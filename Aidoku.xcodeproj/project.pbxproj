@@ -52,6 +52,9 @@
 		FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */; };
 		FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
+		FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB9A659B278217710071F1A2 /* SwiftSoup */; };
+		FB9A659F2782179A0071F1A2 /* TCBScansProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */; };
+		FB9A65A02782179A0071F1A2 /* TCBScansProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +91,7 @@
 		FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderNavigationController.swift; sourceTree = "<group>"; };
 		FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomableScrollView.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCBScansProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +101,7 @@
 			files = (
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
 				FB1B4897277CED3A0056D02C /* SwiftUIX in Frameworks */,
+				FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,6 +204,7 @@
 			children = (
 				FB1B4883277CECCC0056D02C /* MangaProvider.swift */,
 				FB1B4890277CECE10056D02C /* MangaDex */,
+				FB9A659D278217810071F1A2 /* TCB Scans */,
 			);
 			path = Providers;
 			sourceTree = "<group>";
@@ -287,6 +293,14 @@
 			path = Reader;
 			sourceTree = "<group>";
 		};
+		FB9A659D278217810071F1A2 /* TCB Scans */ = {
+			isa = PBXGroup;
+			children = (
+				FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */,
+			);
+			path = "TCB Scans";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -306,6 +320,7 @@
 			packageProductDependencies = (
 				FB1B4873277CE7E60056D02C /* Kingfisher */,
 				FB1B4896277CED3A0056D02C /* SwiftUIX */,
+				FB9A659B278217710071F1A2 /* SwiftSoup */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -362,6 +377,7 @@
 			packageReferences = (
 				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */,
+				FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -422,6 +438,7 @@
 				FB1B487B277CEC270056D02C /* MangaView.swift in Sources */,
 				FB1B489E277CF5540056D02C /* HostingController.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
+				FB9A659F2782179A0071F1A2 /* TCBScansProvider.swift in Sources */,
 				FB1B48B7277CF8280056D02C /* ReaderViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -443,6 +460,7 @@
 				FB1B488C277CECCC0056D02C /* URLSession+object.swift in Sources */,
 				FB1B488A277CECCC0056D02C /* MangaDexProvider.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
+				FB9A65A02782179A0071F1A2 /* TCBScansProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -726,6 +744,14 @@
 				kind = branch;
 			};
 		};
+		FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -748,6 +774,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */;
 			productName = SwiftUIX;
+		};
+		FB9A659B278217710071F1A2 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
 

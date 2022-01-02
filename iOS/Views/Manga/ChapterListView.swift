@@ -24,12 +24,20 @@ struct ChapterListView: View {
                     VStack(spacing: 8) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(chapter.title)
-                                    .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
-                                    .lineLimit(1)
-                                Text("Chapter \(chapter.chapterNum, specifier: "%g")")
-                                    .foregroundColor(.secondaryLabel)
-                                    .lineLimit(1)
+                                if let title = chapter.title {
+                                    Text(title)
+                                        .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                        .lineLimit(1)
+                                } else {
+                                    Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                        .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                        .lineLimit(1)
+                                }
+                                if chapter.title != nil {
+                                    Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                        .foregroundColor(.secondaryLabel)
+                                        .lineLimit(1)
+                                }
                             }
                             Spacer()
                             Image(systemName: "chevron.right")
