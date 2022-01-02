@@ -12,7 +12,8 @@ class ProviderManager {
     static let shared = ProviderManager()
     
     let providers: [String: MangaProvider] = [
-        "xyz.skitty.mangadex": MangaDexProvider()
+        "xyz.skitty.mangadex": MangaDexProvider(),
+        "xyz.skitty.tcbscans": TCBScansProvider()
     ]
 
     func provider(for id: String) -> MangaProvider {

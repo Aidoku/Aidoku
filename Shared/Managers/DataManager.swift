@@ -50,7 +50,7 @@ extension DataManager {
     }
     
     func add(manga m: Manga) -> Bool {
-        if manga.contains(m) {
+        if contains(id: m.id) {
             return false
         }
         

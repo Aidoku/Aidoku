@@ -17,6 +17,8 @@ struct SearchView: View {
     @State var searchText: String = ""
     @State var results: [Manga] = []
     
+    @State var selectedProvider = "xyz.skitty.mangadex"
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -65,7 +67,7 @@ struct SearchView: View {
     }
     
     func doSearch() async {
-        let provider = ProviderManager.shared.provider(for: "xyz.skitty.mangadex")
+        let provider = ProviderManager.shared.provider(for: selectedProvider)
         let search = await provider.fetchSearchManga(query: searchText, page: 0, filters: [])
         results = search.manga
         isMore = search.hasNextPage
@@ -73,7 +75,7 @@ struct SearchView: View {
     
     func loadMore() async {
         isLoadingMore = true
-        let provider = ProviderManager.shared.provider(for: "xyz.skitty.mangadex")
+        let provider = ProviderManager.shared.provider(for: selectedProvider)
         let search = await provider.fetchSearchManga(query: searchText, page: Int(results.count / 10))
 //        results = search.manga
         results.append(contentsOf: search.manga)

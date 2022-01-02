@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "SwiftSoup",
+        "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
+        "state": {
+          "branch": null,
+          "revision": "ea76bfd075ccc1c52c0fefd2105f67964542f246",
+          "version": "2.3.5"
+        }
+      },
+      {
         "package": "SwiftUIX",
         "repositoryURL": "https://github.com/SwiftUIX/SwiftUIX",
         "state": {

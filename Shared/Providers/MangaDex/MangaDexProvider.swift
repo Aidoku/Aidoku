@@ -78,7 +78,7 @@ class MangaDexProvider: MangaProvider {
             )
         } catch {
             print("[getMangaDetails] error: \(error)")
-            return Manga(provider: "xyz.skitty.mangadex", id: id, title: "Error", thumbnailURL: "")
+            return Manga(provider: self.id, id: id, title: "Error", thumbnailURL: "")
         }
     }
     

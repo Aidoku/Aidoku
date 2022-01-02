@@ -92,22 +92,23 @@ struct MangaView: View {
                         .transition(.opacity)
                         .transition(.move(edge: .top))
                 }
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(manga.categories ?? [], id: \.self) { category in
-                            Text(category)
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                                .padding(4)
-                                .padding(.horizontal, 8)
-                                .background(Color.tertiaryFill)
-                                .cornerRadius(100)
+                if let categories = manga.categories {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(categories, id: \.self) { category in
+                                Text(category)
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
+                                    .padding(4)
+                                    .padding(.horizontal, 8)
+                                    .background(Color.tertiaryFill)
+                                    .cornerRadius(100)
+                            }
                         }
+                        .padding(.horizontal)
+                        .padding(.top, 4)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 4)
                 }
-                
                 HStack {
                     Text("Chapters")
                         .font(.system(size: 19, weight: .bold))
@@ -144,12 +145,20 @@ struct MangaView: View {
                             VStack(spacing: 8) {
                                 HStack {
                                     VStack(alignment: .leading) {
-                                        Text(chapter.title)
-                                            .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
-                                            .lineLimit(1)
-                                        Text("Chapter \(chapter.chapterNum, specifier: "%g")")
-                                            .foregroundColor(.secondaryLabel)
-                                            .lineLimit(1)
+                                        if let title = chapter.title {
+                                            Text(title)
+                                                .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                                .lineLimit(1)
+                                        } else {
+                                            Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                                .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                                .lineLimit(1)
+                                        }
+                                        if chapter.title != nil {
+                                            Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                                .foregroundColor(.secondaryLabel)
+                                                .lineLimit(1)
+                                        }
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")

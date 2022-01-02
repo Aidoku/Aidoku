@@ -21,7 +21,7 @@ struct Manga: Hashable, Codable {
     var thumbnailURL: String?
     
     init(
-        provider: String = "xyz.skitty.mangadex",
+        provider: String,
         id: String,
         title: String,
         author: String? = nil,
