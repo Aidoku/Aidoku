@@ -9,12 +9,23 @@ import SwiftUI
 import SwiftUIX
 import Kingfisher
 
+struct AnimatingWidth: AnimatableModifier {
+    var width: CGFloat = 0
+
+    var animatableData: CGFloat {
+        get { width }
+        set { width = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content.frame(width: width)
+    }
+}
+
 struct MangaView: View {
     
     @State var manga: Manga
     
-    @State var fulldesc = false
-    @State var descriptionLoaded = false
     @State var chaptersLoaded = false
     @State var inLibrary: Bool = false
     
@@ -24,6 +35,11 @@ struct MangaView: View {
     @State var readHistory: [String: Bool] = [:]
     
     @State var selectedChapter: Chapter?
+    
+    @State var descriptionLoaded = false
+    @State var descriptionExpanded = false
+    @State var descriptionLineCount = 4
+    @State var isAnimatingDescription = false
     
     var body: some View {
         ScrollView {
@@ -68,10 +84,10 @@ struct MangaView: View {
                     Spacer()
                     Button {
                         withAnimation {
-                            fulldesc.toggle()
+                            animateDescription()
                         }
                     } label: {
-                        Text(fulldesc ? "Show Less" : "Show More")
+                        Text(descriptionExpanded ? "Show Less" : "Show More")
                     }
                     .animation(nil)
                 }
@@ -87,7 +103,7 @@ struct MangaView: View {
                     Text(manga.description ?? "No Description")
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
-                        .lineLimit(fulldesc ? 50 : 4)
+                        .lineLimit(descriptionLineCount)
                         .fixedSize(horizontal: false, vertical: true)
                         .transition(.opacity)
                         .transition(.move(edge: .top))
@@ -195,52 +211,50 @@ struct MangaView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if inLibrary || DataManager.shared.manga.contains(manga) {
-                    if #available(iOS 15, *) {
+                if #available(iOS 15, *) {
+                    ZStack(alignment: .trailing) {
                         Button {
-                            DataManager.shared.deleteManga(manga)
-                            inLibrary = DataManager.shared.manga.contains(manga)
+                            if inLibrary {
+                                DataManager.shared.deleteManga(manga)
+                            } else {
+                                _ = DataManager.shared.add(manga: manga)
+                            }
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                inLibrary = DataManager.shared.manga.contains(manga)
+                            }
                         } label: {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
-                        }
-                        .background(.tertiaryFill)
-                        .clipShape(Circle())
-                        .frame(width: 28, height: 28)
-                        .padding(.trailing, 12)
-                    } else {
-                        Button {
-                            DataManager.shared.deleteManga(manga)
-                            inLibrary = DataManager.shared.manga.contains(manga)
-                        } label: {
-                            Image(systemName: "bookmark.fill")
+                            if inLibrary {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .padding([.leading, .trailing], -3)
+                            } else {
+                                HStack {
+                                    Image(systemName: "plus")
+                                        .padding(.leading, 2)
+                                        .padding(.trailing, -5)
+                                        .font(.system(size: 10, weight: .heavy))
+                                    Text("Add")
+                                        .padding(.trailing, 6)
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                            }
                         }
                     }
+                    .background(.tertiaryFill)
+                    .cornerRadius(14)
+                    .frame(height: 28)
+                    .modifier(AnimatingWidth(width: inLibrary ? 28 : 67))
+                    .padding(.trailing, 12)
                 } else {
-                    if #available(iOS 15, *) {
-                        Button {
+                    Button {
+                        if inLibrary {
+                            DataManager.shared.deleteManga(manga)
+                        } else {
                             _ = DataManager.shared.add(manga: manga)
-                            inLibrary = DataManager.shared.manga.contains(manga)
-                        } label: {
-                            Image(systemName: "plus")
-                                .padding(.leading, 2)
-                                .padding(.trailing, -5)
-                                .font(.system(size: 10, weight: .heavy))
-                            Text("Add")
-                                .padding(.trailing, 6)
-                                .font(.system(size: 14, weight: .medium))
                         }
-                        .background(.tertiaryFill)
-                        .cornerRadius(14)
-                        .frame(width: 67, height: 28)
-                        .padding(.trailing, 12)
-                    } else {
-                        Button {
-                            _ = DataManager.shared.add(manga: manga)
-                            inLibrary = DataManager.shared.manga.contains(manga)
-                        } label: {
-                            Image(systemName: "bookmark")
-                        }
+                        inLibrary = DataManager.shared.manga.contains(manga)
+                    } label: {
+                        Image(systemName: inLibrary ? "bookmark.fill" : "bookmark")
                     }
                 }
                 if #available(iOS 15, *) {
@@ -270,6 +284,29 @@ struct MangaView: View {
                 await fetchManga()
             }
         }
+    }
+    
+    func animateDescription() {
+        guard !isAnimatingDescription else { return } // Check not currently animating
+        descriptionExpanded.toggle()
+        isAnimatingDescription = true
+
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { timer in
+            if descriptionExpanded {
+                descriptionLineCount += 1
+                if descriptionLineCount >= 15 { // max lines
+                    timer.invalidate()
+                    isAnimatingDescription = false
+                }
+            } else {
+                descriptionLineCount -= 1
+                if descriptionLineCount <= 4 { // max lines
+                    timer.invalidate()
+                    isAnimatingDescription = false
+                }
+            }
+        }
+        timer.fire()
     }
     
     func fetchManga() async {

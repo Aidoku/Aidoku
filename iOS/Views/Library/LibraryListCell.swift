@@ -25,10 +25,10 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
             HStack(spacing: 16) {
                 KFImage(URL(string: manga.thumbnailURL ?? ""))
                     .resizable()
-                    .frame(width: 2/3*140, height: 140)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 2/3*140)
                     .cornerRadius(8)
                     .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
-                
                 VStack(alignment: .leading, spacing: 4) {
                     Text(manga.title)
                         .foregroundColor(.label)
@@ -40,8 +40,6 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
                         .lineLimit(1)
                     extraLabel
                 }
-                .transition(.slide)
-                .animation(.easeInOut(duration: 0.2))
                 Spacer()
                 VStack {
                     Spacer()

@@ -55,6 +55,8 @@
 		FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB9A659B278217710071F1A2 /* SwiftSoup */; };
 		FB9A659F2782179A0071F1A2 /* TCBScansProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */; };
 		FB9A65A02782179A0071F1A2 /* TCBScansProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */; };
+		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
+		FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -92,6 +94,7 @@
 		FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomableScrollView.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9A659E2782179A0071F1A2 /* TCBScansProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCBScansProvider.swift; sourceTree = "<group>"; };
+		FBFDD40227838AB90055ED9F /* Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -277,6 +280,7 @@
 			isa = PBXGroup;
 			children = (
 				FB1B489A277CF4B70056D02C /* Color.swift */,
+				FBFDD40227838AB90055ED9F /* Sequence.swift */,
 				FB1B4885277CECCC0056D02C /* URLSession+object.swift */,
 			);
 			path = Extensions;
@@ -415,6 +419,7 @@
 			files = (
 				FB1B4868277CE76B0056D02C /* Manga.swift in Sources */,
 				FB1B4889277CECCC0056D02C /* MangaDexProvider.swift in Sources */,
+				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
 				FB1B488D277CECCC0056D02C /* MangaDexModels.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
@@ -455,6 +460,7 @@
 				FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */,
 				FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB1B486B277CE76B0056D02C /* Page.swift in Sources */,
+				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB1B489C277CF4B70056D02C /* Color.swift in Sources */,
 				FB1B4888277CECCC0056D02C /* MangaProvider.swift in Sources */,
 				FB1B488C277CECCC0056D02C /* URLSession+object.swift in Sources */,

@@ -62,7 +62,7 @@ class TCBScansProvider: MangaProvider {
     
     func fetchSearchManga(query: String, page: Int = 0, filters: [String] = []) async -> MangaPageResult {
         let mangaList = getAllManga().manga
-        return MangaPageResult(manga: mangaList.filter { $0.title.contains(query) }, hasNextPage: false)
+        return MangaPageResult(manga: mangaList.filter { $0.title.lowercased().contains(query.lowercased()) }, hasNextPage: false)
     }
     
     func getMangaDetails(id: String) async -> Manga {
