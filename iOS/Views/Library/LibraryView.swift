@@ -53,6 +53,8 @@ struct LibraryView: View {
     @State var selectedManga: Manga? = nil
     @State var openMangaInfoView: Bool = false
     
+    @State var updatedLibrary: Bool = false
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -96,6 +98,8 @@ struct LibraryView: View {
                                             chapter: c,
                                             manga: m
                                         )
+                                        DataManager.shared.setMangaOpened(m)
+                                        loadManga()
                                     }
                                 } label: {
                                     LibraryGridCell(manga: m)
@@ -109,9 +113,12 @@ struct LibraryView: View {
                                         Text("Manga Info")
                                         Image(systemName: "info.circle")
                                     }
-                                    Button {} label: {
+                                    Button {
+                                        DataManager.shared.deleteManga(m)
+                                        loadManga()
+                                    } label: {
                                         Text("Remove from Library")
-                                        Image(systemName: "bookmark.slash")
+                                        Image(systemName: "trash")
                                     }
                                 }
                             }
@@ -132,7 +139,6 @@ struct LibraryView: View {
                                         manga: m
                                     )
                                     DataManager.shared.setMangaOpened(m)
-                                    DataManager.shared.loadLibrary()
                                     loadManga()
                                 }
                             } label: {
@@ -223,13 +229,18 @@ struct LibraryView: View {
             loadManga()
             Task {
                 await loadHistory()
+                if !updatedLibrary {
+                    await DataManager.shared.getLatestMangaDetails()
+                    await DataManager.shared.updateLibrary()
+                    loadManga()
+                    updatedLibrary = true
+                }
             }
         }
-        .onDisappear(perform: {
-            print("onDisappear")
+        .onDisappear {
             DataManager.shared.loadLibrary()
             loadManga()
-        })
+        }
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
@@ -258,7 +269,7 @@ struct LibraryView: View {
                 $0.author ?? "" < $1.author ?? ""
             }
         }
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.3)) {
             self.manga = loadedManga
         }
     }

@@ -17,7 +17,7 @@ struct SearchView: View {
     @State var searchText: String = ""
     @State var results: [Manga] = []
     
-    @State var selectedProvider = "xyz.skitty.mangadex"
+    @AppStorage("searchProvider") var selectedProvider = "xyz.skitty.mangadex"
     
     var body: some View {
         NavigationView {
@@ -49,6 +49,17 @@ struct SearchView: View {
             }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                Menu {
+                    Picker("Providers", selection: $selectedProvider) {
+                        ForEach(Array(ProviderManager.shared.providers.keys), id: \.self) { id in
+                            Text(ProviderManager.shared.provider(for: id).name)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "square.stack.3d.up")
+                }
+            }
             .navigationSearchBar {
                 SearchBar("Search", text: $searchText, isEditing: $isEditing) {
                     isSearching = true
@@ -71,13 +82,13 @@ struct SearchView: View {
         let search = await provider.fetchSearchManga(query: searchText, page: 0, filters: [])
         results = search.manga
         isMore = search.hasNextPage
+        isSearching = false
     }
     
     func loadMore() async {
         isLoadingMore = true
         let provider = ProviderManager.shared.provider(for: selectedProvider)
         let search = await provider.fetchSearchManga(query: searchText, page: Int(results.count / 10))
-//        results = search.manga
         results.append(contentsOf: search.manga)
         isMore = search.hasNextPage
         isLoadingMore = false

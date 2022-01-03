@@ -94,7 +94,7 @@ extension DataManager {
             try container.viewContext.save()
             
             manga.removeAll {
-                $0.id == id
+                id.hasPrefix($0.provider) && id.hasSuffix($0.id)
             }
         } catch let error as NSError {
             print("Could not delete. \(error), \(error.userInfo)")
@@ -138,8 +138,33 @@ extension DataManager {
         return try container.viewContext.fetch(fetchRequest)
     }
     
-    func updateLibrary(onCompleted: @escaping () -> Void) {
-        // TODO: fetch and store latest manga info
+    func getLatestMangaDetails() async {
+        do {
+            manga = try await manga.concurrentMap { m in
+                let provider = ProviderManager.shared.provider(for: m.provider)
+                var newInfo = await provider.getMangaDetails(id: m.id)
+                newInfo.thumbnailURL = await provider.getMangaCoverURL(manga: m)
+                return m.copy(from: newInfo)
+            }
+        } catch {
+            print("error: \(error)")
+        }
+    }
+    
+    func updateLibrary() async {
+        do {
+            try manga.forEach { m in
+                let mangaObjs = try getLibrary(predicate: NSPredicate(format: "id = %@", m.provider + "." + m.id))
+                if let mangaObj = mangaObjs.first, let encodedManga = try? JSONEncoder().encode(m) {
+                    mangaObj.setValue(m.title, forKey: "title")
+                    mangaObj.setValue(m.author, forKey: "author")
+                    mangaObj.setValue(encodedManga, forKey: "payload")
+                    try container.viewContext.save()
+                }
+            }
+        } catch {
+            print("error: \(error)")
+        }
     }
     
     func clearLibrary() {
