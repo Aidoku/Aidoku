@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FB11EDED2784B03D0007365D /* ChapterListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEC2784B03D0007365D /* ChapterListCell.swift */; };
+		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
+		FB11EDF02784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482D277CE18D0056D02C /* AidokuApp.swift */; };
@@ -60,6 +63,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FB11EDEC2784B03D0007365D /* ChapterListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListCell.swift; sourceTree = "<group>"; };
+		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
 		FB1B4830277CE1920056D02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -181,6 +186,7 @@
 				FB1B4863277CE76A0056D02C /* Chapter.swift */,
 				FB1B4864277CE76A0056D02C /* Manga.swift */,
 				FB1B4865277CE76A0056D02C /* Page.swift */,
+				FB11EDEE2784B0690007365D /* Volume.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -235,6 +241,7 @@
 			children = (
 				FB1B487A277CEC270056D02C /* MangaView.swift */,
 				FB1B48A1277CF60C0056D02C /* ChapterListView.swift */,
+				FB11EDEC2784B03D0007365D /* ChapterListCell.swift */,
 			);
 			path = Manga;
 			sourceTree = "<group>";
@@ -421,6 +428,7 @@
 				FB1B4889277CECCC0056D02C /* MangaDexProvider.swift in Sources */,
 				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
 				FB1B488D277CECCC0056D02C /* MangaDexModels.swift in Sources */,
+				FB11EDED2784B03D0007365D /* ChapterListCell.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
@@ -431,6 +439,7 @@
 				FB1B48AC277CF6B60056D02C /* MangaListCell.swift in Sources */,
 				FB1B485D277CE6600056D02C /* DataManager.swift in Sources */,
 				FB1B4887277CECCC0056D02C /* MangaProvider.swift in Sources */,
+				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FB1B486E277CE7B50056D02C /* LibraryListCell.swift in Sources */,
 				FB1B4881277CEC810056D02C /* SettingsView.swift in Sources */,
 				FB1B48AE277CF6B60056D02C /* SearchView.swift in Sources */,
@@ -467,6 +476,7 @@
 				FB1B488A277CECCC0056D02C /* MangaDexProvider.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB9A65A02782179A0071F1A2 /* TCBScansProvider.swift in Sources */,
+				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

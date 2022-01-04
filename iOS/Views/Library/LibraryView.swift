@@ -44,8 +44,7 @@ struct LibraryView: View {
     @State var chapters: [String: [Chapter]] = [:]
     @State var readHistory: [String: [String: Bool]] = [:]
     
-    @State var showingSettings = false
-    @State var hidingStatusBar = false
+    @State var showingSettings: Bool = false
     @State var isEditing: Bool = false
     @State var searchText: String = ""
     
@@ -188,6 +187,13 @@ struct LibraryView: View {
                     NavigationLink(isActive: $openMangaInfoView) {
                         if let m = selectedManga {
                             MangaView(manga: m)
+                                .onDisappear {
+                                    DataManager.shared.loadLibrary()
+                                    loadManga()
+                                    Task {
+                                        await loadHistory()
+                                    }
+                                }
                         } else {
                             EmptyView()
                         }
@@ -214,7 +220,6 @@ struct LibraryView: View {
             SettingsView()
         }
         .fullScreenCover(item: $selectedChapter, onDismiss: {
-            hidingStatusBar = false
             Task {
                 await loadHistory()
             }
