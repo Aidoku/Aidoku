@@ -20,7 +20,7 @@ class MangaDexProvider: MangaProvider {
     
     func fetchSearchManga(query: String, page: Int = 0, filters: [String] = []) async -> MangaPageResult {
         do {
-            let url = URL(string: "https://api.mangadex.org/manga/?title=\(query)&offset=\(10*page)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")!
+            let url = URL(string: "https://api.mangadex.org/manga/?title=\(query)&offset=\(10*page)&limit=10".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")!
             let search: MDLimitedResponse<MDObject<MDManga>> = try await URLSession.shared.object(from: url)
             var manga = [Manga]()
             for mangaObj in search.data ?? [] {
@@ -69,7 +69,7 @@ class MangaDexProvider: MangaProvider {
             return try await Manga(
                 provider: self.id,
                 id: id,
-                title: manga.data?.attributes.title.translations["en"] ?? "Error",
+                title: manga.data?.attributes.title.translations["en"] ?? "Unknown title",
                 author: author,
                 description: manga.data?.attributes.description?.translations["en"] ?? "No Description",
                 categories: manga.data?.attributes.tags.map {
@@ -89,7 +89,7 @@ class MangaDexProvider: MangaProvider {
             }
         }
         do {
-            let cover: MDLimitedResponse<MDObject<MDCover>> = try await URLSession.shared.object(from: URL(string: "https://api.mangadex.org/cover/?manga[]=\(manga.id)")!)
+            let cover: MDLimitedResponse<MDObject<MDCover>> = try await URLSession.shared.object(from: URL(string: "https://api.mangadex.org/cover/?manga[]=\(manga.id)&order[volume]=desc&limit=1")!)
             guard let fileName = cover.data?.first?.attributes.fileName else { throw MDError.errorResponse }
             return "https://uploads.mangadex.org/covers/\(manga.id)/\(fileName).256.jpg"
         } catch {

@@ -27,6 +27,15 @@
           "revision": "bec03e5e3ac7c56d6fdcaf7f70fcd33fa2df5f69",
           "version": null
         }
+      },
+      {
+        "package": "WebAssembly",
+        "repositoryURL": "https://github.com/L1MeN9Yu/WebAssembly",
+        "state": {
+          "branch": "main",
+          "revision": "3248092261353dd1987bc5864b490e586f1c0481",
+          "version": null
+        }
       }
     ]
   },

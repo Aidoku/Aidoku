@@ -11,12 +11,12 @@ struct Manga: Hashable, Codable {
     let provider: String
     let id: String
     
-    let title: String
-    let author: String?
-    let artist: String?
+    var title: String
+    var author: String?
+    var artist: String?
     
-    let description: String?
-    let categories: [String]?
+    var description: String?
+    var categories: [String]?
     
     var thumbnailURL: String?
     
