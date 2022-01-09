@@ -13,7 +13,8 @@ class ProviderManager {
     
     let providers: [String: MangaProvider] = [
         "xyz.skitty.mangadex": MangaDexProvider(),
-        "xyz.skitty.tcbscans": TCBScansProvider()
+        "xyz.skitty.tcbscans": TCBScansProvider(),
+        "xyz.skitty.wasmtest": WasmProvider()
     ]
 
     func provider(for id: String) -> MangaProvider {
