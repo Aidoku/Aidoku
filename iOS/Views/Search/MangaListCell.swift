@@ -26,14 +26,14 @@ struct MangaListCell: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(manga.title)
+                        Text(manga.title ?? "Unknown Title")
                             .foregroundColor(.label)
                             .multilineTextAlignment(.leading)
                             .lineLimit(3)
-                        Text(manga.author ?? "Unknown Author")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(1)
+//                        Text(manga.author ?? "Unknown Author")
+//                            .foregroundColor(.secondary)
+//                            .multilineTextAlignment(.leading)
+//                            .lineLimit(1)
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -48,8 +48,10 @@ struct MangaListCell: View {
             }
             .onAppear {
                 Task {
-                    coverURL = await ProviderManager.shared.provider(for: manga.provider).getMangaCoverURL(manga: manga)
-                    manga.thumbnailURL = coverURL
+                    if manga.thumbnailURL == nil {
+                        manga = await ProviderManager.shared.provider(for: manga.provider).fetchMangaDetails(manga: manga)
+                    }
+                    coverURL = manga.thumbnailURL ?? ""
                 }
             }
         }

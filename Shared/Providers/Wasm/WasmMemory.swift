@@ -62,7 +62,7 @@ class WasmMemory {
 //                    print("-> \(self.mallocCount) \(self.freeCount) \(self.allocations.count)")
 //                }
             } else {
-                print("ADDRESS TO FREE NOT FOUND")
+                print("ADDRESS TO FREE NOT FOUND (\(addr))")
             }
         }
     }

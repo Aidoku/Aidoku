@@ -142,8 +142,7 @@ extension DataManager {
         do {
             manga = try await manga.concurrentMap { m in
                 let provider = ProviderManager.shared.provider(for: m.provider)
-                var newInfo = await provider.getMangaDetails(id: m.id)
-                newInfo.thumbnailURL = await provider.getMangaCoverURL(manga: m, override: true)
+                let newInfo = await provider.fetchMangaDetails(manga: m)
                 return m.copy(from: newInfo)
             }
         } catch {

@@ -25,12 +25,12 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
             HStack(spacing: 16) {
                 KFImage(URL(string: manga.thumbnailURL ?? ""))
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .aspectRatio(2/3, contentMode: .fit)
                     .frame(width: 2/3*140)
                     .cornerRadius(8)
                     .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(manga.title)
+                    Text(manga.title ?? "Unknown Title")
                         .foregroundColor(.label)
                         .multilineTextAlignment(.leading)
                         .lineLimit(3)
@@ -58,7 +58,7 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
                 .padding(.leading)
                 .padding(.leading)
                 .padding(.leading, 2/3*140)
-                .padding(.trailing)
+//                .padding(.trailing)
         }
     }
 }

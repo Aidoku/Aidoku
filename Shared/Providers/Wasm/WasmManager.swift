@@ -22,7 +22,7 @@ class WasmManager {
     
     init() {
         let bytes = [UInt8](try! Data(contentsOf: Bundle.main.url(forResource: "main", withExtension: "wasm")!))
-        self.vm = try! Interpreter(stackSize: 512 * 1024 * 4, module: bytes)
+        self.vm = try! Interpreter(stackSize: 512 * 1024, module: bytes)
         
         self.memory = WasmMemory(vm: self.vm)
         let wasmRequest = WasmRequest(vm: self.vm, memory: memory)
@@ -220,10 +220,16 @@ class WasmManager {
         return try await task.value
     }
     
-    func getManga(id: String) async throws -> Manga {
+    func getManga(manga: Manga) async throws -> Manga {
         let task = Task<Manga, Error> {
-            let idOffset = self.vm.write(string: id)
-            let mangaOffset = self.vm.write(data: [idOffset, 0, 0, 0, 0, 0, 0])
+            let idOffset = self.vm.write(string: manga.id)
+            var titleOffset: Int32 = 0
+            var authorOffset: Int32 = 0
+            var descriptionOffset: Int32 = 0
+            if let title = manga.title { titleOffset = self.vm.write(string: title) }
+            if let author = manga.author { authorOffset = self.vm.write(string: author) }
+            if let description = manga.description { descriptionOffset = self.vm.write(string: description) }
+            let mangaOffset = self.vm.write(data: [idOffset, titleOffset, authorOffset, descriptionOffset, 0, 0, 0])
             
             let success: Int32 = try self.vm.call("getMangaDetails", mangaOffset)
             guard success > 0 else { throw WasmError.getMangaDetailsError }
@@ -258,7 +264,7 @@ class WasmManager {
             }
             
             self.memory.free(idOffset)
-            if structValues[0] > idOffset {
+            if structValues[0] != idOffset {
                 self.memory.free(structValues[0])
             }
             self.memory.free(mangaOffset)

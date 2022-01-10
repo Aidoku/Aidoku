@@ -52,10 +52,10 @@ struct MangaView: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                     VStack(alignment: .leading, spacing: 4) {
                         Spacer()
-                        Text(manga.title)
+                        Text(manga.title ?? "Unknown Title")
                             .font(.system(size: 24, weight: .medium))
                             .lineLimit(2)
-                        Text(manga.author ?? "Unknown Author")
+                        Text(manga.author ?? "")
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
@@ -281,7 +281,9 @@ struct MangaView: View {
         })
         .onAppear {
             Task {
-                await fetchManga()
+                if !chaptersLoaded {
+                    await fetchManga()
+                }
             }
         }
     }
@@ -314,8 +316,8 @@ struct MangaView: View {
         
         let provider = ProviderManager.shared.provider(for: manga.provider)
         
-        let newManga = await provider.getMangaDetails(id: manga.id)
-        manga = manga.copy(from: newManga)
+        let newManga = await provider.fetchMangaDetails(manga: manga)
+        manga = newManga // manga.copy(from: newManga)
         withAnimation(.easeInOut(duration: 0.3)) {
             descriptionLoaded = true
         }
@@ -324,7 +326,7 @@ struct MangaView: View {
         withAnimation(.easeInOut(duration: 0.3)) {
             chaptersLoaded = true
         }
-        manga.thumbnailURL = await provider.getMangaCoverURL(manga: manga, override: true)
+//        manga.thumbnailURL = await provider.getMangaCoverURL(manga: manga, override: true)
     }
     
     func updateReadHistory() {

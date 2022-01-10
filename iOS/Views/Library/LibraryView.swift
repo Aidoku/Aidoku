@@ -29,7 +29,7 @@ struct DropMenu: View {
     }
 }
 
-struct ChapterWithManga: Identifiable {
+struct ChapterWithManga: Identifiable, Equatable {
     let id = UUID()
     let chapter: Chapter
     let manga: Manga
@@ -88,7 +88,7 @@ struct LibraryView: View {
                             ForEach(manga.filter {
                                 search(
                                     needle: searchText.lowercased(),
-                                    haystack: $0.title.lowercased()
+                                    haystack: $0.title?.lowercased() ?? ""
                                 )
                             }, id: \.self) { m in
                                 Button {
@@ -97,8 +97,6 @@ struct LibraryView: View {
                                             chapter: c,
                                             manga: m
                                         )
-                                        DataManager.shared.setMangaOpened(m)
-                                        loadManga()
                                     }
                                 } label: {
                                     LibraryGridCell(manga: m)
@@ -125,31 +123,46 @@ struct LibraryView: View {
                         .padding(.horizontal, 20.0)
                         .transition(.opacity)
                     } else {
-                        ForEach(manga.filter {
-                            search(
-                                needle: searchText.lowercased(),
-                                haystack: $0.title.lowercased()
-                            )
-                        }, id: \.self) { m in
-                            Button {
-                                if let c = getNextChapter(for: m) {
-                                    selectedChapter = ChapterWithManga(
-                                        chapter: c,
-                                        manga: m
-                                    )
-                                    DataManager.shared.setMangaOpened(m)
-                                    loadManga()
-                                }
-                            } label: {
-                                LibraryListCell(manga: m) {
-                                    if let chapterNum = getNextChapter(for: m)?.chapterNum {
-                                        Text("Chapter \(chapterNum, specifier: "%g")")
-                                            .foregroundColor(.secondaryLabel)
-                                            .font(.system(size: 13))
-                                            .lineLimit(1)
-                                            .padding(.top, 8)
+                        LazyVStack {
+                            ForEach(manga.filter {
+                                search(
+                                    needle: searchText.lowercased(),
+                                    haystack: $0.title?.lowercased() ?? ""
+                                )
+                            }, id: \.self) { m in
+                                Button {
+                                    if let c = getNextChapter(for: m) {
+                                        selectedChapter = ChapterWithManga(
+                                            chapter: c,
+                                            manga: m
+                                        )
                                     }
-                                } menuContent: {
+                                } label: {
+                                    LibraryListCell(manga: m) {
+                                        if let chapterNum = getNextChapter(for: m)?.chapterNum {
+                                            Text("Chapter \(chapterNum, specifier: "%g")")
+                                                .foregroundColor(.secondaryLabel)
+                                                .font(.system(size: 13))
+                                                .lineLimit(1)
+                                                .padding(.top, 8)
+                                        }
+                                    } menuContent: {
+                                        Button {
+                                            selectedManga = m
+                                            openMangaInfoView = true
+                                        } label: {
+                                            Label("Manga Info", systemImage: "info.circle")
+                                        }
+                                        Button {
+                                            DataManager.shared.deleteManga(m)
+                                            loadManga()
+                                        } label: {
+                                            Label("Remove from Library", systemImage: "trash")
+                                        }
+                                    }
+                                    .transition(.move(edge: .top))
+                                }
+                                .contextMenu {
                                     Button {
                                         selectedManga = m
                                         openMangaInfoView = true
@@ -163,24 +176,9 @@ struct LibraryView: View {
                                         Label("Remove from Library", systemImage: "trash")
                                     }
                                 }
-                                .transition(.move(edge: .top))
                             }
-                            .contextMenu {
-                                Button {
-                                    selectedManga = m
-                                    openMangaInfoView = true
-                                } label: {
-                                    Label("Manga Info", systemImage: "info.circle")
-                                }
-                                Button {
-                                    DataManager.shared.deleteManga(m)
-                                    loadManga()
-                                } label: {
-                                    Label("Remove from Library", systemImage: "trash")
-                                }
-                            }
+                            .transition(.opacity)
                         }
-                        .transition(.opacity)
                     }
                 }
                 .background {
@@ -226,6 +224,12 @@ struct LibraryView: View {
         }, content: { item in
             ReaderView(manga: item.manga, chapter: item.chapter, startPage: DataManager.shared.currentPage(forManga: item.manga.id, chapter: item.chapter.id))
                 .edgesIgnoringSafeArea(.all)
+                .onAppear {
+                    if let value = selectedChapter {
+                        DataManager.shared.setMangaOpened(value.manga)
+                        loadManga()
+                    }
+                }
         })
         .onChange(of: sortMethod) { _ in
             loadManga()
@@ -267,7 +271,7 @@ struct LibraryView: View {
         var loadedManga = DataManager.shared.manga
         if sortMethod == 1 {
             loadedManga.sort {
-                $0.title < $1.title
+                $0.title ?? "" < $1.title ?? ""
             }
         } else if sortMethod == 2 {
             loadedManga.sort {
