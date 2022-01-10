@@ -7,6 +7,7 @@
 
 import Foundation
 import WebAssembly
+import CWasm3
 
 struct WasmAllocation {
     var address: Int32
@@ -16,7 +17,7 @@ struct WasmAllocation {
 class WasmMemory {
     let vm: Interpreter
     
-    let header: Int32 = 128 * 1024 // 128 kb
+    let base: Int32
     var allocations = [WasmAllocation]()
     
 //    var mallocCount = 0
@@ -24,30 +25,31 @@ class WasmMemory {
     
     init(vm: Interpreter) {
         self.vm = vm
+        self.base = (try? self.vm.call("get_heap_base")) ?? Int32(66992)
     }
     
     var malloc: (Int32) -> Int32 {
         { size in
 //            self.mallocCount += 1
-            var location: Int32 = self.header
+            var location: Int32 = self.base
             var i = 0
             for allocation in self.allocations {
-                let available = location - (allocation.address + allocation.size)
+                let available = allocation.address - location
                 if available > size {
-                    self.allocations.insert(WasmAllocation(address: location - size, size: size), at: i)
-                    return location - size
+                    self.allocations.insert(WasmAllocation(address: location, size: size), at: i)
+                    return location
                 } else {
-                    location = allocation.address - 1
+                    location = allocation.address + allocation.size + 1
                 }
                 i += 1
             }
-            if location <= size {
-                print("[!] RAN OUT OF MEMORY")
-                print("allocation count: \(self.allocations.count)")
-                return 0
+            // requires some tweaking of the wasm library -- TODO: write my own wasm3 wrapper
+            let pageCount = self.vm.runtime.pointee.memory.numPages
+            if location + size >= pageCount * 64 * 1024 {
+                ResizeMemory(self.vm.runtime, pageCount + 1)
             }
-            self.allocations.append(WasmAllocation(address: location - size, size: size))
-            return location - size
+            self.allocations.append(WasmAllocation(address: location, size: size))
+            return location
         }
     }
     
