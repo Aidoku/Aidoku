@@ -9,6 +9,10 @@ import Foundation
 import WebAssembly
 
 class WasmManager {
+    enum WasmError: Error {
+        case getMangaDetailsError
+    }
+    
     static let shared = WasmManager()
     
     var vm: Interpreter
@@ -61,9 +65,27 @@ class WasmManager {
         )
         
         try? self.vm.addImportHandler(
+            name: "json_dictionary_get_int",
+            namespace: "env",
+            block: wasmJson.json_dictionary_get_int
+        )
+        
+        try? self.vm.addImportHandler(
+            name: "json_dictionary_get_float",
+            namespace: "env",
+            block: wasmJson.json_dictionary_get_float
+        )
+        
+        try? self.vm.addImportHandler(
             name: "json_array_get",
             namespace: "env",
             block: wasmJson.json_array_get
+        )
+        
+        try? self.vm.addImportHandler(
+            name: "json_array_get_string",
+            namespace: "env",
+            block: wasmJson.json_array_get_string
         )
         
         try? self.vm.addImportHandler(
@@ -112,15 +134,16 @@ class WasmManager {
         }
     }
     
-//    var activeTasks = [String: Task<String, Error>]()
-    
     func getCoverURL(id: String) async throws -> String {
         let task = Task<String, Error> {
+            var url = ""
             let idPointer = self.vm.write(string: id)
             let urlPointer: Int32 = try self.vm.call("getCoverURL", idPointer)
-            let url = self.vm.stringFromHeap(byteOffset: Int(urlPointer))
+            if urlPointer > 0 {
+                url = self.vm.stringFromHeap(byteOffset: Int(urlPointer))
+                self.memory.free(urlPointer)
+            }
             self.memory.free(idPointer)
-            self.memory.free(urlPointer)
             
             return url
         }
@@ -135,47 +158,61 @@ class WasmManager {
             try self.vm.call("fetchSearchManga", queryOffset, queryPointer, 0)
             
             let mangaPageStruct = try self.vm.valuesFromHeap(byteOffset: Int(queryOffset), length: 3) as [Int32]
-            let mangaListPointer: Int32 = try self.vm.valueFromHeap(byteOffset: Int(mangaPageStruct[2]))
+            let mangaStructPointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(mangaPageStruct[2]), length: Int(mangaPageStruct[0]))
             
             var manga = [Manga]()
             
-            for i in 0..<Int(mangaPageStruct[0]) {
-                let mangaStruct = try self.vm.valuesFromHeap(byteOffset: Int(mangaListPointer) + 6 * 4 * i, length: 6) as [Int32]
+            for i in 0..<mangaStructPointers.count {
+                let mangaStruct = try self.vm.valuesFromHeap(byteOffset: Int(mangaStructPointers[i]), length: 7) as [Int32]
                 let id = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[0]))
                 let title = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[1]))
                 var author: String?
                 var description: String?
+                var categories: [String]?
                 var thumbnail: String?
-                if mangaStruct[2] != 0 {
+                if mangaStruct[2] > 0 {
                     author = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[2]))
                     self.memory.free(mangaStruct[2])
                 }
-                if mangaStruct[3] != 0 {
+                if mangaStruct[3] > 0 {
                     description = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[3]))
                     self.memory.free(mangaStruct[3])
                 }
-                if mangaStruct[5] != 0 {
-                    thumbnail = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[5]))
+                if mangaStruct[4] > 0 {
+                    categories = ((try? self.vm.valuesFromHeap(byteOffset: Int(mangaStruct[5]), length: Int(mangaStruct[4])) as [Int32]) ?? []).map { pointer -> String in
+                        guard pointer != 0 else { return "" }
+                        let str = self.vm.stringFromHeap(byteOffset: Int(pointer))
+                        self.memory.free(pointer)
+                        return str
+                    }
                     self.memory.free(mangaStruct[5])
+                }
+                if mangaStruct[6] > 0 {
+                    thumbnail = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[6]))
+                    self.memory.free(mangaStruct[6])
                 }
                 
                 self.memory.free(mangaStruct[0])
                 self.memory.free(mangaStruct[1])
                 
-                var newManga = Manga(
+                let newManga = Manga(
                     provider: "xyz.skitty.wasmtest",
                     id: id,
-                    title: title
+                    title: title,
+                    author: author,
+                    description: description,
+                    categories: categories,
+                    thumbnailURL: thumbnail
                 )
-                if let author = author, author != "" { newManga.author = author }
-                if let description = description, description != "" { newManga.description = description }
-                if let thumbnail = thumbnail, thumbnail != "" { newManga.thumbnailURL = thumbnail }
+                
                 manga.append(newManga)
+                
+                self.memory.free(mangaStructPointers[i])
             }
             
             self.memory.free(queryPointer)
             self.memory.free(queryOffset)
-            self.memory.free(mangaListPointer)
+            self.memory.free(mangaPageStruct[2])
             
             return MangaPageResult(manga: manga, hasNextPage: mangaPageStruct[1] > 0)
         }
@@ -186,28 +223,46 @@ class WasmManager {
     func getManga(id: String) async throws -> Manga {
         let task = Task<Manga, Error> {
             let idOffset = self.vm.write(string: id)
-            let mangaOffset = self.vm.write(data: [idOffset, 0, 0, 0, 0, 0])
+            let mangaOffset = self.vm.write(data: [idOffset, 0, 0, 0, 0, 0, 0])
             
-            try self.vm.call("getMangaDetails", mangaOffset)
+            let success: Int32 = try self.vm.call("getMangaDetails", mangaOffset)
+            guard success > 0 else { throw WasmError.getMangaDetailsError }
             
-            let structValues = try self.vm.valuesFromHeap(byteOffset: Int(mangaOffset), length: 6) as [Int32]
+            let structValues = try self.vm.valuesFromHeap(byteOffset: Int(mangaOffset), length: 7) as [Int32]
             
             let id = self.vm.stringFromHeap(byteOffset: Int(structValues[0]))
             let title = self.vm.stringFromHeap(byteOffset: Int(structValues[1]))
-            let author = self.vm.stringFromHeap(byteOffset: Int(structValues[2]))
-            let description = self.vm.stringFromHeap(byteOffset: Int(structValues[3]))
-//            let categories = ((try? self.vm.valuesFromHeap(byteOffset: Int(structValues[4]), length: 3) as [Int32]) ?? []).map {
-//                self.vm.stringFromHeap(byteOffset: Int($0))
-//            }
-            let thumbnail = self.vm.stringFromHeap(byteOffset: Int(structValues[5]))
+            var author: String?
+            var description: String?
+            var categories: [String]?
+            var thumbnail: String?
+            if structValues[2] > 0 {
+                author = self.vm.stringFromHeap(byteOffset: Int(structValues[2]))
+                self.memory.free(structValues[2])
+            }
+            if structValues[3] > 0 {
+                description = self.vm.stringFromHeap(byteOffset: Int(structValues[3]))
+                self.memory.free(structValues[3])
+            }
+            if structValues[5] > 0 {
+                categories = ((try? self.vm.valuesFromHeap(byteOffset: Int(structValues[5]), length: Int(structValues[4])) as [Int32]) ?? []).map { pointer -> String in
+                    let str = self.vm.stringFromHeap(byteOffset: Int(pointer))
+                    self.memory.free(pointer)
+                    return str
+                }
+                self.memory.free(structValues[5])
+            }
+            if structValues[6] > 0 {
+                thumbnail = self.vm.stringFromHeap(byteOffset: Int(structValues[6]))
+                self.memory.free(structValues[6])
+            }
             
             self.memory.free(idOffset)
+            if structValues[0] > idOffset {
+                self.memory.free(structValues[0])
+            }
             self.memory.free(mangaOffset)
             self.memory.free(structValues[1])
-            self.memory.free(structValues[2])
-            self.memory.free(structValues[3])
-            self.memory.free(structValues[4])
-            self.memory.free(structValues[5])
             
             return Manga(
                 provider: "xyz.skitty.wasmtest",
@@ -215,9 +270,96 @@ class WasmManager {
                 title: title,
                 author: author,
                 description: description,
-//                categories: categories,
+                categories: categories,
                 thumbnailURL: thumbnail
             )
+        }
+        
+        return try await task.value
+    }
+    
+    func getChapters(id: String) async throws -> [Chapter] {
+        let task = Task<[Chapter], Error> {
+            let idOffset = self.vm.write(string: id)
+            let chapterListPointer = self.vm.write(data: [0, 0])
+            try self.vm.call("getChapterList", chapterListPointer, idOffset)
+            
+            let chapterListStruct = try self.vm.valuesFromHeap(byteOffset: Int(chapterListPointer), length: 2) as [Int32]
+            let chapterPointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(chapterListStruct[1]), length: Int(chapterListStruct[0]))
+            
+            var chapters: [Chapter] = []
+            
+            for pointer in chapterPointers {
+                let chapterStruct = try self.vm.valuesFromHeap(byteOffset: Int(pointer), length: 4) as [Int32]
+                let id = self.vm.stringFromHeap(byteOffset: Int(chapterStruct[0]))
+                let chapterNum: Float32 = try self.vm.valueFromHeap(byteOffset: Int(pointer) + 8)
+                var title: String?
+                if chapterStruct[1] > 0 {
+                    title = self.vm.stringFromHeap(byteOffset: Int(chapterStruct[1]))
+                    self.memory.free(chapterStruct[1])
+                }
+                
+                self.memory.free(chapterStruct[0])
+                
+                let newChapter = Chapter(
+                    id: id,
+                    title: title,
+                    chapterNum: chapterNum,
+                    volumeNum: Int(chapterStruct[3])
+                )
+                
+                chapters.append(newChapter)
+                
+                self.memory.free(pointer)
+            }
+            
+            self.memory.free(idOffset)
+            self.memory.free(chapterListPointer)
+            self.memory.free(chapterListStruct[1])
+            
+            return chapters
+        }
+        
+        return try await task.value
+    }
+    
+    func getPages(chapter: Chapter) async throws -> [Page] {
+        let task = Task<[Page], Error> {
+            let idOffset = self.vm.write(string: chapter.id)
+            let chapterStruct = self.vm.write(data: [idOffset, 0, 0, 0])
+            let pageListPointer = self.vm.write(data: [0, 0])
+            let success: Int32 = try self.vm.call("getPageList", pageListPointer, chapterStruct)
+            guard success > 0 else { return [] }
+            
+            let pageListStruct = try self.vm.valuesFromHeap(byteOffset: Int(pageListPointer), length: 2) as [Int32]
+            let pagePointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(pageListStruct[1]), length: Int(pageListStruct[0]))
+            
+            var pages: [Page] = []
+            
+            for pointer in pagePointers {
+                let pageStruct = try self.vm.valuesFromHeap(byteOffset: Int(pointer), length: 4) as [Int32]
+                var imageUrl: String?
+                if pageStruct[1] > 0 {
+                    imageUrl = self.vm.stringFromHeap(byteOffset: Int(pageStruct[1]))
+                    self.memory.free(pageStruct[1])
+                }
+                
+                let newPage = Page(
+                    index: Int(pageStruct[0]),
+                    imageURL: imageUrl
+                )
+                
+                pages.append(newPage)
+                
+                self.memory.free(pointer)
+            }
+            
+            self.memory.free(idOffset)
+            self.memory.free(chapterStruct)
+            self.memory.free(pageListPointer)
+            self.memory.free(pageListStruct[1])
+            
+            return pages
         }
         
         return try await task.value

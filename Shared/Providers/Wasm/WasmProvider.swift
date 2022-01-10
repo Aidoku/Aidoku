@@ -32,11 +32,21 @@ class WasmProvider: MangaProvider {
     }
     
     func getChapterList(id: String) async -> [Chapter] {
-        []
+        do {
+            return try await WasmManager.shared.getChapters(id: id)
+        } catch {
+            print("error: \(error)")
+            return []
+        }
     }
     
     func getPageList(chapter: Chapter) async -> [Page] {
-        []
+        do {
+            return try await WasmManager.shared.getPages(chapter: chapter)
+        } catch {
+            print("error: \(error)")
+            return []
+        }
     }
     
     func getMangaCoverURL(manga: Manga, override: Bool = false) async -> String {
