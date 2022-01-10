@@ -18,7 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let contentView = TabView {
             LibraryView()
                 .tabItem {
-                    Label("Library", systemImage: "square.stack.fill")
+                    Label("Library", systemImage: "books.vertical.fill")
                 }
             SearchView()
                 .tabItem {

@@ -11,7 +11,7 @@ struct Manga: Hashable, Codable {
     let provider: String
     let id: String
     
-    var title: String
+    var title: String?
     var author: String?
     var artist: String?
     
@@ -23,7 +23,7 @@ struct Manga: Hashable, Codable {
     init(
         provider: String,
         id: String,
-        title: String,
+        title: String? = nil,
         author: String? = nil,
         artist: String? = nil,
         description: String? = nil,

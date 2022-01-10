@@ -60,8 +60,10 @@ class WasmJson {
         { dict, key in
             guard dict > 0, key > 0 else { return -1 }
             let keyString = self.vm.stringFromHeap(byteOffset: Int(key))
-            let str = ((self.readJsonData(dict) as? [String: Any?])?[keyString] as? String) ?? ""
-            return self.vm.write(string: str)
+            if let str = ((self.readJsonData(dict) as? [String: Any?])?[keyString] as? String) {
+                return self.vm.write(string: str)
+            }
+            return -1
         }
     }
     

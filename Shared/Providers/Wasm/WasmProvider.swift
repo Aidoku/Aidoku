@@ -22,9 +22,18 @@ class WasmProvider: MangaProvider {
         }
     }
     
+    func fetchMangaDetails(manga: Manga) async -> Manga {
+        do {
+            return try await WasmManager.shared.getManga(manga: manga)
+        } catch {
+            print("error: \(error)")
+            return Manga(provider: self.id, id: "error", title: "Error")
+        }
+    }
+    
     func getMangaDetails(id: String) async -> Manga {
         do {
-            return try await WasmManager.shared.getManga(id: id)
+            return try await WasmManager.shared.getManga(manga: Manga(provider: self.id, id: id))
         } catch {
             print("error: \(error)")
             return Manga(provider: self.id, id: "error", title: "Error")
@@ -55,11 +64,12 @@ class WasmProvider: MangaProvider {
                 return url
             }
         }
-        do {
-            return try await WasmManager.shared.getCoverURL(id: manga.id)
-        } catch {
-            print("error: \(error)")
-            return manga.thumbnailURL ?? ""
-        }
+//        do {
+//            return try await WasmManager.shared.getCoverURL(id: manga.id)
+//        } catch {
+//            print("error: \(error)")
+//            return manga.thumbnailURL ?? ""
+//        }
+        return manga.thumbnailURL ?? ""
     }
 }

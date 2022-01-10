@@ -15,6 +15,9 @@ protocol MangaProvider {
     
     func fetchPopularManga(page: Int) async -> MangaPageResult
     func fetchSearchManga(query: String, page: Int, filters: [String]) async -> MangaPageResult
+    
+    func fetchMangaDetails(manga: Manga) async -> Manga
+    
     func getMangaDetails(id: String) async -> Manga
     func getMangaCoverURL(manga: Manga, override: Bool) async -> String
     func getChapterList(id: String) async -> [Chapter]
@@ -23,6 +26,10 @@ protocol MangaProvider {
 
 // MARK: - Default implementations
 extension MangaProvider {
+    
+    func fetchMangaDetails(manga: Manga) async -> Manga {
+        await getMangaDetails(id: manga.id)
+    }
     
     func fetchPopularManga(page: Int) async -> MangaPageResult {
         MangaPageResult(manga: [], hasNextPage: false)

@@ -15,7 +15,7 @@ struct LibraryGridCell: View {
     var body: some View {
             KFImage(URL(string: manga.thumbnailURL ?? ""))
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(2/3, contentMode: .fit)
                 .cornerRadius(8.0)
                 .overlay {
                     LinearGradient(gradient: Gradient(colors: [
@@ -25,7 +25,7 @@ struct LibraryGridCell: View {
                         .cornerRadius(8.0)
                 }
                 .overlay(alignment: .bottomLeading) {
-                    Text(manga.title)
+                    Text(manga.title ?? "Unknown Title")
                         .foregroundColor(.white)
                         .font(.system(size: 15))
                         .fontWeight(.medium)
