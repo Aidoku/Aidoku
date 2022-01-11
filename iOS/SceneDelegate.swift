@@ -20,6 +20,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 .tabItem {
                     Label("Library", systemImage: "books.vertical.fill")
                 }
+            BrowseView()
+                .tabItem {
+                    Label("Browse", systemImage: "globe")
+                }
             SearchView()
                 .tabItem {
                     Label("Search", systemImage: "magnifyingglass")
@@ -44,5 +48,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
+    }
+    
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>){
+        if let url = URLContexts.first?.url {
+            print("Handling \(url)")
+            _ = SourceManager.shared.importSource(from: url)
+        }
     }
 }
