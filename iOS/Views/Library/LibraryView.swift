@@ -56,11 +56,37 @@ struct LibraryView: View {
     
     var body: some View {
         NavigationView {
+            if manga.isEmpty {
+                VStack(spacing: 2) {
+                    Text("Library Empty")
+                        .font(.system(size: 25))
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondaryLabel)
+                        .padding(.top, -50)
+                    Text("Add manga from the browse tab")
+                    .padding(.top, -15)
+                        .foregroundColor(.secondaryLabel)
+                }
+                .navigationTitle("Library")
+                .navigationBarTitleDisplayMode(.large)
+                .navigationSearchBar {
+                    SearchBar("Search", text: $searchText, isEditing: $isEditing)
+                        .showsCancelButton(isEditing)
+                }
+                .toolbar {
+                    Button {
+                        showingSettings.toggle()
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                }
+            } else {
             ScrollView {
                 VStack {
                     HStack {
                         Text("Sort")
                             .foregroundColor(.secondary)
+                            .padding(.trailing, -2)
                         DropMenu(selection: $sortMethod, options: [
                             "Recent",
                             "Title",
@@ -83,8 +109,10 @@ struct LibraryView: View {
                     .padding(.horizontal)
                     .padding(.top, 4)
                     
+//                        }
                     if grid {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 20)], spacing: 20) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 20)], spacing: 20) {
+//                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
                             ForEach(manga.filter {
                                 search(
                                     needle: searchText.lowercased(),
@@ -100,7 +128,6 @@ struct LibraryView: View {
                                     }
                                 } label: {
                                     LibraryGridCell(manga: m)
-                                        .aspectRatio(2/3, contentMode: .fill)
                                 }
                                 .contextMenu {
                                     Button {
@@ -213,9 +240,10 @@ struct LibraryView: View {
                         Image(systemName: "gear")
                     }
                 }
+            }
         }
         .sheet(isPresented: $showingSettings) {
-            SettingsView()
+            SettingsView(presented: $showingSettings)
         }
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             Task {

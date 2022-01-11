@@ -10,7 +10,7 @@ import Kingfisher
 
 struct SettingsView: View {
     
-    @Environment(\.presentationMode) var presentationMode
+    @Binding var presented: Bool
     
     @State var confirmingReset = false
     
@@ -20,13 +20,11 @@ struct SettingsView: View {
                 Section {
                     NavigationLink {
                         List {
-                            Section(header: Text("About")) {
-                                HStack {
-                                    Text("Version")
-                                    Spacer()
-                                    Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
-                                        .foregroundColor(.secondaryLabel)
-                                }
+                            HStack {
+                                Text("Version")
+                                Spacer()
+                                Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
+                                    .foregroundColor(.secondaryLabel)
                             }
                         }
                         .navigationBarTitle("About")
@@ -100,7 +98,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 Button {
-                    presentationMode.wrappedValue.dismiss()
+                    presented = false
                 } label: {
                     Text("Done")
                 }
