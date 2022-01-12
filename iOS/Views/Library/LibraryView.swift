@@ -103,13 +103,12 @@ struct LibraryView: View {
                                 .foregroundColor(.label)
                                 .padding(8)
                                 .background(grid ? Color.clear : Color.secondaryFill)
-                                .cornerRadius(8)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                     }
                     .padding(.horizontal)
                     .padding(.top, 4)
                     
-//                        }
                     if grid {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 20)], spacing: 20) {
 //                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
@@ -287,15 +286,6 @@ struct LibraryView: View {
     }
     
     func loadManga() {
-//        Task {
-//            DataManager.shared.clearLibrary()
-//            if var m = await ProviderManager.shared.provider(for: "xyz.skitty.mangadex").fetchSearchManga(query: "tonikaku").manga.first {
-//                print("adding manga")
-//                m.thumbnailURL = await ProviderManager.shared.provider(for: "xyz.skitty.mangadex").getMangaCoverURL(manga: m, override: true)
-//                _ = DataManager.shared.add(manga: m)
-//            }
-//        }
-        
         var loadedManga = DataManager.shared.manga
         if sortMethod == 1 {
             loadedManga.sort {
@@ -314,7 +304,7 @@ struct LibraryView: View {
     func loadHistory() async {
         for m in manga {
             readHistory[m.id] = DataManager.shared.getReadHistory(forMangaId: m.id)
-            chapters[m.id] = await ProviderManager.shared.provider(for: m.provider).getChapterList(id: m.id)
+            chapters[m.id] = (try? await SourceManager.shared.source(for: m.provider)?.getChapterList(id: m.id)) ?? []
         }
     }
     

@@ -10,14 +10,12 @@ import SwiftUIX
 
 struct SearchView: View {
     
+    @State var sources = SourceManager.shared.sources
+    
     @State var isEditing: Bool = false
     @State var isSearching: Bool = false
-    @State var isLoadingMore: Bool = false
-    @State var isMore: Bool = false
     @State var searchText: String = ""
-    @State var results: [Manga] = []
-    
-    @AppStorage("searchProvider") var selectedProvider = "xyz.skitty.mangadex"
+    @State var results: [String: [Manga]] = [:]
     
     var body: some View {
         NavigationView {
@@ -26,22 +24,29 @@ struct SearchView: View {
                 if isSearching && results.isEmpty && !searchText.isEmpty {
                     ActivityIndicator()
                 } else if !searchText.isEmpty {
-                    ForEach(results, id: \.self) {
-                        MangaListCell(manga: $0)
-                    }
-                    if !results.isEmpty && isMore {
-                        if isLoadingMore {
-                            ActivityIndicator()
-                        } else {
-                            Button {
-                                Task {
-                                    await loadMore()
+                    LazyVStack(alignment: .leading) {
+                        ForEach(sources) { source in
+                            if !isEditing || !results.isEmpty {
+                                Text(source.info.name)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal)
+                                    .padding(.top, 4)
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(results[source.info.id] ?? [], id: \.self) { manga in
+                                            NavigationLink {
+                                                MangaView(manga: manga)
+                                            } label: {
+                                                LibraryGridCell(manga: manga)
+                                                    .frame(width: 100)
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 6)
                                 }
-                            } label: {
-                                Text("Load More")
                             }
                         }
-                        Spacer()
                     }
                 } else {
                     Spacer()
@@ -49,48 +54,36 @@ struct SearchView: View {
             }
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                Menu {
-                    Picker("Providers", selection: $selectedProvider) {
-                        ForEach(Array(ProviderManager.shared.providers.keys), id: \.self) { id in
-                            Text(ProviderManager.shared.provider(for: id).name)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "square.stack.3d.up")
-                }
-            }
             .navigationSearchBar {
                 SearchBar("Search", text: $searchText, isEditing: $isEditing) {
                     isSearching = true
-                    results = []
+                    results = [:]
                     Task {
                         await doSearch()
                     }
                 }
                 .onCancel {
                     isSearching = false
-                    results = []
+                    results = [:]
                 }
                 .showsCancelButton(isEditing)
             }
         }
+        .onChange(of: searchText) { newValue in
+            if newValue.isEmpty {
+                results = [:]
+            }
+        }
+        .onAppear {
+            sources = SourceManager.shared.sources
+        }
     }
     
     func doSearch() async {
-        let provider = ProviderManager.shared.provider(for: selectedProvider)
-        let search = await provider.fetchSearchManga(query: searchText, page: 0, filters: [])
-        results = search.manga
-        isMore = search.hasNextPage
+        for source in SourceManager.shared.sources {
+            let search = try? await source.fetchSearchManga(query: searchText)
+            results[source.info.id] = search?.manga ?? []
+        }
         isSearching = false
-    }
-    
-    func loadMore() async {
-        isLoadingMore = true
-        let provider = ProviderManager.shared.provider(for: selectedProvider)
-        let search = await provider.fetchSearchManga(query: searchText, page: Int(results.count / 10))
-        results.append(contentsOf: search.manga)
-        isMore = search.hasNextPage
-        isLoadingMore = false
     }
 }

@@ -40,6 +40,10 @@ class SourceManager {
         return nil
     }
     
+    func source(for id: String) -> Source? {
+        sources.first { $0.info.id == id }
+    }
+    
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
     }

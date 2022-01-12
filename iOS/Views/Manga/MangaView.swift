@@ -41,6 +41,8 @@ struct MangaView: View {
     @State var descriptionLineCount = 4
     @State var isAnimatingDescription = false
     
+    @State var showingAlert = false
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
@@ -279,7 +281,15 @@ struct MangaView: View {
             ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(forManga: manga.id, chapter: item.id))
                 .edgesIgnoringSafeArea(.all)
         })
+        .alert(isPresented: $showingAlert) {
+            Alert(
+                title: Text("Missing Source"),
+                message: Text("The original source seems to be missing for this Manga. Please redownload it or remove this title from your library."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
         .onAppear {
+            inLibrary = DataManager.shared.manga.contains(manga)
             Task {
                 if !chaptersLoaded {
                     await fetchManga()
@@ -312,21 +322,28 @@ struct MangaView: View {
     }
     
     func fetchManga() async {
-        inLibrary = DataManager.shared.manga.contains(manga)
-        
-        let provider = ProviderManager.shared.provider(for: manga.provider)
-        
-        let newManga = await provider.fetchMangaDetails(manga: manga)
-        manga = newManga // manga.copy(from: newManga)
-        withAnimation(.easeInOut(duration: 0.3)) {
-            descriptionLoaded = true
+        guard let source = SourceManager.shared.source(for: manga.provider) else {
+            manga.description = "No Description"
+            chapters = []
+            withAnimation(.easeInOut(duration: 0.3)) {
+                descriptionLoaded = true
+                chaptersLoaded = true
+            }
+            showingAlert = true
+            return
         }
-        updateReadHistory()
-        chapters = await provider.getChapterList(id: manga.id)
-        withAnimation(.easeInOut(duration: 0.3)) {
-            chaptersLoaded = true
+        
+        if let newManga = try? await source.getMangaDetails(manga: manga) {
+            manga = manga.copy(from: newManga)
+            withAnimation(.easeInOut(duration: 0.3)) {
+                descriptionLoaded = true
+            }
+            updateReadHistory()
+            chapters = (try? await source.getChapterList(id: manga.id)) ?? []
+            withAnimation(.easeInOut(duration: 0.3)) {
+                chaptersLoaded = true
+            }
         }
-//        manga.thumbnailURL = await provider.getMangaCoverURL(manga: manga, override: true)
     }
     
     func updateReadHistory() {
