@@ -43,10 +43,11 @@ class WasmMemory {
                 }
                 i += 1
             }
-            // requires some tweaking of the wasm library -- TODO: write my own wasm3 wrapper
-            let pageCount = self.vm.runtime.pointee.memory.numPages
-            if location + size >= pageCount * 64 * 1024 {
-                ResizeMemory(self.vm.runtime, pageCount + 1)
+            let pageCount = Int(self.vm.runtime.pointee.memory.numPages)
+            let pageSize = 64 * 1024
+            if location + size >= pageCount * pageSize {
+                let numNewPages = ceil(Double(Int(location + size) - (pageCount * pageSize)) / Double(pageSize))
+                ResizeMemory(self.vm.runtime, UInt32(pageCount + Int(numNewPages)))
             }
             self.allocations.append(WasmAllocation(address: location, size: size))
             return location

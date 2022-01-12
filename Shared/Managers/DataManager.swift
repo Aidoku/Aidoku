@@ -141,8 +141,7 @@ extension DataManager {
     func getLatestMangaDetails() async {
         do {
             manga = try await manga.concurrentMap { m in
-                let provider = ProviderManager.shared.provider(for: m.provider)
-                let newInfo = await provider.fetchMangaDetails(manga: m)
+                guard let newInfo = try? await SourceManager.shared.source(for: m.provider)?.getMangaDetails(manga: m) else { return m }
                 return m.copy(from: newInfo)
             }
         } catch {

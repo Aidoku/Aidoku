@@ -139,7 +139,7 @@ class ReaderViewController: UIPageViewController {
     
     func loadPages() async {
         if let manga = manga {
-            let pages = await ProviderManager.shared.provider(for: manga.provider).getPageList(chapter: chapter)
+            let pages = (try? await SourceManager.shared.source(for: manga.provider)?.getPageList(chapter: chapter)) ?? []
             
             let urls = pages.map { $0.imageURL ?? "" }
     //        let urls = urlStrings.map { str -> URL in

@@ -11,7 +11,6 @@ import Kingfisher
 struct MangaListCell: View {
     
     @State var manga: Manga
-    @State var coverURL = ""
     
     var body: some View {
         NavigationLink {
@@ -19,7 +18,7 @@ struct MangaListCell: View {
         } label: {
             VStack(spacing: 16) {
                 HStack(spacing: 16) {
-                    KFImage(URL(string: coverURL))
+                    KFImage(URL(string: manga.thumbnailURL ?? ""))
                         .resizable()
                         .frame(width: 2/3*120, height: 120)
                         .cornerRadius(8)
@@ -49,9 +48,8 @@ struct MangaListCell: View {
             .onAppear {
                 Task {
                     if manga.thumbnailURL == nil {
-                        manga = await ProviderManager.shared.provider(for: manga.provider).fetchMangaDetails(manga: manga)
+                        manga = (try! await SourceManager.shared.source(for: manga.provider)?.getMangaDetails(manga: manga)) ?? manga
                     }
-                    coverURL = manga.thumbnailURL ?? ""
                 }
             }
         }

@@ -61,7 +61,7 @@ class WasmJson {
             guard dict > 0, key > 0 else { return -1 }
             let keyString = self.vm.stringFromHeap(byteOffset: Int(key))
             if let str = ((self.readJsonData(dict) as? [String: Any?])?[keyString] as? String) {
-                return self.vm.write(string: str)
+                return self.vm.write(string: str, memory: self.memory)
             }
             return -1
         }
@@ -92,7 +92,7 @@ class WasmJson {
     var json_array_get_string: (Int32, Int32) -> Int32 {
         { arr, pos in
             let str = (self.readJsonData(arr) as? [Any])?[Int(pos)] as? String ?? ""
-            return self.vm.write(string: str)
+            return self.vm.write(string: str, memory: self.memory)
         }
     }
     
