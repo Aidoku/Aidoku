@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import WebAssembly
+import WasmInterpreter
 
 class WasmManager {
     enum WasmError: Error {
@@ -15,111 +15,111 @@ class WasmManager {
     
     static let shared = WasmManager()
     
-    var vm: Interpreter
+    var vm: WasmInterpreter
     let queue = DispatchQueue(label: "wasmQueue", attributes: .concurrent)
     
     let memory: WasmMemory
     
     init() {
         let bytes = [UInt8](try! Data(contentsOf: Bundle.main.url(forResource: "main", withExtension: "wasm")!))
-        self.vm = try! Interpreter(stackSize: 512 * 1024, module: bytes)
+        self.vm = try! WasmInterpreter(stackSize: 512 * 1024, module: bytes)
         
         self.memory = WasmMemory(vm: self.vm)
         let wasmRequest = WasmRequest(vm: self.vm, memory: memory)
         let wasmJson = WasmJson(vm: self.vm, memory: memory)
         
         try? self.vm.addImportHandler(
-            name: "request_init",
+            named: "request_init",
             namespace: "env",
             block: wasmRequest.request_init
         )
         
         try? self.vm.addImportHandler(
-            name: "request_set",
+            named: "request_set",
             namespace: "env",
             block: wasmRequest.request_set
         )
         
         try? self.vm.addImportHandler(
-            name: "request_data",
+            named: "request_data",
             namespace: "env",
             block: wasmRequest.request_data
         )
         
         try? self.vm.addImportHandler(
-            name: "json_parse",
+            named: "json_parse",
             namespace: "env",
             block: wasmJson.json_parse
         )
         
         try? self.vm.addImportHandler(
-            name: "json_dictionary_get",
+            named: "json_dictionary_get",
             namespace: "env",
             block: wasmJson.json_dictionary_get
         )
         
         try? self.vm.addImportHandler(
-            name: "json_dictionary_get_string",
+            named: "json_dictionary_get_string",
             namespace: "env",
             block: wasmJson.json_dictionary_get_string
         )
         
         try? self.vm.addImportHandler(
-            name: "json_dictionary_get_int",
+            named: "json_dictionary_get_int",
             namespace: "env",
             block: wasmJson.json_dictionary_get_int
         )
         
         try? self.vm.addImportHandler(
-            name: "json_dictionary_get_float",
+            named: "json_dictionary_get_float",
             namespace: "env",
             block: wasmJson.json_dictionary_get_float
         )
         
         try? self.vm.addImportHandler(
-            name: "json_array_get",
+            named: "json_array_get",
             namespace: "env",
             block: wasmJson.json_array_get
         )
         
         try? self.vm.addImportHandler(
-            name: "json_array_get_string",
+            named: "json_array_get_string",
             namespace: "env",
             block: wasmJson.json_array_get_string
         )
         
         try? self.vm.addImportHandler(
-            name: "json_array_get_length",
+            named: "json_array_get_length",
             namespace: "env",
             block: wasmJson.json_array_get_length
         )
         
         try? self.vm.addImportHandler(
-            name: "json_array_find_dictionary",
+            named: "json_array_find_dictionary",
             namespace: "env",
             block: wasmJson.json_array_find_dictionary
         )
         
         try? self.vm.addImportHandler(
-            name: "json_free",
+            named: "json_free",
             namespace: "env",
             block: wasmJson.json_free
         )
         
         try? self.vm.addImportHandler(
-            name: "strjoin",
+            named: "strjoin",
             namespace: "env",
             block: self.strjoin
         )
         
         try? self.vm.addImportHandler(
-            name: "malloc",
+            named: "malloc",
             namespace: "env",
             block: self.memory.malloc
         )
         
         try? self.vm.addImportHandler(
-            name: "free",
+            named: "free",
             namespace: "env",
             block: self.memory.free
         )

@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "CWasm3",
+        "repositoryURL": "https://github.com/shareup/cwasm3.git",
+        "state": {
+          "branch": null,
+          "revision": "38335527c3ae87017d2c8993816d0e9612d18fc7",
+          "version": "0.5.1"
+        }
+      },
+      {
         "package": "Kingfisher",
         "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
         "state": {
@@ -29,11 +38,20 @@
         }
       },
       {
-        "package": "WebAssembly",
-        "repositoryURL": "https://github.com/L1MeN9Yu/WebAssembly",
+        "package": "Synchronized",
+        "repositoryURL": "https://github.com/shareup/synchronized.git",
+        "state": {
+          "branch": null,
+          "revision": "f01e4a1ee5fbf586d612a8dc0bc068603f6b9450",
+          "version": "3.0.0"
+        }
+      },
+      {
+        "package": "WasmInterpreter",
+        "repositoryURL": "https://github.com/Skittyblock/wasm-interpreter-apple.git",
         "state": {
           "branch": "main",
-          "revision": "3248092261353dd1987bc5864b490e586f1c0481",
+          "revision": "ee921fa09fcb1aafcacfc1612c72659a8834378d",
           "version": null
         }
       },

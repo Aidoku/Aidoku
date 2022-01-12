@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import WebAssembly
+import WasmInterpreter
 
 struct WasmRequestObject {
     let id: Int
@@ -20,11 +20,11 @@ struct WasmRequestObject {
 }
 
 class WasmRequest {
-    let vm: Interpreter
+    let vm: WasmInterpreter
     let memory: WasmMemory
     var requests: [WasmRequestObject] = []
     
-    init(vm: Interpreter, memory: WasmMemory) {
+    init(vm: WasmInterpreter, memory: WasmMemory) {
         self.vm = vm
         self.memory = memory
     }
