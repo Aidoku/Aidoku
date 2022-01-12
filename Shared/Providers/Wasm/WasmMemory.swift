@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import WebAssembly
+import WasmInterpreter
 import CWasm3
 
 struct WasmAllocation {
@@ -15,7 +15,7 @@ struct WasmAllocation {
 }
 
 class WasmMemory {
-    let vm: Interpreter
+    let vm: WasmInterpreter
     
     let base: Int32
     var allocations = [WasmAllocation]()
@@ -23,7 +23,7 @@ class WasmMemory {
 //    var mallocCount = 0
 //    var freeCount = 0
     
-    init(vm: Interpreter) {
+    init(vm: WasmInterpreter) {
         self.vm = vm
         self.base = (try? self.vm.call("get_heap_base")) ?? Int32(66992)
     }

@@ -6,20 +6,20 @@
 //
 
 import Foundation
-import WebAssembly
+import WasmInterpreter
 
 enum WasmJsonTypes: Int32 {
     case string = 1, int, bool, array, dictionary
 }
 
 class WasmJson {
-    let vm: Interpreter
+    let vm: WasmInterpreter
     let memory: WasmMemory
     
     var jsonPointer: Int32 = 0
     var jsonData: [Int32: Any] = [:]
     
-    init(vm: Interpreter, memory: WasmMemory) {
+    init(vm: WasmInterpreter, memory: WasmMemory) {
         self.vm = vm
         self.memory = memory
     }

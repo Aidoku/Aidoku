@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import WebAssembly
+import WasmInterpreter
 
-extension Interpreter {
+extension WasmInterpreter {
     func write(string: String) -> Int32 {
         self.write(data: string.int32Array)
     }

@@ -53,6 +53,7 @@
 		FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */; };
 		FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */; };
 		FB6340AD278E10190072A2A2 /* ExternalSourceListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340AC278E10190072A2A2 /* ExternalSourceListCell.swift */; };
+		FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340B0278E61600072A2A2 /* WasmInterpreter */; };
 		FB7B7E7D27861BBD001E6EAF /* main.wasm in Resources */ = {isa = PBXBuildFile; fileRef = FB7B7E7C27861BBC001E6EAF /* main.wasm */; };
 		FB7B7E8F27874E11001E6EAF /* WasmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E8E27874E10001E6EAF /* WasmManager.swift */; };
 		FB7B7E9027874E11001E6EAF /* WasmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E8E27874E10001E6EAF /* WasmManager.swift */; };
@@ -65,7 +66,6 @@
 		FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
 		FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
 		FB7B7EC5278897FA001E6EAF /* main.wasm in Resources */ = {isa = PBXBuildFile; fileRef = FB7B7E7C27861BBC001E6EAF /* main.wasm */; };
-		FB7B7ECB27889E8E001E6EAF /* WebAssembly in Frameworks */ = {isa = PBXBuildFile; productRef = FB7B7ECA27889E8E001E6EAF /* WebAssembly */; };
 		FB7B7ECD2789EAE6001E6EAF /* WasmMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */; };
 		FB7B7ECE2789EAE6001E6EAF /* WasmMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */; };
 		FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED0278CE670001E6EAF /* SourceManager.swift */; };
@@ -146,8 +146,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
-				FB7B7ECB27889E8E001E6EAF /* WebAssembly in Frameworks */,
 				FB1B4897277CED3A0056D02C /* SwiftUIX in Frameworks */,
+				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 			);
@@ -401,8 +401,8 @@
 				FB1B4873277CE7E60056D02C /* Kingfisher */,
 				FB1B4896277CED3A0056D02C /* SwiftUIX */,
 				FB9A659B278217710071F1A2 /* SwiftSoup */,
-				FB7B7ECA27889E8E001E6EAF /* WebAssembly */,
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
+				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -460,8 +460,8 @@
 				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */,
 				FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
-				FB7B7EC927889E8E001E6EAF /* XCRemoteSwiftPackageReference "WebAssembly" */,
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -862,9 +862,9 @@
 				kind = branch;
 			};
 		};
-		FB7B7EC927889E8E001E6EAF /* XCRemoteSwiftPackageReference "WebAssembly" */ = {
+		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/L1MeN9Yu/WebAssembly";
+			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
 			requirement = {
 				branch = main;
 				kind = branch;
@@ -909,10 +909,10 @@
 			package = FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */;
 			productName = SwiftUIX;
 		};
-		FB7B7ECA27889E8E001E6EAF /* WebAssembly */ = {
+		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB7B7EC927889E8E001E6EAF /* XCRemoteSwiftPackageReference "WebAssembly" */;
-			productName = WebAssembly;
+			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
+			productName = WasmInterpreter;
 		};
 		FB7B7ED7278CE949001E6EAF /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
