@@ -29,7 +29,9 @@ class SourceManager {
             let source = try? Source(from: payload)
             if let source = source {
                 let destination = Self.directory.appendingPathComponent(source.info.id)
-                guard !destination.exists else { return nil }
+                if destination.exists {
+                    try? FileManager.default.removeItem(at: destination)
+                }
                 try? FileManager.default.moveItem(at: payload, to: destination)
                 try? FileManager.default.removeItem(at: temporaryDirectory)
                 source.url = destination

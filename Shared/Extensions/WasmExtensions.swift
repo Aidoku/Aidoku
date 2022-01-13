@@ -7,6 +7,7 @@
 
 import Foundation
 import WasmInterpreter
+import CWasm3
 
 extension WasmInterpreter {
     func write(string: String, memory: WasmMemory) -> Int32 {
@@ -33,6 +34,25 @@ extension WasmInterpreter {
             }
         }
         return String(bytes: bytes, encoding: .utf8) ?? ""
+    }
+}
+
+public extension WasmInterpreter {
+    func globalValue(name: String) throws -> Int32 {
+        let global = try global(name: name)
+        let taggedValue = IM3TaggedValue.allocate(capacity: MemoryLayout<M3TaggedValue>.stride)
+        defer { taggedValue.deallocate() }
+        try Self.check(m3_GetGlobal(global, taggedValue))
+        return Int32(taggedValue.pointee.value.i32)
+    }
+}
+
+private extension WasmInterpreter {
+    func global(name: String) throws -> IM3Global {
+        guard let global: IM3Global = m3_FindGlobal(module, name) else {
+            throw WasmInterpreterError.wasm3Error(name)
+        }
+        return global
     }
 }
 

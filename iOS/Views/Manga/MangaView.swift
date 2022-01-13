@@ -339,7 +339,7 @@ struct MangaView: View {
                 descriptionLoaded = true
             }
             updateReadHistory()
-            chapters = (try? await source.getChapterList(id: manga.id)) ?? []
+            chapters = (try? await source.getChapterList(manga: manga)) ?? []
             withAnimation(.easeInOut(duration: 0.3)) {
                 chaptersLoaded = true
             }
