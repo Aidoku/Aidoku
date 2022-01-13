@@ -25,7 +25,8 @@ class WasmMemory {
     
     init(vm: WasmInterpreter) {
         self.vm = vm
-        self.base = (try? self.vm.call("get_heap_base")) ?? Int32(66992)
+        let globalBase = try? self.vm.globalValue(name: "__heap_base")
+        self.base = globalBase ?? (try? self.vm.call("get_heap_base")) ?? Int32(66992)
     }
     
     var malloc: (Int32) -> Int32 {
@@ -56,6 +57,7 @@ class WasmMemory {
     
     var free: (Int32) -> Void {
         { addr in
+            guard addr >= self.base else { return }
 //            self.freeCount += 1
             if let index = self.allocations.firstIndex(where: { $0.address == addr }) {
                 self.allocations.remove(at: index)
