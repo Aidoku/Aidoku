@@ -16,17 +16,17 @@ struct LibraryGridCell: View {
         KFImage(URL(string: manga.thumbnailURL ?? ""))
             .resizable()
             .aspectRatio(2/3, contentMode: .fit)
-            .cornerRadius(8.0)
+            .cornerRadius(5)
             .overlay {
                 LinearGradient(
                     gradient: Gradient(stops: [
                         .init(color: .black, location: 0),
-                        .init(color: .clear, location: 0.5)
+                        .init(color: .clear, location: 0.4)
                     ]),
                     startPoint: .bottom,
                     endPoint: .top
                 )
-                    .cornerRadius(8.0)
+                    .cornerRadius(5)
                     .opacity(0.7)
             }
             .overlay(alignment: .bottomLeading) {

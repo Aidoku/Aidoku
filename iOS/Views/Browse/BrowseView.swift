@@ -33,9 +33,7 @@ struct BrowseView: View {
                     SourceSectionHeader(title: "Installed")
                     ForEach(sources.filter { searchText.isEmpty ? true : $0.info.name.contains(searchText) }) { source in
                         NavigationLink {
-                            Text("Coming Soon")
-                                .foregroundColor(.secondary)
-                                .navigationTitle(source.info.name)
+                            SourceBrowseView(source: source)
                         } label: {
                             SourceListCell(source: source)
                         }

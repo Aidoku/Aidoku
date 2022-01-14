@@ -9,11 +9,14 @@ import Foundation
 import WasmInterpreter
 
 class Source: Identifiable {
-    let id = UUID()
+    var id: String {
+        info.id
+    }
     var url: URL
     var info: SourceInfo
     
     var filters: [Filter] = []
+    var listings: [Listing] = []
     
     struct SourceInfo: Codable {
         let id: String
@@ -118,10 +121,9 @@ class Source: Identifiable {
     
     var push_listing: (Int32, Int32, Int32) -> Void {
         { descriptor, name, name_len in
-            if var listings = self.descriptors[Int(descriptor)] as? [String] {
-                if let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
-                    listings.append(str);
-                }
+            if var listings = self.descriptors[Int(descriptor)] as? [Listing],
+               let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
+                listings.append(Listing(name: str));
                 self.descriptors[Int(descriptor)] = listings
             }
         }
@@ -278,6 +280,27 @@ class Source: Identifiable {
         return filters
     }
     
+    func getListings() async throws -> [Listing] {
+        guard listings.isEmpty else { return listings }
+        
+        let task = Task<[Listing], Error> {
+            let descriptor = self.create_array()
+            
+            try self.vm.call("initialize_listings", descriptor)
+            
+            let filters = self.descriptors[Int(descriptor)] as? [Listing] ?? []
+            
+            self.descriptorPointer = -1
+            self.descriptors = []
+            
+            return filters;
+        }
+        
+        listings = try await task.value
+        
+        return listings
+    }
+    
     func fetchSearchManga(query: String, page: Int = 1) async throws -> MangaPageResult {
         let filter = Filter(name: "Title", value: query)
         return try await getMangaList(filters: [filter], page: 1)
@@ -290,6 +313,24 @@ class Source: Identifiable {
             self.descriptors.append(filters)
             
             let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(self.descriptorPointer), 1)
+            
+            let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
+            
+            self.descriptorPointer = -1
+            self.descriptors = []
+            
+            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
+        }
+        
+        return try await task.value
+    }
+    
+    func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
+        let task = Task<MangaPageResult, Error> {
+            let descriptor = self.create_array()
+            let listingName = self.vm.write(string: listing.name, memory: self.memory)
+            
+            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), 1)
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             

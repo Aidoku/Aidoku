@@ -49,14 +49,14 @@ struct ChapterListView: View {
                         .contextMenu {
                             if readHistory[chapter.id] ?? false {
                                 Button {
-                                    DataManager.shared.removeHistory(forChapterId: chapter.id)
+                                    DataManager.shared.removeHistory(forManga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Unread")
                                 }
                             } else {
                                 Button {
-                                    DataManager.shared.addReadHistory(forMangaId: manga.id, chapterId: chapter.id)
+                                    DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Read")
@@ -110,6 +110,6 @@ struct ChapterListView: View {
     }
     
     func updateReadHistory() {
-        readHistory = DataManager.shared.getReadHistory(forMangaId: manga.id)
+        readHistory = DataManager.shared.getReadHistory(forManga: manga)
     }
 }

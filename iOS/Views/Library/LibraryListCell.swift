@@ -26,9 +26,9 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
                 KFImage(URL(string: manga.thumbnailURL ?? ""))
                     .resizable()
                     .aspectRatio(2/3, contentMode: .fit)
-                    .frame(width: 2/3*140)
-                    .cornerRadius(8)
-                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
+                    .frame(width: 92)
+                    .cornerRadius(5)
+                    .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                 VStack(alignment: .leading, spacing: 4) {
                     Text(manga.title ?? "Unknown Title")
                         .foregroundColor(.label)
@@ -58,7 +58,7 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
                 .padding(.leading)
                 .padding(.leading)
                 .padding(.leading, 2/3*140)
-//                .padding(.trailing)
+                .padding(.trailing)
         }
     }
 }

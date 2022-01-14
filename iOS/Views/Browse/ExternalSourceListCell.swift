@@ -18,8 +18,8 @@ struct ExternalSourceListCell: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 48, height: 48)
-                    .cornerRadius(4)
-                    .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
+                    .cornerRadius(48 * 0.225)
+                    .overlay(RoundedRectangle(cornerRadius: 48 * 0.225).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                 VStack(alignment: .leading, spacing: 4) {
                     Text(source.info.name)
                         .foregroundColor(.label)
