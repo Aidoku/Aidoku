@@ -49,14 +49,14 @@ struct MangaView: View {
                 HStack(spacing: 16) {
                     KFImage(URL(string: manga.thumbnailURL ?? ""))
                         .resizable()
-                        .frame(width: 94, height: 140)
-                        .cornerRadius(8)
-                        .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Color.quaternaryFill, lineWidth: 1))
+                        .frame(width: 100, height: 150)
+                        .cornerRadius(5)
+                        .overlay(RoundedRectangle(cornerRadius: 5).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                     VStack(alignment: .leading, spacing: 4) {
                         Spacer()
                         Text(manga.title ?? "Unknown Title")
                             .font(.system(size: 24, weight: .medium))
-                            .lineLimit(2)
+                            .lineLimit(3)
                         Text(manga.author ?? "")
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
@@ -72,7 +72,7 @@ struct MangaView: View {
                             .padding(.horizontal)
                             .frame(height: 36)
                             .background(.accentColor)
-                            .cornerRadius(8)
+                            .cornerRadius(5)
                         }
                         .padding(.top, 4)
                     }
@@ -190,14 +190,14 @@ struct MangaView: View {
                         .contextMenu {
                             if readHistory[chapter.id] ?? false {
                                 Button {
-                                    DataManager.shared.removeHistory(forChapterId: chapter.id)
+                                    DataManager.shared.removeHistory(forManga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Unread")
                                 }
                             } else {
                                 Button {
-                                    DataManager.shared.addReadHistory(forMangaId: manga.id, chapterId: chapter.id)
+                                    DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Read")
@@ -347,7 +347,7 @@ struct MangaView: View {
     }
     
     func updateReadHistory() {
-        readHistory = DataManager.shared.getReadHistory(forMangaId: manga.id)
+        readHistory = DataManager.shared.getReadHistory(forManga: manga)
     }
 }
 

@@ -110,7 +110,7 @@ struct LibraryView: View {
                     .padding(.top, 4)
                     
                     if grid {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 20)], spacing: 20) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
 //                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 12)], spacing: 12) {
                             ForEach(manga.filter {
                                 search(
@@ -124,6 +124,9 @@ struct LibraryView: View {
                                             chapter: c,
                                             manga: m
                                         )
+                                    } else {
+                                        selectedManga = m
+                                        openMangaInfoView = true
                                     }
                                 } label: {
                                     LibraryGridCell(manga: m)
@@ -146,7 +149,7 @@ struct LibraryView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 20.0)
+                        .padding(.horizontal)
                         .transition(.opacity)
                     } else {
                         LazyVStack {
@@ -162,6 +165,9 @@ struct LibraryView: View {
                                             chapter: c,
                                             manga: m
                                         )
+                                    } else {
+                                        selectedManga = m
+                                        openMangaInfoView = true
                                     }
                                 } label: {
                                     LibraryListCell(manga: m) {
@@ -303,7 +309,7 @@ struct LibraryView: View {
     
     func loadHistory() async {
         for m in manga {
-            readHistory[m.id] = DataManager.shared.getReadHistory(forMangaId: m.id)
+            readHistory[m.id] = DataManager.shared.getReadHistory(forManga: m)
             chapters[m.id] = (try? await SourceManager.shared.source(for: m.provider)?.getChapterList(manga: m)) ?? []
         }
     }

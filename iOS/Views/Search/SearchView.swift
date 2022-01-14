@@ -27,24 +27,7 @@ struct SearchView: View {
                     LazyVStack(alignment: .leading) {
                         ForEach(sources) { source in
                             if !isEditing || !results.isEmpty {
-                                Text(source.info.name)
-                                    .fontWeight(.medium)
-                                    .padding(.horizontal)
-                                    .padding(.top, 4)
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(results[source.info.id] ?? [], id: \.self) { manga in
-                                            NavigationLink {
-                                                MangaView(manga: manga)
-                                            } label: {
-                                                LibraryGridCell(manga: manga)
-                                                    .frame(width: 100)
-                                            }
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.bottom, 6)
-                                }
+                                MangaCarouselView(title: source.info.name, manga: results[source.info.id] ?? [])
                             }
                         }
                     }

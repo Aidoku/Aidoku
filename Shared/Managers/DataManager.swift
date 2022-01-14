@@ -66,7 +66,6 @@ extension DataManager {
         
         mangaData.setValue(m.provider + "." + m.id, forKey: "id")
         mangaData.setValue(m.title, forKey: "title")
-        mangaData.setValue(m.author, forKey: "author")
         mangaData.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
         mangaData.setValue(encodedManga, forKey: "payload")
         
@@ -155,7 +154,6 @@ extension DataManager {
                 let mangaObjs = try getLibrary(predicate: NSPredicate(format: "id = %@", m.provider + "." + m.id))
                 if let mangaObj = mangaObjs.first, let encodedManga = try? JSONEncoder().encode(m) {
                     mangaObj.setValue(m.title, forKey: "title")
-                    mangaObj.setValue(m.author, forKey: "author")
                     mangaObj.setValue(encodedManga, forKey: "payload")
                     try container.viewContext.save()
                 }
@@ -232,9 +230,9 @@ extension DataManager {
         save()
     }
     
-    func removeHistory(forChapterId id: String) {
+    func removeHistory(forManga manga: Manga, chapter: Chapter) {
         do {
-            let history = try getReadHistory(predicate: NSPredicate(format: "chapterId = %@", id))
+            let history = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))
             guard let objectToDelete = history.first else { return }
             container.viewContext.delete(objectToDelete)
             try container.viewContext.save()

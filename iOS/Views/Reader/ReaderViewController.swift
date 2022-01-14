@@ -51,7 +51,7 @@ class ReaderViewController: UIPageViewController {
         super.viewDidLoad()
         
         if let manga = manga {
-            DataManager.shared.addReadHistory(forMangaId: manga.id, chapterId: chapter.id)
+            DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
         }
         
         modalPresentationCapturesStatusBarAppearance = true
@@ -189,7 +189,7 @@ extension ReaderViewController: UIPageViewControllerDataSource {
         let nextIndex = viewControllerIndex + 1
         guard items.count > nextIndex else {
 //            if let manga = manga {
-//                DataManager.shared.addReadHistory(forMangaId: manga.id, chapterId: chapter.id)
+//                DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
 //            }
             return nil
         }
