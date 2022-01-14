@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Manga: Hashable, Codable {
+struct Manga: Hashable, Codable, KVCObject {
     let provider: String
     let id: String
     
@@ -50,6 +50,19 @@ struct Manga: Hashable, Codable {
             description: manga.description ?? self.description,
             categories: manga.categories ?? self.categories,
             thumbnailURL: manga.thumbnailURL ?? self.thumbnailURL)
+    }
+    
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "id": return id
+        case "title": return title
+        case "author": return author
+        case "artist": return artist
+        case "description": return description
+        case "categories": return categories
+        case "cover_url": return thumbnailURL
+        default: return nil
+        }
     }
 }
 

@@ -66,8 +66,17 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "json_array_find_dictionary", namespace: "env", block: wasmJson.json_array_find_dictionary)
         try? vm.addImportHandler(named: "json_free", namespace: "env", block: wasmJson.json_free)
         
-        try? vm.addImportHandler(named: "send_filter", namespace: "env", block: self.send_filter)
-        try? vm.addImportHandler(named: "alloc_filter_group", namespace: "env", block: self.alloc_filter_group)
+        try? vm.addImportHandler(named: "push_filter", namespace: "env", block: self.push_filter)
+        try? vm.addImportHandler(named: "push_listing", namespace: "env", block: self.push_listing)
+        try? vm.addImportHandler(named: "push_manga", namespace: "env", block: self.push_manga)
+        try? vm.addImportHandler(named: "push_chapter", namespace: "env", block: self.push_chapter)
+        try? vm.addImportHandler(named: "push_page", namespace: "env", block: self.push_page)
+        
+        try? vm.addImportHandler(named: "create_array", namespace: "env", block: self.create_array)
+        try? vm.addImportHandler(named: "get_array_len", namespace: "env", block: self.get_array_len)
+        try? vm.addImportHandler(named: "get_array_value", namespace: "env", block: self.get_array_value)
+        try? vm.addImportHandler(named: "array_remove_at", namespace: "env", block: self.array_remove_at)
+        try? vm.addImportHandler(named: "get_object_value", namespace: "env", block: self.get_object_value)
     }
     
     var strjoin: (Int32, Int32) -> Int32 {
@@ -82,18 +91,10 @@ class Source: Identifiable {
     var descriptorPointer = -1
     var descriptors: [Any] = []
     
-    var alloc_filter_group: () -> Int32 {
-        {
-            self.descriptorPointer += 1
-            self.descriptors.append([Filter]())
-            return Int32(self.descriptorPointer)
-        }
-    }
-    
-    var send_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
+    var push_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, type, name, name_len, value, value_len in
             if var filters = self.descriptors[Int(descriptor)] as? [Filter] {
-                if type == 3 {
+                if type == 2 {
                     filters.append(
                         Filter(
                             type: .group,
@@ -115,21 +116,161 @@ class Source: Identifiable {
         }
     }
     
+    var push_listing: (Int32, Int32, Int32) -> Void {
+        { descriptor, name, name_len in
+            if var listings = self.descriptors[Int(descriptor)] as? [String] {
+                if let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
+                    listings.append(str);
+                }
+                self.descriptors[Int(descriptor)] = listings
+            }
+        }
+    }
+    
+    var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
+        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, categories, category_str_lens, category_count in
+            guard descriptor < self.descriptors.count else { return }
+            if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
+                var categoryList: [String] = []
+                let categoryStrings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(categories), length: Int(category_count))) ?? []
+                let categoryStrLengths: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(category_str_lens), length: Int(category_count))) ?? []
+                for i in 0..<Int(category_count) {
+                    if let str = try? self.vm.stringFromHeap(byteOffset: Int(categoryStrings[i]), length: Int(categoryStrLengths[i])) {
+                        categoryList.append(str)
+                    }
+                }
+                let manga = Manga(
+                    provider: self.info.id,
+                    id: mangaId,
+                    title: title_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(title), length: Int(title_len)) : nil,
+                    author: author_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
+                    description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
+                    categories: categoryList,
+                    thumbnailURL: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil
+                )
+                if var mangaList = self.descriptors[Int(descriptor)] as? [Manga] {
+                    mangaList.append(manga)
+                    self.descriptors[Int(descriptor)] = mangaList
+                } else {
+                    self.descriptors[Int(descriptor)] = manga
+                }
+            }
+        }
+    }
+    
+    var push_chapter: (Int32, Int32, Int32, Int32, Int32, Int32, Float32, Int32, Int32, Int32) -> Void {
+        { descriptor, id, id_len, name, name_len, volume, chapter, dateUpdated, scanlator, scanlator_len in
+            guard descriptor < self.descriptors.count else { return }
+            if var chapters = self.descriptors[Int(descriptor)] as? [Chapter] {
+                if let chapterId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
+                    chapters.append(
+                        Chapter(
+                            id: chapterId,
+                            title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
+                            chapterNum: Float(chapter),
+                            volumeNum: Int(volume)
+                        )
+                    );
+                }
+                self.descriptors[Int(descriptor)] = chapters
+            }
+        }
+    }
+    
+    var push_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
+        { descriptor, index, image_url, image_url_len, base64, base64_len, text, text_len in
+            guard descriptor < self.descriptors.count else { return }
+            if var pages = self.descriptors[Int(descriptor)] as? [Page] {
+                pages.append(
+                    Page(
+                        index: Int(index),
+                        imageURL: image_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(image_url), length: Int(image_url_len)) : nil
+                    )
+                )
+                self.descriptors[Int(descriptor)] = pages
+            }
+        }
+    }
+    
+    var create_array: () -> Int32 {
+        {
+            self.descriptorPointer += 1
+            self.descriptors.append([Any]())
+            return Int32(self.descriptorPointer)
+        }
+    }
+    
+    var get_array_len: (Int32) -> Int32 {
+        { descriptor in
+            if let array = self.descriptors[Int(descriptor)] as? [Any] {
+                return Int32(array.count)
+            }
+            return 0
+        }
+    }
+    
+    var get_array_value: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, pos, value_len in
+            if let array = self.descriptors[Int(descriptor)] as? [Any] {
+                guard pos < array.count else { return 0 }
+                if let value = array[Int(pos)] as? String {
+                    if value_len > 0 { try? self.vm.writeToHeap(value: Int32(value.count), byteOffset: Int(value_len)) }
+                    return self.vm.write(string: value, memory: self.memory)
+                } else if let value = array[Int(pos)] as? Int {
+                    return Int32(value)
+                } else {
+                    self.descriptorPointer += 1
+                    self.descriptors.append(array[Int(pos)])
+                    return Int32(self.descriptorPointer)
+                }
+            }
+            return 0
+        }
+    }
+    
+    var array_remove_at: (Int32, Int32) -> Void {
+        { descriptor, pos in
+            if var array = self.descriptors[Int(descriptor)] as? [Any] {
+                array.remove(at: Int(pos))
+                self.descriptors[Int(descriptor)] = array
+            }
+        }
+    }
+    
+    var get_object_value: (Int32, Int32, Int32, Int32) -> Int32 {
+        { descriptor, key, key_len, value_len in
+            if let object = self.descriptors[Int(descriptor)] as? KVCObject,
+               let keyString = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+               let value = object.valueByPropertyName(name: keyString) {
+                if let value = value as? String {
+                    if value_len > 0 { try? self.vm.writeToHeap(value: Int32(value.count), byteOffset: Int(value_len)) }
+                    return self.vm.write(string: value, memory: self.memory)
+                } else if let value = value as? Int {
+                    return Int32(value)
+                } else {
+                    self.descriptorPointer += 1
+                    self.descriptors.append(value)
+                    return Int32(self.descriptorPointer)
+                }
+            }
+            return 0
+        }
+    }
+    
     func getFilters() async throws -> [Filter] {
         guard filters.isEmpty else { return filters }
         
         let task = Task<[Filter], Error> {
+            let descriptor = self.create_array()
             
-            let descriptor = self.alloc_filter_group()
+            try self.vm.call("initialize_filters", descriptor)
             
-            try self.vm.call("get_filters", descriptor)
-            
-            self.filters = self.descriptors[Int(descriptor)] as? [Filter] ?? []
+            let filters = self.descriptors[Int(descriptor)] as? [Filter] ?? []
             
             self.descriptorPointer = -1
             self.descriptors = []
             
-            return self.filters;
+            return filters;
         }
         
         filters = try await task.value
@@ -138,89 +279,24 @@ class Source: Identifiable {
     }
     
     func fetchSearchManga(query: String, page: Int = 1) async throws -> MangaPageResult {
-        let filter = Filter(name: "Title", value: query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query)
+        let filter = Filter(name: "Title", value: query)
         return try await getMangaList(filters: [filter], page: 1)
     }
     
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
-            let filterPointers = filters.map { $0.toStructPointer(vm: self.vm, memory: self.memory) }
-            let filterArrayPointer = self.vm.write(data: filterPointers, memory: self.memory)
-            let filterListPointer = self.vm.write(data: [1, filterArrayPointer], memory: self.memory)
+            let descriptor = self.create_array()
+            self.descriptorPointer += 1
+            self.descriptors.append(filters)
             
-            let queryOffset: Int32 = try self.vm.call("getMangaList", filterListPointer, Int32(page))
+            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(self.descriptorPointer), 1)
             
-            for pointer in filterPointers {
-                let stringsToFree: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(pointer), length: 3)
-                self.memory.free(stringsToFree[1])
-                self.memory.free(stringsToFree[2])
-                self.memory.free(pointer)
-            }
+            let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             
-            guard queryOffset > 0 else { return MangaPageResult(manga: [], hasNextPage: false) }
+            self.descriptorPointer = -1
+            self.descriptors = []
             
-            let mangaPageStruct = try self.vm.valuesFromHeap(byteOffset: Int(queryOffset), length: 3) as [Int32]
-            let mangaStructPointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(mangaPageStruct[2]), length: Int(mangaPageStruct[0]))
-            
-            var manga = [Manga]()
-            
-            for i in 0..<mangaStructPointers.count {
-                let mangaStruct = try self.vm.valuesFromHeap(byteOffset: Int(mangaStructPointers[i]), length: 7) as [Int32]
-                let id = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[0]))
-                let title = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[1]))
-                var author: String?
-                var description: String?
-                var categories: [String]?
-                var thumbnail: String?
-                if mangaStruct[2] > 0 {
-                    author = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[2]))
-                    self.memory.free(mangaStruct[2])
-                }
-                if mangaStruct[3] > 0 {
-                    description = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[3]))
-                    self.memory.free(mangaStruct[3])
-                }
-                if mangaStruct[4] > 0 {
-                    categories = ((try? self.vm.valuesFromHeap(byteOffset: Int(mangaStruct[5]), length: Int(mangaStruct[4])) as [Int32]) ?? []).map { pointer -> String in
-                        guard pointer != 0 else { return "" }
-                        let str = self.vm.stringFromHeap(byteOffset: Int(pointer))
-                        self.memory.free(pointer)
-                        return str
-                    }
-                    self.memory.free(mangaStruct[5])
-                }
-                if mangaStruct[6] > 0 {
-                    thumbnail = self.vm.stringFromHeap(byteOffset: Int(mangaStruct[6]))
-                    self.memory.free(mangaStruct[6])
-                }
-                
-                self.memory.free(mangaStruct[0])
-                self.memory.free(mangaStruct[1])
-                
-                let newManga = Manga(
-                    provider: self.info.id,
-                    id: id,
-                    title: title,
-                    author: author,
-                    description: description,
-                    categories: categories,
-                    thumbnailURL: thumbnail
-                )
-                
-                manga.append(newManga)
-                
-                self.memory.free(mangaStructPointers[i])
-            }
-            
-            self.memory.free(filterListPointer)
-            self.memory.free(queryOffset)
-            if mangaPageStruct[2] > 0 {
-                self.memory.free(mangaPageStruct[2])
-            }
-            
-            print(self.memory.allocations.count)
-            
-            return MangaPageResult(manga: manga, hasNextPage: mangaPageStruct[1] > 0)
+            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
         }
         
         return try await task.value
@@ -228,66 +304,20 @@ class Source: Identifiable {
     
     func getMangaDetails(manga: Manga) async throws -> Manga {
         let task = Task<Manga, Error> {
-            let idOffset = self.vm.write(string: manga.id, memory: self.memory)
-            var titleOffset: Int32 = 0
-            var authorOffset: Int32 = 0
-            var descriptionOffset: Int32 = 0
-            if let title = manga.title { titleOffset = self.vm.write(string: title, memory: self.memory) }
-            if let author = manga.author { authorOffset = self.vm.write(string: author, memory: self.memory) }
-            if let description = manga.description { descriptionOffset = self.vm.write(string: description, memory: self.memory) }
-            let mangaOffset = self.vm.write(data: [idOffset, titleOffset, authorOffset, descriptionOffset, 0, 0, 0], memory: self.memory)
+            self.descriptorPointer += 2
+            self.descriptors.append(manga)
+            self.descriptors.append(0)
+            let descriptor = Int32(self.descriptorPointer)
             
-            let mangaPointer: Int32 = try self.vm.call("getMangaDetails", mangaOffset)
-            guard mangaPointer > 0 else { throw SourceError.mangaDetailsFailed }
+            try self.vm.call("manga_details_request", descriptor, Int32(self.descriptorPointer - 1))
             
-            self.memory.free(mangaOffset)
-            self.memory.free(idOffset)
-            if titleOffset > 0 { self.memory.free(titleOffset) }
-            if authorOffset > 0 { self.memory.free(authorOffset) }
-            if descriptionOffset > 0 { self.memory.free(descriptionOffset) }
+            let manga = self.descriptors[Int(descriptor)] as? Manga
             
-            let structValues = try self.vm.valuesFromHeap(byteOffset: Int(mangaPointer), length: 7) as [Int32]
+            self.descriptorPointer = -1
+            self.descriptors = []
             
-            let id = self.vm.stringFromHeap(byteOffset: Int(structValues[0]))
-            let title = self.vm.stringFromHeap(byteOffset: Int(structValues[1]))
-            var author: String?
-            var description: String?
-            var categories: [String]?
-            var thumbnail: String?
-            if structValues[2] > 0 {
-                author = self.vm.stringFromHeap(byteOffset: Int(structValues[2]))
-                self.memory.free(structValues[2])
-            }
-            if structValues[3] > 0 {
-                description = self.vm.stringFromHeap(byteOffset: Int(structValues[3]))
-                self.memory.free(structValues[3])
-            }
-            if structValues[5] > 0 {
-                categories = ((try? self.vm.valuesFromHeap(byteOffset: Int(structValues[5]), length: Int(structValues[4])) as [Int32]) ?? []).map { pointer -> String in
-                    let str = self.vm.stringFromHeap(byteOffset: Int(pointer))
-                    self.memory.free(pointer)
-                    return str
-                }
-                self.memory.free(structValues[5])
-            }
-            if structValues[6] > 0 {
-                thumbnail = self.vm.stringFromHeap(byteOffset: Int(structValues[6]))
-                self.memory.free(structValues[6])
-            }
-            
-            self.memory.free(mangaPointer)
-            self.memory.free(structValues[0])
-            self.memory.free(structValues[1])
-            
-            return Manga(
-                provider: self.info.id,
-                id: id,
-                title: title,
-                author: author,
-                description: description,
-                categories: categories,
-                thumbnailURL: thumbnail
-            )
+            guard let manga = manga else { throw SourceError.mangaDetailsFailed }
+            return manga
         }
         
         return try await task.value
@@ -295,55 +325,14 @@ class Source: Identifiable {
     
     func getChapterList(manga: Manga) async throws -> [Chapter] {
         let task = Task<[Chapter], Error> {
-            let idOffset = self.vm.write(string: manga.id, memory: self.memory)
-            var titleOffset: Int32 = 0
-            var authorOffset: Int32 = 0
-            var descriptionOffset: Int32 = 0
-            if let title = manga.title { titleOffset = self.vm.write(string: title, memory: self.memory) }
-            if let author = manga.author { authorOffset = self.vm.write(string: author, memory: self.memory) }
-            if let description = manga.description { descriptionOffset = self.vm.write(string: description, memory: self.memory) }
-            let mangaOffset = self.vm.write(data: [idOffset, titleOffset, authorOffset, descriptionOffset, 0, 0, 0], memory: self.memory)
+            let descriptor = self.create_array()
             
-            let chapterListPointer: Int32 = try self.vm.call("getChapterList", mangaOffset)
-            guard chapterListPointer > 0 else { return [] }
+            try self.vm.call("chapter_list_request", descriptor, 0)
             
-            self.memory.free(mangaOffset)
-            self.memory.free(idOffset)
-            if titleOffset > 0 { self.memory.free(titleOffset) }
-            if authorOffset > 0 { self.memory.free(authorOffset) }
-            if descriptionOffset > 0 { self.memory.free(descriptionOffset) }
+            let chapters = self.descriptors[Int(descriptor)] as? [Chapter] ?? []
             
-            let chapterListStruct = try self.vm.valuesFromHeap(byteOffset: Int(chapterListPointer), length: 2) as [Int32]
-            let chapterPointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(chapterListStruct[1]), length: Int(chapterListStruct[0]))
-            
-            var chapters: [Chapter] = []
-            
-            for pointer in chapterPointers {
-                let chapterStruct = try self.vm.valuesFromHeap(byteOffset: Int(pointer), length: 4) as [Int32]
-                let id = self.vm.stringFromHeap(byteOffset: Int(chapterStruct[0]))
-                let chapterNum: Float32 = try self.vm.valueFromHeap(byteOffset: Int(pointer) + 8)
-                var title: String?
-                if chapterStruct[1] > 0 {
-                    title = self.vm.stringFromHeap(byteOffset: Int(chapterStruct[1]))
-                    self.memory.free(chapterStruct[1])
-                }
-                
-                self.memory.free(chapterStruct[0])
-                
-                let newChapter = Chapter(
-                    id: id,
-                    title: title,
-                    chapterNum: chapterNum,
-                    volumeNum: Int(chapterStruct[3])
-                )
-                
-                chapters.append(newChapter)
-                
-                self.memory.free(pointer)
-            }
-            
-            self.memory.free(chapterListPointer)
-            self.memory.free(chapterListStruct[1])
+            self.descriptorPointer = -1
+            self.descriptors = []
             
             return chapters
         }
@@ -353,38 +342,14 @@ class Source: Identifiable {
     
     func getPageList(chapter: Chapter) async throws -> [Page] {
         let task = Task<[Page], Error> {
-            let idOffset = self.vm.write(string: chapter.id, memory: self.memory)
-            let chapterStruct = self.vm.write(data: [idOffset, 0, 0, 0], memory: self.memory)
-            let pageListPointer: Int32 = try self.vm.call("getPageList", chapterStruct)
-            guard pageListPointer > 0 else { return [] }
+            let descriptor = self.create_array()
             
-            let pageListStruct = try self.vm.valuesFromHeap(byteOffset: Int(pageListPointer), length: 2) as [Int32]
-            let pagePointers: [Int32] = try self.vm.valuesFromHeap(byteOffset: Int(pageListStruct[1]), length: Int(pageListStruct[0]))
+            try self.vm.call("page_list_request", descriptor, 0)
             
-            var pages: [Page] = []
+            let pages = self.descriptors[Int(descriptor)] as? [Page] ?? []
             
-            for pointer in pagePointers {
-                let pageStruct = try self.vm.valuesFromHeap(byteOffset: Int(pointer), length: 4) as [Int32]
-                var imageUrl: String?
-                if pageStruct[1] > 0 {
-                    imageUrl = self.vm.stringFromHeap(byteOffset: Int(pageStruct[1]))
-                    self.memory.free(pageStruct[1])
-                }
-                
-                let newPage = Page(
-                    index: Int(pageStruct[0]),
-                    imageURL: imageUrl
-                )
-                
-                pages.append(newPage)
-                
-                self.memory.free(pointer)
-            }
-            
-            self.memory.free(idOffset)
-            self.memory.free(chapterStruct)
-            self.memory.free(pageListPointer)
-            self.memory.free(pageListStruct[1])
+            self.descriptorPointer = -1
+            self.descriptors = []
             
             return pages
         }

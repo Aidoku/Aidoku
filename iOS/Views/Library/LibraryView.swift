@@ -304,7 +304,7 @@ struct LibraryView: View {
     func loadHistory() async {
         for m in manga {
             readHistory[m.id] = DataManager.shared.getReadHistory(forMangaId: m.id)
-            chapters[m.id] = (try? await SourceManager.shared.source(for: m.provider)?.getChapterList(id: m.id)) ?? []
+            chapters[m.id] = (try? await SourceManager.shared.source(for: m.provider)?.getChapterList(manga: m)) ?? []
         }
     }
     

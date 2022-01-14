@@ -14,7 +14,7 @@ enum FilterType: Int {
     case group
 }
 
-struct Filter {
+struct Filter: KVCObject {
     let type: FilterType
     let name: String
     let value: Any?
@@ -50,5 +50,14 @@ struct Filter {
             valuePointer = vm.write(string: str, memory: memory)
         }
         return vm.write(data: [Int32(type.rawValue), namePointer, valuePointer], memory: memory)
+    }
+    
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "type": return type.rawValue
+        case "name": return self.name
+        case "value": return value
+        default: return nil
+        }
     }
 }
