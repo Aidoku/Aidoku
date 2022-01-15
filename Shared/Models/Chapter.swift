@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Chapter: Identifiable, Hashable {
+struct Chapter: KVCObject, Identifiable, Hashable {
     let id: String
     let title: String?
     let chapterNum: Float
@@ -18,5 +18,15 @@ struct Chapter: Identifiable, Hashable {
         self.title = title == "" ? nil : title
         self.chapterNum = chapterNum
         self.volumeNum = volumeNum
+    }
+    
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "id": return id
+        case "title": return title
+        case "chapterNum": return chapterNum
+        case "volumeNum": return volumeNum
+        default: return nil
+        }
     }
 }
