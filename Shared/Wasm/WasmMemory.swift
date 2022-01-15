@@ -9,11 +9,6 @@ import Foundation
 import WasmInterpreter
 import CWasm3
 
-struct WasmAllocation {
-    var address: Int32
-    var size: Int32
-}
-
 class WasmMemory {
     let vm: WasmInterpreter
     
@@ -21,15 +16,20 @@ class WasmMemory {
         self.vm = vm
     }
     
+    var sizes: [Int32: Int32] = [:]
+    
     var malloc: (Int32) -> Int32 {
         { size in
-            (try? self.vm.call("allocate", size)) ?? 0
+            let addr: Int32 = (try? self.vm.call("allocate", size)) ?? 0
+            self.sizes[addr] = size
+            return addr
         }
     }
     
     var free: (Int32) -> Void {
         { addr in
-            try? self.vm.call("deallocate", addr)
+            try? self.vm.call("deallocate", addr, self.sizes[addr] ?? 0)
+            self.sizes.removeValue(forKey: addr)
         }
     }
 }

@@ -50,24 +50,11 @@ class Source: Identifiable {
         
 //        guard let memory = self.memory else { return }
         let wasmRequest = WasmRequest(vm: vm, memory: memory)
-        let wasmJson = WasmJson(vm: vm, memory: memory)
         
         try? vm.addImportHandler(named: "strjoin", namespace: "env", block: self.strjoin)
-        try? vm.addImportHandler(named: "malloc", namespace: "env", block: memory.malloc)
-        try? vm.addImportHandler(named: "free", namespace: "env", block: memory.free)
         try? vm.addImportHandler(named: "request_init", namespace: "env", block: wasmRequest.request_init)
         try? vm.addImportHandler(named: "request_set", namespace: "env", block: wasmRequest.request_set)
         try? vm.addImportHandler(named: "request_data", namespace: "env", block: wasmRequest.request_data)
-        try? vm.addImportHandler(named: "json_parse", namespace: "env", block: wasmJson.json_parse)
-        try? vm.addImportHandler(named: "json_dictionary_get", namespace: "env", block: wasmJson.json_dictionary_get)
-        try? vm.addImportHandler(named: "json_dictionary_get_string", namespace: "env", block: wasmJson.json_dictionary_get_string)
-        try? vm.addImportHandler(named: "json_dictionary_get_int", namespace: "env", block: wasmJson.json_dictionary_get_int)
-        try? vm.addImportHandler(named: "json_dictionary_get_float", namespace: "env", block: wasmJson.json_dictionary_get_float)
-        try? vm.addImportHandler(named: "json_array_get", namespace: "env", block: wasmJson.json_array_get)
-        try? vm.addImportHandler(named: "json_array_get_string", namespace: "env", block: wasmJson.json_array_get_string)
-        try? vm.addImportHandler(named: "json_array_get_length", namespace: "env", block: wasmJson.json_array_get_length)
-        try? vm.addImportHandler(named: "json_array_find_dictionary", namespace: "env", block: wasmJson.json_array_find_dictionary)
-        try? vm.addImportHandler(named: "json_free", namespace: "env", block: wasmJson.json_free)
         
         try? vm.addImportHandler(named: "push_filter", namespace: "env", block: self.push_filter)
         try? vm.addImportHandler(named: "push_listing", namespace: "env", block: self.push_listing)
@@ -80,6 +67,9 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "get_array_value", namespace: "env", block: self.get_array_value)
         try? vm.addImportHandler(named: "array_remove_at", namespace: "env", block: self.array_remove_at)
         try? vm.addImportHandler(named: "get_object_value", namespace: "env", block: self.get_object_value)
+        
+        let wasmJson = WasmJson(vm: vm, memory: memory)
+        wasmJson.export()
     }
     
     var strjoin: (Int32, Int32) -> Int32 {
@@ -131,6 +121,7 @@ class Source: Identifiable {
     
     var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, categories, category_str_lens, category_count in
+//            print("push_manga")
             guard descriptor < self.descriptors.count else { return }
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var categoryList: [String] = []
@@ -170,7 +161,7 @@ class Source: Identifiable {
                             id: chapterId,
                             title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
                             chapterNum: Float(chapter),
-                            volumeNum: Int(volume)
+                            volumeNum: volume >= 0 ? Int(volume) : nil
                         )
                     );
                 }
@@ -288,12 +279,12 @@ class Source: Identifiable {
             
             try self.vm.call("initialize_listings", descriptor)
             
-            let filters = self.descriptors[Int(descriptor)] as? [Listing] ?? []
+            let listings = self.descriptors[Int(descriptor)] as? [Listing] ?? []
             
             self.descriptorPointer = -1
             self.descriptors = []
             
-            return filters;
+            return listings;
         }
         
         listings = try await task.value
@@ -330,9 +321,11 @@ class Source: Identifiable {
             let descriptor = self.create_array()
             let listingName = self.vm.write(string: listing.name, memory: self.memory)
             
-            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), 1)
+            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
+            
+            self.memory.free(listingName)
             
             self.descriptorPointer = -1
             self.descriptors = []
@@ -367,8 +360,10 @@ class Source: Identifiable {
     func getChapterList(manga: Manga) async throws -> [Chapter] {
         let task = Task<[Chapter], Error> {
             let descriptor = self.create_array()
+            self.descriptorPointer += 1
+            self.descriptors.append(manga)
             
-            try self.vm.call("chapter_list_request", descriptor, 0)
+            try self.vm.call("chapter_list_request", descriptor, Int32(self.descriptorPointer))
             
             let chapters = self.descriptors[Int(descriptor)] as? [Chapter] ?? []
             
@@ -384,8 +379,10 @@ class Source: Identifiable {
     func getPageList(chapter: Chapter) async throws -> [Page] {
         let task = Task<[Page], Error> {
             let descriptor = self.create_array()
+            self.descriptorPointer += 1
+            self.descriptors.append(chapter)
             
-            try self.vm.call("page_list_request", descriptor, 0)
+            try self.vm.call("page_list_request", descriptor, Int32(self.descriptorPointer))
             
             let pages = self.descriptors[Int(descriptor)] as? [Page] ?? []
             
