@@ -45,16 +45,16 @@ class DataManager {
 // MARK: - Manga Library
 extension DataManager {
     
-    func contains(id: String) -> Bool {
-        manga.filter { $0.id == id }.isEmpty == false
+    func contains(manga: Manga) -> Bool {
+        self.manga.firstIndex { $0.provider == manga.provider && $0.id == manga.id } != nil
     }
     
-    func add(manga m: Manga) -> Bool {
-        if contains(id: m.id) {
+    func add(manga: Manga) -> Bool {
+        if contains(manga: manga) {
             return false
         }
         
-        guard let encodedManga = try? JSONEncoder().encode(m) else {
+        guard let encodedManga = try? JSONEncoder().encode(manga) else {
             return false
         }
 
@@ -64,8 +64,8 @@ extension DataManager {
         )!
         let mangaData = NSManagedObject(entity: entity, insertInto: container.viewContext)
         
-        mangaData.setValue(m.provider + "." + m.id, forKey: "id")
-        mangaData.setValue(m.title, forKey: "title")
+        mangaData.setValue(manga.provider + "." + manga.id, forKey: "id")
+        mangaData.setValue(manga.title, forKey: "title")
         mangaData.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
         mangaData.setValue(encodedManga, forKey: "payload")
         
@@ -79,33 +79,26 @@ extension DataManager {
         }
     }
     
-    func deleteManga(_ m: Manga) {
-        deleteManga(id: m.provider + "." + m.id)
-    }
-    
-    func deleteManga(id: String) {
+    func delete(manga: Manga) {
         do {
-            let mangaDatas = try getLibrary(predicate: NSPredicate(format: "id = %@", id))
+            let mangaDatas = try getLibrary(predicate: NSPredicate(format: "id = %@", manga.provider + "." + manga.id))
             
             guard let objectToDelete = mangaDatas.first else { return }
             container.viewContext.delete(objectToDelete)
             
             try container.viewContext.save()
             
-            manga.removeAll {
-                id.hasPrefix($0.provider) && id.hasSuffix($0.id)
+            self.manga.removeAll {
+                $0.provider == manga.provider && $0.id == manga.id
             }
         } catch let error as NSError {
             print("Could not delete. \(error), \(error.userInfo)")
         }
     }
     
-    func setMangaOpened(_ m: Manga) {
-        setMangaOpened(id: m.provider + "." + m.id)
-    }
-    func setMangaOpened(id: String) {
+    func setOpened(manga: Manga) {
         do {
-            let mangaObjs = try getLibrary(predicate: NSPredicate(format: "id = %@", id))
+            let mangaObjs = try getLibrary(predicate: NSPredicate(format: "id = %@", manga.provider + "." + manga.id))
             guard let mangaObj = mangaObjs.first else { return }
             mangaObj.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
             try container.viewContext.save()
@@ -181,12 +174,9 @@ extension DataManager {
 // TODO: change function names
 extension DataManager {
     
-    func currentPage(forManga manga: Manga, chapter: Chapter) -> Int {
-        currentPage(forManga: manga.provider + "." + manga.id, chapter: chapter.id)
-    }
-    func currentPage(forManga mangaId: String, chapter chapterId: String) -> Int {
+    func currentPage(manga: Manga, chapterId: String) -> Int {
         do {
-            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", mangaId, chapterId))
+            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapterId))
             guard let mangaObj = mangaObjs.first else { return 0 }
             return mangaObj.value(forKey: "currentPage") as? Int ?? 0
         } catch let error as NSError {
@@ -195,12 +185,9 @@ extension DataManager {
         }
     }
     
-    func setCurrentPage(forManga manga: Manga, chapter: Chapter, page: Int) {
-        setCurrentPage(forManga: manga.provider + "." + manga.id, chapter: chapter.id, page: page)
-    }
-    func setCurrentPage(forManga mangaId: String, chapter chapterId: String, page: Int) {
+    func setCurrentPage(manga: Manga, chapter: Chapter, page: Int) {
         do {
-            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", mangaId, chapterId))
+            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))
             guard let mangaObj = mangaObjs.first else { return }
             mangaObj.setValue(page, forKey: "currentPage")
             mangaObj.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
@@ -210,11 +197,8 @@ extension DataManager {
         }
     }
     
-    func addReadHistory(forManga manga: Manga, chapter: Chapter, page: Int = 0) {
-        addReadHistory(forMangaId: manga.provider + "." + manga.id, chapterId: chapter.id, page: page)
-    }
-    func addReadHistory(forMangaId mangaId: String, chapterId: String, page: Int = 0) {
-        guard ((try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", mangaId, chapterId))) ?? []).count == 0 else { return } // Read history already exists, ignore.
+    func addReadHistory(manga: Manga, chapter: Chapter, page: Int = 0) {
+        guard ((try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))) ?? []).count == 0 else { return } // Read history already exists, ignore.
         
         let entity = NSEntityDescription.entity(
             forEntityName: "ReadHistory",
@@ -222,15 +206,15 @@ extension DataManager {
         )!
         let readHistory = NSManagedObject(entity: entity, insertInto: container.viewContext)
         
-        readHistory.setValue(mangaId, forKey: "mangaId")
-        readHistory.setValue(chapterId, forKey: "chapterId")
+        readHistory.setValue(manga.provider + "." + manga.id, forKey: "mangaId")
+        readHistory.setValue(chapter.id, forKey: "chapterId")
         readHistory.setValue(page, forKey: "currentPage")
         readHistory.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
         
         save()
     }
     
-    func removeHistory(forManga manga: Manga, chapter: Chapter) {
+    func removeHistory(manga: Manga, chapter: Chapter) {
         do {
             let history = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))
             guard let objectToDelete = history.first else { return }
@@ -241,11 +225,8 @@ extension DataManager {
         }
     }
     
-    func getReadHistory(forManga manga: Manga) -> [String: Bool] {
-        getReadHistory(forMangaId: manga.provider + "." + manga.id)
-    }
-    func getReadHistory(forMangaId mangaId: String) -> [String: Bool] {
-        guard let readHistory = try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@", mangaId)) else { return [:] }
+    func getReadHistory(manga: Manga) -> [String: Bool] {
+        guard let readHistory = try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@", manga.provider + "." + manga.id)) else { return [:] }
         
         var readHistoryDict: [String: Bool] = [:]
         for history in readHistory {

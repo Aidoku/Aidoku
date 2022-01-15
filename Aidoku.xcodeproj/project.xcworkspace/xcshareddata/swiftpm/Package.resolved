@@ -20,21 +20,12 @@
         }
       },
       {
-        "package": "SwiftSoup",
-        "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
+        "package": "SwiftUIX",
+        "repositoryURL": "https://github.com/SwiftUIX/SwiftUIX.git",
         "state": {
           "branch": null,
-          "revision": "ea76bfd075ccc1c52c0fefd2105f67964542f246",
-          "version": "2.3.5"
-        }
-      },
-      {
-        "package": "SwiftUIX",
-        "repositoryURL": "https://github.com/SwiftUIX/SwiftUIX",
-        "state": {
-          "branch": "master",
-          "revision": "bec03e5e3ac7c56d6fdcaf7f70fcd33fa2df5f69",
-          "version": null
+          "revision": "eb6a23fc4cc79545e40a8cf5c82119684750194f",
+          "version": "0.1.1"
         }
       },
       {

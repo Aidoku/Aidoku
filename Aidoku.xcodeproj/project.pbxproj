@@ -29,11 +29,8 @@
 		FB1B486E277CE7B50056D02C /* LibraryListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B486C277CE7B50056D02C /* LibraryListCell.swift */; };
 		FB1B4870277CE7B50056D02C /* LibraryGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B486D277CE7B50056D02C /* LibraryGridCell.swift */; };
 		FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4873277CE7E60056D02C /* Kingfisher */; };
-		FB1B4877277CE7FE0056D02C /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4876277CE7FE0056D02C /* Kingfisher */; };
 		FB1B487B277CEC270056D02C /* MangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B487A277CEC270056D02C /* MangaView.swift */; };
 		FB1B4881277CEC810056D02C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4880277CEC810056D02C /* SettingsView.swift */; };
-		FB1B4897277CED3A0056D02C /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4896277CED3A0056D02C /* SwiftUIX */; };
-		FB1B4899277CED440056D02C /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4898277CED440056D02C /* SwiftUIX */; };
 		FB1B489B277CF4B70056D02C /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489A277CF4B70056D02C /* Color.swift */; };
 		FB1B489C277CF4B70056D02C /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489A277CF4B70056D02C /* Color.swift */; };
 		FB1B489E277CF5540056D02C /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489D277CF5540056D02C /* HostingController.swift */; };
@@ -54,6 +51,9 @@
 		FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
 		FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
 		FB6340BE279220F90072A2A2 /* SourceBrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BD279220F90072A2A2 /* SourceBrowseView.swift */; };
+		FB6340C5279246BE0072A2A2 /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C4279246BE0072A2A2 /* SwiftUIX */; };
+		FB6340C7279246CF0072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C6279246CF0072A2A2 /* WasmInterpreter */; };
+		FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C8279246D50072A2A2 /* ZIPFoundation */; };
 		FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmRequest.swift */; };
@@ -74,7 +74,6 @@
 		FB7B7EE2278D00AC001E6EAF /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EE1278D00AC001E6EAF /* BrowseView.swift */; };
 		FB7B7EE5278D0735001E6EAF /* SourceListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EE4278D0735001E6EAF /* SourceListCell.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
-		FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB9A659B278217710071F1A2 /* SwiftSoup */; };
 		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 		FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 /* End PBXBuildFile section */
@@ -135,10 +134,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
-				FB1B4897277CED3A0056D02C /* SwiftUIX in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
-				FB9A659C278217710071F1A2 /* SwiftSoup in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
+				FB6340C5279246BE0072A2A2 /* SwiftUIX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,8 +144,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB1B4877277CE7FE0056D02C /* Kingfisher in Frameworks */,
-				FB1B4899277CED440056D02C /* SwiftUIX in Frameworks */,
+				FB6340C7279246CF0072A2A2 /* WasmInterpreter in Frameworks */,
+				FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,10 +359,9 @@
 			name = "Aidoku (iOS)";
 			packageProductDependencies = (
 				FB1B4873277CE7E60056D02C /* Kingfisher */,
-				FB1B4896277CED3A0056D02C /* SwiftUIX */,
-				FB9A659B278217710071F1A2 /* SwiftSoup */,
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
+				FB6340C4279246BE0072A2A2 /* SwiftUIX */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -384,8 +381,8 @@
 			);
 			name = "Aidoku (macOS)";
 			packageProductDependencies = (
-				FB1B4876277CE7FE0056D02C /* Kingfisher */,
-				FB1B4898277CED440056D02C /* SwiftUIX */,
+				FB6340C6279246CF0072A2A2 /* WasmInterpreter */,
+				FB6340C8279246D50072A2A2 /* ZIPFoundation */,
 			);
 			productName = "Aidoku (macOS)";
 			productReference = FB1B483B277CE1920056D02C /* Aidoku.app */;
@@ -420,10 +417,9 @@
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
 				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */,
-				FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
+				FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -808,20 +804,20 @@
 				minimumVersion = 7.0.0;
 			};
 		};
-		FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftUIX/SwiftUIX";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
 			requirement = {
 				branch = main;
 				kind = branch;
+			};
+		};
+		FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftUIX/SwiftUIX.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.1;
 			};
 		};
 		FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
@@ -832,14 +828,6 @@
 				minimumVersion = 0.9.9;
 			};
 		};
-		FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -848,35 +836,30 @@
 			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
-		FB1B4876277CE7FE0056D02C /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
-		FB1B4896277CED3A0056D02C /* SwiftUIX */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */;
-			productName = SwiftUIX;
-		};
-		FB1B4898277CED440056D02C /* SwiftUIX */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB1B4895277CED3A0056D02C /* XCRemoteSwiftPackageReference "SwiftUIX" */;
-			productName = SwiftUIX;
-		};
 		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
 			productName = WasmInterpreter;
 		};
-		FB7B7ED7278CE949001E6EAF /* ZIPFoundation */ = {
+		FB6340C4279246BE0072A2A2 /* SwiftUIX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */;
+			productName = SwiftUIX;
+		};
+		FB6340C6279246CF0072A2A2 /* WasmInterpreter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
+			productName = WasmInterpreter;
+		};
+		FB6340C8279246D50072A2A2 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
-		FB9A659B278217710071F1A2 /* SwiftSoup */ = {
+		FB7B7ED7278CE949001E6EAF /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB9A659A278217710071F1A2 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
-			productName = SwiftSoup;
+			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
 		};
 /* End XCSwiftPackageProductDependency section */
 

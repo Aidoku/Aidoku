@@ -13,18 +13,18 @@ struct SourceListCell: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack(spacing: 8) {
-                KFImage(URL(string: "https://skitty.xyz/icon.png"))
+            HStack(spacing: 10) {
+                KFImage(source.url.appendingPathComponent("Icon.png"))
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 48, height: 48)
-                    .cornerRadius(48 * 0.225)
+                    .clipShape(RoundedRectangle(cornerRadius: 48 * 0.225, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 48 * 0.225).strokeBorder(Color.quaternaryFill, lineWidth: 1))
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading) {
                     Text(source.info.name)
                         .foregroundColor(.label)
                         .lineLimit(1)
-                    Text("v0.0." + String(source.info.version))
+                    Text("v" + String(source.info.version))
                         .foregroundColor(.secondaryLabel)
                         .lineLimit(1)
                 }

@@ -51,7 +51,7 @@ class ReaderViewController: UIPageViewController {
         super.viewDidLoad()
         
         if let manga = manga {
-            DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
+            DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
         }
         
         modalPresentationCapturesStatusBarAppearance = true
@@ -172,7 +172,7 @@ class ReaderViewController: UIPageViewController {
     
     @objc func close() {
         if let manga = manga {
-            DataManager.shared.setCurrentPage(forManga: manga.id, chapter: chapter.id, page: currentIndex)
+            DataManager.shared.setCurrentPage(manga: manga, chapter: chapter, page: currentIndex)
         }
         presentationMode.wrappedValue.dismiss()
     }
@@ -189,7 +189,7 @@ extension ReaderViewController: UIPageViewControllerDataSource {
         let nextIndex = viewControllerIndex + 1
         guard items.count > nextIndex else {
 //            if let manga = manga {
-//                DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
+//                DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
 //            }
             return nil
         }

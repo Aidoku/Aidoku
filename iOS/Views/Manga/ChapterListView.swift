@@ -49,15 +49,15 @@ struct ChapterListView: View {
                         .contextMenu {
                             if readHistory[chapter.id] ?? false {
                                 Button {
-                                    DataManager.shared.removeHistory(forManga: manga, chapter: chapter)
-                                    updateReadHistory()
+                                    DataManager.shared.removeHistory(manga: manga, chapter: chapter)
+                                    readHistory[chapter.id] = false
                                 } label: {
                                     Text("Mark as Unread")
                                 }
                             } else {
                                 Button {
-                                    DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
-                                    updateReadHistory()
+                                    DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
+                                    readHistory[chapter.id] = true
                                 } label: {
                                     Text("Mark as Read")
                                 }
@@ -104,12 +104,12 @@ struct ChapterListView: View {
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             updateReadHistory()
         }, content: { item in
-            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(forManga: manga.id, chapter: item.id))
+            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(manga: manga, chapterId: item.id))
                 .edgesIgnoringSafeArea(.all)
         })
     }
     
     func updateReadHistory() {
-        readHistory = DataManager.shared.getReadHistory(forManga: manga)
+        readHistory = DataManager.shared.getReadHistory(manga: manga)
     }
 }

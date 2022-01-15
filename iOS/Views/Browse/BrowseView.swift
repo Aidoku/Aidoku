@@ -26,6 +26,8 @@ struct BrowseView: View {
     @State var isSearching: Bool = false
     @State var searchText: String = ""
     
+    let sourcePublisher = NotificationCenter.default.publisher(for: NSNotification.Name("updateSourceList"))
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -60,7 +62,7 @@ struct BrowseView: View {
                     .showsCancelButton(isEditing)
             }
         }
-        .onAppear {
+        .onReceive(sourcePublisher) { _ in
             sources = SourceManager.shared.sources
         }
     }

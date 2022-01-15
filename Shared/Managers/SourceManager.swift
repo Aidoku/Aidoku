@@ -18,6 +18,10 @@ class SourceManager {
         Self.directory.contents.compactMap { try? Source(from: $0) }
     }
     
+    func source(for id: String) -> Source? {
+        sources.first { $0.info.id == id }
+    }
+    
     func importSource(from url: URL) -> Source? {
         Self.directory.createDirctory()
 
@@ -34,6 +38,9 @@ class SourceManager {
                 }
                 try? FileManager.default.moveItem(at: payload, to: destination)
                 try? FileManager.default.removeItem(at: temporaryDirectory)
+                
+                NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+                
                 source.url = destination
                 return source
             }
@@ -42,11 +49,8 @@ class SourceManager {
         return nil
     }
     
-    func source(for id: String) -> Source? {
-        sources.first { $0.info.id == id }
-    }
-    
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
 }
