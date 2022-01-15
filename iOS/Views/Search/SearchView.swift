@@ -17,6 +17,8 @@ struct SearchView: View {
     @State var searchText: String = ""
     @State var results: [String: [Manga]] = [:]
     
+    let sourcePublisher = NotificationCenter.default.publisher(for: NSNotification.Name("updateSourceList"))
+    
     var body: some View {
         NavigationView {
             ScrollView {
@@ -57,7 +59,7 @@ struct SearchView: View {
                 results = [:]
             }
         }
-        .onAppear {
+        .onReceive(sourcePublisher) { _ in
             sources = SourceManager.shared.sources
         }
     }

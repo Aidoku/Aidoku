@@ -190,14 +190,14 @@ struct MangaView: View {
                         .contextMenu {
                             if readHistory[chapter.id] ?? false {
                                 Button {
-                                    DataManager.shared.removeHistory(forManga: manga, chapter: chapter)
+                                    DataManager.shared.removeHistory(manga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Unread")
                                 }
                             } else {
                                 Button {
-                                    DataManager.shared.addReadHistory(forManga: manga, chapter: chapter)
+                                    DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Read")
@@ -217,12 +217,12 @@ struct MangaView: View {
                     ZStack(alignment: .trailing) {
                         Button {
                             if inLibrary {
-                                DataManager.shared.deleteManga(manga)
+                                DataManager.shared.delete(manga: manga)
                             } else {
                                 _ = DataManager.shared.add(manga: manga)
                             }
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                inLibrary = DataManager.shared.manga.contains(manga)
+                                inLibrary = DataManager.shared.contains(manga: manga)
                             }
                         } label: {
                             if inLibrary {
@@ -250,11 +250,11 @@ struct MangaView: View {
                 } else {
                     Button {
                         if inLibrary {
-                            DataManager.shared.deleteManga(manga)
+                            DataManager.shared.delete(manga: manga)
                         } else {
                             _ = DataManager.shared.add(manga: manga)
                         }
-                        inLibrary = DataManager.shared.manga.contains(manga)
+                        inLibrary = DataManager.shared.contains(manga: manga)
                     } label: {
                         Image(systemName: inLibrary ? "bookmark.fill" : "bookmark")
                     }
@@ -278,7 +278,7 @@ struct MangaView: View {
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             updateReadHistory()
         }, content: { item in
-            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(forManga: manga.id, chapter: item.id))
+            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(manga: manga, chapterId: item.id))
                 .edgesIgnoringSafeArea(.all)
         })
         .alert(isPresented: $showingAlert) {
@@ -289,11 +289,13 @@ struct MangaView: View {
             )
         }
         .onAppear {
-            inLibrary = DataManager.shared.manga.contains(manga)
-            Task {
-                if !chaptersLoaded {
+            inLibrary = DataManager.shared.contains(manga: manga)
+            if !chaptersLoaded {
+                Task {
                     await fetchManga()
                 }
+            } else {
+                updateReadHistory()
             }
         }
     }
@@ -347,7 +349,7 @@ struct MangaView: View {
     }
     
     func updateReadHistory() {
-        readHistory = DataManager.shared.getReadHistory(forManga: manga)
+        readHistory = DataManager.shared.getReadHistory(manga: manga)
     }
 }
 

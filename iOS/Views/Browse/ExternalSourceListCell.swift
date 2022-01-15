@@ -24,7 +24,7 @@ struct ExternalSourceListCell: View {
                     Text(source.info.name)
                         .foregroundColor(.label)
                         .lineLimit(1)
-                    Text("v0.0." + String(source.info.version))
+                    Text("v" + String(source.info.version))
                         .foregroundColor(.secondaryLabel)
                         .lineLimit(1)
                 }
