@@ -22,6 +22,8 @@ struct SourceSectionHeader: View {
 struct BrowseView: View {
     @State var sources = SourceManager.shared.sources
     
+    @State var externalSources: [ExternalSourceInfo] = []
+    
     @State var isEditing: Bool = false
     @State var isSearching: Bool = false
     @State var searchText: String = ""
@@ -48,11 +50,12 @@ struct BrowseView: View {
                             }
                         }
                     }
-//                    SourceSectionHeader(title: "All")
-//                    ForEach(sources) { source in
-//                        ExternalSourceListCell(source: source)
-//                            .id(UUID())
-//                    }
+                    if !externalSources.isEmpty {
+                        SourceSectionHeader(title: "All")
+                        ForEach(externalSources.filter { !SourceManager.shared.hasSourceInstalled(id: $0.id) }, id: \.self) { source in
+                            ExternalSourceListCell(source: source)
+                        }
+                    }
                 }
             }
             .navigationTitle("Browse")
@@ -64,6 +67,13 @@ struct BrowseView: View {
         }
         .onReceive(sourcePublisher) { _ in
             sources = SourceManager.shared.sources
+        }
+        .onAppear {
+            if externalSources.isEmpty {
+                Task {
+                    self.externalSources = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                }
+            }
         }
     }
 }

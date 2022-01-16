@@ -29,7 +29,9 @@ struct SearchView: View {
                     LazyVStack(alignment: .leading) {
                         ForEach(sources) { source in
                             if !isEditing || !results.isEmpty {
-                                MangaCarouselView(title: source.info.name, manga: results[source.info.id] ?? [])
+                                MangaCarouselView(title: source.info.name, manga: results[source.info.id] ?? []) {
+                                    SearchResultView(source: source, search: searchText, results: results[source.info.id] ?? [])
+                                }
                             }
                         }
                     }

@@ -22,7 +22,48 @@ class SourceManager {
         sources.first { $0.info.id == id }
     }
     
-    func importSource(from url: URL) -> Source? {
+    func hasSourceInstalled(id: String) -> Bool {
+        sources.firstIndex { $0.info.id == id } != nil
+    }
+    
+    func importSource(from url: URL) async -> Source? {
+        Self.directory.createDirctory()
+        
+        var fileUrl = url
+    
+        if let temporaryDirectory = FileManager.default.temporaryDirectory?.appendingPathComponent(UUID().uuidString) {
+            if fileUrl.scheme != "file" {
+                do {
+                    let location = try await URLSession.shared.download(for: URLRequest.from(url))
+                    fileUrl = location
+                } catch {
+                    return nil
+                }
+            }
+            try? FileManager.default.unzipItem(at: fileUrl, to: temporaryDirectory)
+            try? FileManager.default.removeItem(at: fileUrl)
+
+            let payload = temporaryDirectory.appendingPathComponent("Payload")
+            let source = try? Source(from: payload)
+            if let source = source {
+                let destination = Self.directory.appendingPathComponent(source.info.id)
+                if destination.exists {
+                    try? FileManager.default.removeItem(at: destination)
+                }
+                try? FileManager.default.moveItem(at: payload, to: destination)
+                try? FileManager.default.removeItem(at: temporaryDirectory)
+                
+                NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+                
+                source.url = destination
+                return source
+            }
+        }
+        
+        return nil
+    }
+    
+    func importExternalSource(from url: URL) -> Source? {
         Self.directory.createDirctory()
 
         if let temporaryDirectory = FileManager.default.temporaryDirectory?.appendingPathComponent(UUID().uuidString) {
