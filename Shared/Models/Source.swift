@@ -46,43 +46,29 @@ class Source: Identifiable {
     }
     
     func prepareVirtualMachine() {
-//        guard self.memory == nil else { return }
-        
-//        guard let memory = self.memory else { return }
-        let wasmRequest = WasmRequest(vm: vm, memory: memory)
-        
-        try? vm.addImportHandler(named: "strjoin", namespace: "env", block: self.strjoin)
-        try? vm.addImportHandler(named: "request_init", namespace: "env", block: wasmRequest.request_init)
-        try? vm.addImportHandler(named: "request_set", namespace: "env", block: wasmRequest.request_set)
-        try? vm.addImportHandler(named: "request_data", namespace: "env", block: wasmRequest.request_data)
-        
         try? vm.addImportHandler(named: "push_filter", namespace: "env", block: self.push_filter)
         try? vm.addImportHandler(named: "push_listing", namespace: "env", block: self.push_listing)
         try? vm.addImportHandler(named: "push_manga", namespace: "env", block: self.push_manga)
         try? vm.addImportHandler(named: "push_chapter", namespace: "env", block: self.push_chapter)
         try? vm.addImportHandler(named: "push_page", namespace: "env", block: self.push_page)
         
-        try? vm.addImportHandler(named: "create_array", namespace: "env", block: self.create_array)
-        try? vm.addImportHandler(named: "get_array_len", namespace: "env", block: self.get_array_len)
-        try? vm.addImportHandler(named: "get_array_value", namespace: "env", block: self.get_array_value)
-        try? vm.addImportHandler(named: "array_remove_at", namespace: "env", block: self.array_remove_at)
-        try? vm.addImportHandler(named: "get_object_value", namespace: "env", block: self.get_object_value)
+        try? vm.addImportHandler(named: "array", namespace: "env", block: self.array)
+        try? vm.addImportHandler(named: "array_size", namespace: "env", block: self.array_size)
+        try? vm.addImportHandler(named: "array_get", namespace: "env", block: self.array_get)
+        try? vm.addImportHandler(named: "array_remove", namespace: "env", block: self.array_remove)
+        try? vm.addImportHandler(named: "object_getn", namespace: "env", block: self.object_getn)
+        try? vm.addImportHandler(named: "string_value", namespace: "env", block: self.string_value)
+        try? vm.addImportHandler(named: "integer_value", namespace: "env", block: self.integer_value)
+        try? vm.addImportHandler(named: "float_value", namespace: "env", block: self.float_value)
         
-        let wasmJson = WasmJson(vm: vm, memory: memory)
-        wasmJson.export()
-    }
-    
-    var strjoin: (Int32, Int32) -> Int32 {
-        { strs, len in
-            guard len >= 0, strs >= 0 else { return 0 }
-            let strings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(strs), length: Int(len))) ?? []
-            let string = strings.map { self.vm.stringFromHeap(byteOffset: Int($0)) }.joined()
-            return self.vm.write(string: string, memory: self.memory)
-        }
+        WasmRequest(vm: vm, memory: memory).export()
+        WasmJson(vm: vm, memory: memory).export()
     }
     
     var descriptorPointer = -1
     var descriptors: [Any] = []
+    
+    // MARK: Object Pushing
     
     var push_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, type, name, name_len, value, value_len in
@@ -121,7 +107,6 @@ class Source: Identifiable {
     
     var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, categories, category_str_lens, category_count in
-//            print("push_manga")
             guard descriptor < self.descriptors.count else { return }
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var categoryList: [String] = []
@@ -185,16 +170,19 @@ class Source: Identifiable {
         }
     }
     
-    var create_array: () -> Int32 {
+    // MARK: Descriptor Handling
+    
+    var array: () -> Int32 {
         {
             self.descriptorPointer += 1
-            self.descriptors.append([Any]())
+            self.descriptors.append([])
             return Int32(self.descriptorPointer)
         }
     }
     
-    var get_array_len: (Int32) -> Int32 {
+    var array_size: (Int32) -> Int32 {
         { descriptor in
+            guard descriptor >= 0, descriptor < self.descriptors.count else { return 0 }
             if let array = self.descriptors[Int(descriptor)] as? [Any] {
                 return Int32(array.count)
             }
@@ -202,59 +190,84 @@ class Source: Identifiable {
         }
     }
     
-    var get_array_value: (Int32, Int32, Int32) -> Int32 {
-        { descriptor, pos, value_len in
+    var array_get: (Int32, Int32) -> Int32 {
+        { descriptor, index in
+            guard descriptor >= 0, descriptor < self.descriptors.count else { return -1 }
             if let array = self.descriptors[Int(descriptor)] as? [Any] {
-                guard pos < array.count else { return 0 }
-                if let value = array[Int(pos)] as? String {
-                    if value_len > 0 { try? self.vm.writeToHeap(value: Int32(value.count), byteOffset: Int(value_len)) }
-                    return self.vm.write(string: value, memory: self.memory)
-                } else if let value = array[Int(pos)] as? Int {
-                    return Int32(value)
-                } else {
-                    self.descriptorPointer += 1
-                    self.descriptors.append(array[Int(pos)])
-                    return Int32(self.descriptorPointer)
-                }
+                guard index < array.count else { return -1 }
+                self.descriptorPointer += 1
+                self.descriptors.append(array[Int(index)])
+                return Int32(self.descriptorPointer)
             }
-            return 0
+            return -1
         }
     }
     
-    var array_remove_at: (Int32, Int32) -> Void {
-        { descriptor, pos in
+    var array_remove: (Int32, Int32) -> Void {
+        { descriptor, index in
+            guard descriptor >= 0, descriptor < self.descriptors.count else { return }
             if var array = self.descriptors[Int(descriptor)] as? [Any] {
-                array.remove(at: Int(pos))
+                array.remove(at: Int(index))
                 self.descriptors[Int(descriptor)] = array
             }
         }
     }
     
-    var get_object_value: (Int32, Int32, Int32, Int32) -> Int32 {
-        { descriptor, key, key_len, value_len in
-            if let object = self.descriptors[Int(descriptor)] as? KVCObject,
-               let keyString = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+    var object_getn: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, key, key_len in
+            guard descriptor >= 0, key >= 0, descriptor < self.descriptors.count else { return -1 }
+            if let keyString = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+               let object = self.descriptors[Int(descriptor)] as? KVCObject,
                let value = object.valueByPropertyName(name: keyString) {
-                if let value = value as? String {
-                    if value_len > 0 { try? self.vm.writeToHeap(value: Int32(value.count), byteOffset: Int(value_len)) }
-                    return self.vm.write(string: value, memory: self.memory)
-                } else if let value = value as? Int {
-                    return Int32(value)
-                } else {
-                    self.descriptorPointer += 1
-                    self.descriptors.append(value)
-                    return Int32(self.descriptorPointer)
-                }
+                self.descriptorPointer += 1
+                self.descriptors.append(value)
+                return Int32(self.descriptorPointer)
+            }
+            return -1
+        }
+    }
+    
+    var string_value: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return 0 }
+            if let string = self.descriptors[Int(descriptor)]  as? String {
+                return self.vm.write(string: string, memory: self.memory)
             }
             return 0
         }
     }
     
+    var integer_value: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let int = self.descriptors[Int(descriptor)] as? Int {
+                return Int32(int)
+            } else if let int = Int(self.descriptors[Int(descriptor)] as? String ?? "Error") {
+                return Int32(int)
+            }
+            return -1
+        }
+    }
+    
+    var float_value: (Int32) -> Float32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let float = self.descriptors[Int(descriptor)] as? Float {
+                return Float32(float)
+            } else if let float = Float(self.descriptors[Int(descriptor)] as? String ?? "Error") {
+                return Float32(float)
+            }
+            return -1
+        }
+    }
+    
+    // MARK: Get Functions
+    
     func getFilters() async throws -> [Filter] {
         guard filters.isEmpty else { return filters }
         
         let task = Task<[Filter], Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             
             try self.vm.call("initialize_filters", descriptor)
             
@@ -275,7 +288,7 @@ class Source: Identifiable {
         guard listings.isEmpty else { return listings }
         
         let task = Task<[Listing], Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             
             try self.vm.call("initialize_listings", descriptor)
             
@@ -299,7 +312,7 @@ class Source: Identifiable {
     
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             self.descriptorPointer += 1
             self.descriptors.append(filters)
             
@@ -318,7 +331,7 @@ class Source: Identifiable {
     
     func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             let listingName = self.vm.write(string: listing.name, memory: self.memory)
             
             let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
@@ -359,7 +372,7 @@ class Source: Identifiable {
     
     func getChapterList(manga: Manga) async throws -> [Chapter] {
         let task = Task<[Chapter], Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             self.descriptorPointer += 1
             self.descriptors.append(manga)
             
@@ -378,7 +391,7 @@ class Source: Identifiable {
     
     func getPageList(chapter: Chapter) async throws -> [Page] {
         let task = Task<[Page], Error> {
-            let descriptor = self.create_array()
+            let descriptor = self.array()
             self.descriptorPointer += 1
             self.descriptors.append(chapter)
             

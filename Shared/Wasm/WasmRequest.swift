@@ -29,6 +29,12 @@ class WasmRequest {
         self.memory = memory
     }
     
+    func export() {
+        try? vm.addImportHandler(named: "request_init", namespace: "env", block: self.request_init)
+        try? vm.addImportHandler(named: "request_set", namespace: "env", block: self.request_set)
+        try? vm.addImportHandler(named: "request_data", namespace: "env", block: self.request_data)
+    }
+    
     var request_init: () -> Int32 {
         {
             let req = WasmRequestObject(id: self.requests.count)
