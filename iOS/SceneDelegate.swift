@@ -53,7 +53,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>){
         if let url = URLContexts.first?.url {
             print("Handling \(url)")
-            _ = SourceManager.shared.importSource(from: url)
+            Task {
+                _ = await SourceManager.shared.importSource(from: url)
+            }
         }
     }
 }

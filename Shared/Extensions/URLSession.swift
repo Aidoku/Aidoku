@@ -24,6 +24,24 @@ extension URLSession {
         case noData
     }
     
+    func download(for request: URLRequest) async throws -> URL {
+        if #available(iOS 15.0, *), #available(macOS 12.0, *) {
+            let (data, _) = try await self.download(for: request, delegate: nil)
+            return data
+        } else {
+            let data: URL = try await withCheckedThrowingContinuation({ continuation in
+                self.downloadTask(with: request) { data, response, error in
+                    if let data = data {
+                        continuation.resume(returning: data)
+                    } else {
+                        continuation.resume(throwing: error ?? URLSessionError.noData)
+                    }
+                }.resume()
+            })
+            return data
+        }
+    }
+    
     func data(for request: URLRequest) async throws -> Data {
         if #available(iOS 15.0, *), #available(macOS 12.0, *) {
             let (data, _) = try await self.data(for: request, delegate: nil)

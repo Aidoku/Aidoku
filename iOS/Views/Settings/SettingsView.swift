@@ -32,7 +32,7 @@ struct SettingsView: View {
                         Text("About")
                     }
                     Link("GitHub Repository", destination: URL(string: "https://github.com/Skittyblock/Aidoku")!)
-                    Link("Discord Server", destination: URL(string: "https://discord.gg/vawsawaJh3")!)
+                    Link("Discord Server", destination: URL(string: "https://discord.gg/tGqkkKBBe5")!)
                 }
                 Section {
                     Button {
