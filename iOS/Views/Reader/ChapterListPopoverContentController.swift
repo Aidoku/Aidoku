@@ -23,18 +23,7 @@ class ChapterListPopoverContentController: UIViewController {
         self.chapterList = chapterList
         self.selectedIndex = selectedIndex
         super.init(nibName: nil, bundle: nil)
-//        super.init()
     }
-    
-//    override init() {
-//        super.init()
-//    }
-    
-//    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-//        self.chapterList = []
-//        self.selectedIndex = 0
-//        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-//    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -48,13 +37,11 @@ class ChapterListPopoverContentController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        tableView?.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
-        
         tableView?.dataSource = self
         tableView?.delegate = self
         
         tableView?.backgroundColor = .clear
-        tableView?.separatorColor = .label.withAlphaComponent(0.2) //UIColor(white: 1, alpha: 0.2)
+        tableView?.separatorColor = .label.withAlphaComponent(0.2)
     }
     
     override func viewWillAppear(_ animated: Bool) {

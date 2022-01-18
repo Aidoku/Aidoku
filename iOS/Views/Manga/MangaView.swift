@@ -38,8 +38,6 @@ struct MangaView: View {
     
     @State var descriptionLoaded = false
     @State var descriptionExpanded = false
-    @State var descriptionLineCount = 4
-    @State var isAnimatingDescription = false
     
     @State var showingAlert = false
     
@@ -86,7 +84,7 @@ struct MangaView: View {
                     Spacer()
                     Button {
                         withAnimation {
-                            animateDescription()
+                            descriptionExpanded.toggle()
                         }
                     } label: {
                         Text(descriptionExpanded ? "Show Less" : "Show More")
@@ -105,7 +103,7 @@ struct MangaView: View {
                     Text(manga.description ?? "No Description")
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
-                        .lineLimit(descriptionLineCount)
+                        .lineLimit(descriptionExpanded ? nil : 4)
                         .fixedSize(horizontal: false, vertical: true)
                         .transition(.opacity)
                         .transition(.move(edge: .top))
@@ -212,9 +210,8 @@ struct MangaView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-//        .navigationBarItems(trailing:
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if #available(iOS 15, *) {
+                if #available(iOS 15.0, *) {
                     ZStack(alignment: .trailing) {
                         Button {
                             if inLibrary {
@@ -260,7 +257,7 @@ struct MangaView: View {
                         Image(systemName: inLibrary ? "bookmark.fill" : "bookmark")
                     }
                 }
-                if #available(iOS 15, *) {
+                if #available(iOS 15.0, *) {
                     Button {} label: {
                         Image(systemName: "ellipsis")
                             .padding(.trailing, 8)
@@ -279,7 +276,6 @@ struct MangaView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Text("")
             }
-//        )
         }
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             updateReadHistory()
@@ -304,29 +300,6 @@ struct MangaView: View {
                 updateReadHistory()
             }
         }
-    }
-    
-    func animateDescription() {
-        guard !isAnimatingDescription else { return } // Check not currently animating
-        descriptionExpanded.toggle()
-        isAnimatingDescription = true
-
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { timer in
-            if descriptionExpanded {
-                descriptionLineCount += 1
-                if descriptionLineCount >= 15 { // max lines
-                    timer.invalidate()
-                    isAnimatingDescription = false
-                }
-            } else {
-                descriptionLineCount -= 1
-                if descriptionLineCount <= 4 { // max lines
-                    timer.invalidate()
-                    isAnimatingDescription = false
-                }
-            }
-        }
-        timer.fire()
     }
     
     func getNextChapter() -> Chapter? {

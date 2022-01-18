@@ -56,128 +56,132 @@ struct LibraryView: View {
     
     var body: some View {
         NavigationView {
-            if manga.isEmpty {
-                VStack(spacing: 2) {
-                    Text("Library Empty")
-                        .font(.system(size: 25))
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondaryLabel)
-                        .padding(.top, -50)
-                    Text("Add manga from the browse tab")
-                    .padding(.top, -15)
-                        .foregroundColor(.secondaryLabel)
-                }
-                .navigationTitle("Library")
-                .navigationBarTitleDisplayMode(.large)
-                .navigationSearchBar {
-                    SearchBar("Search", text: $searchText, isEditing: $isEditing)
-                        .showsCancelButton(isEditing)
-                }
-                .toolbar {
-                    Button {
-                        showingSettings.toggle()
-                    } label: {
-                        Image(systemName: "gear")
+            ZStack {
+                if manga.isEmpty {
+                    VStack(spacing: 2) {
+                        Text("Library Empty")
+                            .font(.system(size: 25))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondaryLabel)
+                            .padding(.top, -50)
+                        Text("Add manga from the browse tab")
+                        .padding(.top, -15)
+                            .foregroundColor(.secondaryLabel)
                     }
-                }
-            } else {
-                ScrollView {
-                    VStack {
-                        HStack {
-                            Text("Sort")
-                                .foregroundColor(.secondary)
-                                .padding(.trailing, -2)
-                            DropMenu(selection: $sortMethod, options: [
-                                "Recent",
-                                "Title",
-                                "Author"
-                            ])
-                                .animation(nil)
-                            Spacer()
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    grid.toggle()
-                                }
-                            } label: {
-                                Image(systemName: "list.bullet")
-                                    .foregroundColor(.label)
-                                    .padding(8)
-                                    .background(grid ? .clear : .secondaryFill)
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 4)
-                        
-                        if grid {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
-                                ForEach(manga.filter {
-                                    search(
-                                        needle: searchText.lowercased(),
-                                        haystack: $0.title?.lowercased() ?? ""
-                                    )
-                                }, id: \.self) { m in
-                                    Button {
-                                        if let c = getNextChapter(for: m) {
-                                            selectedChapter = ChapterWithManga(
-                                                chapter: c,
-                                                manga: m
-                                            )
-                                        } else {
-                                            selectedManga = m
-                                            openMangaInfoView = true
-                                        }
-                                    } label: {
-                                        LibraryGridCell(manga: m)
+                } else {
+                    ScrollView {
+                        VStack {
+                            HStack {
+                                Text("Sort")
+                                    .foregroundColor(.secondary)
+                                    .padding(.trailing, -2)
+                                DropMenu(selection: $sortMethod, options: [
+                                    "Recent",
+                                    "Title",
+                                    "Author"
+                                ])
+                                    .animation(nil)
+                                Spacer()
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        grid.toggle()
                                     }
-                                    .contextMenu {
-                                        Button {
-                                            selectedManga = m
-                                            openMangaInfoView = true
-                                        } label: {
-                                            Text("Manga Info")
-                                            Image(systemName: "info.circle")
-                                        }
-                                        Button {
-                                            DataManager.shared.delete(manga: m)
-                                            loadManga()
-                                        } label: {
-                                            Text("Remove from Library")
-                                            Image(systemName: "trash")
-                                        }
-                                    }
+                                } label: {
+                                    Image(systemName: "list.bullet")
+                                        .foregroundColor(.label)
+                                        .padding(8)
+                                        .background(grid ? .clear : .secondaryFill)
+                                        .cornerRadius(8)
                                 }
                             }
                             .padding(.horizontal)
-                            .transition(.opacity)
-                        } else {
-                            LazyVStack {
-                                ForEach(manga.filter {
-                                    search(
-                                        needle: searchText.lowercased(),
-                                        haystack: $0.title?.lowercased() ?? ""
-                                    )
-                                }, id: \.self) { m in
-                                    Button {
-                                        if let c = getNextChapter(for: m) {
-                                            selectedChapter = ChapterWithManga(
-                                                chapter: c,
-                                                manga: m
-                                            )
-                                        } else {
-                                            selectedManga = m
-                                            openMangaInfoView = true
-                                        }
-                                    } label: {
-                                        LibraryListCell(manga: m) {
-                                            if let chapterNum = getNextChapter(for: m)?.chapterNum {
-                                                Text("Chapter \(chapterNum, specifier: "%g")")
-                                                    .foregroundColor(.secondaryLabel)
-                                                    .font(.system(size: 13))
-                                                    .lineLimit(1)
-                                                    .padding(.top, 8)
+                            .padding(.top, 0)
+                            
+                            if grid {
+                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
+                                    ForEach(manga.filter {
+                                        search(
+                                            needle: searchText.lowercased(),
+                                            haystack: $0.title?.lowercased() ?? ""
+                                        )
+                                    }, id: \.self) { m in
+                                        Button {
+                                            if let c = getNextChapter(for: m) {
+                                                selectedChapter = ChapterWithManga(
+                                                    chapter: c,
+                                                    manga: m
+                                                )
+                                            } else {
+                                                selectedManga = m
+                                                openMangaInfoView = true
                                             }
-                                        } menuContent: {
+                                        } label: {
+                                            LibraryGridCell(manga: m)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                selectedManga = m
+                                                openMangaInfoView = true
+                                            } label: {
+                                                Text("Manga Info")
+                                                Image(systemName: "info.circle")
+                                            }
+                                            Button {
+                                                DataManager.shared.delete(manga: m)
+                                                loadManga()
+                                            } label: {
+                                                Text("Remove from Library")
+                                                Image(systemName: "trash")
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .transition(.opacity)
+                            } else {
+                                LazyVStack {
+                                    ForEach(manga.filter {
+                                        search(
+                                            needle: searchText.lowercased(),
+                                            haystack: $0.title?.lowercased() ?? ""
+                                        )
+                                    }, id: \.self) { m in
+                                        Button {
+                                            if let c = getNextChapter(for: m) {
+                                                selectedChapter = ChapterWithManga(
+                                                    chapter: c,
+                                                    manga: m
+                                                )
+                                            } else {
+                                                selectedManga = m
+                                                openMangaInfoView = true
+                                            }
+                                        } label: {
+                                            LibraryListCell(manga: m) {
+                                                if let chapterNum = getNextChapter(for: m)?.chapterNum {
+                                                    Text("Chapter \(chapterNum, specifier: "%g")")
+                                                        .foregroundColor(.secondaryLabel)
+                                                        .font(.system(size: 13))
+                                                        .lineLimit(1)
+                                                        .padding(.top, 8)
+                                                }
+                                            } menuContent: {
+                                                Button {
+                                                    selectedManga = m
+                                                    openMangaInfoView = true
+                                                } label: {
+                                                    Label("Manga Info", systemImage: "info.circle")
+                                                }
+                                                Button {
+                                                    DataManager.shared.delete(manga: m)
+                                                    loadManga()
+                                                } label: {
+                                                    Label("Remove from Library", systemImage: "trash")
+                                                }
+                                            }
+                                            .transition(.move(edge: .top))
+                                        }
+                                        .contextMenu {
                                             Button {
                                                 selectedManga = m
                                                 openMangaInfoView = true
@@ -191,82 +195,72 @@ struct LibraryView: View {
                                                 Label("Remove from Library", systemImage: "trash")
                                             }
                                         }
-                                        .transition(.move(edge: .top))
                                     }
-                                    .contextMenu {
-                                        Button {
-                                            selectedManga = m
-                                            openMangaInfoView = true
-                                        } label: {
-                                            Label("Manga Info", systemImage: "info.circle")
-                                        }
-                                        Button {
-                                            DataManager.shared.delete(manga: m)
-                                            loadManga()
-                                        } label: {
-                                            Label("Remove from Library", systemImage: "trash")
-                                        }
-                                    }
+                                    .transition(.opacity)
                                 }
-                                .transition(.opacity)
                             }
                         }
-                    }
-                    .background {
-                        NavigationLink(isActive: $openMangaInfoView) {
-                            if let m = selectedManga {
-                                MangaView(manga: m)
-                                    .onAppear {
-                                        selectedChapter = nil
-                                    }
-                                    .onDisappear {
-                                        DataManager.shared.loadLibrary()
-                                        loadManga()
-                                        Task {
-                                            await loadHistory()
+                        .background {
+                            NavigationLink(isActive: $openMangaInfoView) {
+                                if let m = selectedManga {
+                                    MangaView(manga: m)
+                                        .onAppear {
+                                            selectedChapter = nil
                                         }
-                                    }
-                            } else {
+                                        .onDisappear {
+                                            DataManager.shared.loadLibrary()
+                                            loadManga()
+                                            Task {
+                                                await loadHistory()
+                                            }
+                                        }
+                                } else {
+                                    EmptyView()
+                                }
+                            } label: {
                                 EmptyView()
                             }
-                        } label: {
-                            EmptyView()
                         }
                     }
-                }
-                    .navigationTitle("Library")
-                    .navigationBarTitleDisplayMode(.large)
-                    .navigationSearchBar {
-                        SearchBar("Search", text: $searchText, isEditing: $isEditing)
-                            .showsCancelButton(isEditing)
+                    .sheet(isPresented: $showingSettings) {
+                        SettingsView(presented: $showingSettings)
                     }
-                    .toolbar {
-                        Button {
-                            showingSettings.toggle()
-                        } label: {
-                            Image(systemName: "gear")
+                    .fullScreenCover(item: $selectedChapter, onDismiss: {
+                        selectedChapter = nil
+                        Task {
+                            await loadHistory()
                         }
-                    }
-            }
-        }
-        .sheet(isPresented: $showingSettings) {
-            SettingsView(presented: $showingSettings)
-        }
-        .fullScreenCover(item: $selectedChapter, onDismiss: {
-            selectedChapter = nil
-            Task {
-                await loadHistory()
-            }
-        }, content: { item in
-            ReaderView(manga: item.manga, chapter: item.chapter, chapterList: chapters[item.manga.id] ?? [])
-                .edgesIgnoringSafeArea(.all)
-                .onAppear {
-                    if let value = selectedChapter {
-                        DataManager.shared.setOpened(manga: value.manga)
-                        loadManga()
-                    }
+                    }, content: { item in
+                        ReaderView(manga: item.manga, chapter: item.chapter, chapterList: chapters[item.manga.id] ?? [])
+                            .edgesIgnoringSafeArea(.all)
+                            .onAppear {
+                                if let value = selectedChapter {
+                                    DataManager.shared.setOpened(manga: value.manga)
+                                    loadManga()
+                                }
+                            }
+                    })
+                    // Necessary to fix iOS 14 SwiftUI bug
+                    EmptyView()
+                        .sheet(isPresented: $showingSettings) {
+                            SettingsView(presented: $showingSettings)
+                        }
                 }
-        })
+            }
+            .navigationTitle("Library")
+            .navigationBarTitleDisplayMode(.large)
+            .navigationSearchBar {
+                SearchBar("Search", text: $searchText, isEditing: $isEditing)
+                    .showsCancelButton(isEditing)
+            }
+            .toolbar {
+                Button {
+                    showingSettings.toggle()
+                } label: {
+                    Image(systemName: "gear")
+                }
+            }
+        }
         .onChange(of: sortMethod) { _ in
             loadManga()
         }

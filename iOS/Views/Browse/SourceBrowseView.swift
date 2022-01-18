@@ -20,36 +20,49 @@ struct SourceBrowseView: View {
     @State var searchText: String = ""
     @State var results: [Manga] = []
     
+    var mangaToList: [Manga] {
+        if !isSearching {
+            return listingResults.first?.value ?? []
+        } else {
+            return results
+        }
+    }
+    
     var body: some View {
         ScrollView {
-            if !isSearching {
-                LazyVStack(alignment: .leading) {
-                    ForEach(listings, id: \.self) { listing in
-                        MangaCarouselView(title: listing.name, manga: listingResults[listing.name] ?? []) {
-                            SourceListingView(source: source, listing: listing, results: listingResults[listing.name] ?? [])
+            Spacer()
+            if !searchText.isEmpty && results.isEmpty && isLoadingResults {
+                ActivityIndicator()
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
+                    ForEach(mangaToList, id: \.self) { manga in
+                        NavigationLink {
+                            MangaView(manga: manga)
+                        } label: {
+                            LibraryGridCell(manga: manga)
                         }
                     }
                 }
-            } else if !searchText.isEmpty {
-                Spacer()
-                if results.isEmpty && isLoadingResults {
-                    ActivityIndicator()
-                } else {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
-                        ForEach(results, id: \.self) { manga in
-                            NavigationLink {
-                                MangaView(manga: manga)
-                            } label: {
-                                LibraryGridCell(manga: manga)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    .transition(.opacity)
-                }
+                .padding(.horizontal)
             }
         }
         .navigationTitle(source.info.name)
+        .toolbar {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button { } label: {
+                    if #available(iOS 15.0, *) {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    } else {
+                        Image(systemName: "line.horizontal.3.decrease.circle")
+                    }
+                }
+                .disabled(true)
+                Button { } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .disabled(true)
+            }
+        }
         .navigationSearchBar {
             SearchBar("Search", text: $searchText, isEditing: $isEditing) {
                 isSearching = true

@@ -34,26 +34,30 @@ struct BrowseView: View {
         NavigationView {
             ScrollView {
                 LazyVStack(alignment: .leading) {
-                    SourceSectionHeader(title: "Installed")
-                    ForEach(sources.filter { searchText.isEmpty ? true : $0.info.name.contains(searchText) }) { source in
-                        NavigationLink {
-                            SourceBrowseView(source: source)
-                        } label: {
-                            SourceListCell(source: source)
-                        }
-                        .contextMenu {
-                            Button {
-                                SourceManager.shared.remove(source: source)
-                                sources = SourceManager.shared.sources
+                    if !sources.isEmpty {
+                        SourceSectionHeader(title: "Installed")
+                        ForEach(sources.filter { searchText.isEmpty ? true : $0.info.name.contains(searchText) }) { source in
+                            NavigationLink {
+                                SourceBrowseView(source: source)
                             } label: {
-                                Label("Uninstall", systemImage: "trash")
+                                SourceListCell(source: source)
+                                    .transition(.move(edge: .top))
+                            }
+                            .contextMenu {
+                                Button {
+                                    SourceManager.shared.remove(source: source)
+                                    sources = SourceManager.shared.sources
+                                } label: {
+                                    Label("Uninstall", systemImage: "trash")
+                                }
                             }
                         }
                     }
-                    if !externalSources.isEmpty {
-                        SourceSectionHeader(title: "All")
-                        ForEach(externalSources.filter { !SourceManager.shared.hasSourceInstalled(id: $0.id) }, id: \.self) { source in
+                    if let exSources = externalSources.filter { !SourceManager.shared.hasSourceInstalled(id: $0.id) }, !exSources.isEmpty {
+                        SourceSectionHeader(title: "External")
+                        ForEach(exSources.filter { searchText.isEmpty ? true : $0.name.contains(searchText) }, id: \.self) { source in
                             ExternalSourceListCell(source: source)
+                                .transition(.opacity)
                         }
                     }
                 }
@@ -66,12 +70,17 @@ struct BrowseView: View {
             }
         }
         .onReceive(sourcePublisher) { _ in
-            sources = SourceManager.shared.sources
+            withAnimation {
+                sources = SourceManager.shared.sources
+            }
         }
         .onAppear {
             if externalSources.isEmpty {
                 Task {
-                    self.externalSources = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                    let result = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                    withAnimation {
+                        externalSources = result
+                    }
                 }
             }
         }
