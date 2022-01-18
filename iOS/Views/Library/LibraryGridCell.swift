@@ -14,6 +14,11 @@ struct LibraryGridCell: View {
     
     var body: some View {
         KFImage(URL(string: manga.thumbnailURL ?? ""))
+            .placeholder {
+                Image("MangaPlaceholder")
+                    .resizable()
+            }
+            .fade(duration: 0.2)
             .resizable()
             .aspectRatio(2/3, contentMode: .fit)
             .cornerRadius(5)

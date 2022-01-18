@@ -13,6 +13,9 @@ struct SearchResultView: View {
     
     @State var results: [Manga]
     
+    @State var currentPage: Int = 1
+    @State var hasMore: Bool = true
+    
     var body: some View {
         ScrollView {
             Spacer()
@@ -26,7 +29,28 @@ struct SearchResultView: View {
                 }
             }
             .padding(.horizontal)
+            if hasMore {
+                Button {
+                    Task {
+                        await loadMore()
+                    }
+                } label: {
+                    Text("Load More")
+                }
+                .padding(.vertical)
+            }
         }
         .navigationTitle("\"\(search)\"")
+    }
+    
+    func loadMore() async {
+        currentPage += 1
+        let result = try? await source.fetchSearchManga(query: search, page: currentPage)
+        if let result = result {
+            hasMore = result.hasNextPage
+            withAnimation {
+                results.append(contentsOf: result.manga)
+            }
+        }
     }
 }

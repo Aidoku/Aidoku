@@ -30,6 +30,10 @@ struct ExternalSourceListCell: View {
         VStack(alignment: .leading) {
             HStack(spacing: 8) {
                 KFImage(URL(string: "https://skitty.xyz/aidoku-sources/icons/\(source.icon)"))
+                    .placeholder {
+                        Image("MangaPlaceholder")
+                            .resizable()
+                    }
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 48, height: 48)
