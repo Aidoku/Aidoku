@@ -46,6 +46,11 @@ struct MangaView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 16) {
                     KFImage(URL(string: manga.thumbnailURL ?? ""))
+                        .placeholder {
+                            Image("MangaPlaceholder")
+                                .resizable()
+                        }
+                        .fade(duration: 0.2)
                         .resizable()
                         .frame(width: 100, height: 150)
                         .cornerRadius(5)
@@ -266,10 +271,12 @@ struct MangaView: View {
                     .background(.tertiaryFill)
                     .clipShape(Circle())
                     .frame(width: 28, height: 28)
+                    .disabled(true)
                 } else {
                     Button {} label: {
-                        Image(systemName: "square.and.arrow.up")
+                        Image(systemName: "ellipsis")
                     }
+                    .disabled(true)
                 }
             }
             

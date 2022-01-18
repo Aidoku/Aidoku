@@ -24,6 +24,11 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
         VStack(spacing: 16) {
             HStack(spacing: 16) {
                 KFImage(URL(string: manga.thumbnailURL ?? ""))
+                    .placeholder {
+                        Image("MangaPlaceholder")
+                            .resizable()
+                    }
+                    .fade(duration: 0.2)
                     .resizable()
                     .aspectRatio(2/3, contentMode: .fit)
                     .frame(width: 92)

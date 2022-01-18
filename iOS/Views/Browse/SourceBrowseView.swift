@@ -31,20 +31,20 @@ struct SourceBrowseView: View {
     var body: some View {
         ScrollView {
             Spacer()
-            if !searchText.isEmpty && results.isEmpty && isLoadingResults {
+            if (!searchText.isEmpty && results.isEmpty && isLoadingResults) || (listingResults.first?.value ?? []).isEmpty {
                 ActivityIndicator()
-            } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
-                    ForEach(mangaToList, id: \.self) { manga in
-                        NavigationLink {
-                            MangaView(manga: manga)
-                        } label: {
-                            LibraryGridCell(manga: manga)
-                        }
+            }
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], spacing: 12) {
+                ForEach(mangaToList, id: \.self) { manga in
+                    NavigationLink {
+                        MangaView(manga: manga)
+                    } label: {
+                        LibraryGridCell(manga: manga)
                     }
                 }
-                .padding(.horizontal)
+                .transition(.opacity)
             }
+            .padding(.horizontal)
         }
         .navigationTitle(source.info.name)
         .toolbar {
@@ -89,8 +89,11 @@ struct SourceBrowseView: View {
             if listings.isEmpty {
                 Task {
                     listings = (try? await source.getListings()) ?? []
-                    for listing in listings {
-                        listingResults[listing.name] = (try? await source.getMangaListing(listing: listing))?.manga ?? []
+                    if let listing = listings.first {
+                        let result = (try? await source.getMangaListing(listing: listing))?.manga ?? []
+                        withAnimation {
+                            listingResults[listing.name] = result
+                        }
                     }
                 }
             }
@@ -99,7 +102,9 @@ struct SourceBrowseView: View {
     
     func doSearch() async {
         let search = try? await source.fetchSearchManga(query: searchText)
-        results = search?.manga ?? []
-        isLoadingResults = false
+        withAnimation {
+            results = search?.manga ?? []
+            isLoadingResults = false
+        }
     }
 }

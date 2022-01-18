@@ -227,12 +227,14 @@ class ReaderViewController: UIViewController {
                 continue
             }
             let processor = DownsamplingImageProcessor(size: items[i].bounds.size)
+            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
             (items[i + 1 + hasPreviousChapter.intValue].subviews.last as? UIImageView)?.kf.setImage(
                 with: URL(string: urls[i]),
                 options: [
                     .processor(processor),
                     .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.3))
+                    .transition(.fade(0.3)),
+                    .retryStrategy(retry)
                 ]
             )
         }

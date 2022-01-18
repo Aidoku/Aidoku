@@ -307,7 +307,7 @@ class Source: Identifiable {
     
     func fetchSearchManga(query: String, page: Int = 1) async throws -> MangaPageResult {
         let filter = Filter(name: "Title", value: query)
-        return try await getMangaList(filters: [filter], page: 1)
+        return try await getMangaList(filters: [filter], page: page)
     }
     
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
@@ -316,7 +316,7 @@ class Source: Identifiable {
             self.descriptorPointer += 1
             self.descriptors.append(filters)
             
-            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(self.descriptorPointer), 1)
+            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(self.descriptorPointer), Int32(page))
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             
