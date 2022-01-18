@@ -27,6 +27,7 @@ struct SettingsView: View {
                                     .foregroundColor(.secondaryLabel)
                             }
                         }
+                        .listStyle(.insetGrouped)
                         .navigationBarTitle("About")
                     } label: {
                         Text("About")

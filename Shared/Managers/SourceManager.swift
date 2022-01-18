@@ -31,7 +31,7 @@ class SourceManager {
         
         var fileUrl = url
     
-        if let temporaryDirectory = FileManager.default.temporaryDirectory?.appendingPathComponent(UUID().uuidString) {
+        if let temporaryDirectory = FileManager.default.temporaryDirectory {
             if fileUrl.scheme != "file" {
                 do {
                     let location = try await URLSession.shared.download(for: URLRequest.from(url))

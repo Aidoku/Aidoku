@@ -30,9 +30,12 @@ extension URLSession {
             return data
         } else {
             let data: URL = try await withCheckedThrowingContinuation({ continuation in
-                self.downloadTask(with: request) { data, response, error in
-                    if let data = data {
-                        continuation.resume(returning: data)
+                self.downloadTask(with: request) { url, response, error in
+                    if let url = url, let tmpDirectory = FileManager.default.temporaryDirectory {
+                        try? FileManager.default.createDirectory(at: tmpDirectory, withIntermediateDirectories: true)
+                        let destination = tmpDirectory.appendingPathComponent(url.lastPathComponent)
+                        try? FileManager.default.moveItem(at: url, to: destination)
+                        continuation.resume(returning: destination)
                     } else {
                         continuation.resume(throwing: error ?? URLSessionError.noData)
                     }

@@ -21,10 +21,15 @@ struct SourceListCell: View {
                     .clipShape(RoundedRectangle(cornerRadius: 48 * 0.225, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 48 * 0.225).strokeBorder(Color.quaternaryFill, lineWidth: 1))
                 VStack(alignment: .leading) {
-                    Text(source.info.name)
-                        .foregroundColor(.label)
-                        .lineLimit(1)
-                    Text("v" + String(source.info.version))
+                    HStack {
+                        Text(source.info.name)
+                            .foregroundColor(.label)
+                            .lineLimit(1)
+                        Text("v" + String(source.info.version))
+                            .foregroundColor(.secondaryLabel)
+                            .lineLimit(1)
+                    }
+                    Text(source.id)
                         .foregroundColor(.secondaryLabel)
                         .lineLimit(1)
                 }
