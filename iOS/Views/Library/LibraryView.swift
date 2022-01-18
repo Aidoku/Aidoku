@@ -42,7 +42,7 @@ struct LibraryView: View {
     
     @State var manga: [Manga] = []
     @State var chapters: [String: [Chapter]] = [:]
-    @State var readHistory: [String: [String: Bool]] = [:]
+    @State var readHistory: [String: [String: Int]] = [:]
     
     @State var showingSettings: Bool = false
     @State var isEditing: Bool = false
@@ -101,9 +101,9 @@ struct LibraryView: View {
                             } label: {
                                 Image(systemName: "list.bullet")
                                     .foregroundColor(.label)
-                                    .background(grid ? Color.clear : Color.secondaryFill)
-                                    .cornerRadius(8)
                                     .padding(8)
+                                    .background(grid ? .clear : .secondaryFill)
+                                    .cornerRadius(8)
                             }
                         }
                         .padding(.horizontal)
@@ -216,6 +216,9 @@ struct LibraryView: View {
                         NavigationLink(isActive: $openMangaInfoView) {
                             if let m = selectedManga {
                                 MangaView(manga: m)
+                                    .onAppear {
+                                        selectedChapter = nil
+                                    }
                                     .onDisappear {
                                         DataManager.shared.loadLibrary()
                                         loadManga()
@@ -250,11 +253,12 @@ struct LibraryView: View {
             SettingsView(presented: $showingSettings)
         }
         .fullScreenCover(item: $selectedChapter, onDismiss: {
+            selectedChapter = nil
             Task {
                 await loadHistory()
             }
         }, content: { item in
-            ReaderView(manga: item.manga, chapter: item.chapter, startPage: DataManager.shared.currentPage(manga: item.manga, chapterId: item.chapter.id))
+            ReaderView(manga: item.manga, chapter: item.chapter, chapterList: chapters[item.manga.id] ?? [])
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
                     if let value = selectedChapter {
@@ -282,8 +286,11 @@ struct LibraryView: View {
     }
     
     func getNextChapter(for manga: Manga) -> Chapter? {
-        let mangaChapters = chapters[manga.id]
-        return mangaChapters?.last(where: { readHistory[manga.id]?[$0.id] ?? false }) ?? mangaChapters?.first
+        let id = readHistory[manga.id]?.max { a, b in a.value < b.value }?.key
+        if let id = id {
+            return chapters[manga.id]?.first { $0.id == id }
+        }
+        return chapters[manga.id]?.first
     }
     
     func loadManga() {

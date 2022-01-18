@@ -32,7 +32,7 @@ struct MangaView: View {
     @State var showReader = false
     
     @State var chapters: [Chapter] = []
-    @State var readHistory: [String: Bool] = [:]
+    @State var readHistory: [String: Int] = [:]
     
     @State var selectedChapter: Chapter?
     
@@ -63,7 +63,7 @@ struct MangaView: View {
                             .lineLimit(1)
                         HStack {
                             Button {
-                                selectedChapter = chapters.last(where: { readHistory[$0.id] ?? false }) ?? chapters.first
+                                selectedChapter = getNextChapter()
                             } label: {
                                 Image(systemName: "play.fill")
                                 Text("Read")
@@ -165,11 +165,11 @@ struct MangaView: View {
                                     VStack(alignment: .leading) {
                                         if let title = chapter.title {
                                             Text(title)
-                                                .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                                .foregroundColor(readHistory[chapter.id] ?? 0 > 0 ? .secondaryLabel : .label)
                                                 .lineLimit(1)
                                         } else {
                                             Text("Chapter \(chapter.chapterNum, specifier: "%g")")
-                                                .foregroundColor(readHistory[chapter.id] ?? false ? .secondaryLabel : .label)
+                                                .foregroundColor(readHistory[chapter.id] ?? 0 > 0 ? .secondaryLabel : .label)
                                                 .lineLimit(1)
                                         }
                                         if chapter.title != nil {
@@ -188,7 +188,7 @@ struct MangaView: View {
                             }
                         }
                         .contextMenu {
-                            if readHistory[chapter.id] ?? false {
+                            if readHistory[chapter.id] ?? 0 > 0 {
                                 Button {
                                     DataManager.shared.removeHistory(manga: manga, chapter: chapter)
                                     updateReadHistory()
@@ -212,6 +212,7 @@ struct MangaView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+//        .navigationBarItems(trailing:
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if #available(iOS 15, *) {
                     ZStack(alignment: .trailing) {
@@ -274,11 +275,16 @@ struct MangaView: View {
                     }
                 }
             }
+            
+            ToolbarItem(placement: .navigationBarLeading) {
+                Text("")
+            }
+//        )
         }
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             updateReadHistory()
         }, content: { item in
-            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(manga: manga, chapterId: item.id))
+            ReaderView(manga: manga, chapter: item, chapterList: chapters)
                 .edgesIgnoringSafeArea(.all)
         })
         .alert(isPresented: $showingAlert) {
@@ -323,9 +329,25 @@ struct MangaView: View {
         timer.fire()
     }
     
+    func getNextChapter() -> Chapter? {
+        let id = readHistory.max { a, b in a.value < b.value }?.key
+        if let id = id {
+            return chapters.first { $0.id == id }
+        }
+        return chapters.first
+    }
+    
     func fetchManga() async {
+        if manga.description != nil {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                descriptionLoaded = true
+            }
+        }
+        
         guard let source = SourceManager.shared.source(for: manga.provider) else {
-            manga.description = "No Description"
+            if manga.description == nil {
+                manga.description = "No Description"
+            }
             chapters = []
             withAnimation(.easeInOut(duration: 0.3)) {
                 descriptionLoaded = true

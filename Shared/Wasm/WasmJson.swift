@@ -59,7 +59,7 @@ class WasmJson {
     func removeValue(_ descriptor: Int32) {
         descriptors.removeValue(forKey: descriptor)
         for d in references[descriptor] ?? [] {
-            descriptors.removeValue(forKey: d)
+            removeValue(d)
         }
         references.removeValue(forKey: descriptor)
     }

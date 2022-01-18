@@ -33,7 +33,7 @@ class ZoomableScrollView: UIScrollView {
     }
     
     @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
-        if let targetView = self.subviews.first {
+        if let targetView = self.subviews.last {
             if zoomScale == 1 { // zoom in
                 let point = recognizer.location(in: targetView)
 
@@ -51,7 +51,7 @@ class ZoomableScrollView: UIScrollView {
     
     func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
         var zoomRect = CGRect.zero
-        if let targetView = subviews.first {
+        if let targetView = subviews.last {
             zoomRect.size.height = targetView.frame.size.height / scale
             zoomRect.size.width  = targetView.frame.size.width  / scale
             let newCenter = convert(center, from: targetView)
@@ -65,7 +65,7 @@ class ZoomableScrollView: UIScrollView {
 
 extension ZoomableScrollView: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return subviews.first
+        return subviews.last
     }
 }
 
