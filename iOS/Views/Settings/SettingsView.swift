@@ -37,6 +37,7 @@ struct SettingsView: View {
                 }
                 Section {
                     Button {
+                        URLCache.shared.removeAllCachedResponses()
                         KingfisherManager.shared.cache.clearMemoryCache()
                         KingfisherManager.shared.cache.clearDiskCache()
                         KingfisherManager.shared.cache.cleanExpiredDiskCache()
