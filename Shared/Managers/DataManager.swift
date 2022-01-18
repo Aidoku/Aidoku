@@ -176,7 +176,7 @@ extension DataManager {
     
     func currentPage(manga: Manga, chapterId: String) -> Int {
         do {
-            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapterId))
+            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapterId), limit: 1)
             guard let mangaObj = mangaObjs.first else { return 0 }
             return mangaObj.value(forKey: "currentPage") as? Int ?? 0
         } catch let error as NSError {
@@ -187,7 +187,7 @@ extension DataManager {
     
     func setCurrentPage(manga: Manga, chapter: Chapter, page: Int) {
         do {
-            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))
+            let mangaObjs = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id), limit: 1)
             guard let mangaObj = mangaObjs.first else { return }
             mangaObj.setValue(page, forKey: "currentPage")
             mangaObj.setValue(Date().timeIntervalSince1970, forKey: "lastOpened")
@@ -198,7 +198,7 @@ extension DataManager {
     }
     
     func addReadHistory(manga: Manga, chapter: Chapter, page: Int = 0) {
-        guard ((try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))) ?? []).count == 0 else { return } // Read history already exists, ignore.
+        guard ((try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id), limit: 1)) ?? []).count == 0 else { return } // Read history already exists, ignore.
         
         let entity = NSEntityDescription.entity(
             forEntityName: "ReadHistory",
@@ -216,7 +216,7 @@ extension DataManager {
     
     func removeHistory(manga: Manga, chapter: Chapter) {
         do {
-            let history = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id))
+            let history = try getReadHistory(predicate: NSPredicate(format: "mangaId = %@ AND chapterId = %@", manga.provider + "." + manga.id, chapter.id), limit: 1)
             guard let objectToDelete = history.first else { return }
             container.viewContext.delete(objectToDelete)
             try container.viewContext.save()
@@ -225,22 +225,31 @@ extension DataManager {
         }
     }
     
-    func getReadHistory(manga: Manga) -> [String: Bool] {
-        guard let readHistory = try? getReadHistory(predicate: NSPredicate(format: "mangaId = %@", manga.provider + "." + manga.id)) else { return [:] }
+    func getReadHistory(manga: Manga) -> [String: Int] {
+        guard let readHistory = try? getReadHistory(
+            predicate: NSPredicate(format: "mangaId = %@", manga.provider + "." + manga.id),
+            sortDescriptors: [NSSortDescriptor(key: "lastOpened", ascending: false)]
+        ) else { return [:] }
         
-        var readHistoryDict: [String: Bool] = [:]
+        var readHistoryDict: [String: Int] = [:]
         for history in readHistory {
             let chapterId = history.value(forKey: "chapterId") as! String
-            readHistoryDict[chapterId] = true
+            readHistoryDict[chapterId] = history.value(forKey: "lastOpened") as? Int
         }
         
         return readHistoryDict
     }
     
-    func getReadHistory(predicate: NSPredicate? = nil) throws -> [NSManagedObject] {
+    func getReadHistory(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, limit: Int? = nil) throws -> [NSManagedObject] {
         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "ReadHistory")
         if let predicate = predicate {
             fetchRequest.predicate = predicate
+        }
+        if let sortDescriptors = sortDescriptors {
+            fetchRequest.sortDescriptors = sortDescriptors
+        }
+        if let limit = limit {
+            fetchRequest.fetchLimit = limit
         }
         return try container.viewContext.fetch(fetchRequest)
     }

@@ -10,14 +10,12 @@ import SwiftUI
 struct ReaderView: UIViewControllerRepresentable {
     typealias UIViewControllerType = ReaderNavigationController
     
-    @Environment(\.presentationMode) var presentationMode
-    
     let manga: Manga?
     let chapter: Chapter
-    let startPage: Int
+    let chapterList: [Chapter]
     
     func makeUIViewController(context: Context) -> ReaderNavigationController {
-        let vc = ReaderViewController(presentationMode: presentationMode, manga: manga, chapter: chapter, startPage: startPage)
+        let vc = ReaderViewController(manga: manga, chapter: chapter, chapterList: chapterList)
         return ReaderNavigationController(rootViewController: vc)
     }
     

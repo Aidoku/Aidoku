@@ -12,12 +12,12 @@ struct ChapterListView: View {
     var manga: Manga
     var chapters: [Chapter]
     @State var volumes: [Volume]
-    @State var readHistory: [String: Bool]
+    @State var readHistory: [String: Int]
     
     @State var selectedChapter: Chapter?
     @State var sortSelection = 0
     
-    init(manga: Manga, chapters: [Chapter], readHistory: [String: Bool]) {
+    init(manga: Manga, chapters: [Chapter], readHistory: [String: Int]) {
         self.chapters = chapters
         self.manga = manga
         self.readHistory = readHistory
@@ -47,20 +47,16 @@ struct ChapterListView: View {
                             ChapterListCell(chapter: chapter, readHistory: $readHistory)
                         }
                         .contextMenu {
-                            if readHistory[chapter.id] ?? false {
-                                Button {
+                            Button {
+                                if readHistory[chapter.id] ?? 0 > 0 {
                                     DataManager.shared.removeHistory(manga: manga, chapter: chapter)
-                                    readHistory[chapter.id] = false
-                                } label: {
-                                    Text("Mark as Unread")
-                                }
-                            } else {
-                                Button {
+                                    readHistory[chapter.id] = -1
+                                } else {
                                     DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
-                                    readHistory[chapter.id] = true
-                                } label: {
-                                    Text("Mark as Read")
+                                    readHistory[chapter.id] = Int(Date().timeIntervalSince1970)
                                 }
+                            } label: {
+                                Text("Toggle Read") // \(readHistory[chapter.id] ?? 0 > 0 ? "Unread" : "Read")")
                             }
                         }
                     }
@@ -104,7 +100,7 @@ struct ChapterListView: View {
         .fullScreenCover(item: $selectedChapter, onDismiss: {
             updateReadHistory()
         }, content: { item in
-            ReaderView(manga: manga, chapter: item, startPage: DataManager.shared.currentPage(manga: manga, chapterId: item.id))
+            ReaderView(manga: manga, chapter: item, chapterList: chapters)
                 .edgesIgnoringSafeArea(.all)
         })
     }
