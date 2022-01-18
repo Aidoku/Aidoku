@@ -22,6 +22,7 @@ struct SourceSectionHeader: View {
 struct BrowseView: View {
     @State var sources = SourceManager.shared.sources
     
+    @State var updates: [ExternalSourceInfo] = []
     @State var externalSources: [ExternalSourceInfo] = []
     
     @State var isEditing: Bool = false
@@ -34,6 +35,13 @@ struct BrowseView: View {
         NavigationView {
             ScrollView {
                 LazyVStack(alignment: .leading) {
+                    if !updates.isEmpty && searchText.isEmpty {
+                        SourceSectionHeader(title: "Updates")
+                        ForEach(updates, id: \.self) { source in
+                            ExternalSourceListCell(source: source, update: true)
+                                .transition(.opacity)
+                        }
+                    }
                     if !sources.isEmpty {
                         SourceSectionHeader(title: "Installed")
                         ForEach(sources.filter { searchText.isEmpty ? true : $0.info.name.contains(searchText) }) { source in
@@ -71,6 +79,7 @@ struct BrowseView: View {
         }
         .onReceive(sourcePublisher) { _ in
             withAnimation {
+                fetchUpdates()
                 sources = SourceManager.shared.sources
             }
         }
@@ -80,7 +89,19 @@ struct BrowseView: View {
                     let result = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
                     withAnimation {
                         externalSources = result
+                        fetchUpdates()
                     }
+                }
+            }
+        }
+    }
+    
+    func fetchUpdates() {
+        updates = []
+        for source in externalSources {
+            if let installedSource = SourceManager.shared.source(for: source.id) {
+                if source.version > installedSource.info.version {
+                    updates.append(source)
                 }
             }
         }

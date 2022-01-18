@@ -11,9 +11,20 @@ import SwiftUIX
 
 struct ExternalSourceListCell: View {
     let source: ExternalSourceInfo
+    let update: Bool
     
     @State var installing = false
-    @State var getText = "GET"
+    @State var getText: String
+    
+    init(source: ExternalSourceInfo, update: Bool = false) {
+        self.source = source
+        self.update = update
+        if update {
+            getText = "UPDATE"
+        } else {
+            getText = "GET"
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -24,7 +35,7 @@ struct ExternalSourceListCell: View {
                     .frame(width: 48, height: 48)
                     .cornerRadius(48 * 0.225)
                     .overlay(RoundedRectangle(cornerRadius: 48 * 0.225).strokeBorder(Color.quaternaryFill, lineWidth: 1))
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading) {
                     HStack {
                         Text(source.name)
                             .foregroundColor(.label)
@@ -70,7 +81,7 @@ struct ExternalSourceListCell: View {
                 .background(.tertiaryFill)
                 .cornerRadius(14)
                 .frame(height: 28)
-                .modifier(AnimatingWidth(width: installing ? 28 : (getText != "GET" ? 80 : 67)))
+                .modifier(AnimatingWidth(width: installing ? 28 : (getText != "GET" ? 90 : 67)))
             }
             .padding(.horizontal)
             Divider()
