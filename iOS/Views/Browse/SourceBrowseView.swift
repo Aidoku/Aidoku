@@ -20,6 +20,9 @@ struct SourceBrowseView: View {
     @State var searchText: String = ""
     @State var results: [Manga] = []
     
+    @State var configuringFilters = false
+    @State var selectedFilters: [Filter] = []
+    
     var mangaToList: [Manga] {
         if !isSearching {
             return listingResults.first?.value ?? []
@@ -49,14 +52,15 @@ struct SourceBrowseView: View {
         .navigationTitle(source.info.name)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Button { } label: {
+                Button {
+                    configuringFilters.toggle()
+                } label: {
                     if #available(iOS 15.0, *) {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     } else {
                         Image(systemName: "line.horizontal.3.decrease.circle")
                     }
                 }
-                .disabled(true)
                 Button { } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -79,10 +83,25 @@ struct SourceBrowseView: View {
             }
             .showsCancelButton(isEditing)
         }
+        .sheet(isPresented: $configuringFilters) {
+            SourceFiltersView(source: source, selected: $selectedFilters)
+        }
         .onChange(of: searchText) { newValue in
             if newValue.isEmpty {
                 results = []
                 isLoadingResults = false
+            }
+        }
+        .onChange(of: configuringFilters) { newValue in
+            if !newValue {
+                Task {
+                    if let listing = listings.first {
+                        let search = try? await source.getMangaList(filters: selectedFilters)
+                        withAnimation {
+                            listingResults[listing.name] = search?.manga ?? []
+                        }
+                    }
+                }
             }
         }
         .onAppear {
@@ -101,7 +120,8 @@ struct SourceBrowseView: View {
     }
     
     func doSearch() async {
-        let search = try? await source.fetchSearchManga(query: searchText)
+        guard !searchText.isEmpty else { return }
+        let search = try? await source.fetchSearchManga(query: searchText, filters: selectedFilters)
         withAnimation {
             results = search?.manga ?? []
             isLoadingResults = false

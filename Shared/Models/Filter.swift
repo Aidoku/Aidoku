@@ -10,19 +10,37 @@ import WasmInterpreter
 
 enum FilterType: Int {
     case text = 0
-    case bool
-    case group
+    case option = 1
+    case sort = 2
+    case group = 3
 }
 
-struct Filter: KVCObject {
+enum FilterOption: Int {
+    case text = 0
+    case option = 1
+    case sort = 2
+    case group = 3
+}
+
+struct Filter: KVCObject, Identifiable, Equatable {
+    static func == (lhs: Filter, rhs: Filter) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    var id: String {
+        name
+    }
+    
     let type: FilterType
     let name: String
-    let value: Any?
+    var value: Any?
+    var defaultValue: Any? = nil
     
-    init(type: FilterType, name: String, value: Any? = nil) {
+    init(type: FilterType, name: String, value: Any? = nil, defaultValue: Any? = nil) {
         self.type = type
         self.name = name
         self.value = value
+        self.defaultValue = defaultValue
     }
     
     init(name: String, value: String? = nil) {
@@ -37,10 +55,18 @@ struct Filter: KVCObject {
         self.value = filters as Any
     }
     
-    init(name: String, canExclude: Bool) {
-        self.type = .bool
+    init(name: String, canExclude: Bool, default defaultValue: Int = 0) {
+        self.type = .option
         self.name = name
         self.value = canExclude as Any
+        self.defaultValue = defaultValue as Any
+    }
+    
+    init(name: String, canReverse: Bool, default defaultValue: Int = 0) {
+        self.type = .sort
+        self.name = name
+        self.value = canReverse as Any
+        self.defaultValue = defaultValue as Any
     }
     
     func toStructPointer(vm: WasmInterpreter, memory: WasmMemory) -> Int32 {

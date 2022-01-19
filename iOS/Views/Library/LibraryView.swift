@@ -12,14 +12,26 @@ import CoreData
 
 struct DropMenu: View {
     @Binding var selection: Int
+    @Binding var ascending: Bool
     
     let options: [String]
     
     var body: some View {
         Menu {
-            Picker("Sort", selection: $selection) {
-                ForEach(0..<options.count) { i in
-                    Text(options[i]).tag(i)
+            ForEach(0..<options.count) { i in
+                Button {
+                    if selection == i {
+                        ascending.toggle()
+                    } else {
+                        ascending = false
+                    }
+                    selection = i
+                } label: {
+                    if i == selection {
+                        Label(options[i], systemImage: ascending ? "chevron.up" : "chevron.down")
+                    } else {
+                        Text(options[i])
+                    }
                 }
             }
         } label: {
@@ -39,6 +51,7 @@ struct LibraryView: View {
     
     @AppStorage("libraryGrid") var grid = true
     @AppStorage("librarySort") var sortMethod = 0
+    @AppStorage("librarySortAscending") var sortAscending = false
     
     @State var manga: [Manga] = []
     @State var chapters: [String: [Chapter]] = [:]
@@ -75,7 +88,7 @@ struct LibraryView: View {
                                 Text("Sort")
                                     .foregroundColor(.secondary)
                                     .padding(.trailing, -2)
-                                DropMenu(selection: $sortMethod, options: [
+                                DropMenu(selection: $sortMethod, ascending: $sortAscending, options: [
                                     "Recent",
                                     "Title",
                                     "Author"
@@ -264,6 +277,9 @@ struct LibraryView: View {
         .onChange(of: sortMethod) { _ in
             loadManga()
         }
+        .onChange(of: sortAscending) { _ in
+            loadManga()
+        }
         .onAppear {
             loadManga()
             Task {
@@ -297,6 +313,9 @@ struct LibraryView: View {
             loadedManga.sort {
                 $0.author ?? "" < $1.author ?? ""
             }
+        }
+        if sortAscending {
+            loadedManga.reverse()
         }
         withAnimation(.easeInOut(duration: 0.3)) {
             self.manga = loadedManga
