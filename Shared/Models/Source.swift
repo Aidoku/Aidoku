@@ -73,23 +73,34 @@ class Source: Identifiable {
     var push_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, type, name, name_len, value, value_len in
             if var filters = self.descriptors[Int(descriptor)] as? [Filter] {
-                if type == 2 {
-                    filters.append(
-                        Filter(
-                            type: .group,
-                            name: (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? "",
-                            value: self.descriptors[Int(value)]
-                        )
+                let filter: Filter
+                let name = (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
+                if type == FilterType.group.rawValue {
+                    filter = Filter(
+                        type: .group,
+                        name: name,
+                        value: self.descriptors[Int(value)]
+                    )
+                } else if type == FilterType.option.rawValue {
+                    filter = Filter(
+                        name: name,
+                        canExclude: value > 0,
+                        default: Int(value_len)
+                    )
+                } else if type == FilterType.sort.rawValue {
+                    filter = Filter(
+                        name: name,
+                        canReverse: value > 0,
+                        default: Int(value_len)
                     )
                 } else {
-                    filters.append(
-                        Filter(
-                            type: FilterType(rawValue: Int(type)) ?? .text,
-                            name: (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? "",
-                            value: value_len > 0 ? try? self.vm.bytesFromHeap(byteOffset: Int(value), length: Int(value_len)) : nil
-                        )
+                    filter = Filter(
+                        type: FilterType(rawValue: Int(type)) ?? .text,
+                        name: name,
+                        value: value_len > 0 ? try? self.vm.bytesFromHeap(byteOffset: Int(value), length: Int(value_len)) : nil
                     )
                 }
+                filters.append(filter)
                 self.descriptors[Int(descriptor)] = filters
             }
         }
@@ -305,9 +316,10 @@ class Source: Identifiable {
         return listings
     }
     
-    func fetchSearchManga(query: String, page: Int = 1) async throws -> MangaPageResult {
-        let filter = Filter(name: "Title", value: query)
-        return try await getMangaList(filters: [filter], page: page)
+    func fetchSearchManga(query: String, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
+        var newFilters = filters
+        newFilters.append(Filter(name: "Title", value: query))
+        return try await getMangaList(filters: newFilters, page: page)
     }
     
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
