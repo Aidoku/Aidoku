@@ -46,6 +46,29 @@ extension UINavigationItem {
     }
 }
 
+extension UIToolbar {
+    var contentView: UIView? {
+        subviews.filter { view in
+            let viewDescription = String(describing: type(of: view))
+            return viewDescription.contains("ContentView")
+        }.first
+    }
+
+    var stackView: UIView? {
+        return contentView?.subviews.filter { (view) -> Bool in
+            let viewDescription = String(describing: type(of: view))
+            return viewDescription.contains("ButtonBarStackView")
+        }.first
+    }
+
+   func fitContentViewToToolbar() {
+        guard let stackView = stackView, let contentView = contentView else { return }
+        stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor).isActive = true
+        stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor).isActive = true
+        stackView.widthAnchor.constraint(equalTo: contentView.widthAnchor).isActive = true
+    }
+}
+
 class ReaderViewController: UIViewController {
     
     let manga: Manga?
@@ -64,6 +87,7 @@ class ReaderViewController: UIViewController {
     var scrollView: UIScrollView
     
     var items: [UIView] = []
+    var leadingConstraints: [NSLayoutConstraint] = []
     var pages: [Page] = []
     var preloadedPages: [Page] = []
     
@@ -71,6 +95,13 @@ class ReaderViewController: UIViewController {
     
     var hasNextChapter = false
     var hasPreviousChapter = false
+    
+    let transitionView = UIView()
+    
+    let sliderView = ReaderSliderView()
+    let currentPageLabel = UILabel()
+    let pagesLeftLabel = UILabel()
+    var toolbarSliderWidthConstraint: NSLayoutConstraint?
     
     var currentIndex: Int {
         Int(floor((self.scrollView.contentSize.width - scrollView.contentOffset.x) / self.scrollView.bounds.width) - CGFloat(hasPreviousChapter.intValue + 2))
@@ -144,8 +175,45 @@ class ReaderViewController: UIViewController {
         UINavigationBar.appearance().compactAppearance = navigationBarAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
         
-//        self.navigationController?.isToolbarHidden = false
-//        self.toolbarItems = [ UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil) ]
+        let slideView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 24))
+        
+        currentPageLabel.font = .systemFont(ofSize: 10)
+        currentPageLabel.textAlignment = .center
+        currentPageLabel.sizeToFit()
+        currentPageLabel.translatesAutoresizingMaskIntoConstraints = false
+        slideView.addSubview(currentPageLabel)
+
+        currentPageLabel.centerXAnchor.constraint(equalTo: slideView.centerXAnchor).isActive = true
+        currentPageLabel.bottomAnchor.constraint(equalTo: slideView.bottomAnchor).isActive = true
+
+        pagesLeftLabel.font = .systemFont(ofSize: 10)
+        pagesLeftLabel.textColor = .secondaryLabel
+        pagesLeftLabel.textAlignment = .right
+        pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
+        slideView.addSubview(pagesLeftLabel)
+
+        pagesLeftLabel.trailingAnchor.constraint(equalTo: slideView.trailingAnchor, constant: -16).isActive = true
+        pagesLeftLabel.bottomAnchor.constraint(equalTo: slideView.bottomAnchor).isActive = true
+        
+        sliderView.addTarget(self, action: #selector(sliderDone(_:)), for: .editingDidEnd)
+        sliderView.translatesAutoresizingMaskIntoConstraints = false
+        slideView.addSubview(sliderView)
+        
+        sliderView.heightAnchor.constraint(equalToConstant: 12).isActive = true
+        sliderView.leadingAnchor.constraint(equalTo: slideView.leadingAnchor, constant: 12).isActive = true
+        sliderView.trailingAnchor.constraint(equalTo: slideView.trailingAnchor, constant: -12).isActive = true
+        
+        slideView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let toolbarSlider = UIBarButtonItem(customView: slideView)
+        toolbarSliderWidthConstraint = toolbarSlider.customView?.widthAnchor.constraint(equalToConstant: view.bounds.width)
+        toolbarSliderWidthConstraint?.isActive = true
+        toolbarSlider.customView?.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        navigationController?.isToolbarHidden = false
+        toolbarItems = [toolbarSlider]
+        
+        navigationController?.toolbar.fitContentViewToToolbar()
         
         view.backgroundColor = .systemBackground
         view.isUserInteractionEnabled = true
@@ -160,24 +228,92 @@ class ReaderViewController: UIViewController {
         
         singleTap.require(toFail: doubleTap)
         
-        scrollView.frame = view.bounds
+        scrollView.delegate = self
         scrollView.isPagingEnabled = true
         scrollView.contentInsetAdjustmentBehavior = .never
-        scrollView.delegate = self
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
+        
+        // Shows when orientation changing in order to cover up the jerky scrolling happening
+        transitionView.isHidden = true
+        transitionView.backgroundColor = .black
+        transitionView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(transitionView)
+        
+        scrollView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        scrollView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        transitionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        transitionView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
     
         let activityIndicator = UIActivityIndicatorView(style: .medium)
-        activityIndicator.center = scrollView.center
         activityIndicator.startAnimating()
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         items.append(activityIndicator)
         scrollView.addSubview(activityIndicator)
+        activityIndicator.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor).isActive = true
         
         Task {
             await loadChapter()
             self.scrollTo(page: startPage)
+        }
+    }
+    
+    @objc func sliderDone(_ sender: ReaderSliderView) {
+        let page = Int(round(sender.currentValue * CGFloat(pages.count - 1)))
+        scrollTo(page: page)
+    }
+    
+    func updateLabels() {
+        var currentPage = currentIndex + 1
+        let pageCount = pages.count
+        if currentPage > pageCount {
+            currentPage = pageCount
+        } else if currentPage < 1 {
+            currentPage = 1
+        }
+        let pagesLeft = pageCount - currentPage
+        currentPageLabel.text = "\(currentPage) of \(pageCount)"
+        if pagesLeft < 1 {
+            pagesLeftLabel.text = nil
+        } else {
+            pagesLeftLabel.text = "\(pagesLeft) page\(pagesLeft == 1 ? "" : "s") left"
+        }
+        sliderView.currentValue = CGFloat(currentPage - 1) / CGFloat(pageCount - 1)
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        
+        let currentPage = currentIndex
+        
+        transitionView.isHidden = false
+        
+        toolbarSliderWidthConstraint?.constant = size.width
+        
+        scrollView.contentSize = CGSize(
+            width: CGFloat(self.items.count) * size.width,
+            height: size.height
+        )
+        
+        scrollView.setContentOffset(
+            CGPoint(
+                x: scrollView.contentSize.width - size.width * CGFloat(currentPage + hasPreviousChapter.intValue + 2),
+                y: 0
+            ),
+            animated: false
+        )
+    
+        for (i, _) in items.reversed().enumerated() {
+            leadingConstraints[i].constant = CGFloat(i) * size.width
+        }
+        
+        coordinator.animate(alongsideTransition: nil) { _ in
+            self.transitionView.isHidden = true
         }
     }
     
@@ -189,11 +325,11 @@ class ReaderViewController: UIViewController {
         UINavigationBar.appearance().scrollEdgeAppearance = savedScrollEdgeAppearance
     }
     
-    func clearPages() {
-        for view in self.items {
+    func clearPageViews() {
+        for view in items {
             view.removeFromSuperview()
         }
-        self.items = []
+        items = []
     }
     
     func preload(chapter: Chapter) async {
@@ -223,10 +359,10 @@ class ReaderViewController: UIViewController {
         let urls = pages.map { $0.imageURL ?? "" }
         for i in range {
             guard i < urls.count else { return }
-            if i < 0 {
+            if i < -1 {
                 continue
             }
-            let processor = DownsamplingImageProcessor(size: items[i].bounds.size)
+            let processor = DownsamplingImageProcessor(size: items[i + 1 + hasPreviousChapter.intValue].bounds.size)
             let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
             (items[i + 1 + hasPreviousChapter.intValue].subviews.last as? UIImageView)?.kf.setImage(
                 with: URL(string: urls[i]),
@@ -270,34 +406,47 @@ class ReaderViewController: UIViewController {
         }
         
         DispatchQueue.main.async {
-            self.clearPages()
+            self.clearPageViews()
             
             for _ in self.pages {
                 let zoomableView = ZoomableScrollView(frame: self.view.bounds)
+                zoomableView.translatesAutoresizingMaskIntoConstraints = false
+                
                 let activityIndicator = UIActivityIndicatorView(style: .medium)
-                activityIndicator.center = zoomableView.center
                 activityIndicator.startAnimating()
+                activityIndicator.translatesAutoresizingMaskIntoConstraints = false
                 zoomableView.addSubview(activityIndicator)
                 
-                let imageView = UIImageView(frame: zoomableView.bounds)
-                imageView.contentMode = .scaleAspectFit
+                activityIndicator.centerXAnchor.constraint(equalTo: zoomableView.centerXAnchor).isActive = true
+                activityIndicator.centerYAnchor.constraint(equalTo: zoomableView.centerYAnchor).isActive = true
                 
+                let imageView = UIImageView()
+                imageView.contentMode = .scaleAspectFit
+                imageView.translatesAutoresizingMaskIntoConstraints = false
                 zoomableView.addSubview(imageView)
+                
                 self.items.append(zoomableView)
             }
             
-            let firstPage = UIView()
-            firstPage.backgroundColor = .white
+            let firstPage = ReaderInfoPageView(type: .previous, currentChapter: self.chapter)
+            if self.hasPreviousChapter  {
+                firstPage.previousChapter = self.chapterList[self.chapterIndex - 1]
+            }
+            firstPage.translatesAutoresizingMaskIntoConstraints = false
             self.items.insert(firstPage, at: 0)
             
-            let finalPage = UIView()
-            finalPage.backgroundColor = .white
+            let finalPage = ReaderInfoPageView(type: .next, currentChapter: self.chapter)
+            if self.hasNextChapter  {
+                finalPage.nextChapter = self.chapterList[self.chapterIndex + 1]
+            }
+            finalPage.translatesAutoresizingMaskIntoConstraints = false
             self.items.append(finalPage)
             
             if self.hasPreviousChapter {
                 let previousChapterPage = UIImageView()
                 previousChapterPage.kf.indicatorType = .activity
                 previousChapterPage.contentMode = .scaleAspectFit
+                previousChapterPage.translatesAutoresizingMaskIntoConstraints = false
                 self.items.insert(previousChapterPage, at: 0)
             }
             
@@ -305,12 +454,23 @@ class ReaderViewController: UIViewController {
                 let nextChapterPage = UIImageView()
                 nextChapterPage.kf.indicatorType = .activity
                 nextChapterPage.contentMode = .scaleAspectFit
+                nextChapterPage.translatesAutoresizingMaskIntoConstraints = false
                 self.items.append(nextChapterPage)
             }
             
+            self.leadingConstraints = []
             for (i, view) in self.items.reversed().enumerated() {
-                view.frame = CGRect(x: CGFloat(i) * self.scrollView.bounds.width, y: 0, width: self.scrollView.bounds.width, height: self.scrollView.bounds.height)
+//                view.frame = CGRect(x: CGFloat(i) * self.scrollView.bounds.width, y: 0, width: self.scrollView.bounds.width, height: self.scrollView.bounds.height)
                 self.scrollView.addSubview(view)
+                
+                self.leadingConstraints.append(view.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: CGFloat(i) * self.scrollView.bounds.width))
+                self.leadingConstraints[i].isActive = true
+                view.topAnchor.constraint(equalTo: self.scrollView.topAnchor).isActive = true
+                view.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor).isActive = true
+                view.heightAnchor.constraint(equalTo: self.scrollView.heightAnchor).isActive = true
+                
+                view.subviews.last?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+                view.subviews.last?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
             }
             self.scrollView.contentSize = CGSize(
                 width: CGFloat(self.items.count) * self.scrollView.bounds.width,
@@ -328,6 +488,7 @@ class ReaderViewController: UIViewController {
             ),
             animated: false
         )
+        updateLabels()
     }
     
     @objc func close() {
@@ -460,6 +621,7 @@ extension ReaderViewController: UIScrollViewDelegate {
             self.preloadImages(for: currentIndex..<(currentIndex + imagesToPreload))
             self.setImages(for: (currentIndex - 1)..<(currentIndex + 4))
         }
+        updateLabels()
     }
 }
 
