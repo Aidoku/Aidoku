@@ -47,6 +47,10 @@ class ReaderSliderView: UIControl {
         addSubview(progressedTrackView)
 
         thumbView.backgroundColor = .white
+        thumbView.layer.shadowRadius = 1.5
+        thumbView.layer.shadowOffset = CGSize(width: 0, height: 1)
+        thumbView.layer.shadowColor = UIColor.black.cgColor
+        thumbView.layer.shadowOpacity = 0.2
         thumbView.layer.cornerRadius = 5
         thumbView.isUserInteractionEnabled = false
         thumbView.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +91,7 @@ class ReaderSliderView: UIControl {
     }
     
     func positionForValue(_ value: CGFloat) -> CGFloat {
-        return trackView.bounds.width - (trackView.bounds.width * value) + trackView.frame.origin.x
+        trackView.bounds.width - (trackView.bounds.width * value) + trackView.frame.origin.x
     }
     
     private func thumbOriginForValue(_ value: CGFloat) -> CGPoint {
@@ -132,7 +136,7 @@ class ReaderSliderView: UIControl {
     }
 
     private func boundValue(_ value: CGFloat, toLowerValue lowerValue: CGFloat, upperValue: CGFloat) -> CGFloat {
-        return min(max(value, lowerValue), upperValue)
+        min(max(value, lowerValue), upperValue)
     }
     
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {

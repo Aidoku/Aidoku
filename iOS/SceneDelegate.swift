@@ -13,29 +13,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        let dataManager = DataManager.shared //(appDelegate: UIApplication.shared.delegate as! AppDelegate)
+        let tabController = UITabBarController()
+        let libraryViewController = HostingController(rootView: LibraryView())
+        let browseViewController = HostingController(rootView: BrowseView()) // UINavigationController(rootViewController: BrowseViewController())
+        let searchViewController = HostingController(rootView: SearchView())
+        libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
+        browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)
+        searchViewController.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 2)
+        tabController.viewControllers = [libraryViewController, browseViewController, searchViewController]
         
-        let contentView = TabView {
-            LibraryView()
-                .tabItem {
-                    Label("Library", systemImage: "books.vertical.fill")
-                }
-            BrowseView()
-                .tabItem {
-                    Label("Browse", systemImage: "globe")
-                }
-            SearchView()
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
-
-        }
-            .environment(\.managedObjectContext, dataManager.container.viewContext)
-
-        // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = HostingController(rootView: contentView)
+            window.rootViewController = tabController
             self.window = window
             window.makeKeyAndVisible()
         }

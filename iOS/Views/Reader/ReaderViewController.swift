@@ -175,37 +175,38 @@ class ReaderViewController: UIViewController {
         UINavigationBar.appearance().compactAppearance = navigationBarAppearance
         UINavigationBar.appearance().scrollEdgeAppearance = navigationBarAppearance
         
-        let slideView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 24))
+        let toolbarView = UIView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 24))
         
         currentPageLabel.font = .systemFont(ofSize: 10)
         currentPageLabel.textAlignment = .center
         currentPageLabel.sizeToFit()
         currentPageLabel.translatesAutoresizingMaskIntoConstraints = false
-        slideView.addSubview(currentPageLabel)
+        toolbarView.addSubview(currentPageLabel)
 
-        currentPageLabel.centerXAnchor.constraint(equalTo: slideView.centerXAnchor).isActive = true
-        currentPageLabel.bottomAnchor.constraint(equalTo: slideView.bottomAnchor).isActive = true
+        currentPageLabel.centerXAnchor.constraint(equalTo: toolbarView.centerXAnchor).isActive = true
+        currentPageLabel.bottomAnchor.constraint(equalTo: toolbarView.bottomAnchor).isActive = true
 
         pagesLeftLabel.font = .systemFont(ofSize: 10)
         pagesLeftLabel.textColor = .secondaryLabel
         pagesLeftLabel.textAlignment = .right
         pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
-        slideView.addSubview(pagesLeftLabel)
+        toolbarView.addSubview(pagesLeftLabel)
 
-        pagesLeftLabel.trailingAnchor.constraint(equalTo: slideView.trailingAnchor, constant: -16).isActive = true
-        pagesLeftLabel.bottomAnchor.constraint(equalTo: slideView.bottomAnchor).isActive = true
+        pagesLeftLabel.trailingAnchor.constraint(equalTo: toolbarView.trailingAnchor, constant: -16).isActive = true
+        pagesLeftLabel.bottomAnchor.constraint(equalTo: toolbarView.bottomAnchor).isActive = true
         
+        sliderView.addTarget(self, action: #selector(sliderMoved(_:)), for: .valueChanged)
         sliderView.addTarget(self, action: #selector(sliderDone(_:)), for: .editingDidEnd)
         sliderView.translatesAutoresizingMaskIntoConstraints = false
-        slideView.addSubview(sliderView)
+        toolbarView.addSubview(sliderView)
         
         sliderView.heightAnchor.constraint(equalToConstant: 12).isActive = true
-        sliderView.leadingAnchor.constraint(equalTo: slideView.leadingAnchor, constant: 12).isActive = true
-        sliderView.trailingAnchor.constraint(equalTo: slideView.trailingAnchor, constant: -12).isActive = true
+        sliderView.leadingAnchor.constraint(equalTo: toolbarView.leadingAnchor, constant: 12).isActive = true
+        sliderView.trailingAnchor.constraint(equalTo: toolbarView.trailingAnchor, constant: -12).isActive = true
         
-        slideView.translatesAutoresizingMaskIntoConstraints = false
+        toolbarView.translatesAutoresizingMaskIntoConstraints = false
         
-        let toolbarSlider = UIBarButtonItem(customView: slideView)
+        let toolbarSlider = UIBarButtonItem(customView: toolbarView)
         toolbarSliderWidthConstraint = toolbarSlider.customView?.widthAnchor.constraint(equalToConstant: view.bounds.width)
         toolbarSliderWidthConstraint?.isActive = true
         toolbarSlider.customView?.heightAnchor.constraint(equalToConstant: 30).isActive = true
@@ -261,6 +262,11 @@ class ReaderViewController: UIViewController {
             await loadChapter()
             self.scrollTo(page: startPage)
         }
+    }
+    
+    @objc func sliderMoved(_ sender: ReaderSliderView) {
+        let page = Int(round(sender.currentValue * CGFloat(pages.count - 1)))
+        currentPageLabel.text = "\(page) of \(pages.count)"
     }
     
     @objc func sliderDone(_ sender: ReaderSliderView) {
