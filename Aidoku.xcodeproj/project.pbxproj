@@ -80,6 +80,8 @@
 		FB7B7EE2278D00AC001E6EAF /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EE1278D00AC001E6EAF /* BrowseView.swift */; };
 		FB7B7EE5278D0735001E6EAF /* SourceListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EE4278D0735001E6EAF /* SourceListCell.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
+		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
+		FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */; };
 		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 		FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 /* End PBXBuildFile section */
@@ -136,6 +138,8 @@
 		FB7B7EE1278D00AC001E6EAF /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		FB7B7EE4278D0735001E6EAF /* SourceListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListCell.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
+		FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInfoPageView.swift; sourceTree = "<group>"; };
 		FBFDD40227838AB90055ED9F /* Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -351,6 +355,8 @@
 				FB1B48B4277CF8280056D02C /* ReaderView.swift */,
 				FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */,
 				FB1B48B3277CF8280056D02C /* ReaderViewController.swift */,
+				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
+				FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */,
 				FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */,
 				FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */,
 			);
@@ -473,12 +479,14 @@
 			files = (
 				FB7B7ECD2789EAE6001E6EAF /* WasmMemory.swift in Sources */,
 				FB6340D3279492F90072A2A2 /* SearchResultView.swift in Sources */,
+				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB1B4868277CE76B0056D02C /* Manga.swift in Sources */,
 				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
 				FB11EDED2784B03D0007365D /* ChapterListCell.swift in Sources */,
 				FB56423227978944003B4246 /* SourceFiltersView.swift in Sources */,
 				FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
+				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
