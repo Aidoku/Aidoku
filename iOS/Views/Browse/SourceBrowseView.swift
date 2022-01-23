@@ -95,8 +95,8 @@ struct SourceBrowseView: View {
         .onChange(of: configuringFilters) { newValue in
             if !newValue {
                 Task {
-                    if let listing = listings.first {
-                        let search = try? await source.getMangaList(filters: selectedFilters)
+                    if let listing = listings.first, listing.canFilter {
+                        let search = try? await source.getMangaListing(listing: listing, filters: selectedFilters)
                         withAnimation {
                             listingResults[listing.name] = search?.manga ?? []
                         }

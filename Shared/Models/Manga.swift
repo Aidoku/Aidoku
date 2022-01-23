@@ -7,6 +7,14 @@
 
 import Foundation
 
+enum MangaStatus: Int, Codable {
+    case unknown = 0
+    case ongoing = 1
+    case completed = 2
+    case cancelled = 3
+    case hiatus = 4
+}
+
 struct Manga: Hashable, Codable, KVCObject {
     let provider: String
     let id: String
@@ -18,6 +26,8 @@ struct Manga: Hashable, Codable, KVCObject {
     var description: String?
     var categories: [String]?
     
+    var status: MangaStatus
+    
     var thumbnailURL: String?
     
     init(
@@ -28,6 +38,7 @@ struct Manga: Hashable, Codable, KVCObject {
         artist: String? = nil,
         description: String? = nil,
         categories: [String]? = nil,
+        status: MangaStatus = .unknown,
         thumbnailURL: String? = nil
     ) {
         self.provider = provider
@@ -37,6 +48,7 @@ struct Manga: Hashable, Codable, KVCObject {
         self.artist = artist
         self.description = description
         self.categories = categories
+        self.status = status
         self.thumbnailURL = thumbnailURL
     }
     
@@ -60,6 +72,7 @@ struct Manga: Hashable, Codable, KVCObject {
         case "artist": return artist
         case "description": return description
         case "categories": return categories
+        case "status": return status.rawValue
         case "cover_url": return thumbnailURL
         default: return nil
         }
