@@ -36,6 +36,8 @@ struct Filter: KVCObject, Identifiable, Equatable {
     var value: Any?
     var defaultValue: Any? = nil
     
+    var secondaryType: Int?
+    
     init(type: FilterType, name: String, value: Any? = nil, defaultValue: Any? = nil) {
         self.type = type
         self.name = name
@@ -49,10 +51,11 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.value = value
     }
     
-    init(name: String, filters: [Filter]) {
+    init(name: String, filters: [Filter], nested: Bool = false) {
         self.type = .group
         self.name = name
         self.value = filters as Any
+        self.secondaryType = nested ? 1 : 0
     }
     
     init(name: String, canExclude: Bool, default defaultValue: Int = 0) {

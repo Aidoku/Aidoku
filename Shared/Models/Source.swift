@@ -77,9 +77,9 @@ class Source: Identifiable {
                 let name = (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
                 if type == FilterType.group.rawValue {
                     filter = Filter(
-                        type: .group,
                         name: name,
-                        value: self.descriptors[Int(value)]
+                        filters: self.descriptors[Int(value)] as? [Filter] ?? [],
+                        nested: value_len > 0
                     )
                 } else if type == FilterType.option.rawValue {
                     filter = Filter(
@@ -106,18 +106,18 @@ class Source: Identifiable {
         }
     }
     
-    var push_listing: (Int32, Int32, Int32) -> Void {
-        { descriptor, name, name_len in
+    var push_listing: (Int32, Int32, Int32, Int32) -> Void {
+        { descriptor, name, name_len, can_filter in
             if var listings = self.descriptors[Int(descriptor)] as? [Listing],
                let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
-                listings.append(Listing(name: str));
+                listings.append(Listing(name: str, canFilter: can_filter > 0));
                 self.descriptors[Int(descriptor)] = listings
             }
         }
     }
     
-    var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, categories, category_str_lens, category_count in
+    var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
+        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, categories, category_str_lens, category_count in
             guard descriptor < self.descriptors.count else { return }
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var categoryList: [String] = []
@@ -135,6 +135,7 @@ class Source: Identifiable {
                     author: author_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
                     description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
                     categories: categoryList,
+                    status: MangaStatus(rawValue: Int(status)) ?? .unknown,
                     thumbnailURL: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil
                 )
                 if var mangaList = self.descriptors[Int(descriptor)] as? [Manga] {
@@ -341,12 +342,14 @@ class Source: Identifiable {
         return try await task.value
     }
     
-    func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
+    func getMangaListing(listing: Listing, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
             let descriptor = self.array()
+            self.descriptorPointer += 1
+            self.descriptors.append(filters)
             let listingName = self.vm.write(string: listing.name, memory: self.memory)
             
-            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
+            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(self.descriptorPointer), Int32(page))
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             

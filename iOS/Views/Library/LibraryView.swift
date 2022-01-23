@@ -81,6 +81,9 @@ struct LibraryView: View {
                         .padding(.top, -15)
                             .foregroundColor(.secondaryLabel)
                     }
+                    .sheet(isPresented: $showingSettings) {
+                        SettingsView(presented: $showingSettings)
+                    }
                 } else {
                     ScrollView {
                         VStack {
