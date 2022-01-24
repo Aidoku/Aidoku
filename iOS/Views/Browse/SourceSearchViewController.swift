@@ -39,7 +39,6 @@ class SourceSearchViewController: MangaCollectionViewController {
         
         navigationItem.hidesSearchBarWhenScrolling = false
         
-//        let activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.startAnimating()
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(activityIndicator)
