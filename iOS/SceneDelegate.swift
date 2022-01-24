@@ -15,7 +15,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
         let libraryViewController = HostingController(rootView: LibraryView())
-        let browseViewController = HostingController(rootView: BrowseView()) // UINavigationController(rootViewController: BrowseViewController())
+        let browseViewController = UINavigationController(rootViewController: BrowseViewController())
         let searchViewController = HostingController(rootView: SearchView())
         libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
         browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)

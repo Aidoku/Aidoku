@@ -28,6 +28,10 @@ class SourceBrowseViewController: MangaCollectionViewController {
         title = source.info.name
         navigationController?.navigationBar.prefersLargeTitles = true
         
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchBar.delegate = self
+        navigationItem.searchController = searchController
+        
         let activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.startAnimating()
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -46,12 +50,16 @@ class SourceBrowseViewController: MangaCollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        parent?.navigationItem.title = source.info.name
-        
-        let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchBar.delegate = self
-        navigationItem.searchController = searchController
-        parent?.navigationItem.searchController = searchController
+        if #available(iOS 11.0, *) {
+            navigationItem.hidesSearchBarWhenScrolling = false
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if #available(iOS 11.0, *) {
+            navigationItem.hidesSearchBarWhenScrolling = true
+        }
     }
     
     override func viewLayoutMarginsDidChange() {
