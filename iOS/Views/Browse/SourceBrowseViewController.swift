@@ -12,6 +12,10 @@ class SourceBrowseViewController: MangaCollectionViewController {
     let source: Source
     
     var listings: [Listing] = []
+    var filters: [Filter] = []
+    
+    var currentListing: Listing?
+    let selectedFilters = SelectedFilters()
     
     init(source: Source) {
         self.source = source
@@ -28,6 +32,24 @@ class SourceBrowseViewController: MangaCollectionViewController {
         title = source.info.name
         navigationController?.navigationBar.prefersLargeTitles = true
         
+        let filterImage: UIImage?
+        if #available(iOS 15.0, *) {
+            filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
+        } else {
+            filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
+        }
+        let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
+        ellipsisButton.isEnabled = false
+        navigationItem.rightBarButtonItems = [
+            ellipsisButton,
+            UIBarButtonItem(
+                image: filterImage,
+                style: .plain,
+                target: self,
+                action: #selector(openFilterPopover(_:))
+            )
+        ]
+        
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
         navigationItem.searchController = searchController
@@ -40,7 +62,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
         activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
         Task {
-            await fetchListings()
+            await fetchData()
             UIView.animate(withDuration: 0.3) {
                 activityIndicator.alpha = 0
             }
@@ -68,18 +90,53 @@ class SourceBrowseViewController: MangaCollectionViewController {
         }
     }
     
-    func fetchListings() async {
-        listings = (try? await source.getListings()) ?? []
-        if let listing = listings.first {
-            manga = (try? await source.getMangaListing(listing: listing))?.manga ?? []
+    func fetchData() async {
+        if filters.isEmpty {
+            filters = (try? await source.getFilters()) ?? []
+            if selectedFilters.filters.isEmpty {
+                selectedFilters.filters = source.getDefaultFilters()
+            }
         }
+        if listings.isEmpty {
+            listings = (try? await source.getListings()) ?? []
+        }
+        if currentListing == nil {
+            currentListing = listings.first
+        }
+        if let listing = currentListing {
+            manga = (try? await source.getMangaListing(listing: listing, filters: selectedFilters.filters))?.manga ?? []
+        }
+    }
+    
+    @objc func openFilterPopover(_ sender: UIBarButtonItem) {
+        let vc = HostingController(rootView: SourceFiltersView(filters: filters, selectedFilters: selectedFilters))
+        vc.preferredContentSize = CGSize(width: 300, height: 300)
+        vc.modalPresentationStyle = .popover
+        vc.presentationController?.delegate = self
+        vc.popoverPresentationController?.permittedArrowDirections = .up
+        vc.popoverPresentationController?.barButtonItem = sender
+        present(vc, animated: true)
     }
 }
 
 // MARK: - Search Bar Delegate
 extension SourceBrowseViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let vc = SourceSearchViewController(source: source, query: searchBar.text)
+        let vc = SourceSearchViewController(source: source, query: searchBar.text, selectedFilters: selectedFilters)
         navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
+// MARK: - Popover Delegate
+extension SourceBrowseViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+        .none
+    }
+    
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        Task {
+            await fetchData()
+            reloadData()
+        }
     }
 }
