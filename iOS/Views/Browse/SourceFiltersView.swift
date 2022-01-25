@@ -6,174 +6,140 @@
 //
 
 import SwiftUI
+import SwiftUIX
 
-struct ParsedFilter: Identifiable {
-    var id = UUID()
-    
-    var type: FilterType
-    var name: String
-    var filter: Filter
-    
-    var items: [ParsedFilter]?
-    
-    var currentValue: Int = 0
-    
-    var boolValue: Bool {
-        filter.value as? Bool ?? false
-    }
-    var defaultIntValue: Int {
-        filter.defaultValue as? Int ?? 0
-    }
+class SelectedFilters: ObservableObject {
+    @Published var filters: [Filter] = []
 }
 
 struct SourceFiltersView: View {
-    
-    @Environment(\.presentationMode) var presentationMode
-    
-    let source: Source
-    @Binding var selected: [Filter]
-    
-    @State var filters: [Filter] = []
-    @State var parsedFilters: [ParsedFilter] = []
-    @State var selectedFilters: [String: ParsedFilter] = [:]
-    
-    @State var groupsExpanded: [Bool] = []
+    var filters: [Filter]
+    @ObservedObject var selectedFilters: SelectedFilters
     
     var body: some View {
         NavigationView {
             List {
-                ForEach(Array(parsedFilters.enumerated()), id: \.1.id) { i, group in
-                    DisclosureGroup(isExpanded: $groupsExpanded[i]) {
-                        ForEach(group.items ?? []) { filter in
-                            Button {
-                                if let index = group.items?.firstIndex(where: { $0.id == filter.id }), let currentValue = parsedFilters[i].items?[index].currentValue {
-                                    if filter.type == .sort {
-                                        selectedFilters = selectedFilters.filter { $0.value.type != .sort }
-                                        group.items?.filter { $0.type == .sort }.indices.forEach { parsedFilters[i].items?[$0].currentValue = 0 }
-                                        if filter.boolValue && currentValue == 1 { // can ascend
-                                            parsedFilters[i].items?[index].currentValue = 2
-                                        } else {
-                                            parsedFilters[i].items?[index].currentValue = 1
-                                        }
-                                        selectedFilters[filter.id.uuidString] = parsedFilters[i].items?[index]
-                                    } else if filter.type == .option {
-                                        if filter.boolValue && currentValue == 1 { // can exclude
-                                            parsedFilters[i].items?[index].currentValue = 2
-                                            selectedFilters[filter.id.uuidString] = parsedFilters[i].items?[index]
-                                        } else {
-                                            parsedFilters[i].items?[index].currentValue = currentValue > 0 ? 0 : 1
-                                            if currentValue > 0 {
-                                                selectedFilters.removeValue(forKey: filter.id.uuidString)
-                                            } else {
-                                                selectedFilters[filter.id.uuidString] = parsedFilters[i].items?[index]
-                                            }
-                                        }
-                                    }
-                                }
-                                convertSelectedToSendable()
-                            } label: {
-                                HStack {
-                                    Text(filter.name)
-                                    Spacer()
-                                    if filter.type == .sort && filter.currentValue > 0 {
-                                        Image(systemName: filter.currentValue > 1 ? "chevron.up" : "chevron.down")
-                                    } else if filter.type == .option && filter.currentValue > 0 {
-                                        Image(systemName: filter.currentValue > 1 ? "xmark" : "checkmark")
-                                    }
-                                }
-                            }
-                            .foregroundColor(.label)
-                        }
-                    } label: {
-                        Text(group.name)
-                    }
+                ForEach(filters.filter { $0.type != .text }) { filter in
+                    FilterListCell(filter: filter, selectedFilters: selectedFilters)
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Filters")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                Button {
-                    presentationMode.wrappedValue.dismiss()
-                } label: {
-                    Text("Done")
-                }
-            }
-        }
-        .onAppear {
-            Task {
-                await loadFilters()
-                if selected.isEmpty {
-                    convertSelectedToSendable()
-                } else {
-                    convertSentToSelected()
-                }
-            }
+            .navigationBarTitle("Filters")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
+}
+
+struct FilterSortCell: View {
+    let filter: Filter
+    @ObservedObject var selectedFilters: SelectedFilters
     
-    func convertSelectedToSendable() {
-        var filters: [Filter] = []
-        for (_, parsedFilter) in selectedFilters {
-            var newFilter = parsedFilter.filter
-            newFilter.value = parsedFilter.currentValue
-            filters.append(newFilter)
-        }
-        selected = filters
+    var value: SortOption {
+        selectedFilters.filters.first { $0.name == filter.name }?.value as? SortOption ?? SortOption(index: 0, name: "", ascending: false)
     }
     
-    func convertSentToSelected() {
-        guard !selected.isEmpty else { return }
-        selectedFilters = [:]
-        for sentFilter in selected {
-            var newFilter = parsedFilters.flatMap { $0.items ?? [] }.first { $0.name == sentFilter.name }
-            newFilter?.currentValue = sentFilter.value as? Int ?? 0
-            selectedFilters[newFilter?.id.uuidString ?? ""] = newFilter
-        }
-        for (i, _) in parsedFilters.enumerated() {
-            for (j, _) in (parsedFilters[i].items ?? []).enumerated() {
-                if selectedFilters[parsedFilters[i].items?[j].id.uuidString ?? ""] != nil {
-                    parsedFilters[i].items?[j].currentValue = selectedFilters[parsedFilters[i].items?[j].id.uuidString ?? ""]?.currentValue ?? 0
-                } else {
-                    parsedFilters[i].items?[j].currentValue = 0
+    func setValue(_ option: SortOption) {
+        var newArray = selectedFilters.filters.filter { $0.name != filter.name }
+        newArray.append(Filter(type: .sort, name: filter.name, value: option))
+        selectedFilters.filters = newArray
+    }
+    
+    var body: some View {
+        NavigationLink {
+            List {
+                ForEach(filter.value as? [Filter] ?? []) { subFilter in
+                    Button {
+                        if let option = subFilter.value as? SortOption {
+                            let asc = subFilter.name == value.name && !value.ascending
+                            setValue(SortOption(index: option.index, name: option.name, ascending: asc))
+                        }
+                    } label: {
+                        HStack {
+                            Text(subFilter.name)
+                                .foregroundColor(.label)
+                            Spacer()
+                            if subFilter.name == value.name {
+                                Image(systemName: value.ascending ? "chevron.up" : "chevron.down")
+                            }
+                        }
+                    }
                 }
             }
+        } label: {
+            Text(filter.name)
         }
     }
+}
+
+struct FilterListCell: View {
+    let filter: Filter
+    @ObservedObject var selectedFilters: SelectedFilters
     
-    func parseFilter(_ filter: Filter) -> ParsedFilter {
-        var items: [ParsedFilter]? = nil
+    var selectedValue: Int? {
+        selectedFilters.filters.filter({ $0.name == filter.name }).first?.value as? Int
+    }
+    var canExclude: Bool {
+        filter.value as? Bool ?? false
+    }
+    
+    func toggle() {
+        var newArray = selectedFilters.filters
+        if let value = selectedValue {
+            newArray = newArray.filter { $0.name != filter.name }
+            if value == 1 && canExclude {
+                newArray.append(Filter(type: filter.type, name: filter.name, value: 2))
+            }
+        } else {
+            newArray.append(Filter(type: filter.type, name: filter.name, value: 1))
+        }
+        selectedFilters.filters = newArray
+    }
+    
+    var body: some View {
         if filter.type == .group {
-            items = []
-            for subFilter in filter.value as? [Filter] ?? [] {
-                items?.append(parseFilter(subFilter))
+            NavigationLink {
+                List {
+                    ForEach((filter.value as? [Filter] ?? []).filter { $0.type != .text }) { subFilter in
+                        FilterListCell(filter: subFilter, selectedFilters: selectedFilters)
+                    }
+                }
+            } label: {
+                Text(filter.name)
             }
-        }
-        var parsedFilter = ParsedFilter(
-            type: filter.type,
-            name: filter.name,
-            filter: filter,
-            items: items
-        )
-        if filter.type == .sort || filter.type == .option {
-            parsedFilter.currentValue = parsedFilter.defaultIntValue
-            if parsedFilter.defaultIntValue > 0 {
-                selectedFilters[parsedFilter.id.uuidString] = parsedFilter
+        } else if filter.type == .sort {
+            FilterSortCell(filter: filter, selectedFilters: selectedFilters)
+        } else if filter.type == .select {
+            NavigationLink {
+                List {
+                    ForEach(filter.value as? [String] ?? [], id: \.self) { option in
+                        Button {} label: {
+                            HStack {
+                                Text(option)
+                                    .foregroundColor(.label)
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                Text(filter.name)
             }
-        }
-        return parsedFilter
-    }
-    
-    func loadFilters() async {
-        filters = (try? await source.getFilters()) ?? []
-        parsedFilters = []
-        groupsExpanded = []
-        
-        for filter in filters {
-            if filter.type == .group {
-                groupsExpanded.append(false)
-                parsedFilters.append(parseFilter(filter))
+        } else if filter.type == .check {
+            Button {
+                toggle()
+            } label: {
+                HStack {
+                    Text(filter.name)
+                        .foregroundColor(.label)
+                    Spacer()
+                    if let value = selectedValue {
+                        Image(systemName: value == 1 ? "checkmark" : "xmark")
+                    }
+                }
             }
+        } else {
+            Text(filter.name)
         }
     }
 }

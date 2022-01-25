@@ -16,6 +16,7 @@ class Source: Identifiable {
     var info: SourceInfo
     
     var filters: [Filter] = []
+    var defaultFilters: [Filter] = []
     var listings: [Listing] = []
     
     struct SourceInfo: Codable {
@@ -46,6 +47,7 @@ class Source: Identifiable {
     }
     
     func prepareVirtualMachine() {
+        try? vm.addImportHandler(named: "push_string", namespace: "env", block: self.push_string)
         try? vm.addImportHandler(named: "push_filter", namespace: "env", block: self.push_filter)
         try? vm.addImportHandler(named: "push_listing", namespace: "env", block: self.push_listing)
         try? vm.addImportHandler(named: "push_manga", namespace: "env", block: self.push_manga)
@@ -70,34 +72,56 @@ class Source: Identifiable {
     
     // MARK: Object Pushing
     
+    var push_string: (Int32, Int32, Int32) -> Void {
+        { descriptor, string, string_len in
+            if var strings = self.descriptors[Int(descriptor)] as? [String] {
+                strings.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
+            }
+        }
+    }
+    
     var push_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, type, name, name_len, value, value_len in
+        { descriptor, type, name, name_len, value, default_value in
             if var filters = self.descriptors[Int(descriptor)] as? [Filter] {
                 let filter: Filter
                 let name = (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
-                if type == FilterType.group.rawValue {
-                    filter = Filter(
-                        name: name,
-                        filters: self.descriptors[Int(value)] as? [Filter] ?? [],
-                        nested: value_len > 0
-                    )
-                } else if type == FilterType.option.rawValue {
+                if type == FilterType.note.rawValue {
+                    filter = Filter(text: name)
+                } else if type == FilterType.text.rawValue {
+                    filter = Filter(name: name)
+                } else if type == FilterType.check.rawValue {
                     filter = Filter(
                         name: name,
                         canExclude: value > 0,
-                        default: Int(value_len)
+                        default: Int(default_value)
                     )
-                } else if type == FilterType.sort.rawValue {
+                } else if type == FilterType.select.rawValue {
                     filter = Filter(
                         name: name,
-                        canReverse: value > 0,
-                        default: Int(value_len)
+                        options: self.descriptors[Int(value)] as? [String] ?? [],
+                        default: Int(default_value)
+                    )
+                } else if type == FilterType.sort.rawValue {
+                    let options = self.descriptors[Int(value)] as? [Filter] ?? []
+                    filter = Filter(
+                        name: name,
+                        options: options,
+                        default: (self.descriptors[Int(default_value)] as? Filter)?.value as? SortOption
+                    )
+                } else if type == FilterType.sortOption.rawValue {
+                    filter = Filter(
+                        name: name,
+                        canReverse: value > 0
+                    )
+                } else if type == FilterType.group.rawValue {
+                    filter = Filter(
+                        name: name,
+                        filters: self.descriptors[Int(value)] as? [Filter] ?? []
                     )
                 } else {
                     filter = Filter(
                         type: FilterType(rawValue: Int(type)) ?? .text,
-                        name: name,
-                        value: value_len > 0 ? try? self.vm.bytesFromHeap(byteOffset: Int(value), length: Int(value_len)) : nil
+                        name: name
                     )
                 }
                 filters.append(filter)
@@ -254,8 +278,10 @@ class Source: Identifiable {
             guard descriptor >= 0 else { return -1 }
             if let int = self.descriptors[Int(descriptor)] as? Int {
                 return Int32(int)
-            } else if let int = Int(self.descriptors[Int(descriptor)] as? String ?? "Error") {
-                return Int32(int)
+            } else if let bool = self.descriptors[Int(descriptor)] as? Bool {
+                return Int32(bool ? 1 : 0)
+            } else if let string = self.descriptors[Int(descriptor)] as? String {
+                return Int32(string) ?? -1
             }
             return -1
         }
@@ -275,6 +301,24 @@ class Source: Identifiable {
     
     // MARK: Get Functions
     
+    func getDefaultFilters() -> [Filter] {
+        guard defaultFilters.isEmpty && !filters.isEmpty else { return defaultFilters }
+        
+        for filter in filters {
+            if filter.type == .group {
+                for subFilter in filter.value as? [Filter] ?? [] {
+                    if subFilter.type == .check && subFilter.defaultValue as? Int ?? 0 > 0 {
+                        defaultFilters.append(Filter(type: subFilter.type, name: subFilter.name, value: subFilter.defaultValue))
+                    }
+                }
+            } else {
+                defaultFilters.append(Filter(type: filter.type, name: filter.name, value: filter.defaultValue))
+            }
+        }
+        
+        return defaultFilters
+    }
+    
     func getFilters() async throws -> [Filter] {
         guard filters.isEmpty else { return filters }
         
@@ -292,6 +336,7 @@ class Source: Identifiable {
         }
         
         filters = try await task.value
+        _ = getDefaultFilters()
         
         return filters
     }

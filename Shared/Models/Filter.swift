@@ -9,17 +9,28 @@ import Foundation
 import WasmInterpreter
 
 enum FilterType: Int {
-    case text = 0
-    case option = 1
-    case sort = 2
-    case group = 3
+    case note = 0 // just plain text, a note
+    case text = 1 // enterable text
+    case check = 2 // multi option include or exclude
+    case select = 3 // single option selection
+    case sort = 4 // sort group
+    case sortOption = 5 // sort option
+    case group = 6 // filter group
 }
 
-enum FilterOption: Int {
-    case text = 0
-    case option = 1
-    case sort = 2
-    case group = 3
+struct SortOption: KVCObject {
+    let index: Int
+    let name: String
+    let ascending: Bool
+    
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "index": return index
+        case "name": return self.name
+        case "ascending": return ascending
+        default: return nil
+        }
+    }
 }
 
 struct Filter: KVCObject, Identifiable, Equatable {
@@ -32,11 +43,9 @@ struct Filter: KVCObject, Identifiable, Equatable {
     }
     
     let type: FilterType
-    let name: String
-    var value: Any?
+    var name: String
+    var value: Any? = nil
     var defaultValue: Any? = nil
-    
-    var secondaryType: Int?
     
     init(type: FilterType, name: String, value: Any? = nil, defaultValue: Any? = nil) {
         self.type = type
@@ -45,31 +54,55 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.defaultValue = defaultValue
     }
     
+    // Note
+    init(text: String) {
+        self.type = .note
+        self.name = text
+    }
+    
+    // Text
     init(name: String, value: String? = nil) {
         self.type = .text
         self.name = name
         self.value = value
     }
     
-    init(name: String, filters: [Filter], nested: Bool = false) {
+    // Check
+    init(name: String, canExclude: Bool, default defaultValue: Int = 0) {
+        self.type = .check
+        self.name = name
+        self.value = canExclude
+        self.defaultValue = defaultValue
+    }
+    
+    // Select
+    init(name: String, options: [String], default defaultValue: Int = 0) {
+        self.type = .select
+        self.name = name
+        self.value = options
+        self.defaultValue = defaultValue
+    }
+    
+    // Sort
+    init(name: String, options: [Filter], default defaultValue: SortOption?) {
+        self.type = .sort
+        self.name = name
+        self.value = options
+        self.defaultValue = defaultValue
+    }
+    
+    // Sort Option
+    init(name: String, index: Int = 0, canReverse: Bool) {
+        self.type = .sortOption
+        self.name = name
+        self.value = SortOption(index: index, name: name, ascending: canReverse)
+    }
+    
+    // Group
+    init(name: String, filters: [Filter]) {
         self.type = .group
         self.name = name
         self.value = filters as Any
-        self.secondaryType = nested ? 1 : 0
-    }
-    
-    init(name: String, canExclude: Bool, default defaultValue: Int = 0) {
-        self.type = .option
-        self.name = name
-        self.value = canExclude as Any
-        self.defaultValue = defaultValue as Any
-    }
-    
-    init(name: String, canReverse: Bool, default defaultValue: Int = 0) {
-        self.type = .sort
-        self.name = name
-        self.value = canReverse as Any
-        self.defaultValue = defaultValue as Any
     }
     
     func toStructPointer(vm: WasmInterpreter, memory: WasmMemory) -> Int32 {
@@ -86,6 +119,7 @@ struct Filter: KVCObject, Identifiable, Equatable {
         case "type": return type.rawValue
         case "name": return self.name
         case "value": return value
+        case "default": return defaultValue
         default: return nil
         }
     }
