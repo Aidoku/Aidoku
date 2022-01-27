@@ -8,6 +8,29 @@
 import UIKit
 import SwiftUI
 
+// needed in order to fix a swiftui bug
+// (using a hosting controller inside a normal nav controller would change the tab bar title)
+class FixedTitleNavigationController: UINavigationController {
+    var fixTitle = false
+    var oldTitle: String? = nil
+    
+    override var title: String? {
+        didSet {
+            if fixTitle {
+                fixTitle = false
+                navigationItem.title = title
+                title = oldTitle
+            }
+        }
+        willSet {
+            if newValue != tabBarItem.title && tabBarItem.title != nil {
+                fixTitle = true
+                oldTitle = tabBarItem.title
+            }
+        }
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
@@ -15,7 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
         let libraryViewController = HostingController(rootView: LibraryView())
-        let browseViewController = UINavigationController(rootViewController: BrowseViewController())
+        let browseViewController = FixedTitleNavigationController(rootViewController: BrowseViewController())
         let searchViewController = HostingController(rootView: SearchView())
         libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
         browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)

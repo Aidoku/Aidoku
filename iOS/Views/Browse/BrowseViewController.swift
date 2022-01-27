@@ -26,9 +26,7 @@ class SourceSectionHeaderView: UITableViewHeaderFooterView {
         contentView.addSubview(title)
 
         NSLayoutConstraint.activate([
-            // Center the label vertically, and use it to fill the remaining
-            // space in the header view.
-            title.heightAnchor.constraint(equalToConstant: 24),
+            title.heightAnchor.constraint(equalToConstant: 20),
             title.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
             title.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
             title.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
@@ -38,7 +36,7 @@ class SourceSectionHeaderView: UITableViewHeaderFooterView {
 
 class BrowseViewController: UIViewController {
     
-    let tableView = UITableView()
+    let tableView = UITableView(frame: .zero, style: .grouped)
     
     var sources = SourceManager.shared.sources {
         didSet {
@@ -80,6 +78,7 @@ class BrowseViewController: UIViewController {
         title = "Browse"
         
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.hidesSearchBarWhenScrolling = false
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -88,6 +87,7 @@ class BrowseViewController: UIViewController {
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0.0
         }
+        tableView.separatorStyle = .none
         tableView.delaysContentTouches = false
         tableView.delegate = self
         tableView.dataSource = self
@@ -117,18 +117,14 @@ class BrowseViewController: UIViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        if #available(iOS 11.0, *) {
-            navigationItem.hidesSearchBarWhenScrolling = false
-        }
-    }
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        navigationItem.hidesSearchBarWhenScrolling = false
+//    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if #available(iOS 11.0, *) {
-            navigationItem.hidesSearchBarWhenScrolling = true
-        }
+        navigationItem.hidesSearchBarWhenScrolling = true
     }
     
     func reloadData() {
@@ -159,7 +155,16 @@ extension BrowseViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        24
+        20
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        8
+    }
+    
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        UIView()
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

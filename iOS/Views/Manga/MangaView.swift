@@ -213,6 +213,7 @@ struct MangaView: View {
             }
             .frame(alignment: .center)
         }
+        .navigationBarTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {

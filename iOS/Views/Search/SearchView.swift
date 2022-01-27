@@ -61,6 +61,11 @@ struct SearchView: View {
         }
         .onReceive(sourcePublisher) { _ in
             sources = SourceManager.shared.sources
+            if !searchText.isEmpty {
+                Task {
+                    await doSearch()
+                }
+            }
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
