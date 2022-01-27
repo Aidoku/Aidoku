@@ -73,6 +73,7 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
         cell?.manga = manga[indexPath.row]
         return cell ?? UICollectionViewCell()
     }
+    
 }
 
 // MARK: - Collection View Delegate
@@ -93,6 +94,22 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? MangaCoverCell {
             cell.unhighlight(animated: true)
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
+            let action: UIAction
+            if DataManager.shared.contains(manga: self.manga[indexPath.row]) {
+                action = UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
+                    DataManager.shared.delete(manga: self.manga[indexPath.row])
+                }
+            } else {
+                action = UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
+                    _ = DataManager.shared.add(manga: self.manga[indexPath.row])
+                }
+            }
+            return UIMenu(title: "", children: [action])
         }
     }
 }

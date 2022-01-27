@@ -266,7 +266,7 @@ struct LibraryView: View {
             .navigationTitle("Library")
             .navigationBarTitleDisplayMode(.large)
             .navigationSearchBar {
-                SearchBar("Search", text: $searchText, isEditing: $isEditing)
+                SearchBar("Find in Library", text: $searchText, isEditing: $isEditing)
                     .showsCancelButton(isEditing)
             }
             .toolbar {
@@ -320,8 +320,13 @@ struct LibraryView: View {
         if sortAscending {
             loadedManga.reverse()
         }
-        withAnimation(.easeInOut(duration: 0.3)) {
-            self.manga = loadedManga
+        // animation doesn't work pre-ios 15 due to some swiftui bug I don't care to figure out
+        if #available(iOS 15.0, *) {
+            withAnimation {
+                manga = loadedManga
+            }
+        } else {
+            manga = loadedManga
         }
     }
     

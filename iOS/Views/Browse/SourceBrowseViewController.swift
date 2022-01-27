@@ -72,16 +72,12 @@ class SourceBrowseViewController: MangaCollectionViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if #available(iOS 11.0, *) {
-            navigationItem.hidesSearchBarWhenScrolling = false
-        }
+        navigationItem.hidesSearchBarWhenScrolling = false
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if #available(iOS 11.0, *) {
-            navigationItem.hidesSearchBarWhenScrolling = true
-        }
+        navigationItem.hidesSearchBarWhenScrolling = true
     }
     
     override func viewLayoutMarginsDidChange() {

@@ -65,6 +65,7 @@ struct FilterSortCell: View {
                     }
                 }
             }
+            .listStyle(.insetGrouped)
         } label: {
             Text(filter.name)
         }
@@ -103,6 +104,7 @@ struct FilterListCell: View {
                         FilterListCell(filter: subFilter, selectedFilters: selectedFilters)
                     }
                 }
+                .listStyle(.insetGrouped)
             } label: {
                 Text(filter.name)
             }
@@ -122,6 +124,7 @@ struct FilterListCell: View {
                         }
                     }
                 }
+                .listStyle(.insetGrouped)
             } label: {
                 Text(filter.name)
             }

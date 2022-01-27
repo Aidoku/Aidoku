@@ -36,6 +36,7 @@ class SourceTableViewCell: UITableViewCell {
     }
     
     func setupViews() {
+        backgroundColor = .clear
         accessoryType = .disclosureIndicator
         
         iconView.clipsToBounds = true
@@ -70,6 +71,11 @@ class SourceTableViewCell: UITableViewCell {
         subtitleLabel.textColor = .secondaryLabel
         labelStack.addArrangedSubview(subtitleLabel)
         
+        let separator = UIView()
+        separator.backgroundColor = .separator
+        separator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(separator)
+        
         iconView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
         iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         iconView.widthAnchor.constraint(equalToConstant: 48).isActive = true
@@ -77,6 +83,11 @@ class SourceTableViewCell: UITableViewCell {
         
         labelStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10).isActive = true
         labelStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+        
+        separator.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
+        separator.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        separator.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        separator.heightAnchor.constraint(equalToConstant: 1).isActive = true
     }
     
     func loadInfo() {

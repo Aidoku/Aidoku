@@ -45,6 +45,8 @@ class ExternalSourceTableViewCell: UITableViewCell {
     }
     
     func setupViews() {
+        backgroundColor = .clear
+        
         selectionStyle = .none
         
         iconView.clipsToBounds = true
@@ -83,6 +85,11 @@ class ExternalSourceTableViewCell: UITableViewCell {
         getButton.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(getButton)
         
+        let separator = UIView()
+        separator.backgroundColor = .separator
+        separator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(separator)
+        
         iconView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
         iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         iconView.widthAnchor.constraint(equalToConstant: 48).isActive = true
@@ -96,6 +103,11 @@ class ExternalSourceTableViewCell: UITableViewCell {
         getButtonWidthConstraint = getButton.widthAnchor.constraint(equalToConstant: buttonWidth)
         getButtonWidthConstraint?.isActive = true
         getButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        
+        separator.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
+        separator.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        separator.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -1).isActive = true
+        separator.heightAnchor.constraint(equalToConstant: 1).isActive = true
     }
     
     func loadInfo() {
