@@ -20,20 +20,20 @@ struct ChapterListView: View {
     init(manga: Manga, chapters: [Chapter], readHistory: [String: Int]) {
         self.chapters = chapters
         self.manga = manga
-        self.readHistory = readHistory
+        self._readHistory = .init(initialValue: readHistory)
         
         let volumeNumbers = chapters.map { $0.chapterNum == 0 ? -2 : $0.volumeNum ?? -1 }.uniqued()
         var newVolumes = [Volume]()
         for num in volumeNumbers {
             let actual = num < 0 ? nil : num
-            let title = num < -1 ? "Volume 0" : num < 1 ? "No Volume" : "Volume \(num)"
+            let title = num < -1 ? "Volume 0" : num < 1 ? "No Volume" : String(format: "Volume %g", num)
             newVolumes.append(Volume(
                 title: title,
-                sortNumber: num == 0 ? Int.max : num,
+                sortNumber: num == 0 ? 99999 : num,
                 chapters: chapters.filter { num < -1 ? $0.chapterNum == 0 : $0.volumeNum == actual && $0.chapterNum > 0 }
             ))
         }
-        self.volumes = newVolumes
+        self._volumes = .init(initialValue: newVolumes)
     }
     
     var body: some View {
@@ -49,10 +49,10 @@ struct ChapterListView: View {
                         .contextMenu {
                             Button {
                                 if readHistory[chapter.id] ?? 0 > 0 {
-                                    DataManager.shared.removeHistory(manga: manga, chapter: chapter)
+                                    DataManager.shared.removeHistory(for: chapter)
                                     readHistory[chapter.id] = -1
                                 } else {
-                                    DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
+                                    DataManager.shared.addHistory(for: chapter)
                                     readHistory[chapter.id] = Int(Date().timeIntervalSince1970)
                                 }
                             } label: {

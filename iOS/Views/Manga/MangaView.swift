@@ -45,7 +45,7 @@ struct MangaView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 16) {
-                    KFImage(URL(string: manga.thumbnailURL ?? ""))
+                    KFImage(URL(string: manga.cover ?? ""))
                         .placeholder {
                             Image("MangaPlaceholder")
                                 .resizable()
@@ -113,11 +113,11 @@ struct MangaView: View {
                         .transition(.opacity)
                         .transition(.move(edge: .top))
                 }
-                if let categories = manga.categories {
+                if let tags = manga.tags {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                            ForEach(categories, id: \.self) { category in
-                                Text(category)
+                            ForEach(tags, id: \.self) { tag in
+                                Text(tag)
                                     .font(.system(size: 13))
                                     .foregroundColor(.secondary)
                                     .padding(4)
@@ -193,14 +193,14 @@ struct MangaView: View {
                         .contextMenu {
                             if readHistory[chapter.id] ?? 0 > 0 {
                                 Button {
-                                    DataManager.shared.removeHistory(manga: manga, chapter: chapter)
+                                    DataManager.shared.removeHistory(for: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Unread")
                                 }
                             } else {
                                 Button {
-                                    DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
+                                    DataManager.shared.addHistory(for: chapter)
                                     updateReadHistory()
                                 } label: {
                                     Text("Mark as Read")
@@ -223,10 +223,10 @@ struct MangaView: View {
                             if inLibrary {
                                 DataManager.shared.delete(manga: manga)
                             } else {
-                                _ = DataManager.shared.add(manga: manga)
+                                _ = DataManager.shared.addToLibrary(manga: manga)
                             }
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                inLibrary = DataManager.shared.contains(manga: manga)
+                                inLibrary = DataManager.shared.libraryContains(manga: manga)
                             }
                         } label: {
                             if inLibrary {
@@ -256,9 +256,9 @@ struct MangaView: View {
                         if inLibrary {
                             DataManager.shared.delete(manga: manga)
                         } else {
-                            _ = DataManager.shared.add(manga: manga)
+                            _ = DataManager.shared.addToLibrary(manga: manga)
                         }
-                        inLibrary = DataManager.shared.contains(manga: manga)
+                        inLibrary = DataManager.shared.libraryContains(manga: manga)
                     } label: {
                         Image(systemName: inLibrary ? "bookmark.fill" : "bookmark")
                     }
@@ -299,7 +299,7 @@ struct MangaView: View {
             )
         }
         .onAppear {
-            inLibrary = DataManager.shared.contains(manga: manga)
+            inLibrary = DataManager.shared.libraryContains(manga: manga)
             if !chaptersLoaded {
                 Task {
                     await fetchManga()
@@ -325,7 +325,7 @@ struct MangaView: View {
             }
         }
         
-        guard let source = SourceManager.shared.source(for: manga.provider) else {
+        guard let source = SourceManager.shared.source(for: manga.sourceId) else {
             if manga.description == nil {
                 manga.description = "No Description"
             }
@@ -344,7 +344,7 @@ struct MangaView: View {
                 descriptionLoaded = true
             }
             updateReadHistory()
-            chapters = (try? await source.getChapterList(manga: manga)) ?? []
+            chapters = await DataManager.shared.getChapters(for: manga, fromSource: !inLibrary)
             withAnimation(.easeInOut(duration: 0.3)) {
                 chaptersLoaded = true
             }

@@ -141,26 +141,26 @@ class Source: Identifiable {
     }
     
     var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, categories, category_str_lens, category_count in
+        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, tags, tag_str_lens, tag_count in
             guard descriptor < self.descriptors.count else { return }
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
-                var categoryList: [String] = []
-                let categoryStrings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(categories), length: Int(category_count))) ?? []
-                let categoryStrLengths: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(category_str_lens), length: Int(category_count))) ?? []
-                for i in 0..<Int(category_count) {
-                    if let str = try? self.vm.stringFromHeap(byteOffset: Int(categoryStrings[i]), length: Int(categoryStrLengths[i])) {
-                        categoryList.append(str)
+                var tagList: [String] = []
+                let tagStrings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(tags), length: Int(tag_count))) ?? []
+                let tagStringLengths: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(tag_str_lens), length: Int(tag_count))) ?? []
+                for i in 0..<Int(tag_count) {
+                    if let str = try? self.vm.stringFromHeap(byteOffset: Int(tagStrings[i]), length: Int(tagStringLengths[i])) {
+                        tagList.append(str)
                     }
                 }
                 let manga = Manga(
-                    provider: self.info.id,
+                    sourceId: self.info.id,
                     id: mangaId,
                     title: title_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(title), length: Int(title_len)) : nil,
                     author: author_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
                     description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
-                    categories: categoryList,
+                    tags: tagList,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
-                    thumbnailURL: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil
+                    cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil
                 )
                 if var mangaList = self.descriptors[Int(descriptor)] as? [Manga] {
                     mangaList.append(manga)
@@ -172,19 +172,29 @@ class Source: Identifiable {
         }
     }
     
-    var push_chapter: (Int32, Int32, Int32, Int32, Int32, Int32, Float32, Int32, Int32, Int32) -> Void {
-        { descriptor, id, id_len, name, name_len, volume, chapter, dateUpdated, scanlator, scanlator_len in
+    var chapterCounter = 0
+    var currentManga = ""
+    
+    var push_chapter: (Int32, Int32, Int32, Int32, Int32, Float32, Float32, Int32, Int32, Int32) -> Void {
+        { descriptor, id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len in
             guard descriptor < self.descriptors.count else { return }
             if var chapters = self.descriptors[Int(descriptor)] as? [Chapter] {
                 if let chapterId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                     chapters.append(
                         Chapter(
+                            sourceId: self.info.id,
                             id: chapterId,
+                            mangaId: self.currentManga,
                             title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
+                            scanlator: scanlator_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(scanlator), length: Int(scanlator_len)) : nil,
+                            lang: "en",
                             chapterNum: Float(chapter),
-                            volumeNum: volume >= 0 ? Int(volume) : nil
+                            volumeNum: volume >= 0 ? Float(volume) : nil,
+                            dateUploaded: Date(timeIntervalSince1970: TimeInterval(dateUploaded)),
+                            sourceOrder: self.chapterCounter
                         )
                     );
+                    self.chapterCounter += 1
                 }
                 self.descriptors[Int(descriptor)] = chapters
             }
@@ -436,10 +446,14 @@ class Source: Identifiable {
             self.descriptorPointer += 1
             self.descriptors.append(manga)
             
+            self.chapterCounter = 0
+            self.currentManga = manga.id
+            
             try self.vm.call("chapter_list_request", descriptor, Int32(self.descriptorPointer))
             
             let chapters = self.descriptors[Int(descriptor)] as? [Chapter] ?? []
             
+            self.chapterCounter = 0
             self.descriptorPointer = -1
             self.descriptors = []
             

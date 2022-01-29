@@ -288,7 +288,6 @@ struct LibraryView: View {
             Task {
                 await loadHistory()
                 if !updatedLibrary {
-                    await DataManager.shared.getLatestMangaDetails()
                     await DataManager.shared.updateLibrary()
                     loadManga()
                     updatedLibrary = true
@@ -307,7 +306,7 @@ struct LibraryView: View {
     }
     
     func loadManga() {
-        var loadedManga = DataManager.shared.manga
+        var loadedManga = DataManager.shared.libraryManga
         if sortMethod == 1 {
             loadedManga.sort {
                 $0.title ?? "" < $1.title ?? ""
@@ -333,7 +332,7 @@ struct LibraryView: View {
     func loadHistory() async {
         for m in manga {
             readHistory[m.id] = DataManager.shared.getReadHistory(manga: m)
-            chapters[m.id] = (try? await SourceManager.shared.source(for: m.provider)?.getChapterList(manga: m)) ?? []
+            chapters[m.id] = await DataManager.shared.getChapters(for: m)
         }
     }
     

@@ -90,6 +90,13 @@ class SourceManager {
         return nil
     }
     
+    func clearSources() {
+        for source in sources {
+            try? FileManager.default.removeItem(at: source.url)
+        }
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+    }
+    
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)

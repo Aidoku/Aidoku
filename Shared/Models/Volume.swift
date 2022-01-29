@@ -9,6 +9,6 @@ import Foundation
 
 struct Volume: Hashable {
     let title: String
-    let sortNumber: Int
+    let sortNumber: Float
     var chapters: [Chapter]
 }

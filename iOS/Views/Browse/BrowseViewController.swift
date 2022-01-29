@@ -77,6 +77,8 @@ class BrowseViewController: UIViewController {
         super.viewDidLoad()
         title = "Browse"
         
+//        view.backgroundColor = .systemBackground
+        
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
         
@@ -94,6 +96,7 @@ class BrowseViewController: UIViewController {
         tableView.register(SourceTableViewCell.self, forCellReuseIdentifier: "SourceTableViewCell")
         tableView.register(ExternalSourceTableViewCell.self, forCellReuseIdentifier: "ExternalSourceTableViewCell")
         tableView.register(SourceSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SourceSectionHeaderView")
+        tableView.backgroundColor = .systemBackground
         view.addSubview(tableView)
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -117,10 +120,10 @@ class BrowseViewController: UIViewController {
         }
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        navigationItem.hidesSearchBarWhenScrolling = false
-//    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationItem.hidesSearchBarWhenScrolling = false
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

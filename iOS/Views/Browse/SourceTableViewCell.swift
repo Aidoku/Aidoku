@@ -87,7 +87,7 @@ class SourceTableViewCell: UITableViewCell {
         separator.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
         separator.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         separator.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        separator.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        separator.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
     }
     
     func loadInfo() {
