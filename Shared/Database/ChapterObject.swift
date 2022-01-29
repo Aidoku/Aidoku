@@ -15,8 +15,8 @@ public class ChapterObject: NSManagedObject {
         sourceId = chapter.sourceId
         mangaId = chapter.mangaId
         id = chapter.id
-        title = chapter.title ?? "No title"
-        scanlator = chapter.scanlator  ?? "No scanlator"
+        title = chapter.title
+        scanlator = chapter.scanlator
         lang = chapter.lang
         self.chapter = chapter.chapterNum
         volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
@@ -54,8 +54,8 @@ extension ChapterObject {
     @NSManaged public var sourceId: String
     @NSManaged public var mangaId: String
     @NSManaged public var id: String
-    @NSManaged public var title: String
-    @NSManaged public var scanlator: String
+    @NSManaged public var title: String?
+    @NSManaged public var scanlator: String?
     @NSManaged public var lang: String
     @NSManaged public var chapter: Float
     @NSManaged public var volume: NSNumber?

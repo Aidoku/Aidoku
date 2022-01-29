@@ -51,6 +51,7 @@
 		FB4EEBCB27A35171005081A3 /* HistoryObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBC727A35171005081A3 /* HistoryObject.swift */; };
 		FB4EEBDC27A4C0DF005081A3 /* CategoryObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBD927A4C0DF005081A3 /* CategoryObject.swift */; };
 		FB4EEBDD27A4C0DF005081A3 /* CategoryObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBD927A4C0DF005081A3 /* CategoryObject.swift */; };
+		FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB4EEBDF27A4F5C1005081A3 /* CloudKit.framework */; };
 		FB56423227978944003B4246 /* SourceFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB56423127978944003B4246 /* SourceFiltersView.swift */; };
 		FB5FB5F62794EBD60059632B /* ChapterListPopoverContentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */; };
 		FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */; };
@@ -135,6 +136,8 @@
 		FB4EEBC127A34ED4005081A3 /* ChapterObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterObject.swift; sourceTree = "<group>"; };
 		FB4EEBC727A35171005081A3 /* HistoryObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryObject.swift; sourceTree = "<group>"; };
 		FB4EEBD927A4C0DF005081A3 /* CategoryObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryObject.swift; sourceTree = "<group>"; };
+		FB4EEBDE27A4F5AF005081A3 /* iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = iOS.entitlements; sourceTree = "<group>"; };
+		FB4EEBDF27A4F5C1005081A3 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk/System/Library/Frameworks/CloudKit.framework; sourceTree = DEVELOPER_DIR; };
 		FB56423127978944003B4246 /* SourceFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceFiltersView.swift; sourceTree = "<group>"; };
 		FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListPopoverContentController.swift; sourceTree = "<group>"; };
 		FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSourceTableViewCell.swift; sourceTree = "<group>"; };
@@ -171,6 +174,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
@@ -242,6 +246,7 @@
 				FB1B4855277CE5560056D02C /* SceneDelegate.swift */,
 				FB1B489D277CF5540056D02C /* HostingController.swift */,
 				FB1B48B0277CF7880056D02C /* Views */,
+				FB4EEBDE27A4F5AF005081A3 /* iOS.entitlements */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 		FB1B4875277CE7FE0056D02C /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FB4EEBDF27A4F5C1005081A3 /* CloudKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -729,6 +735,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -762,6 +769,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

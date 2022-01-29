@@ -32,7 +32,7 @@ public class MangaObject: NSManagedObject {
             author: author,
             artist: artist,
             description: desc,
-            tags: tags,
+            tags: tags ?? [],
             status: MangaStatus(rawValue: Int(status)) ?? .unknown,
             cover: cover,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
@@ -59,7 +59,7 @@ extension MangaObject {
     @NSManaged public var author: String?
     @NSManaged public var artist: String?
     @NSManaged public var desc: String?
-    @NSManaged public var tags: [String]
+    @NSManaged public var tags: [String]?
     @NSManaged public var status: Int16
     @NSManaged public var cover: String
     @NSManaged public var nsfw: Bool

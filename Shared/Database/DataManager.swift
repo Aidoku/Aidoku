@@ -11,22 +11,44 @@ class DataManager {
     
     static let shared = DataManager()
     
-    let container: NSPersistentContainer
+    var container: NSPersistentCloudKitContainer
+    var inMemory: Bool
     
     var libraryManga: [Manga] = []
     
     init(inMemory: Bool = false) {
-        container = NSPersistentContainer(name: "Aidoku")
+        container = NSPersistentCloudKitContainer(name: "Aidoku")
+        self.inMemory = inMemory
+        setupContainer(cloudSync: !NSUbiquitousKeyValueStore.default.bool(forKey: "disableCloudSync"))
+        loadLibrary()
+        
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateLibrary()
+            }
+        }
+    }
+    
+    func setupContainer(cloudSync: Bool = true) {
+        container = NSPersistentCloudKitContainer(name: "Aidoku")
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
+        
         container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergePolicy(merge: .overwriteMergePolicyType)
+        
+        container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        if !cloudSync {
+            container.persistentStoreDescriptions.first?.cloudKitContainerOptions = nil
+        }
+        
         container.loadPersistentStores { description, error in
             if let error = error {
                 fatalError("Error: \(error)")
             }
         }
-        loadLibrary()
     }
     
     func fetch<T>(request: NSFetchRequest<T>, predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, limit: Int? = nil) throws -> [T] {
@@ -289,6 +311,16 @@ extension DataManager {
         return nil
     }
     
+    func getChapterObject(for source: String, id: String) -> ChapterObject? {
+        try? getChapterObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND id = %@",
+                source, id
+            ),
+            limit: 1
+        ).first
+    }
+    
     func getChapterObjects(for manga: Manga) -> [ChapterObject] {
         (try? getChapterObjects(predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id), sortDescriptors: [NSSortDescriptor(key: "sourceOrder", ascending: true)])) ?? []
     }
@@ -315,23 +347,27 @@ extension DataManager {
     func setCurrentPage(_ page: Int, for chapter: Chapter) {
         guard let chapterObject = getChapterObject(for: chapter) else { return }
         chapterObject.progress = Int16(page)
-        chapterObject.history?.dateRead = Date()
+        if let historyObject = getHistoryObject(for: chapter) {
+            historyObject.dateRead = Date()
+        }
         _ = save()
     }
     
     func setCompleted(chapter: Chapter) {
         guard let historyObject = getHistoryObject(for: chapter) else { return }
-        historyObject.chapter.read = true
+        guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId) else { return }
+        chapterObject.read = true
         historyObject.dateRead = Date()
         _ = save()
     }
     
     func addHistory(for chapter: Chapter, page: Int? = nil) {
-        guard let historyObject = getHistoryObject(for: chapter) else { print("ayo")
+        guard let historyObject = getHistoryObject(for: chapter) else {
             return }
         historyObject.dateRead = Date()
         if let page = page {
-            historyObject.chapter.progress = Int16(page)
+            guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId) else { return }
+            chapterObject.progress = Int16(page)
         }
         _ = save()
     }
@@ -340,8 +376,8 @@ extension DataManager {
         guard let chapterObject = getChapterObject(for: chapter) else { return }
         chapterObject.read = false
         chapterObject.progress = 0
-        if let history = chapterObject.history {
-            container.viewContext.delete(history)
+        if let historyObject = getHistoryObject(for: chapter, createIfMissing: false) {
+            container.viewContext.delete(historyObject)
         }
         _ = save()
     }
@@ -357,13 +393,13 @@ extension DataManager {
     
     func getReadHistory(manga: Manga) -> [String: Int] {
         guard let readHistory = try? getReadHistory(
-            predicate: NSPredicate(format: "chapter.sourceId = %@ AND chapter.mangaId = %@", manga.sourceId, manga.id),
+            predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id),
             sortDescriptors: [NSSortDescriptor(key: "dateRead", ascending: false)]
         ) else { return [:] }
         
         var readHistoryDict: [String: Int] = [:]
         for history in readHistory {
-            let chapterId = history.chapter.id
+            let chapterId = history.chapterId
             readHistoryDict[chapterId] = Int(history.dateRead.timeIntervalSince1970)
         }
         
@@ -371,12 +407,14 @@ extension DataManager {
     }
     
     func getHistoryObject(for chapter: Chapter, createIfMissing: Bool = true) -> HistoryObject? {
-        if let historyObject = try? getReadHistory(predicate: NSPredicate(format: "chapter.sourceId = %@ AND chapter.id = %@", chapter.sourceId, chapter.id), limit: 1).first {
+        if let historyObject = try? getReadHistory(predicate: NSPredicate(format: "sourceId = %@ AND chapterId = %@", chapter.sourceId, chapter.id), limit: 1).first {
             return historyObject
-        } else if createIfMissing, let chapterObject = getChapterObject(for: chapter) {
+        } else if createIfMissing {
             let readHistory = HistoryObject(context: container.viewContext)
             readHistory.dateRead = Date()
-            readHistory.chapter = chapterObject
+            readHistory.sourceId = chapter.sourceId
+            readHistory.chapterId = chapter.id
+            readHistory.mangaId = chapter.mangaId
             return readHistory
         }
         return nil
