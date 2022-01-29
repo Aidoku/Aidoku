@@ -20,7 +20,9 @@ extension HistoryObject {
     }
 
     @NSManaged public var dateRead: Date
-    @NSManaged public var chapter: ChapterObject
+    @NSManaged public var sourceId: String
+    @NSManaged public var chapterId: String
+    @NSManaged public var mangaId: String
     
 }
 

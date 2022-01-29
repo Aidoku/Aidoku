@@ -13,6 +13,7 @@ struct SettingsView: View {
     @Binding var presented: Bool
     
     @State var confirmingReset = false
+    @State var cloudSync = !NSUbiquitousKeyValueStore.default.bool(forKey: "disableCloudSync")
     
     var body: some View {
         NavigationView {
@@ -34,6 +35,9 @@ struct SettingsView: View {
                     }
                     Link("GitHub Repository", destination: URL(string: "https://github.com/Skittyblock/Aidoku")!)
                     Link("Discord Server", destination: URL(string: "https://discord.gg/tGqkkKBBe5")!)
+                }
+                Section {
+                    Toggle("iCloud Sync", isOn: $cloudSync)
                 }
                 Section {
                     Button {
@@ -97,6 +101,10 @@ struct SettingsView: View {
                         }
                     }
                 }
+            }
+            .onChange(of: cloudSync) { newValue in
+                NSUbiquitousKeyValueStore.default.set(!newValue as NSNumber, forKey: "disableCloudSync")
+                DataManager.shared.setupContainer(cloudSync: newValue)
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")

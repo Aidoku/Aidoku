@@ -19,7 +19,7 @@ extension CategoryObject {
         return NSFetchRequest<CategoryObject>(entityName: "Category")
     }
 
-    @NSManaged public var id: String
+    @NSManaged public var id: UUID?
     @NSManaged public var title: String
     @NSManaged public var sort: Int16
     @NSManaged public var flags: Int16

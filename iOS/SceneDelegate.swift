@@ -16,10 +16,13 @@ class FixedTitleNavigationController: UINavigationController {
     
     override var title: String? {
         didSet {
-            if fixTitle {
-                fixTitle = false
-                navigationItem.title = title
-                title = oldTitle
+            // Crashes pre-iOS 15 for some reason
+            if #available(iOS 15.0, *) {
+                if fixTitle {
+                    fixTitle = false
+                    navigationItem.title = title
+                    title = oldTitle
+                }
             }
         }
         willSet {
