@@ -18,7 +18,7 @@ enum FilterType: Int {
     case group = 6 // filter group
 }
 
-struct SortOption: KVCObject {
+struct SortOption: KVCObject, Equatable {
     let index: Int
     let name: String
     let ascending: Bool
@@ -84,10 +84,14 @@ struct Filter: KVCObject, Identifiable, Equatable {
     }
     
     // Sort
-    init(name: String, options: [Filter], default defaultValue: SortOption?) {
+    init(name: String, options: [Filter], value: SortOption? = nil, default defaultValue: SortOption? = nil) {
         self.type = .sort
         self.name = name
-        self.value = options
+        if let value = value {
+            self.value = value
+        } else {
+            self.value = options
+        }
         self.defaultValue = defaultValue
     }
     

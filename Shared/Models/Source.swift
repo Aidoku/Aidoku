@@ -106,6 +106,7 @@ class Source: Identifiable {
                     filter = Filter(
                         name: name,
                         options: options,
+                        value: (self.descriptors[Int(value)] as? Filter)?.value as? SortOption,
                         default: (self.descriptors[Int(default_value)] as? Filter)?.value as? SortOption
                     )
                 } else if type == FilterType.sortOption.rawValue {
@@ -397,14 +398,12 @@ class Source: Identifiable {
         return try await task.value
     }
     
-    func getMangaListing(listing: Listing, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
+    func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
             let descriptor = self.array()
-            self.descriptorPointer += 1
-            self.descriptors.append(filters)
             let listingName = self.vm.write(string: listing.name, memory: self.memory)
             
-            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(self.descriptorPointer), Int32(page))
+            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             
