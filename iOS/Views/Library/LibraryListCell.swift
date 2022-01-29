@@ -23,7 +23,7 @@ struct LibraryListCell<Content, Content2>: View where Content: View, Content2: V
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 16) {
-                KFImage(URL(string: manga.thumbnailURL ?? ""))
+                KFImage(URL(string: manga.cover ?? ""))
                     .placeholder {
                         Image("MangaPlaceholder")
                             .resizable()

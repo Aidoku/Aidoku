@@ -100,13 +100,20 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             let action: UIAction
-            if DataManager.shared.contains(manga: self.manga[indexPath.row]) {
+            if DataManager.shared.libraryContains(manga: self.manga[indexPath.row]) {
                 action = UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
                     DataManager.shared.delete(manga: self.manga[indexPath.row])
                 }
             } else {
                 action = UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    _ = DataManager.shared.add(manga: self.manga[indexPath.row])
+                    Task {
+                        let manga = self.manga[indexPath.row]
+                        if let updatedManga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
+                            DispatchQueue.main.async {
+                                _ = DataManager.shared.addToLibrary(manga: updatedManga)
+                            }
+                        }
+                    }
                 }
             }
             return UIMenu(title: "", children: [action])

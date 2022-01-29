@@ -67,6 +67,9 @@ struct SettingsView: View {
                                 KingfisherManager.shared.cache.cleanExpiredDiskCache()
                                 DataManager.shared.clearLibrary()
                                 DataManager.shared.clearHistory()
+                                DataManager.shared.clearManga()
+                                DataManager.shared.clearChapters()
+                                SourceManager.shared.clearSources()
                                 UserDefaults.resetStandardUserDefaults()
                             }
                         }

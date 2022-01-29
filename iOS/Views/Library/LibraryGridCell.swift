@@ -13,7 +13,7 @@ struct LibraryGridCell: View {
     let manga: Manga
     
     var body: some View {
-        KFImage(URL(string: manga.thumbnailURL ?? ""))
+        KFImage(URL(string: manga.cover ?? ""))
             .placeholder {
                 Image("MangaPlaceholder")
                     .resizable()

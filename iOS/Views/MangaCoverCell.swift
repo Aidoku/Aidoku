@@ -53,7 +53,7 @@ class MangaCoverCell: UICollectionViewCell {
         let processor = DownsamplingImageProcessor(size: bounds.size) //|> RoundCornerImageProcessor(cornerRadius: 5)
         let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
         imageView.kf.setImage(
-            with: URL(string: manga?.thumbnailURL ?? ""),
+            with: URL(string: manga?.cover ?? ""),
             placeholder: UIImage(named: "MangaPlaceholder"),
             options: [
                 .processor(processor),

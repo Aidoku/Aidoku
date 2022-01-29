@@ -1,19 +1,63 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="20F5055c" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="MangaData" representedClassName="MangaData" syncable="YES" codeGenerationType="class">
-        <attribute name="id" optional="YES" attributeType="String"/>
-        <attribute name="lastOpened" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="payload" optional="YES" attributeType="Binary"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
+    <entity name="Category" representedClassName="CategoryObject" syncable="YES">
+        <attribute name="flags" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String"/>
+        <relationship name="libraryObjects" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LibraryManga" inverseName="categories" inverseEntity="LibraryManga"/>
     </entity>
-    <entity name="ReadHistory" representedClassName="ReadHistory" syncable="YES" codeGenerationType="class">
-        <attribute name="chapterId" optional="YES" attributeType="String"/>
-        <attribute name="currentPage" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="lastOpened" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="mangaId" optional="YES" attributeType="String"/>
+    <entity name="Chapter" representedClassName="ChapterObject" syncable="YES">
+        <attribute name="chapter" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="dateUploaded" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="lang" attributeType="String"/>
+        <attribute name="mangaId" attributeType="String"/>
+        <attribute name="progress" attributeType="Integer 16" defaultValueString="0"/>
+        <attribute name="read" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="scanlator" attributeType="String"/>
+        <attribute name="sourceId" attributeType="String"/>
+        <attribute name="sourceOrder" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="volume" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="history" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="History" inverseName="chapter" inverseEntity="History"/>
+        <relationship name="manga" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Manga" inverseName="chapters" inverseEntity="Manga"/>
+    </entity>
+    <entity name="History" representedClassName="HistoryObject" syncable="YES">
+        <attribute name="dateRead" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="chapter" maxCount="1" deletionRule="Nullify" destinationEntity="Chapter" inverseName="history" inverseEntity="Chapter"/>
+    </entity>
+    <entity name="LibraryManga" representedClassName="LibraryMangaObject" syncable="YES">
+        <attribute name="dateAdded" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="lastOpened" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastUpdated" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="categories" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Category" inverseName="libraryObjects" inverseEntity="Category"/>
+        <relationship name="manga" maxCount="1" deletionRule="Nullify" destinationEntity="Manga" inverseName="libraryObject" inverseEntity="Manga"/>
+    </entity>
+    <entity name="Manga" representedClassName="MangaObject" syncable="YES">
+        <attribute name="artist" optional="YES" attributeType="String"/>
+        <attribute name="author" optional="YES" attributeType="String"/>
+        <attribute name="cover" attributeType="String"/>
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="favorite" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="flags" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="String"/>
+        <attribute name="lastUpdate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="nsfw" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="sourceId" attributeType="String"/>
+        <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="tags" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="viewer" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="chapters" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Chapter" inverseName="manga" inverseEntity="Chapter"/>
+        <relationship name="libraryObject" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="LibraryManga" inverseName="manga" inverseEntity="LibraryManga"/>
     </entity>
     <elements>
-        <element name="MangaData" positionX="-63" positionY="-9" width="128" height="89"/>
-        <element name="ReadHistory" positionX="-54" positionY="0" width="128" height="89"/>
+        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="133"/>
+        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="283"/>
+        <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="253"/>
+        <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="118"/>
+        <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="73"/>
     </elements>
 </model>

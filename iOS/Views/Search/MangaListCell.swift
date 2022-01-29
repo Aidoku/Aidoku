@@ -18,7 +18,7 @@ struct MangaListCell: View {
         } label: {
             VStack(spacing: 16) {
                 HStack(spacing: 16) {
-                    KFImage(URL(string: manga.thumbnailURL ?? ""))
+                    KFImage(URL(string: manga.cover ?? ""))
                         .resizable()
                         .frame(width: 2/3*120, height: 120)
                         .cornerRadius(8)
@@ -47,8 +47,8 @@ struct MangaListCell: View {
             }
             .onAppear {
                 Task {
-                    if manga.thumbnailURL == nil {
-                        manga = (try! await SourceManager.shared.source(for: manga.provider)?.getMangaDetails(manga: manga)) ?? manga
+                    if manga.cover == nil {
+                        manga = (try! await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga)) ?? manga
                     }
                 }
             }

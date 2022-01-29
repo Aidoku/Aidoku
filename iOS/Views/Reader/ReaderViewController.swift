@@ -104,7 +104,9 @@ class ReaderViewController: UIViewController {
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
     
     var currentIndex: Int {
-        Int(floor((self.scrollView.contentSize.width - scrollView.contentOffset.x) / self.scrollView.bounds.width) - CGFloat(hasPreviousChapter.intValue + 2))
+        let offset = floor((self.scrollView.contentSize.width - scrollView.contentOffset.x) / self.scrollView.bounds.width) - CGFloat(hasPreviousChapter.intValue + 2)
+        guard !offset.isNaN && !offset.isInfinite else { return 0 }
+        return Int(offset)
     }
     
     var statusBarHidden = false
@@ -266,7 +268,7 @@ class ReaderViewController: UIViewController {
     
     @objc func sliderMoved(_ sender: ReaderSliderView) {
         let page = Int(round(sender.currentValue * CGFloat(pages.count - 1)))
-        currentPageLabel.text = "\(page) of \(pages.count)"
+        currentPageLabel.text = "\(page + 1) of \(pages.count)"
     }
     
     @objc func sliderDone(_ sender: ReaderSliderView) {
@@ -339,8 +341,7 @@ class ReaderViewController: UIViewController {
     }
     
     func preload(chapter: Chapter) async {
-        guard let manga = manga else { return }
-        preloadedPages = (try? await SourceManager.shared.source(for: manga.provider)?.getPageList(chapter: chapter)) ?? []
+        preloadedPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
     }
     
     func preloadImages(for range: Range<Int>) {
@@ -386,21 +387,21 @@ class ReaderViewController: UIViewController {
         guard let manga = manga else { return }
         
         if chapterList.isEmpty {
-            chapterList = (try? await SourceManager.shared.source(for: manga.provider)?.getChapterList(manga: manga)) ?? []
+            chapterList = await DataManager.shared.getChapters(for: manga, fromSource: true)
         }
         
-        DataManager.shared.addReadHistory(manga: manga, chapter: chapter)
-        startPage = DataManager.shared.currentPage(manga: manga, chapterId: chapter.id)
-        
         DispatchQueue.main.async {
-            self.navigationItem.setTitle(upper: self.chapter.volumeNum != nil ? "Volume \(self.chapter.volumeNum ?? 0)" : nil, lower: String(format: "Chapter %g", self.chapter.chapterNum))
+            DataManager.shared.addHistory(for: self.chapter)
+            self.startPage = DataManager.shared.currentPage(for: self.chapter)
+            
+            self.navigationItem.setTitle(upper: self.chapter.volumeNum != nil ? String(format: "Volume %g", self.chapter.volumeNum ?? 0) : nil, lower: String(format: "Chapter %g", self.chapter.chapterNum))
         }
         
         if !preloadedPages.isEmpty {
             pages = preloadedPages
             preloadedPages = []
         } else {
-            pages = (try? await SourceManager.shared.source(for: manga.provider)?.getPageList(chapter: chapter)) ?? []
+            pages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
         }
         
         if let chapterIndex = chapterList.firstIndex(of: chapter) {
@@ -498,15 +499,13 @@ class ReaderViewController: UIViewController {
     }
     
     @objc func close() {
-        if let manga = manga {
-            var index = currentIndex
-            if index < 0 {
-                index = 0
-            } else if index >= items.count - (hasNextChapter.intValue + hasPreviousChapter.intValue + 2) {
-                index = items.count - (hasNextChapter.intValue + hasPreviousChapter.intValue + 2) - 1
-            }
-            DataManager.shared.setCurrentPage(manga: manga, chapter: chapter, page: index)
+        var index = currentIndex
+        if index < 0 {
+            index = 0
+        } else if index >= items.count - (hasNextChapter.intValue + hasPreviousChapter.intValue + 2) {
+            index = items.count - (hasNextChapter.intValue + hasPreviousChapter.intValue + 2) - 1
         }
+        DataManager.shared.setCurrentPage(index, for: chapter)
         self.dismiss(animated: true)
     }
     
@@ -600,6 +599,7 @@ extension ReaderViewController: UIScrollViewDelegate {
                 )
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 3) { // Preload next chapter
+            DataManager.shared.setCompleted(chapter: chapter)
             Task {
                 let nextChapter = chapterList[chapterIndex + 1]
                 await preload(chapter: nextChapter)
@@ -621,9 +621,7 @@ extension ReaderViewController: UIScrollViewDelegate {
                 self.scrollTo(page: 0)
             }
         } else {
-            if let manga = manga {
-                DataManager.shared.setCurrentPage(manga: manga, chapter: chapter, page: currentIndex)
-            }
+            DataManager.shared.setCurrentPage(currentIndex, for: chapter)
             self.preloadImages(for: currentIndex..<(currentIndex + imagesToPreload))
             self.setImages(for: (currentIndex - 1)..<(currentIndex + 4))
         }
