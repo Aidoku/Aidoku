@@ -14,8 +14,13 @@ class SourceBrowseViewController: MangaCollectionViewController {
     var listings: [Listing] = []
     var filters: [Filter] = []
     
+    var hasMore: Bool = false
+    var page: Int? = nil
+    var query: String? = nil
     var currentListing: Listing?
     let selectedFilters = SelectedFilters()
+    
+    var oldSelectedFilters: [Filter] = []
     
     init(source: Source) {
         self.source = source
@@ -50,8 +55,12 @@ class SourceBrowseViewController: MangaCollectionViewController {
             )
         ]
         
+        (collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.headerReferenceSize = CGSize(width: collectionView?.bounds.size.width ?? 0, height: 40)
+        collectionView?.register(MangaListingHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListingHeader")
+        
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
+        searchController.hidesNavigationBarDuringPresentation = false
         navigationItem.searchController = searchController
         
         let activityIndicator = UIActivityIndicatorView(style: .medium)
@@ -80,12 +89,6 @@ class SourceBrowseViewController: MangaCollectionViewController {
         navigationItem.hidesSearchBarWhenScrolling = true
     }
     
-    override func viewLayoutMarginsDidChange() {
-        if let layout = collectionView?.collectionViewLayout as? MangaGridFlowLayout {
-            layout.sectionInset = UIEdgeInsets(top: 0, left: view.layoutMargins.left, bottom: 10, right: view.layoutMargins.right)
-        }
-    }
-    
     func fetchData() async {
         if filters.isEmpty {
             filters = (try? await source.getFilters()) ?? []
@@ -96,15 +99,29 @@ class SourceBrowseViewController: MangaCollectionViewController {
         if listings.isEmpty {
             listings = (try? await source.getListings()) ?? []
         }
-        if currentListing == nil {
-            currentListing = listings.first
+        if page == nil {
+            manga = []
+            page = 1
+            hasMore = true
+        } else if let current = page {
+            page = current + 1
         }
-        if let listing = currentListing {
-            manga = (try? await source.getMangaListing(listing: listing, filters: selectedFilters.filters))?.manga ?? []
+        if hasMore, let page = page {
+            let result: MangaPageResult?
+            if let listing = currentListing {
+                result = try? await source.getMangaListing(listing: listing, page: page)
+            } else if let query = query {
+                result = try? await source.fetchSearchManga(query: query, filters: selectedFilters.filters, page: page)
+            } else {
+                result = try? await source.getMangaList(filters: selectedFilters.filters, page: page)
+            }
+            manga.append(contentsOf: result?.manga ?? [])
+            hasMore = result?.hasNextPage ?? false
         }
     }
     
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {
+        oldSelectedFilters = selectedFilters.filters
         let vc = HostingController(rootView: SourceFiltersView(filters: filters, selectedFilters: selectedFilters))
         vc.preferredContentSize = CGSize(width: 300, height: 300)
         vc.modalPresentationStyle = .popover
@@ -115,24 +132,129 @@ class SourceBrowseViewController: MangaCollectionViewController {
     }
 }
 
+// MARK: - Collection View Delegate
+extension SourceBrowseViewController {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        print("yo")
+        return CGSize(width: collectionView.bounds.width, height: 40)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            var header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "MangaListingHeader", for: indexPath) as? MangaListingHeader
+            if header == nil {
+                header = MangaListingHeader(frame: .zero)
+            }
+            header?.delegate = nil
+            var options = listings.map { $0.name }
+            options.append("All")
+            header?.title = "List"
+            header?.options = options
+            header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
+            header?.delegate = self
+            return header ?? UICollectionReusableView()
+        }
+        return UICollectionReusableView()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.row == manga.count - 1 && hasMore {
+            Task {
+                await fetchData()
+                reloadData()
+            }
+        }
+    }
+}
+
+// MARK: - Listing Header Delegate
+extension SourceBrowseViewController: MangaListingHeaderDelegate {
+    
+    func optionSelected(_ index: Int) {
+        if index == listings.count {
+            currentListing = nil
+        } else {
+            currentListing = listings[index]
+            query = nil
+        }
+        Task {
+            page = nil
+            await fetchData()
+            reloadData()
+        }
+    }
+}
+
 // MARK: - Search Bar Delegate
 extension SourceBrowseViewController: UISearchBarDelegate {
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let vc = SourceSearchViewController(source: source, query: searchBar.text, selectedFilters: selectedFilters)
-        navigationController?.pushViewController(vc, animated: true)
+        guard searchBar.text != query else { return }
+        query = searchBar.text
+        currentListing = nil
+        Task {
+            page = nil
+            await fetchData()
+            reloadData()
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        query = nil
+        Task {
+            page = nil
+            await fetchData()
+            reloadData()
+        }
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            query = nil
+            Task {
+                page = nil
+                await fetchData()
+                reloadData()
+            }
+        }
     }
 }
 
 // MARK: - Popover Delegate
 extension SourceBrowseViewController: UIPopoverPresentationControllerDelegate {
+    
     func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
         .none
     }
     
     func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        Task {
-            await fetchData()
-            reloadData()
+        var update = false
+        if oldSelectedFilters != selectedFilters.filters {
+            update = true
+        } else {
+            for filter in oldSelectedFilters {
+                if let target = selectedFilters.filters.first(where: { filter.name == $0.name }) {
+                    if filter.value as? SortOption != target.value as? SortOption {
+                        update = true
+                        break
+                    }
+                } else {
+                    update = true
+                    break
+                }
+            }
+        }
+        if update {
+            print("ig so")
+            page = nil
+            currentListing = nil
+            Task {
+                await fetchData()
+                reloadData()
+            }
+        } else {
+            print("ig not")
         }
     }
 }
