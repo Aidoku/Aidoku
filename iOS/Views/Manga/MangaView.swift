@@ -171,12 +171,12 @@ struct MangaView: View {
                                                 .foregroundColor(readHistory[chapter.id] ?? 0 > 0 ? .secondaryLabel : .label)
                                                 .lineLimit(1)
                                         } else {
-                                            Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                            Text("Chapter \(chapter.chapterNum ?? 0, specifier: "%g")")
                                                 .foregroundColor(readHistory[chapter.id] ?? 0 > 0 ? .secondaryLabel : .label)
                                                 .lineLimit(1)
                                         }
                                         if chapter.title != nil {
-                                            Text("Chapter \(chapter.chapterNum, specifier: "%g")")
+                                            Text("Chapter \(chapter.chapterNum ?? 0, specifier: "%g")")
                                                 .foregroundColor(.secondaryLabel)
                                                 .lineLimit(1)
                                         }

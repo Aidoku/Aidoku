@@ -208,8 +208,8 @@
 			children = (
 				FB1B48B2277CF7DC0056D02C /* Extensions */,
 				FB4EEBB327A2EC9C005081A3 /* Database */,
-				FB1B4891277CECF60056D02C /* Managers */,
 				FB1B4862277CE7370056D02C /* Models */,
+				FB1B4891277CECF60056D02C /* Sources */,
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
@@ -259,8 +259,6 @@
 				FB11EDEE2784B0690007365D /* Volume.swift */,
 				FB6340B2278F898E0072A2A2 /* Filter.swift */,
 				FB6340BA2792202B0072A2A2 /* Listing.swift */,
-				FB7B7ED3278CE692001E6EAF /* Source.swift */,
-				FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -282,12 +280,14 @@
 			path = Library;
 			sourceTree = "<group>";
 		};
-		FB1B4891277CECF60056D02C /* Managers */ = {
+		FB1B4891277CECF60056D02C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				FB7B7ED0278CE670001E6EAF /* SourceManager.swift */,
+				FB7B7ED3278CE692001E6EAF /* Source.swift */,
+				FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */,
 			);
-			path = Managers;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		FB1B48A6277CF6240056D02C /* Manga */ = {

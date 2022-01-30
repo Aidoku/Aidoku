@@ -18,7 +18,7 @@ public class ChapterObject: NSManagedObject {
         title = chapter.title
         scanlator = chapter.scanlator
         lang = chapter.lang
-        self.chapter = chapter.chapterNum
+        self.chapter = chapter.chapterNum != nil ? NSNumber(value: chapter.chapterNum ?? -1) : nil
         volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
         dateUploaded = chapter.dateUploaded ?? Date()
         sourceOrder = Int16(chapter.sourceOrder)
@@ -31,7 +31,7 @@ public class ChapterObject: NSManagedObject {
             title: title,
             scanlator: scanlator,
             lang: lang,
-            chapterNum: chapter,
+            chapterNum: chapter?.floatValue,
             volumeNum: volume?.floatValue,
             dateUploaded: dateUploaded,
             sourceOrder: Int(sourceOrder)
@@ -57,7 +57,7 @@ extension ChapterObject {
     @NSManaged public var title: String?
     @NSManaged public var scanlator: String?
     @NSManaged public var lang: String
-    @NSManaged public var chapter: Float
+    @NSManaged public var chapter: NSNumber?
     @NSManaged public var volume: NSNumber?
     @NSManaged public var progress: Int16
     @NSManaged public var read: Bool

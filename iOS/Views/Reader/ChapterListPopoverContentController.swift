@@ -72,9 +72,9 @@ extension ChapterListPopoverContentController: UITableViewDataSource {
         
         var chapterString = ""
         if let volume = volume, volume > 0 {
-            chapterString.append(String(format: "Volume %g ", volume))
+            chapterString.append(String(format: "Vol.%g ", volume))
         }
-        chapterString.append(String(format: "Chapter %g", chapter.chapterNum))
+        chapterString.append(String(format: "Ch.%g", chapter.chapterNum ?? 0))
         
         cell.backgroundColor = .clear
         cell.textLabel?.text = chapterString

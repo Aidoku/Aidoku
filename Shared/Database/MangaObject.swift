@@ -18,9 +18,9 @@ public class MangaObject: NSManagedObject {
         artist = manga.artist
         desc = manga.description
         tags = manga.tags ?? []
+        cover = manga.cover
         status = Int16(manga.status.rawValue)
-        cover = manga.cover ?? ""
-        nsfw = false
+        nsfw = Int16(manga.nsfw.rawValue)
         viewer = Int16(manga.viewer.rawValue)
     }
     
@@ -33,8 +33,9 @@ public class MangaObject: NSManagedObject {
             artist: artist,
             description: desc,
             tags: tags ?? [],
-            status: MangaStatus(rawValue: Int(status)) ?? .unknown,
             cover: cover,
+            status: MangaStatus(rawValue: Int(status)) ?? .unknown,
+            nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
         )
     }
@@ -60,15 +61,16 @@ extension MangaObject {
     @NSManaged public var artist: String?
     @NSManaged public var desc: String?
     @NSManaged public var tags: [String]?
+    @NSManaged public var cover: String?
+    
     @NSManaged public var status: Int16
-    @NSManaged public var cover: String
-    @NSManaged public var nsfw: Bool
+    @NSManaged public var nsfw: Int16
+    @NSManaged public var viewer: Int16
     
     @NSManaged public var favorite: Bool
     
     @NSManaged public var lastUpdate: Date
     
-    @NSManaged public var viewer: Int16
     @NSManaged public var flags: Int16
     
     @NSManaged public var libraryObject: LibraryMangaObject?

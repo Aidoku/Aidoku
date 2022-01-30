@@ -14,6 +14,11 @@ enum MangaStatus: Int {
     case cancelled = 3
     case hiatus = 4
 }
+enum MangaContentRating: Int {
+    case safe = 0
+    case suggestive = 1
+    case nsfw = 2
+}
 
 enum MangaViewer: Int {
     case rtl = 0
@@ -33,10 +38,10 @@ struct Manga: KVCObject, Hashable  {
     var description: String?
     var tags: [String]?
     
-    var status: MangaStatus
-    
     var cover: String?
     
+    var status: MangaStatus
+    var nsfw: MangaContentRating
     var viewer: MangaViewer
     
     init(
@@ -47,8 +52,9 @@ struct Manga: KVCObject, Hashable  {
         artist: String? = nil,
         description: String? = nil,
         tags: [String]? = nil,
-        status: MangaStatus = .unknown,
         cover: String? = nil,
+        status: MangaStatus = .unknown,
+        nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .rtl
     ) {
         self.sourceId = sourceId
@@ -58,8 +64,9 @@ struct Manga: KVCObject, Hashable  {
         self.artist = artist
         self.description = description
         self.tags = tags
-        self.status = status
         self.cover = cover
+        self.status = status
+        self.nsfw = nsfw
         self.viewer = viewer
     }
     
@@ -72,8 +79,9 @@ struct Manga: KVCObject, Hashable  {
             artist: manga.artist ?? self.artist,
             description: manga.description ?? self.description,
             tags: manga.tags ?? self.tags,
-            status: manga.status,
             cover: manga.cover ?? self.cover,
+            status: manga.status,
+            nsfw: manga.nsfw,
             viewer: manga.viewer
         )
     }
@@ -86,8 +94,9 @@ struct Manga: KVCObject, Hashable  {
         case "artist": return artist
         case "description": return description
         case "tags": return tags
-        case "status": return status.rawValue
         case "cover": return cover
+        case "status": return status.rawValue
+        case "nsfw": return nsfw.rawValue
         case "viewer": return viewer.rawValue
         default: return nil
         }
