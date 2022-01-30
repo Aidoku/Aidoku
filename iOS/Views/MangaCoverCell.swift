@@ -45,6 +45,7 @@ class MangaCoverCell: UICollectionViewCell {
             view.removeFromSuperview()
         }
         
+        clipsToBounds = true
         layer.cornerRadius = 5
         
         layer.borderWidth = 1
@@ -63,8 +64,6 @@ class MangaCoverCell: UICollectionViewCell {
                 .cacheOriginalImage
             ]
         )
-        imageView.layer.cornerRadius = layer.cornerRadius
-        imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
         

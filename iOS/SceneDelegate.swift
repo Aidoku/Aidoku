@@ -40,7 +40,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
-        let libraryViewController = HostingController(rootView: LibraryView())
+        let libraryViewController = FixedTitleNavigationController(rootViewController: LibraryViewController())
         let browseViewController = FixedTitleNavigationController(rootViewController: BrowseViewController())
         let searchViewController = HostingController(rootView: SearchView())
         libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)

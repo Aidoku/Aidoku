@@ -14,15 +14,19 @@ class DataManager {
     var container: NSPersistentCloudKitContainer
     var inMemory: Bool
     
-    var libraryManga: [Manga] = []
+    var libraryManga: [Manga] = [] {
+        didSet {
+            NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+        }
+    }
     
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         self.inMemory = inMemory
-        setupContainer(cloudSync: !NSUbiquitousKeyValueStore.default.bool(forKey: "disableCloudSync"))
+        setupContainer(cloudSync: NSUbiquitousKeyValueStore.default.bool(forKey: "cloudSync"))
         loadLibrary()
         
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
             Task {
                 await self.updateLibrary()
             }
@@ -40,7 +44,7 @@ class DataManager {
         
         container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        if !cloudSync {
+        if !cloudSync || inMemory {
             container.persistentStoreDescriptions.first?.cloudKitContainerOptions = nil
         }
         

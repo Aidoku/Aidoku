@@ -11,12 +11,24 @@ class MangaCollectionViewController: UIViewController {
     
     var collectionView: UICollectionView?
     var manga: [Manga] = []
-
+    
+    var chapters: [String: [Chapter]] = [:]
+    var readHistory: [String: [String: Int]] = [:]
+    
+    var opensReaderView = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let cellsPerRow: Int
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            cellsPerRow = view.bounds.width > view.bounds.height ? 6 : 4
+        } else {
+            cellsPerRow = view.bounds.width > view.bounds.height ? 5 : 2
+        }
+        
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: MangaGridFlowLayout(
-            cellsPerRow: 2,
+            cellsPerRow: cellsPerRow,
             minimumInteritemSpacing: 12,
             minimumLineSpacing: 12,
             sectionInset: view.layoutMargins
@@ -24,12 +36,18 @@ class MangaCollectionViewController: UIViewController {
         collectionView?.delegate = self
         collectionView?.dataSource = self
         collectionView?.delaysContentTouches = false
+        collectionView?.alwaysBounceVertical = true
         collectionView?.register(MangaCoverCell.self, forCellWithReuseIdentifier: "MangaCoverCell")
         collectionView?.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView ?? UICollectionView())
         
         collectionView?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         collectionView?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadChaptersAndHistory()
     }
     
     override func viewLayoutMarginsDidChange() {
@@ -41,7 +59,12 @@ class MangaCollectionViewController: UIViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         
-        let cellsPerRow = size.width > size.height ? 5 : 2
+        let cellsPerRow: Int
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            cellsPerRow = size.width > size.height ? 6 : 4
+        } else {
+            cellsPerRow = size.width > size.height ? 5 : 2
+        }
         
         collectionView?.collectionViewLayout = MangaGridFlowLayout(
             cellsPerRow: cellsPerRow,
@@ -51,10 +74,40 @@ class MangaCollectionViewController: UIViewController {
         )
     }
     
-    func reloadData() {
-        collectionView?.performBatchUpdates {
-            self.collectionView?.reloadSections(IndexSet(integer: 0))
+    func getNextChapter(for manga: Manga) -> Chapter? {
+        let id = readHistory[manga.id]?.max { a, b in a.value < b.value }?.key
+        if let id = id {
+            return chapters[manga.id]?.first { $0.id == id }
         }
+        return chapters[manga.id]?.first
+    }
+    
+    func loadChaptersAndHistory() {
+        if opensReaderView {
+            Task {
+                for m in manga {
+                    readHistory[m.id] = DataManager.shared.getReadHistory(manga: m)
+                    chapters[m.id] = await DataManager.shared.getChapters(for: m)
+                }
+            }
+        } else {
+            chapters = [:]
+            readHistory = [:]
+        }
+    }
+    
+    func reloadData() {
+        DispatchQueue.main.async {
+            self.collectionView?.performBatchUpdates {
+                self.collectionView?.reloadSections(IndexSet(integer: 0))
+            }
+        }
+    }
+    
+    func openMangaView(for manga: Manga) {
+        let vc = HostingController(rootView: MangaView(manga: manga))
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 
@@ -79,10 +132,19 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
 // MARK: - Collection View Delegate
 extension MangaCollectionViewController: UICollectionViewDelegate {
     
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        1
+    }
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = HostingController(rootView: MangaView(manga: manga[indexPath.row]))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+        let manga = manga[indexPath.row]
+        if opensReaderView, let chapter = getNextChapter(for: manga) {
+            let readerController = UINavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters[manga.id] ?? []))
+            readerController.modalPresentationStyle = .fullScreen
+            present(readerController, animated: true)
+        } else {
+            openMangaView(for: manga)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
@@ -97,21 +159,15 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
         }
     }
     
-    
-//    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-//        print("elllo")
-//        return UICollectionReusableView()
-//    }
-    
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
-            let action: UIAction
+            var actions: [UIAction] = []
             if DataManager.shared.libraryContains(manga: self.manga[indexPath.row]) {
-                action = UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
+                actions.append(UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
                     DataManager.shared.delete(manga: self.manga[indexPath.row])
-                }
+                })
             } else {
-                action = UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
+                actions.append(UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
                     Task {
                         let manga = self.manga[indexPath.row]
                         if let updatedManga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
@@ -120,9 +176,14 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                             }
                         }
                     }
-                }
+                })
             }
-            return UIMenu(title: "", children: [action])
+            if self.opensReaderView {
+                actions.append(UIAction(title: "Manga Info", image: UIImage(systemName: "info.circle")) { _ in
+                    self.openMangaView(for: self.manga[indexPath.row])
+                })
+            }
+            return UIMenu(title: "", children: actions)
         }
     }
 }

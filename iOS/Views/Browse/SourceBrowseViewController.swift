@@ -35,7 +35,9 @@ class SourceBrowseViewController: MangaCollectionViewController {
         super.viewDidLoad()
         
         title = source.info.name
+        
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.hidesSearchBarWhenScrolling = false
         
         let filterImage: UIImage?
         if #available(iOS 15.0, *) {
@@ -55,8 +57,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
             )
         ]
         
-        (collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.headerReferenceSize = CGSize(width: collectionView?.bounds.size.width ?? 0, height: 40)
-        collectionView?.register(MangaListingHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListingHeader")
+        collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
@@ -77,11 +78,6 @@ class SourceBrowseViewController: MangaCollectionViewController {
             }
             reloadData()
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationItem.hidesSearchBarWhenScrolling = false
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -133,18 +129,17 @@ class SourceBrowseViewController: MangaCollectionViewController {
 }
 
 // MARK: - Collection View Delegate
-extension SourceBrowseViewController {
+extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        print("yo")
-        return CGSize(width: collectionView.bounds.width, height: 40)
+        CGSize(width: collectionView.bounds.width, height: 40)
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
-            var header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "MangaListingHeader", for: indexPath) as? MangaListingHeader
+            var header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "MangaListSelectionHeader", for: indexPath) as? MangaListSelectionHeader
             if header == nil {
-                header = MangaListingHeader(frame: .zero)
+                header = MangaListSelectionHeader(frame: .zero)
             }
             header?.delegate = nil
             var options = listings.map { $0.name }
@@ -161,15 +156,20 @@ extension SourceBrowseViewController {
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == manga.count - 1 && hasMore {
             Task {
+                let start = manga.count
                 await fetchData()
-                reloadData()
+                var indexPaths: [IndexPath] = []
+                for i in start..<manga.count {
+                    indexPaths.append(IndexPath(row: i, section: 0))
+                }
+                collectionView.insertItems(at: indexPaths)
             }
         }
     }
 }
 
 // MARK: - Listing Header Delegate
-extension SourceBrowseViewController: MangaListingHeaderDelegate {
+extension SourceBrowseViewController: MangaListSelectionHeaderDelegate {
     
     func optionSelected(_ index: Int) {
         if index == listings.count {
@@ -246,15 +246,12 @@ extension SourceBrowseViewController: UIPopoverPresentationControllerDelegate {
             }
         }
         if update {
-            print("ig so")
             page = nil
             currentListing = nil
             Task {
                 await fetchData()
                 reloadData()
             }
-        } else {
-            print("ig not")
         }
     }
 }
