@@ -30,7 +30,7 @@ struct ChapterListView: View {
             newVolumes.append(Volume(
                 title: title,
                 sortNumber: num == 0 ? 99999 : num,
-                chapters: chapters.filter { num < -1 ? $0.chapterNum == 0 : $0.volumeNum == actual && $0.chapterNum > 0 }
+                chapters: chapters.filter { num < -1 ? $0.chapterNum == 0 : $0.volumeNum == actual && $0.chapterNum ?? -1 > 0 }
             ))
         }
         self._volumes = .init(initialValue: newVolumes)
@@ -80,7 +80,7 @@ struct ChapterListView: View {
             if newValue == 0 {
                 for (index, _) in volumes.enumerated() {
                     volumes[index].chapters.sort {
-                        $0.chapterNum < $1.chapterNum
+                        $0.chapterNum ?? 0 < $1.chapterNum ?? 0
                     }
                 }
                 volumes.sort {
@@ -89,7 +89,7 @@ struct ChapterListView: View {
             } else {
                 for (index, _) in volumes.enumerated() {
                     volumes[index].chapters.sort {
-                        $0.chapterNum > $1.chapterNum
+                        $0.chapterNum ?? 0 > $1.chapterNum ?? 0
                     }
                 }
                 volumes.sort {

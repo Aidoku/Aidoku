@@ -8,7 +8,7 @@
         <relationship name="libraryObjects" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LibraryManga" inverseName="categories" inverseEntity="LibraryManga"/>
     </entity>
     <entity name="Chapter" representedClassName="ChapterObject" syncable="YES">
-        <attribute name="chapter" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="chapter" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="dateUploaded" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lang" attributeType="String" defaultValueString="en"/>
@@ -39,13 +39,13 @@
     <entity name="Manga" representedClassName="MangaObject" syncable="YES">
         <attribute name="artist" optional="YES" attributeType="String"/>
         <attribute name="author" optional="YES" attributeType="String"/>
-        <attribute name="cover" attributeType="String" defaultValueString=""/>
+        <attribute name="cover" optional="YES" attributeType="String"/>
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="flags" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lastUpdate" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
-        <attribute name="nsfw" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="nsfw" attributeType="Integer 16" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="sourceId" attributeType="String" defaultValueString=""/>
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="tags" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer"/>
@@ -55,10 +55,10 @@
         <relationship name="libraryObject" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="LibraryManga" inverseName="manga" inverseEntity="LibraryManga"/>
     </entity>
     <elements>
-        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="133"/>
-        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="283"/>
-        <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="238"/>
         <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="118"/>
+        <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="224"/>
         <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="103"/>
+        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="133"/>
+        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="269"/>
     </elements>
 </model>

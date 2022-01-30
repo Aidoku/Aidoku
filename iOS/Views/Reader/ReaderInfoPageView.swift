@@ -101,16 +101,16 @@ class ReaderInfoPageView: UIView {
     func updateLabelText() {
         if let previousChapter = previousChapter {
             topChapterLabel.text = "Previous:"
-            topChapterTitleLabel.text = String(format: "Ch.%g - \(previousChapter.title ?? "No title")", previousChapter.chapterNum)
+            topChapterTitleLabel.text = String(format: "Ch.%g - \(previousChapter.title ?? "No title")", previousChapter.chapterNum ?? 0)
             bottomChapterLabel.text = "Current:"
-            bottomChapterTitleLabel.text = String(format: "Ch.%g - \(currentChapter.title ?? "No title")", currentChapter.chapterNum)
+            bottomChapterTitleLabel.text = String(format: "Ch.%g - \(currentChapter.title ?? "No title")", currentChapter.chapterNum ?? 0)
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else if let nextChapter = nextChapter {
             topChapterLabel.text = "Finished:"
-            topChapterTitleLabel.text = String(format: "Ch.%g - \(currentChapter.title ?? "No title")", currentChapter.chapterNum)
+            topChapterTitleLabel.text = String(format: "Ch.%g - \(currentChapter.title ?? "No title")", currentChapter.chapterNum ?? 0)
             bottomChapterLabel.text = "Next:"
-            bottomChapterTitleLabel.text = String(format: "Ch.%g - \(nextChapter.title ?? "No title")", nextChapter.chapterNum)
+            bottomChapterTitleLabel.text = String(format: "Ch.%g - \(nextChapter.title ?? "No title")", nextChapter.chapterNum ?? 0)
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else {

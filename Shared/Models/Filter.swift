@@ -16,6 +16,7 @@ enum FilterType: Int {
     case sort = 4 // sort group
     case sortOption = 5 // sort option
     case group = 6 // filter group
+    case genre = 7
 }
 
 struct SortOption: KVCObject, Equatable {
@@ -67,9 +68,9 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.value = value
     }
     
-    // Check
-    init(name: String, canExclude: Bool, default defaultValue: Int = 0) {
-        self.type = .check
+    // Check (and Genre)
+    init(type: FilterType = .check, name: String, canExclude: Bool, default defaultValue: Int = 0) {
+        self.type = type
         self.name = name
         self.value = canExclude
         self.defaultValue = defaultValue

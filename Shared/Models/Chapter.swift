@@ -14,7 +14,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
     let title: String?
     let scanlator: String?
     let lang: String
-    let chapterNum: Float
+    let chapterNum: Float?
     let volumeNum: Float?
     let dateUploaded: Date?
     let sourceOrder: Int
@@ -26,7 +26,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         title: String?,
         scanlator: String? = nil,
         lang: String = "en",
-        chapterNum: Float,
+        chapterNum: Float? = nil,
         volumeNum: Float? = nil,
         dateUploaded: Date? = nil,
         sourceOrder: Int

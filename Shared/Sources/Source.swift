@@ -47,16 +47,17 @@ class Source: Identifiable {
     }
     
     func prepareVirtualMachine() {
-        try? vm.addImportHandler(named: "push_string", namespace: "env", block: self.push_string)
-        try? vm.addImportHandler(named: "push_filter", namespace: "env", block: self.push_filter)
-        try? vm.addImportHandler(named: "push_listing", namespace: "env", block: self.push_listing)
-        try? vm.addImportHandler(named: "push_manga", namespace: "env", block: self.push_manga)
-        try? vm.addImportHandler(named: "push_chapter", namespace: "env", block: self.push_chapter)
-        try? vm.addImportHandler(named: "push_page", namespace: "env", block: self.push_page)
+        try? vm.addImportHandler(named: "string", namespace: "env", block: self.create_string)
+        try? vm.addImportHandler(named: "filter", namespace: "env", block: self.create_filter)
+        try? vm.addImportHandler(named: "listing", namespace: "env", block: self.create_listing)
+        try? vm.addImportHandler(named: "manga", namespace: "env", block: self.create_manga)
+        try? vm.addImportHandler(named: "chapter", namespace: "env", block: self.create_chapter)
+        try? vm.addImportHandler(named: "page", namespace: "env", block: self.create_page)
         
         try? vm.addImportHandler(named: "array", namespace: "env", block: self.array)
         try? vm.addImportHandler(named: "array_size", namespace: "env", block: self.array_size)
         try? vm.addImportHandler(named: "array_get", namespace: "env", block: self.array_get)
+        try? vm.addImportHandler(named: "array_append", namespace: "env", block: self.array_append)
         try? vm.addImportHandler(named: "array_remove", namespace: "env", block: self.array_remove)
         try? vm.addImportHandler(named: "object_getn", namespace: "env", block: self.object_getn)
         try? vm.addImportHandler(named: "string_value", namespace: "env", block: self.string_value)
@@ -72,78 +73,78 @@ class Source: Identifiable {
     
     // MARK: Object Pushing
     
-    var push_string: (Int32, Int32, Int32) -> Void {
-        { descriptor, string, string_len in
-            if var strings = self.descriptors[Int(descriptor)] as? [String] {
-                strings.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
-            }
+    var create_string: (Int32, Int32) -> Int32 {
+        { string, string_len in
+            self.descriptorPointer += 1
+            self.descriptors.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
+            return Int32(self.descriptorPointer)
         }
     }
     
-    var push_filter: (Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, type, name, name_len, value, default_value in
-            if var filters = self.descriptors[Int(descriptor)] as? [Filter] {
-                let filter: Filter
-                let name = (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
-                if type == FilterType.note.rawValue {
-                    filter = Filter(text: name)
-                } else if type == FilterType.text.rawValue {
-                    filter = Filter(name: name)
-                } else if type == FilterType.check.rawValue {
-                    filter = Filter(
-                        name: name,
-                        canExclude: value > 0,
-                        default: Int(default_value)
-                    )
-                } else if type == FilterType.select.rawValue {
-                    filter = Filter(
-                        name: name,
-                        options: self.descriptors[Int(value)] as? [String] ?? [],
-                        default: Int(default_value)
-                    )
-                } else if type == FilterType.sort.rawValue {
-                    let options = self.descriptors[Int(value)] as? [Filter] ?? []
-                    filter = Filter(
-                        name: name,
-                        options: options,
-                        value: (self.descriptors[Int(value)] as? Filter)?.value as? SortOption,
-                        default: (self.descriptors[Int(default_value)] as? Filter)?.value as? SortOption
-                    )
-                } else if type == FilterType.sortOption.rawValue {
-                    filter = Filter(
-                        name: name,
-                        canReverse: value > 0
-                    )
-                } else if type == FilterType.group.rawValue {
-                    filter = Filter(
-                        name: name,
-                        filters: self.descriptors[Int(value)] as? [Filter] ?? []
-                    )
-                } else {
-                    filter = Filter(
-                        type: FilterType(rawValue: Int(type)) ?? .text,
-                        name: name
-                    )
-                }
-                filters.append(filter)
-                self.descriptors[Int(descriptor)] = filters
+    var create_filter: (Int32, Int32, Int32, Int32, Int32) -> Int32 {
+        { type, name, name_len, value, default_value in
+            let filter: Filter
+            let name = (try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
+            if type == FilterType.note.rawValue {
+                filter = Filter(text: name)
+            } else if type == FilterType.text.rawValue {
+                filter = Filter(name: name)
+            } else if type == FilterType.check.rawValue || type == FilterType.genre.rawValue {
+                filter = Filter(
+                    type: FilterType(rawValue: Int(type)) ?? .check,
+                    name: name,
+                    canExclude: value > 0,
+                    default: Int(default_value)
+                )
+            } else if type == FilterType.select.rawValue {
+                filter = Filter(
+                    name: name,
+                    options: value > 0 ? self.descriptors[Int(value)] as? [String] ?? [] : [],
+                    default: Int(default_value)
+                )
+            } else if type == FilterType.sort.rawValue {
+                let options = self.descriptors[Int(value)] as? [Filter] ?? []
+                filter = Filter(
+                    name: name,
+                    options: options,
+                    value: value > 0 ? (self.descriptors[Int(value)] as? Filter)?.value as? SortOption : nil,
+                    default: default_value > 0 ? (self.descriptors[Int(default_value)] as? Filter)?.value as? SortOption : nil
+                )
+            } else if type == FilterType.sortOption.rawValue {
+                filter = Filter(
+                    name: name,
+                    canReverse: value > 0
+                )
+            } else if type == FilterType.group.rawValue {
+                filter = Filter(
+                    name: name,
+                    filters: value > 0 ? self.descriptors[Int(value)] as? [Filter] ?? [] : []
+                )
+            } else {
+                filter = Filter(
+                    type: FilterType(rawValue: Int(type)) ?? .text,
+                    name: name
+                )
             }
+            self.descriptorPointer += 1
+            self.descriptors.append(filter)
+            return Int32(self.descriptorPointer)
         }
     }
     
-    var push_listing: (Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, name, name_len, can_filter in
-            if var listings = self.descriptors[Int(descriptor)] as? [Listing],
-               let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
-                listings.append(Listing(name: str, canFilter: can_filter > 0));
-                self.descriptors[Int(descriptor)] = listings
+    var create_listing: (Int32, Int32, Int32) -> Int32 {
+        { name, name_len, can_filter in
+            if let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
+                self.descriptorPointer += 1
+                self.descriptors.append(Listing(name: str, canFilter: can_filter > 0))
+                return Int32(self.descriptorPointer)
             }
+            return -1
         }
     }
     
-    var push_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, tags, tag_str_lens, tag_count in
-            guard descriptor < self.descriptors.count else { return }
+    var create_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
+        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, tags, tag_str_lens, tag_count, url, url_len, nsfw, viewer in
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var tagList: [String] = []
                 let tagStrings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(tags), length: Int(tag_count))) ?? []
@@ -160,60 +161,57 @@ class Source: Identifiable {
                     author: author_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
                     description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
                     tags: tagList,
+                    cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
-                    cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil
+                    nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
+                    viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
                 )
-                if var mangaList = self.descriptors[Int(descriptor)] as? [Manga] {
-                    mangaList.append(manga)
-                    self.descriptors[Int(descriptor)] = mangaList
-                } else {
-                    self.descriptors[Int(descriptor)] = manga
-                }
+                self.descriptorPointer += 1
+                self.descriptors.append(manga)
+                return Int32(self.descriptorPointer)
             }
+            return -1
         }
     }
     
     var chapterCounter = 0
     var currentManga = ""
     
-    var push_chapter: (Int32, Int32, Int32, Int32, Int32, Float32, Float32, Int32, Int32, Int32) -> Void {
-        { descriptor, id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len in
-            guard descriptor < self.descriptors.count else { return }
-            if var chapters = self.descriptors[Int(descriptor)] as? [Chapter] {
-                if let chapterId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
-                    chapters.append(
-                        Chapter(
-                            sourceId: self.info.id,
-                            id: chapterId,
-                            mangaId: self.currentManga,
-                            title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
-                            scanlator: scanlator_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(scanlator), length: Int(scanlator_len)) : nil,
-                            lang: "en",
-                            chapterNum: Float(chapter),
-                            volumeNum: volume >= 0 ? Float(volume) : nil,
-                            dateUploaded: Date(timeIntervalSince1970: TimeInterval(dateUploaded)),
-                            sourceOrder: self.chapterCounter
-                        )
-                    );
-                    self.chapterCounter += 1
-                }
-                self.descriptors[Int(descriptor)] = chapters
+    var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Int64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
+        { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, url, url_len, lang, lang_len in
+            if let chapterId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
+                self.descriptorPointer += 1
+                self.descriptors.append(
+                    Chapter(
+                        sourceId: self.info.id,
+                        id: chapterId,
+                        mangaId: self.currentManga,
+                        title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
+                        scanlator: scanlator_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(scanlator), length: Int(scanlator_len)) : nil,
+                        lang: lang_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(lang), length: Int(lang_len))) ?? "en" : "en",
+                        chapterNum: chapter >= 0 ? Float(chapter) : nil,
+                        volumeNum: volume >= 0 ? Float(volume) : nil,
+                        dateUploaded: Date(timeIntervalSince1970: TimeInterval(dateUploaded)),
+                        sourceOrder: self.chapterCounter
+                    )
+                );
+                self.chapterCounter += 1
+                return Int32(self.descriptorPointer)
             }
+            return -1
         }
     }
     
-    var push_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, index, image_url, image_url_len, base64, base64_len, text, text_len in
-            guard descriptor < self.descriptors.count else { return }
-            if var pages = self.descriptors[Int(descriptor)] as? [Page] {
-                pages.append(
-                    Page(
-                        index: Int(index),
-                        imageURL: image_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(image_url), length: Int(image_url_len)) : nil
-                    )
+    var create_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
+        { index, image_url, image_url_len, base64, base64_len, text, text_len in
+            self.descriptorPointer += 1
+            self.descriptors.append(
+                Page(
+                    index: Int(index),
+                    imageURL: image_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(image_url), length: Int(image_url_len)) : nil
                 )
-                self.descriptors[Int(descriptor)] = pages
-            }
+            )
+            return Int32(self.descriptorPointer)
         }
     }
     
@@ -247,6 +245,17 @@ class Source: Identifiable {
                 return Int32(self.descriptorPointer)
             }
             return -1
+        }
+    }
+    
+    var array_append: (Int32, Int32) -> Void {
+        { descriptor, object in
+            guard descriptor >= 0, descriptor < self.descriptors.count else { return }
+            guard object >= 0, object < self.descriptors.count else { return }
+            if var array = self.descriptors[Int(descriptor)] as? [Any] {
+                array.append(self.descriptors[Int(object)])
+                self.descriptors[Int(descriptor)] = array
+            }
         }
     }
     
@@ -318,7 +327,7 @@ class Source: Identifiable {
         for filter in filters {
             if filter.type == .group {
                 for subFilter in filter.value as? [Filter] ?? [] {
-                    if subFilter.type == .check && subFilter.defaultValue as? Int ?? 0 > 0 {
+                    if (subFilter.type == .check || subFilter.type == .genre) && subFilter.defaultValue as? Int ?? 0 > 0 {
                         defaultFilters.append(Filter(type: subFilter.type, name: subFilter.name, value: subFilter.defaultValue))
                     }
                 }
@@ -420,14 +429,12 @@ class Source: Identifiable {
     
     func getMangaDetails(manga: Manga) async throws -> Manga {
         let task = Task<Manga, Error> {
-            self.descriptorPointer += 2
+            self.descriptorPointer += 1
             self.descriptors.append(manga)
-            self.descriptors.append(0)
-            let descriptor = Int32(self.descriptorPointer)
             
-            try self.vm.call("manga_details_request", descriptor, Int32(self.descriptorPointer - 1))
+            let result: Int32 = try self.vm.call("manga_details_request", Int32(self.descriptorPointer))
             
-            let manga = self.descriptors[Int(descriptor)] as? Manga
+            let manga = self.descriptors[Int(result)] as? Manga
             
             self.descriptorPointer = -1
             self.descriptors = []

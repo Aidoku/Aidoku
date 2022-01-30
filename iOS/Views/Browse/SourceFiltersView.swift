@@ -128,7 +128,7 @@ struct FilterListCell: View {
             } label: {
                 Text(filter.name)
             }
-        } else if filter.type == .check {
+        } else if filter.type == .check || filter.type == .genre {
             Button {
                 toggle()
             } label: {

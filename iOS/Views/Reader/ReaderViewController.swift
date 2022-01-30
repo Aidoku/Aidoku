@@ -394,7 +394,7 @@ class ReaderViewController: UIViewController {
             DataManager.shared.addHistory(for: self.chapter)
             self.startPage = DataManager.shared.currentPage(for: self.chapter)
             
-            self.navigationItem.setTitle(upper: self.chapter.volumeNum != nil ? String(format: "Volume %g", self.chapter.volumeNum ?? 0) : nil, lower: String(format: "Chapter %g", self.chapter.chapterNum))
+            self.navigationItem.setTitle(upper: self.chapter.volumeNum != nil ? String(format: "Volume %g", self.chapter.volumeNum ?? 0) : nil, lower: String(format: "Chapter %g", self.chapter.chapterNum ?? 0))
         }
         
         if !preloadedPages.isEmpty {
