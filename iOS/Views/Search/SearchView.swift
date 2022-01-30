@@ -17,7 +17,7 @@ struct SearchView: View {
     @State var searchText: String = ""
     @State var results: [String: MangaPageResult] = [:]
     
-    let sourcePublisher = NotificationCenter.default.publisher(for: NSNotification.Name("updateSourceList"))
+    let sourcePublisher = NotificationCenter.default.publisher(for: Notification.Name("updateSourceList"))
     
     var body: some View {
         NavigationView {

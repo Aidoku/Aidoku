@@ -105,7 +105,7 @@ class BrowseViewController: UIViewController {
         tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
         
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
             DispatchQueue.main.async {
                 self.sources = SourceManager.shared.sources
                 self.fetchUpdates()
@@ -118,11 +118,6 @@ class BrowseViewController: UIViewController {
                 fetchUpdates()
             }
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationItem.hidesSearchBarWhenScrolling = false
     }
 
     override func viewDidAppear(_ animated: Bool) {

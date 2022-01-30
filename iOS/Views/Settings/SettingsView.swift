@@ -10,10 +10,10 @@ import Kingfisher
 
 struct SettingsView: View {
     
-    @Binding var presented: Bool
+    @Environment(\.presentationMode) var presentationMode
     
     @State var confirmingReset = false
-    @State var cloudSync = !NSUbiquitousKeyValueStore.default.bool(forKey: "disableCloudSync")
+    @State var cloudSync = NSUbiquitousKeyValueStore.default.bool(forKey: "cloudSync")
     
     var body: some View {
         NavigationView {
@@ -103,7 +103,7 @@ struct SettingsView: View {
                 }
             }
             .onChange(of: cloudSync) { newValue in
-                NSUbiquitousKeyValueStore.default.set(!newValue as NSNumber, forKey: "disableCloudSync")
+                NSUbiquitousKeyValueStore.default.set(newValue as NSNumber, forKey: "cloudSync")
                 DataManager.shared.setupContainer(cloudSync: newValue)
             }
             .listStyle(.insetGrouped)
@@ -111,11 +111,12 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 Button {
-                    presented = false
+                    presentationMode.wrappedValue.dismiss()
                 } label: {
                     Text("Done")
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 }

@@ -1,24 +1,24 @@
 //
-//  MangaListingHeader.swift
-//  Aidoku
+//  MangaListSelectionHeader.swift
+//  Aidoku (iOS)
 //
 //  Created by Skitty on 1/29/22.
 //
 
 import UIKit
 
-protocol MangaListingHeaderDelegate {
+protocol MangaListSelectionHeaderDelegate {
     func optionSelected(_ index: Int)
 }
 
-class MangaListingHeader: UICollectionReusableView {
+class MangaListSelectionHeader: UICollectionReusableView {
     
-    var delegate: MangaListingHeaderDelegate?
+    var delegate: MangaListSelectionHeaderDelegate?
     
     let titleLabel = UILabel()
     let menuButton = UIButton()
     
-    var title = "" {
+    var title: String? = nil {
         didSet {
             titleLabel.text = title
         }
@@ -89,7 +89,7 @@ class MangaListingHeader: UICollectionReusableView {
         menuButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(menuButton)
         
-        titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16).isActive = true
+        titleLabel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true
         titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -4).isActive = true
         
         menuButton.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 5).isActive = true
