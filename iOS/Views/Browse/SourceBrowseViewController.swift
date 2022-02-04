@@ -11,6 +11,15 @@ class SourceBrowseViewController: MangaCollectionViewController {
     
     let source: Source
     
+    var restrictToSearch = false {
+        didSet {
+            navigationItem.hidesSearchBarWhenScrolling = restrictToSearch
+            if restrictToSearch {
+                currentListing = nil
+            }
+        }
+    }
+    
     var listings: [Listing] = []
     var filters: [Filter] = []
     
@@ -62,36 +71,48 @@ class SourceBrowseViewController: MangaCollectionViewController {
         searchController.searchBar.delegate = self
 //        searchController.hidesNavigationBarDuringPresentation = false
         searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.text = query
         navigationItem.searchController = searchController
         
         let activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.startAnimating()
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(activityIndicator)
+        
         activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
         Task {
-            await fetchData()
-            UIView.animate(withDuration: 0.3) {
+            if filters.isEmpty {
+                await fetchFilters()
+            }
+            if manga.isEmpty {
+                await fetchData()
+                UIView.animate(withDuration: 0.3) {
+                    activityIndicator.alpha = 0
+                }
+                reloadData()
+            } else {
                 activityIndicator.alpha = 0
             }
-            reloadData()
         }
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        navigationItem.hidesSearchBarWhenScrolling = true
+        if !restrictToSearch {
+            navigationItem.hidesSearchBarWhenScrolling = true
+        }
+    }
+    
+    func fetchFilters() async {
+        filters = (try? await source.getFilters()) ?? []
+        if selectedFilters.filters.isEmpty {
+            selectedFilters.filters = source.getDefaultFilters()
+        }
     }
     
     func fetchData() async {
-        if filters.isEmpty {
-            filters = (try? await source.getFilters()) ?? []
-            if selectedFilters.filters.isEmpty {
-                selectedFilters.filters = source.getDefaultFilters()
-            }
-        }
         if listings.isEmpty {
             listings = (try? await source.getListings()) ?? []
         }
@@ -132,7 +153,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
 extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        CGSize(width: collectionView.bounds.width, height: 40)
+        restrictToSearch ? .zero : CGSize(width: collectionView.bounds.width, height: 40)
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {

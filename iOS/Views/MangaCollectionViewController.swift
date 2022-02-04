@@ -129,7 +129,9 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
         if cell == nil {
             cell = MangaCoverCell(frame: .zero)
         }
-        cell?.manga = manga[indexPath.row]
+        if manga.count > indexPath.row {
+            cell?.manga = manga[indexPath.row]
+        }
         return cell ?? UICollectionViewCell()
     }
     
