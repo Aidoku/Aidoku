@@ -77,8 +77,6 @@ class BrowseViewController: UIViewController {
         super.viewDidLoad()
         title = "Browse"
         
-//        view.backgroundColor = .systemBackground
-        
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
         

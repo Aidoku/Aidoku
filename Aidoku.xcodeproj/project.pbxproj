@@ -30,7 +30,6 @@
 		FB1B489B277CF4B70056D02C /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489A277CF4B70056D02C /* Color.swift */; };
 		FB1B489C277CF4B70056D02C /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489A277CF4B70056D02C /* Color.swift */; };
 		FB1B489E277CF5540056D02C /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489D277CF5540056D02C /* HostingController.swift */; };
-		FB1B48AE277CF6B60056D02C /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48AB277CF6B60056D02C /* SearchView.swift */; };
 		FB1B48B7277CF8280056D02C /* ReaderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B3277CF8280056D02C /* ReaderViewController.swift */; };
 		FB1B48B9277CF8280056D02C /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B4277CF8280056D02C /* ReaderView.swift */; };
 		FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */; };
@@ -39,6 +38,7 @@
 		FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0227AC39F500D50410 /* UIColor.swift */; };
 		FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
 		FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */; };
+		FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0827ACBED700D50410 /* SearchViewController.swift */; };
 		FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4CB19227A70B9A00A05445 /* MangaViewController.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -118,7 +118,6 @@
 		FB1B4880277CEC810056D02C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FB1B489A277CF4B70056D02C /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		FB1B489D277CF5540056D02C /* HostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HostingController.swift; path = iOS/HostingController.swift; sourceTree = SOURCE_ROOT; };
-		FB1B48AB277CF6B60056D02C /* SearchView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		FB1B48B3277CF8280056D02C /* ReaderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderViewController.swift; sourceTree = "<group>"; };
 		FB1B48B4277CF8280056D02C /* ReaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
 		FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderNavigationController.swift; sourceTree = "<group>"; };
@@ -126,6 +125,7 @@
 		FB31AD0027AC2C3000D50410 /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		FB31AD0227AC39F500D50410 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
+		FB31AD0827ACBED700D50410 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		FB4CB19227A70B9A00A05445 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
@@ -300,7 +300,7 @@
 		FB1B48A7277CF62F0056D02C /* Search */ = {
 			isa = PBXGroup;
 			children = (
-				FB1B48AB277CF6B60056D02C /* SearchView.swift */,
+				FB31AD0827ACBED700D50410 /* SearchViewController.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -553,12 +553,12 @@
 				FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */,
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
+				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */,
 				FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */,
 				FB7B7EDA278CEA6A001E6EAF /* FileManager.swift in Sources */,
 				FB1B4881277CEC810056D02C /* SettingsView.swift in Sources */,
-				FB1B48AE277CF6B60056D02C /* SearchView.swift in Sources */,
 				FB1B4853277CE4510056D02C /* AppDelegate.swift in Sources */,
 				FB4EEBE527A5F6B7005081A3 /* LibraryViewController.swift in Sources */,
 				FB6E34C6279DF6AB00BFE54B /* BrowseViewController.swift in Sources */,

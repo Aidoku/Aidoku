@@ -6,33 +6,6 @@
 //
 
 import UIKit
-import SwiftUI
-
-// needed in order to fix a swiftui bug
-// (using a hosting controller inside a normal nav controller would change the tab bar title)
-class FixedTitleNavigationController: UINavigationController {
-    var fixTitle = false
-    var oldTitle: String? = nil
-    
-    override var title: String? {
-        didSet {
-            // Crashes pre-iOS 15 for some reason
-            if #available(iOS 15.0, *) {
-                if fixTitle {
-                    fixTitle = false
-                    navigationItem.title = title
-                    title = oldTitle
-                }
-            }
-        }
-        willSet {
-            if newValue != tabBarItem.title && tabBarItem.title != nil {
-                fixTitle = true
-                oldTitle = tabBarItem.title
-            }
-        }
-    }
-}
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
@@ -40,9 +13,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
-        let libraryViewController = FixedTitleNavigationController(rootViewController: LibraryViewController())
-        let browseViewController = FixedTitleNavigationController(rootViewController: BrowseViewController())
-        let searchViewController = HostingController(rootView: SearchView())
+        let libraryViewController = UINavigationController(rootViewController: LibraryViewController())
+        let browseViewController = UINavigationController(rootViewController: BrowseViewController())
+        let searchViewController = UINavigationController(rootViewController: SearchViewController())
         libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
         browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)
         searchViewController.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 2)
@@ -67,7 +40,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>){
         if let url = URLContexts.first?.url {
-            print("Handling \(url)")
+            print("Importing \(url)")
             Task {
                 _ = await SourceManager.shared.importSource(from: url)
             }
