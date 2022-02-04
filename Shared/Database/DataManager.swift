@@ -215,10 +215,10 @@ extension DataManager {
         
         container.viewContext.delete(mangaObject)
         
-        _  = save()
-        
-        libraryManga.removeAll {
-            $0.sourceId == manga.sourceId && $0.id == manga.id
+        if save() {
+            libraryManga.removeAll {
+                $0.sourceId == manga.sourceId && $0.id == manga.id
+            }
         }
     }
     

@@ -162,6 +162,7 @@ class Source: Identifiable {
                     description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
                     tags: tagList,
                     cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil,
+                    url: url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(url), length: Int(url_len)) : nil,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
                     viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
@@ -191,10 +192,10 @@ class Source: Identifiable {
                         lang: lang_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(lang), length: Int(lang_len))) ?? "en" : "en",
                         chapterNum: chapter >= 0 ? Float(chapter) : nil,
                         volumeNum: volume >= 0 ? Float(volume) : nil,
-                        dateUploaded: Date(timeIntervalSince1970: TimeInterval(dateUploaded)),
+                        dateUploaded: dateUploaded > 0 ? Date(timeIntervalSince1970: TimeInterval(dateUploaded)) : nil,
                         sourceOrder: self.chapterCounter
                     )
-                );
+                )
                 self.chapterCounter += 1
                 return Int32(self.descriptorPointer)
             }
@@ -352,7 +353,7 @@ class Source: Identifiable {
             self.descriptorPointer = -1
             self.descriptors = []
             
-            return filters;
+            return filters
         }
         
         filters = try await task.value
@@ -374,7 +375,7 @@ class Source: Identifiable {
             self.descriptorPointer = -1
             self.descriptors = []
             
-            return listings;
+            return listings
         }
         
         listings = try await task.value

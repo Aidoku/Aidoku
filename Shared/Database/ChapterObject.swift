@@ -20,7 +20,7 @@ public class ChapterObject: NSManagedObject {
         lang = chapter.lang
         self.chapter = chapter.chapterNum != nil ? NSNumber(value: chapter.chapterNum ?? -1) : nil
         volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
-        dateUploaded = chapter.dateUploaded ?? Date()
+        dateUploaded = chapter.dateUploaded
         sourceOrder = Int16(chapter.sourceOrder)
     }
     func toChapter() -> Chapter {
@@ -61,7 +61,7 @@ extension ChapterObject {
     @NSManaged public var volume: NSNumber?
     @NSManaged public var progress: Int16
     @NSManaged public var read: Bool
-    @NSManaged public var dateUploaded: Date
+    @NSManaged public var dateUploaded: Date?
     @NSManaged public var sourceOrder: Int16
     
     @NSManaged public var manga: MangaObject?

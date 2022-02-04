@@ -38,6 +38,7 @@ class WasmJson {
         try? vm.addImportHandler(named: "json_integer_value", namespace: "env", block: self.json_integer_value)
         try? vm.addImportHandler(named: "json_float", namespace: "env", block: self.json_float)
         try? vm.addImportHandler(named: "json_float_value", namespace: "env", block: self.json_float_value)
+        try? vm.addImportHandler(named: "json_date_value", namespace: "env", block: self.json_date_value)
         try? vm.addImportHandler(named: "json_free", namespace: "env", block: self.json_free)
     }
     
@@ -225,6 +226,26 @@ class WasmJson {
                 return Float32(float)
             } else if let float = Float(self.readValue(json) as? String ?? "Error") {
                 return Float32(float)
+            }
+            return -1
+        }
+    }
+    
+    var json_date_value: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int64 {
+        { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
+            guard json >= 0, format_len > 0 else { return -1 }
+            if let string = self.readValue(json) as? String,
+               let formatString = try? self.vm.stringFromHeap(byteOffset: Int(format), length: Int(format_len)) {
+                let localeString = locale_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(locale), length: Int(locale_len))) ?? "en_US_POSIX" : "en_US_POSIX"
+                let timeZoneString = timeZone_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(timeZone), length: Int(timeZone_len))) ?? "UTC" : "UTC"
+                
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: localeString)
+                formatter.timeZone = TimeZone(identifier: timeZoneString)
+                formatter.dateFormat = formatString
+                if let date = formatter.date(from: string) {
+                    return Int64(date.timeIntervalSince1970)
+                }
             }
             return -1
         }

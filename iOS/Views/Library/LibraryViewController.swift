@@ -48,10 +48,12 @@ class LibraryViewController: MangaCollectionViewController {
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Find in Library"
         navigationItem.searchController = searchController
         
-        opensReaderView = true
+//        opensReaderView = true
+        preloadsChapters = true
         
 //        collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
         

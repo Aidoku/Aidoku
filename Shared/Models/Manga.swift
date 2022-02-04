@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 enum MangaStatus: Int {
     case unknown = 0
@@ -14,6 +15,7 @@ enum MangaStatus: Int {
     case cancelled = 3
     case hiatus = 4
 }
+
 enum MangaContentRating: Int {
     case safe = 0
     case suggestive = 1
@@ -27,7 +29,11 @@ enum MangaViewer: Int {
     case webtoon = 3
 }
 
-struct Manga: KVCObject, Hashable  {
+class Manga: KVCObject  {
+    static func == (lhs: Manga, rhs: Manga) -> Bool {
+        lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
+    }
+    
     let sourceId: String
     let id: String
     
@@ -39,10 +45,13 @@ struct Manga: KVCObject, Hashable  {
     var tags: [String]?
     
     var cover: String?
+    var url: String?
     
     var status: MangaStatus
     var nsfw: MangaContentRating
     var viewer: MangaViewer
+    
+    var tintColor: UIColor?
     
     init(
         sourceId: String,
@@ -53,6 +62,7 @@ struct Manga: KVCObject, Hashable  {
         description: String? = nil,
         tags: [String]? = nil,
         cover: String? = nil,
+        url: String? = nil,
         status: MangaStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .rtl
@@ -65,6 +75,7 @@ struct Manga: KVCObject, Hashable  {
         self.description = description
         self.tags = tags
         self.cover = cover
+        self.url = url
         self.status = status
         self.nsfw = nsfw
         self.viewer = viewer
@@ -80,6 +91,7 @@ struct Manga: KVCObject, Hashable  {
             description: manga.description ?? self.description,
             tags: manga.tags ?? self.tags,
             cover: manga.cover ?? self.cover,
+            url: manga.url,
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer
@@ -95,6 +107,7 @@ struct Manga: KVCObject, Hashable  {
         case "description": return description
         case "tags": return tags
         case "cover": return cover
+        case "url": return url
         case "status": return status.rawValue
         case "nsfw": return nsfw.rawValue
         case "viewer": return viewer.rawValue
