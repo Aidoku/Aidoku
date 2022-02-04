@@ -36,7 +36,6 @@ class SourceBrowseViewController: MangaCollectionViewController {
         
         title = source.info.name
         
-        navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
         
         let filterImage: UIImage?
@@ -61,7 +60,8 @@ class SourceBrowseViewController: MangaCollectionViewController {
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
-        searchController.hidesNavigationBarDuringPresentation = false
+//        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.searchController = searchController
         
         let activityIndicator = UIActivityIndicatorView(style: .medium)

@@ -84,6 +84,7 @@ class BrowseViewController: UIViewController {
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.searchController = searchController
         
         if #available(iOS 15.0, *) {
@@ -127,7 +128,7 @@ class BrowseViewController: UIViewController {
     
     func reloadData() {
         UIView.transition(with: tableView,
-                          duration: 0.35,
+                          duration: 0.3,
                           options: .transitionCrossDissolve,
                           animations: { self.tableView.reloadData() })
     }

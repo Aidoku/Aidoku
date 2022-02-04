@@ -16,6 +16,7 @@ class MangaCollectionViewController: UIViewController {
     var readHistory: [String: [String: Int]] = [:]
     
     var opensReaderView = false
+    var preloadsChapters = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +34,7 @@ class MangaCollectionViewController: UIViewController {
             minimumLineSpacing: 12,
             sectionInset: view.layoutMargins
         ))
+        collectionView?.backgroundColor = .systemBackground
         collectionView?.delegate = self
         collectionView?.dataSource = self
         collectionView?.delaysContentTouches = false
@@ -90,6 +92,12 @@ class MangaCollectionViewController: UIViewController {
                     chapters[m.id] = await DataManager.shared.getChapters(for: m)
                 }
             }
+        } else if preloadsChapters {
+            Task {
+                for m in manga {
+                    chapters[m.id] = await DataManager.shared.getChapters(for: m)
+                }
+            }
         } else {
             chapters = [:]
             readHistory = [:]
@@ -105,9 +113,7 @@ class MangaCollectionViewController: UIViewController {
     }
     
     func openMangaView(for manga: Manga) {
-        let vc = HostingController(rootView: MangaView(manga: manga))
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+        navigationController?.pushViewController(MangaViewController(manga: manga, chapters: chapters[manga.id] ?? []), animated: true)
     }
 }
 

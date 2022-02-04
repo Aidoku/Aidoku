@@ -9,7 +9,7 @@
     </entity>
     <entity name="Chapter" representedClassName="ChapterObject" syncable="YES">
         <attribute name="chapter" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="dateUploaded" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
+        <attribute name="dateUploaded" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lang" attributeType="String" defaultValueString="en"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
@@ -50,6 +50,7 @@
         <attribute name="status" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="tags" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer"/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
+        <attribute name="url" optional="YES" attributeType="String"/>
         <attribute name="viewer" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="chapters" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Chapter" inverseName="manga" inverseEntity="Chapter"/>
         <relationship name="libraryObject" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="LibraryManga" inverseName="manga" inverseEntity="LibraryManga"/>
@@ -59,6 +60,6 @@
         <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="224"/>
         <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="103"/>
         <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="133"/>
-        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="269"/>
+        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="284"/>
     </elements>
 </model>

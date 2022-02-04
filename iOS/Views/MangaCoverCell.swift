@@ -63,7 +63,19 @@ class MangaCoverCell: UICollectionViewCell {
                 .retryStrategy(retry),
                 .cacheOriginalImage
             ]
-        )
+        ) { result in
+            switch result {
+                case .success(let value):
+                if self.manga?.tintColor == nil {
+                    value.image.getColors(quality: .low) { colors in
+                        let luma = colors?.background.luminance ?? 0
+                        self.manga?.tintColor = luma >= 0.9 ? colors?.secondary : colors?.background
+                    }
+                }
+            default:
+                break
+            }
+        }
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
         

@@ -16,7 +16,7 @@ class MangaListSelectionHeader: UICollectionReusableView {
     var delegate: MangaListSelectionHeaderDelegate?
     
     let titleLabel = UILabel()
-    let menuButton = UIButton()
+    let menuButton = UIButton(type: .roundedRect)
     
     var title: String? = nil {
         didSet {
@@ -69,7 +69,6 @@ class MangaListSelectionHeader: UICollectionReusableView {
         addSubview(titleLabel)
         
         menuButton.tintColor = .label
-        
         menuButton.setImage(UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
         
         // Move chevron to right side
