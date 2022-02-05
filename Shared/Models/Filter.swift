@@ -36,7 +36,7 @@ struct SortOption: KVCObject, Equatable {
 
 struct Filter: KVCObject, Identifiable, Equatable {
     static func == (lhs: Filter, rhs: Filter) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id && lhs.value as? Int ?? 0 == rhs.value as? Int ?? 0
     }
     
     var id: String {

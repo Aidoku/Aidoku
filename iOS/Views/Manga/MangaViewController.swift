@@ -49,7 +49,9 @@ class MangaViewHeaderView: UIView {
     let descriptionLabel = ExpandableTextView()
     let tagScrollView = UIScrollView()
     let readButton = UIButton(type: .roundedRect)
+    let headerView = UIView()
     let headerTitle = UILabel()
+    let sortButton = UIButton(type: .roundedRect)
     
     override var intrinsicContentSize: CGSize {
         return CGSize(
@@ -245,10 +247,17 @@ class MangaViewHeaderView: UIView {
         contentStackView.addArrangedSubview(readButton)
         contentStackView.setCustomSpacing(12, after: readButton)
         
+        headerView.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.addArrangedSubview(headerView)
+        
         // Chapter count header text
         headerTitle.font = .systemFont(ofSize: 18, weight: .semibold)
         headerTitle.translatesAutoresizingMaskIntoConstraints = false
-        contentStackView.addArrangedSubview(headerTitle)
+        headerView.addSubview(headerTitle)
+        
+        sortButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        sortButton.translatesAutoresizingMaskIntoConstraints = false
+        headerView.addSubview(sortButton)
         
         activateConstraints()
         updateViews()
@@ -290,7 +299,13 @@ class MangaViewHeaderView: UIView {
             readButton.trailingAnchor.constraint(equalTo: contentStackView.trailingAnchor),
             readButton.heightAnchor.constraint(equalToConstant: 38),
             
-            headerTitle.heightAnchor.constraint(equalToConstant: 36)
+            headerView.heightAnchor.constraint(equalToConstant: 36),
+            
+            headerTitle.leadingAnchor.constraint(equalTo: headerView.leadingAnchor),
+            headerTitle.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
+            
+            sortButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor),
+            sortButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
         ])
     }
     
@@ -377,11 +392,36 @@ class MangaViewController: UIViewController {
             updateReadButton()
         }
     }
+    var sortedChapters: [Chapter] {
+        if sortOption == 0 {
+            return sortAscending ? chapters.reversed() : chapters
+        } else if sortOption == 1 {
+            return sortAscending ? orderedChapters.reversed() : orderedChapters
+        } else {
+            return chapters
+        }
+    }
+    var orderedChapters: [Chapter] {
+        chapters.sorted { a, b in
+            a.chapterNum ?? -1 < b.chapterNum ?? -1
+        }
+    }
     var readHistory: [String: Int] = [:]
     
     var tintColor: UIColor? {
         didSet {
             setTintColor(tintColor)
+        }
+    }
+    
+    var sortOption: Int = 0 {
+        didSet {
+            tableView.reloadData()
+        }
+    }
+    var sortAscending: Bool = false {
+        didSet {
+            tableView.reloadData()
         }
     }
     
@@ -442,6 +482,7 @@ class MangaViewController: UIViewController {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         tableView.tableHeaderView = headerView
         
+        updateSortMenu()
         activateConstraints()
         updateReadHistory()
         setTintColor(tintColor)
@@ -518,13 +559,41 @@ class MangaViewController: UIViewController {
         if let id = id {
             return chapters.first { $0.id == id }
         }
-        return chapters.first
+        return orderedChapters.first
+    }
+    
+    func updateSortMenu() {
+        if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
+            let sortOptions: [UIAction] = [
+                UIAction(title: "Source Order", image: sortOption == 0 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
+                    if self.sortOption == 0 {
+                        self.sortAscending.toggle()
+                    } else {
+                        self.sortAscending = false
+                        self.sortOption = 0
+                    }
+                    self.updateSortMenu()
+                },
+                UIAction(title: "Chapter", image: sortOption == 1 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
+                    if self.sortOption == 1 {
+                        self.sortAscending.toggle()
+                    } else {
+                        self.sortAscending = false
+                        self.sortOption = 1
+                    }
+                    self.updateSortMenu()
+                }
+            ]
+            let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: sortOptions)
+            headerView.sortButton.showsMenuAsPrimaryAction = true
+            headerView.sortButton.menu = menu
+        }
     }
     
     func updateReadButton(_ headerView: MangaViewHeaderView? = nil) {
         var titleString = ""
         if let chapter = getNextChapter() {
-            if chapter == chapters.first && readHistory[chapter.id] ?? 0 == 0 {
+            if readHistory[chapter.id] ?? 0 == 0 {
                 titleString.append("Start Reading")
             } else {
                 titleString.append("Continue Reading")
@@ -586,7 +655,7 @@ extension MangaViewController: UITableViewDataSource {
             cell = UITableViewCell(style: .subtitle, reuseIdentifier: "ChapterTableViewCell")
         }
         
-        let chapter = chapters[indexPath.row]
+        let chapter = sortedChapters[indexPath.row]
         var titleString = ""
         if let volumeNum = chapter.volumeNum {
             titleString.append(String(format: "Vol.%g ", volumeNum))
@@ -635,15 +704,15 @@ extension MangaViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             let action: UIAction
-            if self.readHistory[self.chapters[indexPath.row].id] ?? 0 > 0 {
+            if self.readHistory[self.sortedChapters[indexPath.row].id] ?? 0 > 0 {
                 action = UIAction(title: "Mark as unread", image: nil) { action in
-                    DataManager.shared.removeHistory(for: self.chapters[indexPath.row])
+                    DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
                 }
             } else {
                 action = UIAction(title: "Mark as read", image: nil) { action in
-                    DataManager.shared.addHistory(for: self.chapters[indexPath.row])
+                    DataManager.shared.addHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
                 }
@@ -659,7 +728,7 @@ extension MangaViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         
         if SourceManager.shared.source(for: manga.sourceId) != nil {
-            openReaderView(for: chapters[indexPath.row])
+            openReaderView(for: sortedChapters[indexPath.row])
         }
     }
 }

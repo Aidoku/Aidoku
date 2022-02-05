@@ -216,6 +216,7 @@ extension DataManager {
         container.viewContext.delete(mangaObject)
         
         if save() {
+            purgeChapters(for: manga)
             libraryManga.removeAll {
                 $0.sourceId == manga.sourceId && $0.id == manga.id
             }
@@ -287,6 +288,22 @@ extension DataManager {
         }
         for chapter in newChapters {
             _ = getChapterObject(for: chapter, manga: manga)
+        }
+        _ = save()
+    }
+    
+    // Removed chapters stored without progress
+    func purgeChapters(for manga: Manga? = nil) {
+        let chapters: [ChapterObject]
+        if let manga = manga {
+            chapters = getChapterObjects(for: manga)
+        } else {
+            chapters = (try? getChapterObjects()) ?? []
+        }
+        for chapter in chapters {
+            if chapter.progress == 0 {
+                container.viewContext.delete(chapter)
+            }
         }
         _ = save()
     }
