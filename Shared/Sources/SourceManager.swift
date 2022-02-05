@@ -14,8 +14,19 @@ class SourceManager {
     
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Sources", isDirectory: true)
     
-    var sources: [Source] {
-        Self.directory.contents.compactMap { try? Source(from: $0) }
+    var sources: [Source] = []
+    
+    init() {
+        sources = Self.directory.contents.compactMap { try? Source(from: $0) }
+        sources.sort { $0.info.name > $1.info.name }
+        
+        Task {
+            for source in sources {
+                _ = try? await source.getFilters()
+            }
+            NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
+            print("loadedSourceFilters")
+        }
     }
     
     func source(for id: String) -> Source? {
@@ -49,6 +60,7 @@ class SourceManager {
                 let destination = Self.directory.appendingPathComponent(source.info.id)
                 if destination.exists {
                     try? FileManager.default.removeItem(at: destination)
+                    sources.removeAll { $0.id == source.id }
                 }
                 try? FileManager.default.moveItem(at: payload, to: destination)
                 try? FileManager.default.removeItem(at: temporaryDirectory)
@@ -56,6 +68,11 @@ class SourceManager {
                 NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
                 
                 source.url = destination
+                sources.append(source)
+                sources.sort { $0.info.name > $1.info.name }
+                Task {
+                    _ = try? await source.getFilters()
+                }
                 return source
             }
         }
@@ -76,6 +93,7 @@ class SourceManager {
                 let destination = Self.directory.appendingPathComponent(source.info.id)
                 if destination.exists {
                     try? FileManager.default.removeItem(at: destination)
+                    sources.removeAll { $0.id == source.id }
                 }
                 try? FileManager.default.moveItem(at: payload, to: destination)
                 try? FileManager.default.removeItem(at: temporaryDirectory)
@@ -83,6 +101,11 @@ class SourceManager {
                 NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
                 
                 source.url = destination
+                sources.append(source)
+                sources.sort { $0.info.name > $1.info.name }
+                Task {
+                    _ = try? await source.getFilters()
+                }
                 return source
             }
         }
@@ -94,11 +117,13 @@ class SourceManager {
         for source in sources {
             try? FileManager.default.removeItem(at: source.url)
         }
+        sources = []
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
     
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
+        sources.removeAll { $0.id == source.id }
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
 }

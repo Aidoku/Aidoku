@@ -90,6 +90,7 @@ class MangaViewHeaderView: UIView {
         titleLabel.text = manga?.title ?? "No Title"
         authorLabel.text = manga?.author ?? "No Author"
         statusLabel.text = manga?.status == .ongoing ? "Ongoing" : manga?.status == .cancelled ? "Cancelled" : manga?.status == .completed ? "Completed" : manga?.status == .hiatus ? "Hiatus" : "Unknown"
+        self.statusView.isHidden = self.manga?.status == .unknown
         if manga?.nsfw == .safe {
             nsfwView.alpha = 0
         } else {
@@ -110,13 +111,16 @@ class MangaViewHeaderView: UIView {
             bookmarkButton.backgroundColor = .secondarySystemFill
         }
         
-        
         descriptionLabel.text = manga?.description ?? "No Description"
+        
         UIView.animate(withDuration: 0.3) {
+            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
+            
             if (self.descriptionLabel.alpha == 0 || self.descriptionLabel.isHidden) && self.manga?.description != nil  {
                 self.descriptionLabel.alpha = 1
                 self.descriptionLabel.isHidden = false
             }
+            
             let targetAlpha: CGFloat = self.manga?.url == nil ? 0 : 1
             if self.safariButton.alpha != targetAlpha {
                 self.safariButton.alpha = targetAlpha
@@ -173,6 +177,7 @@ class MangaViewHeaderView: UIView {
         innerTitleStackView.setCustomSpacing(10, after: labelStackView)
 
         // Status label
+        statusView.isHidden = manga?.status == .unknown
         statusView.backgroundColor = .tertiarySystemFill
         statusView.layer.cornerRadius = 6
         statusView.layer.cornerCurve = .continuous

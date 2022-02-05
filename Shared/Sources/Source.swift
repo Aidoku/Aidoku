@@ -19,6 +19,16 @@ class Source: Identifiable {
     var defaultFilters: [Filter] = []
     var listings: [Listing] = []
     
+    var titleSearchable: Bool {
+        filters.firstIndex { $0.type == .text && $0.name == "Title" } != nil
+    }
+    var authorSearchable: Bool {
+        filters.firstIndex { $0.type == .text && $0.name == "Author" } != nil
+    }
+    var filterable: Bool {
+        !filters.filter { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }.isEmpty
+    }
+    
     struct SourceInfo: Codable {
         let id: String
         let lang: String
@@ -66,6 +76,7 @@ class Source: Identifiable {
         
         WasmRequest(vm: vm, memory: memory).export()
         WasmJson(vm: vm, memory: memory).export()
+        WasmScraper(vm: vm, memory: memory).export()
     }
     
     var descriptorPointer = -1

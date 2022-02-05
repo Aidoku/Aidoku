@@ -47,7 +47,7 @@ class MangaCarouselHeader: UICollectionReusableView {
 
 class SearchViewController: UIViewController {
     
-    var sources = SourceManager.shared.sources
+    var sources: [Source] = []
     var results: [String: MangaPageResult] = [:]
     
     var collectionView: UICollectionView?
@@ -60,6 +60,8 @@ class SearchViewController: UIViewController {
         title = "Search"
         
         navigationController?.navigationBar.prefersLargeTitles = true
+        
+        sources = SourceManager.shared.sources.filter { $0.titleSearchable }
         
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
@@ -105,7 +107,13 @@ class SearchViewController: UIViewController {
         
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
             DispatchQueue.main.async {
-                self.sources = SourceManager.shared.sources
+                self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
+                self.collectionView?.reloadData()
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("loadedSourceFilters"), object: nil, queue: nil) { _ in
+            DispatchQueue.main.async {
+                self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
                 self.collectionView?.reloadData()
             }
         }

@@ -24,7 +24,6 @@
 		FB1B4869277CE76B0056D02C /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4864277CE76A0056D02C /* Manga.swift */; };
 		FB1B486A277CE76B0056D02C /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4865277CE76A0056D02C /* Page.swift */; };
 		FB1B486B277CE76B0056D02C /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4865277CE76A0056D02C /* Page.swift */; };
-		FB1B4870277CE7B50056D02C /* LibraryGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B486D277CE7B50056D02C /* LibraryGridCell.swift */; };
 		FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4873277CE7E60056D02C /* Kingfisher */; };
 		FB1B4881277CEC810056D02C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4880277CEC810056D02C /* SettingsView.swift */; };
 		FB1B489B277CF4B70056D02C /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B489A277CF4B70056D02C /* Color.swift */; };
@@ -39,6 +38,9 @@
 		FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
 		FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */; };
 		FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0827ACBED700D50410 /* SearchViewController.swift */; };
+		FB31AD0B27AE180300D50410 /* WasmScraper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmScraper.swift */; };
+		FB31AD0C27AE180300D50410 /* WasmScraper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmScraper.swift */; };
+		FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB31AD0E27AE18DA00D50410 /* SwiftSoup */; };
 		FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4CB19227A70B9A00A05445 /* MangaViewController.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -63,7 +65,6 @@
 		FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B52791DA130072A2A2 /* KVCObject.swift */; };
 		FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
 		FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
-		FB6340C5279246BE0072A2A2 /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C4279246BE0072A2A2 /* SwiftUIX */; };
 		FB6340C7279246CF0072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C6279246CF0072A2A2 /* WasmInterpreter */; };
 		FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C8279246D50072A2A2 /* ZIPFoundation */; };
 		FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */; };
@@ -114,7 +115,6 @@
 		FB1B4863277CE76A0056D02C /* Chapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Chapter.swift; sourceTree = "<group>"; };
 		FB1B4864277CE76A0056D02C /* Manga.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
 		FB1B4865277CE76A0056D02C /* Page.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Page.swift; sourceTree = "<group>"; };
-		FB1B486D277CE7B50056D02C /* LibraryGridCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LibraryGridCell.swift; sourceTree = "<group>"; };
 		FB1B4880277CEC810056D02C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		FB1B489A277CF4B70056D02C /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		FB1B489D277CF5540056D02C /* HostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HostingController.swift; path = iOS/HostingController.swift; sourceTree = SOURCE_ROOT; };
@@ -126,6 +126,7 @@
 		FB31AD0227AC39F500D50410 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
 		FB31AD0827ACBED700D50410 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
+		FB31AD0A27AE180300D50410 /* WasmScraper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmScraper.swift; sourceTree = "<group>"; };
 		FB4CB19227A70B9A00A05445 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
@@ -173,7 +174,7 @@
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
-				FB6340C5279246BE0072A2A2 /* SwiftUIX in Frameworks */,
+				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,7 +274,6 @@
 			isa = PBXGroup;
 			children = (
 				FB4EEBE427A5F6B7005081A3 /* LibraryViewController.swift */,
-				FB1B486D277CE7B50056D02C /* LibraryGridCell.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -378,6 +378,7 @@
 				FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */,
 				FB7B7E9727877416001E6EAF /* WasmRequest.swift */,
 				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
+				FB31AD0A27AE180300D50410 /* WasmScraper.swift */,
 			);
 			path = Wasm;
 			sourceTree = "<group>";
@@ -429,7 +430,7 @@
 				FB1B4873277CE7E60056D02C /* Kingfisher */,
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
-				FB6340C4279246BE0072A2A2 /* SwiftUIX */,
+				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -487,7 +488,7 @@
 				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
-				FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */,
+				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -537,12 +538,12 @@
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
+				FB31AD0B27AE180300D50410 /* WasmScraper.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB7B7EE5278D0735001E6EAF /* SourceTableViewCell.swift in Sources */,
 				FB1B486A277CE76B0056D02C /* Page.swift in Sources */,
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
-				FB1B4870277CE7B50056D02C /* LibraryGridCell.swift in Sources */,
 				FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */,
 				FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */,
 				FB1B485D277CE6600056D02C /* DataManager.swift in Sources */,
@@ -609,6 +610,7 @@
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
 				FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */,
+				FB31AD0C27AE180300D50410 /* WasmScraper.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 			);
@@ -894,20 +896,20 @@
 				minimumVersion = 7.0.0;
 			};
 		};
+		FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
 			requirement = {
 				branch = main;
 				kind = branch;
-			};
-		};
-		FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SwiftUIX/SwiftUIX.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.1;
 			};
 		};
 		FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
@@ -926,15 +928,15 @@
 			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
 		};
+		FB31AD0E27AE18DA00D50410 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
+		};
 		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
 			productName = WasmInterpreter;
-		};
-		FB6340C4279246BE0072A2A2 /* SwiftUIX */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB6340C3279246BE0072A2A2 /* XCRemoteSwiftPackageReference "SwiftUIX" */;
-			productName = SwiftUIX;
 		};
 		FB6340C6279246CF0072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
