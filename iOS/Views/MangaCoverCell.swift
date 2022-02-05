@@ -76,6 +76,7 @@ class MangaCoverCell: UICollectionViewCell {
                 break
             }
         }
+        imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
         

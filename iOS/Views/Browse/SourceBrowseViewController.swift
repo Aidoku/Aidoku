@@ -55,24 +55,30 @@ class SourceBrowseViewController: MangaCollectionViewController {
         }
         let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
         ellipsisButton.isEnabled = false
-        navigationItem.rightBarButtonItems = [
-            ellipsisButton,
-            UIBarButtonItem(
-                image: filterImage,
-                style: .plain,
-                target: self,
-                action: #selector(openFilterPopover(_:))
+        
+        var items = [ellipsisButton]
+        if source.filterable {
+            items.append(
+                UIBarButtonItem(
+                    image: filterImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openFilterPopover(_:))
+                )
             )
-        ]
+        }
+        navigationItem.rightBarButtonItems = items
         
         collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
         
-        let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchBar.delegate = self
-//        searchController.hidesNavigationBarDuringPresentation = false
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.text = query
-        navigationItem.searchController = searchController
+        if source.titleSearchable {
+            let searchController = UISearchController(searchResultsController: nil)
+            searchController.searchBar.delegate = self
+//            searchController.hidesNavigationBarDuringPresentation = false
+            searchController.obscuresBackgroundDuringPresentation = false
+            searchController.searchBar.text = query
+            navigationItem.searchController = searchController
+        }
         
         let activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.startAnimating()
@@ -153,7 +159,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
 extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        restrictToSearch ? .zero : CGSize(width: collectionView.bounds.width, height: 40)
+        restrictToSearch || listings.isEmpty ? .zero : CGSize(width: collectionView.bounds.width, height: 40)
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {

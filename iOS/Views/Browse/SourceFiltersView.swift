@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SwiftUIX
 
 class SelectedFilters: ObservableObject {
     @Published var filters: [Filter] = []
