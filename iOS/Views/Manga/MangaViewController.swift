@@ -266,6 +266,8 @@ class MangaViewHeaderView: UIView {
         
         activateConstraints()
         updateViews()
+        
+        contentStackView.frame = CGRect(origin: .zero, size: contentStackView.intrinsicContentSize)
     }
     
     func activateConstraints() {
@@ -564,7 +566,7 @@ class MangaViewController: UIViewController {
         if let id = id {
             return chapters.first { $0.id == id }
         }
-        return orderedChapters.first
+        return chapters.last
     }
     
     func updateSortMenu() {
@@ -625,7 +627,7 @@ class MangaViewController: UIViewController {
     }
     
     func openReaderView(for chapter: Chapter) {
-        let readerController = UINavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters))
+        let readerController = ReaderNavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters))
         readerController.modalPresentationStyle = .fullScreen
         present(readerController, animated: true)
     }

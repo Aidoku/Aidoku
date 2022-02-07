@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class LibraryViewController: MangaCollectionViewController {
     
@@ -105,7 +106,7 @@ class LibraryViewController: MangaCollectionViewController {
     }
     
     @objc func showSettings() {
-        let settingsController = HostingController(rootView: SettingsView())
+        let settingsController = UIHostingController(rootView: SettingsView())
         present(settingsController, animated: true)
     }
 }

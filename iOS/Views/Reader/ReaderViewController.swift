@@ -111,7 +111,15 @@ class ReaderViewController: UIViewController {
     
     var statusBarHidden = false
     
+    override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
+        return UIStatusBarAnimation.fade
+    }
+    
     override var prefersStatusBarHidden: Bool {
+        statusBarHidden
+    }
+    
+    override var prefersHomeIndicatorAutoHidden: Bool {
         statusBarHidden
     }
     
@@ -316,7 +324,12 @@ class ReaderViewController: UIViewController {
             animated: false
         )
     
-        for (i, _) in items.reversed().enumerated() {
+        for (i, item) in items.reversed().enumerated() {
+            if let item = item as? ReaderPageView {
+                item.zoomableView.frame = CGRect(origin: .zero, size: size)
+                item.imageView.frame = item.zoomableView.bounds
+                item.updateZoomBounds()
+            }
             leadingConstraints[i].constant = CGFloat(i) * size.width
         }
         
@@ -369,17 +382,7 @@ class ReaderViewController: UIViewController {
             if i < -1 {
                 continue
             }
-            let processor = DownsamplingImageProcessor(size: items[i + 1 + hasPreviousChapter.intValue].bounds.size)
-            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
-            (items[i + 1 + hasPreviousChapter.intValue].subviews.last as? UIImageView)?.kf.setImage(
-                with: URL(string: urls[i]),
-                options: [
-                    .processor(processor),
-                    .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.3)),
-                    .retryStrategy(retry)
-                ]
-            )
+            (items[i + 1 + hasPreviousChapter.intValue] as? ReaderPageView)?.setPageImage(url: urls[i])
         }
     }
     
@@ -416,23 +419,9 @@ class ReaderViewController: UIViewController {
             self.clearPageViews()
             
             for _ in self.pages {
-                let zoomableView = ZoomableScrollView(frame: self.view.bounds)
-                zoomableView.translatesAutoresizingMaskIntoConstraints = false
-                
-                let activityIndicator = UIActivityIndicatorView(style: .medium)
-                activityIndicator.startAnimating()
-                activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-                zoomableView.addSubview(activityIndicator)
-                
-                activityIndicator.centerXAnchor.constraint(equalTo: zoomableView.centerXAnchor).isActive = true
-                activityIndicator.centerYAnchor.constraint(equalTo: zoomableView.centerYAnchor).isActive = true
-                
-                let imageView = UIImageView()
-                imageView.contentMode = .scaleAspectFit
-                imageView.translatesAutoresizingMaskIntoConstraints = false
-                zoomableView.addSubview(imageView)
-                
-                self.items.append(zoomableView)
+                let pageView = ReaderPageView()
+                pageView.translatesAutoresizingMaskIntoConstraints = false
+                self.items.append(pageView)
             }
             
             let firstPage = ReaderInfoPageView(type: .previous, currentChapter: self.chapter)
@@ -450,24 +439,19 @@ class ReaderViewController: UIViewController {
             self.items.append(finalPage)
             
             if self.hasPreviousChapter {
-                let previousChapterPage = UIImageView()
-                previousChapterPage.kf.indicatorType = .activity
-                previousChapterPage.contentMode = .scaleAspectFit
-                previousChapterPage.translatesAutoresizingMaskIntoConstraints = false
+                let previousChapterPage = ReaderPageView()
+                previousChapterPage.imageView.kf.indicatorType = .activity
                 self.items.insert(previousChapterPage, at: 0)
             }
             
             if self.hasNextChapter {
-                let nextChapterPage = UIImageView()
-                nextChapterPage.kf.indicatorType = .activity
-                nextChapterPage.contentMode = .scaleAspectFit
-                nextChapterPage.translatesAutoresizingMaskIntoConstraints = false
+                let nextChapterPage = ReaderPageView()
+                nextChapterPage.imageView.kf.indicatorType = .activity
                 self.items.append(nextChapterPage)
             }
             
             self.leadingConstraints = []
             for (i, view) in self.items.reversed().enumerated() {
-//                view.frame = CGRect(x: CGFloat(i) * self.scrollView.bounds.width, y: 0, width: self.scrollView.bounds.width, height: self.scrollView.bounds.height)
                 self.scrollView.addSubview(view)
                 
                 self.leadingConstraints.append(view.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor, constant: CGFloat(i) * self.scrollView.bounds.width))
@@ -475,9 +459,6 @@ class ReaderViewController: UIViewController {
                 view.topAnchor.constraint(equalTo: self.scrollView.topAnchor).isActive = true
                 view.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor).isActive = true
                 view.heightAnchor.constraint(equalTo: self.scrollView.heightAnchor).isActive = true
-                
-                view.subviews.last?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-                view.subviews.last?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
             }
             self.scrollView.contentSize = CGSize(
                 width: CGFloat(self.items.count) * self.scrollView.bounds.width,
@@ -535,9 +516,13 @@ class ReaderViewController: UIViewController {
         if let navigationController = navigationController {
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 self.statusBarHidden = false
-                NotificationCenter.default.post(name: Notification.Name("updateStatusBar"), object: nil)
                 self.setNeedsStatusBarAppearanceUpdate()
+                self.setNeedsUpdateOfHomeIndicatorAutoHidden()
             } completion: { _ in
+                if navigationController.toolbar.isHidden {
+                    navigationController.toolbar.alpha = 0
+                    navigationController.toolbar.isHidden = false
+                }
                 UIView.animate(withDuration: CATransaction.animationDuration()) {
                     navigationController.navigationBar.alpha = 1
                     navigationController.toolbar.alpha = 1
@@ -551,13 +536,15 @@ class ReaderViewController: UIViewController {
         if let navigationController = navigationController {
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 self.statusBarHidden = true
-                NotificationCenter.default.post(name: Notification.Name("updateStatusBar"), object: nil)
                 self.setNeedsStatusBarAppearanceUpdate()
+                self.setNeedsUpdateOfHomeIndicatorAutoHidden()
             } completion: { _ in
                 UIView.animate(withDuration: CATransaction.animationDuration()) {
                     navigationController.navigationBar.alpha = 0
                     navigationController.toolbar.alpha = 0
                     self.view.backgroundColor = .black
+                } completion: { _ in
+                    navigationController.toolbar.isHidden = true
                 }
             }
         }
@@ -588,32 +575,14 @@ extension ReaderViewController: UIScrollViewDelegate {
             Task {
                 let previousChapter = chapterList[chapterIndex + 1]
                 await preload(chapter: previousChapter)
-                
-                let processor = DownsamplingImageProcessor(size: scrollView.bounds.size)
-                (self.items.first as? UIImageView)?.kf.setImage(
-                    with: URL(string: preloadedPages.last?.imageURL ?? ""),
-                    options: [
-                        .processor(processor),
-                        .scaleFactor(UIScreen.main.scale),
-                        .transition(.fade(0.3))
-                    ]
-                )
+                (self.items.first as? ReaderPageView)?.setPageImage(url: preloadedPages.last?.imageURL ?? "")
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 3) { // Preload next chapter
             DataManager.shared.setCompleted(chapter: chapter)
             Task {
                 let nextChapter = chapterList[chapterIndex - 1]
                 await preload(chapter: nextChapter)
-                
-                let processor = DownsamplingImageProcessor(size: scrollView.bounds.size)
-                (self.items.last as? UIImageView)?.kf.setImage(
-                    with: URL(string: preloadedPages.first?.imageURL ?? ""),
-                    options: [
-                        .processor(processor),
-                        .scaleFactor(UIScreen.main.scale),
-                        .transition(.fade(0.3))
-                    ]
-                )
+                (self.items.last as? ReaderPageView)?.setPageImage(url: preloadedPages.first?.imageURL ?? "")
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 2) { // Next chapter
             chapter = chapterList[chapterIndex - 1]

@@ -148,7 +148,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
         guard manga.count > indexPath.row else { return }
         let manga = manga[indexPath.row]
         if opensReaderView, let chapter = getNextChapter(for: manga), let _ = SourceManager.shared.source(for: manga.sourceId) {
-            let readerController = UINavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters[manga.id] ?? []))
+            let readerController = ReaderNavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters[manga.id] ?? []))
             readerController.modalPresentationStyle = .fullScreen
             present(readerController, animated: true)
         } else {
