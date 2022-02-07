@@ -39,6 +39,7 @@ class WasmJson {
         try? vm.addImportHandler(named: "json_float", namespace: "env", block: self.json_float)
         try? vm.addImportHandler(named: "json_float_value", namespace: "env", block: self.json_float_value)
         try? vm.addImportHandler(named: "json_date_value", namespace: "env", block: self.json_date_value)
+        try? vm.addImportHandler(named: "json_copy", namespace: "env", block: self.json_copy)
         try? vm.addImportHandler(named: "json_free", namespace: "env", block: self.json_free)
     }
     
@@ -71,6 +72,19 @@ class WasmJson {
             if let readData = try? self.vm.dataFromHeap(byteOffset: Int(data), length: Int(size)),
                let json = try? JSONSerialization.jsonObject(with: readData, options: .fragmentsAllowed) as? [String: Any?] {
                 return self.storeValue(json)
+            } else if let readData = try? self.vm.dataFromHeap(byteOffset: Int(data), length: Int(size)),
+                      let json = try? JSONSerialization.jsonObject(with: readData, options: .fragmentsAllowed) as? [Any?] {
+                return self.storeValue(json)
+            }
+            return -1
+        }
+    }
+    
+    var json_copy: (Int32) -> Int32 {
+        { json in
+            guard json >= 0 else { return -1 }
+            if let object = self.readValue(json) {
+                return self.storeValue(object)
             }
             return -1
         }

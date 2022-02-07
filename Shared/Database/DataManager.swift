@@ -103,7 +103,10 @@ extension DataManager {
         loadLibrary()
         
         Task {
-            await updateLibrary()
+            let chapters = await getChapters(for: manga, fromSource: true)
+            DispatchQueue.main.async {
+                self.set(chapters: chapters, for: manga)
+            }
         }
         
         return libraryObject

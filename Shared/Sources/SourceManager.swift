@@ -25,7 +25,6 @@ class SourceManager {
                 _ = try? await source.getFilters()
             }
             NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
-            print("loadedSourceFilters")
         }
     }
     

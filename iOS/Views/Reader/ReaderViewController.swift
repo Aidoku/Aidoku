@@ -405,8 +405,8 @@ class ReaderViewController: UIViewController {
         }
         
         if let chapterIndex = chapterList.firstIndex(of: chapter) {
-            hasPreviousChapter = chapterIndex != 0
-            hasNextChapter = chapterIndex != chapterList.count - 1
+            hasPreviousChapter = chapterIndex != chapterList.count - 1
+            hasNextChapter = chapterIndex != 0
         } else {
             hasPreviousChapter = false
             hasNextChapter = false
@@ -437,14 +437,14 @@ class ReaderViewController: UIViewController {
             
             let firstPage = ReaderInfoPageView(type: .previous, currentChapter: self.chapter)
             if self.hasPreviousChapter  {
-                firstPage.previousChapter = self.chapterList[self.chapterIndex - 1]
+                firstPage.previousChapter = self.chapterList[self.chapterIndex + 1]
             }
             firstPage.translatesAutoresizingMaskIntoConstraints = false
             self.items.insert(firstPage, at: 0)
             
             let finalPage = ReaderInfoPageView(type: .next, currentChapter: self.chapter)
             if self.hasNextChapter  {
-                finalPage.nextChapter = self.chapterList[self.chapterIndex + 1]
+                finalPage.nextChapter = self.chapterList[self.chapterIndex - 1]
             }
             finalPage.translatesAutoresizingMaskIntoConstraints = false
             self.items.append(finalPage)
@@ -487,6 +487,7 @@ class ReaderViewController: UIViewController {
     }
     
     func scrollTo(page: Int, animated: Bool = false) {
+        guard page >= 0, page < pages.count else { return }
         self.setImages(for: (page - 2)..<(page + 3))
         self.scrollView.setContentOffset(
             CGPoint(
@@ -578,14 +579,14 @@ extension ReaderViewController: ChapterListPopoverDelegate {
 extension ReaderViewController: UIScrollViewDelegate {
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         if hasPreviousChapter && currentIndex == -2 { // Previous chapter
-            chapter = chapterList[chapterIndex - 1]
+            chapter = chapterList[chapterIndex + 1]
             Task {
                 await loadChapter()
                 self.scrollTo(page: items.count - (hasNextChapter.intValue + hasPreviousChapter.intValue + 2) - 1)
             }
         } else if hasPreviousChapter && currentIndex == -1 { // Preload previous chapter
             Task {
-                let previousChapter = chapterList[chapterIndex - 1]
+                let previousChapter = chapterList[chapterIndex + 1]
                 await preload(chapter: previousChapter)
                 
                 let processor = DownsamplingImageProcessor(size: scrollView.bounds.size)
@@ -601,7 +602,7 @@ extension ReaderViewController: UIScrollViewDelegate {
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 3) { // Preload next chapter
             DataManager.shared.setCompleted(chapter: chapter)
             Task {
-                let nextChapter = chapterList[chapterIndex + 1]
+                let nextChapter = chapterList[chapterIndex - 1]
                 await preload(chapter: nextChapter)
                 
                 let processor = DownsamplingImageProcessor(size: scrollView.bounds.size)
@@ -615,7 +616,7 @@ extension ReaderViewController: UIScrollViewDelegate {
                 )
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 2) { // Next chapter
-            chapter = chapterList[chapterIndex + 1]
+            chapter = chapterList[chapterIndex - 1]
             Task {
                 await loadChapter()
                 self.scrollTo(page: 0)
