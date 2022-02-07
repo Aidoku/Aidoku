@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class SourceBrowseViewController: MangaCollectionViewController {
     
@@ -145,7 +146,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
     
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {
         oldSelectedFilters = selectedFilters.filters
-        let vc = HostingController(rootView: SourceFiltersView(filters: filters, selectedFilters: selectedFilters))
+        let vc = UIHostingController(rootView: SourceFiltersView(filters: filters, selectedFilters: selectedFilters))
         vc.preferredContentSize = CGSize(width: 300, height: 300)
         vc.modalPresentationStyle = .popover
         vc.presentationController?.delegate = self

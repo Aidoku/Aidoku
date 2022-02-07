@@ -34,6 +34,8 @@ class ExpandableTextView: UIView {
                 self.textLabel.numberOfLines = 4
                 self.invalidateIntrinsicContentSize()
                 self.host?.view.setNeedsLayout()
+                self.moreButton.alpha = 1
+                self.fadeView.alpha = 1
             }
         }
     }

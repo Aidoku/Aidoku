@@ -150,11 +150,13 @@ extension DataManager {
         for manga in libraryManga {
             let chapters = await getChapters(for: manga, fromSource: true)
             DispatchQueue.main.async {
-                let mangaObject = self.getMangaObject(for: manga)
-                if mangaObject?.chapters?.count != chapters.count {
-                    self.set(chapters: chapters, for: manga)
-                }
-                if let mangaObject = mangaObject {
+                if let mangaObject = self.getMangaObject(for: manga) {
+                    if mangaObject.chapters?.count != chapters.count {
+                        if chapters.count > mangaObject.chapters?.count ?? 0 {
+                            mangaObject.libraryObject?.newChaptersCount = Int16(chapters.count - (mangaObject.chapters?.count ?? 0))
+                        }
+                        self.set(chapters: chapters, for: manga)
+                    }
                     mangaObject.load(from: manga)
                     mangaObject.libraryObject?.lastUpdated = Date()
                     _ = self.save()
@@ -323,8 +325,8 @@ extension DataManager {
     func getChapterObject(for chapter: Chapter, manga: Manga? = nil, createIfMissing: Bool = true) -> ChapterObject? {
         if let object = try? getChapterObjects(
             predicate: NSPredicate(
-                format: "sourceId = %@ AND id = %@",
-                chapter.sourceId, chapter.id
+                format: "sourceId = %@ AND id = %@ AND mangaId = %@",
+                chapter.sourceId, chapter.id, chapter.mangaId
             ),
             limit: 1
         ).first {
@@ -335,11 +337,11 @@ extension DataManager {
         return nil
     }
     
-    func getChapterObject(for source: String, id: String) -> ChapterObject? {
+    func getChapterObject(for source: String, id: String, mangaId: String) -> ChapterObject? {
         try? getChapterObjects(
             predicate: NSPredicate(
-                format: "sourceId = %@ AND id = %@",
-                source, id
+                format: "sourceId = %@ AND id = %@ AND mangaId = %@",
+                source, id, mangaId
             ),
             limit: 1
         ).first
@@ -379,7 +381,7 @@ extension DataManager {
     
     func setCompleted(chapter: Chapter) {
         guard let historyObject = getHistoryObject(for: chapter) else { return }
-        guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId) else { return }
+        guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId, mangaId: historyObject.mangaId) else { return }
         chapterObject.read = true
         historyObject.dateRead = Date()
         _ = save()
@@ -390,7 +392,7 @@ extension DataManager {
             return }
         historyObject.dateRead = Date()
         if let page = page {
-            guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId) else { return }
+            guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId, mangaId: historyObject.mangaId) else { return }
             chapterObject.progress = Int16(page)
         }
         _ = save()
