@@ -108,6 +108,8 @@ class WasmScraper {
             guard descriptor >= 0 else { return 0 }
             if let string = try? (self.readValue(descriptor) as? SwiftSoup.Elements)?.text() {
                 return self.vm.write(string: string, memory: self.memory)
+            } else if let string = try? (self.readValue(descriptor) as? SwiftSoup.Element)?.text() {
+                return self.vm.write(string: string, memory: self.memory)
             } else if let string = self.readValue(descriptor) as? String {
                 return self.vm.write(string: string, memory: self.memory)
             }

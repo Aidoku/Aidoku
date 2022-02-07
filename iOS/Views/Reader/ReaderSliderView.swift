@@ -86,8 +86,10 @@ class ReaderSliderView: UIControl {
     
     private func updateLayerFrames() {
         let origin = thumbOriginForValue(currentValue)
-        trackWidthConstraint?.constant = trackView.bounds.width - origin.x
-        thumbTrailingConstraint?.constant = 0 - (trackView.bounds.width - origin.x)
+        let width = trackView.bounds.width - origin.x
+        guard width >= 0, width < bounds.width else { return }
+        trackWidthConstraint?.constant = width
+        thumbTrailingConstraint?.constant = 0 - width
     }
     
     func positionForValue(_ value: CGFloat) -> CGFloat {

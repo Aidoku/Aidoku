@@ -343,7 +343,7 @@ class Source: Identifiable {
                         defaultFilters.append(Filter(type: subFilter.type, name: subFilter.name, value: subFilter.defaultValue))
                     }
                 }
-            } else {
+            } else if filter.type != .text || (filter.name != "Title" && filter.name != "Author") {
                 defaultFilters.append(Filter(type: filter.type, name: filter.name, value: filter.defaultValue))
             }
         }
@@ -403,10 +403,14 @@ class Source: Identifiable {
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
         let task = Task<MangaPageResult, Error> {
             let descriptor = self.array()
-            self.descriptorPointer += 1
-            self.descriptors.append(filters)
+            var filterPointer = -1
+            if !filters.isEmpty {
+                self.descriptorPointer += 1
+                self.descriptors.append(filters)
+                filterPointer = self.descriptorPointer
+            }
             
-            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(self.descriptorPointer), Int32(page))
+            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(filterPointer), Int32(page))
             
             let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
             
@@ -446,6 +450,7 @@ class Source: Identifiable {
             
             let result: Int32 = try self.vm.call("manga_details_request", Int32(self.descriptorPointer))
             
+            guard result >= 0, result < self.descriptors.count else { throw SourceError.mangaDetailsFailed }
             let manga = self.descriptors[Int(result)] as? Manga
             
             self.descriptorPointer = -1
