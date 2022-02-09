@@ -36,13 +36,135 @@ class Source: Identifiable {
         let version: Int
     }
     
-    enum SourceError: Error {
-        case vmNotLoaded
-        case mangaDetailsFailed
-    }
-    
     var vm: WasmInterpreter
     var memory: WasmMemory
+    
+    actor SourceActor {
+        
+        var source: Source
+        
+        enum SourceError: Error {
+            case vmNotLoaded
+            case mangaDetailsFailed
+        }
+        
+        init(source: Source) {
+            self.source = source
+        }
+        
+        func getFilters() async throws -> [Filter] {
+            let descriptor = source.array()
+            
+            try source.vm.call("initialize_filters", descriptor)
+            
+            let filters = source.descriptors[Int(descriptor)] as? [Filter] ?? []
+            
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            return filters
+        }
+        
+        func getListings() throws -> [Listing] {
+            let descriptor = source.array()
+            
+            try source.vm.call("initialize_listings", descriptor)
+            
+            let listings = source.descriptors[Int(descriptor)] as? [Listing] ?? []
+            
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            return listings
+        }
+        
+        func getMangaList(filters: [Filter], page: Int = 1) throws -> MangaPageResult {
+            let descriptor = source.array()
+            var filterPointer = -1
+            if !filters.isEmpty {
+                source.descriptorPointer += 1
+                source.descriptors.append(filters)
+                filterPointer = source.descriptorPointer
+            }
+            
+            let hasMore: Int32 = try source.vm.call("manga_list_request", descriptor, Int32(filterPointer), Int32(page))
+            
+            let manga = source.descriptors[Int(descriptor)] as? [Manga] ?? []
+            
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
+        }
+        
+        func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
+            let descriptor = source.array()
+            let listingName = source.vm.write(string: listing.name, memory: source.memory)
+            
+            let hasMore: Int32 = try source.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
+            
+            let manga = source.descriptors[Int(descriptor)] as? [Manga] ?? []
+                
+            source.memory.free(listingName)
+                
+            source.descriptorPointer = -1
+            source.descriptors = []
+                
+            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
+        }
+        
+        func getMangaDetails(manga: Manga) throws -> Manga {
+            source.descriptorPointer += 1
+            source.descriptors.append(manga)
+            
+            let result: Int32 = try source.vm.call("manga_details_request", Int32(source.descriptorPointer))
+            
+            guard result >= 0, result < source.descriptors.count else { throw SourceError.mangaDetailsFailed }
+            let manga = source.descriptors[Int(result)] as? Manga
+            
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            guard let manga = manga else { throw SourceError.mangaDetailsFailed }
+            return manga
+        }
+        
+        func getChapterList(manga: Manga) throws -> [Chapter] {
+            let descriptor = source.array()
+            source.descriptorPointer += 1
+            source.descriptors.append(manga)
+            
+            source.chapterCounter = 0
+            source.currentManga = manga.id
+            
+            try source.vm.call("chapter_list_request", descriptor, Int32(source.descriptorPointer))
+            
+            let chapters = source.descriptors[Int(descriptor)] as? [Chapter] ?? []
+            
+            source.chapterCounter = 0
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            return chapters
+        }
+        
+        func getPageList(chapter: Chapter) async throws -> [Page] {
+            let descriptor = source.array()
+            source.descriptorPointer += 1
+            source.descriptors.append(chapter)
+            
+            try source.vm.call("page_list_request", descriptor, Int32(source.descriptorPointer))
+            
+            let pages = source.descriptors[Int(descriptor)] as? [Page] ?? []
+            
+            source.descriptorPointer = -1
+            source.descriptors = []
+            
+            return pages
+        }
+    }
+    
+    var actor: SourceActor!
     
     init(from url: URL) throws {
         self.url = url
@@ -52,6 +174,7 @@ class Source: Identifiable {
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         self.vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
         self.memory = WasmMemory(vm: vm)
+        self.actor = SourceActor(source: self)
         
         prepareVirtualMachine()
     }
@@ -354,20 +477,7 @@ class Source: Identifiable {
     func getFilters() async throws -> [Filter] {
         guard filters.isEmpty else { return filters }
         
-        let task = Task<[Filter], Error> {
-            let descriptor = self.array()
-            
-            try self.vm.call("initialize_filters", descriptor)
-            
-            let filters = self.descriptors[Int(descriptor)] as? [Filter] ?? []
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return filters
-        }
-        
-        filters = try await task.value
+        filters = try await actor.getFilters()
         _ = getDefaultFilters()
         
         return filters
@@ -376,20 +486,7 @@ class Source: Identifiable {
     func getListings() async throws -> [Listing] {
         guard listings.isEmpty else { return listings }
         
-        let task = Task<[Listing], Error> {
-            let descriptor = self.array()
-            
-            try self.vm.call("initialize_listings", descriptor)
-            
-            let listings = self.descriptors[Int(descriptor)] as? [Listing] ?? []
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return listings
-        }
-        
-        listings = try await task.value
+        listings = try await actor.getListings()
         
         return listings
     }
@@ -397,111 +494,26 @@ class Source: Identifiable {
     func fetchSearchManga(query: String, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
         var newFilters = filters
         newFilters.append(Filter(name: "Title", value: query))
-        return try await getMangaList(filters: newFilters, page: page)
+        return try await actor.getMangaList(filters: newFilters, page: page)
     }
     
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
-        let task = Task<MangaPageResult, Error> {
-            let descriptor = self.array()
-            var filterPointer = -1
-            if !filters.isEmpty {
-                self.descriptorPointer += 1
-                self.descriptors.append(filters)
-                filterPointer = self.descriptorPointer
-            }
-            
-            let hasMore: Int32 = try self.vm.call("manga_list_request", descriptor, Int32(filterPointer), Int32(page))
-            
-            let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
-        }
-        
-        return try await task.value
+        try await actor.getMangaList(filters: filters, page: page)
     }
     
     func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
-        let task = Task<MangaPageResult, Error> {
-            let descriptor = self.array()
-            let listingName = self.vm.write(string: listing.name, memory: self.memory)
-            
-            let hasMore: Int32 = try self.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
-            
-            let manga = self.descriptors[Int(descriptor)] as? [Manga] ?? []
-            
-            self.memory.free(listingName)
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
-        }
-        
-        return try await task.value
+        try await actor.getMangaListing(listing: listing, page: page)
     }
     
     func getMangaDetails(manga: Manga) async throws -> Manga {
-        let task = Task<Manga, Error> {
-            self.descriptorPointer += 1
-            self.descriptors.append(manga)
-            
-            let result: Int32 = try self.vm.call("manga_details_request", Int32(self.descriptorPointer))
-            
-            guard result >= 0, result < self.descriptors.count else { throw SourceError.mangaDetailsFailed }
-            let manga = self.descriptors[Int(result)] as? Manga
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            guard let manga = manga else { throw SourceError.mangaDetailsFailed }
-            return manga
-        }
-        
-        return try await task.value
+        try await actor.getMangaDetails(manga: manga)
     }
     
     func getChapterList(manga: Manga) async throws -> [Chapter] {
-        let task = Task<[Chapter], Error> {
-            let descriptor = self.array()
-            self.descriptorPointer += 1
-            self.descriptors.append(manga)
-            
-            self.chapterCounter = 0
-            self.currentManga = manga.id
-            
-            try self.vm.call("chapter_list_request", descriptor, Int32(self.descriptorPointer))
-            
-            let chapters = self.descriptors[Int(descriptor)] as? [Chapter] ?? []
-            
-            self.chapterCounter = 0
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return chapters
-        }
-        
-        return try await task.value
+        try await actor.getChapterList(manga: manga)
     }
     
     func getPageList(chapter: Chapter) async throws -> [Page] {
-        let task = Task<[Page], Error> {
-            let descriptor = self.array()
-            self.descriptorPointer += 1
-            self.descriptors.append(chapter)
-            
-            try self.vm.call("page_list_request", descriptor, Int32(self.descriptorPointer))
-            
-            let pages = self.descriptors[Int(descriptor)] as? [Page] ?? []
-            
-            self.descriptorPointer = -1
-            self.descriptors = []
-            
-            return pages
-        }
-        
-        return try await task.value
+        try await actor.getPageList(chapter: chapter)
     }
 }
