@@ -440,13 +440,13 @@ class ReaderViewController: UIViewController {
             
             if self.hasPreviousChapter {
                 let previousChapterPage = ReaderPageView()
-                previousChapterPage.imageView.kf.indicatorType = .activity
+                previousChapterPage.translatesAutoresizingMaskIntoConstraints = false
                 self.items.insert(previousChapterPage, at: 0)
             }
             
             if self.hasNextChapter {
                 let nextChapterPage = ReaderPageView()
-                nextChapterPage.imageView.kf.indicatorType = .activity
+                nextChapterPage.translatesAutoresizingMaskIntoConstraints = false
                 self.items.append(nextChapterPage)
             }
             

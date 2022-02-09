@@ -29,6 +29,7 @@ class LibraryViewController: MangaCollectionViewController {
     }
     
     var searchText: String = ""
+    var updatedLibrary = false
     
     let emptyTextStackView = UIStackView()
     
@@ -85,15 +86,22 @@ class LibraryViewController: MangaCollectionViewController {
         fetchLibrary()
         
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
+            self.manga = DataManager.shared.libraryManga
+            DispatchQueue.main.async {
+                self.collectionView?.reloadData()
+            }
         }
     }
     
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        manga = DataManager.shared.libraryManga
-//        collectionView?.reloadData()
-//    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !updatedLibrary {
+            updatedLibrary = true
+            Task {
+                await DataManager.shared.updateLibrary()
+            }
+        }
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
