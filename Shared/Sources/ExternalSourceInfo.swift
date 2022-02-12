@@ -14,5 +14,7 @@ struct ExternalSourceInfo: Codable, Hashable {
     let icon: String
     let lang: String
     let version: Int
-    let nsfw: Int // 0 = none, 1 = minor, 2 = major
+    let nsfw: Int?
+    let minAppVersion: String?
+    let maxAppVersion: String?
 }

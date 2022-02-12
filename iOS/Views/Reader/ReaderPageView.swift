@@ -13,6 +13,7 @@ class ReaderPageView: UIView {
     var zoomableView = ZoomableScrollView(frame: .zero)
     let imageView = UIImageView()
     let activityIndicator = UIActivityIndicatorView(style: .medium)
+    let reloadButton = UIButton(type: .roundedRect)
     
     var imageViewHeightConstraint: NSLayoutConstraint?
     
@@ -46,6 +47,12 @@ class ReaderPageView: UIView {
         
         zoomableView.zoomView = imageView
         
+        reloadButton.alpha = 0
+        reloadButton.setTitle("Reload", for: .normal)
+        reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
+        reloadButton.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(reloadButton)
+        
         activateConstraints()
     }
     
@@ -61,6 +68,9 @@ class ReaderPageView: UIView {
         
         activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        
+        reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
     }
     
     func updateZoomBounds() {
@@ -72,13 +82,23 @@ class ReaderPageView: UIView {
         self.zoomableView.contentSize = self.imageView.bounds.size
     }
     
+    @objc func reload() {
+        if let url = currentUrl {
+            reloadButton.alpha = 0
+            activityIndicator.alpha = 1
+            activityIndicator.startAnimating()
+            currentUrl = nil
+            setPageImage(url: url)
+        }
+    }
+    
     func setPageImage(url: String) {
         guard currentUrl != url else { return }
         currentUrl = url
         
         DispatchQueue.main.async {
             let processor = DownsamplingImageProcessor(size: self.bounds.size)
-            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
+            let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
             self.imageView.kf.setImage(
                 with: URL(string: url),
                 options: [
@@ -92,9 +112,11 @@ class ReaderPageView: UIView {
                 case .success:
                     self.activityIndicator.stopAnimating()
                     self.activityIndicator.isHidden = true
+                    self.reloadButton.alpha = 0
                     self.updateZoomBounds()
-                default:
-                    // TODO: maybe do something here?
+                case .failure:
+                    self.activityIndicator.alpha = 0
+                    self.reloadButton.alpha = 1
                     break
                 }
             }

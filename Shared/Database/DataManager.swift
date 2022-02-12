@@ -122,7 +122,10 @@ extension DataManager {
     func loadLibrary() {
         guard let libraryObjects = try? getLibraryObjects(sortDescriptors: [NSSortDescriptor(key: "lastOpened", ascending: false)]) else { return }
         libraryManga = libraryObjects.map { (libraryObject) -> Manga in
-            libraryObject.manga.toManga()
+            if let oldManga = libraryManga.first(where: { $0.sourceId == libraryObject.manga.sourceId && $0.id == libraryObject.manga.id }) {
+                return oldManga
+            }
+            return libraryObject.manga.toManga()
         }
     }
     
@@ -221,7 +224,7 @@ extension DataManager {
         container.viewContext.delete(mangaObject)
         
         if save() {
-            purgeChapters(for: manga)
+            deleteChapters(for: manga)
             libraryManga.removeAll {
                 $0.sourceId == manga.sourceId && $0.id == manga.id
             }
@@ -297,8 +300,7 @@ extension DataManager {
         _ = save()
     }
     
-    // Removed chapters stored without progress
-    func purgeChapters(for manga: Manga? = nil) {
+    func deleteChapters(for manga: Manga? = nil) {
         let chapters: [ChapterObject]
         if let manga = manga {
             chapters = getChapterObjects(for: manga)
@@ -306,9 +308,7 @@ extension DataManager {
             chapters = (try? getChapterObjects()) ?? []
         }
         for chapter in chapters {
-            if chapter.progress == 0 {
-                container.viewContext.delete(chapter)
-            }
+            container.viewContext.delete(chapter)
         }
         _ = save()
     }
@@ -366,24 +366,31 @@ extension DataManager {
 extension DataManager {
     
     func currentPage(for chapter: Chapter) -> Int {
-        guard let chapterObject = getChapterObject(for: chapter, createIfMissing: false) else { return 0 }
-        return Int(chapterObject.progress)
+        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return 0 }
+        return Int(historyObject.progress)
     }
     
     func setCurrentPage(_ page: Int, for chapter: Chapter) {
-        guard let chapterObject = getChapterObject(for: chapter) else { return }
-        chapterObject.progress = Int16(page)
-        if let historyObject = getHistoryObject(for: chapter) {
-            historyObject.dateRead = Date()
-        }
+        guard let historyObject = getHistoryObject(for: chapter) else { return }
+        historyObject.progress = Int16(page)
+        historyObject.dateRead = Date()
         _ = save()
     }
     
-    func setCompleted(chapter: Chapter) {
+    func setCompleted(chapter: Chapter, date: Date = Date()) {
         guard let historyObject = getHistoryObject(for: chapter) else { return }
-        guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId, mangaId: historyObject.mangaId) else { return }
-        chapterObject.read = true
-        historyObject.dateRead = Date()
+        historyObject.completed = true
+        historyObject.dateRead = date
+        _ = save()
+    }
+    
+    func setCompleted(chapters: [Chapter], date: Date = Date()) {
+        for chapter in chapters {
+            if let historyObject = getHistoryObject(for: chapter) {
+                historyObject.dateRead = date
+                historyObject.completed = true
+            }
+        }
         _ = save()
     }
     
@@ -392,19 +399,14 @@ extension DataManager {
             return }
         historyObject.dateRead = Date()
         if let page = page {
-            guard let chapterObject = getChapterObject(for: historyObject.sourceId, id:  historyObject.chapterId, mangaId: historyObject.mangaId) else { return }
-            chapterObject.progress = Int16(page)
+            historyObject.progress = Int16(page)
         }
         _ = save()
     }
     
     func removeHistory(for chapter: Chapter) {
-        guard let chapterObject = getChapterObject(for: chapter) else { return }
-        chapterObject.read = false
-        chapterObject.progress = 0
-        if let historyObject = getHistoryObject(for: chapter, createIfMissing: false) {
-            container.viewContext.delete(historyObject)
-        }
+        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return }
+        container.viewContext.delete(historyObject)
         _ = save()
     }
     

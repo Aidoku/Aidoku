@@ -69,7 +69,7 @@ class MangaCoverCell: UICollectionViewCell {
                 if self.manga?.tintColor == nil {
                     value.image.getColors(quality: .low) { colors in
                         let luma = colors?.background.luminance ?? 0
-                        self.manga?.tintColor = luma >= 0.9 ? colors?.secondary : colors?.background
+                        self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
                     }
                 }
             default:

@@ -9,6 +9,15 @@ import Foundation
 import WasmInterpreter
 
 class Source: Identifiable {
+    
+    struct SourceInfo: Codable {
+        let id: String
+        let lang: String
+        let name: String
+        let version: Int
+        let nsfw: Int?
+    }
+    
     var id: String {
         info.id
     }
@@ -27,13 +36,6 @@ class Source: Identifiable {
     }
     var filterable: Bool {
         !filters.filter { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }.isEmpty
-    }
-    
-    struct SourceInfo: Codable {
-        let id: String
-        let lang: String
-        let name: String
-        let version: Int
     }
     
     var vm: WasmInterpreter
@@ -193,6 +195,7 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "array_append", namespace: "env", block: self.array_append)
         try? vm.addImportHandler(named: "array_remove", namespace: "env", block: self.array_remove)
         try? vm.addImportHandler(named: "object_getn", namespace: "env", block: self.object_getn)
+        try? vm.addImportHandler(named: "string", namespace: "env", block: self.string)
         try? vm.addImportHandler(named: "string_value", namespace: "env", block: self.string_value)
         try? vm.addImportHandler(named: "integer_value", namespace: "env", block: self.integer_value)
         try? vm.addImportHandler(named: "float_value", namespace: "env", block: self.float_value)
@@ -412,6 +415,18 @@ class Source: Identifiable {
                let value = object.valueByPropertyName(name: keyString) {
                 self.descriptorPointer += 1
                 self.descriptors.append(value)
+                return Int32(self.descriptorPointer)
+            }
+            return -1
+        }
+    }
+    
+    var string: (Int32, Int32) -> Int32 {
+        { str, str_len in
+            guard str_len >= 0 else { return -1 }
+            if let string = try? self.vm.stringFromHeap(byteOffset: Int(str), length: Int(str_len)) {
+                self.descriptorPointer += 1
+                self.descriptors.append(string)
                 return Int32(self.descriptorPointer)
             }
             return -1

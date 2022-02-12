@@ -60,7 +60,19 @@ class BrowseViewController: UIViewController {
     var searchText: String = ""
     
     var filteredSources: [Source] { sources.filter { searchText.isEmpty ? true : $0.info.name.lowercased().contains(searchText.lowercased()) } }
-    var filteredUpdates: [ExternalSourceInfo] { updates.filter { searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased()) } }
+    var filteredUpdates: [ExternalSourceInfo] {
+        updates.filter {
+            if let appVersion = Float(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0") {
+                if let maxVersion = $0.maxAppVersion {
+                    guard Float(maxVersion) ?? 0 >= appVersion else { return false }
+                }
+                if let minVersion = $0.minAppVersion {
+                    guard Float(minVersion) ?? 0 <= appVersion else { return false }
+                }
+            }
+            return searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased())
+        }
+    }
     var filteredInstallableSources: [ExternalSourceInfo] { installableSources.filter { searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased()) } }
     
     var hasSources: Bool {
