@@ -20,7 +20,6 @@ class MangaViewHeaderView: UIView {
     
     var manga: Manga? {
         didSet {
-            updateViews()
             activateConstraints()
             updateViews()
         }
@@ -125,6 +124,9 @@ class MangaViewHeaderView: UIView {
             if self.safariButton.alpha != targetAlpha {
                 self.safariButton.alpha = targetAlpha
             }
+        } completion: { _ in
+            // Necessary because pre-iOS 15 stack view won't adjust its size automatically for some reason
+            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
         }
         loadTags()
         layoutIfNeeded()
@@ -148,6 +150,8 @@ class MangaViewHeaderView: UIView {
         coverImageView.clipsToBounds = true
         coverImageView.layer.cornerRadius = 5
         coverImageView.layer.cornerCurve = .continuous
+        coverImageView.layer.borderWidth = 1
+        coverImageView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
         coverImageView.translatesAutoresizingMaskIntoConstraints = false
         titleStackView.addArrangedSubview(coverImageView)
 
@@ -326,12 +330,17 @@ class MangaViewHeaderView: UIView {
         }
     }
     
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
+        loadTags()
+    }
+    
     func loadTags() {
         for view in tagScrollView.subviews {
             view.removeFromSuperview()
         }
         
-        var width: CGFloat = 16
+        var width: CGFloat = safeAreaInsets.left + 16
         for tag in manga?.tags ?? [] {
             let tagView = UIView()
             tagView.backgroundColor = .tertiarySystemFill
@@ -357,6 +366,8 @@ class MangaViewHeaderView: UIView {
         tagScrollView.contentSize = CGSize(width: width + 16, height: 26)
         
         UIView.animate(withDuration: 0.3) {
+            self.tagScrollView.isHidden = (self.manga?.tags ?? []).isEmpty
+        } completion: { _ in
             self.tagScrollView.isHidden = (self.manga?.tags ?? []).isEmpty
         }
     }
@@ -437,18 +448,6 @@ class MangaViewController: UIViewController {
     init(manga: Manga, chapters: [Chapter] = []) {
         self.manga = manga
         self.chapters = chapters
-        // Adjust tint color for readability
-        // TODO: move elsewhere
-        if let tintColor = manga.tintColor {
-            let luma = tintColor.luminance
-            if luma >= 0.6 {
-                self.tintColor = tintColor.darker(by: luma >= 0.9 ? 40 : 30)
-            } else if luma <= 0.3 {
-                self.tintColor = tintColor.lighter(by: luma <= 0.1 ? 30 : 20)
-            } else {
-                self.tintColor = tintColor
-            }
-        }
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -463,8 +462,28 @@ class MangaViewController: UIViewController {
         
         navigationItem.largeTitleDisplayMode = .never
         
+        let mangaOptions: [UIAction] = [
+            UIAction(title: "Mark all as read", image: nil) { _ in
+                    DataManager.shared.setCompleted(chapters: self.chapters, date: Date().addingTimeInterval(-5))
+                // Make most recent chapter appear as the most recently read
+                if let firstChapter = self.chapters.first {
+                    DataManager.shared.setCompleted(chapter: firstChapter)
+                }
+                self.updateReadHistory()
+                self.tableView.reloadData()
+            },
+            UIAction(title: "Mark all as unread", image: nil) { _ in
+                for chapter in self.chapters {
+                    DataManager.shared.removeHistory(for: chapter)
+                }
+                self.updateReadHistory()
+                self.tableView.reloadData()
+            }
+        ]
+        let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: mangaOptions)
+        
         let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
-        ellipsisButton.isEnabled = false
+        ellipsisButton.menu = menu
         navigationItem.rightBarButtonItem = ellipsisButton
         
         if #available(iOS 15.0, *) {
@@ -490,9 +509,10 @@ class MangaViewController: UIViewController {
         tableView.tableHeaderView = headerView
         
         updateSortMenu()
-        activateConstraints()
         updateReadHistory()
-        setTintColor(tintColor)
+        activateConstraints()
+        
+        getTintColor()
         
         guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
         Task {
@@ -526,18 +546,6 @@ class MangaViewController: UIViewController {
         setTintColor(nil)
     }
     
-    func setTintColor(_ color: UIColor?) {
-        if let color = color {
-            navigationController?.navigationBar.tintColor = color
-            navigationController?.tabBarController?.tabBar.tintColor = color
-            view.tintColor = color
-        } else {
-            navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
-            navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
-//            view.tintColor = UIView().tintColor
-        }
-    }
-    
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
@@ -558,6 +566,38 @@ class MangaViewController: UIViewController {
             headerView.topAnchor.constraint(equalTo: tableView.topAnchor).isActive = true
             headerView.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
             headerView.heightAnchor.constraint(equalTo: headerView.contentStackView.heightAnchor, constant: 10).isActive = true
+        }
+    }
+    
+    func setTintColor(_ color: UIColor?) {
+        if let color = color {
+            navigationController?.navigationBar.tintColor = color
+            navigationController?.tabBarController?.tabBar.tintColor = color
+            view.tintColor = color
+        } else {
+            navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
+            navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
+//            view.tintColor = UIView().tintColor
+        }
+    }
+    
+    func getTintColor() {
+        if let tintColor = manga.tintColor {
+            // Adjust tint color for readability
+            let luma = tintColor.luminance
+            if luma >= 0.6 {
+                self.tintColor = tintColor.darker(by: luma >= 0.9 ? 40 : 30)
+            } else if luma <= 0.3 {
+                self.tintColor = tintColor.lighter(by: luma <= 0.1 ? 30 : 20)
+            } else {
+                self.tintColor = tintColor
+            }
+        } else if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
+            headerView.coverImageView.image?.getColors(quality: .low) { colors in
+                let luma = colors?.background.luminance ?? 0
+                self.manga.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
+                self.getTintColor()
+            }
         }
     }
     

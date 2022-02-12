@@ -86,9 +86,24 @@ class LibraryViewController: MangaCollectionViewController {
         fetchLibrary()
         
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
+            let previousManga = self.manga
             self.manga = DataManager.shared.libraryManga
-            DispatchQueue.main.async {
-                self.collectionView?.reloadData()
+            if !self.manga.isEmpty && self.manga.count == previousManga.count { // reorder
+                DispatchQueue.main.async {
+                    self.collectionView?.performBatchUpdates {
+                        for (i, manga) in previousManga.enumerated() {
+                            let from = IndexPath(row: i, section: 0)
+                            if let j = self.manga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }) {
+                                let to = IndexPath(row: j, section: 0)
+                                self.collectionView?.moveItem(at: from, to: to)
+                            }
+                        }
+                    }
+                }
+            } else { // reload
+                DispatchQueue.main.async {
+                    self.collectionView?.reloadData()
+                }
             }
         }
     }

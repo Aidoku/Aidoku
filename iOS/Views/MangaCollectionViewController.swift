@@ -152,7 +152,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
             readerController.modalPresentationStyle = .fullScreen
             present(readerController, animated: true)
         } else {
-            openMangaView(for: manga)
+            openMangaView(for: self.manga[indexPath.row])
         }
     }
     

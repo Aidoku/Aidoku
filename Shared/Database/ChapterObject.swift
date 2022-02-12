@@ -37,12 +37,6 @@ public class ChapterObject: NSManagedObject {
             sourceOrder: Int(sourceOrder)
         )
     }
-    
-    public override func awakeFromInsert() {
-        super.awakeFromInsert()
-        progress = 0
-        read = false
-    }
 }
 
 extension ChapterObject {
@@ -59,8 +53,6 @@ extension ChapterObject {
     @NSManaged public var lang: String
     @NSManaged public var chapter: NSNumber?
     @NSManaged public var volume: NSNumber?
-    @NSManaged public var progress: Int16
-    @NSManaged public var read: Bool
     @NSManaged public var dateUploaded: Date?
     @NSManaged public var sourceOrder: Int16
     

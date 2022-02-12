@@ -31,11 +31,11 @@ class ExpandableTextView: UIView {
                     self.fadeView.alpha = 0
                 }
             } else {
-                self.textLabel.numberOfLines = 4
-                self.invalidateIntrinsicContentSize()
-                self.host?.view.setNeedsLayout()
-                self.moreButton.alpha = 1
-                self.fadeView.alpha = 1
+                textLabel.numberOfLines = 4
+                invalidateIntrinsicContentSize()
+                host?.view.setNeedsLayout()
+                moreButton.alpha = 1
+                fadeView.alpha = 1
             }
         }
     }

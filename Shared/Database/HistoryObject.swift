@@ -10,7 +10,12 @@ import CoreData
 
 @objc(HistoryObject)
 public class HistoryObject: NSManagedObject {
-
+    
+    public override func awakeFromInsert() {
+        super.awakeFromInsert()
+        progress = 0
+        completed = false
+    }
 }
 
 extension HistoryObject {
@@ -23,6 +28,9 @@ extension HistoryObject {
     @NSManaged public var sourceId: String
     @NSManaged public var chapterId: String
     @NSManaged public var mangaId: String
+    
+    @NSManaged public var progress: Int16
+    @NSManaged public var completed: Bool
     
 }
 
