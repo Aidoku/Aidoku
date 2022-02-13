@@ -40,7 +40,7 @@ class ReaderSliderView: UIControl {
         trackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(trackView)
         
-        progressedTrackView.backgroundColor = .systemBlue
+        progressedTrackView.backgroundColor = tintColor
         progressedTrackView.layer.cornerRadius = 1.5
         progressedTrackView.isUserInteractionEnabled = false
         progressedTrackView.translatesAutoresizingMaskIntoConstraints = false

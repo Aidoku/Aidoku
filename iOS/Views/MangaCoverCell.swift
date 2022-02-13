@@ -15,9 +15,32 @@ class MangaCoverCell: UICollectionViewCell {
             layoutViews()
         }
     }
+    
+    var badgeNumber: Int? {
+        didSet {
+            if let num = badgeNumber, num > 0 {
+                badgeLabel.text = String(num)
+                UIView.animate(withDuration: 0.3) {
+                    self.badgeView.alpha = 1
+                } completion: { _ in
+                    self.badgeView.alpha = 1
+                }
+            } else {
+                UIView.animate(withDuration: 0.3) {
+                    self.badgeView.alpha = 0
+                } completion: { _ in
+//                    self.badgeLabel.text = ""
+                    self.badgeView.alpha = 0
+                }
+            }
+        }
+    }
+    
     var imageView = UIImageView()
     var titleLabel = UILabel()
     var gradient = CAGradientLayer()
+    var badgeView = UIView()
+    var badgeLabel = UILabel()
     
     var highlightView = UIView()
     
@@ -101,21 +124,46 @@ class MangaCoverCell: UICollectionViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
         
-        highlightView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        badgeView.alpha = 0
+        badgeView.backgroundColor = tintColor
+        badgeView.layer.cornerRadius = 5
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(badgeView)
+        
+        badgeLabel.text = String(badgeNumber ?? 0)
+        badgeLabel.textColor = .white
+        badgeLabel.numberOfLines = 1
+        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.addSubview(badgeLabel)
+        
         highlightView.alpha = 0
+        highlightView.backgroundColor = UIColor(white: 0, alpha: 0.5)
         highlightView.layer.cornerRadius = layer.cornerRadius
         highlightView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(highlightView)
         
-        imageView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        imageView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
-        
         overlayView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         overlayView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        
+        activateConstraints()
+    }
+    
+    func activateConstraints() {
+        imageView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        imageView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
         
         titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8).isActive = true
         titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8).isActive = true
         titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
+        
+        badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
+        badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5).isActive = true
+        badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10).isActive = true
+        badgeView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor).isActive = true
+        badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true
         
         highlightView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         highlightView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true

@@ -9,14 +9,33 @@ import UIKit
 
 class MangaCollectionViewController: UIViewController {
     
+    enum MangaCellBadgeType {
+        case none
+        case unread
+        case downloaded
+    }
+    
     var collectionView: UICollectionView?
     var manga: [Manga] = []
     
     var chapters: [String: [Chapter]] = [:]
     var readHistory: [String: [String: Int]] = [:]
+    var badges: [String: Int] = [:]
     
     var opensReaderView = false
     var preloadsChapters = false
+    var badgeType: MangaCellBadgeType = .none {
+        didSet {
+            if badgeType == .none {
+                badges = [:]
+                for i in 0..<manga.count {
+                    if let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as? MangaCoverCell {
+                        cell.badgeNumber = nil
+                    }
+                }
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,15 +106,28 @@ class MangaCollectionViewController: UIViewController {
     func loadChaptersAndHistory() {
         if opensReaderView {
             Task {
-                for m in manga {
+                for (i, m) in manga.enumerated() {
                     readHistory[m.id] = DataManager.shared.getReadHistory(manga: m)
                     chapters[m.id] = await DataManager.shared.getChapters(for: m)
+                    if badgeType == .unread {
+                        badges[m.id] = (chapters[m.id]?.count ?? 0) - (readHistory[m.id]?.count ?? 0)
+                        if let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as? MangaCoverCell {
+                            cell.badgeNumber = badges[m.id]
+                        }
+                    }
                 }
             }
-        } else if preloadsChapters {
+        } else if preloadsChapters || badgeType == .unread {
             Task {
-                for m in manga {
+                for (i, m) in manga.enumerated() {
                     chapters[m.id] = await DataManager.shared.getChapters(for: m)
+                    if badgeType == .unread {
+                        readHistory[m.id] = DataManager.shared.getReadHistory(manga: m)
+                        badges[m.id] = (chapters[m.id]?.count ?? 0) - (readHistory[m.id]?.count ?? 0)
+                        if let cell = collectionView?.cellForItem(at: IndexPath(row: i, section: 0)) as? MangaCoverCell {
+                            cell.badgeNumber = badges[m.id]
+                        }
+                    }
                 }
             }
         } else {
@@ -131,6 +163,7 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
         }
         if manga.count > indexPath.row {
             cell?.manga = manga[indexPath.row]
+            cell?.badgeNumber = badges[manga[indexPath.row].id]
         }
         return cell ?? UICollectionViewCell()
     }

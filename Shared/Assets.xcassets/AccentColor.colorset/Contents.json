@@ -1,6 +1,10 @@
 {
   "colors" : [
     {
+      "color" : {
+        "platform" : "ios",
+        "reference" : "systemPinkColor"
+      },
       "idiom" : "universal"
     }
   ],
