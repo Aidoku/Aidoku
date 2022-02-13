@@ -73,7 +73,18 @@ class BrowseViewController: UIViewController {
             return searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased())
         }
     }
-    var filteredInstallableSources: [ExternalSourceInfo] { installableSources.filter { searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased()) } }
+    var filteredInstallableSources: [ExternalSourceInfo] {
+        installableSources.filter {
+            let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+            if !showNsfw && $0.nsfw ?? 0 > 1 {
+                return false
+            } else if searchText.isEmpty {
+                return true
+            } else {
+                return $0.name.lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
     
     var hasSources: Bool {
         filteredSources.count > 0

@@ -23,7 +23,7 @@ class DataManager {
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         self.inMemory = inMemory
-        setupContainer(cloudSync: NSUbiquitousKeyValueStore.default.bool(forKey: "cloudSync"))
+        setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
         loadLibrary()
         
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
@@ -238,6 +238,16 @@ extension DataManager {
             }
             _ = save()
         }
+    }
+    
+    // Clear stored manga not in library
+    func purgeManga() {
+        guard let allManga = try? getMangaObjects() else { return }
+        for manga in allManga {
+            guard manga.libraryObject == nil else { continue }
+            container.viewContext.delete(manga)
+        }
+        _ = save()
     }
     
     func getMangaObject(for manga: Manga, createIfMissing: Bool = true) -> MangaObject? {

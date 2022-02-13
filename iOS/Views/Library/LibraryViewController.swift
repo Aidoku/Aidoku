@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import SwiftUI
 
 class LibraryViewController: MangaCollectionViewController {
     
@@ -54,8 +53,9 @@ class LibraryViewController: MangaCollectionViewController {
         searchController.searchBar.placeholder = "Find in Library"
         navigationItem.searchController = searchController
         
-//        opensReaderView = true
+        opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
         preloadsChapters = true
+        badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
         
 //        collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
         
@@ -109,7 +109,11 @@ class LibraryViewController: MangaCollectionViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
+        badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+        
         super.viewWillAppear(animated)
+        
         if !updatedLibrary {
             updatedLibrary = true
             Task {
@@ -129,8 +133,18 @@ class LibraryViewController: MangaCollectionViewController {
     }
     
     @objc func showSettings() {
-        let settingsController = UIHostingController(rootView: SettingsView())
+        let settingsController = UINavigationController(rootViewController: SettingsViewController())
+        settingsController.presentationController?.delegate = self
         present(settingsController, animated: true)
+    }
+}
+
+extension LibraryViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        // unfortunately only gets called for a swipe to dismiss
+        opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
+        badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+        loadChaptersAndHistory()
     }
 }
 
