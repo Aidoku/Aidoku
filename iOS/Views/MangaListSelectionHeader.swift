@@ -18,6 +18,8 @@ class MangaListSelectionHeader: UICollectionReusableView {
     let titleLabel = UILabel()
     let menuButton = UIButton(type: .roundedRect)
     
+    let filterButton = UIButton(type: .roundedRect)
+    
     var title: String? = nil {
         didSet {
             titleLabel.text = title
@@ -42,24 +44,6 @@ class MangaListSelectionHeader: UICollectionReusableView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-    
-    func updateMenu() {
-        var children: [UIAction] = []
-        for (i, option) in options.enumerated() {
-            children.append(
-                UIAction(title: option, image: selectedOption == i ? UIImage(systemName: "checkmark") : nil) { _ in
-                    self.selectedOption = i
-                }
-            )
-        }
-        let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: children)
-        menuButton.menu = menu
-        if options.count > selectedOption {
-            menuButton.setTitle(options[selectedOption], for: .normal)
-        } else {
-            menuButton.setTitle("", for: .normal)
-        }
     }
     
     func layoutViews() {
@@ -88,10 +72,36 @@ class MangaListSelectionHeader: UICollectionReusableView {
         menuButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(menuButton)
         
+        filterButton.alpha = 0
+        filterButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        filterButton.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(filterButton)
+        
         titleLabel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true
         titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -4).isActive = true
         
         menuButton.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 5).isActive = true
         menuButton.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -4).isActive = true
+        
+        filterButton.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16).isActive = true
+        filterButton.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -4).isActive = true
+    }
+    
+    func updateMenu() {
+        var children: [UIAction] = []
+        for (i, option) in options.enumerated() {
+            children.append(
+                UIAction(title: option, image: nil, state: selectedOption == i ? .on : .off) { _ in
+                    self.selectedOption = i
+                }
+            )
+        }
+        let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: children)
+        menuButton.menu = menu
+        if options.count > selectedOption {
+            menuButton.setTitle(options[selectedOption], for: .normal)
+        } else {
+            menuButton.setTitle("", for: .normal)
+        }
     }
 }
