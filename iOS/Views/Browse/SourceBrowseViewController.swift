@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import SwiftUI
 
 class SourceBrowseViewController: MangaCollectionViewController {
     
@@ -24,13 +23,15 @@ class SourceBrowseViewController: MangaCollectionViewController {
     var listings: [Listing] = []
     var filters: [Filter] = []
     
-    var hasMore: Bool = false
-    var page: Int? = nil
-    var query: String? = nil
+    var hasMore = false
+    var page: Int?
+    var query: String?
     var currentListing: Listing?
     let selectedFilters = SelectedFilters()
     
     var oldSelectedFilters: [Filter] = []
+    
+    var listingsLoaded = false
     
     init(source: Source) {
         self.source = source
@@ -48,34 +49,13 @@ class SourceBrowseViewController: MangaCollectionViewController {
         
         navigationItem.hidesSearchBarWhenScrolling = false
         
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
-        }
-        let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
-        ellipsisButton.isEnabled = false
-        
-        var items = [ellipsisButton]
-        if source.filterable {
-            items.append(
-                UIBarButtonItem(
-                    image: filterImage,
-                    style: .plain,
-                    target: self,
-                    action: #selector(openFilterPopover(_:))
-                )
-            )
-        }
-        navigationItem.rightBarButtonItems = items
+        updateNavbarItems()
         
         collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
         
         if source.titleSearchable {
             let searchController = UISearchController(searchResultsController: nil)
             searchController.searchBar.delegate = self
-//            searchController.hidesNavigationBarDuringPresentation = false
             searchController.obscuresBackgroundDuringPresentation = false
             searchController.searchBar.text = query
             navigationItem.searchController = searchController
@@ -112,16 +92,48 @@ class SourceBrowseViewController: MangaCollectionViewController {
         }
     }
     
+    func updateNavbarItems() {
+        let filterImage: UIImage?
+        if #available(iOS 15.0, *) {
+            filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
+        } else {
+            filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
+        }
+        let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
+        ellipsisButton.isEnabled = false
+        
+        var items = [ellipsisButton]
+        if source.filterable && (restrictToSearch || (listings.isEmpty && listingsLoaded)) {
+            items.append(
+                UIBarButtonItem(
+                    image: filterImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openFilterPopover(_:))
+                )
+            )
+        }
+        navigationItem.rightBarButtonItems = items
+    }
+    
+    @objc func resetFilters() {
+        selectedFilters.filters = source.getDefaultFilters()
+    }
+    
     func fetchFilters() async {
         filters = (try? await source.getFilters()) ?? []
         if selectedFilters.filters.isEmpty {
-            selectedFilters.filters = source.getDefaultFilters()
+            resetFilters()
         }
     }
     
     func fetchData() async {
         if listings.isEmpty {
             listings = (try? await source.getListings()) ?? []
+            listingsLoaded = true
+            DispatchQueue.main.async {
+                self.updateNavbarItems()
+            }
         }
         if page == nil {
             manga = []
@@ -146,13 +158,12 @@ class SourceBrowseViewController: MangaCollectionViewController {
     
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {
         oldSelectedFilters = selectedFilters.filters
-        let vc = UIHostingController(rootView: SourceFiltersView(filters: filters, selectedFilters: selectedFilters))
-        vc.preferredContentSize = CGSize(width: 300, height: 300)
-        vc.modalPresentationStyle = .popover
-        vc.presentationController?.delegate = self
-        vc.popoverPresentationController?.permittedArrowDirections = .up
-        vc.popoverPresentationController?.barButtonItem = sender
-        present(vc, animated: true)
+        
+        let vc = FilterModalViewController(filters: filters, selectedFilters: selectedFilters)
+        vc.delegate = self
+        vc.resetButton.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
+        vc.modalPresentationStyle = .overFullScreen
+        present(vc, animated: false)
     }
 }
 
@@ -175,6 +186,10 @@ extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
             header?.title = "List"
             header?.options = options
             header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
+            
+            header?.filterButton.alpha = source.filterable ? 1 : 0
+            header?.filterButton.addTarget(self, action: #selector(openFilterPopover(_:)), for: .touchUpInside)
+            
             header?.delegate = self
             return header ?? UICollectionReusableView()
         }
@@ -249,14 +264,10 @@ extension SourceBrowseViewController: UISearchBarDelegate {
     }
 }
 
-// MARK: - Popover Delegate
-extension SourceBrowseViewController: UIPopoverPresentationControllerDelegate {
+// MARK: - Modal Delegate
+extension SourceBrowseViewController: MiniModalDelegate {
     
-    func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
-        .none
-    }
-    
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+    func modalWillDismiss() {
         var update = false
         if oldSelectedFilters != selectedFilters.filters {
             update = true

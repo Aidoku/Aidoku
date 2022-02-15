@@ -405,8 +405,7 @@ extension DataManager {
     }
     
     func addHistory(for chapter: Chapter, page: Int? = nil) {
-        guard let historyObject = getHistoryObject(for: chapter) else {
-            return }
+        guard let historyObject = getHistoryObject(for: chapter) else { return }
         historyObject.dateRead = Date()
         if let page = page {
             historyObject.progress = Int16(page)
@@ -414,9 +413,25 @@ extension DataManager {
         _ = save()
     }
     
+    func addHistory(for chapters: [Chapter]) {
+        for chapter in chapters {
+            guard let historyObject = getHistoryObject(for: chapter) else { continue }
+            historyObject.dateRead = Date()
+        }
+        _ = save()
+    }
+    
     func removeHistory(for chapter: Chapter) {
         guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return }
         container.viewContext.delete(historyObject)
+        _ = save()
+    }
+    
+    func removeHistory(for chapters: [Chapter]) {
+        for chapter in chapters {
+            guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { continue }
+            container.viewContext.delete(historyObject)
+        }
         _ = save()
     }
     

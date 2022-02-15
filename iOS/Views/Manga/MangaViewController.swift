@@ -462,8 +462,9 @@ class MangaViewController: UIViewController {
         
         navigationItem.largeTitleDisplayMode = .never
         
+        // TODO: only show relevant actions
         let mangaOptions: [UIAction] = [
-            UIAction(title: "Mark all as read", image: nil) { _ in
+            UIAction(title: "Read", image: nil) { _ in
                     DataManager.shared.setCompleted(chapters: self.chapters, date: Date().addingTimeInterval(-5))
                 // Make most recent chapter appear as the most recently read
                 if let firstChapter = self.chapters.first {
@@ -472,7 +473,7 @@ class MangaViewController: UIViewController {
                 self.updateReadHistory()
                 self.tableView.reloadData()
             },
-            UIAction(title: "Mark all as unread", image: nil) { _ in
+            UIAction(title: "Unread", image: nil) { _ in
                 for chapter in self.chapters {
                     DataManager.shared.removeHistory(for: chapter)
                 }
@@ -480,7 +481,9 @@ class MangaViewController: UIViewController {
                 self.tableView.reloadData()
             }
         ]
-        let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: mangaOptions)
+        let markSubmenu = UIMenu(title: "Mark All", children: mangaOptions)
+        
+        let menu = UIMenu(title: "", children: [markSubmenu])
         
         let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
         ellipsisButton.menu = menu
@@ -764,7 +767,19 @@ extension MangaViewController: UITableViewDataSource {
                     tableView.reloadData()
                 }
             }
-            return UIMenu(title: "", children: [action])
+            let previousSubmenu = UIMenu(title: "Mark Previous", children: [
+                UIAction(title: "Read", image: nil) { action in
+                    DataManager.shared.addHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
+                    self.updateReadHistory()
+                    tableView.reloadData()
+                },
+                UIAction(title: "Unread", image: nil) { action in
+                    DataManager.shared.removeHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
+                    self.updateReadHistory()
+                    tableView.reloadData()
+                }
+            ])
+            return UIMenu(title: "", children: [action, previousSubmenu])
         }
     }
 }
