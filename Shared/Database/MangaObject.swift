@@ -10,6 +10,7 @@ import CoreData
 
 @objc(MangaObject)
 public class MangaObject: NSManagedObject {
+    
     func load(from manga: Manga) {
         id = manga.id
         sourceId = manga.sourceId
@@ -46,7 +47,6 @@ public class MangaObject: NSManagedObject {
         super.awakeFromInsert()
         favorite = false
         lastUpdate = Date()
-        flags = 0
     }
 }
 
@@ -73,8 +73,6 @@ extension MangaObject {
     @NSManaged public var favorite: Bool
     
     @NSManaged public var lastUpdate: Date
-    
-    @NSManaged public var flags: Int16
     
     @NSManaged public var libraryObject: LibraryMangaObject?
     @NSManaged public var chapters: NSSet?

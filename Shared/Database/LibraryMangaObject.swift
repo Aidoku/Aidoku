@@ -20,7 +20,6 @@ public class LibraryMangaObject: NSManagedObject {
         lastOpened = Date()
         lastUpdated = Date()
         dateAdded = Date()
-        newChaptersCount = 0
     }
 }
 
@@ -34,7 +33,6 @@ extension LibraryMangaObject {
     @NSManaged public var lastOpened: Date
     @NSManaged public var lastUpdated: Date
     @NSManaged public var dateAdded: Date
-    @NSManaged public var newChaptersCount: Int16
     @NSManaged public var manga: MangaObject
     
     @NSManaged public var categories: NSSet?

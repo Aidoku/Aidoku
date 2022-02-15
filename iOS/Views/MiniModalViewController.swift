@@ -19,7 +19,18 @@ class MiniModalViewController: UIViewController {
         let view = UIView()
         view.backgroundColor = .secondarySystemGroupedBackground
         view.layer.cornerRadius = 16
-        view.clipsToBounds = true
+//        view.clipsToBounds = true
+        
+        // TODO: probably use a mask instead
+        let hideCornersView = UIView()
+        hideCornersView.backgroundColor = .secondarySystemGroupedBackground
+        hideCornersView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(hideCornersView)
+        
+        hideCornersView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        hideCornersView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        hideCornersView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
         return view
     }()
     

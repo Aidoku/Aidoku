@@ -17,7 +17,7 @@ class SourceManager {
     var sources: [Source] = []
     
     init() {
-        sources = Self.directory.contents.compactMap { try? Source(from: $0) }
+        sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
         sources.sort { $0.info.name > $1.info.name }
         
         Task {
@@ -64,48 +64,20 @@ class SourceManager {
                 try? FileManager.default.moveItem(at: payload, to: destination)
                 try? FileManager.default.removeItem(at: temporaryDirectory)
                 
-                NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
-                
                 source.url = destination
-                sources.append(source)
-                sources.sort { $0.info.name > $1.info.name }
-                Task {
-                    _ = try? await source.getFilters()
-                }
-                return source
-            }
-        }
-        
-        return nil
-    }
-    
-    func importExternalSource(from url: URL) -> Source? {
-        Self.directory.createDirctory()
-
-        if let temporaryDirectory = FileManager.default.temporaryDirectory?.appendingPathComponent(UUID().uuidString) {
-            try? FileManager.default.unzipItem(at: url, to: temporaryDirectory)
-            try? FileManager.default.removeItem(at: url)
-
-            let payload = temporaryDirectory.appendingPathComponent("Payload")
-            let source = try? Source(from: payload)
-            if let source = source {
-                let destination = Self.directory.appendingPathComponent(source.info.id)
-                if destination.exists {
-                    try? FileManager.default.removeItem(at: destination)
-                    sources.removeAll { $0.id == source.id }
-                }
-                try? FileManager.default.moveItem(at: payload, to: destination)
-                try? FileManager.default.removeItem(at: temporaryDirectory)
                 
-                NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
-                
-                source.url = destination
-                sources.append(source)
-                sources.sort { $0.info.name > $1.info.name }
-                Task {
-                    _ = try? await source.getFilters()
+                if let _ = DataManager.shared.add(source: source) {
+                    sources.append(source)
+                    sources.sort { $0.info.name > $1.info.name }
+                    
+                    NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+                    
+                    Task {
+                        _ = try? await source.getFilters()
+                    }
+                    
+                    return source
                 }
-                return source
             }
         }
         
@@ -117,11 +89,13 @@ class SourceManager {
             try? FileManager.default.removeItem(at: source.url)
         }
         sources = []
+        DataManager.shared.clearSources()
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
     
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
+        DataManager.shared.delete(source: source)
         sources.removeAll { $0.id == source.id }
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
