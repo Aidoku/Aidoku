@@ -141,6 +141,12 @@ class BrowseViewController: UIViewController {
             }
         }
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
+        navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

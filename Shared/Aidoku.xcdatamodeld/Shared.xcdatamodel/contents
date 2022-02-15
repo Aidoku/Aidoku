@@ -56,6 +56,7 @@
     <entity name="Source" representedClassName="SourceObject" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lang" optional="YES" attributeType="String"/>
+        <attribute name="listing" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="nsfw" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="path" optional="YES" attributeType="String"/>
         <attribute name="title" optional="YES" attributeType="String"/>
@@ -67,6 +68,6 @@
         <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="119"/>
         <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>
         <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="269"/>
-        <element name="Source" positionX="-126" positionY="18" width="128" height="119"/>
+        <element name="Source" positionX="-126" positionY="18" width="128" height="134"/>
     </elements>
 </model>
