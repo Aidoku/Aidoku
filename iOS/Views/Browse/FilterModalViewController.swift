@@ -22,6 +22,8 @@ class FilterModalViewController: MiniModalViewController {
     let resetButton = UIButton(type: .roundedRect)
     let doneButton = UIButton(type: .roundedRect)
     
+    let bottomInset = UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
+    
     init(filters: [Filter], selectedFilters: SelectedFilters) {
         self.filters = filters
         self.selectedFilters = selectedFilters
@@ -71,7 +73,7 @@ class FilterModalViewController: MiniModalViewController {
         one.priority = .defaultHigh
         one.isActive = true
         
-        let two = scrollView.heightAnchor.constraint(equalTo: stackView!.heightAnchor, constant: 25 + 100)
+        let two = scrollView.heightAnchor.constraint(equalTo: stackView!.heightAnchor, constant: 25 + 60 + bottomInset)
         two.priority = .defaultLow
         two.isActive = true
         
@@ -82,7 +84,7 @@ class FilterModalViewController: MiniModalViewController {
         
         toolbarView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor).isActive = true
         toolbarView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
-        toolbarView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        toolbarView.heightAnchor.constraint(equalToConstant: 60 + bottomInset).isActive = true
         
         separatorView.topAnchor.constraint(equalTo: toolbarView.topAnchor).isActive = true
         separatorView.widthAnchor.constraint(equalTo: toolbarView.widthAnchor).isActive = true
@@ -105,6 +107,6 @@ class FilterModalViewController: MiniModalViewController {
     }
     
     func updateContentSize() {
-        scrollView.contentSize = CGSize(width: scrollView.bounds.width, height: (stackView?.bounds.size.height ?? 0) + 90)
+        scrollView.contentSize = CGSize(width: scrollView.bounds.width, height: (stackView?.bounds.size.height ?? 0) + 25 + 60)
     }
 }

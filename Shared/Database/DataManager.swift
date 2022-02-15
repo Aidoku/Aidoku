@@ -21,8 +21,9 @@ class DataManager {
     }
     
     init(inMemory: Bool = false) {
-        container = NSPersistentCloudKitContainer(name: "Aidoku")
         self.inMemory = inMemory
+        
+        container = NSPersistentCloudKitContainer(name: "Aidoku")
         setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
         loadLibrary()
         
@@ -33,7 +34,7 @@ class DataManager {
         }
     }
     
-    func setupContainer(cloudSync: Bool = true) {
+    func setupContainer(cloudSync: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
@@ -154,10 +155,11 @@ extension DataManager {
             let chapters = await getChapters(for: manga, fromSource: true)
             DispatchQueue.main.async {
                 if let mangaObject = self.getMangaObject(for: manga) {
-                    if mangaObject.chapters?.count != chapters.count {
-                        if chapters.count > mangaObject.chapters?.count ?? 0 {
-                            mangaObject.libraryObject?.newChaptersCount = Int16(chapters.count - (mangaObject.chapters?.count ?? 0))
-                        }
+                    if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
+                        // TODO: do something with this -- notifications?
+//                        if chapters.count > mangaObject.chapters?.count ?? 0 {
+//                            _ = Int16(chapters.count - (mangaObject.chapters?.count ?? 0))
+//                        }
                         self.set(chapters: chapters, for: manga)
                     }
                     mangaObject.load(from: manga)
@@ -476,6 +478,64 @@ extension DataManager {
     func getReadHistory(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, limit: Int? = nil) throws -> [HistoryObject] {
         try fetch(
             request: HistoryObject.fetchRequest(),
+            predicate: predicate,
+            sortDescriptors: sortDescriptors,
+            limit: limit
+        )
+    }
+}
+
+// MARK: - Sources
+extension DataManager {
+    
+    func add(source: Source) -> SourceObject? {
+        if let sourceObject = getSourceObject(for: source, createIfMissing: false) {
+            return sourceObject
+        }
+        
+        let sourceObject = SourceObject(context: container.viewContext)
+        sourceObject.load(from: source)
+        
+        guard save() else { return nil }
+        
+        return sourceObject
+    }
+    
+    func delete(source: Source) {
+        guard let sourceObject = getSourceObject(for: source) else { return }
+        
+        container.viewContext.delete(sourceObject)
+        
+        _ = save()
+    }
+    
+    func clearSources() {
+        if let items = try? getSourceObjects() {
+            for item in items {
+                container.viewContext.delete(item)
+            }
+            _ = save()
+        }
+    }
+    
+    func getSourceObject(for source: Source, createIfMissing: Bool = true) -> SourceObject? {
+        if let object = try? getSourceObjects(
+            predicate: NSPredicate(
+                format: "id = %@",
+                source.id
+            ),
+            limit: 1
+        ).first {
+            return object
+        } else if createIfMissing {
+            return add(source: source)
+        }
+        return nil
+    }
+    
+    func getSourceObjects(predicate: NSPredicate? = nil, sortDescriptors: [NSSortDescriptor]? = nil, limit: Int? = nil) throws -> [SourceObject] {
+        try fetch(
+            request: SourceObject.fetchRequest(),
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit

@@ -264,7 +264,11 @@ class MangaViewHeaderView: UIView {
         headerTitle.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(headerTitle)
         
-        sortButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        if #available(iOS 15.0, *) {
+            sortButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        } else {
+            sortButton.setImage(UIImage(systemName: "line.horizontal.3.decrease"), for: .normal)
+        }
         sortButton.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(sortButton)
         
@@ -517,7 +521,10 @@ class MangaViewController: UIViewController {
         
         getTintColor()
         
-        guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
+        guard let source = SourceManager.shared.source(for: manga.sourceId) else {
+            showMissingSourceWarning()
+            return
+        }
         Task {
             if let newManga = try? await source.getMangaDetails(manga: manga) {
                 manga = manga.copy(from: newManga)
@@ -642,7 +649,9 @@ class MangaViewController: UIViewController {
     
     func updateReadButton(_ headerView: MangaViewHeaderView? = nil) {
         var titleString = ""
-        if let chapter = getNextChapter() {
+        if SourceManager.shared.source(for: manga.sourceId) == nil {
+            titleString = "Unavailable"
+        } else if let chapter = getNextChapter() {
             if readHistory[chapter.id] ?? 0 == 0 {
                 titleString.append("Start Reading")
             } else {
@@ -673,6 +682,12 @@ class MangaViewController: UIViewController {
         let readerController = ReaderNavigationController(rootViewController: ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters))
         readerController.modalPresentationStyle = .fullScreen
         present(readerController, animated: true)
+    }
+    
+    func showMissingSourceWarning() {
+        let alert = UIAlertController(title: "Missing Source", message: "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+        self.present(alert, animated: true, completion: nil)
     }
     
     @objc func readButtonPressed() {

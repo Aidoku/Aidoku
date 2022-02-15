@@ -73,7 +73,11 @@ class MangaListSelectionHeader: UICollectionReusableView {
         addSubview(menuButton)
         
         filterButton.alpha = 0
-        filterButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        if #available(iOS 15.0, *) {
+            filterButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
+        } else {
+            filterButton.setImage(UIImage(systemName: "line.horizontal.3.decrease"), for: .normal)
+        }
         filterButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(filterButton)
         

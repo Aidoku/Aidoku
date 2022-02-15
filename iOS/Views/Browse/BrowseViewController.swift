@@ -230,7 +230,9 @@ extension BrowseViewController: UITableViewDataSource {
                 cell = SourceTableViewCell(style: .default, reuseIdentifier: "SourceTableViewCell")
             }
             guard let cell = cell else { return UITableViewCell() }
-            cell.source = filteredSources[indexPath.row]
+            if indexPath.row < filteredSources.count {
+                cell.source = filteredSources[indexPath.row]
+            }
             
             return cell
         } else if (indexPath.section == 0 && !hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && !hasUpdates) || (indexPath.section == 1 && !hasSources && hasUpdates) || (indexPath.section == 2 && hasSources && hasUpdates) {
@@ -240,9 +242,11 @@ extension BrowseViewController: UITableViewDataSource {
             }
             guard let cell = cell else { return UITableViewCell() }
             
-            cell.source = filteredInstallableSources[indexPath.row]
-            cell.getButton.title = "GET"
-            cell.buttonWidth = 67
+            if indexPath.row < filteredInstallableSources.count {
+                cell.source = filteredInstallableSources[indexPath.row]
+                cell.getButton.title = "GET"
+                cell.buttonWidth = 67
+            }
             
             return cell
         }
