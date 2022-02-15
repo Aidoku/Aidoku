@@ -119,6 +119,12 @@ class SearchViewController: UIViewController {
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
+        navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
+    }
+    
     func reloadData() {
         DispatchQueue.main.async {
             self.collectionView?.reloadSections(IndexSet(integersIn: 0..<self.sources.count))

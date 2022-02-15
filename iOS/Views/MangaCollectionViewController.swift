@@ -69,6 +69,8 @@ class MangaCollectionViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadChaptersAndHistory()
+        navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
+        navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
     
     override func viewLayoutMarginsDidChange() {

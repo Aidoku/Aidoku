@@ -551,11 +551,6 @@ class MangaViewController: UIViewController {
         setTintColor(tintColor)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        setTintColor(nil)
-    }
-    
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 

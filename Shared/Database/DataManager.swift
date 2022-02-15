@@ -502,11 +502,22 @@ extension DataManager {
     }
     
     func delete(source: Source) {
+        guard let sourceObject = getSourceObject(for: source, createIfMissing: false) else { return }
+        container.viewContext.delete(sourceObject)
+        _ = save()
+    }
+    
+    func setListing(for source: Source, listing: Int) {
         guard let sourceObject = getSourceObject(for: source) else { return }
         
-        container.viewContext.delete(sourceObject)
+        sourceObject.listing = Int16(listing)
         
         _ = save()
+    }
+    
+    func getListing(for source: Source) -> Int {
+        guard let sourceObject = getSourceObject(for: source) else { return 0 }
+        return Int(sourceObject.listing)
     }
     
     func clearSources() {

@@ -131,6 +131,12 @@ class SourceBrowseViewController: MangaCollectionViewController {
         if listings.isEmpty {
             listings = (try? await source.getListings()) ?? []
             listingsLoaded = true
+            
+            let sourceListing = DataManager.shared.getListing(for: source)
+            if sourceListing > 0 && sourceListing - 1 < listings.count {
+                currentListing = listings[sourceListing - 1]
+            }
+            
             DispatchQueue.main.async {
                 self.updateNavbarItems()
             }
@@ -217,8 +223,10 @@ extension SourceBrowseViewController: MangaListSelectionHeaderDelegate {
     func optionSelected(_ index: Int) {
         if index == listings.count {
             currentListing = nil
+            DataManager.shared.setListing(for: source, listing: 0)
         } else {
             currentListing = listings[index]
+            DataManager.shared.setListing(for: source, listing: index + 1)
             query = nil
         }
         Task {
@@ -236,6 +244,7 @@ extension SourceBrowseViewController: UISearchBarDelegate {
         guard searchBar.text != query else { return }
         query = searchBar.text
         currentListing = nil
+        DataManager.shared.setListing(for: source, listing: 0)
         Task {
             page = nil
             await fetchData()
@@ -287,6 +296,7 @@ extension SourceBrowseViewController: MiniModalDelegate {
         if update {
             page = nil
             currentListing = nil
+            DataManager.shared.setListing(for: source, listing: 0)
             Task {
                 await fetchData()
                 reloadData()
