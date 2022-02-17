@@ -70,7 +70,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
         activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
         Task {
-            if filters.isEmpty {
+            if filters.isEmpty || source.needsFilterRefresh {
                 await fetchFilters()
             }
             if manga.isEmpty {
@@ -93,17 +93,21 @@ class SourceBrowseViewController: MangaCollectionViewController {
     }
     
     func updateNavbarItems() {
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
-        }
-        let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
-        ellipsisButton.isEnabled = false
-        
-        var items = [ellipsisButton]
+        var items = [
+            UIBarButtonItem(
+                image: UIImage(systemName: "ellipsis"),
+                style: .plain,
+                target: self,
+                action: #selector(openInfoPage)
+            )
+        ]
         if source.filterable && (restrictToSearch || (listings.isEmpty && listingsLoaded)) {
+            let filterImage: UIImage?
+            if #available(iOS 15.0, *) {
+                filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
+            } else {
+                filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
+            }
             items.append(
                 UIBarButtonItem(
                     image: filterImage,
@@ -121,8 +125,9 @@ class SourceBrowseViewController: MangaCollectionViewController {
     }
     
     func fetchFilters() async {
+        let reset = source.needsFilterRefresh
         filters = (try? await source.getFilters()) ?? []
-        if selectedFilters.filters.isEmpty {
+        if selectedFilters.filters.isEmpty || reset {
             resetFilters()
         }
     }
@@ -160,6 +165,11 @@ class SourceBrowseViewController: MangaCollectionViewController {
             manga.append(contentsOf: result?.manga ?? [])
             hasMore = result?.hasNextPage ?? false
         }
+    }
+    
+    @objc func openInfoPage() {
+        let infoController = UINavigationController(rootViewController: SourceInfoViewController(source: source))
+        present(infoController, animated: true)
     }
     
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {

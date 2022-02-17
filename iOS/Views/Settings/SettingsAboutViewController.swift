@@ -28,6 +28,7 @@ class SettingsAboutViewController: UITableViewController {
     }
 }
 
+// MARK: - Table View Data Source
 extension SettingsAboutViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
