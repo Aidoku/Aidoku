@@ -100,6 +100,7 @@ class SettingsViewController: UITableViewController {
     }
 }
 
+// MARK: - Table View Data Source
 extension SettingsViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {

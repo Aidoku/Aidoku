@@ -61,6 +61,7 @@ class ExternalSourceTableViewCell: UITableViewCell {
         labelStack.distribution = .equalSpacing
         labelStack.axis = .vertical
         labelStack.spacing = 1
+        labelStack.alignment = .leading
         labelStack.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(labelStack)
         

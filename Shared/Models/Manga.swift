@@ -23,10 +23,11 @@ enum MangaContentRating: Int {
 }
 
 enum MangaViewer: Int {
-    case rtl = 0
-    case ltf = 1
-    case vertical = 2
-    case webtoon = 3
+    case defaultViewer = 0
+    case rtl = 1
+    case ltf = 2
+    case vertical = 3
+    case webtoon = 4
 }
 
 class Manga: KVCObject  {
@@ -65,7 +66,7 @@ class Manga: KVCObject  {
         url: String? = nil,
         status: MangaStatus = .unknown,
         nsfw: MangaContentRating = .safe,
-        viewer: MangaViewer = .rtl,
+        viewer: MangaViewer = .defaultViewer,
         tintColor: UIColor? = nil
     ) {
         self.sourceId = sourceId

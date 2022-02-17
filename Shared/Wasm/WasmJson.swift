@@ -23,15 +23,21 @@ class WasmJson {
     
     func export() {
         try? vm.addImportHandler(named: "json_parse", namespace: "env", block: self.json_parse)
+        
         try? vm.addImportHandler(named: "json_object", namespace: "env", block: self.json_object)
+        try? vm.addImportHandler(named: "json_object_size", namespace: "env", block: self.json_object_size)
         try? vm.addImportHandler(named: "json_object_getn", namespace: "env", block: self.json_object_getn)
         try? vm.addImportHandler(named: "json_object_setn", namespace: "env", block: self.json_object_setn)
         try? vm.addImportHandler(named: "json_object_deln", namespace: "env", block: self.json_object_deln)
+        try? vm.addImportHandler(named: "json_object_keys", namespace: "env", block: self.json_object_keys)
+        try? vm.addImportHandler(named: "json_object_values", namespace: "env", block: self.json_object_values)
+        
         try? vm.addImportHandler(named: "json_array", namespace: "env", block: self.json_array)
         try? vm.addImportHandler(named: "json_array_size", namespace: "env", block: self.json_array_size)
         try? vm.addImportHandler(named: "json_array_get", namespace: "env", block: self.json_array_get)
         try? vm.addImportHandler(named: "json_array_append", namespace: "env", block: self.json_array_append)
         try? vm.addImportHandler(named: "json_array_remove", namespace: "env", block: self.json_array_remove)
+        
         try? vm.addImportHandler(named: "json_string", namespace: "env", block: self.json_string)
         try? vm.addImportHandler(named: "json_string_value", namespace: "env", block: self.json_string_value)
         try? vm.addImportHandler(named: "json_integer", namespace: "env", block: self.json_integer)
@@ -39,6 +45,7 @@ class WasmJson {
         try? vm.addImportHandler(named: "json_float", namespace: "env", block: self.json_float)
         try? vm.addImportHandler(named: "json_float_value", namespace: "env", block: self.json_float_value)
         try? vm.addImportHandler(named: "json_date_value", namespace: "env", block: self.json_date_value)
+        
         try? vm.addImportHandler(named: "json_copy", namespace: "env", block: self.json_copy)
         try? vm.addImportHandler(named: "json_free", namespace: "env", block: self.json_free)
     }
@@ -104,6 +111,13 @@ class WasmJson {
         }
     }
     
+    var json_object_size: (Int32) -> Int32 {
+        { json in
+            guard json >= 0 else { return 0 }
+            return Int32((self.readValue(json) as? [String: Any?])?.count ?? 0)
+        }
+    }
+    
     var json_object_getn: (Int32, Int32, Int32) -> Int32 {
         { json, key, key_len in
             guard json >= 0, key >= 0 else { return -1 }
@@ -138,6 +152,26 @@ class WasmJson {
         }
     }
     
+    var json_object_keys: (Int32) -> Int32 {
+        { json in
+            guard json >= 0 else { return -1 }
+            if let object = self.readValue(json) as? [String: Any?] {
+                return self.storeValue(object.keys, from: json)
+            }
+            return -1
+        }
+    }
+    
+    var json_object_values: (Int32) -> Int32 {
+        { json in
+            guard json >= 0 else { return -1 }
+            if let object = self.readValue(json) as? [String: Any?] {
+                return self.storeValue(object.values, from: json)
+            }
+            return -1
+        }
+    }
+    
     // MARK: Array
     
     var json_array: () -> Int32 {
@@ -148,6 +182,7 @@ class WasmJson {
     
     var json_array_size: (Int32) -> Int32 {
         { json in
+            guard json >= 0 else { return 0 }
             return Int32((self.readValue(json) as? [Any])?.count ?? 0)
         }
     }

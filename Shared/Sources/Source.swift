@@ -28,6 +28,9 @@ class Source: Identifiable {
     var defaultFilters: [Filter] = []
     var listings: [Listing] = []
     
+    var languages: [String] = []
+    var settingItems: [SourceSettingItem] = []
+    
     var titleSearchable: Bool {
         filters.firstIndex { $0.type == .text && $0.name == "Title" } != nil
     }
@@ -38,8 +41,13 @@ class Source: Identifiable {
         !filters.filter { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }.isEmpty
     }
     
+    var needsFilterRefresh = true
+    
     var vm: WasmInterpreter
     var memory: WasmMemory
+    
+    var descriptorPointer = -1
+    var descriptors: [Any] = []
     
     actor SourceActor {
         
@@ -179,6 +187,7 @@ class Source: Identifiable {
         self.actor = SourceActor(source: self)
         
         prepareVirtualMachine()
+        loadSettings()
     }
     
     func prepareVirtualMachine() {
@@ -200,13 +209,116 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "integer_value", namespace: "env", block: self.integer_value)
         try? vm.addImportHandler(named: "float_value", namespace: "env", block: self.float_value)
         
+        try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
+        try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
+        try? vm.addImportHandler(named: "setting_get_float", namespace: "env", block: self.setting_get_float)
+        try? vm.addImportHandler(named: "setting_get_bool", namespace: "env", block: self.setting_get_bool)
+        try? vm.addImportHandler(named: "setting_get_array", namespace: "env", block: self.setting_get_array)
+        
         WasmRequest(vm: vm, memory: memory).export()
         WasmJson(vm: vm, memory: memory).export()
         WasmScraper(vm: vm, memory: memory).export()
     }
     
-    var descriptorPointer = -1
-    var descriptors: [Any] = []
+    // MARK: Settings
+    
+    func loadSettings() {
+        if let data = try? Data(contentsOf: url.appendingPathComponent("Settings.plist")),
+           let settingsPlist = try? PropertyListDecoder().decode(SourceSettings.self, from: data) {
+            settingItems = settingsPlist.settings ?? []
+            languages = settingsPlist.languages ?? []
+            
+            // Load defaults
+            var defaults: [String: Any] = [:]
+            
+            if let defaultLang = languages.first {
+                defaults["\(id)._language"] = defaultLang
+            }
+            
+            for item in settingItems {
+                if item.type == "group" {
+                    for subItem in item.items ?? [] {
+                        if let itemKey = subItem.key {
+                            let key = "\(id).\(itemKey)"
+                            switch subItem.type {
+                            case "switch":
+                                defaults[key] = subItem.defaultValue?.boolValue
+//                            case "select", "text":
+//                                defaults[key] = subItem.defaultValue?.stringValue
+                            case "multi-select":
+                                defaults[key] = subItem.defaultValue?.stringArrayValue
+                            default:
+                                defaults[key] = subItem.defaultValue?.stringValue
+                            }
+                        }
+                    }
+                }
+            }
+            
+            UserDefaults.standard.register(defaults: defaults)
+        }
+    }
+    
+    var setting_get_string: (Int32, Int32) -> Int32 {
+        { key, key_len in
+            guard key_len >= 0 else { return 0 }
+            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+               let string = UserDefaults.standard.string(forKey: "\(self.id).\(key)") {
+                return self.vm.write(string: string, memory: self.memory)
+            }
+            return 0
+        }
+    }
+    
+    var setting_get_int: (Int32, Int32) -> Int32 {
+        { key, key_len in
+            guard key_len >= 0 else { return -1 }
+            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
+                return Int32(UserDefaults.standard.integer(forKey: "\(self.id).\(key)"))
+            }
+            return -1
+        }
+    }
+    
+    var setting_get_float: (Int32, Int32) -> Float32 {
+        { key, key_len in
+            guard key_len >= 0 else { return -1 }
+            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
+                return Float32(UserDefaults.standard.float(forKey: "\(self.id).\(key)"))
+            }
+            return -1
+        }
+    }
+    
+    var setting_get_bool: (Int32, Int32) -> Int32 {
+        { key, key_len in
+            guard key_len >= 0 else { return 0 }
+            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
+                return UserDefaults.standard.bool(forKey: "\(self.id).\(key)") ? 1 : 0
+            }
+            return 0
+        }
+    }
+    
+    var setting_get_array: (Int32, Int32) -> Int32 {
+        { key, key_len in
+            guard key_len >= 0 else { return -1 }
+            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+               let array = UserDefaults.standard.array(forKey: "\(self.id).\(key)") {
+                self.descriptorPointer += 1
+                self.descriptors.append(array)
+                return Int32(self.descriptorPointer)
+            }
+            return -1
+        }
+    }
+    
+    func performAction(key: String) {
+        let string = vm.write(string: key, memory: memory)
+        guard string > 0 else { return }
+        try? vm.call("perform_action", string, Int32(key.count))
+        memory.free(string)
+    }
     
     // MARK: Object Pushing
     
@@ -472,7 +584,9 @@ class Source: Identifiable {
     // MARK: Get Functions
     
     func getDefaultFilters() -> [Filter] {
-        guard defaultFilters.isEmpty && !filters.isEmpty else { return defaultFilters }
+        guard (defaultFilters.isEmpty || needsFilterRefresh) && !filters.isEmpty else { return defaultFilters }
+        
+        defaultFilters = []
         
         for filter in filters {
             if filter.type == .group {
@@ -490,10 +604,12 @@ class Source: Identifiable {
     }
     
     func getFilters() async throws -> [Filter] {
-        guard filters.isEmpty else { return filters }
+        guard filters.isEmpty || needsFilterRefresh else { return filters }
         
         filters = try await actor.getFilters()
         _ = getDefaultFilters()
+        
+        needsFilterRefresh = false
         
         return filters
     }
