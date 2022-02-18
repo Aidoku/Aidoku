@@ -119,6 +119,9 @@ extension SourceSettingSelectViewController {
                 value = values[indexPath.row]
             }
         }
+        if let notification = item.notification {
+            source.performAction(key: notification)
+        }
         
         tableView.deselectRow(at: indexPath, animated: true)
     }

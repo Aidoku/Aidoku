@@ -18,7 +18,7 @@ class SourceManager {
     
     init() {
         sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
-        sources.sort { $0.info.name > $1.info.name }
+        sources.sort { $0.info.name < $1.info.name }
         
         Task {
             for source in sources {
