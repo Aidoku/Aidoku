@@ -63,6 +63,9 @@ extension TextInputTableViewCell: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let key = item?.key {
             UserDefaults.standard.set(textField.text, forKey: "\(source.id).\(key)")
+            if let notification = item?.notification {
+                source.performAction(key: notification)
+            }
         }
     }
     

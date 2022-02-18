@@ -253,6 +253,11 @@ extension SourceInfoViewController {
                 cell.detailTextLabel?.text = item.subtitle
                 let switchView = UISwitch()
                 switchView.defaultsKey = "\(source.id).\(item.key ?? "")"
+                switchView.handleChange { _ in
+                    if let notification = item.notification {
+                        self.source.performAction(key: notification)
+                    }
+                }
                 cell.accessoryView = switchView
                 cell.selectionStyle = .none
             } else if item.type == "button" {
@@ -269,7 +274,7 @@ extension SourceInfoViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !source.languages.isEmpty && indexPath.section == 0 {
-            let item = SourceSettingItem(type: "select", key: "_language", title: "Language", values: source.languages, titles: source.languages)
+            let item = SourceSettingItem(type: "select", key: "_language", title: "Language", values: source.languages, titles: source.languages, notification: "languageChange")
             navigationController?.pushViewController(SourceSettingSelectViewController(source: source, item: item), animated: true)
         } else if source.settingItems.isEmpty || indexPath.section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
             // info

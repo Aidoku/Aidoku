@@ -156,7 +156,7 @@ class WasmJson {
         { json in
             guard json >= 0 else { return -1 }
             if let object = self.readValue(json) as? [String: Any?] {
-                return self.storeValue(object.keys, from: json)
+                return self.storeValue(Array(object.keys), from: json)
             }
             return -1
         }
@@ -165,8 +165,8 @@ class WasmJson {
     var json_object_values: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
-            if let object = self.readValue(json) as? [String: Any?] {
-                return self.storeValue(object.values, from: json)
+            if let object = self.readValue(json) as? [String: Any] {
+                return self.storeValue(Array(object.values), from: json)
             }
             return -1
         }

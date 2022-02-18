@@ -26,6 +26,7 @@ struct SourceSettingItem: Codable {
     var values: [String]?
     var titles: [String]?
     var defaultValue: DefaultValue?
+    var notification: String?
     
     var items: [SourceSettingItem]?
     
