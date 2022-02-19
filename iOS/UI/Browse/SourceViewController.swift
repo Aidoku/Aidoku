@@ -1,5 +1,5 @@
 //
-//  SourceBrowseViewController.swift
+//  SourceViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 1/23/22.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class SourceBrowseViewController: MangaCollectionViewController {
+class SourceViewController: MangaCollectionViewController {
     
     let source: Source
     
@@ -184,7 +184,7 @@ class SourceBrowseViewController: MangaCollectionViewController {
 }
 
 // MARK: - Collection View Delegate
-extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
+extension SourceViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         restrictToSearch || listings.isEmpty ? .zero : CGSize(width: collectionView.bounds.width, height: 40)
@@ -228,7 +228,7 @@ extension SourceBrowseViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - Listing Header Delegate
-extension SourceBrowseViewController: MangaListSelectionHeaderDelegate {
+extension SourceViewController: MangaListSelectionHeaderDelegate {
     
     func optionSelected(_ index: Int) {
         if index == listings.count {
@@ -248,7 +248,7 @@ extension SourceBrowseViewController: MangaListSelectionHeaderDelegate {
 }
 
 // MARK: - Search Bar Delegate
-extension SourceBrowseViewController: UISearchBarDelegate {
+extension SourceViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard searchBar.text != query else { return }
@@ -284,7 +284,7 @@ extension SourceBrowseViewController: UISearchBarDelegate {
 }
 
 // MARK: - Modal Delegate
-extension SourceBrowseViewController: MiniModalDelegate {
+extension SourceViewController: MiniModalDelegate {
     
     func modalWillDismiss() {
         var update = false

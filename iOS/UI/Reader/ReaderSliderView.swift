@@ -8,6 +8,7 @@
 import UIKit
 
 class ReaderSliderView: UIControl {
+    
     var minimumValue: CGFloat = 0
     var maximumValue: CGFloat = 1
     var currentValue: CGFloat = 0 {

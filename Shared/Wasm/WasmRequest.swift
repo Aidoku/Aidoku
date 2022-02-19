@@ -20,6 +20,7 @@ struct WasmRequestObject {
 }
 
 class WasmRequest {
+    
     let vm: WasmInterpreter
     let memory: WasmMemory
     var requests: [WasmRequestObject] = []

@@ -68,7 +68,7 @@ class SourceManager {
                 
                 if let _ = DataManager.shared.add(source: source) {
                     sources.append(source)
-                    sources.sort { $0.info.name > $1.info.name }
+                    sources.sort { $0.info.name < $1.info.name }
                     
                     NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
                     

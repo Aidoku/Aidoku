@@ -138,7 +138,7 @@ class SearchViewController: UIViewController {
     @objc func openSearchView(_ sender: UIButton) {
         guard sources.count > sender.tag else { return }
         let source = sources[sender.tag]
-        let vc = SourceBrowseViewController(source: source)
+        let vc = SourceViewController(source: source)
         vc.restrictToSearch = true
         vc.page = 1
         vc.query = query
