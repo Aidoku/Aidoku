@@ -6,7 +6,13 @@
 //
 
 import Foundation
-import UIKit
+
+#if os(OSX)
+    import AppKit
+//    public typealias UIColor = NSColor
+#else
+    import UIKit
+#endif
 
 enum MangaStatus: Int {
     case unknown = 0

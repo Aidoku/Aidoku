@@ -136,7 +136,9 @@ class BrowseViewController: UIViewController {
         
         if externalSources.isEmpty {
             Task {
-                externalSources = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                var sources = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                sources.sort { $0.name < $1.name }
+                externalSources = sources
                 fetchUpdates()
             }
         }
@@ -281,7 +283,7 @@ extension BrowseViewController: UITableViewDataSource {
 extension BrowseViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
-            let vc = SourceBrowseViewController(source: sources[indexPath.row])
+            let vc = SourceViewController(source: sources[indexPath.row])
             navigationController?.pushViewController(vc, animated: true)
         }
 

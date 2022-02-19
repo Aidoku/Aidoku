@@ -8,6 +8,7 @@
 import Foundation
 
 struct Chapter: KVCObject, Identifiable, Hashable {
+    
     let sourceId: String
     let id: String
     let mangaId: String

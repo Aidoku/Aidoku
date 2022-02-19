@@ -1,6 +1,6 @@
 //
 //  SourceSettings.swift
-//  Aidoku (iOS)
+//  Aidoku
 //
 //  Created by Skitty on 2/17/22.
 //

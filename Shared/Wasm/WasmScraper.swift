@@ -10,6 +10,7 @@ import WasmInterpreter
 import SwiftSoup
 
 class WasmScraper {
+    
     let vm: WasmInterpreter
     let memory: WasmMemory
     

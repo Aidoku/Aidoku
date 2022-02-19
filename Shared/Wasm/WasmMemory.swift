@@ -10,6 +10,7 @@ import WasmInterpreter
 import CWasm3
 
 class WasmMemory {
+    
     let vm: WasmInterpreter
     
     init(vm: WasmInterpreter) {

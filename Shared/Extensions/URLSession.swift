@@ -1,5 +1,5 @@
 //
-//  URLSession+object.swift
+//  URLSession.swift
 //  Aidoku
 //
 //  Created by Skitty on 12/24/21.

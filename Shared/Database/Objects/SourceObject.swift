@@ -1,6 +1,6 @@
 //
 //  SourceObject.swift
-//  Aidoku (iOS)
+//  Aidoku
 //
 //  Created by Skitty on 2/14/22.
 //

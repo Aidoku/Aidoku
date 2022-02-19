@@ -9,6 +9,7 @@ import Foundation
 import WasmInterpreter
 
 class WasmJson {
+    
     let vm: WasmInterpreter
     let memory: WasmMemory
     

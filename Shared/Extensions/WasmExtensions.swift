@@ -9,7 +9,9 @@ import Foundation
 import WasmInterpreter
 import CWasm3
 
+// MARK: - WasmInterpreter
 extension WasmInterpreter {
+    
     func write(string: String, memory: WasmMemory) -> Int32 {
         self.write(data: string.int32Array, memory: memory)
     }
@@ -56,6 +58,7 @@ private extension WasmInterpreter {
     }
 }
 
+// MARK: - UInts
 public extension UnsignedInteger {
     init(_ bytes: [UInt8]) {
         precondition(bytes.count <= MemoryLayout<Self>.size)
@@ -68,17 +71,10 @@ public extension UnsignedInteger {
     }
 }
 
-extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        return stride(from: 0, to: count, by: size).map {
-            Array(self[$0 ..< Swift.min($0 + size, count)])
-        }
-    }
-}
-
 protocol UIntToBytesConvertable {
     var toBytes: [UInt8] { get }
 }
+
 extension UIntToBytesConvertable {
     func toByteArr<T: BinaryInteger>(endian: T, count: Int) -> [UInt8] {
         var _endian = endian
@@ -97,12 +93,23 @@ extension UInt32: UIntToBytesConvertable {
     }
 }
 
+// MARK: - C strings
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
+
 extension String {
+    
     var nullTerminated: [UInt8] {
         var data = [UInt8](self.utf8)
         data.append(0)
         return data
     }
+    
     var int32Array: [Int32] {
         self.nullTerminated.chunked(into: 4).map { Int32(truncatingIfNeeded: UInt32($0.reversed())) }
     }
