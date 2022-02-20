@@ -16,6 +16,8 @@ class ExternalSourceTableViewCell: UITableViewCell {
         }
     }
     
+    let sourceURL: String
+    
     let iconView = UIImageView()
     let titleLabel = UILabel()
     let versionLabel = UILabel()
@@ -30,12 +32,14 @@ class ExternalSourceTableViewCell: UITableViewCell {
     
     var getButtonWidthConstraint: NSLayoutConstraint?
     
-    init(reuseIdentifier: String?) {
+    init(reuseIdentifier: String?, sourceURL: String) {
+        self.sourceURL = sourceURL
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+    init(style: UITableViewCell.CellStyle, reuseIdentifier: String?, sourceURL: String) {
+        self.sourceURL = sourceURL
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
@@ -116,7 +120,7 @@ class ExternalSourceTableViewCell: UITableViewCell {
         versionLabel.text = "v\(source?.version ?? 1)"
         subtitleLabel.text = source?.id
         iconView.kf.setImage(
-            with: URL(string: "https://skitty.xyz/aidoku-sources/icons/\(source?.icon ??  "")"),
+            with: URL(string: "\(sourceURL)/icons/\(source?.icon ??  "")"),
             placeholder: UIImage(named: "MangaPlaceholder"),
             options: nil
         )
@@ -125,7 +129,7 @@ class ExternalSourceTableViewCell: UITableViewCell {
     @objc func getPressed() {
         Task {
             getButton.buttonState = .downloading
-            let installedSource = await SourceManager.shared.importSource(from: URL(string: "https://skitty.xyz/aidoku-sources/sources/\(source?.file ?? "")")!)
+            let installedSource = await SourceManager.shared.importSource(from: URL(string: "\(sourceURL)/sources/\(source?.file ?? "")")!)
             getButton.buttonState = installedSource == nil ? .fail : .get
         }
     }
