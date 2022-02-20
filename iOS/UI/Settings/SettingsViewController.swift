@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 import Kingfisher
 
 class SettingsViewController: UITableViewController {
@@ -24,6 +25,7 @@ class SettingsViewController: UITableViewController {
         var title: String
         var subtitle: String?
         var target: String?
+        var bool: Bool?
     }
     
     let sections = [
@@ -36,10 +38,12 @@ class SettingsViewController: UITableViewController {
     
     let cells: [[SettingsCell]] = [
         [
-            SettingsCell(type: .pageLink, title: "About", target: "About.about")
+            SettingsCell(type: .pageLink, title: "About", target: "About.about"),
+            SettingsCell(type: .link, title: "GitHub Repository", target: "https://github.com/Aidoku/Aidoku", bool: true),
+            SettingsCell(type: .link, title: "Discord Server", target: "https://discord.gg/9U8cC5Zk3s")
         ],
         [
-            SettingsCell(type: .toggle, title: "iCloud Sync", target: "General.icloudSync"),
+            SettingsCell(type: .toggle, title: "iCloud Sync", target: "General.icloudSync")
         ],
         [
             SettingsCell(type: .toggle, title: "Open Reader View", target: "Library.opensReaderView"),
@@ -141,7 +145,8 @@ extension SettingsViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if let target = cells[indexPath.section][indexPath.row].target {
+        let config = cells[indexPath.section][indexPath.row]
+        if let target = config.target {
             switch target {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
@@ -180,8 +185,18 @@ extension SettingsViewController {
                     SourceManager.shared.clearSources()
                     UserDefaults.resetStandardUserDefaults()
                 }
+                
             default:
-                break
+                if config.type == .link {
+                    if let url = URL(string: target) {
+                        if let inline = config.bool, inline {
+                            let safariViewController = SFSafariViewController(url: URL(string: target)!)
+                            present(safariViewController, animated: true)
+                        } else {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                }
             }
         }
         tableView.deselectRow(at: indexPath, animated: true)

@@ -38,6 +38,8 @@ class BrowseViewController: UIViewController {
     
     let tableView = UITableView(frame: .zero, style: .grouped)
     
+    let sourceURL = "https://sources.aidoku.app"
+    
     var sources = SourceManager.shared.sources {
         didSet {
             reloadData()
@@ -116,7 +118,6 @@ class BrowseViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(SourceTableViewCell.self, forCellReuseIdentifier: "SourceTableViewCell")
-        tableView.register(ExternalSourceTableViewCell.self, forCellReuseIdentifier: "ExternalSourceTableViewCell")
         tableView.register(SourceSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SourceSectionHeaderView")
         tableView.backgroundColor = .systemBackground
         view.addSubview(tableView)
@@ -136,7 +137,7 @@ class BrowseViewController: UIViewController {
         
         if externalSources.isEmpty {
             Task {
-                var sources = (try? await URLSession.shared.object(from: URL(string: "https://skitty.xyz/aidoku-sources/index.json")!) as [ExternalSourceInfo]?) ?? []
+                var sources = (try? await URLSession.shared.object(from: URL(string: "\(sourceURL)/index.min.json")!) as [ExternalSourceInfo]?) ?? []
                 sources.sort { $0.name < $1.name }
                 externalSources = sources
                 fetchUpdates()
@@ -223,7 +224,7 @@ extension BrowseViewController: UITableViewDataSource {
         if indexPath.section == 0 && hasUpdates {
             var cell = tableView.dequeueReusableCell(withIdentifier: "ExternalSourceTableViewCell") as? ExternalSourceTableViewCell
             if cell == nil {
-                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell")
+                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell", sourceURL: sourceURL)
             }
             guard let cell = cell else { return UITableViewCell() }
             
@@ -246,7 +247,7 @@ extension BrowseViewController: UITableViewDataSource {
         } else if (indexPath.section == 0 && !hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && !hasUpdates) || (indexPath.section == 1 && !hasSources && hasUpdates) || (indexPath.section == 2 && hasSources && hasUpdates) {
             var cell = tableView.dequeueReusableCell(withIdentifier: "ExternalSourceTableViewCell") as? ExternalSourceTableViewCell
             if cell == nil {
-                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell")
+                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell", sourceURL: sourceURL)
             }
             guard let cell = cell else { return UITableViewCell() }
             
