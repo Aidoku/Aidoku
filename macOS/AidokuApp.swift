@@ -15,6 +15,3 @@ struct AidokuApp: App {
         }
     }
 }
-
-
-

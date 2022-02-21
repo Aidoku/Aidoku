@@ -8,7 +8,7 @@
 import CoreData
 
 extension SourceObject {
-    
+
     func load(from source: Source) {
         id = source.id
         title = source.info.name
@@ -17,7 +17,7 @@ extension SourceObject {
         nsfw = Int16(source.info.nsfw ?? 0)
         path = source.url.pathComponents[source.url.pathComponents.count - 2..<source.url.pathComponents.count].joined(separator: "/")
     }
-    
+
     func toSource() -> Source? {
         if let path = path {
             return try? Source(from: FileManager.default.documentDirectory.appendingPathComponent(path))

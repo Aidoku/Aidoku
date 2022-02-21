@@ -8,7 +8,7 @@
 import Foundation
 
 struct Chapter: KVCObject, Identifiable, Hashable {
-    
+
     let sourceId: String
     let id: String
     let mangaId: String
@@ -19,7 +19,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
     let volumeNum: Float?
     let dateUploaded: Date?
     let sourceOrder: Int
-    
+
     init(
         sourceId: String,
         id: String,
@@ -43,7 +43,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         self.dateUploaded = dateUploaded
         self.sourceOrder = sourceOrder
     }
-    
+
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id

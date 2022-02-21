@@ -9,70 +9,70 @@ import UIKit
 import Kingfisher
 
 class ReaderPageView: UIView {
-    
+
     var zoomableView = ZoomableScrollView(frame: .zero)
     let imageView = UIImageView()
     let activityIndicator = UIActivityIndicatorView(style: .medium)
     let reloadButton = UIButton(type: .roundedRect)
-    
+
     var imageViewHeightConstraint: NSLayoutConstraint?
-    
+
     var currentUrl: String?
-    
+
     init() {
         super.init(frame: .zero)
         configureViews()
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureViews()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func configureViews() {
         activityIndicator.startAnimating()
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         addSubview(activityIndicator)
-        
+
         zoomableView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(zoomableView)
-        
+
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         zoomableView.addSubview(imageView)
-        
+
         zoomableView.zoomView = imageView
-        
+
         reloadButton.alpha = 0
         reloadButton.setTitle("Reload", for: .normal)
         reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
         reloadButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(reloadButton)
-        
+
         activateConstraints()
     }
-    
+
     func activateConstraints() {
         zoomableView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         zoomableView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
-        
+
         imageView.widthAnchor.constraint(equalTo: zoomableView.widthAnchor).isActive = true
         imageViewHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
         imageViewHeightConstraint?.isActive = true
         imageView.centerXAnchor.constraint(equalTo: zoomableView.centerXAnchor).isActive = true
         imageView.centerYAnchor.constraint(equalTo: zoomableView.centerYAnchor).isActive = true
-        
+
         activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        
+
         reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
     }
-    
+
     func updateZoomBounds() {
         var height = (self.imageView.image?.size.height ?? 0) / (self.imageView.image?.size.width ?? 1) * self.imageView.bounds.width
         if height > zoomableView.bounds.height {
@@ -81,7 +81,7 @@ class ReaderPageView: UIView {
         self.imageViewHeightConstraint?.constant = height
         self.zoomableView.contentSize = self.imageView.bounds.size
     }
-    
+
     @objc func reload() {
         if let url = currentUrl {
             reloadButton.alpha = 0
@@ -91,11 +91,11 @@ class ReaderPageView: UIView {
             setPageImage(url: url)
         }
     }
-    
+
     func setPageImage(url: String) {
         guard currentUrl != url else { return }
         currentUrl = url
-        
+
         DispatchQueue.main.async {
             let processor = DownsamplingImageProcessor(size: self.bounds.size)
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
@@ -117,7 +117,6 @@ class ReaderPageView: UIView {
                 case .failure:
                     self.activityIndicator.alpha = 0
                     self.reloadButton.alpha = 1
-                    break
                 }
             }
         }

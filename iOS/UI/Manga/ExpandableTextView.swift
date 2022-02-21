@@ -8,9 +8,9 @@
 import UIKit
 
 class ExpandableTextView: UIView {
-    
+
     var host: UIViewController?
-    
+
     var text: String? {
         get {
             textLabel.text
@@ -39,44 +39,44 @@ class ExpandableTextView: UIView {
             }
         }
     }
-    
+
     let textLabel = UILabel()
     let moreButton = UIButton(type: .roundedRect)
     let fadeView = UIView()
     let fadeGradient = CAGradientLayer()
-    
+
     override var intrinsicContentSize: CGSize {
         textLabel.intrinsicContentSize
     }
-    
+
     init() {
         super.init(frame: .zero)
         configureLabel()
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureLabel()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func configureLabel() {
         textLabel.textColor = .secondaryLabel
         textLabel.font = .systemFont(ofSize: 15)
         textLabel.numberOfLines = 4
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(textLabel)
-        
+
         moreButton.setTitle("more", for: .normal)
         moreButton.addTarget(self, action: #selector(toggleExpanded), for: .touchUpInside)
         moreButton.backgroundColor = .systemBackground
         moreButton.titleLabel?.font = .systemFont(ofSize: 12)
         moreButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(moreButton)
-        
+
         fadeGradient.frame = CGRect(x: 0, y: 0, width: 20, height: 18)
         fadeGradient.startPoint = CGPoint(x: 0, y: 0.5)
         fadeGradient.endPoint = CGPoint(x: 1, y: 0.5)
@@ -88,21 +88,21 @@ class ExpandableTextView: UIView {
         fadeView.layer.insertSublayer(fadeGradient, at: 0)
         fadeView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(fadeView)
-        
+
         textLabel.topAnchor.constraint(equalTo: topAnchor).isActive = true
         textLabel.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
         textLabel.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        
+
         moreButton.trailingAnchor.constraint(equalTo: textLabel.trailingAnchor).isActive = true
         moreButton.bottomAnchor.constraint(equalTo: textLabel.bottomAnchor).isActive = true
         moreButton.heightAnchor.constraint(equalToConstant: 18).isActive = true
-        
+
         fadeView.trailingAnchor.constraint(equalTo: moreButton.leadingAnchor).isActive = true
         fadeView.bottomAnchor.constraint(equalTo: moreButton.bottomAnchor).isActive = true
         fadeView.heightAnchor.constraint(equalTo: moreButton.heightAnchor).isActive = true
         fadeView.widthAnchor.constraint(equalToConstant: 20).isActive = true
     }
-    
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
@@ -113,7 +113,7 @@ class ExpandableTextView: UIView {
             setNeedsDisplay()
         }
     }
-    
+
     @objc func toggleExpanded() {
         expanded.toggle()
     }

@@ -8,7 +8,6 @@
 import Foundation
 import CoreData
 
-
 @objc(ChapterObject)
 public class ChapterObject: NSManagedObject {
     func load(from chapter: Chapter) {
@@ -42,7 +41,7 @@ public class ChapterObject: NSManagedObject {
 extension ChapterObject {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<ChapterObject> {
-        return NSFetchRequest<ChapterObject>(entityName: "Chapter")
+        NSFetchRequest<ChapterObject>(entityName: "Chapter")
     }
 
     @NSManaged public var sourceId: String
@@ -55,12 +54,12 @@ extension ChapterObject {
     @NSManaged public var volume: NSNumber?
     @NSManaged public var dateUploaded: Date?
     @NSManaged public var sourceOrder: Int16
-    
+
     @NSManaged public var manga: MangaObject?
     @NSManaged public var history: HistoryObject?
-    
+
 }
 
-extension ChapterObject : Identifiable {
+extension ChapterObject: Identifiable {
 
 }

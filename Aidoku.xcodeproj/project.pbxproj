@@ -100,6 +100,8 @@
 		FBED233327C091D70095D0C0 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FBED233227C091D70095D0C0 /* SwiftSoup */; };
 		FBED233427C095170095D0C0 /* SourceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232A27BEAC980095D0C0 /* SourceSettings.swift */; };
 		FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232227BB461D0095D0C0 /* SourceObject.swift */; };
+		FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
+		FBED233A27C439C20095D0C0 /* MangaViewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */; };
 		FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED62B1279DB3FC0096B717 /* SourceViewController.swift */; };
 		FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */; };
 		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
@@ -173,6 +175,8 @@
 		FBED232627BDB69B0095D0C0 /* SourceSettingSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSettingSelectViewController.swift; sourceTree = "<group>"; };
 		FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputTableViewCell.swift; sourceTree = "<group>"; };
 		FBED232A27BEAC980095D0C0 /* SourceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSettings.swift; sourceTree = "<group>"; };
+		FBED233727C3D0E30095D0C0 /* SourceActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceActor.swift; sourceTree = "<group>"; };
+		FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewHeaderView.swift; sourceTree = "<group>"; };
 		FBED62B1279DB3FC0096B717 /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
 		FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverCell.swift; sourceTree = "<group>"; };
 		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
@@ -297,6 +301,7 @@
 			isa = PBXGroup;
 			children = (
 				FB7B7ED0278CE670001E6EAF /* SourceManager.swift */,
+				FBED233727C3D0E30095D0C0 /* SourceActor.swift */,
 				FB7B7ED3278CE692001E6EAF /* Source.swift */,
 				FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */,
 				FBED232A27BEAC980095D0C0 /* SourceSettings.swift */,
@@ -308,6 +313,7 @@
 			isa = PBXGroup;
 			children = (
 				FB4CB19227A70B9A00A05445 /* MangaViewController.swift */,
+				FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */,
 				FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */,
 			);
 			path = Manga;
@@ -491,6 +497,7 @@
 				FB1B4831277CE1920056D02C /* Sources */,
 				FB1B4832277CE1920056D02C /* Frameworks */,
 				FB1B4833277CE1920056D02C /* Resources */,
+				FBED233627C3C4D70095D0C0 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -591,6 +598,26 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		FBED233627C3C4D70095D0C0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		FB1B4831277CE1920056D02C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -615,6 +642,7 @@
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
 				FBED232B27BEAC980095D0C0 /* SourceSettings.swift in Sources */,
 				FB31AD0B27AE180300D50410 /* WasmScraper.swift in Sources */,
+				FBED233A27C439C20095D0C0 /* MangaViewHeaderView.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB7B7EE5278D0735001E6EAF /* SourceTableViewCell.swift in Sources */,
@@ -633,6 +661,7 @@
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
+				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FBED231927B8BA7C0095D0C0 /* MiniModalViewController.swift in Sources */,
@@ -817,7 +846,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -851,7 +880,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

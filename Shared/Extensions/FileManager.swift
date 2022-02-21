@@ -9,13 +9,13 @@ import Foundation
 
 extension URL {
     var exists: Bool {
-        return FileManager.default.fileExists(atPath: path)
+        FileManager.default.fileExists(atPath: path)
     }
-    
+
     var contents: [URL] {
         (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil)) ?? []
     }
-    
+
     func createDirctory() {
         try? FileManager.default.createDirectory(at: self, withIntermediateDirectories: true, attributes: nil)
     }
@@ -23,9 +23,9 @@ extension URL {
 
 extension FileManager {
     var documentDirectory: URL {
-        return urls(for: .documentDirectory, in: .userDomainMask)[0]
+        urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    
+
     var temporaryDirectory: URL? {
         try? url(for: .itemReplacementDirectory, in: .userDomainMask, appropriateFor: documentDirectory, create: true)
     }

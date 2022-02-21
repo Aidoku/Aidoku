@@ -15,27 +15,27 @@ struct WasmRequestObject {
     var headers: [String]?
     var bodyLength: Int?
     var body: Data?
-    
+
     var data: Data?
 }
 
 class WasmRequest {
-    
+
     let vm: WasmInterpreter
     let memory: WasmMemory
     var requests: [WasmRequestObject] = []
-    
+
     init(vm: WasmInterpreter, memory: WasmMemory) {
         self.vm = vm
         self.memory = memory
     }
-    
+
     func export() {
         try? vm.addImportHandler(named: "request_init", namespace: "env", block: self.request_init)
         try? vm.addImportHandler(named: "request_set", namespace: "env", block: self.request_set)
         try? vm.addImportHandler(named: "request_data", namespace: "env", block: self.request_data)
     }
-    
+
     var request_init: () -> Int32 {
         {
             let req = WasmRequestObject(id: self.requests.count)
@@ -43,7 +43,7 @@ class WasmRequest {
             return Int32(req.id)
         }
     }
-    
+
     var request_set: (Int32, Int32, Int32) -> Void {
         { req, opt, val in
             let stringValue = self.vm.stringFromHeap(byteOffset: Int(val))
@@ -65,44 +65,44 @@ class WasmRequest {
             }
         }
     }
-    
+
     var request_data: (Int32, Int32) -> Int32 {
         { req, size in
             let semaphore = DispatchSemaphore(value: 0)
-            
+
             let request = self.requests[Int(req)]
             guard let url = URL(string: request.URL ?? "") else {
                 return -1
             }
-            
+
             var urlRequest = URLRequest(url: url)
             for value in request.headers ?? [] {
                 urlRequest.setValue(value, forHTTPHeaderField: "key")
             }
             if let body = request.body { urlRequest.httpBody = body }
             if let method = request.method { urlRequest.httpMethod = method }
-            
-            URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+
+            URLSession.shared.dataTask(with: urlRequest) { data, _, _ in
                 if let data = data {
                     self.requests[Int(req)].data = data
                 }
                 semaphore.signal()
             }.resume()
-            
+
             semaphore.wait()
-            
+
             var dataPointer: Int32 = -1
-            
+
             if let data = self.requests[Int(req)].data {
                 let dataArray = Array(data)
-                
+
                 dataPointer = self.memory.malloc(Int32(dataArray.count))
                 try? self.vm.writeToHeap(bytes: dataArray, byteOffset: Int(dataPointer))
                 try? self.vm.writeToHeap(values: [Int32(dataArray.count)], byteOffset: Int(size))
             }
-            
+
             self.requests.remove(at: Int(req))
-            
+
             return dataPointer
         }
     }

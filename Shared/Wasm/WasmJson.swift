@@ -9,22 +9,25 @@ import Foundation
 import WasmInterpreter
 
 class WasmJson {
-    
+
     let vm: WasmInterpreter
     let memory: WasmMemory
-    
+
     var descriptorPointer: Int32 = -1
     var descriptors: [Int32: Any] = [:]
     var references: [Int32: [Int32]] = [:]
+
+    let defaultLocale = "en_US_POSIX"
+    let defaultTimeZone = "UTC"
 
     init(vm: WasmInterpreter, memory: WasmMemory) {
         self.vm = vm
         self.memory = memory
     }
-    
+
     func export() {
         try? vm.addImportHandler(named: "json_parse", namespace: "env", block: self.json_parse)
-        
+
         try? vm.addImportHandler(named: "json_object", namespace: "env", block: self.json_object)
         try? vm.addImportHandler(named: "json_object_size", namespace: "env", block: self.json_object_size)
         try? vm.addImportHandler(named: "json_object_getn", namespace: "env", block: self.json_object_getn)
@@ -32,13 +35,13 @@ class WasmJson {
         try? vm.addImportHandler(named: "json_object_deln", namespace: "env", block: self.json_object_deln)
         try? vm.addImportHandler(named: "json_object_keys", namespace: "env", block: self.json_object_keys)
         try? vm.addImportHandler(named: "json_object_values", namespace: "env", block: self.json_object_values)
-        
+
         try? vm.addImportHandler(named: "json_array", namespace: "env", block: self.json_array)
         try? vm.addImportHandler(named: "json_array_size", namespace: "env", block: self.json_array_size)
         try? vm.addImportHandler(named: "json_array_get", namespace: "env", block: self.json_array_get)
         try? vm.addImportHandler(named: "json_array_append", namespace: "env", block: self.json_array_append)
         try? vm.addImportHandler(named: "json_array_remove", namespace: "env", block: self.json_array_remove)
-        
+
         try? vm.addImportHandler(named: "json_string", namespace: "env", block: self.json_string)
         try? vm.addImportHandler(named: "json_string_value", namespace: "env", block: self.json_string_value)
         try? vm.addImportHandler(named: "json_integer", namespace: "env", block: self.json_integer)
@@ -46,15 +49,15 @@ class WasmJson {
         try? vm.addImportHandler(named: "json_float", namespace: "env", block: self.json_float)
         try? vm.addImportHandler(named: "json_float_value", namespace: "env", block: self.json_float_value)
         try? vm.addImportHandler(named: "json_date_value", namespace: "env", block: self.json_date_value)
-        
+
         try? vm.addImportHandler(named: "json_copy", namespace: "env", block: self.json_copy)
         try? vm.addImportHandler(named: "json_free", namespace: "env", block: self.json_free)
     }
-    
+
     func readValue(_ descriptor: Int32) -> Any? {
         descriptors[descriptor]
     }
-    
+
     func storeValue(_ data: Any, from: Int32? = nil) -> Int32 {
         descriptorPointer += 1
         descriptors[descriptorPointer] = data
@@ -65,7 +68,7 @@ class WasmJson {
         }
         return descriptorPointer
     }
-    
+
     func removeValue(_ descriptor: Int32) {
         descriptors.removeValue(forKey: descriptor)
         for d in references[descriptor] ?? [] {
@@ -73,7 +76,7 @@ class WasmJson {
         }
         references.removeValue(forKey: descriptor)
     }
-    
+
     var json_parse: (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
@@ -87,7 +90,7 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_copy: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
@@ -97,28 +100,28 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_free: (Int32) -> Void {
         { json in
             self.removeValue(json)
         }
     }
-    
+
     // MARK: Object
-    
+
     var json_object: () -> Int32 {
         {
             self.storeValue([:])
         }
     }
-    
+
     var json_object_size: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return 0 }
             return Int32((self.readValue(json) as? [String: Any?])?.count ?? 0)
         }
     }
-    
+
     var json_object_getn: (Int32, Int32, Int32) -> Int32 {
         { json, key, key_len in
             guard json >= 0, key >= 0 else { return -1 }
@@ -129,7 +132,7 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_object_setn: (Int32, Int32, Int32, Int32) -> Void {
         { json, key, key_len, value in
             guard json >= 0, key >= 0, value >= 0 else { return }
@@ -141,7 +144,7 @@ class WasmJson {
             }
         }
     }
-    
+
     var json_object_deln: (Int32, Int32, Int32) -> Void {
         { json, key, key_len in
             guard json >= 0, key >= 0 else { return }
@@ -152,7 +155,7 @@ class WasmJson {
             }
         }
     }
-    
+
     var json_object_keys: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
@@ -162,7 +165,7 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_object_values: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
@@ -172,22 +175,22 @@ class WasmJson {
             return -1
         }
     }
-    
+
     // MARK: Array
-    
+
     var json_array: () -> Int32 {
         {
             self.storeValue([])
         }
     }
-    
+
     var json_array_size: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return 0 }
             return Int32((self.readValue(json) as? [Any])?.count ?? 0)
         }
     }
-    
+
     var json_array_get: (Int32, Int32) -> Int32 {
         { json, index in
             guard json >= 0, index >= 0 else { return -1 }
@@ -199,18 +202,18 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_array_append: (Int32, Int32) -> Void {
         { json, value in
             guard json >= 0, value >= 0 else { return }
             if var array = self.readValue(json) as? [Any],
-               let valueToAppend = self.readValue(value){
+               let valueToAppend = self.readValue(value) {
                 array.append(valueToAppend)
                 self.descriptors[json] = array
             }
         }
     }
-    
+
     var json_array_remove: (Int32, Int32) -> Void {
         { json, index in
             guard json >= 0, index >= 0 else { return }
@@ -221,9 +224,9 @@ class WasmJson {
             }
         }
     }
-    
+
     // MARK: String
-    
+
     var json_string: (Int32, Int32) -> Int32 {
         { string, string_len in
             if let value = try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len)) {
@@ -232,7 +235,7 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_string_value: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return 0 }
@@ -242,15 +245,15 @@ class WasmJson {
             return 0
         }
     }
-    
+
     // MARK: Number
-    
+
     var json_integer: (Int32) -> Int32 {
         { int in
             self.storeValue(int)
         }
     }
-    
+
     var json_integer_value: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
@@ -262,13 +265,13 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_float: (Float32) -> Int32 {
         { float in
             self.storeValue(float)
         }
     }
-    
+
     var json_float_value: (Int32) -> Float32 {
         { json in
             guard json >= 0 else { return -1 }
@@ -280,15 +283,21 @@ class WasmJson {
             return -1
         }
     }
-    
+
     var json_date_value: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int64 {
         { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
             guard json >= 0, format_len > 0 else { return -1 }
             if let string = self.readValue(json) as? String,
                let formatString = try? self.vm.stringFromHeap(byteOffset: Int(format), length: Int(format_len)) {
-                let localeString = locale_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(locale), length: Int(locale_len))) ?? "en_US_POSIX" : "en_US_POSIX"
-                let timeZoneString = timeZone_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(timeZone), length: Int(timeZone_len))) ?? "UTC" : "UTC"
-                
+                let localeString = locale_len > 0 ? (try? self.vm.stringFromHeap(
+                    byteOffset: Int(locale),
+                    length: Int(locale_len))
+                ) ?? self.defaultLocale : self.defaultLocale
+                let timeZoneString = timeZone_len > 0 ? (try? self.vm.stringFromHeap(
+                    byteOffset: Int(timeZone),
+                    length: Int(timeZone_len))
+                ) ?? self.defaultTimeZone : self.defaultTimeZone
+
                 let formatter = DateFormatter()
                 formatter.locale = Locale(identifier: localeString)
                 formatter.timeZone = TimeZone(identifier: timeZoneString)

@@ -10,7 +10,7 @@ import CoreData
 
 @objc(MangaObject)
 public class MangaObject: NSManagedObject {
-    
+
     func load(from manga: Manga) {
         id = manga.id
         sourceId = manga.sourceId
@@ -25,7 +25,7 @@ public class MangaObject: NSManagedObject {
         nsfw = Int16(manga.nsfw.rawValue)
         viewer = Int16(manga.viewer.rawValue)
     }
-    
+
     func toManga() -> Manga {
         Manga(
             sourceId: sourceId,
@@ -42,7 +42,7 @@ public class MangaObject: NSManagedObject {
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
         )
     }
-    
+
     public override func awakeFromInsert() {
         super.awakeFromInsert()
         favorite = false
@@ -53,9 +53,9 @@ public class MangaObject: NSManagedObject {
 extension MangaObject {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<MangaObject> {
-        return NSFetchRequest<MangaObject>(entityName: "Manga")
+        NSFetchRequest<MangaObject>(entityName: "Manga")
     }
-    
+
     @NSManaged public var id: String
     @NSManaged public var sourceId: String
     @NSManaged public var title: String
@@ -65,15 +65,15 @@ extension MangaObject {
     @NSManaged public var tags: [String]?
     @NSManaged public var cover: String?
     @NSManaged public var url: String?
-    
+
     @NSManaged public var status: Int16
     @NSManaged public var nsfw: Int16
     @NSManaged public var viewer: Int16
-    
+
     @NSManaged public var favorite: Bool
-    
+
     @NSManaged public var lastUpdate: Date
-    
+
     @NSManaged public var libraryObject: LibraryMangaObject?
     @NSManaged public var chapters: NSSet?
 
@@ -96,6 +96,6 @@ extension MangaObject {
 
 }
 
-extension MangaObject : Identifiable {
+extension MangaObject: Identifiable {
 
 }

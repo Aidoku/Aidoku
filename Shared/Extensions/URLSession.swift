@@ -23,14 +23,14 @@ extension URLSession {
     enum URLSessionError: Error {
         case noData
     }
-    
+
     func download(for request: URLRequest) async throws -> URL {
         if #available(iOS 15.0, *), #available(macOS 12.0, *) {
             let (data, _) = try await self.download(for: request, delegate: nil)
             return data
         } else {
             let data: URL = try await withCheckedThrowingContinuation({ continuation in
-                self.downloadTask(with: request) { url, response, error in
+                self.downloadTask(with: request) { url, _, error in
                     if let url = url, let tmpDirectory = FileManager.default.temporaryDirectory {
                         try? FileManager.default.createDirectory(at: tmpDirectory, withIntermediateDirectories: true)
                         let destination = tmpDirectory.appendingPathComponent(url.lastPathComponent)
@@ -44,14 +44,14 @@ extension URLSession {
             return data
         }
     }
-    
+
     func data(for request: URLRequest) async throws -> Data {
         if #available(iOS 15.0, *), #available(macOS 12.0, *) {
             let (data, _) = try await self.data(for: request, delegate: nil)
             return data
         } else {
             let data: Data = try await withCheckedThrowingContinuation({ continuation in
-                self.dataTask(with: request) { data, response, error in
+                self.dataTask(with: request) { data, _, error in
                     if let data = data {
                         continuation.resume(returning: data)
                     } else {
@@ -62,11 +62,11 @@ extension URLSession {
             return data
         }
     }
-    
+
     func object<T: Codable>(from url: URL) async throws -> T {
-        return try await self.object(from: URLRequest.from(url))
+        try await self.object(from: URLRequest.from(url))
     }
-    
+
     func object<T: Codable>(from req: URLRequest) async throws -> T {
         // let start = DispatchTime.now()
         let data = try await self.data(for: req)

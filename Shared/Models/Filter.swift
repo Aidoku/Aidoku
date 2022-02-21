@@ -23,7 +23,7 @@ struct SortOption: KVCObject, Equatable {
     let index: Int
     let name: String
     let ascending: Bool
-    
+
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "index": return index
@@ -35,40 +35,40 @@ struct SortOption: KVCObject, Equatable {
 }
 
 struct Filter: KVCObject, Identifiable, Equatable {
-    
+
     static func == (lhs: Filter, rhs: Filter) -> Bool {
         lhs.id == rhs.id && lhs.value as? Int ?? 0 == rhs.value as? Int ?? 0
     }
-    
+
     var id: String {
         name
     }
-    
+
     let type: FilterType
     var name: String
-    var value: Any? = nil
-    var defaultValue: Any? = nil
-    
+    var value: Any?
+    var defaultValue: Any?
+
     init(type: FilterType, name: String, value: Any? = nil, defaultValue: Any? = nil) {
         self.type = type
         self.name = name
         self.value = value
         self.defaultValue = defaultValue
     }
-    
+
     // Note
     init(text: String) {
         self.type = .note
         self.name = text
     }
-    
+
     // Text
     init(name: String, value: String? = nil) {
         self.type = .text
         self.name = name
         self.value = value
     }
-    
+
     // Check (and Genre)
     init(type: FilterType = .check, name: String, canExclude: Bool, default defaultValue: Int = 0) {
         self.type = type
@@ -76,7 +76,7 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.value = canExclude
         self.defaultValue = defaultValue
     }
-    
+
     // Select
     init(name: String, options: [String], default defaultValue: Int = 0) {
         self.type = .select
@@ -84,7 +84,7 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.value = options
         self.defaultValue = defaultValue
     }
-    
+
     // Sort
     init(name: String, options: [Filter], value: SortOption? = nil, default defaultValue: SortOption? = nil) {
         self.type = .sort
@@ -96,21 +96,21 @@ struct Filter: KVCObject, Identifiable, Equatable {
         }
         self.defaultValue = defaultValue
     }
-    
+
     // Sort Option
     init(name: String, index: Int = 0, canReverse: Bool) {
         self.type = .sortOption
         self.name = name
         self.value = SortOption(index: index, name: name, ascending: canReverse)
     }
-    
+
     // Group
     init(name: String, filters: [Filter]) {
         self.type = .group
         self.name = name
         self.value = filters as Any
     }
-    
+
     func toStructPointer(vm: WasmInterpreter, memory: WasmMemory) -> Int32 {
         let namePointer = vm.write(string: name, memory: memory)
         var valuePointer: Int32 = 0
@@ -119,7 +119,7 @@ struct Filter: KVCObject, Identifiable, Equatable {
         }
         return vm.write(data: [Int32(type.rawValue), namePointer, valuePointer], memory: memory)
     }
-    
+
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "type": return type.rawValue

@@ -36,30 +36,30 @@ enum MangaViewer: Int {
     case webtoon = 4
 }
 
-class Manga: KVCObject  {
+class Manga: KVCObject {
     static func == (lhs: Manga, rhs: Manga) -> Bool {
         lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
     }
-    
+
     let sourceId: String
     let id: String
-    
+
     var title: String?
     var author: String?
     var artist: String?
-    
+
     var description: String?
     var tags: [String]?
-    
+
     var cover: String?
     var url: String?
-    
+
     var status: MangaStatus
     var nsfw: MangaContentRating
     var viewer: MangaViewer
-    
+
     var tintColor: UIColor?
-    
+
     init(
         sourceId: String,
         id: String,
@@ -89,7 +89,7 @@ class Manga: KVCObject  {
         self.viewer = viewer
         self.tintColor = tintColor
     }
-    
+
     func copy(from manga: Manga) -> Manga {
         Manga(
             sourceId: manga.sourceId,
@@ -107,7 +107,7 @@ class Manga: KVCObject  {
             tintColor: tintColor ?? self.tintColor
         )
     }
-    
+
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id
