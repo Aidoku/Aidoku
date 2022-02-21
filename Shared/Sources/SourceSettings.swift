@@ -16,7 +16,7 @@ struct SourceSettings: Codable {
 // TODO: slider, segment
 struct SourceSettingItem: Codable {
     var type: String
-    
+
     var key: String?
     var action: String?
     var title: String?
@@ -27,9 +27,9 @@ struct SourceSettingItem: Codable {
     var titles: [String]?
     var defaultValue: DefaultValue?
     var notification: String?
-    
+
     var items: [SourceSettingItem]?
-    
+
     enum CodingKeys: String, CodingKey {
         case type
         case items
@@ -50,7 +50,7 @@ struct DefaultValue: Codable {
     let intValue: Int?
     let stringValue: String?
     let stringArrayValue: [String]?
-    
+
     init(boolValue: Bool, intValue: Int? = nil, stringValue: String? = nil, stringArrayValue: [String]? = nil) {
         self.boolValue = boolValue
         self.intValue = intValue

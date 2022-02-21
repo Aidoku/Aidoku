@@ -9,7 +9,7 @@ import Foundation
 import WasmInterpreter
 
 class Source: Identifiable {
-    
+
     struct SourceInfo: Codable {
         let id: String
         let lang: String
@@ -17,179 +17,57 @@ class Source: Identifiable {
         let version: Int
         let nsfw: Int?
     }
-    
+
     var id: String {
         info.id
     }
     var url: URL
     var info: SourceInfo
-    
+
     var filters: [Filter] = []
     var defaultFilters: [Filter] = []
     var listings: [Listing] = []
-    
+
     var languages: [String] = []
     var settingItems: [SourceSettingItem] = []
-    
+
     var titleSearchable: Bool {
-        filters.firstIndex { $0.type == .text && $0.name == "Title" } != nil
+        filters.contains { $0.type == .text && $0.name == "Title" }
     }
     var authorSearchable: Bool {
-        filters.firstIndex { $0.type == .text && $0.name == "Author" } != nil
+        filters.contains { $0.type == .text && $0.name == "Author" }
     }
     var filterable: Bool {
-        !filters.filter { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }.isEmpty
+        !filters.contains { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }
     }
-    
+
     var needsFilterRefresh = true
-    
+
     var vm: WasmInterpreter
     var memory: WasmMemory
-    
+
     var descriptorPointer = -1
     var descriptors: [Any] = []
-    
-    actor SourceActor {
-        
-        var source: Source
-        
-        enum SourceError: Error {
-            case vmNotLoaded
-            case mangaDetailsFailed
-        }
-        
-        init(source: Source) {
-            self.source = source
-        }
-        
-        func getFilters() async throws -> [Filter] {
-            let descriptor = source.array()
-            
-            try source.vm.call("initialize_filters", descriptor)
-            
-            let filters = source.descriptors[Int(descriptor)] as? [Filter] ?? []
-            
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            return filters
-        }
-        
-        func getListings() throws -> [Listing] {
-            let descriptor = source.array()
-            
-            try source.vm.call("initialize_listings", descriptor)
-            
-            let listings = source.descriptors[Int(descriptor)] as? [Listing] ?? []
-            
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            return listings
-        }
-        
-        func getMangaList(filters: [Filter], page: Int = 1) throws -> MangaPageResult {
-            let descriptor = source.array()
-            var filterPointer = -1
-            if !filters.isEmpty {
-                source.descriptorPointer += 1
-                source.descriptors.append(filters)
-                filterPointer = source.descriptorPointer
-            }
-            
-            let hasMore: Int32 = try source.vm.call("manga_list_request", descriptor, Int32(filterPointer), Int32(page))
-            
-            let manga = source.descriptors[Int(descriptor)] as? [Manga] ?? []
-            
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
-        }
-        
-        func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
-            let descriptor = source.array()
-            let listingName = source.vm.write(string: listing.name, memory: source.memory)
-            
-            let hasMore: Int32 = try source.vm.call("manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page))
-            
-            let manga = source.descriptors[Int(descriptor)] as? [Manga] ?? []
-                
-            source.memory.free(listingName)
-                
-            source.descriptorPointer = -1
-            source.descriptors = []
-                
-            return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
-        }
-        
-        func getMangaDetails(manga: Manga) throws -> Manga {
-            source.descriptorPointer += 1
-            source.descriptors.append(manga)
-            
-            let result: Int32 = try source.vm.call("manga_details_request", Int32(source.descriptorPointer))
-            
-            guard result >= 0, result < source.descriptors.count else { throw SourceError.mangaDetailsFailed }
-            let manga = source.descriptors[Int(result)] as? Manga
-            
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            guard let manga = manga else { throw SourceError.mangaDetailsFailed }
-            return manga
-        }
-        
-        func getChapterList(manga: Manga) throws -> [Chapter] {
-            let descriptor = source.array()
-            source.descriptorPointer += 1
-            source.descriptors.append(manga)
-            
-            source.chapterCounter = 0
-            source.currentManga = manga.id
-            
-            try source.vm.call("chapter_list_request", descriptor, Int32(source.descriptorPointer))
-            
-            let chapters = source.descriptors[Int(descriptor)] as? [Chapter] ?? []
-            
-            source.chapterCounter = 0
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            return chapters
-        }
-        
-        func getPageList(chapter: Chapter) async throws -> [Page] {
-            let descriptor = source.array()
-            source.descriptorPointer += 1
-            source.descriptors.append(chapter)
-            
-            try source.vm.call("page_list_request", descriptor, Int32(source.descriptorPointer))
-            
-            let pages = source.descriptors[Int(descriptor)] as? [Page] ?? []
-            
-            source.descriptorPointer = -1
-            source.descriptors = []
-            
-            return pages
-        }
-    }
-    
+
+    var chapterCounter = 0
+    var currentManga = ""
+
     var actor: SourceActor!
-    
+
     init(from url: URL) throws {
         self.url = url
         let data = try Data(contentsOf: url.appendingPathComponent("Info.plist"))
         self.info = try PropertyListDecoder().decode(SourceInfo.self, from: data)
-        
+
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         self.vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
         self.memory = WasmMemory(vm: vm)
         self.actor = SourceActor(source: self)
-        
+
         prepareVirtualMachine()
         loadSettings()
     }
-    
+
     func prepareVirtualMachine() {
         try? vm.addImportHandler(named: "string", namespace: "env", block: self.create_string)
         try? vm.addImportHandler(named: "filter", namespace: "env", block: self.create_filter)
@@ -197,7 +75,7 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "manga", namespace: "env", block: self.create_manga)
         try? vm.addImportHandler(named: "chapter", namespace: "env", block: self.create_chapter)
         try? vm.addImportHandler(named: "page", namespace: "env", block: self.create_page)
-        
+
         try? vm.addImportHandler(named: "array", namespace: "env", block: self.array)
         try? vm.addImportHandler(named: "array_size", namespace: "env", block: self.array_size)
         try? vm.addImportHandler(named: "array_get", namespace: "env", block: self.array_get)
@@ -208,57 +86,57 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "string_value", namespace: "env", block: self.string_value)
         try? vm.addImportHandler(named: "integer_value", namespace: "env", block: self.integer_value)
         try? vm.addImportHandler(named: "float_value", namespace: "env", block: self.float_value)
-        
+
         try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
         try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
         try? vm.addImportHandler(named: "setting_get_float", namespace: "env", block: self.setting_get_float)
         try? vm.addImportHandler(named: "setting_get_bool", namespace: "env", block: self.setting_get_bool)
         try? vm.addImportHandler(named: "setting_get_array", namespace: "env", block: self.setting_get_array)
-        
+
         WasmRequest(vm: vm, memory: memory).export()
         WasmJson(vm: vm, memory: memory).export()
         WasmScraper(vm: vm, memory: memory).export()
     }
-    
-    // MARK: Settings
-    
+}
+
+// MARK: - Settings
+extension Source {
+
     func loadSettings() {
         if let data = try? Data(contentsOf: url.appendingPathComponent("Settings.plist")),
            let settingsPlist = try? PropertyListDecoder().decode(SourceSettings.self, from: data) {
             settingItems = settingsPlist.settings ?? []
             languages = settingsPlist.languages ?? []
-            
+
             // Load defaults
             var defaults: [String: Any] = [:]
-            
+
             if let defaultLang = languages.first {
                 defaults["\(id)._language"] = defaultLang
             }
-            
-            for item in settingItems {
-                if item.type == "group" {
-                    for subItem in item.items ?? [] {
-                        if let itemKey = subItem.key {
-                            let key = "\(id).\(itemKey)"
-                            switch subItem.type {
-                            case "switch":
-                                defaults[key] = subItem.defaultValue?.boolValue
-//                            case "select", "text":
-//                                defaults[key] = subItem.defaultValue?.stringValue
-                            case "multi-select":
-                                defaults[key] = subItem.defaultValue?.stringArrayValue
-                            default:
-                                defaults[key] = subItem.defaultValue?.stringValue
-                            }
+
+            for item in settingItems where item.type == "group" {
+                for subItem in item.items ?? [] {
+                    if let itemKey = subItem.key {
+                        let key = "\(id).\(itemKey)"
+                        switch subItem.type {
+                        case "switch":
+                            defaults[key] = subItem.defaultValue?.boolValue
+//                        case "select", "text":
+//                            defaults[key] = subItem.defaultValue?.stringValue
+                        case "multi-select":
+                            defaults[key] = subItem.defaultValue?.stringArrayValue
+                        default:
+                            defaults[key] = subItem.defaultValue?.stringValue
                         }
                     }
                 }
             }
-            
+
             UserDefaults.standard.register(defaults: defaults)
         }
     }
-    
+
     var setting_get_string: (Int32, Int32) -> Int32 {
         { key, key_len in
             guard key_len >= 0 else { return 0 }
@@ -269,7 +147,7 @@ class Source: Identifiable {
             return 0
         }
     }
-    
+
     var setting_get_int: (Int32, Int32) -> Int32 {
         { key, key_len in
             guard key_len >= 0 else { return -1 }
@@ -279,7 +157,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var setting_get_float: (Int32, Int32) -> Float32 {
         { key, key_len in
             guard key_len >= 0 else { return -1 }
@@ -289,7 +167,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var setting_get_bool: (Int32, Int32) -> Int32 {
         { key, key_len in
             guard key_len >= 0 else { return 0 }
@@ -299,7 +177,7 @@ class Source: Identifiable {
             return 0
         }
     }
-    
+
     var setting_get_array: (Int32, Int32) -> Int32 {
         { key, key_len in
             guard key_len >= 0 else { return -1 }
@@ -312,16 +190,18 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     func performAction(key: String) {
         let string = vm.write(string: key, memory: memory)
         guard string > 0 else { return }
         try? vm.call("perform_action", string, Int32(key.count))
         memory.free(string)
     }
-    
-    // MARK: Object Pushing
-    
+}
+
+// MARK: - Object Pushing
+extension Source {
+
     var create_string: (Int32, Int32) -> Int32 {
         { string, string_len in
             self.descriptorPointer += 1
@@ -329,7 +209,7 @@ class Source: Identifiable {
             return Int32(self.descriptorPointer)
         }
     }
-    
+
     var create_filter: (Int32, Int32, Int32, Int32, Int32) -> Int32 {
         { type, name, name_len, value, default_value in
             let filter: Filter
@@ -380,7 +260,7 @@ class Source: Identifiable {
             return Int32(self.descriptorPointer)
         }
     }
-    
+
     var create_listing: (Int32, Int32, Int32) -> Int32 {
         { name, name_len, can_filter in
             if let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
@@ -391,13 +271,20 @@ class Source: Identifiable {
             return -1
         }
     }
-    
-    var create_manga: (Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, artist, artist_len, description, description_len, status, tags, tag_str_lens, tag_count, url, url_len, nsfw, viewer in
+
+    var create_manga: (
+        Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32,
+        Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32
+    ) -> Int32 {
+        // swiftlint:disable:next line_length
+        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, _, _, description, description_len, status, tags, tag_str_lens, tag_count, url, url_len, nsfw, viewer in
             if let mangaId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var tagList: [String] = []
                 let tagStrings: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(tags), length: Int(tag_count))) ?? []
-                let tagStringLengths: [Int32] = (try? self.vm.valuesFromHeap(byteOffset: Int(tag_str_lens), length: Int(tag_count))) ?? []
+                let tagStringLengths: [Int32] = (try? self.vm.valuesFromHeap(
+                    byteOffset: Int(tag_str_lens),
+                    length: Int(tag_count)
+                )) ?? []
                 for i in 0..<Int(tag_count) {
                     if let str = try? self.vm.stringFromHeap(byteOffset: Int(tagStrings[i]), length: Int(tagStringLengths[i])) {
                         tagList.append(str)
@@ -408,9 +295,11 @@ class Source: Identifiable {
                     id: mangaId,
                     title: title_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(title), length: Int(title_len)) : nil,
                     author: author_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
-                    description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description), length: Int(description_len)) : nil,
+                    description: description_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(description),
+                                                                                   length: Int(description_len)) : nil,
                     tags: tagList,
-                    cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url), length: Int(cover_url_len)) : nil,
+                    cover: cover_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(cover_url),
+                                                                           length: Int(cover_url_len)) : nil,
                     url: url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(url), length: Int(url_len)) : nil,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
@@ -423,12 +312,9 @@ class Source: Identifiable {
             return -1
         }
     }
-    
-    var chapterCounter = 0
-    var currentManga = ""
-    
+
     var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Int64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, url, url_len, lang, lang_len in
+        { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, _, _, lang, lang_len in
             if let chapterId = try? self.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 self.descriptorPointer += 1
                 self.descriptors.append(
@@ -437,8 +323,10 @@ class Source: Identifiable {
                         id: chapterId,
                         mangaId: self.currentManga,
                         title: name_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
-                        scanlator: scanlator_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(scanlator), length: Int(scanlator_len)) : nil,
-                        lang: lang_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(lang), length: Int(lang_len))) ?? "en" : "en",
+                        scanlator: scanlator_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(scanlator),
+                                                                                   length: Int(scanlator_len)) : nil,
+                        lang: lang_len > 0 ? (try? self.vm.stringFromHeap(byteOffset: Int(lang),
+                                                                          length: Int(lang_len))) ?? "en" : "en",
                         chapterNum: chapter >= 0 ? Float(chapter) : nil,
                         volumeNum: volume >= 0 ? Float(volume) : nil,
                         dateUploaded: dateUploaded > 0 ? Date(timeIntervalSince1970: TimeInterval(dateUploaded)) : nil,
@@ -451,22 +339,25 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var create_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { index, image_url, image_url_len, base64, base64_len, text, text_len in
+        { index, image_url, image_url_len, _, _, _, _ in
             self.descriptorPointer += 1
             self.descriptors.append(
                 Page(
                     index: Int(index),
-                    imageURL: image_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(image_url), length: Int(image_url_len)) : nil
+                    imageURL: image_url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(image_url),
+                                                                              length: Int(image_url_len)) : nil
                 )
             )
             return Int32(self.descriptorPointer)
         }
     }
-    
-    // MARK: Descriptor Handling
-    
+}
+
+// MARK: - Descriptor Handling
+extension Source {
+
     var array: () -> Int32 {
         {
             self.descriptorPointer += 1
@@ -474,7 +365,7 @@ class Source: Identifiable {
             return Int32(self.descriptorPointer)
         }
     }
-    
+
     var array_size: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0, descriptor < self.descriptors.count else { return 0 }
@@ -484,7 +375,7 @@ class Source: Identifiable {
             return 0
         }
     }
-    
+
     var array_get: (Int32, Int32) -> Int32 {
         { descriptor, index in
             guard descriptor >= 0, descriptor < self.descriptors.count else { return -1 }
@@ -497,7 +388,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var array_append: (Int32, Int32) -> Void {
         { descriptor, object in
             guard descriptor >= 0, descriptor < self.descriptors.count else { return }
@@ -508,7 +399,7 @@ class Source: Identifiable {
             }
         }
     }
-    
+
     var array_remove: (Int32, Int32) -> Void {
         { descriptor, index in
             guard descriptor >= 0, descriptor < self.descriptors.count else { return }
@@ -518,7 +409,7 @@ class Source: Identifiable {
             }
         }
     }
-    
+
     var object_getn: (Int32, Int32, Int32) -> Int32 {
         { descriptor, key, key_len in
             guard descriptor >= 0, key >= 0, descriptor < self.descriptors.count else { return -1 }
@@ -532,7 +423,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var string: (Int32, Int32) -> Int32 {
         { str, str_len in
             guard str_len >= 0 else { return -1 }
@@ -544,7 +435,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var string_value: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return 0 }
@@ -554,7 +445,7 @@ class Source: Identifiable {
             return 0
         }
     }
-    
+
     var integer_value: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
@@ -568,7 +459,7 @@ class Source: Identifiable {
             return -1
         }
     }
-    
+
     var float_value: (Int32) -> Float32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
@@ -580,14 +471,16 @@ class Source: Identifiable {
             return -1
         }
     }
-    
-    // MARK: Get Functions
-    
+}
+
+// MARK: - Get Functions
+extension Source {
+
     func getDefaultFilters() -> [Filter] {
         guard (defaultFilters.isEmpty || needsFilterRefresh) && !filters.isEmpty else { return defaultFilters }
-        
+
         defaultFilters = []
-        
+
         for filter in filters {
             if filter.type == .group {
                 for subFilter in filter.value as? [Filter] ?? [] {
@@ -599,51 +492,51 @@ class Source: Identifiable {
                 defaultFilters.append(Filter(type: filter.type, name: filter.name, value: filter.defaultValue))
             }
         }
-        
+
         return defaultFilters
     }
-    
+
     func getFilters() async throws -> [Filter] {
         guard filters.isEmpty || needsFilterRefresh else { return filters }
-        
+
         filters = try await actor.getFilters()
         _ = getDefaultFilters()
-        
+
         needsFilterRefresh = false
-        
+
         return filters
     }
-    
+
     func getListings() async throws -> [Listing] {
         guard listings.isEmpty else { return listings }
-        
+
         listings = try await actor.getListings()
-        
+
         return listings
     }
-    
+
     func fetchSearchManga(query: String, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
         var newFilters = filters
         newFilters.append(Filter(name: "Title", value: query))
         return try await actor.getMangaList(filters: newFilters, page: page)
     }
-    
+
     func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
         try await actor.getMangaList(filters: filters, page: page)
     }
-    
+
     func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
         try await actor.getMangaListing(listing: listing, page: page)
     }
-    
+
     func getMangaDetails(manga: Manga) async throws -> Manga {
         try await actor.getMangaDetails(manga: manga)
     }
-    
+
     func getChapterList(manga: Manga) async throws -> [Chapter] {
         try await actor.getChapterList(manga: manga)
     }
-    
+
     func getPageList(chapter: Chapter) async throws -> [Page] {
         try await actor.getPageList(chapter: chapter)
     }

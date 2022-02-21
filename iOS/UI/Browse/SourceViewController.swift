@@ -8,9 +8,9 @@
 import UIKit
 
 class SourceViewController: MangaCollectionViewController {
-    
+
     let source: Source
-    
+
     var restrictToSearch = false {
         didSet {
             navigationItem.hidesSearchBarWhenScrolling = restrictToSearch
@@ -19,40 +19,42 @@ class SourceViewController: MangaCollectionViewController {
             }
         }
     }
-    
+
     var listings: [Listing] = []
     var filters: [Filter] = []
-    
+
     var hasMore = false
     var page: Int?
     var query: String?
     var currentListing: Listing?
     let selectedFilters = SelectedFilters()
-    
+
     var oldSelectedFilters: [Filter] = []
-    
+
     var listingsLoaded = false
-    
+
     init(source: Source) {
         self.source = source
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         title = source.info.name
-        
+
         navigationItem.hidesSearchBarWhenScrolling = false
-        
+
         updateNavbarItems()
-        
-        collectionView?.register(MangaListSelectionHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "MangaListSelectionHeader")
-        
+
+        collectionView?.register(MangaListSelectionHeader.self,
+                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                 withReuseIdentifier: "MangaListSelectionHeader")
+
         if source.titleSearchable {
             let searchController = UISearchController(searchResultsController: nil)
             searchController.searchBar.delegate = self
@@ -60,15 +62,15 @@ class SourceViewController: MangaCollectionViewController {
             searchController.searchBar.text = query
             navigationItem.searchController = searchController
         }
-        
+
         let activityIndicator = UIActivityIndicatorView(style: .medium)
         activityIndicator.startAnimating()
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(activityIndicator)
-        
+
         activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        
+
         Task {
             if filters.isEmpty || source.needsFilterRefresh {
                 await fetchFilters()
@@ -91,7 +93,7 @@ class SourceViewController: MangaCollectionViewController {
             navigationItem.hidesSearchBarWhenScrolling = true
         }
     }
-    
+
     func updateNavbarItems() {
         var items = [
             UIBarButtonItem(
@@ -119,11 +121,11 @@ class SourceViewController: MangaCollectionViewController {
         }
         navigationItem.rightBarButtonItems = items
     }
-    
+
     @objc func resetFilters() {
         selectedFilters.filters = source.getDefaultFilters()
     }
-    
+
     func fetchFilters() async {
         let reset = source.needsFilterRefresh
         filters = (try? await source.getFilters()) ?? []
@@ -131,17 +133,17 @@ class SourceViewController: MangaCollectionViewController {
             resetFilters()
         }
     }
-    
+
     func fetchData() async {
         if listings.isEmpty {
             listings = (try? await source.getListings()) ?? []
             listingsLoaded = true
-            
+
             let sourceListing = DataManager.shared.getListing(for: source)
             if sourceListing > 0 && sourceListing - 1 < listings.count {
                 currentListing = listings[sourceListing - 1]
             }
-            
+
             DispatchQueue.main.async {
                 self.updateNavbarItems()
             }
@@ -166,15 +168,15 @@ class SourceViewController: MangaCollectionViewController {
             hasMore = result?.hasNextPage ?? false
         }
     }
-    
+
     @objc func openInfoPage() {
         let infoController = UINavigationController(rootViewController: SourceInfoViewController(source: source))
         present(infoController, animated: true)
     }
-    
+
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {
         oldSelectedFilters = selectedFilters.filters
-        
+
         let vc = FilterModalViewController(filters: filters, selectedFilters: selectedFilters)
         vc.delegate = self
         vc.resetButton.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
@@ -185,14 +187,20 @@ class SourceViewController: MangaCollectionViewController {
 
 // MARK: - Collection View Delegate
 extension SourceViewController: UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
         restrictToSearch || listings.isEmpty ? .zero : CGSize(width: collectionView.bounds.width, height: 40)
     }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+
+    func collectionView(_ collectionView: UICollectionView,
+                        viewForSupplementaryElementOfKind kind: String,
+                        at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
-            var header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "MangaListSelectionHeader", for: indexPath) as? MangaListSelectionHeader
+            var header = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
+                                                                         withReuseIdentifier: "MangaListSelectionHeader",
+                                                                         for: indexPath) as? MangaListSelectionHeader
             if header == nil {
                 header = MangaListSelectionHeader(frame: .zero)
             }
@@ -202,16 +210,16 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
             header?.title = "List"
             header?.options = options
             header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
-            
+
             header?.filterButton.alpha = source.filterable ? 1 : 0
             header?.filterButton.addTarget(self, action: #selector(openFilterPopover(_:)), for: .touchUpInside)
-            
+
             header?.delegate = self
             return header ?? UICollectionReusableView()
         }
         return UICollectionReusableView()
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == manga.count - 1 && hasMore {
             Task {
@@ -229,7 +237,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
 
 // MARK: - Listing Header Delegate
 extension SourceViewController: MangaListSelectionHeaderDelegate {
-    
+
     func optionSelected(_ index: Int) {
         if index == listings.count {
             currentListing = nil
@@ -249,7 +257,7 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Search Bar Delegate
 extension SourceViewController: UISearchBarDelegate {
-    
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard searchBar.text != query else { return }
         query = searchBar.text
@@ -261,7 +269,7 @@ extension SourceViewController: UISearchBarDelegate {
             reloadData()
         }
     }
-    
+
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         query = nil
         Task {
@@ -270,7 +278,7 @@ extension SourceViewController: UISearchBarDelegate {
             reloadData()
         }
     }
-    
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             query = nil
@@ -285,7 +293,7 @@ extension SourceViewController: UISearchBarDelegate {
 
 // MARK: - Modal Delegate
 extension SourceViewController: MiniModalDelegate {
-    
+
     func modalWillDismiss() {
         var update = false
         if oldSelectedFilters != selectedFilters.filters {

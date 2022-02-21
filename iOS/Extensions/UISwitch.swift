@@ -10,7 +10,7 @@ import UIKit
 extension UISwitch {
     private static var _defaultsKey = [String: String?]()
     private static var _handlers = [String: (Bool) -> Void]()
-    
+
     var defaultsKey: String? {
         get {
             let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
@@ -27,19 +27,19 @@ extension UISwitch {
             }
         }
     }
-    
+
     @objc func handleChange(_ handler: @escaping (Bool) -> Void) {
         let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
         Self._handlers[tmpAddress] = handler
         addTarget(self, action: #selector(notifyHandler), for: .valueChanged)
     }
-    
+
     @objc func toggleDefaultsSetting() {
         if let key = defaultsKey {
             UserDefaults.standard.set(isOn, forKey: key)
         }
     }
-    
+
     @objc func notifyHandler() {
         let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
         if let handler = Self._handlers[tmpAddress] {

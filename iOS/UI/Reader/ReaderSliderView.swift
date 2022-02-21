@@ -8,7 +8,7 @@
 import UIKit
 
 class ReaderSliderView: UIControl {
-    
+
     var minimumValue: CGFloat = 0
     var maximumValue: CGFloat = 1
     var currentValue: CGFloat = 0 {
@@ -16,31 +16,31 @@ class ReaderSliderView: UIControl {
             updateLayerFrames()
         }
     }
-    
+
     let trackView = UIView()
     let progressedTrackView = UIView()
     let thumbView = UIView()
-    
+
     private var trackWidthConstraint: NSLayoutConstraint?
     private var thumbTrailingConstraint: NSLayoutConstraint?
-    
+
     private var previousLocation = CGPoint()
-    
+
     override var frame: CGRect {
         didSet {
             updateLayerFrames()
         }
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         trackView.backgroundColor = .secondarySystemFill
         trackView.layer.cornerRadius = 1.5
         trackView.isUserInteractionEnabled = false
         trackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(trackView)
-        
+
         progressedTrackView.backgroundColor = tintColor
         progressedTrackView.layer.cornerRadius = 1.5
         progressedTrackView.isUserInteractionEnabled = false
@@ -56,35 +56,35 @@ class ReaderSliderView: UIControl {
         thumbView.isUserInteractionEnabled = false
         thumbView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(thumbView)
-        
+
         trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
         trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
         trackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         trackView.heightAnchor.constraint(equalToConstant: 3).isActive = true
-        
+
         trackWidthConstraint = progressedTrackView.widthAnchor.constraint(equalToConstant: 5)
         trackWidthConstraint?.isActive = true
         progressedTrackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
         progressedTrackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         progressedTrackView.heightAnchor.constraint(equalToConstant: 3).isActive = true
-        
+
         thumbTrailingConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
         thumbTrailingConstraint?.isActive = true
         thumbView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         thumbView.heightAnchor.constraint(equalToConstant: 10).isActive = true
         thumbView.widthAnchor.constraint(equalToConstant: 10).isActive = true
-        
+
         updateLayerFrames()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func layoutSubviews() {
         updateLayerFrames()
     }
-    
+
     private func updateLayerFrames() {
         let origin = thumbOriginForValue(currentValue)
         let width = trackView.bounds.width - origin.x
@@ -92,27 +92,27 @@ class ReaderSliderView: UIControl {
         trackWidthConstraint?.constant = width
         thumbTrailingConstraint?.constant = 0 - width
     }
-    
+
     func positionForValue(_ value: CGFloat) -> CGFloat {
         trackView.bounds.width - (trackView.bounds.width * value) + trackView.frame.origin.x
     }
-    
+
     private func thumbOriginForValue(_ value: CGFloat) -> CGPoint {
-        let x = positionForValue(value) - thumbView.bounds.size.width / 2.0
-        return CGPoint(x: x, y: (bounds.height - thumbView.bounds.size.height) / 2.0)
+        let x = positionForValue(value) - thumbView.bounds.size.width / 2
+        return CGPoint(x: x, y: (bounds.height - thumbView.bounds.size.height) / 2)
     }
-    
+
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         previousLocation = touch.location(in: self)
-        
+
         if thumbView.frame.contains(previousLocation) {
             thumbView.tag = 1
             return true
         }
-        
+
         return false
     }
-    
+
     override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         let location = touch.location(in: self)
 
@@ -132,7 +132,7 @@ class ReaderSliderView: UIControl {
         updateLayerFrames()
 
         CATransaction.commit()
-        
+
         sendActions(for: .valueChanged)
 
         return true
@@ -141,7 +141,7 @@ class ReaderSliderView: UIControl {
     private func boundValue(_ value: CGFloat, toLowerValue lowerValue: CGFloat, upperValue: CGFloat) -> CGFloat {
         min(max(value, lowerValue), upperValue)
     }
-    
+
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         thumbView.tag = 0
         sendActions(for: .editingDidEnd)

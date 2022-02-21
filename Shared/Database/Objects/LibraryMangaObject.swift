@@ -13,7 +13,7 @@ public class LibraryMangaObject: NSManagedObject {
     func opened() {
         self.lastOpened = Date()
     }
-    
+
     public override func awakeFromInsert() {
         super.awakeFromInsert()
         id = UUID().uuidString
@@ -26,7 +26,7 @@ public class LibraryMangaObject: NSManagedObject {
 extension LibraryMangaObject {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<LibraryMangaObject> {
-        return NSFetchRequest<LibraryMangaObject>(entityName: "LibraryManga")
+        NSFetchRequest<LibraryMangaObject>(entityName: "LibraryManga")
     }
 
     @NSManaged public var id: String
@@ -34,9 +34,9 @@ extension LibraryMangaObject {
     @NSManaged public var lastUpdated: Date
     @NSManaged public var dateAdded: Date
     @NSManaged public var manga: MangaObject
-    
+
     @NSManaged public var categories: NSSet?
-    
+
 }
 
 // MARK: Generated accessors for categories
@@ -56,6 +56,6 @@ extension MangaObject {
 
 }
 
-extension LibraryMangaObject : Identifiable {
+extension LibraryMangaObject: Identifiable {
 
 }

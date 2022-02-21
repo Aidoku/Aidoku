@@ -10,15 +10,15 @@ import WasmInterpreter
 import CWasm3
 
 class WasmMemory {
-    
+
     let vm: WasmInterpreter
-    
+
     init(vm: WasmInterpreter) {
         self.vm = vm
     }
-    
+
     var sizes: [Int32: Int32] = [:]
-    
+
     var malloc: (Int32) -> Int32 {
         { size in
             let addr: Int32 = (try? self.vm.call("allocate", size)) ?? 0
@@ -26,7 +26,7 @@ class WasmMemory {
             return addr
         }
     }
-    
+
     var free: (Int32) -> Void {
         { addr in
             try? self.vm.call("deallocate", addr, self.sizes[addr] ?? 0)

@@ -8,7 +8,7 @@
 import UIKit
 
 class ReaderNavigationController: UINavigationController {
-    
+
     override var childForStatusBarHidden: UIViewController? {
         topViewController
     }

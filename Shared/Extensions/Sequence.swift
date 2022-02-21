@@ -21,7 +21,7 @@ extension Sequence {
             try await task.value
         }
     }
-    
+
     func asyncMap<T>(
         _ transform: (Element) async throws -> T
     ) async rethrows -> [T] {
