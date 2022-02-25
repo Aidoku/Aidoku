@@ -38,7 +38,7 @@ class Source: Identifiable {
         filters.contains { $0.type == .text && $0.name == "Author" }
     }
     var filterable: Bool {
-        !filters.contains { $0.type != .text || ($0.name != "Title" && $0.name != "Author") }
+        filters.contains { $0.type != .text }
     }
 
     var needsFilterRefresh = true
