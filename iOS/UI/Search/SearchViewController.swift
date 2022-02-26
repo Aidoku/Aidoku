@@ -12,7 +12,7 @@ class MangaCarouselHeader: UICollectionReusableView {
     let titleLabel = UILabel()
     let viewMoreButton = UIButton(type: .roundedRect)
 
-    var title: String? = nil {
+    var title: String? {
         didSet {
             titleLabel.text = title
         }

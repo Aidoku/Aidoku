@@ -200,7 +200,7 @@ extension UIImage {
                     return nil
                 }
                 let result = NSImage(size: newSize, flipped: false, drawingHandler: { _ -> Bool in
-                    return representation.draw(in: frame)
+                    representation.draw(in: frame)
                 })
 
                 return result

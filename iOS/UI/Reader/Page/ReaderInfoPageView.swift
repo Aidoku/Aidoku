@@ -16,12 +16,12 @@ class ReaderInfoPageView: UIView {
     var type: ReaderInfoPageType
 
     let currentChapter: Chapter
-    var previousChapter: Chapter? = nil {
+    var previousChapter: Chapter? {
         didSet {
             updateLabelText()
         }
     }
-    var nextChapter: Chapter? = nil {
+    var nextChapter: Chapter? {
         didSet {
             updateLabelText()
         }
