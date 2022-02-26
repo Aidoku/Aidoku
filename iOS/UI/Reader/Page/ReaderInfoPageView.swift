@@ -41,7 +41,7 @@ class ReaderInfoPageView: UIView {
 
         super.init(frame: .zero)
 
-        backgroundColor = .white
+        backgroundColor = .systemBackground
 
         stackView.distribution = .equalSpacing
         stackView.axis = .vertical
@@ -52,9 +52,9 @@ class ReaderInfoPageView: UIView {
         topStackView.distribution = .equalSpacing
         topStackView.axis = .vertical
         topStackView.spacing = 2
-        topChapterLabel.textColor = .black
+        topChapterLabel.textColor = .label
         topChapterLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        topChapterTitleLabel.textColor = .gray
+        topChapterTitleLabel.textColor = .secondaryLabel
         topChapterTitleLabel.font = .systemFont(ofSize: 16)
         topChapterTitleLabel.numberOfLines = 0
 
@@ -62,9 +62,9 @@ class ReaderInfoPageView: UIView {
         bottomStackView.distribution = .equalSpacing
         bottomStackView.axis = .vertical
         bottomStackView.spacing = 2
-        bottomChapterLabel.textColor = .black
+        bottomChapterLabel.textColor = .label
         bottomChapterLabel.font = .systemFont(ofSize: 16, weight: .medium)
-        bottomChapterTitleLabel.textColor = .gray
+        bottomChapterTitleLabel.textColor = .secondaryLabel
         bottomChapterTitleLabel.font = .systemFont(ofSize: 16)
         bottomChapterTitleLabel.numberOfLines = 0
 
@@ -78,7 +78,7 @@ class ReaderInfoPageView: UIView {
 
         addSubview(stackView)
 
-        noChapterLabel.textColor = .gray
+        noChapterLabel.textColor = .secondaryLabel
         noChapterLabel.textAlignment = .center
         noChapterLabel.font = .systemFont(ofSize: 16)
         noChapterLabel.translatesAutoresizingMaskIntoConstraints = false
