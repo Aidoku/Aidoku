@@ -16,10 +16,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let libraryViewController = UINavigationController(rootViewController: LibraryViewController())
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
+        let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
         libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
         browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)
         searchViewController.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 2)
-        tabController.viewControllers = [libraryViewController, browseViewController, searchViewController]
+        settingsViewController.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gear"), tag: 3)
+        tabController.viewControllers = [libraryViewController, browseViewController, searchViewController, settingsViewController]
 
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
