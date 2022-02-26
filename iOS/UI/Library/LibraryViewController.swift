@@ -40,13 +40,6 @@ class LibraryViewController: MangaCollectionViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "gear"),
-            style: .plain,
-            target: self,
-            action: #selector(showSettings)
-        )
-
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
@@ -132,12 +125,6 @@ class LibraryViewController: MangaCollectionViewController {
     func fetchLibrary() {
         manga = DataManager.shared.libraryManga
         reloadData()
-    }
-
-    @objc func showSettings() {
-        let settingsController = UINavigationController(rootViewController: SettingsViewController())
-        settingsController.presentationController?.delegate = self
-        present(settingsController, animated: true)
     }
 }
 

@@ -80,12 +80,6 @@ class SettingsViewController: UITableViewController {
         title = "Settings"
         navigationController?.navigationBar.prefersLargeTitles = true
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .done,
-            target: self,
-            action: #selector(close)
-        )
-
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -105,10 +99,6 @@ class SettingsViewController: UITableViewController {
 
         alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alertView, animated: true)
-    }
-
-    @objc func close() {
-        dismiss(animated: true)
     }
 }
 
