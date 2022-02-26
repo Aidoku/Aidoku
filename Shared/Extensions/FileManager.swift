@@ -16,6 +16,18 @@ extension URL {
         (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil)) ?? []
     }
 
+    var contentsByDateAdded: [URL] {
+        if let urls = try? FileManager.default.contentsOfDirectory(at: self,
+                                                                   includingPropertiesForKeys: [.contentModificationDateKey]) {
+            return urls.sorted {
+                ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
+                >
+                ((try? $1.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
+            }
+        }
+        return self.contents
+    }
+
     func createDirctory() {
         try? FileManager.default.createDirectory(at: self, withIntermediateDirectories: true, attributes: nil)
     }

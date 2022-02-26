@@ -45,7 +45,6 @@ public class MangaObject: NSManagedObject {
 
     public override func awakeFromInsert() {
         super.awakeFromInsert()
-        favorite = false
         lastUpdate = Date()
     }
 }
@@ -69,8 +68,6 @@ extension MangaObject {
     @NSManaged public var status: Int16
     @NSManaged public var nsfw: Int16
     @NSManaged public var viewer: Int16
-
-    @NSManaged public var favorite: Bool
 
     @NSManaged public var lastUpdate: Date
 
