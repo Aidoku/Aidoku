@@ -444,6 +444,11 @@ extension ReaderViewController {
             for _ in self.pages {
                 let pageView = ReaderPageView()
                 pageView.translatesAutoresizingMaskIntoConstraints = false
+
+                // Append context menu interaction for each page in the chapter
+                let interaction = UIContextMenuInteraction(delegate: self)
+                pageView.imageView.addInteraction(interaction)
+
                 self.items.append(pageView)
             }
 
@@ -632,5 +637,23 @@ extension ReaderViewController: UIPopoverPresentationControllerDelegate {
     func adaptivePresentationStyle(for controller: UIPresentationController,
                                    traitCollection: UITraitCollection) -> UIModalPresentationStyle {
         .none
+    }
+}
+
+// MARK: - Context menu Delegate
+extension ReaderViewController: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(title: "Save to Photos", image: UIImage(systemName: "square.and.arrow.down")) { [self] _ in
+                if let currentPage: ReaderPageView = items[currentIndex + 1 + hasPreviousChapter.intValue] as? ReaderPageView {
+                    if let image = currentPage.imageView.image {
+                        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                    }
+                }
+            }
+
+            return UIMenu(title: "", children: [saveToPhotosAction])
+        })
     }
 }
