@@ -33,6 +33,7 @@ class SettingsViewController: UITableViewController {
         "General",
         "Library",
         "Browse",
+        "Backups",
         "Advanced"
     ]
 
@@ -52,6 +53,9 @@ class SettingsViewController: UITableViewController {
         [
             SettingsCell(type: .toggle, title: "Show NSFW Sources", target: "Browse.showNsfwSources")
 //            SettingsCell(type: .toggle, title: "Label NSFW Sources", target: "Browse.labelNsfwSources"),
+        ],
+        [
+            SettingsCell(type: .pageLink, title: "Backups", target: "Backups.backups")
         ],
         [
             SettingsCell(type: .action, title: "Clear Chapter Cache", target: "Advanced.clearChapterCache"),
@@ -131,14 +135,18 @@ extension SettingsViewController {
 
         switch config.type {
         case .pageLink:
+            cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
         case .link, .action:
             cell.textLabel?.textColor = cell.tintColor
+            cell.accessoryType = .none
         case .actionDestructive:
             cell.textLabel?.textColor = .systemRed
+            cell.accessoryType = .none
         case .toggle:
             let switchView = UISwitch()
             switchView.defaultsKey = config.target
+            cell.textLabel?.textColor = .label
             cell.accessoryView = switchView
             cell.selectionStyle = .none
         default:
@@ -154,6 +162,9 @@ extension SettingsViewController {
             switch target {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
+
+            case "Backups.backups":
+                navigationController?.pushViewController(BackupsViewController(), animated: true)
 
             case "Advanced.clearChapterCache":
                 confirmAction(title: "Clear Chapter Cache",

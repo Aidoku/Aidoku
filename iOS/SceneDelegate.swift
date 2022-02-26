@@ -40,9 +40,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
-            print("Importing \(url)")
-            Task {
-                _ = await SourceManager.shared.importSource(from: url)
+            if url.pathExtension == "aix" {
+                Task {
+                    _ = await SourceManager.shared.importSource(from: url)
+                }
+            } else if url.pathExtension == "json" {
+                BackupManager.shared.importBackup(from: url)
             }
         }
     }

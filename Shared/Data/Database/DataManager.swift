@@ -268,14 +268,18 @@ extension DataManager {
         _ = save()
     }
 
-    func getMangaObject(for manga: Manga, createIfMissing: Bool = true) -> MangaObject? {
-        if let object = try? getMangaObjects(
+    func getMangaObject(withId id: String, sourceId: String) -> MangaObject? {
+        try? getMangaObjects(
             predicate: NSPredicate(
                 format: "sourceId = %@ AND id = %@",
-                manga.sourceId, manga.id
+                sourceId, id
             ),
             limit: 1
-        ).first {
+        ).first
+    }
+
+    func getMangaObject(for manga: Manga, createIfMissing: Bool = true) -> MangaObject? {
+        if let object = getMangaObject(withId: manga.id, sourceId: manga.sourceId) {
             return object
         } else if createIfMissing {
             return add(manga: manga)
