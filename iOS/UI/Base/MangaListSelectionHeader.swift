@@ -20,7 +20,7 @@ class MangaListSelectionHeader: UICollectionReusableView {
 
     let filterButton = UIButton(type: .roundedRect)
 
-    var title: String? = nil {
+    var title: String? {
         didSet {
             titleLabel.text = title
         }
