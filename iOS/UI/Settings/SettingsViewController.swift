@@ -9,82 +9,40 @@ import UIKit
 import SafariServices
 import Kingfisher
 
-class SettingsViewController: UITableViewController {
-
-    enum SettingsCellType {
-        case pageLink
-        case link
-        case action
-        case actionDestructive
-        case toggle
-        case select
-    }
-
-    struct SettingsCell {
-        var type: SettingsCellType
-        var title: String
-        var subtitle: String?
-        var target: String?
-        var bool: Bool?
-    }
-
-    let sections = [
-        "About",
-        "General",
-        "Library",
-        "Browse",
-        "Backups",
-        "Advanced"
-    ]
-
-    let cells: [[SettingsCell]] = [
-        [
-            SettingsCell(type: .pageLink, title: "About", target: "About.about"),
-            SettingsCell(type: .link, title: "GitHub Repository", target: "https://github.com/Aidoku/Aidoku", bool: true),
-            SettingsCell(type: .link, title: "Discord Server", target: "https://discord.gg/9U8cC5Zk3s")
-        ],
-        [
-            SettingsCell(type: .toggle, title: "iCloud Sync", target: "General.icloudSync")
-        ],
-        [
-            SettingsCell(type: .toggle, title: "Open Reader View", target: "Library.opensReaderView"),
-            SettingsCell(type: .toggle, title: "Unread Chapter Badges", target: "Library.unreadChapterBadges")
-        ],
-        [
-            SettingsCell(type: .toggle, title: "Show NSFW Sources", target: "Browse.showNsfwSources")
-//            SettingsCell(type: .toggle, title: "Label NSFW Sources", target: "Browse.labelNsfwSources"),
-        ],
-        [
-            SettingsCell(type: .pageLink, title: "Backups", target: "Backups.backups")
-        ],
-        [
-            SettingsCell(type: .action, title: "Clear Chapter Cache", target: "Advanced.clearChapterCache"),
-            SettingsCell(type: .action, title: "Clear Manga Cache", target: "Advanced.clearMangaCache"),
-            SettingsCell(type: .action, title: "Clear Network Cache", target: "Advanced.clearNetworkCache"),
-            SettingsCell(type: .action, title: "Clear Read History", target: "Advanced.clearReadHistory"),
-            SettingsCell(type: .actionDestructive, title: "Reset", target: "Advanced.reset")
-        ]
-    ]
+class SettingsViewController: SettingsTableViewController {
 
     init() {
-        super.init(style: .insetGrouped)
+        super.init(items: [
+            SettingItem(type: "group", title: "About", items: [
+                SettingItem(type: "page", key: "About.about", title: "About"),
+                SettingItem(type: "link", key: "https://github.com/Aidoku/Aidoku", title: "GitHub Repository"),
+                SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: "Discord Server", external: true)
+            ]),
+            SettingItem(type: "group", title: "General", items: [
+                SettingItem(type: "switch", key: "General.icloudSync", title: "iCloud Sync")
+            ]),
+            SettingItem(type: "group", title: "Library", items: [
+                SettingItem(type: "switch", key: "Library.opensReaderView", title: "Open Reader View"),
+                SettingItem(type: "switch", key: "Library.unreadChapterBadges", title: "Unread Chapter Badges")
+            ]),
+            SettingItem(type: "group", title: "Browse", items: [
+                SettingItem(type: "switch", key: "Browse.showNsfwSources", title: "Show NSFW Sources")
+            ]),
+            SettingItem(type: "group", title: "Backups", items: [
+                SettingItem(type: "page", key: "Backups.backups", title: "Backups")
+            ]),
+            SettingItem(type: "group", title: "Advanced", items: [
+                SettingItem(type: "button", key: "Advanced.clearChapterCache", title: "Clear Chapter Cache"),
+                SettingItem(type: "button", key: "Advanced.clearMangaCache", title: "Clear Manga Cache"),
+                SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: "Clear Network Cache"),
+                SettingItem(type: "button", key: "Advanced.clearReadHistory", title: "Clear Read History"),
+                SettingItem(type: "button", key: "Advanced.reset", title: "Reset", destructive: true)
+            ])
+        ])
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        title = "Settings"
-        navigationController?.navigationBar.prefersLargeTitles = true
-
-        if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0
-        }
-
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
     }
 
     func confirmAction(title: String,
@@ -104,52 +62,9 @@ class SettingsViewController: UITableViewController {
 
 // MARK: - Table View Data Source
 extension SettingsViewController {
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        sections.count
-    }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        cells[section].count
-    }
-
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        sections[section]
-    }
-
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
-
-        let config = cells[indexPath.section][indexPath.row]
-        cell.textLabel?.text = config.title
-
-        switch config.type {
-        case .pageLink:
-            cell.textLabel?.textColor = .label
-            cell.accessoryType = .disclosureIndicator
-        case .link, .action:
-            cell.textLabel?.textColor = cell.tintColor
-            cell.accessoryType = .none
-        case .actionDestructive:
-            cell.textLabel?.textColor = .systemRed
-            cell.accessoryType = .none
-        case .toggle:
-            let switchView = UISwitch()
-            switchView.defaultsKey = config.target
-            cell.textLabel?.textColor = .label
-            cell.accessoryView = switchView
-            cell.selectionStyle = .none
-        default:
-            break
-        }
-
-        return cell
-    }
-
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let config = cells[indexPath.section][indexPath.row]
-        if let target = config.target {
-            switch target {
+        if let item = items[indexPath.section].items?[indexPath.row] {
+            switch item.key {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
 
@@ -196,16 +111,7 @@ extension SettingsViewController {
                 }
 
             default:
-                if config.type == .link {
-                    if let url = URL(string: target) {
-                        if let inline = config.bool, inline {
-                            let safariViewController = SFSafariViewController(url: URL(string: target)!)
-                            present(safariViewController, animated: true)
-                        } else {
-                            UIApplication.shared.open(url)
-                        }
-                    }
-                }
+                super.tableView(tableView, didSelectRowAt: indexPath)
             }
         }
         tableView.deselectRow(at: indexPath, animated: true)

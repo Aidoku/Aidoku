@@ -9,12 +9,12 @@ import Foundation
 
 struct SourceSettings: Codable {
     let languages: [String]?
-    let settings: [SourceSettingItem]?
+    let settings: [SettingItem]?
 }
 
-// possible types: group, select, multi-select, switch, text
+// possible types: group, select, multi-select, switch, text, page, button, link
 // TODO: slider, segment
-struct SourceSettingItem: Codable {
+struct SettingItem: Codable {
     var type: String
 
     var key: String?
@@ -28,7 +28,10 @@ struct SourceSettingItem: Codable {
     var defaultValue: DefaultValue?
     var notification: String?
 
-    var items: [SourceSettingItem]?
+    var destructive: Bool? // button
+    var external: Bool? // link
+
+    var items: [SettingItem]?
 
     enum CodingKeys: String, CodingKey {
         case type

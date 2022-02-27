@@ -29,7 +29,7 @@ class Source: Identifiable {
     var listings: [Listing] = []
 
     var languages: [String] = []
-    var settingItems: [SourceSettingItem] = []
+    var settingItems: [SettingItem] = []
 
     var titleSearchable: Bool {
         filters.contains { $0.type == .text && $0.name == "Title" }

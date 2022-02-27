@@ -17,7 +17,7 @@ class TextInputTableViewCell: UITableViewCell {
         return textField
     }()
 
-    let source: Source
+    var source: Source?
 
     var placeholder: String? {
         didSet {
@@ -25,14 +25,20 @@ class TextInputTableViewCell: UITableViewCell {
         }
     }
 
-    var item: SourceSettingItem? {
+    var item: SettingItem? {
         didSet {
             placeholder = item?.placeholder
-            textField.text = UserDefaults.standard.string(forKey: "\(source.id).\(item?.key ?? "")")
+            let key: String
+            if let source = source {
+                key = "\(source.id).\(item?.key ?? "")"
+            } else {
+                key = item?.key ?? ""
+            }
+            textField.text = UserDefaults.standard.string(forKey: key)
         }
     }
 
-    init(source: Source, reuseIdentifier: String?) {
+    init(source: Source? = nil, reuseIdentifier: String?) {
         self.source = source
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
         activateConstraints()
@@ -62,9 +68,13 @@ extension TextInputTableViewCell: UITextFieldDelegate {
 
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let key = item?.key {
-            UserDefaults.standard.set(textField.text, forKey: "\(source.id).\(key)")
-            if let notification = item?.notification {
-                source.performAction(key: notification)
+            if let source = source {
+                UserDefaults.standard.set(textField.text, forKey: "\(source.id).\(key)")
+                if let notification = item?.notification {
+                    source.performAction(key: notification)
+                }
+            } else {
+                UserDefaults.standard.set(textField.text, forKey: key)
             }
         }
     }
