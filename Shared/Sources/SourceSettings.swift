@@ -12,8 +12,8 @@ struct SourceSettings: Codable {
     let settings: [SettingItem]?
 }
 
-// possible types: group, select, multi-select, switch, text, page, button, link
-// TODO: slider, segment
+// possible types: group, select, multi-select, switch, segment, text, page, button, link
+// TODO: slider
 struct SettingItem: Codable {
     var type: String
 
@@ -28,10 +28,13 @@ struct SettingItem: Codable {
     var defaultValue: DefaultValue?
     var notification: String?
 
+    var requires: String?
+    var requiresFalse: String?
+
     var destructive: Bool? // button
     var external: Bool? // link
 
-    var items: [SettingItem]?
+    var items: [SettingItem]? // group, page
 
     enum CodingKeys: String, CodingKey {
         case type

@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.register(
             defaults: [
                 "General.icloudSync": false,
+                "General.appearance": 0,
+                "General.useSystemAppearance": true,
 
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,

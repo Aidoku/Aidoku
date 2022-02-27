@@ -115,10 +115,16 @@ extension Source {
                 defaults["\(id)._language"] = defaultLang
             }
 
-            for item in settingItems where item.type == "group" {
-                for subItem in item.items ?? [] {
+            for (i, item) in settingItems.enumerated() where item.type == "group" {
+                for (j, subItem) in (item.items ?? []).enumerated() {
                     if let itemKey = subItem.key {
                         let key = "\(id).\(itemKey)"
+                        settingItems[i].items?[j].key = key
+                        if let requires = subItem.requires {
+                            settingItems[i].items?[j].requires = "\(id).\(requires)"
+                        } else if let requires = subItem.requiresFalse {
+                            settingItems[i].items?[j].requiresFalse = "\(id).\(requires)"
+                        }
                         switch subItem.type {
                         case "switch":
                             defaults[key] = subItem.defaultValue?.boolValue

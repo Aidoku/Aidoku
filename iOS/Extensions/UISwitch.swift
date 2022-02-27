@@ -25,13 +25,13 @@ extension UISwitch {
             } else {
                 isOn = false
             }
+            addTarget(self, action: #selector(notifyHandler), for: .valueChanged)
         }
     }
 
     @objc func handleChange(_ handler: @escaping (Bool) -> Void) {
         let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
         Self._handlers[tmpAddress] = handler
-        addTarget(self, action: #selector(notifyHandler), for: .valueChanged)
     }
 
     @objc func toggleDefaultsSetting() {
@@ -44,6 +44,9 @@ extension UISwitch {
         let tmpAddress = String(format: "%p", unsafeBitCast(self, to: Int.self))
         if let handler = Self._handlers[tmpAddress] {
             handler(isOn)
+        }
+        if let key = defaultsKey {
+            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
         }
     }
 }
