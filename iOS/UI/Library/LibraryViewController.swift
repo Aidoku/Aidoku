@@ -119,12 +119,24 @@ class LibraryViewController: MangaCollectionViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(updateLibraryRefresh), for: .valueChanged)
+        collectionView?.refreshControl = refreshControl
+
         navigationItem.hidesSearchBarWhenScrolling = true
     }
 
     func fetchLibrary() {
         manga = DataManager.shared.libraryManga
         reloadData()
+    }
+
+    @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {
+        Task {
+            await DataManager.shared.updateLibrary()
+            refreshControl.endRefreshing()
+        }
     }
 }
 
