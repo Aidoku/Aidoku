@@ -16,7 +16,6 @@ public class LibraryMangaObject: NSManagedObject {
 
     public override func awakeFromInsert() {
         super.awakeFromInsert()
-        id = UUID().uuidString
         lastOpened = Date()
         lastUpdated = Date()
         dateAdded = Date()
@@ -29,7 +28,6 @@ extension LibraryMangaObject {
         NSFetchRequest<LibraryMangaObject>(entityName: "LibraryManga")
     }
 
-    @NSManaged public var id: String
     @NSManaged public var lastOpened: Date
     @NSManaged public var lastUpdated: Date
     @NSManaged public var dateAdded: Date
