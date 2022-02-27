@@ -9,7 +9,6 @@ import CoreData
 import Kingfisher
 
 struct BackupLibraryManga: Codable {
-    var id: String
     var lastOpened: Date
     var lastUpdated: Date
     var dateAdded: Date
@@ -19,7 +18,6 @@ struct BackupLibraryManga: Codable {
     var sourceId: String
 
     init(libraryObject: LibraryMangaObject) {
-        id = libraryObject.id
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
         dateAdded = libraryObject.dateAdded
@@ -35,7 +33,6 @@ struct BackupLibraryManga: Codable {
         } else {
             obj = LibraryMangaObject()
         }
-        obj.id = id
         obj.lastOpened = lastOpened
         obj.lastUpdated = lastUpdated
         obj.dateAdded = dateAdded

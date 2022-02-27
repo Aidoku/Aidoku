@@ -29,7 +29,6 @@
     </entity>
     <entity name="LibraryManga" representedClassName="LibraryMangaObject" syncable="YES">
         <attribute name="dateAdded" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
-        <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lastOpened" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <relationship name="categories" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Category" inverseName="libraryObjects" inverseEntity="Category"/>
@@ -65,7 +64,7 @@
         <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="89"/>
         <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="194"/>
         <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="119"/>
-        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>
+        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="104"/>
         <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="254"/>
         <element name="Source" positionX="-126" positionY="18" width="128" height="134"/>
     </elements>
