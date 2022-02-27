@@ -12,6 +12,8 @@ class SettingsTableViewController: UITableViewController {
 
     var items: [SettingItem]
 
+    var observers: [SettingItem] = []
+
     init(items: [SettingItem] = []) {
         self.items = items
         super.init(style: .insetGrouped)
@@ -56,7 +58,6 @@ extension SettingsTableViewController {
         items[section].title
     }
 
-    // TODO: put this somewhere reusable
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath,
                    settingItem item: SettingItem) -> UITableViewCell {
@@ -88,6 +89,21 @@ extension SettingsTableViewController {
                     NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
                 }
             }
+            if let requires = item.requires {
+                switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                }
+                observers.append(item)
+            } else if let requires = item.requiresFalse {
+                switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                }
+                observers.append(item)
+            } else {
+                switchView.isEnabled = true
+            }
             cell.accessoryView = switchView
             cell.selectionStyle = .none
 
@@ -103,6 +119,9 @@ extension SettingsTableViewController {
         case "text":
             cell = TextInputTableViewCell(reuseIdentifier: "TextInputTableViewCell")
             (cell as? TextInputTableViewCell)?.item = item
+
+        case "segment":
+            cell = SegmentTableViewCell(item: item, reuseIdentifier: nil)
 
         default:
             cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)

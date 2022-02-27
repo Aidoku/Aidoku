@@ -28,13 +28,7 @@ class TextInputTableViewCell: UITableViewCell {
     var item: SettingItem? {
         didSet {
             placeholder = item?.placeholder
-            let key: String
-            if let source = source {
-                key = "\(source.id).\(item?.key ?? "")"
-            } else {
-                key = item?.key ?? ""
-            }
-            textField.text = UserDefaults.standard.string(forKey: key)
+            textField.text = UserDefaults.standard.string(forKey: item?.key ?? "")
         }
     }
 
@@ -68,14 +62,11 @@ extension TextInputTableViewCell: UITextFieldDelegate {
 
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let key = item?.key {
-            if let source = source {
-                UserDefaults.standard.set(textField.text, forKey: "\(source.id).\(key)")
-                if let notification = item?.notification {
-                    source.performAction(key: notification)
-                }
-            } else {
-                UserDefaults.standard.set(textField.text, forKey: key)
+            UserDefaults.standard.set(textField.text, forKey: key)
+            if let source = source, let notification = item?.notification {
+                source.performAction(key: notification)
             }
+            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
         }
     }
 

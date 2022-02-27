@@ -19,7 +19,10 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: "Discord Server", external: true)
             ]),
             SettingItem(type: "group", title: "General", items: [
-                SettingItem(type: "switch", key: "General.icloudSync", title: "iCloud Sync")
+                SettingItem(type: "switch", key: "General.icloudSync", title: "iCloud Sync"),
+                SettingItem(type: "segment", key: "General.appearance", title: "Appearance",
+                            values: ["Light", "Dark"], requiresFalse: "General.useSystemAppearance"),
+                SettingItem(type: "switch", key: "General.useSystemAppearance", title: "Use System Appearance")
             ]),
             SettingItem(type: "group", title: "Library", items: [
                 SettingItem(type: "switch", key: "Library.opensReaderView", title: "Open Reader View"),
@@ -39,6 +42,27 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "button", key: "Advanced.reset", title: "Reset", destructive: true)
             ])
         ])
+
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.appearance"), object: nil, queue: nil) { _ in
+            if !UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                    self.view.window?.overrideUserInterfaceStyle = .light
+                } else {
+                    self.view.window?.overrideUserInterfaceStyle = .dark
+                }
+            }
+        }
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.useSystemAppearance"), object: nil, queue: nil) { _ in
+            if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                self.view.window?.overrideUserInterfaceStyle = .unspecified
+            } else {
+                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                    self.view.window?.overrideUserInterfaceStyle = .light
+                } else {
+                    self.view.window?.overrideUserInterfaceStyle = .dark
+                }
+            }
+        }
     }
 
     required init?(coder: NSCoder) {

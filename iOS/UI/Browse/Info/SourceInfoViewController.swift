@@ -134,7 +134,11 @@ extension SourceInfoViewController {
 
             return cell!
         } else if let item = source.settingItems[indexPath.section + (source.languages.isEmpty ? 0 : -1)].items?[indexPath.row] { // Settings
-            return self.tableView(tableView, cellForRowAt: indexPath, settingItem: item)
+            let cell = self.tableView(tableView, cellForRowAt: indexPath, settingItem: item)
+            if item.type == "text" || item.type == "segment" {
+                (cell as? TextInputTableViewCell)?.source = source
+            }
+            return cell
         }
 
         return UITableViewCell()

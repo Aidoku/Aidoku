@@ -26,6 +26,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
             window.rootViewController = tabController
+
+            if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                window.overrideUserInterfaceStyle = .unspecified
+            } else {
+                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                    window.overrideUserInterfaceStyle = .light
+                } else {
+                    window.overrideUserInterfaceStyle = .dark
+                }
+            }
+
             self.window = window
             window.makeKeyAndVisible()
         }

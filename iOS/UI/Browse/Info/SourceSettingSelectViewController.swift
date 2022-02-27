@@ -19,10 +19,10 @@ class SourceSettingSelectViewController: UITableViewController {
     // single
     var value: String {
         get {
-            UserDefaults.standard.string(forKey: "\(source.id).\(item.key ?? "")") ?? ""
+            UserDefaults.standard.string(forKey: item.key ?? "") ?? ""
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "\(source.id).\(item.key ?? "")")
+            UserDefaults.standard.set(newValue, forKey: item.key ?? "")
         }
     }
     var index: Int {
@@ -32,10 +32,10 @@ class SourceSettingSelectViewController: UITableViewController {
     // multi
     var values: [String] {
         get {
-            (UserDefaults.standard.array(forKey: "\(source.id).\(item.key ?? "")") as? [String]) ?? []
+            (UserDefaults.standard.array(forKey: item.key ?? "") as? [String]) ?? []
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "\(source.id).\(item.key ?? "")")
+            UserDefaults.standard.set(newValue, forKey: item.key ?? "")
         }
     }
     var indexes: [Int] {
