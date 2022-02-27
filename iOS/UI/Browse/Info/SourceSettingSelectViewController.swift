@@ -10,7 +10,7 @@ import UIKit
 class SourceSettingSelectViewController: UITableViewController {
 
     let source: Source
-    let item: SourceSettingItem
+    let item: SettingItem
 
     var multi: Bool {
         item.type == "multi-select"
@@ -48,7 +48,7 @@ class SourceSettingSelectViewController: UITableViewController {
         return indexes
     }
 
-    init(source: Source, item: SourceSettingItem) {
+    init(source: Source, item: SettingItem) {
         self.source = source
         self.item = item
         super.init(style: .insetGrouped)

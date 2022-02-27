@@ -79,6 +79,8 @@
 		FB72501D27CAACC00037F1C9 /* BackupChapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB72501B27CAACC00037F1C9 /* BackupChapter.swift */; };
 		FB72501F27CAACC90037F1C9 /* BackupHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB72501E27CAACC90037F1C9 /* BackupHistory.swift */; };
 		FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB72501E27CAACC90037F1C9 /* BackupHistory.swift */; };
+		FB72502227CBE9170037F1C9 /* SourceInfoHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB72502127CBE9170037F1C9 /* SourceInfoHeaderView.swift */; };
+		FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB72502327CBF8C00037F1C9 /* SettingsTableViewController.swift */; };
 		FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmRequest.swift */; };
@@ -173,6 +175,8 @@
 		FB72501827CAACB60037F1C9 /* BackupLibraryManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupLibraryManga.swift; sourceTree = "<group>"; };
 		FB72501B27CAACC00037F1C9 /* BackupChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupChapter.swift; sourceTree = "<group>"; };
 		FB72501E27CAACC90037F1C9 /* BackupHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupHistory.swift; sourceTree = "<group>"; };
+		FB72502127CBE9170037F1C9 /* SourceInfoHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceInfoHeaderView.swift; sourceTree = "<group>"; };
+		FB72502327CBF8C00037F1C9 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
 		FB7B7E942787740A001E6EAF /* WasmJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmJson.swift; sourceTree = "<group>"; };
 		FB7B7E9727877416001E6EAF /* WasmRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmRequest.swift; sourceTree = "<group>"; };
 		FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExtensions.swift; sourceTree = "<group>"; };
@@ -483,6 +487,7 @@
 				FB4EEBE127A5AB4E005081A3 /* MangaListSelectionHeader.swift */,
 				FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */,
 				FBED231827B8BA7C0095D0C0 /* MiniModalViewController.swift */,
+				FB72502327CBF8C00037F1C9 /* SettingsTableViewController.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -491,6 +496,7 @@
 			isa = PBXGroup;
 			children = (
 				FBED232427BC07690095D0C0 /* SourceInfoViewController.swift */,
+				FB72502127CBE9170037F1C9 /* SourceInfoHeaderView.swift */,
 				FBED232627BDB69B0095D0C0 /* SourceSettingSelectViewController.swift */,
 				FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */,
 			);
@@ -724,12 +730,14 @@
 				FB7B7EDA278CEA6A001E6EAF /* FileManager.swift in Sources */,
 				FBED232127BB2BBE0095D0C0 /* FilterModalViewController.swift in Sources */,
 				FB1B4853277CE4510056D02C /* AppDelegate.swift in Sources */,
+				FB72502227CBE9170037F1C9 /* SourceInfoHeaderView.swift in Sources */,
 				FB4EEBE527A5F6B7005081A3 /* LibraryViewController.swift in Sources */,
 				FB6E34C6279DF6AB00BFE54B /* BrowseViewController.swift in Sources */,
 				FB72501627CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB72501F27CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */,
+				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
 				FB6E34CA279DF9D800BFE54B /* MangaCollectionViewController.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
