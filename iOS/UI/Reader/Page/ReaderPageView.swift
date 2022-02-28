@@ -51,6 +51,7 @@ class ReaderPageView: UIView {
         reloadButton.setTitle("Reload", for: .normal)
         reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
         reloadButton.translatesAutoresizingMaskIntoConstraints = false
+        reloadButton.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
         addSubview(reloadButton)
 
         activateConstraints()
