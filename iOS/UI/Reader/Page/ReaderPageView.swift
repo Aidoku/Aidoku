@@ -20,12 +20,7 @@ class ReaderPageView: UIView {
     var currentUrl: String?
 
     init() {
-        super.init(frame: .zero)
-        configureViews()
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+        super.init(frame: UIScreen.main.bounds)
         configureViews()
     }
 
@@ -41,6 +36,7 @@ class ReaderPageView: UIView {
         zoomableView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(zoomableView)
 
+        imageView.frame = UIScreen.main.bounds
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         zoomableView.addSubview(imageView)
@@ -98,11 +94,12 @@ class ReaderPageView: UIView {
         currentUrl = url
 
         DispatchQueue.main.async {
-            let processor = DownsamplingImageProcessor(size: self.bounds.size)
+            let processor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
             self.imageView.kf.setImage(
                 with: URL(string: url),
                 options: [
+                    .cacheOriginalImage,
                     .processor(processor),
                     .scaleFactor(UIScreen.main.scale),
                     .transition(.fade(0.3)),
