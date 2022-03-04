@@ -148,7 +148,7 @@ extension SourceInfoViewController {
         if !source.languages.isEmpty && indexPath.section == 0 {
             let item = SettingItem(
                 type: "select",
-                key: "_language",
+                key: "\(source.id)._language",
                 title: "Language",
                 values: source.languages,
                 titles: source.languages,
