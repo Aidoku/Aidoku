@@ -19,6 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.appearance": 0,
                 "General.useSystemAppearance": true,
 
+                "Reader.downsampleImages": true,
+
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
 
