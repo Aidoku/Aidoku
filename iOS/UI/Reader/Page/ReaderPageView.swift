@@ -94,17 +94,21 @@ class ReaderPageView: UIView {
         currentUrl = url
 
         DispatchQueue.main.async {
-            let processor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
+            var kfOptions: [KingfisherOptionsInfoItem] = [
+                .scaleFactor(UIScreen.main.scale),
+                .transition(.fade(0.3)),
+                .retryStrategy(retry)
+            ]
+
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                let downsampleProcessor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
+                kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
+            }
+
             self.imageView.kf.setImage(
                 with: URL(string: url),
-                options: [
-                    .cacheOriginalImage,
-                    .processor(processor),
-                    .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.3)),
-                    .retryStrategy(retry)
-                ]
+                options: kfOptions
             ) { result in
                 switch result {
                 case .success:
