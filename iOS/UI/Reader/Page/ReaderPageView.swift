@@ -10,7 +10,7 @@ import Kingfisher
 
 class ReaderPageView: UIView {
 
-    var zoomableView = ZoomableScrollView(frame: .zero)
+    var zoomableView = ZoomableScrollView(frame: UIScreen.main.bounds)
     let imageView = UIImageView()
     let activityIndicator = UIActivityIndicatorView(style: .medium)
     let reloadButton = UIButton(type: .roundedRect)
