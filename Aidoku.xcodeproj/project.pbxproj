@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */; };
 		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB11EDF02784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
@@ -127,6 +128,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
@@ -499,6 +501,7 @@
 				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
 				FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */,
 				FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */,
+				0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -704,6 +707,7 @@
 				FB7B7ECD2789EAE6001E6EAF /* WasmMemory.swift in Sources */,
 				FB72501C27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB4EEBC427A34ED4005081A3 /* ChapterObject.swift in Sources */,
+				0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB72501927CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,

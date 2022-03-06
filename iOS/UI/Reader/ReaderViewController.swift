@@ -115,7 +115,7 @@ class ReaderViewController: UIViewController {
     let sliderView = ReaderSliderView()
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
-    let activityIndicator = UIActivityIndicatorView(style: .medium)
+    let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
 
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
 
@@ -146,7 +146,7 @@ class ReaderViewController: UIViewController {
         self.chapter = chapter
         self.startPage = 0
         self.chapterList = chapterList
-        self.scrollView = UIScrollView()
+        self.scrollView = UIScrollView(frame: UIScreen.main.bounds)
         self.savedStandardAppearance = UINavigationBar.appearance().standardAppearance
         super.init(nibName: nil, bundle: nil)
     }
@@ -249,10 +249,12 @@ class ReaderViewController: UIViewController {
         transitionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(transitionView)
 
-        activityIndicator.startAnimating()
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        items.append(activityIndicator)
-        scrollView.addSubview(activityIndicator)
+        // TODO: Maybe make this an indefinite progress view
+        progressView.center = scrollView.center
+        progressView.trackColor = .quaternaryLabel
+        progressView.progressColor = scrollView.tintColor
+        items.append(progressView)
+        scrollView.addSubview(progressView)
 
         view.addGestureRecognizer(singleTap)
 
@@ -284,9 +286,6 @@ class ReaderViewController: UIViewController {
 
         transitionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         transitionView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-
-        activityIndicator.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
-        activityIndicator.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor).isActive = true
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
