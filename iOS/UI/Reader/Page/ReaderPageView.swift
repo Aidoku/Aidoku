@@ -12,7 +12,7 @@ class ReaderPageView: UIView {
 
     var zoomableView = ZoomableScrollView(frame: UIScreen.main.bounds)
     let imageView = UIImageView()
-    let activityIndicator = UIActivityIndicatorView(style: .medium)
+    let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
     let reloadButton = UIButton(type: .roundedRect)
 
     var imageViewHeightConstraint: NSLayoutConstraint?
@@ -29,9 +29,10 @@ class ReaderPageView: UIView {
     }
 
     func configureViews() {
-        activityIndicator.startAnimating()
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(activityIndicator)
+        progressView.center = self.center
+        progressView.trackColor = .quaternaryLabel
+        progressView.progressColor = self.tintColor
+        addSubview(progressView)
 
         zoomableView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(zoomableView)
@@ -63,9 +64,6 @@ class ReaderPageView: UIView {
         imageView.centerXAnchor.constraint(equalTo: zoomableView.centerXAnchor).isActive = true
         imageView.centerYAnchor.constraint(equalTo: zoomableView.centerYAnchor).isActive = true
 
-        activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-
         reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
     }
@@ -82,8 +80,7 @@ class ReaderPageView: UIView {
     @objc func reload() {
         if let url = currentUrl {
             reloadButton.alpha = 0
-            activityIndicator.alpha = 1
-            activityIndicator.startAnimating()
+            progressView.alpha = 1
             currentUrl = nil
             setPageImage(url: url)
         }
@@ -108,19 +105,25 @@ class ReaderPageView: UIView {
 
             self.imageView.kf.setImage(
                 with: URL(string: url),
-                options: kfOptions
-            ) { result in
-                switch result {
-                case .success:
-                    self.activityIndicator.stopAnimating()
-                    self.activityIndicator.isHidden = true
-                    self.reloadButton.alpha = 0
-                    self.updateZoomBounds()
-                case .failure:
-                    self.activityIndicator.alpha = 0
-                    self.reloadButton.alpha = 1
+                options: kfOptions,
+                progressBlock: { recievedSize, totalSize in
+                    self.progressView.setProgress(value: Float(recievedSize) / Float(totalSize), withAnimation: false)
+                },
+                completionHandler: { result in
+                    switch result {
+                    case .success:
+                        if self.progressView.progress != 1 {
+                            self.progressView.setProgress(value: 1, withAnimation: true)
+                        }
+                        self.progressView.isHidden = true
+                        self.reloadButton.alpha = 0
+                        self.updateZoomBounds()
+                    case .failure:
+                        self.progressView.alpha = 0
+                        self.reloadButton.alpha = 1
+                    }
                 }
-            }
+            )
         }
     }
 }
