@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -28,6 +29,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Browse.labelNsfwSources": true
             ]
         )
+
+        KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
+        KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
 
         return true
     }
