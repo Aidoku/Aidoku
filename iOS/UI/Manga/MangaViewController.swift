@@ -144,9 +144,7 @@ class MangaViewController: UIViewController {
                 if chapters.isEmpty {
                     chapters = await DataManager.shared.getChapters(for: manga,
                                                                     fromSource: !DataManager.shared.libraryContains(manga: manga))
-                    DispatchQueue.main.async {
-                        self.tableView.reloadSections(IndexSet(integer: 0), with: .fade)
-                    }
+                    self.tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                 }
             }
         }

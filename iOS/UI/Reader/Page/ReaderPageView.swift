@@ -82,15 +82,18 @@ class ReaderPageView: UIView {
             reloadButton.alpha = 0
             progressView.alpha = 1
             currentUrl = nil
-            setPageImage(url: url)
+            Task {
+                await setPageImage(url: url)
+            }
         }
     }
 
-    func setPageImage(url: String) {
+    func setPageImage(url: String) async {
         guard currentUrl != url else { return }
         currentUrl = url
 
-        DispatchQueue.main.async {
+        // Run the image loading code immediately on the main actor
+        await MainActor.run {
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
             var kfOptions: [KingfisherOptionsInfoItem] = [
                 .scaleFactor(UIScreen.main.scale),
