@@ -9,5 +9,5 @@ import Foundation
 
 struct Listing: Hashable {
     var name: String
-    var canFilter: Bool = false
+    var flags: Int32 // currently unused
 }

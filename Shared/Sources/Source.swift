@@ -93,9 +93,30 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "setting_get_bool", namespace: "env", block: self.setting_get_bool)
         try? vm.addImportHandler(named: "setting_get_array", namespace: "env", block: self.setting_get_array)
 
+        try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
+        try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
+
         WasmRequest(vm: vm, memory: memory).export()
         WasmJson(vm: vm, memory: memory).export()
         WasmScraper(vm: vm, memory: memory).export()
+    }
+
+    var printFunction: (Int32, Int32) -> Void {
+        { string, length in
+            print((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(length))) ?? "")
+        }
+    }
+
+    var abort: (Int32, Int32, Int32, Int32) -> Void {
+        { msg, fileName, line, column in
+            let messageLength = (try? self.vm.bytesFromHeap(byteOffset: Int(msg - 4), length: 1).first) ?? 0
+            let fileLength = (try? self.vm.bytesFromHeap(byteOffset: Int(fileName - 4), length: 1).first) ?? 0
+
+            let message = try? self.vm.stringFromHeap(byteOffset: Int(msg), length: Int(messageLength))
+            let file = try? self.vm.stringFromHeap(byteOffset: Int(fileName), length: Int(fileLength))
+
+            print("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
+        }
     }
 }
 
@@ -268,10 +289,10 @@ extension Source {
     }
 
     var create_listing: (Int32, Int32, Int32) -> Int32 {
-        { name, name_len, can_filter in
+        { name, name_len, flags in
             if let str = try? self.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
                 self.descriptorPointer += 1
-                self.descriptors.append(Listing(name: str, canFilter: can_filter > 0))
+                self.descriptors.append(Listing(name: str, flags: flags))
                 return Int32(self.descriptorPointer)
             }
             return -1
@@ -445,7 +466,7 @@ extension Source {
     var string_value: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return 0 }
-            if let string = self.descriptors[Int(descriptor)]  as? String {
+            if let string = self.descriptors[Int(descriptor)] as? String {
                 return self.vm.write(string: string, memory: self.memory)
             }
             return 0
