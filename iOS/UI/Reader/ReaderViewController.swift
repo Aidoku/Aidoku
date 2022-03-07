@@ -401,10 +401,14 @@ extension ReaderViewController {
             if i < -1 {
                 continue
             }
-            (items[i + 1 + hasPreviousChapter.intValue] as? ReaderPageView)?.setPageImage(url: urls[i])
+
+            Task {
+                await (items[i + 1 + hasPreviousChapter.intValue] as? ReaderPageView)?.setPageImage(url: urls[i])
+            }
         }
     }
 
+    @MainActor
     func loadChapter() async {
         guard let manga = manga else { return }
 
@@ -412,15 +416,13 @@ extension ReaderViewController {
             chapterList = await DataManager.shared.getChapters(for: manga, fromSource: true)
         }
 
-        DispatchQueue.main.async {
-            DataManager.shared.addHistory(for: self.chapter)
-            self.startPage = DataManager.shared.currentPage(for: self.chapter)
+        DataManager.shared.addHistory(for: self.chapter)
+        self.startPage = DataManager.shared.currentPage(for: self.chapter)
 
-            self.navigationItem.setTitle(
-                upper: self.chapter.volumeNum != nil ? String(format: "Volume %g", self.chapter.volumeNum ?? 0) : nil,
-                lower: String(format: "Chapter %g", self.chapter.chapterNum ?? 0)
-            )
-        }
+        self.navigationItem.setTitle(
+            upper: self.chapter.volumeNum != nil ? String(format: "Volume %g", self.chapter.volumeNum ?? 0) : nil,
+            lower: String(format: "Chapter %g", self.chapter.chapterNum ?? 0)
+        )
 
         if !preloadedPages.isEmpty {
             pages = preloadedPages
@@ -437,64 +439,62 @@ extension ReaderViewController {
             hasNextChapter = false
         }
 
-        DispatchQueue.main.async {
-            self.clearPageViews()
+        self.clearPageViews()
 
-            for _ in self.pages {
-                let pageView = ReaderPageView()
-                pageView.translatesAutoresizingMaskIntoConstraints = false
+        for _ in self.pages {
+            let pageView = ReaderPageView()
+            pageView.translatesAutoresizingMaskIntoConstraints = false
 
-                // Append context menu interaction for each page in the chapter
-                let interaction = UIContextMenuInteraction(delegate: self)
-                pageView.imageView.addInteraction(interaction)
+            // Append context menu interaction for each page in the chapter
+            let interaction = UIContextMenuInteraction(delegate: self)
+            pageView.imageView.addInteraction(interaction)
 
-                self.items.append(pageView)
-            }
-
-            let firstPage = ReaderInfoPageView(type: .previous, currentChapter: self.chapter)
-            if self.hasPreviousChapter {
-                firstPage.previousChapter = self.chapterList[self.chapterIndex + 1]
-            }
-            firstPage.translatesAutoresizingMaskIntoConstraints = false
-            self.items.insert(firstPage, at: 0)
-
-            let finalPage = ReaderInfoPageView(type: .next, currentChapter: self.chapter)
-            if self.hasNextChapter {
-                finalPage.nextChapter = self.chapterList[self.chapterIndex - 1]
-            }
-            finalPage.translatesAutoresizingMaskIntoConstraints = false
-            self.items.append(finalPage)
-
-            if self.hasPreviousChapter {
-                let previousChapterPage = ReaderPageView()
-                previousChapterPage.translatesAutoresizingMaskIntoConstraints = false
-                self.items.insert(previousChapterPage, at: 0)
-            }
-
-            if self.hasNextChapter {
-                let nextChapterPage = ReaderPageView()
-                nextChapterPage.translatesAutoresizingMaskIntoConstraints = false
-                self.items.append(nextChapterPage)
-            }
-
-            self.leadingConstraints = []
-            for (i, view) in self.items.reversed().enumerated() {
-                self.scrollView.addSubview(view)
-
-                self.leadingConstraints.append(
-                    view.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor,
-                                                  constant: CGFloat(i) * self.scrollView.bounds.width)
-                )
-                self.leadingConstraints[i].isActive = true
-                view.topAnchor.constraint(equalTo: self.scrollView.topAnchor).isActive = true
-                view.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor).isActive = true
-                view.heightAnchor.constraint(equalTo: self.scrollView.heightAnchor).isActive = true
-            }
-            self.scrollView.contentSize = CGSize(
-                width: CGFloat(self.items.count) * self.scrollView.bounds.width,
-                height: self.scrollView.bounds.height
-            )
+            self.items.append(pageView)
         }
+
+        let firstPage = ReaderInfoPageView(type: .previous, currentChapter: self.chapter)
+        if self.hasPreviousChapter {
+            firstPage.previousChapter = self.chapterList[self.chapterIndex + 1]
+        }
+        firstPage.translatesAutoresizingMaskIntoConstraints = false
+        self.items.insert(firstPage, at: 0)
+
+        let finalPage = ReaderInfoPageView(type: .next, currentChapter: self.chapter)
+        if self.hasNextChapter {
+            finalPage.nextChapter = self.chapterList[self.chapterIndex - 1]
+        }
+        finalPage.translatesAutoresizingMaskIntoConstraints = false
+        self.items.append(finalPage)
+
+        if self.hasPreviousChapter {
+            let previousChapterPage = ReaderPageView()
+            previousChapterPage.translatesAutoresizingMaskIntoConstraints = false
+            self.items.insert(previousChapterPage, at: 0)
+        }
+
+        if self.hasNextChapter {
+            let nextChapterPage = ReaderPageView()
+            nextChapterPage.translatesAutoresizingMaskIntoConstraints = false
+            self.items.append(nextChapterPage)
+        }
+
+        self.leadingConstraints = []
+        for (i, view) in self.items.reversed().enumerated() {
+            self.scrollView.addSubview(view)
+
+            self.leadingConstraints.append(
+                view.leadingAnchor.constraint(equalTo: self.scrollView.leadingAnchor,
+                                              constant: CGFloat(i) * self.scrollView.bounds.width)
+            )
+            self.leadingConstraints[i].isActive = true
+            view.topAnchor.constraint(equalTo: self.scrollView.topAnchor).isActive = true
+            view.widthAnchor.constraint(equalTo: self.scrollView.widthAnchor).isActive = true
+            view.heightAnchor.constraint(equalTo: self.scrollView.heightAnchor).isActive = true
+        }
+        self.scrollView.contentSize = CGSize(
+            width: CGFloat(self.items.count) * self.scrollView.bounds.width,
+            height: self.scrollView.bounds.height
+        )
     }
 
     func scrollTo(page: Int, animated: Bool = false) {
@@ -607,14 +607,14 @@ extension ReaderViewController: UIScrollViewDelegate {
             Task {
                 let previousChapter = chapterList[chapterIndex + 1]
                 await preload(chapter: previousChapter)
-                (self.items.first as? ReaderPageView)?.setPageImage(url: preloadedPages.last?.imageURL ?? "")
+                await (self.items.first as? ReaderPageView)?.setPageImage(url: preloadedPages.last?.imageURL ?? "")
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 3) { // Preload next chapter
             DataManager.shared.setCompleted(chapter: chapter)
             Task {
                 let nextChapter = chapterList[chapterIndex - 1]
                 await preload(chapter: nextChapter)
-                (self.items.last as? ReaderPageView)?.setPageImage(url: preloadedPages.first?.imageURL ?? "")
+                await (self.items.last as? ReaderPageView)?.setPageImage(url: preloadedPages.first?.imageURL ?? "")
             }
         } else if hasNextChapter && currentIndex == items.count - (hasPreviousChapter.intValue + 2) { // Next chapter
             chapter = chapterList[chapterIndex - 1]

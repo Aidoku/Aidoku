@@ -139,7 +139,7 @@ class MangaCollectionViewController: UIViewController {
     }
 
     func reloadData() {
-        DispatchQueue.main.async {
+        Task { @MainActor in
             self.collectionView?.performBatchUpdates {
                 self.collectionView?.reloadSections(IndexSet(integer: 0))
             }
@@ -219,12 +219,10 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                 })
             } else {
                 actions.append(UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    Task {
+                    Task { @MainActor in
                         let manga = self.manga[indexPath.row]
                         if let newManga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
-                            DispatchQueue.main.async {
-                                _ = DataManager.shared.addToLibrary(manga: newManga)
-                            }
+                            _ = DataManager.shared.addToLibrary(manga: newManga)
                         }
                     }
                 })

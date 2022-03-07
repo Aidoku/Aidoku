@@ -111,13 +111,13 @@ class SearchViewController: UIViewController {
         collectionView?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
                 self.collectionView?.reloadData()
             }
         }
         NotificationCenter.default.addObserver(forName: Notification.Name("loadedSourceFilters"), object: nil, queue: nil) { _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
                 self.collectionView?.reloadData()
             }
@@ -131,9 +131,7 @@ class SearchViewController: UIViewController {
     }
 
     func reloadData() {
-        DispatchQueue.main.async {
-            self.collectionView?.reloadSections(IndexSet(integersIn: 0..<self.sources.count))
-        }
+        self.collectionView?.reloadSections(IndexSet(integersIn: 0..<self.sources.count))
     }
 
     func openMangaView(for manga: Manga) {
@@ -152,14 +150,14 @@ class SearchViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
 
+    @MainActor
     func fetchData() async {
         guard let query = query, !query.isEmpty else { return }
+        // TODO: Make this run in parallel
         for (i, source) in sources.enumerated() {
             let search = try? await source.fetchSearchManga(query: query, page: 1)
             results[source.info.id] = search
-            DispatchQueue.main.async {
-                self.collectionView?.reloadSections(IndexSet(integer: i))
-            }
+            self.collectionView?.reloadSections(IndexSet(integer: i))
         }
     }
 }
@@ -239,11 +237,9 @@ extension SearchViewController: UICollectionViewDelegate {
                     })
                 } else {
                     actions.append(UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
-                        Task {
+                        Task { @MainActor in
                             if let manga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
-                                DispatchQueue.main.async {
-                                    _ = DataManager.shared.addToLibrary(manga: manga)
-                                }
+                                _ = DataManager.shared.addToLibrary(manga: manga)
                             }
                         }
                     })

@@ -109,11 +109,9 @@ extension DataManager {
         guard save() else { return nil }
         loadLibrary()
 
-        Task {
+        Task { @MainActor in
             let chapters = await getChapters(for: manga, fromSource: true)
-            DispatchQueue.main.async {
-                self.set(chapters: chapters, for: manga)
-            }
+            self.set(chapters: chapters, for: manga)
         }
 
         return libraryObject
@@ -160,24 +158,23 @@ extension DataManager {
         return getChapterObjects(for: manga).map { $0.toChapter() }
     }
 
+    @MainActor
     func updateLibrary() async {
         await getLatestMangaDetails()
 
         for manga in libraryManga {
             let chapters = await getChapters(for: manga, fromSource: true)
-            DispatchQueue.main.async {
-                if let mangaObject = self.getMangaObject(for: manga) {
-                    if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                        // TODO: do something with this -- notifications?
+            if let mangaObject = self.getMangaObject(for: manga) {
+                if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
+                    // TODO: do something with this -- notifications?
 //                        if chapters.count > mangaObject.chapters?.count ?? 0 {
 //                            _ = Int16(chapters.count - (mangaObject.chapters?.count ?? 0))
 //                        }
-                        self.set(chapters: chapters, for: manga)
-                    }
-                    mangaObject.load(from: manga)
-                    mangaObject.libraryObject?.lastUpdated = Date()
-                    _ = self.save()
+                    self.set(chapters: chapters, for: manga)
                 }
+                mangaObject.load(from: manga)
+                mangaObject.libraryObject?.lastUpdated = Date()
+                _ = self.save()
             }
         }
     }
