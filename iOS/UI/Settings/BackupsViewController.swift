@@ -34,24 +34,22 @@ class BackupsViewController: UITableViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("updateBackupList"), object: nil, queue: nil) { _ in
             let previousBackups = self.backups
             self.backups = BackupManager.backupUrls
-            DispatchQueue.main.async {
-                let previousCount = previousBackups.count
-                let currentCount = self.backups.count
-                if previousCount == currentCount {
-                    self.tableView.reloadData()
-                } else {
-                    self.tableView.performBatchUpdates {
-                        if previousCount > currentCount { // remove
-                            for (i, url) in previousBackups.enumerated() {
-                                if !self.backups.contains(url) {
-                                    self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
-                                }
+            let previousCount = previousBackups.count
+            let currentCount = self.backups.count
+            if previousCount == currentCount {
+                self.tableView.reloadData()
+            } else {
+                self.tableView.performBatchUpdates {
+                    if previousCount > currentCount { // remove
+                        for (i, url) in previousBackups.enumerated() {
+                            if !self.backups.contains(url) {
+                                self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
                             }
-                        } else { // add
-                            for url in self.backups {
-                                if !previousBackups.contains(url) {
-                                    self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-                                }
+                        }
+                    } else { // add
+                        for url in self.backups {
+                            if !previousBackups.contains(url) {
+                                self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
                             }
                         }
                     }

@@ -144,9 +144,7 @@ class SourceViewController: MangaCollectionViewController {
                 currentListing = listings[sourceListing - 1]
             }
 
-            DispatchQueue.main.async {
-                self.updateNavbarItems()
-            }
+            self.updateNavbarItems()
         }
         if page == nil {
             manga = []

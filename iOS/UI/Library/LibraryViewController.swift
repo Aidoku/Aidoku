@@ -11,7 +11,7 @@ class LibraryViewController: MangaCollectionViewController {
 
     var unfilteredManga: [Manga] = [] {
         didSet {
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.emptyTextStackView.isHidden = !self.unfilteredManga.isEmpty
                 self.collectionView?.alwaysBounceVertical = !self.unfilteredManga.isEmpty
             }
@@ -84,7 +84,7 @@ class LibraryViewController: MangaCollectionViewController {
             let previousManga = self.manga
             self.manga = DataManager.shared.libraryManga
             if !self.manga.isEmpty && self.manga.count == previousManga.count { // reorder
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     self.collectionView?.performBatchUpdates {
                         for (i, manga) in previousManga.enumerated() {
                             let from = IndexPath(row: i, section: 0)
@@ -96,7 +96,7 @@ class LibraryViewController: MangaCollectionViewController {
                     }
                 }
             } else { // reload
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     self.collectionView?.reloadData()
                 }
             }

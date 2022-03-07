@@ -131,7 +131,7 @@ class BrowseViewController: UIViewController {
         tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.sources = SourceManager.shared.sources
                 self.fetchUpdates()
             }
