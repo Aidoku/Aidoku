@@ -15,6 +15,13 @@ class CircularProgressView: UIView {
             progressLayer.strokeEnd = newValue
         }
     }
+    private var oldProgress: Float = 0 {
+        didSet(newValue) {
+            if newValue >= 1 {
+                oldProgress = 0
+            }
+        }
+    }
 
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
@@ -58,6 +65,10 @@ class CircularProgressView: UIView {
     }
 
     func setProgress(value: Float, withAnimation: Bool) {
+        if value < oldProgress || value > 1 {
+            return
+        }
+
         if withAnimation {
             let endAnimation = CABasicAnimation(keyPath: "strokeEnd")
             endAnimation.duration = 1
@@ -68,5 +79,6 @@ class CircularProgressView: UIView {
         }
 
         progress = CGFloat(value)
+        oldProgress = value
     }
 }
