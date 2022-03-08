@@ -1,5 +1,5 @@
 //
-//  SourceSettingSelectViewController.swift
+//  SettingSelectViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 2/16/22.
@@ -7,9 +7,9 @@
 
 import UIKit
 
-class SourceSettingSelectViewController: UITableViewController {
+class SettingSelectViewController: UITableViewController {
 
-    let source: Source
+    let source: Source?
     let item: SettingItem
 
     var multi: Bool {
@@ -48,10 +48,10 @@ class SourceSettingSelectViewController: UITableViewController {
         return indexes
     }
 
-    init(source: Source, item: SettingItem) {
+    init(source: Source? = nil, item: SettingItem, style: UITableView.Style = .insetGrouped) {
         self.source = source
         self.item = item
-        super.init(style: .insetGrouped)
+        super.init(style: style)
     }
 
     required init?(coder: NSCoder) {
@@ -70,10 +70,15 @@ class SourceSettingSelectViewController: UITableViewController {
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.isHidden = false
+    }
 }
 
 // MARK: - Table View Data Source
-extension SourceSettingSelectViewController {
+extension SettingSelectViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         item.values?.count ?? 0
@@ -120,7 +125,7 @@ extension SourceSettingSelectViewController {
             }
         }
         if let notification = item.notification {
-            source.performAction(key: notification)
+            source?.performAction(key: notification)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)

@@ -14,9 +14,9 @@ class SettingsTableViewController: UITableViewController {
 
     var observers: [SettingItem] = []
 
-    init(items: [SettingItem] = []) {
+    init(items: [SettingItem] = [], style: UITableView.Style = .insetGrouped) {
         self.items = items
-        super.init(style: .insetGrouped)
+        super.init(style: style)
     }
 
     required init?(coder: NSCoder) {
@@ -142,22 +142,28 @@ extension SettingsTableViewController {
         }
     }
 
+    func performAction(for item: SettingItem) {
+        if item.type == "select" || item.type == "multi-select" {
+            navigationController?.pushViewController(SettingSelectViewController(item: item, style: tableView.style), animated: true)
+        } else if item.type == "link" {
+            if let url = URL(string: item.key ?? "") {
+                if let external = item.external, external {
+                    UIApplication.shared.open(url)
+                } else {
+                    let safariViewController = SFSafariViewController(url: url)
+                    present(safariViewController, animated: true)
+                }
+            }
+        } else if item.type == "page", let items = item.items {
+            let subPage = SettingsTableViewController(items: items, style: tableView.style)
+            subPage.title = item.title
+            present(subPage, animated: true)
+        }
+    }
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
-            if item.type == "link" {
-                if let url = URL(string: item.key ?? "") {
-                    if let external = item.external, external {
-                        UIApplication.shared.open(url)
-                    } else {
-                        let safariViewController = SFSafariViewController(url: url)
-                        present(safariViewController, animated: true)
-                    }
-                }
-            } else if item.type == "page", let items = item.items {
-                let subPage = SettingsTableViewController(items: items)
-                subPage.title = item.title
-                present(subPage, animated: true)
-            }
+            performAction(for: item)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
