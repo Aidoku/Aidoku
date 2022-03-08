@@ -154,18 +154,21 @@ extension SourceInfoViewController {
                 titles: source.languages,
                 notification: "languageChange"
             )
-            navigationController?.pushViewController(SourceSettingSelectViewController(source: source, item: item), animated: true)
+            navigationController?.pushViewController(SettingSelectViewController(source: source, item: item, style: tableView.style), animated: true)
         } else if source.settingItems.isEmpty || indexPath.section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
             // info
         } else if let item = source.settingItems[indexPath.section + (source.languages.isEmpty ? 0 : -1)].items?[indexPath.row] {
             if item.type == "select" || item.type == "multi-select" {
-                navigationController?.pushViewController(SourceSettingSelectViewController(source: source, item: item), animated: true)
+                navigationController?.pushViewController(
+                    SettingSelectViewController(source: source, item: item, style: tableView.style),
+                    animated: true
+                )
             } else if item.type == "button" {
                 if let key = item.action {
                     source.performAction(key: key)
                 }
             } else {
-                super.tableView(tableView, didSelectRowAt: indexPath)
+                performAction(for: item)
             }
         }
 

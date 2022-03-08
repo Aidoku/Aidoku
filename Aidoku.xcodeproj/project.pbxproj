@@ -110,7 +110,7 @@
 		FBED232127BB2BBE0095D0C0 /* FilterModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232027BB2BBD0095D0C0 /* FilterModalViewController.swift */; };
 		FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232227BB461D0095D0C0 /* SourceObject.swift */; };
 		FBED232527BC07690095D0C0 /* SourceInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232427BC07690095D0C0 /* SourceInfoViewController.swift */; };
-		FBED232727BDB69B0095D0C0 /* SourceSettingSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232627BDB69B0095D0C0 /* SourceSettingSelectViewController.swift */; };
+		FBED232727BDB69B0095D0C0 /* SettingSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232627BDB69B0095D0C0 /* SettingSelectViewController.swift */; };
 		FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */; };
 		FBED232B27BEAC980095D0C0 /* SourceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232A27BEAC980095D0C0 /* SourceSettings.swift */; };
 		FBED233327C091D70095D0C0 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FBED233227C091D70095D0C0 /* SwiftSoup */; };
@@ -198,7 +198,7 @@
 		FBED232027BB2BBD0095D0C0 /* FilterModalViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterModalViewController.swift; sourceTree = "<group>"; };
 		FBED232227BB461D0095D0C0 /* SourceObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceObject.swift; sourceTree = "<group>"; };
 		FBED232427BC07690095D0C0 /* SourceInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceInfoViewController.swift; sourceTree = "<group>"; };
-		FBED232627BDB69B0095D0C0 /* SourceSettingSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSettingSelectViewController.swift; sourceTree = "<group>"; };
+		FBED232627BDB69B0095D0C0 /* SettingSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSelectViewController.swift; sourceTree = "<group>"; };
 		FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputTableViewCell.swift; sourceTree = "<group>"; };
 		FBED232A27BEAC980095D0C0 /* SourceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSettings.swift; sourceTree = "<group>"; };
 		FBED233727C3D0E30095D0C0 /* SourceActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceActor.swift; sourceTree = "<group>"; };
@@ -449,6 +449,7 @@
 			isa = PBXGroup;
 			children = (
 				FB72502327CBF8C00037F1C9 /* SettingsTableViewController.swift */,
+				FBED232627BDB69B0095D0C0 /* SettingSelectViewController.swift */,
 				FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */,
 				FB72502727CC06AA0037F1C9 /* SegmentTableViewCell.swift */,
 			);
@@ -517,7 +518,6 @@
 			children = (
 				FBED232427BC07690095D0C0 /* SourceInfoViewController.swift */,
 				FB72502127CBE9170037F1C9 /* SourceInfoHeaderView.swift */,
-				FBED232627BDB69B0095D0C0 /* SourceSettingSelectViewController.swift */,
 			);
 			path = Info;
 			sourceTree = "<group>";
@@ -708,7 +708,7 @@
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB72501927CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
 				FBED232527BC07690095D0C0 /* SourceInfoViewController.swift in Sources */,
-				FBED232727BDB69B0095D0C0 /* SourceSettingSelectViewController.swift in Sources */,
+				FBED232727BDB69B0095D0C0 /* SettingSelectViewController.swift in Sources */,
 				FB31AD0127AC2C3000D50410 /* UIImageColors.swift in Sources */,
 				FB1B4868277CE76B0056D02C /* Manga.swift in Sources */,
 				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
@@ -944,6 +944,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aidoku needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -953,7 +954,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -978,6 +979,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aidoku needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -987,7 +989,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
