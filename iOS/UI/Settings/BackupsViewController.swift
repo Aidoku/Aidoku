@@ -93,7 +93,7 @@ extension BackupsViewController {
         let alertView = UIAlertController(
             title: "Restore to this backup?",
             message: "All current data will be removed and replaced by the data from this backup.",
-            preferredStyle: .actionSheet
+            preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
         )
 
         let action = UIAlertAction(title: "Restore", style: .destructive) { _ in
