@@ -77,7 +77,11 @@ class SettingsViewController: SettingsTableViewController {
                        continueActionName: String = "Continue",
                        destructive: Bool = true,
                        proceed: @escaping () -> Void) {
-        let alertView = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        let alertView = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
+        )
 
         let action = UIAlertAction(title: continueActionName, style: destructive ? .destructive : .default) { _ in proceed() }
         alertView.addAction(action)

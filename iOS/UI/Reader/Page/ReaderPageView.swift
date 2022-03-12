@@ -109,8 +109,8 @@ class ReaderPageView: UIView {
             self.imageView.kf.setImage(
                 with: URL(string: url),
                 options: kfOptions,
-                progressBlock: { recievedSize, totalSize in
-                    self.progressView.setProgress(value: Float(recievedSize) / Float(totalSize), withAnimation: false)
+                progressBlock: { receivedSize, totalSize in
+                    self.progressView.setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
                 },
                 completionHandler: { result in
                     switch result {
