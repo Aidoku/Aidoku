@@ -362,7 +362,7 @@ extension ReaderViewController {
         } else {
             pagesLeftLabel.text = "\(pagesLeft) page\(pagesLeft == 1 ? "" : "s") left"
         }
-        sliderView.currentValue = CGFloat(currentPage - 1) / CGFloat(pageCount - 1)
+        sliderView.currentValue = CGFloat(currentPage - 1) / max(CGFloat(pageCount - 1), 1)
     }
 
     func clearPageViews() {
