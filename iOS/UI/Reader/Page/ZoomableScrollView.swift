@@ -21,14 +21,19 @@ class ZoomableScrollView: UIScrollView {
     lazy var zoomingTap: UITapGestureRecognizer = {
         let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
         zoomingTap.numberOfTapsRequired = 2
-
         return zoomingTap
     }()
 
+    var zoomEnabled = true {
+        didSet {
+            isScrollEnabled = zoomEnabled
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        delegate = self
 
+        delegate = self
         maximumZoomScale = 2
         minimumZoomScale = 1
         bouncesZoom = true
@@ -42,12 +47,12 @@ class ZoomableScrollView: UIScrollView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.centerView()
+        centerView()
     }
 
     func configure() {
-        self.zoomView.addGestureRecognizer(self.zoomingTap)
-        self.zoomView.isUserInteractionEnabled = true
+        zoomView.addGestureRecognizer(zoomingTap)
+        zoomView.isUserInteractionEnabled = true
     }
 
     func centerView() {
@@ -76,11 +81,13 @@ class ZoomableScrollView: UIScrollView {
 extension ZoomableScrollView {
 
     @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
+        guard zoomEnabled else { return }
         let location = sender.location(in: sender.view)
-        self.zoom(to: location, animated: true)
+        zoom(to: location, animated: true)
     }
 
     func zoom(to point: CGPoint, animated: Bool) {
+        guard zoomEnabled else { return }
         let currentScale = self.zoomScale
         let minScale = self.minimumZoomScale
         let maxScale = self.maximumZoomScale
@@ -91,8 +98,8 @@ extension ZoomableScrollView {
 
         let toScale = maxScale
         let finalScale = (currentScale == minScale) ? toScale : minScale
-        let zoomRect = self.zoomRect(for: finalScale, withCenter: point)
-        self.zoom(to: zoomRect, animated: animated)
+        let zoomRect = zoomRect(for: finalScale, withCenter: point)
+        zoom(to: zoomRect, animated: animated)
     }
 
     func zoomRect(for scale: CGFloat, withCenter center: CGPoint) -> CGRect {
@@ -113,10 +120,10 @@ extension ZoomableScrollView {
 extension ZoomableScrollView: UIScrollViewDelegate {
 
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        self.zoomView
+        zoomEnabled ? zoomView : nil
     }
 
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        self.centerView()
+        centerView()
     }
 }

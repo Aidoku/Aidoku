@@ -31,9 +31,9 @@ enum MangaContentRating: Int {
 enum MangaViewer: Int {
     case defaultViewer = 0
     case rtl = 1
-    case ltf = 2
+    case ltr = 2
     case vertical = 3
-    case webtoon = 4
+    case scroll = 4
 }
 
 class Manga: KVCObject {

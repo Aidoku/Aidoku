@@ -11,13 +11,13 @@ import UIKit
 class CircularProgressView: UIView {
     // You can set this value directly, but it's better to use setProgress
     var progress: CGFloat = 0 {
-        didSet(newValue) {
+        willSet(newValue) {
             progressLayer.strokeEnd = newValue
         }
     }
     private var oldProgress: Float = 0 {
-        didSet(newValue) {
-            if newValue >= 1 {
+        didSet {
+            if oldProgress >= 1 {
                 oldProgress = 0
             }
         }
@@ -27,12 +27,12 @@ class CircularProgressView: UIView {
     private var trackLayer = CAShapeLayer()
 
     var progressColor = UIColor.white {
-        didSet(newValue) {
+        willSet(newValue) {
             progressLayer.strokeColor = newValue.cgColor
         }
     }
     var trackColor = UIColor.white {
-        didSet(newValue) {
+        willSet(newValue) {
             trackLayer.strokeColor = newValue.cgColor
         }
     }

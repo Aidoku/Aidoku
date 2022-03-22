@@ -159,6 +159,19 @@ extension DataManager {
     }
 
     @MainActor
+    func getChapters(from sourceId: String, for mangaId: String, fromSource: Bool = false) async -> [Chapter] {
+        if fromSource {
+            if let manga = getMangaObject(withId: mangaId, sourceId: sourceId)?.toManga() {
+                return (try? await SourceManager.shared.source(for: sourceId)?.getChapterList(manga: manga)) ?? []
+            } else {
+                return []
+            }
+        } else {
+            return getChapterObjects(sourceId: sourceId, mangaId: mangaId).map { $0.toChapter() }
+        }
+    }
+
+    @MainActor
     func updateLibrary() async {
         await getLatestMangaDetails()
 
@@ -384,7 +397,10 @@ extension DataManager {
     }
 
     func getChapterObjects(for manga: Manga) -> [ChapterObject] {
-        (try? getChapterObjects(predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id),
+        getChapterObjects(sourceId: manga.sourceId, mangaId: manga.id)
+    }
+    func getChapterObjects(sourceId: String, mangaId: String) -> [ChapterObject] {
+        (try? getChapterObjects(predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", sourceId, mangaId),
                                 sortDescriptors: [NSSortDescriptor(key: "sourceOrder", ascending: true)])) ?? []
     }
 
