@@ -8,7 +8,13 @@
 import UIKit
 import Kingfisher
 
+protocol ReaderPageViewDelegate: AnyObject {
+    func imageLoaded(result: Result<RetrieveImageResult, KingfisherError>)
+}
+
 class ReaderPageView: UIView {
+
+    weak var delegate: ReaderPageViewDelegate?
 
     var zoomableView = ZoomableScrollView(frame: UIScreen.main.bounds)
     let imageView = UIImageView()
@@ -18,6 +24,13 @@ class ReaderPageView: UIView {
     var imageViewHeightConstraint: NSLayoutConstraint?
 
     var currentUrl: String?
+    var cacheKey: String?
+
+    var zoomEnabled = true {
+        didSet {
+            zoomableView.zoomEnabled = zoomEnabled
+        }
+    }
 
     init() {
         super.init(frame: UIScreen.main.bounds)
@@ -57,6 +70,8 @@ class ReaderPageView: UIView {
     func activateConstraints() {
         zoomableView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         zoomableView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        zoomableView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        zoomableView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
 
         imageView.widthAnchor.constraint(equalTo: zoomableView.widthAnchor).isActive = true
         imageViewHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
@@ -69,12 +84,12 @@ class ReaderPageView: UIView {
     }
 
     func updateZoomBounds() {
-        var height = (self.imageView.image?.size.height ?? 0) / (self.imageView.image?.size.width ?? 1) * self.imageView.bounds.width
+        var height = (imageView.image?.size.height ?? 0) / (imageView.image?.size.width ?? 1) * imageView.bounds.width
         if height > zoomableView.bounds.height {
             height = zoomableView.bounds.height
         }
-        self.imageViewHeightConstraint?.constant = height
-        self.zoomableView.contentSize = self.imageView.bounds.size
+        imageViewHeightConstraint?.constant = height
+        zoomableView.contentSize = imageView.bounds.size
     }
 
     @objc func reload() {
@@ -114,7 +129,8 @@ class ReaderPageView: UIView {
                 },
                 completionHandler: { result in
                     switch result {
-                    case .success:
+                    case .success(let imageResult):
+                        self.cacheKey = imageResult.source.cacheKey
                         if self.progressView.progress != 1 {
                             self.progressView.setProgress(value: 1, withAnimation: true)
                         }
@@ -125,6 +141,7 @@ class ReaderPageView: UIView {
                         self.progressView.alpha = 0
                         self.reloadButton.alpha = 1
                     }
+                    self.delegate?.imageLoaded(result: result)
                 }
             )
         }

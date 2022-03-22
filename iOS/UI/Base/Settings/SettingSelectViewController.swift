@@ -22,7 +22,9 @@ class SettingSelectViewController: UITableViewController {
             UserDefaults.standard.string(forKey: item.key ?? "") ?? ""
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: item.key ?? "")
+            if let key = item.key {
+                UserDefaults.standard.set(newValue, forKey: key)
+            }
         }
     }
     var index: Int {
@@ -35,7 +37,9 @@ class SettingSelectViewController: UITableViewController {
             (UserDefaults.standard.array(forKey: item.key ?? "") as? [String]) ?? []
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: item.key ?? "")
+            if let key = item.key {
+                UserDefaults.standard.set(newValue, forKey: key)
+            }
         }
     }
     var indexes: [Int] {
@@ -126,6 +130,9 @@ extension SettingSelectViewController {
         }
         if let notification = item.notification {
             source?.performAction(key: notification)
+        }
+        if let key = item.key {
+            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)

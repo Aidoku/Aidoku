@@ -26,7 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.unreadChapterBadges": true,
 
                 "Browse.showNsfwSources": false,
-                "Browse.labelNsfwSources": true
+                "Browse.labelNsfwSources": true,
+
+                "Reader.readingMode": "default"
             ]
         )
 
