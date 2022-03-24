@@ -29,6 +29,15 @@ class ReaderPageView: UIView {
     var zoomEnabled = true {
         didSet {
             zoomableView.zoomEnabled = zoomEnabled
+            if zoomEnabled {
+                imageViewHeightConstraint?.isActive = false
+                imageViewHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
+                imageViewHeightConstraint?.isActive = true
+            } else {
+                imageViewHeightConstraint?.isActive = false
+                imageViewHeightConstraint = imageView.heightAnchor.constraint(equalTo: zoomableView.heightAnchor)
+                imageViewHeightConstraint?.isActive = true
+            }
         }
     }
 
@@ -42,9 +51,9 @@ class ReaderPageView: UIView {
     }
 
     func configureViews() {
-        progressView.center = self.center
         progressView.trackColor = .quaternaryLabel
-        progressView.progressColor = self.tintColor
+        progressView.progressColor = tintColor
+        progressView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(progressView)
 
         zoomableView.translatesAutoresizingMaskIntoConstraints = false
@@ -68,10 +77,10 @@ class ReaderPageView: UIView {
     }
 
     func activateConstraints() {
-        zoomableView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        zoomableView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
-        zoomableView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        zoomableView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        zoomableView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        zoomableView.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
+        zoomableView.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        zoomableView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
 
         imageView.widthAnchor.constraint(equalTo: zoomableView.widthAnchor).isActive = true
         imageViewHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 0)
@@ -81,14 +90,23 @@ class ReaderPageView: UIView {
 
         reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+
+        progressView.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        progressView.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        progressView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        progressView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
     }
 
     func updateZoomBounds() {
-        var height = (imageView.image?.size.height ?? 0) / (imageView.image?.size.width ?? 1) * imageView.bounds.width
-        if height > zoomableView.bounds.height {
-            height = zoomableView.bounds.height
+        if zoomEnabled {
+            var height = (imageView.image?.size.height ?? 0) / (imageView.image?.size.width ?? 1) * imageView.bounds.width
+            if height > zoomableView.bounds.height {
+                height = zoomableView.bounds.height
+            }
+            imageViewHeightConstraint?.constant = height
+        } else {
+            imageViewHeightConstraint?.constant = 0
         }
-        imageViewHeightConstraint?.constant = height
         zoomableView.contentSize = imageView.bounds.size
     }
 
@@ -104,7 +122,7 @@ class ReaderPageView: UIView {
     }
 
     func setPageImage(url: String) async {
-        guard currentUrl != url else { return }
+        if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
 
         // Run the image loading code immediately on the main actor
@@ -121,7 +139,7 @@ class ReaderPageView: UIView {
                 kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
             }
 
-            self.imageView.kf.setImage(
+            imageView.kf.setImage(
                 with: URL(string: url),
                 options: kfOptions,
                 progressBlock: { receivedSize, totalSize in
@@ -138,8 +156,10 @@ class ReaderPageView: UIView {
                         self.reloadButton.alpha = 0
                         self.updateZoomBounds()
                     case .failure:
-                        self.progressView.alpha = 0
-                        self.reloadButton.alpha = 1
+                        if self.zoomEnabled {
+                            self.progressView.alpha = 0
+                            self.reloadButton.alpha = 1
+                        }
                     }
                     self.delegate?.imageLoaded(result: result)
                 }

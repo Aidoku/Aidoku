@@ -39,8 +39,8 @@ class CircularProgressView: UIView {
     var lineWidth: CGFloat = 3
 
     override func draw(_ rect: CGRect) {
-        self.backgroundColor = UIColor.clear
-        self.layer.cornerRadius = self.frame.size.width / 2
+        backgroundColor = UIColor.clear
+        layer.cornerRadius = frame.size.width / 2
 
         let circlePath = UIBezierPath(
             arcCenter: CGPoint(x: frame.size.width / 2, y: frame.size.height / 2),

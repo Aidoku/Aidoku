@@ -203,15 +203,10 @@ extension ReaderPagedPageManager {
         }
 
         let targetIndex = startIndex + 1 + (hasPreviousChapter ? 1 : 0)
-        let pageIndex = startIndex
 
         if targetIndex >= 0 && targetIndex < items.count {
-            // this main dispatch seems redundant but it's needed to set the proper page
-            // if it's not used, the page will set to the one after or before the target index (depending on scroll direction)
-            DispatchQueue.main.async {
-                self.pageViewController.setViewControllers([self.items[targetIndex]], direction: .forward, animated: false, completion: nil)
-                self.delegate?.didMove(toPage: pageIndex)
-            }
+            pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)
+            delegate?.didMove(toPage: startIndex)
         }
     }
 
@@ -234,8 +229,7 @@ extension ReaderPagedPageManager {
         let newRange = lower..<upper
         let pages = pages[newRange]
         let urls = pages.compactMap { URL(string: $0.imageURL ?? "") }
-        let prefetcher = ImagePrefetcher(urls: urls)
-        prefetcher.start()
+        ImagePrefetcher(urls: urls).start()
     }
 
     func setImages(for range: Range<Int>) async {
@@ -317,9 +311,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
 extension ReaderPagedPageManager: UIPageViewControllerDataSource {
 
     func pageViewController(_: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = items.firstIndex(of: viewController) else {
-            return nil
-        }
+        guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
 
         if readingMode == .ltr {
             let nextIndex = viewControllerIndex + 1
@@ -333,9 +325,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDataSource {
     }
 
     func pageViewController(_: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = items.firstIndex(of: viewController) else {
-            return nil
-        }
+        guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
 
         if readingMode == .ltr {
             let previousIndex = viewControllerIndex - 1
