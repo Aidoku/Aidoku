@@ -9,6 +9,27 @@ import UIKit
 
 class ReaderSliderView: UIControl {
 
+    enum SliderDirection {
+        case forward
+        case backward
+    }
+
+    var direction: SliderDirection = .forward {
+        didSet {
+            thumbPositionConstraint?.isActive = false
+            trackPositionConstraint?.isActive = false
+            if direction == .forward {
+                thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
+                trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
+            } else {
+                thumbPositionConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
+                trackPositionConstraint = progressedTrackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
+            }
+            thumbPositionConstraint?.isActive = true
+            trackPositionConstraint?.isActive = true
+        }
+    }
+
     var minimumValue: CGFloat = 0
     var maximumValue: CGFloat = 1
     var currentValue: CGFloat = 0 {
@@ -22,7 +43,8 @@ class ReaderSliderView: UIControl {
     let thumbView = UIView()
 
     private var trackWidthConstraint: NSLayoutConstraint?
-    private var thumbTrailingConstraint: NSLayoutConstraint?
+    private var trackPositionConstraint: NSLayoutConstraint?
+    private var thumbPositionConstraint: NSLayoutConstraint?
 
     private var previousLocation = CGPoint()
 
@@ -48,12 +70,14 @@ class ReaderSliderView: UIControl {
         addSubview(progressedTrackView)
 
         thumbView.backgroundColor = .white
+        thumbView.layer.shadowPath = UIBezierPath(rect: thumbView.bounds).cgPath
         thumbView.layer.shadowRadius = 1.5
         thumbView.layer.shadowOffset = CGSize(width: 0, height: 1)
         thumbView.layer.shadowColor = UIColor.black.cgColor
         thumbView.layer.shadowOpacity = 0.2
-        thumbView.layer.cornerRadius = 5
+        thumbView.layer.cornerRadius = 15
         thumbView.isUserInteractionEnabled = false
+        thumbView.transform = CGAffineTransform(scaleX: 1/3, y: 1/3)
         thumbView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(thumbView)
 
@@ -64,15 +88,16 @@ class ReaderSliderView: UIControl {
 
         trackWidthConstraint = progressedTrackView.widthAnchor.constraint(equalToConstant: 5)
         trackWidthConstraint?.isActive = true
-        progressedTrackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
+        trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
+        trackPositionConstraint?.isActive = true
         progressedTrackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         progressedTrackView.heightAnchor.constraint(equalToConstant: 3).isActive = true
 
-        thumbTrailingConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
-        thumbTrailingConstraint?.isActive = true
+        thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
+        thumbPositionConstraint?.isActive = true
         thumbView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        thumbView.heightAnchor.constraint(equalToConstant: 10).isActive = true
-        thumbView.widthAnchor.constraint(equalToConstant: 10).isActive = true
+        thumbView.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        thumbView.widthAnchor.constraint(equalToConstant: 30).isActive = true
 
         updateLayerFrames()
     }
@@ -86,20 +111,27 @@ class ReaderSliderView: UIControl {
     }
 
     private func updateLayerFrames() {
-        let origin = thumbOriginForValue(currentValue)
-        let width = trackView.bounds.width - origin.x
-        guard width >= 0, width < bounds.width else { return }
-        trackWidthConstraint?.constant = width
-        thumbTrailingConstraint?.constant = 0 - width
+        let position = positionForValue(currentValue)
+        if direction == .forward {
+            trackWidthConstraint?.constant = position - trackView.frame.origin.x
+            thumbPositionConstraint?.constant =  position - thumbView.bounds.width / 2
+        } else {
+            trackWidthConstraint?.constant = trackView.bounds.width - position - trackView.frame.origin.x
+            thumbPositionConstraint?.constant =  position - trackView.bounds.width + thumbView.bounds.width / 2
+        }
+    }
+
+    // TODO: animate this
+    func move(toValue value: CGFloat) {
+        currentValue = value
     }
 
     func positionForValue(_ value: CGFloat) -> CGFloat {
-        trackView.bounds.width - (trackView.bounds.width * value) + trackView.frame.origin.x
-    }
-
-    private func thumbOriginForValue(_ value: CGFloat) -> CGPoint {
-        let x = positionForValue(value) - thumbView.bounds.size.width / 2
-        return CGPoint(x: x, y: (bounds.height - thumbView.bounds.size.height) / 2)
+        if direction == .forward {
+            return trackView.bounds.width * value + trackView.frame.origin.x
+        } else {
+            return trackView.bounds.width - (trackView.bounds.width * value) - trackView.frame.origin.x
+        }
     }
 
     override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
@@ -107,6 +139,9 @@ class ReaderSliderView: UIControl {
 
         if thumbView.frame.contains(previousLocation) {
             thumbView.tag = 1
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) {
+                self.thumbView.transform = CGAffineTransform(scaleX: 1/2, y: 1/2)
+            }
             return true
         }
 
@@ -122,7 +157,11 @@ class ReaderSliderView: UIControl {
         previousLocation = location
 
         if thumbView.tag == 1 {
-            currentValue -= deltaValue
+            if direction == .forward {
+                currentValue += deltaValue
+            } else {
+                currentValue -= deltaValue
+            }
             currentValue = boundValue(currentValue, toLowerValue: minimumValue, upperValue: maximumValue)
         }
 
@@ -144,6 +183,9 @@ class ReaderSliderView: UIControl {
 
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         thumbView.tag = 0
+        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) {
+            self.thumbView.transform = CGAffineTransform(scaleX: 1/3, y: 1/3)
+        }
         sendActions(for: .editingDidEnd)
     }
 }
