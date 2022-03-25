@@ -22,7 +22,7 @@ class ReaderSliderView: UIControl {
                 thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
                 trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
             } else {
-                thumbPositionConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
+                thumbPositionConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 10)
                 trackPositionConstraint = progressedTrackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
             }
             thumbPositionConstraint?.isActive = true
@@ -98,8 +98,6 @@ class ReaderSliderView: UIControl {
         thumbView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         thumbView.heightAnchor.constraint(equalToConstant: 30).isActive = true
         thumbView.widthAnchor.constraint(equalToConstant: 30).isActive = true
-
-        updateLayerFrames()
     }
 
     required init?(coder: NSCoder) {
@@ -111,6 +109,7 @@ class ReaderSliderView: UIControl {
     }
 
     private func updateLayerFrames() {
+        guard trackView.frame.size != .zero else { return }
         let position = positionForValue(currentValue)
         if direction == .forward {
             trackWidthConstraint?.constant = position - trackView.frame.origin.x

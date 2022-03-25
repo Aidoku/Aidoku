@@ -320,10 +320,12 @@ class ReaderViewController: UIViewController {
 
         toolbarSliderWidthConstraint?.constant = size.width
 
-//        coordinator.animate(alongsideTransition: nil) { _ in
+        pageManager.willTransition(to: size, with: coordinator)
+
+        coordinator.animate(alongsideTransition: nil) { _ in
 //            self.transitionView.isHidden = true
-//            self.updateLabels()
-//        }
+            self.updateLabels()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {

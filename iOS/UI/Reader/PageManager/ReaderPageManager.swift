@@ -18,6 +18,8 @@ protocol ReaderPageManager {
 
     func setChapter(chapter: Chapter, startPage: Int)
     func move(toPage: Int)
+
+    func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator)
 }
 
 extension ReaderPageManager {

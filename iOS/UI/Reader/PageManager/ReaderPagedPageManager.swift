@@ -84,6 +84,19 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
             delegate?.didMove(toPage: page)
         }
     }
+
+    func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animate(alongsideTransition: nil) { _ in
+            for vc in self.items {
+                vc.view.frame = self.pageViewController.view.bounds
+                if let page = vc.view as? ReaderPageView {
+                    page.zoomableView.frame = page.bounds
+                    page.imageView.frame = page.bounds
+                    page.updateZoomBounds()
+                }
+            }
+        }
+    }
 }
 
 extension ReaderPagedPageManager {
@@ -159,6 +172,7 @@ extension ReaderPagedPageManager {
         for _ in urls {
             let c = UIViewController()
             let page = ReaderPageView()
+            page.frame = pageViewController.view.bounds
             c.view = page
             items.append(c)
         }
@@ -173,7 +187,7 @@ extension ReaderPagedPageManager {
         if hasPreviousChapter {
             firstPage.previousChapter = chapterList[chapterIndex + 1]
         }
-        firstPage.frame = pageViewController.view.frame
+        firstPage.frame = pageViewController.view.bounds
         firstPageController.view.addSubview(firstPage)
         items.insert(firstPageController, at: 0)
 
@@ -182,7 +196,7 @@ extension ReaderPagedPageManager {
         if hasNextChapter {
             finalPage.nextChapter = chapterList[chapterIndex - 1]
         }
-        finalPage.frame = pageViewController.view.frame
+        finalPage.frame = pageViewController.view.bounds
         finalPageController.view = finalPage
         items.append(finalPageController)
 
