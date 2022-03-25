@@ -81,6 +81,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
 
         if targetIndex >= 0 && targetIndex < items.count {
             pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)
+            currentIndex = targetIndex
             delegate?.didMove(toPage: page)
         }
     }
@@ -122,7 +123,7 @@ extension ReaderPagedPageManager {
             pages = preloadedPages
             preloadedPages = []
             preloadedChapter = nil
-        } else if pages.isEmpty {
+        } else {
             pages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
             delegate?.pagesLoaded()
         }
@@ -173,6 +174,7 @@ extension ReaderPagedPageManager {
             let c = UIViewController()
             let page = ReaderPageView()
             page.frame = pageViewController.view.bounds
+            page.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
             c.view = page
             items.append(c)
         }
@@ -350,5 +352,21 @@ extension ReaderPagedPageManager: UIPageViewControllerDataSource {
             guard items.count > nextIndex else { return nil }
             return items[nextIndex]
         }
+    }
+}
+
+// MARK: - Context Menu Delegate
+extension ReaderPagedPageManager: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(title: "Save to Photos", image: UIImage(systemName: "square.and.arrow.down")) { _ in
+                if let pageView = interaction.view as? UIImageView,
+                   let image = pageView.image {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+            }
+            return UIMenu(title: "", children: [saveToPhotosAction])
+        })
     }
 }
