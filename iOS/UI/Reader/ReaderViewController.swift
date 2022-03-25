@@ -118,7 +118,7 @@ class ReaderViewController: UIViewController {
 
     let transitionView = UIView()
 
-    let toolbarView = UIView()
+    let toolbarView = ToolbarContainerView()
     let sliderView = ReaderSliderView()
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
@@ -234,7 +234,8 @@ class ReaderViewController: UIViewController {
 
         let toolbarSlider = UIBarButtonItem(customView: toolbarView)
         toolbarSliderWidthConstraint = toolbarSlider.customView?.widthAnchor.constraint(equalToConstant: view.bounds.width)
-        toolbarSlider.customView?.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        toolbarSlider.customView?.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        toolbarSlider.customView?.transform = CGAffineTransform(translationX: 0, y: -10)
 
         navigationController?.isToolbarHidden = false
         toolbarItems = [toolbarSlider]
@@ -278,6 +279,12 @@ class ReaderViewController: UIViewController {
         default: readingMode = .defaultViewer
         }
 
+        if readingMode == .defaultViewer || readingMode == .rtl {
+            sliderView.direction = .backward
+        } else {
+            sliderView.direction = .forward
+        }
+
         if readingMode == .scroll && !(pageManager is ReaderScrollPageManager) {
             pageManager = ReaderScrollPageManager()
         } else if !(pageManager is ReaderPagedPageManager) {
@@ -296,7 +303,7 @@ class ReaderViewController: UIViewController {
         pagesLeftLabel.bottomAnchor.constraint(equalTo: toolbarView.bottomAnchor).isActive = true
 
         sliderView.heightAnchor.constraint(equalToConstant: 12).isActive = true
-        sliderView.topAnchor.constraint(equalTo: toolbarView.topAnchor).isActive = true
+        sliderView.topAnchor.constraint(equalTo: toolbarView.topAnchor, constant: 10).isActive = true
         sliderView.leadingAnchor.constraint(equalTo: toolbarView.leadingAnchor, constant: 12).isActive = true
         sliderView.trailingAnchor.constraint(equalTo: toolbarView.trailingAnchor, constant: -12).isActive = true
 
@@ -345,14 +352,15 @@ extension ReaderViewController {
             currentPage = 1
         }
         let pagesLeft = pageCount - currentPage
-        DispatchQueue.main.async {
-            self.currentPageLabel.text = "\(currentPage) of \(pageCount)"
+        let page = currentPage
+        Task { @MainActor in
+            self.currentPageLabel.text = "\(page) of \(pageCount)"
             if pagesLeft < 1 {
                 self.pagesLeftLabel.text = nil
             } else {
                 self.pagesLeftLabel.text = "\(pagesLeft) page\(pagesLeft == 1 ? "" : "s") left"
             }
-            self.sliderView.currentValue = CGFloat(currentPage - 1) / max(CGFloat(pageCount - 1), 1)
+            self.sliderView.move(toValue: CGFloat(page - 1) / max(CGFloat(pageCount - 1), 1))
         }
     }
 
