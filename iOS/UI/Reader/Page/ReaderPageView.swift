@@ -155,7 +155,12 @@ class ReaderPageView: UIView {
                         self.progressView.isHidden = true
                         self.reloadButton.alpha = 0
                         self.updateZoomBounds()
-                    case .failure:
+                    case .failure(let error):
+                        // If the error isn't part of the current task, we don't care.
+                        if error.isNotCurrentTask || error.isTaskCancelled {
+                            return
+                        }
+
                         if self.zoomEnabled {
                             self.progressView.alpha = 0
                             self.reloadButton.alpha = 1
