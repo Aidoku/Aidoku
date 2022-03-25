@@ -121,7 +121,6 @@ class ReaderPageView: UIView {
         }
     }
 
-    @MainActor
     func setPageImage(url: String) async {
         if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
