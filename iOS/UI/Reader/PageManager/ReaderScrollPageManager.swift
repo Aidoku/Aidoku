@@ -69,7 +69,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.prefetchDataSource = self
         collectionView.isPrefetchingEnabled = true
         collectionView.contentInsetAdjustmentBehavior = .never
-
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         parent.view.addSubview(collectionView)
 
         collectionView.topAnchor.constraint(equalTo: parent.view.topAnchor).isActive = true
@@ -104,6 +104,19 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     func move(toPage page: Int) {
         collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 0), at: .top, animated: false)
         delegate?.didMove(toPage: page)
+    }
+
+    func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        coordinator.animate(alongsideTransition: nil) { _ in
+            for (key, value) in self.sizeCache {
+                let newValue = CGSize(
+                    width: self.collectionView.bounds.size.width,
+                    height: value.height * (self.collectionView.bounds.size.width / value.width)
+                )
+                self.sizeCache[key] = newValue
+            }
+            self.collectionView?.collectionViewLayout.invalidateLayout()
+        }
     }
 
     func loadPages() async {
