@@ -222,6 +222,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                 }
             } else {
                 cell.convertToPage()
+                cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                 cell.pageView?.delegate = self
             }
         }
@@ -258,6 +259,22 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
         case .failure:
             break
         }
+    }
+}
+
+// MARK: - Context Menu Delegate
+extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
+                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(title: "Save to Photos", image: UIImage(systemName: "square.and.arrow.down")) { _ in
+                if let pageView = interaction.view as? UIImageView,
+                   let image = pageView.image {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+            }
+            return UIMenu(title: "", children: [saveToPhotosAction])
+        })
     }
 }
 
