@@ -21,17 +21,25 @@ class BackupManager {
         Self.backupUrls.compactMap { Backup.load(from: $0) }
     }
 
-    func saveNewBackup() {
+    func save(backup: Backup, url: URL? = nil) {
         Self.directory.createDirctory()
-
-        let backup = createBackup()
-        if let json = try? JSONEncoder().encode(backup) {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970
+        if let json = try? encoder.encode(backup) {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-            let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: Date())).json")
-            try? json.write(to: path)
+            if let url = url {
+                try? json.write(to: url)
+            } else {
+                let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: backup.date)).json")
+                try? json.write(to: path)
+            }
             NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
         }
+    }
+
+    func saveNewBackup() {
+        save(backup: createBackup())
     }
 
     func importBackup(from url: URL) {
@@ -64,6 +72,12 @@ class BackupManager {
         )
     }
 
+    func renameBackup(url: URL, name: String?) {
+        guard var backup = Backup.load(from: url) else { return }
+        backup.name = name?.isEmpty ?? true ? nil : name
+        save(backup: backup, url: url)
+    }
+
     func removeBackup(url: URL) {
         try? FileManager.default.removeItem(at: url)
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
@@ -72,23 +86,23 @@ class BackupManager {
     func restore(from backup: Backup) {
         // this should probably do some more checks before running, idk
 
-        if !backup.history.isEmpty {
+        if backup.history != nil {
             DataManager.shared.clearHistory()
-            backup.history.forEach {
+            backup.history?.forEach {
                 _ = $0.toObject(context: DataManager.shared.container.viewContext)
             }
         }
 
-        if !backup.manga.isEmpty {
+        if backup.manga != nil {
             DataManager.shared.clearManga()
-            backup.manga.forEach {
+            backup.manga?.forEach {
                 _ = $0.toObject(context: DataManager.shared.container.viewContext)
             }
         }
 
-        if !backup.library.isEmpty {
+        if backup.library != nil {
             DataManager.shared.clearLibrary()
-            backup.library.forEach {
+            backup.library?.forEach {
                 let libraryObject = $0.toObject(context: DataManager.shared.container.viewContext)
                 if let manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId) {
                     libraryObject.manga = manga
@@ -96,9 +110,9 @@ class BackupManager {
             }
         }
 
-        if !backup.chapters.isEmpty {
+        if backup.chapters != nil {
             DataManager.shared.clearChapters()
-            backup.chapters.forEach {
+            backup.chapters?.forEach {
                 let chapter = $0.toObject(context: DataManager.shared.container.viewContext)
                 chapter.manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId)
             }

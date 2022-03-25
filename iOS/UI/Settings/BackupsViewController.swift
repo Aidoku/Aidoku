@@ -10,7 +10,7 @@ import CoreData
 
 class BackupsViewController: UITableViewController {
 
-    var backups = BackupManager.backupUrls
+    var backups: [URL] = []
 
     init() {
         super.init(style: .insetGrouped)
@@ -29,6 +29,11 @@ class BackupsViewController: UITableViewController {
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
+        }
+
+        Task { @MainActor in
+            backups = BackupManager.backupUrls
+            tableView.reloadSections(IndexSet(integer: 0), with: .fade)
         }
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateBackupList"), object: nil, queue: nil) { _ in
@@ -71,20 +76,28 @@ extension BackupsViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var cell: UITableViewCell? = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell")
+        var cell: UITableViewCell? = tableView.dequeueReusableCell(withIdentifier: "UITableViewCellSubtitle")
         if cell == nil {
-            cell = UITableViewCell(style: .default, reuseIdentifier: "UITableViewCell")
+            cell = UITableViewCell(style: .subtitle, reuseIdentifier: "UITableViewCellSubtitle")
         }
+
+        cell?.detailTextLabel?.text = nil
 
         if let backup = Backup.load(from: backups[indexPath.row]) {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "M/dd h:mm a"
-            cell?.textLabel?.text = "Backup \(dateFormatter.string(from: backup.date))"
+            if let name = backup.name {
+                cell?.textLabel?.text = name
+                cell?.detailTextLabel?.text = dateFormatter.string(from: backup.date)
+                cell?.detailTextLabel?.textColor = .secondaryLabel
+            } else {
+                cell?.textLabel?.text = "Backup \(dateFormatter.string(from: backup.date))"
+            }
         } else {
             cell?.textLabel?.text = "Corrupted Backup"
         }
 
-        return cell ?? UITableViewCell()
+        return cell!
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -107,10 +120,41 @@ extension BackupsViewController {
         present(alertView, animated: true)
     }
 
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            BackupManager.shared.removeBackup(url: backups[indexPath.row])
+    override func tableView(_ tableView: UITableView,
+                            trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+
+        let rename = UIContextualAction(style: .normal, title: "Rename") { _, _, completion in
+            if let backup = Backup.load(from: self.backups[indexPath.row]) {
+                let alert = UIAlertController(title: "Rename Backup", message: "Enter a new name for your backup", preferredStyle: .alert)
+                alert.addTextField { textField in
+                    textField.placeholder = backup.name ?? "Backup Name"
+                }
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                    let textField = alert.textFields![0]
+                    BackupManager.shared.renameBackup(url: self.backups[indexPath.row], name: textField.text)
+                }))
+                self.present(alert, animated: true, completion: nil)
+            } else {
+                let alert = UIAlertController(
+                    title: "Corrupted Backup",
+                    message: "This backup seems to have misconfigured data. Renaming is not possible.",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                self.present(alert, animated: true, completion: nil)
+            }
+            completion(true)
         }
+        rename.backgroundColor = .systemIndigo
+
+        let delete = UIContextualAction(style: .normal, title: "Delete") { _, _, completion in
+            BackupManager.shared.removeBackup(url: self.backups[indexPath.row])
+            completion(true)
+        }
+        delete.backgroundColor = .red
+
+        return UISwipeActionsConfiguration(actions: [delete, rename])
     }
 
     override func tableView(_ tableView: UITableView,
