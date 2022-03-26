@@ -451,19 +451,19 @@ extension DataManager {
         _ = save()
     }
 
-    func addHistory(for chapter: Chapter, page: Int? = nil) {
+    func addHistory(for chapter: Chapter, page: Int? = nil, date: Date = Date()) {
         guard let historyObject = getHistoryObject(for: chapter) else { return }
-        historyObject.dateRead = Date()
+        historyObject.dateRead = date
         if let page = page {
             historyObject.progress = Int16(page)
         }
         _ = save()
     }
 
-    func addHistory(for chapters: [Chapter]) {
+    func addHistory(for chapters: [Chapter], date: Date = Date()) {
         for chapter in chapters {
             guard let historyObject = getHistoryObject(for: chapter) else { continue }
-            historyObject.dateRead = Date()
+            historyObject.dateRead = date
         }
         _ = save()
     }
