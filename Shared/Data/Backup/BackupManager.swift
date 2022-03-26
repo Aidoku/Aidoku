@@ -44,7 +44,13 @@ class BackupManager {
 
     func importBackup(from url: URL) {
         Self.directory.createDirctory()
-        try? FileManager.default.moveItem(at: url, to: Self.directory.appendingPathComponent(url.lastPathComponent))
+        var targetLocation = Self.directory.appendingPathComponent(url.lastPathComponent)
+        while targetLocation.exists {
+            targetLocation = targetLocation.deletingLastPathComponent().appendingPathComponent(
+                targetLocation.deletingPathExtension().lastPathComponent.appending("_1")
+            ).appendingPathExtension(url.pathExtension)
+        }
+        try? FileManager.default.moveItem(at: url, to: targetLocation)
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
@@ -61,12 +67,16 @@ class BackupManager {
         let chapters = (try? DataManager.shared.getChapterObjects())?.map {
             BackupChapter(chapterObject: $0)
         } ?? []
+        let sources = (try? DataManager.shared.getSourceObjects())?.compactMap {
+            $0.id
+        } ?? []
 
         return Backup(
             library: library,
             history: history,
             manga: manga,
             chapters: chapters,
+            sources: sources,
             date: Date(),
             version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
         )
