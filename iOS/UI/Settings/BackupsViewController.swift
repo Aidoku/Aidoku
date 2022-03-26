@@ -97,6 +97,24 @@ extension BackupsViewController {
             cell?.textLabel?.text = "Corrupted Backup"
         }
 
+        let label = UILabel()
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: backups[indexPath.row].path),
+           let size = attributes[FileAttributeKey.size] as? NSNumber {
+            if (size.floatValue / 1000) < 1 {
+                label.text = "\(size.intValue) bytes"
+            } else if (size.floatValue / 1000000) < 1 {
+                label.text = "\(Int(round(size.floatValue / 1000))) KB"
+            } else {
+                label.text = "\(round(size.floatValue / 1000000 * 10) / 10) MB"
+            }
+        } else {
+            label.text = nil
+        }
+        label.textColor = .secondaryLabel
+        label.font = .systemFont(ofSize: 14)
+        label.sizeToFit()
+        cell?.accessoryView = label
+
         return cell!
     }
 
