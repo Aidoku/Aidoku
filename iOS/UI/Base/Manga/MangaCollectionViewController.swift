@@ -102,7 +102,7 @@ class MangaCollectionViewController: UIViewController {
         if let id = id {
             return chapters[manga.id]?.first { $0.id == id }
         }
-        return chapters[manga.id]?.first
+        return chapters[manga.id]?.last
     }
 
     func loadChaptersAndHistory() {
