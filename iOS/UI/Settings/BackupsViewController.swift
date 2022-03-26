@@ -103,21 +103,34 @@ extension BackupsViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        let alertView = UIAlertController(
+        let restoreAlert = UIAlertController(
             title: "Restore to this backup?",
             message: "All current data will be removed and replaced by the data from this backup.",
             preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
         )
 
-        let action = UIAlertAction(title: "Restore", style: .destructive) { _ in
+        restoreAlert.addAction(UIAlertAction(title: "Restore", style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
                 BackupManager.shared.restore(from: backup)
+                let missingSources = (backup.sources ?? []).filter {
+                    !DataManager.shared.hasSource(id: $0)
+                }
+                if !missingSources.isEmpty {
+                    var message = "The restored backup may contain data from the following sources, which are not currently installed:"
+                    message += missingSources.map { "\n- \($0)" }.joined()
+                    let missingAlert = UIAlertController(
+                        title: "Missing Sources",
+                        message: message,
+                        preferredStyle: .alert
+                    )
+                    missingAlert.addAction(UIAlertAction(title: "OK", style: .cancel))
+                    self.present(missingAlert, animated: true)
+                }
             }
-        }
-        alertView.addAction(action)
+        })
 
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        present(alertView, animated: true)
+        restoreAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(restoreAlert, animated: true)
     }
 
     override func tableView(_ tableView: UITableView,

@@ -559,6 +559,16 @@ extension DataManager {
         _ = save()
     }
 
+    func hasSource(id: String) -> Bool {
+        (try? getSourceObjects(
+            predicate: NSPredicate(
+                format: "id = %@",
+                id
+            ),
+            limit: 1
+        ).first) != nil
+    }
+
     func setListing(for source: Source, listing: Int) {
         guard let sourceObject = getSourceObject(for: source) else { return }
 
