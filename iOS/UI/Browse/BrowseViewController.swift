@@ -28,7 +28,6 @@ class SourceSectionHeaderView: UITableViewHeaderFooterView {
         NSLayoutConstraint.activate([
             title.heightAnchor.constraint(equalToConstant: 20),
             title.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            title.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
             title.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }

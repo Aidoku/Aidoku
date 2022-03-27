@@ -93,6 +93,7 @@ class SettingsViewController: SettingsTableViewController {
 
 // MARK: - Table View Data Source
 extension SettingsViewController {
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
             switch item.key {
@@ -146,5 +147,9 @@ extension SettingsViewController {
             }
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        44
     }
 }
