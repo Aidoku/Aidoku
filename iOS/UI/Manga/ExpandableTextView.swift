@@ -91,7 +91,7 @@ class ExpandableTextView: UIView {
 
         textLabel.topAnchor.constraint(equalTo: topAnchor).isActive = true
         textLabel.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
-        textLabel.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        textLabel.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
 
         moreButton.trailingAnchor.constraint(equalTo: textLabel.trailingAnchor).isActive = true
         moreButton.bottomAnchor.constraint(equalTo: textLabel.bottomAnchor).isActive = true

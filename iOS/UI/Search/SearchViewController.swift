@@ -76,7 +76,7 @@ class SearchViewController: UIViewController {
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
             let groupSize = NSCollectionLayoutSize(widthDimension: .estimated(120),
-                                                   heightDimension: mangaCount > 0 ? .estimated(180) : .absolute(0))
+                                                   heightDimension: mangaCount > 0 ? .estimated(180) : .absolute(0.1))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
             let section = NSCollectionLayoutSection(group: group)

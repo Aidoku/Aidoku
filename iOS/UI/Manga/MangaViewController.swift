@@ -182,6 +182,7 @@ class MangaViewController: UIViewController {
         if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
             headerView.topAnchor.constraint(equalTo: tableView.topAnchor).isActive = true
             headerView.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
+            headerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
             headerView.heightAnchor.constraint(equalTo: headerView.contentStackView.heightAnchor, constant: 10).isActive = true
         }
     }

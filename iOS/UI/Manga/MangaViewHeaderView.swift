@@ -137,7 +137,9 @@ class MangaViewHeaderView: UIView {
             self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
         }
         loadTags()
-        layoutIfNeeded()
+        if superview != nil {
+            layoutIfNeeded()
+        }
     }
 
     func configureContents() {
@@ -314,16 +316,15 @@ class MangaViewHeaderView: UIView {
             nsfwLabel.leadingAnchor.constraint(equalTo: nsfwView.leadingAnchor, constant: 8),
             nsfwLabel.topAnchor.constraint(equalTo: nsfwView.topAnchor, constant: 4),
 
-            descriptionLabel.leadingAnchor.constraint(equalTo: contentStackView.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(equalTo: contentStackView.trailingAnchor),
             descriptionLabel.heightAnchor.constraint(equalTo: descriptionLabel.textLabel.heightAnchor),
 
+            // The following two constraints cause warning due to UISV-canvas-connection constraints added by contentStackView
+            // The only way around this might be making width full size and then setting subview width constraints
+            // but that might be tough because I use safe area insets and not static insets.
             tagScrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             tagScrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             tagScrollView.heightAnchor.constraint(equalToConstant: 26),
 
-            readButton.leadingAnchor.constraint(equalTo: contentStackView.leadingAnchor),
-            readButton.trailingAnchor.constraint(equalTo: contentStackView.trailingAnchor),
             readButton.heightAnchor.constraint(equalToConstant: 38),
 
             headerView.heightAnchor.constraint(equalToConstant: 36),
@@ -371,9 +372,11 @@ class MangaViewHeaderView: UIView {
             tagLabel.translatesAutoresizingMaskIntoConstraints = false
             tagView.addSubview(tagLabel)
 
-            tagView.leadingAnchor.constraint(equalTo: tagScrollView.leadingAnchor, constant: width).isActive = true
             tagLabel.leadingAnchor.constraint(equalTo: tagView.leadingAnchor, constant: 12).isActive = true
             tagLabel.topAnchor.constraint(equalTo: tagView.topAnchor, constant: 4).isActive = true
+
+            tagView.centerYAnchor.constraint(equalTo: tagScrollView.centerYAnchor).isActive = true
+            tagView.leadingAnchor.constraint(equalTo: tagScrollView.leadingAnchor, constant: width).isActive = true
             tagView.widthAnchor.constraint(equalTo: tagLabel.widthAnchor, constant: 24).isActive = true
             tagView.heightAnchor.constraint(equalTo: tagLabel.heightAnchor, constant: 8).isActive = true
 
