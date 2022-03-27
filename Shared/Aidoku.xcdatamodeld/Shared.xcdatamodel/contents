@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="20F5055c" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="20F5055c" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="CategoryObject" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -60,6 +60,16 @@
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="version" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
+    <configuration name="Cloud" usedWithCloudKit="YES">
+        <memberEntity name="Category"/>
+        <memberEntity name="Chapter"/>
+        <memberEntity name="History"/>
+        <memberEntity name="LibraryManga"/>
+        <memberEntity name="Manga"/>
+    </configuration>
+    <configuration name="Local">
+        <memberEntity name="Source"/>
+    </configuration>
     <elements>
         <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="89"/>
         <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="194"/>

@@ -31,7 +31,7 @@ extension LibraryMangaObject {
     @NSManaged public var lastOpened: Date
     @NSManaged public var lastUpdated: Date
     @NSManaged public var dateAdded: Date
-    @NSManaged public var manga: MangaObject
+    @NSManaged public var manga: MangaObject?
 
     @NSManaged public var categories: NSSet?
 

@@ -25,34 +25,54 @@ class DataManager {
 
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
-        loadLibrary()
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
             Task {
                 await self.updateLibrary()
             }
         }
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil) { _ in
+            self.setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
+        }
     }
 
     func setupContainer(cloudSync: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
+        let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let mainStoreUrl = storeDirectory.appendingPathComponent("Aidoku.sqlite")
+
+        let cloudDescription = NSPersistentStoreDescription(url: mainStoreUrl)
+        cloudDescription.configuration = "Cloud"
+
+        cloudDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        cloudDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+
+        let localDescription = NSPersistentStoreDescription(url: storeDirectory.appendingPathComponent("Local.sqlite"))
+        localDescription.configuration = "Local"
+
         if inMemory {
-            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
+            localDescription.url = URL(fileURLWithPath: "/dev/null")
+            cloudDescription.url = URL(fileURLWithPath: "/dev/null")
+            cloudDescription.cloudKitContainerOptions = nil
+        } else if cloudSync {
+            cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.xyz.skitty.Aidoku")
+        } else {
+            cloudDescription.cloudKitContainerOptions = nil
         }
+
+        container.persistentStoreDescriptions = [
+            cloudDescription,
+            localDescription
+        ]
 
         container.viewContext.automaticallyMergesChangesFromParent = true
-        container.viewContext.mergePolicy = NSMergePolicy(merge: .overwriteMergePolicyType)
+        container.viewContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
 
-        container.persistentStoreDescriptions.first?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        container.persistentStoreDescriptions.first?.setOption(true as NSNumber,
-                                                               forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        if !cloudSync || inMemory {
-            container.persistentStoreDescriptions.first?.cloudKitContainerOptions = nil
-        }
-
-        container.loadPersistentStores { _, error in
+        container.loadPersistentStores { desciption, error in
             if let error = error {
-                fatalError("Error: \(error)")
+                print("[Error] CoreData Error: \(error)")
+            } else if desciption.configuration == "Cloud" {
+                self.loadLibrary()
             }
         }
     }
@@ -128,13 +148,13 @@ extension DataManager {
         guard let libraryObjects = try? getLibraryObjects(
             sortDescriptors: [NSSortDescriptor(key: "lastOpened", ascending: false)]
         ) else { return }
-        libraryManga = libraryObjects.map { libraryObject -> Manga in
+        libraryManga = libraryObjects.compactMap { libraryObject -> Manga? in
             if let oldManga = libraryManga.first(where: {
-                $0.sourceId == libraryObject.manga.sourceId && $0.id == libraryObject.manga.id }
+                $0.sourceId == libraryObject.manga?.sourceId && $0.id == libraryObject.manga?.id }
             ) {
                 return oldManga
             }
-            return libraryObject.manga.toManga()
+            return libraryObject.manga?.toManga()
         }
     }
 

@@ -21,8 +21,8 @@ struct BackupLibraryManga: Codable {
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
         dateAdded = libraryObject.dateAdded
-        mangaId = libraryObject.manga.id
-        sourceId = libraryObject.manga.sourceId
+        mangaId = libraryObject.manga?.id ?? ""
+        sourceId = libraryObject.manga?.sourceId ?? ""
         categories = []
     }
 
