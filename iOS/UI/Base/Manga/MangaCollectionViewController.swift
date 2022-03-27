@@ -170,6 +170,9 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
         return cell ?? UICollectionViewCell()
     }
 
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        (cell as? MangaCoverCell)?.badgeNumber = badges[manga[indexPath.row].id]
+    }
 }
 
 // MARK: - Collection View Delegate

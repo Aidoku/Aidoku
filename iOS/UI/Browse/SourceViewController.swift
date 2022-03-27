@@ -218,7 +218,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
         return UICollectionReusableView()
     }
 
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+    override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == manga.count - 1 && hasMore {
             Task {
                 let start = manga.count
