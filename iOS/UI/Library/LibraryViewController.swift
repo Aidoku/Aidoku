@@ -83,20 +83,19 @@ class LibraryViewController: MangaCollectionViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
             let previousManga = self.manga
             self.manga = DataManager.shared.libraryManga
-            if !self.manga.isEmpty && self.manga.count == previousManga.count { // reorder
-                Task { @MainActor in
+            Task { @MainActor in
+                if !self.manga.isEmpty && self.manga.count == previousManga.count { // reorder
                     self.collectionView?.performBatchUpdates {
                         for (i, manga) in previousManga.enumerated() {
                             let from = IndexPath(row: i, section: 0)
-                            if let j = self.manga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }) {
+                            if let j = self.manga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }),
+                               j != i {
                                 let to = IndexPath(row: j, section: 0)
                                 self.collectionView?.moveItem(at: from, to: to)
                             }
                         }
                     }
-                }
-            } else { // reload
-                Task { @MainActor in
+                } else { // reload
                     self.collectionView?.reloadData()
                 }
             }
@@ -137,15 +136,6 @@ class LibraryViewController: MangaCollectionViewController {
             await DataManager.shared.updateLibrary()
             refreshControl.endRefreshing()
         }
-    }
-}
-
-extension LibraryViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        // unfortunately only gets called for a swipe to dismiss
-        opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
-        badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
-        loadChaptersAndHistory()
     }
 }
 
