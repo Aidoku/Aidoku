@@ -15,7 +15,11 @@ enum ReaderInfoPageType {
 class ReaderInfoPageView: UIView {
     var type: ReaderInfoPageType
 
-    let currentChapter: Chapter
+    var currentChapter: Chapter {
+        didSet {
+            updateLabelText()
+        }
+    }
     var previousChapter: Chapter? {
         didSet {
             updateLabelText()
