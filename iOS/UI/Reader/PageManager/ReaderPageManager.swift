@@ -29,6 +29,7 @@ extension ReaderPageManager {
 }
 
 protocol ReaderPageManagerDelegate: AnyObject {
+    var chapter: Chapter { get set }
     var chapterList: [Chapter] { get set }
 
     func didMove(toPage page: Int)
