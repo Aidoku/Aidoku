@@ -122,7 +122,7 @@ class ReaderViewController: UIViewController {
     let sliderView = ReaderSliderView()
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
-    let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+    let progressView = UIActivityIndicatorView()
 
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
 
@@ -206,12 +206,6 @@ class ReaderViewController: UIViewController {
             navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
         }
 
-//        if readingMode == .scroll {
-//            pageManager = ReaderScrollPageManager()
-//        } else {
-//            pageManager = ReaderPagedPageManager()
-//        }
-
         currentPageLabel.font = .systemFont(ofSize: 10)
         currentPageLabel.textAlignment = .center
         currentPageLabel.sizeToFit()
@@ -248,12 +242,11 @@ class ReaderViewController: UIViewController {
         transitionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(transitionView)
 
-        // TODO: Maybe make this an indefinite progress view
-//        progressView.center = scrollView.center
-//        progressView.trackColor = .quaternaryLabel
-//        progressView.progressColor = scrollView.tintColor
-//        scrollView.items.append(progressView)
-//        scrollView.addSubview(progressView)
+        // TODO: Mak this an indefinite progress view more like the circular progress view
+        progressView.center = view.center
+        progressView.hidesWhenStopped = true
+        progressView.startAnimating()
+        view.addSubview(progressView)
 
         view.addGestureRecognizer(singleTap)
 
@@ -276,7 +269,12 @@ class ReaderViewController: UIViewController {
         case "ltr": readingMode = .ltr
         case "vertical": readingMode = .vertical
         case "scroll": readingMode = .scroll
-        default: readingMode = .defaultViewer
+        default:
+            if let manga = manga {
+                readingMode = manga.viewer
+            } else {
+                readingMode = .defaultViewer
+            }
         }
 
         if readingMode == .defaultViewer || readingMode == .rtl {
@@ -378,6 +376,8 @@ extension ReaderViewController {
         if chapterList.isEmpty {
             chapterList = await DataManager.shared.getChapters(from: chapter.sourceId, for: chapter.mangaId, fromSource: true)
         }
+
+        progressView.stopAnimating()
     }
 
     @objc func close() {

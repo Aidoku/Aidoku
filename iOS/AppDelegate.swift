@@ -20,15 +20,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.appearance": 0,
                 "General.useSystemAppearance": true,
 
-                "Reader.downsampleImages": true,
-
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
 
                 "Browse.showNsfwSources": false,
                 "Browse.labelNsfwSources": true,
 
-                "Reader.readingMode": "default"
+                "Reader.readingMode": "default",
+                "Reader.downsampleImages": false,
+                "Reader.verticalInfiniteScroll": false
             ]
         )
 

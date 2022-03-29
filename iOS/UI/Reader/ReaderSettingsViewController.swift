@@ -14,7 +14,11 @@ class ReaderSettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: "General", items: [
                 SettingItem(type: "select", key: "Reader.readingMode", title: "Reading Mode",
                             values: ["default", "rtl", "ltr", "vertical", "scroll"],
-                            titles: ["Default", "Right to Left", "Left to Right", "Vertical", "Vertical Scroll"])
+                            titles: ["Default", "Right to Left", "Left to Right", "Vertical", "Vertical Scroll"]),
+                SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
+            ]),
+            SettingItem(type: "group", title: "Experimental", items: [
+                SettingItem(type: "switch", key: "Reader.verticalInfiniteScroll", title: "Infinite Vertical Scrolling")
             ])
         ])
     }
