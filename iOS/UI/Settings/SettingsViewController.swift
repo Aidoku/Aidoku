@@ -24,15 +24,15 @@ class SettingsViewController: SettingsTableViewController {
                             values: ["Light", "Dark"], requiresFalse: "General.useSystemAppearance"),
                 SettingItem(type: "switch", key: "General.useSystemAppearance", title: "Use System Appearance")
             ]),
-            SettingItem(type: "group", title: "Reader", items: [
-                SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
-            ]),
             SettingItem(type: "group", title: "Library", items: [
                 SettingItem(type: "switch", key: "Library.opensReaderView", title: "Open Reader View"),
                 SettingItem(type: "switch", key: "Library.unreadChapterBadges", title: "Unread Chapter Badges")
             ]),
             SettingItem(type: "group", title: "Browse", items: [
                 SettingItem(type: "switch", key: "Browse.showNsfwSources", title: "Show NSFW Sources")
+            ]),
+            SettingItem(type: "group", title: "Reader", items: [
+                SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
             ]),
             SettingItem(type: "group", title: "Backups", items: [
                 SettingItem(type: "page", key: "Backups.backups", title: "Backups")

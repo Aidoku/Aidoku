@@ -39,7 +39,7 @@ public class MangaObject: NSManagedObject {
             url: url,
             status: MangaStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
-            viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
+            viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
         )
     }
 

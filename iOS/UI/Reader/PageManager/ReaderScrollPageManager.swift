@@ -29,6 +29,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var readingMode: MangaViewer?
     var pages: [Page] = []
 
+    var infiniteScroll = false
+
     var previousChapter: Chapter?
     var previousPages: [Page] = []
     var nextChapter: Chapter?
@@ -127,6 +129,21 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.leadingAnchor.constraint(equalTo: parent.view.leadingAnchor).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: parent.view.trailingAnchor).isActive = true
         collectionView.bottomAnchor.constraint(equalTo: parent.view.bottomAnchor).isActive = true
+
+        infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil) { _ in
+            self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+            if !self.infiniteScroll {
+                self.previousPages = []
+                self.previousChapter = nil
+                self.nextPages = []
+                self.nextChapter = nil
+            }
+            Task { @MainActor in
+                self.collectionView.reloadData()
+            }
+        }
     }
 
     func remove() {
@@ -367,6 +384,8 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
     }
 
     func calculateIndexes() {
+        guard infiniteScroll else { return }
+
         let topCellIndex = topCellIndex
         let bottomCellIndex = bottomCellIndex
 

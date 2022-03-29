@@ -330,7 +330,7 @@ extension Source {
                     url: url_len > 0 ? try? self.vm.stringFromHeap(byteOffset: Int(url), length: Int(url_len)) : nil,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
-                    viewer: MangaViewer(rawValue: Int(viewer)) ?? .rtl
+                    viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
                 )
                 self.descriptorPointer += 1
                 self.descriptors.append(manga)
