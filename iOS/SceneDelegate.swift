@@ -59,7 +59,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     _ = await SourceManager.shared.importSource(from: url)
                 }
             } else if url.pathExtension == "json" {
-                BackupManager.shared.importBackup(from: url)
+                let success = BackupManager.shared.importBackup(from: url)
+                let title: String
+                let message: String
+                if success {
+                    title = "Backup Imported"
+                    message = "To restore to this backup, find it in the backups page in settings."
+                } else {
+                    title = "Import Failed"
+                    message = "Failed to save backup. Maybe try importing from a different location."
+                }
+                let importAlert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                importAlert.addAction(UIAlertAction(title: "OK", style: .cancel))
+                UIApplication.shared.windows.first?.rootViewController?.present(importAlert, animated: true)
             }
         }
     }

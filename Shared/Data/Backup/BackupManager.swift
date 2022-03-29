@@ -42,7 +42,7 @@ class BackupManager {
         save(backup: createBackup())
     }
 
-    func importBackup(from url: URL) {
+    func importBackup(from url: URL) -> Bool {
         Self.directory.createDirctory()
         var targetLocation = Self.directory.appendingPathComponent(url.lastPathComponent)
         while targetLocation.exists {
@@ -50,8 +50,14 @@ class BackupManager {
                 targetLocation.deletingPathExtension().lastPathComponent.appending("_1")
             ).appendingPathExtension(url.pathExtension)
         }
-        try? FileManager.default.moveItem(at: url, to: targetLocation)
-        NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
+        do {
+            try FileManager.default.copyItem(at: url, to: targetLocation)
+            try? FileManager.default.removeItem(at: url)
+            NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
+            return true
+        } catch {
+            return false
+        }
     }
 
     func createBackup() -> Backup {
