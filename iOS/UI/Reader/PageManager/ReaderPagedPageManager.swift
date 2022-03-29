@@ -13,12 +13,23 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     weak var delegate: ReaderPageManagerDelegate?
 
     var chapter: Chapter?
-    var readingMode: MangaViewer?
+    var readingMode: MangaViewer? {
+        didSet(oldValue) {
+            if (readingMode == .vertical && oldValue != .vertical) || oldValue == .vertical {
+                remove()
+                createPageViewController()
+                if let chapter = chapter {
+                    setChapter(chapter: chapter, startPage: currentPageIndex)
+                }
+            }
+        }
+    }
     var pages: [Page] = []
 
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
+    var parentViewController: UIViewController!
     var pageViewController: UIPageViewController!
     var items: [UIViewController] = []
 
@@ -36,20 +47,30 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
         currentIndex - 1 - (hasPreviousChapter ? 1 : 0)
     }
 
-    func attach(toParent parent: UIViewController) {
-        pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+    func createPageViewController() {
+        guard parentViewController != nil else { return }
+        pageViewController = UIPageViewController(
+            transitionStyle: .scroll,
+            navigationOrientation: readingMode == .vertical ? .vertical : .horizontal,
+            options: nil
+        )
 
         pageViewController.delegate = self
         pageViewController.dataSource = self
         pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
-        parent.addChild(pageViewController)
-        parent.view.addSubview(pageViewController.view)
-        pageViewController.didMove(toParent: parent)
+        parentViewController.addChild(pageViewController)
+        parentViewController.view.addSubview(pageViewController.view)
+        pageViewController.didMove(toParent: parentViewController)
 
-        pageViewController.view.topAnchor.constraint(equalTo: parent.view.topAnchor).isActive = true
-        pageViewController.view.leadingAnchor.constraint(equalTo: parent.view.leadingAnchor).isActive = true
-        pageViewController.view.trailingAnchor.constraint(equalTo: parent.view.trailingAnchor).isActive = true
-        pageViewController.view.bottomAnchor.constraint(equalTo: parent.view.bottomAnchor).isActive = true
+        pageViewController.view.topAnchor.constraint(equalTo: parentViewController.view.topAnchor).isActive = true
+        pageViewController.view.leadingAnchor.constraint(equalTo: parentViewController.view.leadingAnchor).isActive = true
+        pageViewController.view.trailingAnchor.constraint(equalTo: parentViewController.view.trailingAnchor).isActive = true
+        pageViewController.view.bottomAnchor.constraint(equalTo: parentViewController.view.bottomAnchor).isActive = true
+    }
+
+    func attach(toParent parent: UIViewController) {
+        parentViewController = parent
+        createPageViewController()
     }
 
     func remove() {
@@ -329,7 +350,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDataSource {
     func pageViewController(_: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
 
-        if readingMode == .ltr {
+        if readingMode == .ltr || readingMode == .vertical {
             let nextIndex = viewControllerIndex + 1
             guard items.count > nextIndex else { return nil }
             return items[nextIndex]
@@ -343,7 +364,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDataSource {
     func pageViewController(_: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
 
-        if readingMode == .ltr {
+        if readingMode == .ltr || readingMode == .vertical {
             let previousIndex = viewControllerIndex - 1
             guard previousIndex >= 0, items.count > previousIndex else { return nil }
             return items[previousIndex]
