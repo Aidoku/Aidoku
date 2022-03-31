@@ -111,15 +111,6 @@ struct Filter: KVCObject, Identifiable, Equatable {
         self.value = filters as Any
     }
 
-    func toStructPointer(vm: WasmInterpreter, memory: WasmMemory) -> Int32 {
-        let namePointer = vm.write(string: name, memory: memory)
-        var valuePointer: Int32 = 0
-        if let str = value as? String {
-            valuePointer = vm.write(string: str, memory: memory)
-        }
-        return vm.write(data: [Int32(type.rawValue), namePointer, valuePointer], memory: memory)
-    }
-
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "type": return type.rawValue

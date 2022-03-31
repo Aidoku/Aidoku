@@ -12,16 +12,6 @@ import CWasm3
 // MARK: - WasmInterpreter
 extension WasmInterpreter {
 
-    func write(string: String, memory: WasmMemory) -> Int32 {
-        self.write(data: string.int32Array, memory: memory)
-    }
-
-    func write(data: [Int32], memory: WasmMemory) -> Int32 {
-        let offset = memory.malloc(Int32(4 * data.count))
-        try? self.writeToHeap(values: data, byteOffset: Int(offset))
-        return offset
-    }
-
     func stringFromHeap(byteOffset: Int) -> String {
         var bytes = [UInt8]()
         var offset = byteOffset

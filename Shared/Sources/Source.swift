@@ -44,7 +44,6 @@ class Source: Identifiable {
     var needsFilterRefresh = true
 
     var vm: WasmInterpreter
-    var memory: WasmMemory
 
     var globalStore: WasmGlobalStore
 
@@ -60,7 +59,6 @@ class Source: Identifiable {
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         self.vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
-        self.memory = WasmMemory(vm: vm)
         self.globalStore = WasmGlobalStore(vm: vm)
         self.actor = SourceActor(source: self)
 
@@ -69,24 +67,11 @@ class Source: Identifiable {
     }
 
     func prepareVirtualMachine() {
-        try? vm.addImportHandler(named: "string", namespace: "env", block: self.create_string)
-
 //        try? vm.addImportHandler(named: "filter", namespace: "env", block: self.create_filter)
 //        try? vm.addImportHandler(named: "listing", namespace: "env", block: self.create_listing)
 //        try? vm.addImportHandler(named: "manga", namespace: "env", block: self.create_manga)
 //        try? vm.addImportHandler(named: "chapter", namespace: "env", block: self.create_chapter)
 //        try? vm.addImportHandler(named: "page", namespace: "env", block: self.create_page)
-
-        try? vm.addImportHandler(named: "array", namespace: "env", block: self.array)
-        try? vm.addImportHandler(named: "array_size", namespace: "env", block: self.array_size)
-        try? vm.addImportHandler(named: "array_get", namespace: "env", block: self.array_get)
-        try? vm.addImportHandler(named: "array_append", namespace: "env", block: self.array_append)
-        try? vm.addImportHandler(named: "array_remove", namespace: "env", block: self.array_remove)
-        try? vm.addImportHandler(named: "object_getn", namespace: "env", block: self.object_getn)
-        try? vm.addImportHandler(named: "string", namespace: "env", block: self.string)
-        try? vm.addImportHandler(named: "string_value", namespace: "env", block: self.string_value)
-        try? vm.addImportHandler(named: "integer_value", namespace: "env", block: self.integer_value)
-        try? vm.addImportHandler(named: "float_value", namespace: "env", block: self.float_value)
 
         try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
         try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
@@ -97,6 +82,7 @@ class Source: Identifiable {
         try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
         try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
 
+        WasmStd(globalStore: globalStore).export()
         WasmAidoku(globalStore: globalStore, sourceId: id).export()
         WasmNet(globalStore: globalStore).export()
         WasmJson(globalStore: globalStore).export()
@@ -167,12 +153,12 @@ extension Source {
     }
 
     var setting_get_string: (Int32, Int32) -> Int32 {
-        { key, key_len in
+        { _, key_len in
             guard key_len >= 0 else { return 0 }
-            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-               let string = UserDefaults.standard.string(forKey: "\(self.id).\(key)") {
-                return self.vm.write(string: string, memory: self.memory)
-            }
+//            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+//               let string = UserDefaults.standard.string(forKey: "\(self.id).\(key)") {
+//                return self.vm.write(string: string, memory: self.memory)
+//            }
             return 0
         }
     }
@@ -208,153 +194,23 @@ extension Source {
     }
 
     var setting_get_array: (Int32, Int32) -> Int32 {
-        { key, key_len in
+        { _, key_len in
             guard key_len >= 0 else { return -1 }
-            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-               let array = UserDefaults.standard.array(forKey: "\(self.id).\(key)") {
-                self.globalStore.swiftDescriptorPointer += 1
-                self.globalStore.swiftDescriptors.append(array)
-                return Int32(self.globalStore.swiftDescriptorPointer)
-            }
+//            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+//               let array = UserDefaults.standard.array(forKey: "\(self.id).\(key)") {
+//                self.globalStore.swiftDescriptorPointer += 1
+//                self.globalStore.swiftDescriptors.append(array)
+//                return Int32(self.globalStore.swiftDescriptorPointer)
+//            }
             return -1
         }
     }
 
     func performAction(key: String) {
-        let string = vm.write(string: key, memory: memory)
-        guard string > 0 else { return }
-        try? vm.call("perform_action", string, Int32(key.count))
-        memory.free(string)
-    }
-}
-
-// MARK: - Object Pushing
-extension Source {
-
-    var create_string: (Int32, Int32) -> Int32 {
-        { string, string_len in
-            self.globalStore.swiftDescriptorPointer += 1
-            self.globalStore.swiftDescriptors.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
-            return Int32(self.globalStore.swiftDescriptorPointer)
-        }
-    }
-}
-
-// MARK: - Descriptor Handling
-extension Source {
-
-    var array: () -> Int32 {
-        {
-            self.globalStore.swiftDescriptorPointer += 1
-            self.globalStore.swiftDescriptors.append([])
-            return Int32(self.globalStore.swiftDescriptorPointer)
-        }
-    }
-
-    var array_size: (Int32) -> Int32 {
-        { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return 0 }
-            if let array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
-                return Int32(array.count)
-            }
-            return 0
-        }
-    }
-
-    var array_get: (Int32, Int32) -> Int32 {
-        { descriptor, index in
-            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return -1 }
-            if let array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
-                guard index < array.count else { return -1 }
-                self.globalStore.swiftDescriptorPointer += 1
-                self.globalStore.swiftDescriptors.append(array[Int(index)])
-                return Int32(self.globalStore.swiftDescriptorPointer)
-            }
-            return -1
-        }
-    }
-
-    var array_append: (Int32, Int32) -> Void {
-        { descriptor, object in
-            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return }
-            guard object >= 0, object < self.globalStore.swiftDescriptors.count else { return }
-            if var array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
-                array.append(self.globalStore.swiftDescriptors[Int(object)])
-                self.globalStore.swiftDescriptors[Int(descriptor)] = array
-            }
-        }
-    }
-
-    var array_remove: (Int32, Int32) -> Void {
-        { descriptor, index in
-            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return }
-            if var array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
-                array.remove(at: Int(index))
-                self.globalStore.swiftDescriptors[Int(descriptor)] = array
-            }
-        }
-    }
-
-    var object_getn: (Int32, Int32, Int32) -> Int32 {
-        { descriptor, key, key_len in
-            guard descriptor >= 0, key >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return -1 }
-            if let keyString = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-               let object = self.globalStore.swiftDescriptors[Int(descriptor)] as? KVCObject,
-               let value = object.valueByPropertyName(name: keyString) {
-                self.globalStore.swiftDescriptorPointer += 1
-                self.globalStore.swiftDescriptors.append(value)
-                return Int32(self.globalStore.swiftDescriptorPointer)
-            }
-            return -1
-        }
-    }
-
-    var string: (Int32, Int32) -> Int32 {
-        { str, str_len in
-            guard str_len >= 0 else { return -1 }
-            if let string = try? self.vm.stringFromHeap(byteOffset: Int(str), length: Int(str_len)) {
-                self.globalStore.swiftDescriptorPointer += 1
-                self.globalStore.swiftDescriptors.append(string)
-                return Int32(self.globalStore.swiftDescriptorPointer)
-            }
-            return -1
-        }
-    }
-
-    var string_value: (Int32) -> Int32 {
-        { descriptor in
-            guard descriptor >= 0 else { return 0 }
-            if let string = self.globalStore.swiftDescriptors[Int(descriptor)] as? String {
-                return self.vm.write(string: string, memory: self.memory)
-            }
-            return 0
-        }
-    }
-
-    var integer_value: (Int32) -> Int32 {
-        { descriptor in
-            guard descriptor >= 0 else { return -1 }
-            if let int = self.globalStore.swiftDescriptors[Int(descriptor)] as? Int {
-                return Int32(int)
-            } else if let bool = self.globalStore.swiftDescriptors[Int(descriptor)] as? Bool {
-                return Int32(bool ? 1 : 0)
-            } else if let string = self.globalStore.swiftDescriptors[Int(descriptor)] as? String {
-                return Int32(string) ?? -1
-            }
-            return -1
-        }
-    }
-
-    var float_value: (Int32) -> Float32 {
-        { descriptor in
-            guard descriptor >= 0 else { return -1 }
-            if let float = self.globalStore.swiftDescriptors[Int(descriptor)] as? Float {
-                return Float32(float)
-            } else if let float = Float(self.globalStore.swiftDescriptors[Int(descriptor)] as? String ?? "Error") {
-                return Float32(float)
-            }
-            return -1
-        }
+//        let string = vm.write(string: key, memory: memory)
+//        guard string > 0 else { return }
+//        try? vm.call("perform_action", string, Int32(key.count))
+//        memory.free(string)
     }
 }
 

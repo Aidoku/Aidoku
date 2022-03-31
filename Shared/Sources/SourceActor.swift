@@ -20,115 +20,96 @@ actor SourceActor {
         self.source = source
     }
 
+    // TODO: make filters and listings static
     func getFilters() async throws -> [Filter] {
-        let descriptor = source.array()
+        let descriptor: Int32 = try source.vm.call("initialize_filters")
 
-        try source.vm.call("initialize_filters", descriptor)
-
-        let filters = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Filter] ?? []
-
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+        let filters = source.globalStore.readStdValue(descriptor) as? [Filter] ?? []
+        source.globalStore.removeStdValue(descriptor)
 
         return filters
     }
 
     func getListings() throws -> [Listing] {
-        let descriptor = source.array()
+        let descriptor: Int32 = try source.vm.call("initialize_listings")
 
-        try source.vm.call("initialize_listings", descriptor)
-
-        let listings = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Listing] ?? []
-
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+        let listings = source.globalStore.readStdValue(descriptor) as? [Listing] ?? []
+        source.globalStore.removeStdValue(descriptor)
 
         return listings
     }
 
     func getMangaList(filters: [Filter], page: Int = 1) throws -> MangaPageResult {
-        let descriptor = source.array()
-        var filterPointer = -1
+        var filterPointer: Int32 = -1
         if !filters.isEmpty {
-            source.globalStore.swiftDescriptorPointer += 1
-            source.globalStore.swiftDescriptors.append(filters)
-            filterPointer = source.globalStore.swiftDescriptorPointer
+            filterPointer = source.globalStore.storeStdValue(filters)
         }
 
-        let hasMore: Int32 = try source.vm.call("manga_list_request", descriptor, Int32(filterPointer), Int32(page))
+        let descriptor: Int32 = try source.vm.call("manga_list_request", filterPointer, Int32(page))
 
-        let manga = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Manga] ?? []
+        let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
+        source.globalStore.removeStdValue(descriptor)
 
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+        if filterPointer > -1 {
+            source.globalStore.removeStdValue(filterPointer)
+        }
 
-        return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
+        return result
     }
 
     func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
-        let descriptor = source.array()
-        let listingName = source.vm.write(string: listing.name, memory: source.memory)
+        let listingPointer = source.globalStore.storeStdValue(listing)
 
-        let hasMore: Int32 = try source.vm.call(
-            "manga_listing_request", descriptor, listingName, Int32(listing.name.count), Int32(page)
+        let descriptor: Int32 = try source.vm.call(
+            "manga_listing_request", listingPointer, Int32(page)
         )
 
-        let manga = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Manga] ?? []
+        let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
+        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(listingPointer)
 
-        source.memory.free(listingName)
-
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
-
-        return MangaPageResult(manga: manga, hasNextPage: hasMore > 0)
+        return result
     }
 
     func getMangaDetails(manga: Manga) throws -> Manga {
-        source.globalStore.swiftDescriptorPointer += 1
-        source.globalStore.swiftDescriptors.append(manga)
+        let mangaPointer = source.globalStore.storeStdValue(manga)
 
-        let result: Int32 = try source.vm.call("manga_details_request", Int32(source.globalStore.swiftDescriptorPointer))
+        let descriptor: Int32 = try source.vm.call("manga_details_request", mangaPointer)
 
-        guard result >= 0, result < source.globalStore.swiftDescriptors.count else { throw SourceError.mangaDetailsFailed }
-        let manga = source.globalStore.swiftDescriptors[Int(result)] as? Manga
-
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+        let manga = source.globalStore.readStdValue(descriptor) as? Manga
+        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(mangaPointer)
 
         guard let manga = manga else { throw SourceError.mangaDetailsFailed }
+
         return manga
     }
 
     func getChapterList(manga: Manga) throws -> [Chapter] {
-        let descriptor = source.array()
-        source.globalStore.swiftDescriptorPointer += 1
-        source.globalStore.swiftDescriptors.append(manga)
+        let mangaPointer = source.globalStore.storeStdValue(manga)
 
         source.chapterCounter = 0
         source.currentManga = manga.id
 
-        try source.vm.call("chapter_list_request", descriptor, Int32(source.globalStore.swiftDescriptorPointer))
-
-        let chapters = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Chapter] ?? []
+        let descriptor: Int32 = try source.vm.call("chapter_list_request", mangaPointer)
 
         source.chapterCounter = 0
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+
+        let chapters = source.globalStore.readStdValue(descriptor) as? [Chapter] ?? []
+        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(mangaPointer)
 
         return chapters
     }
 
     func getPageList(chapter: Chapter) async throws -> [Page] {
-        let descriptor = source.array()
-        source.globalStore.swiftDescriptorPointer += 1
-        source.globalStore.swiftDescriptors.append(chapter)
+        let chapterPointer = source.globalStore.storeStdValue(chapter)
 
-        try source.vm.call("page_list_request", descriptor, Int32(source.globalStore.swiftDescriptorPointer))
+        let descriptor: Int32 = try source.vm.call("page_list_request", chapterPointer)
 
-        let pages = source.globalStore.swiftDescriptors[Int(descriptor)] as? [Page] ?? []
-
-        source.globalStore.swiftDescriptorPointer = -1
-        source.globalStore.swiftDescriptors = []
+        let pages = source.globalStore.readStdValue(descriptor) as? [Page] ?? []
+        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(chapterPointer)
 
         return pages
     }
