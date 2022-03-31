@@ -8,8 +8,12 @@
 import Foundation
 import WasmInterpreter
 
-struct WasmGlobalStore {
+class WasmGlobalStore {
     var vm: WasmInterpreter
+
+    // aidoku
+    var swiftDescriptorPointer = -1
+    var swiftDescriptors: [Any] = []
 
     // net
     var requests: [WasmRequestObject] = []
@@ -18,4 +22,8 @@ struct WasmGlobalStore {
     var jsonDescriptorPointer: Int32 = -1
     var jsonDescriptors: [Int32: Any?] = [:]
     var jsonReferences: [Int32: [Int32]] = [:]
+
+    init(vm: WasmInterpreter) {
+        self.vm = vm
+    }
 }
