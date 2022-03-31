@@ -13,10 +13,10 @@ struct WasmRequestObject {
     var URL: String?
     var method: String?
     var headers: [String: String?] = [:]
-    var bodyLength: Int?
     var body: Data?
 
     var data: Data?
+    var bytesRead: Int = 0
 }
 
 class WasmNet: WasmModule {
@@ -41,11 +41,14 @@ class WasmNet: WasmModule {
         try? globalStore.vm.addImportHandler(named: "request_set_header", namespace: namespace, block: self.request_set_header)
         try? globalStore.vm.addImportHandler(named: "request_set_body", namespace: namespace, block: self.request_set_header)
         try? globalStore.vm.addImportHandler(named: "request_send", namespace: namespace, block: self.request_send)
+        try? globalStore.vm.addImportHandler(named: "request_get_data_size", namespace: namespace, block: self.request_get_data_size)
         try? globalStore.vm.addImportHandler(named: "request_get_data", namespace: namespace, block: self.request_get_data)
+        try? globalStore.vm.addImportHandler(named: "request_close", namespace: namespace, block: self.request_close)
+        try? globalStore.vm.addImportHandler(named: "request_json", namespace: namespace, block: self.request_json)
     }
 }
 
-extension WasmRequest {
+extension WasmNet {
 
     var request_init: (Int32) -> Int32 {
         { method in
@@ -113,9 +116,53 @@ extension WasmRequest {
         }
     }
 
+    var request_get_data_size: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
+
+            if let data = self.globalStore.requests[Int(descriptor)].data {
+                return Int32(data.count - self.globalStore.requests[Int(descriptor)].bytesRead)
+            }
+
+            return -1
+        }
+    }
+
     var request_get_data: (Int32, Int32, Int32) -> Void {
         { descriptor, buffer, size in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count, size > 0 else { return }
+
+            let bytesRead = self.globalStore.requests[Int(descriptor)].bytesRead
+
+            if let data = self.globalStore.requests[Int(descriptor)].data,
+               bytesRead + Int(size) <= data.count {
+                let result = Array(data.dropLast(data.count - Int(size) - bytesRead))
+                try? self.globalStore.vm.writeToHeap(bytes: result, byteOffset: Int(buffer))
+                self.globalStore.requests[Int(descriptor)].bytesRead += Int(size)
+            }
+        }
+    }
+
+    var request_close: (Int32) -> Void {
+        { descriptor in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return }
+            self.globalStore.requests.remove(at: Int(descriptor))
+        }
+    }
+
+    var request_json: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
+
+            if let data = self.globalStore.requests[Int(descriptor)].data,
+               let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
+               json is [String: Any?] || json is [Any?] {
+                self.globalStore.jsonDescriptorPointer += 1
+                self.globalStore.jsonDescriptors[self.globalStore.jsonDescriptorPointer] = json
+                return self.globalStore.jsonDescriptorPointer
+            }
+
+            return -1
         }
     }
 }

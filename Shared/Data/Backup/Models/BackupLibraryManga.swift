@@ -6,7 +6,6 @@
 //
 
 import CoreData
-import Kingfisher
 
 struct BackupLibraryManga: Codable {
     var lastOpened: Date

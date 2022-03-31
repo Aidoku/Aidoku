@@ -46,8 +46,7 @@ class Source: Identifiable {
     var vm: WasmInterpreter
     var memory: WasmMemory
 
-    var descriptorPointer = -1
-    var descriptors: [Any] = []
+    var globalStore: WasmGlobalStore
 
     var chapterCounter = 0
     var currentManga = ""
@@ -62,6 +61,7 @@ class Source: Identifiable {
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         self.vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
         self.memory = WasmMemory(vm: vm)
+        self.globalStore = WasmGlobalStore(vm: vm)
         self.actor = SourceActor(source: self)
 
         prepareVirtualMachine()
@@ -96,8 +96,6 @@ class Source: Identifiable {
 
         try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
         try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
-
-        let globalStore = WasmGlobalStore(vm: vm)
 
         WasmAidoku(globalStore: globalStore, sourceId: id).export()
         WasmNet(globalStore: globalStore).export()
@@ -214,9 +212,9 @@ extension Source {
             guard key_len >= 0 else { return -1 }
             if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
                let array = UserDefaults.standard.array(forKey: "\(self.id).\(key)") {
-                self.descriptorPointer += 1
-                self.descriptors.append(array)
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(array)
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -235,9 +233,9 @@ extension Source {
 
     var create_string: (Int32, Int32) -> Int32 {
         { string, string_len in
-            self.descriptorPointer += 1
-            self.descriptors.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
-            return Int32(self.descriptorPointer)
+            self.globalStore.swiftDescriptorPointer += 1
+            self.globalStore.swiftDescriptors.append((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len))) ?? "")
+            return Int32(self.globalStore.swiftDescriptorPointer)
         }
     }
 }
@@ -247,16 +245,16 @@ extension Source {
 
     var array: () -> Int32 {
         {
-            self.descriptorPointer += 1
-            self.descriptors.append([])
-            return Int32(self.descriptorPointer)
+            self.globalStore.swiftDescriptorPointer += 1
+            self.globalStore.swiftDescriptors.append([])
+            return Int32(self.globalStore.swiftDescriptorPointer)
         }
     }
 
     var array_size: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.descriptors.count else { return 0 }
-            if let array = self.descriptors[Int(descriptor)] as? [Any] {
+            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return 0 }
+            if let array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
                 return Int32(array.count)
             }
             return 0
@@ -265,12 +263,12 @@ extension Source {
 
     var array_get: (Int32, Int32) -> Int32 {
         { descriptor, index in
-            guard descriptor >= 0, descriptor < self.descriptors.count else { return -1 }
-            if let array = self.descriptors[Int(descriptor)] as? [Any] {
+            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return -1 }
+            if let array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
                 guard index < array.count else { return -1 }
-                self.descriptorPointer += 1
-                self.descriptors.append(array[Int(index)])
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(array[Int(index)])
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -278,34 +276,34 @@ extension Source {
 
     var array_append: (Int32, Int32) -> Void {
         { descriptor, object in
-            guard descriptor >= 0, descriptor < self.descriptors.count else { return }
-            guard object >= 0, object < self.descriptors.count else { return }
-            if var array = self.descriptors[Int(descriptor)] as? [Any] {
-                array.append(self.descriptors[Int(object)])
-                self.descriptors[Int(descriptor)] = array
+            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return }
+            guard object >= 0, object < self.globalStore.swiftDescriptors.count else { return }
+            if var array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
+                array.append(self.globalStore.swiftDescriptors[Int(object)])
+                self.globalStore.swiftDescriptors[Int(descriptor)] = array
             }
         }
     }
 
     var array_remove: (Int32, Int32) -> Void {
         { descriptor, index in
-            guard descriptor >= 0, descriptor < self.descriptors.count else { return }
-            if var array = self.descriptors[Int(descriptor)] as? [Any] {
+            guard descriptor >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return }
+            if var array = self.globalStore.swiftDescriptors[Int(descriptor)] as? [Any] {
                 array.remove(at: Int(index))
-                self.descriptors[Int(descriptor)] = array
+                self.globalStore.swiftDescriptors[Int(descriptor)] = array
             }
         }
     }
 
     var object_getn: (Int32, Int32, Int32) -> Int32 {
         { descriptor, key, key_len in
-            guard descriptor >= 0, key >= 0, descriptor < self.descriptors.count else { return -1 }
+            guard descriptor >= 0, key >= 0, descriptor < self.globalStore.swiftDescriptors.count else { return -1 }
             if let keyString = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-               let object = self.descriptors[Int(descriptor)] as? KVCObject,
+               let object = self.globalStore.swiftDescriptors[Int(descriptor)] as? KVCObject,
                let value = object.valueByPropertyName(name: keyString) {
-                self.descriptorPointer += 1
-                self.descriptors.append(value)
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(value)
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -315,9 +313,9 @@ extension Source {
         { str, str_len in
             guard str_len >= 0 else { return -1 }
             if let string = try? self.vm.stringFromHeap(byteOffset: Int(str), length: Int(str_len)) {
-                self.descriptorPointer += 1
-                self.descriptors.append(string)
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(string)
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -326,7 +324,7 @@ extension Source {
     var string_value: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return 0 }
-            if let string = self.descriptors[Int(descriptor)] as? String {
+            if let string = self.globalStore.swiftDescriptors[Int(descriptor)] as? String {
                 return self.vm.write(string: string, memory: self.memory)
             }
             return 0
@@ -336,11 +334,11 @@ extension Source {
     var integer_value: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let int = self.descriptors[Int(descriptor)] as? Int {
+            if let int = self.globalStore.swiftDescriptors[Int(descriptor)] as? Int {
                 return Int32(int)
-            } else if let bool = self.descriptors[Int(descriptor)] as? Bool {
+            } else if let bool = self.globalStore.swiftDescriptors[Int(descriptor)] as? Bool {
                 return Int32(bool ? 1 : 0)
-            } else if let string = self.descriptors[Int(descriptor)] as? String {
+            } else if let string = self.globalStore.swiftDescriptors[Int(descriptor)] as? String {
                 return Int32(string) ?? -1
             }
             return -1
@@ -350,9 +348,9 @@ extension Source {
     var float_value: (Int32) -> Float32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let float = self.descriptors[Int(descriptor)] as? Float {
+            if let float = self.globalStore.swiftDescriptors[Int(descriptor)] as? Float {
                 return Float32(float)
-            } else if let float = Float(self.descriptors[Int(descriptor)] as? String ?? "Error") {
+            } else if let float = Float(self.globalStore.swiftDescriptors[Int(descriptor)] as? String ?? "Error") {
                 return Float32(float)
             }
             return -1
