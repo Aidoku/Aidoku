@@ -1,5 +1,5 @@
 //
-//  WasmScraper.swift
+//  WasmHtml.swift
 //  Aidoku
 //
 //  Created by Skitty on 2/4/22.
@@ -9,30 +9,28 @@ import Foundation
 import WasmInterpreter
 import SwiftSoup
 
-class WasmScraper {
+class WasmHtml {
 
-    let vm: WasmInterpreter
-    let memory: WasmMemory
+    var globalStore: WasmGlobalStore
 
     var descriptorPointer: Int32 = -1
     var descriptors: [Int32: Any] = [:]
     var references: [Int32: [Int32]] = [:]
 
-    init(vm: WasmInterpreter, memory: WasmMemory) {
-        self.vm = vm
-        self.memory = memory
+    init(globalStore: WasmGlobalStore) {
+        self.globalStore = globalStore
     }
 
-    func export() {
-        try? vm.addImportHandler(named: "scraper_parse", namespace: "env", block: self.scraper_parse)
-        try? vm.addImportHandler(named: "scraper_select", namespace: "env", block: self.scraper_select)
-        try? vm.addImportHandler(named: "scraper_attr", namespace: "env", block: self.scraper_attr)
-        try? vm.addImportHandler(named: "scraper_text", namespace: "env", block: self.scraper_text)
+    func export(into namespace: String = "html") {
+        try? globalStore.vm.addImportHandler(named: "scraper_parse", namespace: namespace, block: self.scraper_parse)
+        try? globalStore.vm.addImportHandler(named: "scraper_select", namespace: namespace, block: self.scraper_select)
+        try? globalStore.vm.addImportHandler(named: "scraper_attr", namespace: namespace, block: self.scraper_attr)
+        try? globalStore.vm.addImportHandler(named: "scraper_text", namespace: namespace, block: self.scraper_text)
 
-        try? vm.addImportHandler(named: "scraper_array_size", namespace: "env", block: self.scraper_array_size)
-        try? vm.addImportHandler(named: "scraper_array_get", namespace: "env", block: self.scraper_array_get)
+        try? globalStore.vm.addImportHandler(named: "scraper_array_size", namespace: namespace, block: self.scraper_array_size)
+        try? globalStore.vm.addImportHandler(named: "scraper_array_get", namespace: namespace, block: self.scraper_array_get)
 
-        try? vm.addImportHandler(named: "scraper_free", namespace: "env", block: self.scraper_free)
+        try? globalStore.vm.addImportHandler(named: "scraper_free", namespace: namespace, block: self.scraper_free)
     }
 
     func readValue(_ descriptor: Int32) -> Any? {
@@ -57,11 +55,14 @@ class WasmScraper {
         }
         references.removeValue(forKey: descriptor)
     }
+}
+
+extension WasmHtml {
 
     var scraper_parse: (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
-            if let readData = try? self.vm.dataFromHeap(byteOffset: Int(data), length: Int(size)),
+            if let readData = try? self.globalStore.vm.dataFromHeap(byteOffset: Int(data), length: Int(size)),
                let content = String(bytes: readData, encoding: .utf8),
                let obj = try? SwiftSoup.parse(content) {
                 return self.storeValue(obj)
@@ -79,7 +80,7 @@ class WasmScraper {
     var scraper_select: (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selector >= 0 else { return -1 }
-            if let selectorString = try? self.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
+            if let selectorString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
                 if let object = try? (self.readValue(descriptor) as? SwiftSoup.Element)?.select(selectorString) {
                     return self.storeValue(object, from: descriptor)
                 } else if let object = try? (self.readValue(descriptor) as? SwiftSoup.Elements)?.select(selectorString) {
@@ -93,7 +94,7 @@ class WasmScraper {
     var scraper_attr: (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selector >= 0 else { return -1 }
-            if let selectorString = try? self.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
+            if let selectorString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
                 if let object = try? (self.readValue(descriptor) as? SwiftSoup.Elements)?.attr(selectorString) {
                    return self.storeValue(object, from: descriptor)
                 } else if let object = try? (self.readValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
@@ -104,17 +105,20 @@ class WasmScraper {
         }
     }
 
-    var scraper_text: (Int32) -> Int32 {
-        { descriptor in
-            guard descriptor >= 0 else { return 0 }
+    var scraper_text: (Int32, Int32) -> Void {
+        { descriptor, buffer in
+            guard descriptor >= 0 else { return }
+            var finalString: String?
             if let string = try? (self.readValue(descriptor) as? SwiftSoup.Elements)?.text() {
-                return self.vm.write(string: string, memory: self.memory)
+                finalString = string
             } else if let string = try? (self.readValue(descriptor) as? SwiftSoup.Element)?.text() {
-                return self.vm.write(string: string, memory: self.memory)
+                finalString = string
             } else if let string = self.readValue(descriptor) as? String {
-                return self.vm.write(string: string, memory: self.memory)
+                finalString = string
             }
-            return 0
+            if let string = finalString {
+                try? self.globalStore.vm.writeToHeap(string: string, byteOffset: Int(buffer))
+            }
         }
     }
 
