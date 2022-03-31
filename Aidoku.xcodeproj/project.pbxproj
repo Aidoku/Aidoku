@@ -100,8 +100,6 @@
 		FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
 		FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
 		FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
-		FB7B7ECD2789EAE6001E6EAF /* WasmMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */; };
-		FB7B7ECE2789EAE6001E6EAF /* WasmMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */; };
 		FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED0278CE670001E6EAF /* SourceManager.swift */; };
 		FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED0278CE670001E6EAF /* SourceManager.swift */; };
 		FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED3278CE692001E6EAF /* Source.swift */; };
@@ -114,6 +112,8 @@
 		FB7B7EE5278D0735001E6EAF /* SourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EE4278D0735001E6EAF /* SourceTableViewCell.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
 		FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
+		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
+		FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231227B816D50095D0C0 /* SettingsViewController.swift */; };
 		FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */; };
 		FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231627B83B670095D0C0 /* UISwitch.swift */; };
@@ -204,13 +204,13 @@
 		FB7B7E942787740A001E6EAF /* WasmJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmJson.swift; sourceTree = "<group>"; };
 		FB7B7E9727877416001E6EAF /* WasmNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNet.swift; sourceTree = "<group>"; };
 		FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExtensions.swift; sourceTree = "<group>"; };
-		FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmMemory.swift; sourceTree = "<group>"; };
 		FB7B7ED0278CE670001E6EAF /* SourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceManager.swift; sourceTree = "<group>"; };
 		FB7B7ED3278CE692001E6EAF /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
 		FB7B7ED9278CEA6A001E6EAF /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
 		FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSession.swift; sourceTree = "<group>"; };
 		FB7B7EE4278D0735001E6EAF /* SourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceTableViewCell.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBED231227B816D50095D0C0 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutViewController.swift; sourceTree = "<group>"; };
 		FBED231627B83B670095D0C0 /* UISwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UISwitch.swift; sourceTree = "<group>"; };
@@ -504,8 +504,8 @@
 			children = (
 				FB67EE5F27F3708400C468EA /* WasmModule.swift */,
 				FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */,
+				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
 				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
-				FB7B7ECC2789EAE5001E6EAF /* WasmMemory.swift */,
 				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
 				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
 				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,
@@ -740,13 +740,13 @@
 			files = (
 				FB4EEBCA27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB6E34C8279DF76300BFE54B /* MangaGridFlowLayout.swift in Sources */,
-				FB7B7ECD2789EAE6001E6EAF /* WasmMemory.swift in Sources */,
 				FB72501C27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB4EEBC427A34ED4005081A3 /* ChapterObject.swift in Sources */,
 				FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */,
 				0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
+				FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB71E37F27E0FBB800BE4860 /* ReaderPagedPageManager.swift in Sources */,
 				FB72501927CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
 				FBED232527BC07690095D0C0 /* SourceInfoViewController.swift in Sources */,
@@ -837,6 +837,7 @@
 				FB1B485E277CE6600056D02C /* DataManager.swift in Sources */,
 				FB72501727CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB4EEBCB27A35171005081A3 /* HistoryObject.swift in Sources */,
+				FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB1B4869277CE76B0056D02C /* Manga.swift in Sources */,
 				FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */,
 				FB72501A27CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
@@ -856,7 +857,6 @@
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
-				FB7B7ECE2789EAE6001E6EAF /* WasmMemory.swift in Sources */,
 				FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
