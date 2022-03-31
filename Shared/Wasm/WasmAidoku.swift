@@ -13,14 +13,8 @@ class WasmAidoku: WasmModule {
     var globalStore: WasmGlobalStore
     let sourceId: String
 
-    var descriptorPointer = -1
-    var descriptors: [Any] = []
-
     var chapterCounter = 0
     var currentManga = ""
-
-    let defaultLocale = "en_US_POSIX"
-    let defaultTimeZone = "UTC"
 
     init(globalStore: WasmGlobalStore, sourceId: String) {
         self.globalStore = globalStore
@@ -63,16 +57,16 @@ extension WasmAidoku {
             } else if type == FilterType.select.rawValue {
                 filter = Filter(
                     name: name,
-                    options: value > 0 ? self.descriptors[Int(value)] as? [String] ?? [] : [],
+                    options: value > 0 ? self.globalStore.swiftDescriptors[Int(value)] as? [String] ?? [] : [],
                     default: Int(default_value)
                 )
             } else if type == FilterType.sort.rawValue {
-                let options = self.descriptors[Int(value)] as? [Filter] ?? []
+                let options = self.globalStore.swiftDescriptors[Int(value)] as? [Filter] ?? []
                 filter = Filter(
                     name: name,
                     options: options,
-                    value: value > 0 ? (self.descriptors[Int(value)] as? Filter)?.value as? SortOption : nil,
-                    default: default_value > 0 ? (self.descriptors[Int(default_value)] as? Filter)?.value as? SortOption : nil
+                    value: value > 0 ? (self.globalStore.swiftDescriptors[Int(value)] as? Filter)?.value as? SortOption : nil,
+                    default: default_value > 0 ? (self.globalStore.swiftDescriptors[Int(default_value)] as? Filter)?.value as? SortOption : nil
                 )
             } else if type == FilterType.sortOption.rawValue {
                 filter = Filter(
@@ -82,7 +76,7 @@ extension WasmAidoku {
             } else if type == FilterType.group.rawValue {
                 filter = Filter(
                     name: name,
-                    filters: value > 0 ? self.descriptors[Int(value)] as? [Filter] ?? [] : []
+                    filters: value > 0 ? self.globalStore.swiftDescriptors[Int(value)] as? [Filter] ?? [] : []
                 )
             } else {
                 filter = Filter(
@@ -90,18 +84,18 @@ extension WasmAidoku {
                     name: name
                 )
             }
-            self.descriptorPointer += 1
-            self.descriptors.append(filter)
-            return Int32(self.descriptorPointer)
+            self.globalStore.swiftDescriptorPointer += 1
+            self.globalStore.swiftDescriptors.append(filter)
+            return Int32(self.globalStore.swiftDescriptorPointer)
         }
     }
 
     var create_listing: (Int32, Int32, Int32) -> Int32 {
         { name, name_len, flags in
             if let str = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
-                self.descriptorPointer += 1
-                self.descriptors.append(Listing(name: str, flags: flags))
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(Listing(name: str, flags: flags))
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -140,9 +134,9 @@ extension WasmAidoku {
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
                     viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
                 )
-                self.descriptorPointer += 1
-                self.descriptors.append(manga)
-                return Int32(self.descriptorPointer)
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(manga)
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -151,8 +145,8 @@ extension WasmAidoku {
     var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Int64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
         { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, _, _, lang, lang_len in
             if let chapterId = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
-                self.descriptorPointer += 1
-                self.descriptors.append(
+                self.globalStore.swiftDescriptorPointer += 1
+                self.globalStore.swiftDescriptors.append(
                     Chapter(
                         sourceId: self.sourceId,
                         id: chapterId,
@@ -169,7 +163,7 @@ extension WasmAidoku {
                     )
                 )
                 self.chapterCounter += 1
-                return Int32(self.descriptorPointer)
+                return Int32(self.globalStore.swiftDescriptorPointer)
             }
             return -1
         }
@@ -177,15 +171,15 @@ extension WasmAidoku {
 
     var create_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
         { index, image_url, image_url_len, _, _, _, _ in
-            self.descriptorPointer += 1
-            self.descriptors.append(
+            self.globalStore.swiftDescriptorPointer += 1
+            self.globalStore.swiftDescriptors.append(
                 Page(
                     index: Int(index),
                     imageURL: image_url_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(image_url),
                                                                                           length: Int(image_url_len)) : nil
                 )
             )
-            return Int32(self.descriptorPointer)
+            return Int32(self.globalStore.swiftDescriptorPointer)
         }
     }
 }

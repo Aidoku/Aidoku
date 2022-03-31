@@ -204,11 +204,9 @@ extension WasmJson {
     var json_read_string: (Int32, Int32, Int32) -> Void {
         { json, buffer, size in
             guard json >= 0, size >= 0 else { return }
-            if let string = self.readValue(json) as? String, Int(size) < string.utf8.count {
+            if let string = self.readValue(json) as? String, Int(size) <= string.utf8.count {
                 try? self.globalStore.vm.writeToHeap(
-                    values: string.utf8.dropLast(string.utf8.count - Int(size)).chunked(into: 4).map {
-                        Int32(truncatingIfNeeded: UInt32($0.reversed()))
-                    },
+                    bytes: string.utf8.dropLast(string.utf8.count - Int(size)),
                     byteOffset: Int(buffer)
                 )
             }
@@ -264,10 +262,10 @@ extension WasmJson {
 
     var json_object_get: (Int32, Int32, Int32) -> Int32 {
         { json, key, keyLength in
-            guard json >= 0, key >= 0, keyLength > 0 else { return -1 }
+            guard json >= 0, keyLength > 0 else { return -1 }
             if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(keyLength)),
                let object = (self.readValue(json) as? [String: Any?])?[keyString] {
-                return self.storeValue(object as Any, from: json)
+                return self.storeValue(object, from: json)
             }
             return -1
         }
