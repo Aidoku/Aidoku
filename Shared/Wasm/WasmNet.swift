@@ -7,6 +7,7 @@
 
 import Foundation
 import WasmInterpreter
+import SwiftSoup
 
 struct WasmRequestObject {
     let id: Int
@@ -45,6 +46,7 @@ class WasmNet: WasmModule {
         try? globalStore.vm.addImportHandler(named: "get_data", namespace: namespace, block: self.get_data)
         try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
         try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
+        try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
     }
 }
 
@@ -158,6 +160,20 @@ extension WasmNet {
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
                json is [String: Any?] || json is [Any?] {
                 return self.globalStore.storeStdValue(json)
+            }
+
+            return -1
+        }
+    }
+
+    var html: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
+
+            if let data = self.globalStore.requests[Int(descriptor)].data,
+               let content = String(data: data, encoding: .utf8),
+               let obj = try? SwiftSoup.parse(content) {
+                return self.globalStore.storeStdValue(obj)
             }
 
             return -1
