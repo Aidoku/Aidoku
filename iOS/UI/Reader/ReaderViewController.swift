@@ -122,7 +122,7 @@ class ReaderViewController: UIViewController {
     let sliderView = ReaderSliderView()
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
-    let progressView = UIActivityIndicatorView()
+    let progressView = UIActivityIndicatorView(style: .medium)
 
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
 
@@ -242,7 +242,7 @@ class ReaderViewController: UIViewController {
         transitionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(transitionView)
 
-        // TODO: Mak this an indefinite progress view more like the circular progress view
+        // TODO: Make this an indefinite progress view more like the circular progress view
         progressView.center = view.center
         progressView.hidesWhenStopped = true
         progressView.startAnimating()
@@ -376,8 +376,6 @@ extension ReaderViewController {
         if chapterList.isEmpty {
             chapterList = await DataManager.shared.getChapters(from: chapter.sourceId, for: chapter.mangaId, fromSource: true)
         }
-
-        progressView.stopAnimating()
     }
 
     @objc func close() {
@@ -474,7 +472,10 @@ extension ReaderViewController: ReaderPageManagerDelegate {
     }
 
     func pagesLoaded() {
-        updateLabels()
+        Task { @MainActor in
+            updateLabels()
+            progressView.stopAnimating()
+        }
     }
 
     func move(toChapter chapter: Chapter) {
