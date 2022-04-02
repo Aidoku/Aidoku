@@ -141,7 +141,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 self.nextChapter = nil
             }
             Task { @MainActor in
-                self.collectionView.reloadData()
+                self.collectionView?.reloadData()
             }
         }
     }
