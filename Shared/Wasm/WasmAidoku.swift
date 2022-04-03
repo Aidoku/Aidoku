@@ -22,8 +22,6 @@ class WasmAidoku: WasmModule {
     }
 
     func export(into namespace: String = "aidoku") {
-        try? globalStore.vm.addImportHandler(named: "filter", namespace: namespace, block: self.create_filter)
-        try? globalStore.vm.addImportHandler(named: "listing", namespace: namespace, block: self.create_listing)
         try? globalStore.vm.addImportHandler(named: "manga", namespace: namespace, block: self.create_manga)
         try? globalStore.vm.addImportHandler(named: "manga_result", namespace: namespace, block: self.create_manga_result)
         try? globalStore.vm.addImportHandler(named: "chapter", namespace: namespace, block: self.create_chapter)
@@ -39,77 +37,6 @@ class WasmAidoku: WasmModule {
 
 // MARK: - Aidoku Objects
 extension WasmAidoku {
-
-    var create_filter: (Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { type, name, name_len, value, default_value in
-            var addValueReference = false
-            var addDefaultReference = false
-            let filter: Filter
-            let name = (try? self.globalStore.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len))) ?? ""
-            if type == FilterType.note.rawValue {
-                filter = Filter(text: name)
-            } else if type == FilterType.text.rawValue {
-                filter = Filter(name: name)
-            } else if type == FilterType.check.rawValue || type == FilterType.genre.rawValue {
-                filter = Filter(
-                    type: FilterType(rawValue: Int(type)) ?? .check,
-                    name: name,
-                    canExclude: value > 0,
-                    default: Int(default_value)
-                )
-            } else if type == FilterType.select.rawValue {
-                filter = Filter(
-                    name: name,
-                    options: value > 0 ? self.globalStore.readStdValue(value) as? [String] ?? [] : [],
-                    default: Int(default_value)
-                )
-                addValueReference = value > 0
-            } else if type == FilterType.sort.rawValue {
-                let options = self.globalStore.readStdValue(value) as? [Filter] ?? []
-                filter = Filter(
-                    name: name,
-                    options: options,
-                    value: value > 0 ? (self.globalStore.readStdValue(value) as? Filter)?.value as? SortOption : nil,
-                    default: default_value > 0 ? (self.globalStore.readStdValue(default_value) as? Filter)?.value as? SortOption : nil
-                )
-                addValueReference = value > 0
-                addDefaultReference = default_value > 0
-            } else if type == FilterType.sortOption.rawValue {
-                filter = Filter(
-                    name: name,
-                    canReverse: value > 0
-                )
-            } else if type == FilterType.group.rawValue {
-                filter = Filter(
-                    name: name,
-                    filters: value > 0 ? self.globalStore.readStdValue(value) as? [Filter] ?? [] : []
-                )
-                addValueReference = value > 0
-            } else {
-                filter = Filter(
-                    type: FilterType(rawValue: Int(type)) ?? .text,
-                    name: name
-                )
-            }
-            let descriptor = self.globalStore.storeStdValue(filter)
-            if addValueReference {
-                self.globalStore.addStdReference(to: descriptor, target: value)
-            }
-            if addDefaultReference {
-                self.globalStore.addStdReference(to: descriptor, target: default_value)
-            }
-            return descriptor
-        }
-    }
-
-    var create_listing: (Int32, Int32, Int32) -> Int32 {
-        { name, name_len, flags in
-            if let str = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) {
-                return self.globalStore.storeStdValue(Listing(name: str, flags: flags))
-            }
-            return -1
-        }
-    }
 
     var create_manga: (
         Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32,

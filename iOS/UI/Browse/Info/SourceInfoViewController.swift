@@ -121,10 +121,10 @@ extension SourceInfoViewController {
             switch indexPath.row {
             case 0:
                 cell?.textLabel?.text = "Version"
-                cell?.detailTextLabel?.text = String(source.info.version)
+                cell?.detailTextLabel?.text = String(source.manifest.info.version)
             case 1:
                 cell?.textLabel?.text = "Language"
-                cell?.detailTextLabel?.text = source.info.lang
+                cell?.detailTextLabel?.text = source.manifest.info.lang
             default:
                 break
             }

@@ -11,10 +11,10 @@ extension SourceObject {
 
     func load(from source: Source) {
         id = source.id
-        title = source.info.name
-        lang = source.info.lang
-        version = Int16(source.info.version)
-        nsfw = Int16(source.info.nsfw ?? 0)
+        title = source.manifest.info.name
+        lang = source.manifest.info.lang
+        version = Int16(source.manifest.info.version)
+        nsfw = Int16(source.manifest.info.nsfw ?? 0)
         path = source.url.pathComponents[source.url.pathComponents.count - 2..<source.url.pathComponents.count].joined(separator: "/")
     }
 
