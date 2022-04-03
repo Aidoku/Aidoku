@@ -33,6 +33,7 @@ class Source: Identifiable {
 
     struct SourceManifest: Codable {
         let info: SourceInfo
+        let languages: [String]?
         let listings: [String]?
         let filters: [FilterInfo]?
     }
@@ -81,6 +82,7 @@ class Source: Identifiable {
         globalStore = WasmGlobalStore(vm: vm)
         actor = SourceActor(source: self)
 
+        languages = manifest.languages ?? []
         listings = manifest.listings?.map { Listing(name: $0, flags: 0) } ?? []
 
         prepareVirtualMachine()
@@ -88,12 +90,6 @@ class Source: Identifiable {
     }
 
     func prepareVirtualMachine() {
-//        try? vm.addImportHandler(named: "filter", namespace: "env", block: self.create_filter)
-//        try? vm.addImportHandler(named: "listing", namespace: "env", block: self.create_listing)
-//        try? vm.addImportHandler(named: "manga", namespace: "env", block: self.create_manga)
-//        try? vm.addImportHandler(named: "chapter", namespace: "env", block: self.create_chapter)
-//        try? vm.addImportHandler(named: "page", namespace: "env", block: self.create_page)
-
         try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
         try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
         try? vm.addImportHandler(named: "setting_get_float", namespace: "env", block: self.setting_get_float)
@@ -134,9 +130,8 @@ extension Source {
 
     func loadSettings() {
         if let data = try? Data(contentsOf: url.appendingPathComponent("settings.json")),
-           let settingsPlist = try? JSONDecoder().decode(SourceSettings.self, from: data) {
-            settingItems = settingsPlist.settings ?? []
-            languages = settingsPlist.languages ?? []
+           let settingsPlist = try? JSONDecoder().decode([SettingItem].self, from: data) {
+            settingItems = settingsPlist
 
             // Load defaults
             var defaults: [String: Any] = [:]

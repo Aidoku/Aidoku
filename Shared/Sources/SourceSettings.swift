@@ -7,11 +7,6 @@
 
 import Foundation
 
-struct SourceSettings: Codable {
-    let languages: [String]?
-    let settings: [SettingItem]?
-}
-
 // possible types: group, select, multi-select, switch, segment, text, page, button, link
 // TODO: slider
 struct SettingItem: Codable {
