@@ -8,12 +8,12 @@
 import UIKit
 
 class SelectedFilters {
-    var filters: [Filter] = []
+    var filters: [FilterBase] = []
 }
 
 class FilterModalViewController: MiniModalViewController {
 
-    let filters: [Filter]
+    let filters: [FilterBase]
     var selectedFilters: SelectedFilters
 
     var stackView: FilterStackView?
@@ -24,7 +24,7 @@ class FilterModalViewController: MiniModalViewController {
 
     let bottomInset = UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
 
-    init(filters: [Filter], selectedFilters: SelectedFilters) {
+    init(filters: [FilterBase], selectedFilters: SelectedFilters) {
         self.filters = filters
         self.selectedFilters = selectedFilters
 
@@ -40,7 +40,7 @@ class FilterModalViewController: MiniModalViewController {
 
         scrollView.delaysContentTouches = false
 
-        stackView = FilterStackView(filters: filters.filter({ $0.type != .text }), selectedFilters: selectedFilters)
+        stackView = FilterStackView(filters: filters.filter({ !($0 is TextFilter) }), selectedFilters: selectedFilters)
         stackView?.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(stackView!)
 

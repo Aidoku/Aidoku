@@ -8,116 +8,197 @@
 import Foundation
 import WasmInterpreter
 
-enum FilterType: Int {
-    case note = 0 // just plain text, a note
-    case text = 1 // enterable text
-    case check = 2 // multi option include or exclude
-    case select = 3 // single option selection
-    case sort = 4 // sort group
-    case sortOption = 5 // sort option
-    case group = 6 // filter group
-    case genre = 7
-}
+class FilterBase: KVCObject, Identifiable, Equatable {
+    static func == (lhs: FilterBase, rhs: FilterBase) -> Bool {
+        lhs.id == rhs.id
+    }
 
-struct SortOption: KVCObject, Equatable {
-    let index: Int
-    let name: String
-    let ascending: Bool
+    var name: String
+
+    var type: String {
+        "Filter"
+    }
+
+    init(name: String) {
+        self.name = name
+    }
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "index": return index
+        case "type": return type
         case "name": return self.name
+        default: return nil
+        }
+    }
+}
+
+class Filter<T>: FilterBase {
+
+    var value: T
+    var defaultValue: T
+
+    init(name: String, value: T) {
+        self.defaultValue = value
+        self.value = value
+        super.init(name: name)
+    }
+
+    override func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "value": return value
+        case "default": return defaultValue
+        default: return super.valueByPropertyName(name: name)
+        }
+    }
+}
+
+// Just used for select and sort options internally
+class StringFilter: Filter<String> {
+    init(value: String = "") {
+        super.init(name: value, value: value)
+    }
+}
+
+// MARK: Text
+class TextFilter: Filter<String> {
+    override var type: String {
+        "TextFilter"
+    }
+
+    override init(name: String, value: String = "") {
+        super.init(name: name, value: value)
+    }
+}
+
+// MARK: Check
+class CheckFilter: Filter<Bool?> {
+    var canExclude: Bool
+
+    override var type: String {
+        "CheckFilter"
+    }
+
+    init(name: String, canExclude: Bool, value: Bool? = nil) {
+        self.canExclude = canExclude
+        super.init(name: name, value: value)
+    }
+
+    override func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "canExclude": return canExclude
+        default: return super.valueByPropertyName(name: name)
+        }
+    }
+}
+
+// MARK: Select
+class SelectFilter: Filter<Int> {
+    var options: [String]
+
+    override var type: String {
+        "SelectFilter"
+    }
+
+    init(name: String, options: [String], value: Int = 0) {
+        self.options = options
+        super.init(name: name, value: value)
+    }
+
+    override func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "options": return options
+        default: return super.valueByPropertyName(name: name)
+        }
+    }
+}
+
+// MARK: Sort
+class SortSelection: FilterBase {
+    var index: Int
+    var ascending: Bool
+
+    init(index: Int, ascending: Bool) {
+        self.index = index
+        self.ascending = ascending
+        super.init(name: "")
+    }
+
+    override func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "index": return index
         case "ascending": return ascending
         default: return nil
         }
     }
 }
 
-struct Filter: KVCObject, Identifiable, Equatable {
+class SortFilter: Filter<SortSelection?> {
+    var options: [String]
+    var canAscend: Bool
 
-    static func == (lhs: Filter, rhs: Filter) -> Bool {
-        lhs.id == rhs.id && lhs.value as? Int ?? 0 == rhs.value as? Int ?? 0
+    override var type: String {
+        "SortFilter"
     }
 
-    var id: String {
-        name
+    init(name: String, options: [String], canAscend: Bool = true, value: SortSelection? = nil) {
+        self.options = options
+        self.canAscend = canAscend
+        super.init(name: name, value: value)
     }
 
-    let type: FilterType
-    var name: String
-    var value: Any?
-    var defaultValue: Any?
-
-    init(type: FilterType, name: String, value: Any? = nil, defaultValue: Any? = nil) {
-        self.type = type
-        self.name = name
-        self.value = value
-        self.defaultValue = defaultValue
-    }
-
-    // Note
-    init(text: String) {
-        self.type = .note
-        self.name = text
-    }
-
-    // Text
-    init(name: String, value: String? = nil) {
-        self.type = .text
-        self.name = name
-        self.value = value
-    }
-
-    // Check (and Genre)
-    init(type: FilterType = .check, name: String, canExclude: Bool, default defaultValue: Int = 0) {
-        self.type = type
-        self.name = name
-        self.value = canExclude
-        self.defaultValue = defaultValue
-    }
-
-    // Select
-    init(name: String, options: [String], default defaultValue: Int = 0) {
-        self.type = .select
-        self.name = name
-        self.value = options
-        self.defaultValue = defaultValue
-    }
-
-    // Sort
-    init(name: String, options: [Filter], value: SortOption? = nil, default defaultValue: SortOption? = nil) {
-        self.type = .sort
-        self.name = name
-        if let value = value {
-            self.value = value
-        } else {
-            self.value = options
-        }
-        self.defaultValue = defaultValue
-    }
-
-    // Sort Option
-    init(name: String, index: Int = 0, canReverse: Bool) {
-        self.type = .sortOption
-        self.name = name
-        self.value = SortOption(index: index, name: name, ascending: canReverse)
-    }
-
-    // Group
-    init(name: String, filters: [Filter]) {
-        self.type = .group
-        self.name = name
-        self.value = filters as Any
-    }
-
-    func valueByPropertyName(name: String) -> Any? {
+    override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "type": return type.rawValue
-        case "name": return self.name
-        case "value": return value
-        case "default": return defaultValue
-        default: return nil
+        case "options": return options
+        case "canAscend": return canAscend
+        default: return super.valueByPropertyName(name: name)
         }
+    }
+}
+
+// MARK: Group
+class GroupFilter: Filter<Any?> {
+    var filters: [FilterBase]
+
+    override var type: String {
+        "GroupFilter"
+    }
+
+    init(name: String, filters: [FilterBase]) {
+        self.filters = filters
+        super.init(name: name, value: nil)
+    }
+
+    override func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "filters": return filters
+        default: return super.valueByPropertyName(name: name)
+        }
+    }
+}
+
+// MARK: Common types
+class TitleFilter: TextFilter {
+    override var type: String {
+        "TitleFilter"
+    }
+
+    init(value: String = "") {
+        super.init(name: "Title", value: value)
+    }
+}
+
+class AuthorFilter: TextFilter {
+    override var type: String {
+        "AuthorFilter"
+    }
+
+    init(value: String = "") {
+        super.init(name: "Author", value: value)
+    }
+}
+
+class GenreFilter: CheckFilter {
+    override var type: String {
+        "GenreFilter"
     }
 }

@@ -56,12 +56,20 @@ struct DefaultValue: Codable {
     let intValue: Int?
     let stringValue: String?
     let stringArrayValue: [String]?
+    let objectValue: [String: DefaultValue]?
 
-    init(boolValue: Bool, intValue: Int? = nil, stringValue: String? = nil, stringArrayValue: [String]? = nil) {
+    init(
+        boolValue: Bool,
+        intValue: Int? = nil,
+        stringValue: String? = nil,
+        stringArrayValue: [String]? = nil,
+        objectValue: [String: DefaultValue]? = nil
+    ) {
         self.boolValue = boolValue
         self.intValue = intValue
         self.stringValue = stringValue
         self.stringArrayValue = stringArrayValue
+        self.objectValue = objectValue
     }
 
     init(from decoder: Decoder) throws {
@@ -72,26 +80,37 @@ struct DefaultValue: Codable {
             intValue = bool ? 1 : 0
             stringValue = nil
             stringArrayValue = nil
+            objectValue = nil
         } else if let int = try? container.decode(Int.self) {
             boolValue = int > 0
             intValue = int
             stringValue = nil
             stringArrayValue = nil
+            objectValue = nil
         } else if let string = try? container.decode(String.self) {
             boolValue = false
             intValue = nil
             stringValue = string
             stringArrayValue = nil
+            objectValue = nil
         } else if let strings = try? container.decode([String].self) {
             boolValue = false
             intValue = nil
             stringValue = nil
             stringArrayValue = strings
+            objectValue = nil
+        } else if let object = try? container.decode([String: DefaultValue].self) {
+            boolValue = false
+            intValue = nil
+            stringValue = nil
+            stringArrayValue = nil
+            objectValue = object
         } else {
             boolValue = false
             intValue = nil
             stringValue = nil
             stringArrayValue = nil
+            objectValue = nil
         }
     }
 

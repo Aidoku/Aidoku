@@ -57,10 +57,10 @@ class SourceInfoHeaderView: UIView {
         labelStack.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(labelStack)
 
-        titleLabel.text = source.info.name
+        titleLabel.text = source.manifest.info.name
         labelStack.addArrangedSubview(titleLabel)
 
-        subtitleLabel.text = source.info.id
+        subtitleLabel.text = source.id
         subtitleLabel.textColor = .secondaryLabel
         labelStack.addArrangedSubview(subtitleLabel)
 

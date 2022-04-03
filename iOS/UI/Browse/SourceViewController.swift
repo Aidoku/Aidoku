@@ -21,7 +21,7 @@ class SourceViewController: MangaCollectionViewController {
     }
 
     var listings: [Listing] = []
-    var filters: [Filter] = []
+    var filters: [FilterBase] = []
 
     var hasMore = false
     var page: Int?
@@ -29,7 +29,7 @@ class SourceViewController: MangaCollectionViewController {
     var currentListing: Listing?
     let selectedFilters = SelectedFilters()
 
-    var oldSelectedFilters: [Filter] = []
+    var oldSelectedFilters: [FilterBase] = []
 
     var listingsLoaded = false
 
@@ -45,7 +45,7 @@ class SourceViewController: MangaCollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = source.info.name
+        title = source.manifest.info.name
 
         navigationItem.hidesSearchBarWhenScrolling = false
 
@@ -119,10 +119,22 @@ class SourceViewController: MangaCollectionViewController {
                 )
             )
         }
-        navigationItem.rightBarButtonItems = items
+        let finalItems = items
+        Task { @MainActor in
+            navigationItem.rightBarButtonItems = finalItems
+        }
     }
 
     @objc func resetFilters() {
+        for filter in selectedFilters.filters {
+            if let filter = filter as? CheckFilter {
+                filter.value = filter.defaultValue
+            } else if let filter = filter as? SortFilter {
+                filter.value = filter.defaultValue
+            } else if let filter = filter as? SelectFilter {
+                filter.value = filter.defaultValue
+            }
+        }
         selectedFilters.filters = source.getDefaultFilters()
     }
 
@@ -136,7 +148,7 @@ class SourceViewController: MangaCollectionViewController {
 
     func fetchData() async {
         if listings.isEmpty {
-            listings = (try? await source.getListings()) ?? []
+            listings = source.listings
             listingsLoaded = true
 
             let sourceListing = DataManager.shared.getListing(for: source)
@@ -298,8 +310,9 @@ extension SourceViewController: MiniModalDelegate {
             update = true
         } else {
             for filter in oldSelectedFilters {
-                if let target = selectedFilters.filters.first(where: { filter.name == $0.name }) {
-                    if filter.value as? SortOption != target.value as? SortOption {
+                if let target = selectedFilters.filters.first(where: { filter.name == $0.name }) as? SortFilter,
+                   let filter = filter as? SortFilter {
+                    if filter.value?.index != target.value?.index {
                         update = true
                         break
                     }

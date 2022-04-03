@@ -18,7 +18,7 @@ class SourceManager {
 
     init() {
         sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
-        sources.sort { $0.info.name < $1.info.name }
+        sources.sort { $0.manifest.info.name < $1.manifest.info.name }
 
         Task {
             for source in sources {
@@ -29,11 +29,11 @@ class SourceManager {
     }
 
     func source(for id: String) -> Source? {
-        sources.first { $0.info.id == id }
+        sources.first { $0.id == id }
     }
 
     func hasSourceInstalled(id: String) -> Bool {
-        sources.contains { $0.info.id == id }
+        sources.contains { $0.id == id }
     }
 
     func importSource(from url: URL) async -> Source? {
@@ -56,7 +56,7 @@ class SourceManager {
             let payload = temporaryDirectory.appendingPathComponent("Payload")
             let source = try? Source(from: payload)
             if let source = source {
-                let destination = Self.directory.appendingPathComponent(source.info.id)
+                let destination = Self.directory.appendingPathComponent(source.id)
                 if destination.exists {
                     try? FileManager.default.removeItem(at: destination)
                     sources.removeAll { $0.id == source.id }
@@ -68,7 +68,7 @@ class SourceManager {
 
                 if DataManager.shared.add(source: source) != nil {
                     sources.append(source)
-                    sources.sort { $0.info.name < $1.info.name }
+                    sources.sort { $0.manifest.info.name < $1.manifest.info.name }
 
                     NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
 
