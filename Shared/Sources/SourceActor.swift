@@ -20,26 +20,7 @@ actor SourceActor {
         self.source = source
     }
 
-    // TODO: make filters and listings static
-    func getFilters() async throws -> [Filter] {
-        let descriptor: Int32 = try source.vm.call("initialize_filters")
-
-        let filters = source.globalStore.readStdValue(descriptor) as? [Filter] ?? []
-        source.globalStore.removeStdValue(descriptor)
-
-        return filters
-    }
-
-    func getListings() throws -> [Listing] {
-        let descriptor: Int32 = try source.vm.call("initialize_listings")
-
-        let listings = source.globalStore.readStdValue(descriptor) as? [Listing] ?? []
-        source.globalStore.removeStdValue(descriptor)
-
-        return listings
-    }
-
-    func getMangaList(filters: [Filter], page: Int = 1) throws -> MangaPageResult {
+    func getMangaList(filters: [FilterBase], page: Int = 1) throws -> MangaPageResult {
         var filterPointer: Int32 = -1
         if !filters.isEmpty {
             filterPointer = source.globalStore.storeStdValue(filters)

@@ -156,7 +156,7 @@ class SearchViewController: UIViewController {
         // TODO: Make this run in parallel
         for (i, source) in sources.enumerated() {
             let search = try? await source.fetchSearchManga(query: query, page: 1)
-            results[source.info.id] = search
+            results[source.id] = search
             self.collectionView?.reloadSections(IndexSet(integer: i))
         }
     }
@@ -180,7 +180,7 @@ extension SearchViewController: UICollectionViewDataSource {
                 headerView = MangaCarouselHeader(frame: .zero)
             }
 
-            headerView?.title = sources[indexPath.section].info.name
+            headerView?.title = sources[indexPath.section].manifest.info.name
             headerView?.viewMoreButton.addTarget(self, action: #selector(openSearchView(_:)), for: .touchUpInside)
             headerView?.viewMoreButton.tag = indexPath.section
 

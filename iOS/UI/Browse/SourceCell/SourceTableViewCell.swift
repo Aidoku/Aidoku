@@ -92,8 +92,8 @@ class SourceTableViewCell: UITableViewCell {
     }
 
     func loadInfo() {
-        titleLabel.text = source?.info.name
-        versionLabel.text = "v\(source?.info.version ?? 1)"
+        titleLabel.text = source?.manifest.info.name
+        versionLabel.text = "v\(source?.manifest.info.version ?? 1)"
         subtitleLabel.text = source?.id
         iconView.kf.setImage(
             with: source?.url.appendingPathComponent("Icon.png"),

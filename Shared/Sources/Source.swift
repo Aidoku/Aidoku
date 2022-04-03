@@ -10,6 +10,19 @@ import WasmInterpreter
 
 class Source: Identifiable {
 
+    struct FilterInfo: Codable {
+        let type: String
+
+        let name: String?
+        let defaultValue: DefaultValue?
+
+        let filters: [FilterInfo]?
+        let options: [String]?
+
+        let canExclude: Bool?
+        let canAscend: Bool?
+    }
+
     struct SourceInfo: Codable {
         let id: String
         let lang: String
@@ -18,27 +31,33 @@ class Source: Identifiable {
         let nsfw: Int?
     }
 
+    struct SourceManifest: Codable {
+        let info: SourceInfo
+        let listings: [String]?
+        let filters: [FilterInfo]?
+    }
+
     var id: String {
-        info.id
+        manifest.info.id
     }
     var url: URL
-    var info: SourceInfo
+    var manifest: SourceManifest
 
-    var filters: [Filter] = []
-    var defaultFilters: [Filter] = []
+    var filters: [FilterBase] = []
+    var defaultFilters: [FilterBase] = []
     var listings: [Listing] = []
 
     var languages: [String] = []
     var settingItems: [SettingItem] = []
 
     var titleSearchable: Bool {
-        filters.contains { $0.type == .text && $0.name == "Title" }
+        filters.contains { $0 is TitleFilter }
     }
     var authorSearchable: Bool {
-        filters.contains { $0.type == .text && $0.name == "Author" }
+        filters.contains { $0 is AuthorFilter }
     }
     var filterable: Bool {
-        filters.contains { $0.type != .text }
+        filters.contains { !($0 is TextFilter) }
     }
 
     var needsFilterRefresh = true
@@ -54,13 +73,15 @@ class Source: Identifiable {
 
     init(from url: URL) throws {
         self.url = url
-        let data = try Data(contentsOf: url.appendingPathComponent("Info.plist"))
-        self.info = try PropertyListDecoder().decode(SourceInfo.self, from: data)
+        let data = try Data(contentsOf: url.appendingPathComponent("source.json"))
+        manifest = try JSONDecoder().decode(SourceManifest.self, from: data)
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
-        self.vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
-        self.globalStore = WasmGlobalStore(vm: vm)
-        self.actor = SourceActor(source: self)
+        vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
+        globalStore = WasmGlobalStore(vm: vm)
+        actor = SourceActor(source: self)
+
+        listings = manifest.listings?.map { Listing(name: $0, flags: 0) } ?? []
 
         prepareVirtualMachine()
         loadSettings()
@@ -112,8 +133,8 @@ class Source: Identifiable {
 extension Source {
 
     func loadSettings() {
-        if let data = try? Data(contentsOf: url.appendingPathComponent("Settings.plist")),
-           let settingsPlist = try? PropertyListDecoder().decode(SourceSettings.self, from: data) {
+        if let data = try? Data(contentsOf: url.appendingPathComponent("settings.json")),
+           let settingsPlist = try? JSONDecoder().decode(SourceSettings.self, from: data) {
             settingItems = settingsPlist.settings ?? []
             languages = settingsPlist.languages ?? []
 
@@ -217,30 +238,69 @@ extension Source {
 // MARK: - Get Functions
 extension Source {
 
-    func getDefaultFilters() -> [Filter] {
+    func getDefaultFilters() -> [FilterBase] {
         guard (defaultFilters.isEmpty || needsFilterRefresh) && !filters.isEmpty else { return defaultFilters }
 
         defaultFilters = []
 
         for filter in filters {
-            if filter.type == .group {
-                for subFilter in filter.value as? [Filter] ?? [] {
-                    if (subFilter.type == .check || subFilter.type == .genre) && subFilter.defaultValue as? Int ?? 0 > 0 {
-                        defaultFilters.append(Filter(type: subFilter.type, name: subFilter.name, value: subFilter.defaultValue))
+            if let filter = filter as? GroupFilter {
+                for subFilter in filter.filters {
+                    if let subFilter = subFilter as? CheckFilter, subFilter.defaultValue != nil {
+                        defaultFilters.append(subFilter)
                     }
                 }
-            } else if filter.type != .text || (filter.name != "Title" && filter.name != "Author") {
-                defaultFilters.append(Filter(type: filter.type, name: filter.name, value: filter.defaultValue))
+            } else if !(filter is TitleFilter) && !(filter is AuthorFilter) {
+                defaultFilters.append(filter)
             }
         }
 
         return defaultFilters
     }
 
-    func getFilters() async throws -> [Filter] {
+    func parseFilter(from filter: FilterInfo) -> FilterBase? {
+        switch filter.type {
+        case "title": return TitleFilter()
+        case "author": return AuthorFilter()
+        case "select":
+            return SelectFilter(
+                name: filter.name ?? "",
+                options: filter.options ?? [],
+                value: filter.defaultValue?.intValue ?? 0
+            )
+        case "sort":
+            let value = filter.defaultValue?.objectValue
+            return SortFilter(
+                name: filter.name ?? "",
+                options: filter.options ?? [],
+                value: value?["index"] != nil ? SortSelection(index: value?["index"]?.intValue ?? 0,
+                                                              ascending: value?["ascending"]?.boolValue ?? false) : nil
+            )
+        case "check":
+            filters.append(CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue))
+        case "genre":
+            return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue)
+        case "group":
+            return GroupFilter(name: filter.name ?? "", filters: filter.filters?.compactMap { parseFilter(from: $0) } ?? [])
+        default: break
+        }
+        return nil
+    }
+
+    func getFilters() async throws -> [FilterBase] {
         guard filters.isEmpty || needsFilterRefresh else { return filters }
 
-        filters = try await actor.getFilters()
+        filters = []
+
+        for filter in manifest.filters ?? [] {
+            print("x \(filter)")
+            if let result = parseFilter(from: filter) {
+                filters.append(result)
+            }
+        }
+
+        print("filters: \(filters)")
+
         _ = getDefaultFilters()
 
         needsFilterRefresh = false
@@ -248,21 +308,13 @@ extension Source {
         return filters
     }
 
-    func getListings() async throws -> [Listing] {
-        guard listings.isEmpty else { return listings }
-
-        listings = try await actor.getListings()
-
-        return listings
-    }
-
-    func fetchSearchManga(query: String, filters: [Filter] = [], page: Int = 1) async throws -> MangaPageResult {
+    func fetchSearchManga(query: String, filters: [FilterBase] = [], page: Int = 1) async throws -> MangaPageResult {
         var newFilters = filters
-        newFilters.append(Filter(name: "Title", value: query))
+        newFilters.append(TitleFilter(value: query))
         return try await actor.getMangaList(filters: newFilters, page: page)
     }
 
-    func getMangaList(filters: [Filter], page: Int = 1) async throws -> MangaPageResult {
+    func getMangaList(filters: [FilterBase], page: Int = 1) async throws -> MangaPageResult {
         try await actor.getMangaList(filters: filters, page: page)
     }
 

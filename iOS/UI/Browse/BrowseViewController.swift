@@ -61,7 +61,7 @@ class BrowseViewController: UIViewController {
     var searchText: String = ""
 
     var filteredSources: [Source] {
-        sources.filter { searchText.isEmpty ? true : $0.info.name.lowercased().contains(searchText.lowercased()) }
+        sources.filter { searchText.isEmpty ? true : $0.manifest.info.name.lowercased().contains(searchText.lowercased()) }
     }
     var filteredUpdates: [ExternalSourceInfo] {
         updates.filter {
@@ -170,7 +170,7 @@ class BrowseViewController: UIViewController {
         var newUpdates: [ExternalSourceInfo] = []
         for source in externalSources {
             if let installedSource = SourceManager.shared.source(for: source.id) {
-                if source.version > installedSource.info.version {
+                if source.version > installedSource.manifest.info.version {
                     newUpdates.append(source)
                 }
             }

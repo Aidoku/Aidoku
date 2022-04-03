@@ -9,7 +9,7 @@ import UIKit
 
 class FilterCell: UIView {
 
-    let filter: Filter
+    let filter: FilterBase
     let parent: FilterCell?
     var selectedFilters: SelectedFilters
 
@@ -19,30 +19,41 @@ class FilterCell: UIView {
     var detailView: FilterStackView?
 
     var selectedIntValue: Int? {
-        selectedFilters.filters.first(where: { $0.name == filter.name })?.value as? Int
-    }
-
-    var boolValue: Bool {
-        filter.value as? Bool ?? false
-    }
-
-    var selectedSortValue: SortOption {
         get {
-            selectedFilters.filters.first {
-                $0.name == parent?.filter.name ?? ""
-            }?.value as? SortOption ?? SortOption(index: 0, name: "", ascending: false)
+            (selectedFilters.filters.first(where: { $0.name == parent?.filter.name ?? "" }) as? SelectFilter)?.value
         }
         set {
-            if let parent = parent {
+            if let newValue = newValue,
+               let parent = parent,
+               let parentFilter = parent.filter as? SelectFilter {
                 var newArray = selectedFilters.filters.filter { $0.name != parent.filter.name }
-                newArray.append(Filter(type: .sort, name: parent.filter.name, value: newValue))
+                parentFilter.value = newValue
+                newArray.append(parentFilter)
                 selectedFilters.filters = newArray
                 parent.detailView?.updateCellImages()
             }
         }
     }
 
-    init(filter: Filter, parent: FilterCell? = nil, selectedFilters: SelectedFilters) {
+    var selectedSortValue: SortSelection {
+        get {
+            (selectedFilters.filters.first {
+                $0.name == parent?.filter.name ?? ""
+            } as? SortFilter)?.value ?? SortSelection(index: 0, ascending: false)
+        }
+        set {
+            if let parent = parent,
+               let parentFilter = parent.filter as? SortFilter {
+                var newArray = selectedFilters.filters.filter { $0.name != parent.filter.name }
+                parentFilter.value = newValue
+                newArray.append(parentFilter)
+                selectedFilters.filters = newArray
+                parent.detailView?.updateCellImages()
+            }
+        }
+    }
+
+    init(filter: FilterBase, parent: FilterCell? = nil, selectedFilters: SelectedFilters) {
         self.filter = filter
         self.parent = parent
         self.selectedFilters = selectedFilters
@@ -61,9 +72,15 @@ class FilterCell: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
 
-        if filter.type == .group || filter.type == .sort {
+        if filter is GroupFilter || filter is SortFilter || filter is SelectFilter {
             insets = 16
-            detailView = FilterStackView(filters: filter.value as? [Filter] ?? [], parent: self, selectedFilters: selectedFilters)
+            if let filter = filter as? GroupFilter {
+                detailView = FilterStackView(filters: filter.filters, parent: self, selectedFilters: selectedFilters)
+            } else if let filter = filter as? SortFilter {
+                detailView = FilterStackView(filters: filter.options.map { StringFilter(value: $0) }, parent: self, selectedFilters: selectedFilters)
+            } else if let filter = filter as? SelectFilter {
+                detailView = FilterStackView(filters: filter.options.map { StringFilter(value: $0) }, parent: self, selectedFilters: selectedFilters)
+            }
             detailView?.alpha = 0
             detailView?.isHidden = true
         }
@@ -85,6 +102,7 @@ class FilterCell: UIView {
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
+
         UIView.animate(withDuration: 0.2) {
             self.backgroundColor = .clear
 
@@ -96,12 +114,21 @@ class FilterCell: UIView {
                 self.symbolView.transform = hiding ? CGAffineTransform.identity : CGAffineTransform(scaleX: 1, y: -1)
             }
         }
-        if filter.type == .sortOption {
-            if let option = filter.value as? SortOption {
-                let asc = filter.name == selectedSortValue.name && !selectedSortValue.ascending
-                selectedSortValue = SortOption(index: option.index, name: option.name, ascending: asc)
+
+        if let filter = filter as? StringFilter {
+            if let parent = parent?.filter as? SortFilter,
+               let index = parent.options.firstIndex(of: filter.value) {
+                selectedSortValue = SortSelection(
+                    index: index,
+                    ascending: parent.value?.index == index && !selectedSortValue.ascending
+                )
+            } else if let parent = parent?.filter as? SelectFilter,
+                      let index = parent.options.firstIndex(of: filter.value) {
+                if selectedIntValue != index {
+                    selectedIntValue = index
+                }
             }
-        } else if filter.type == .check || filter.type == .genre {
+        } else if filter is CheckFilter {
             toggleSelectedValue()
         }
     }
@@ -114,22 +141,32 @@ class FilterCell: UIView {
     }
 
     func updateImage() {
-        if filter.type == .group || filter.type == .sort {
+        if filter is GroupFilter || filter is SortFilter || filter is SelectFilter {
             symbolView.image = UIImage(systemName: "chevron.down",
                                        withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .medium))
             symbolView.tintColor = .label
             if !(detailView?.isHidden ?? true) {
                 symbolView.transform = CGAffineTransform(scaleX: 1, y: -1)
             }
-        } else if filter.type == .sortOption {
-            if filter.name == selectedSortValue.name {
-                symbolView.image = UIImage(systemName: selectedSortValue.ascending ? "chevron.up" : "chevron.down")
-            } else {
-                symbolView.image = nil
+        } else if let filter = filter as? StringFilter {
+            if let parent = parent?.filter as? SortFilter,
+               let index = parent.options.firstIndex(of: filter.value) {
+                if index == selectedSortValue.index {
+                    symbolView.image = UIImage(systemName: selectedSortValue.ascending ? "chevron.up" : "chevron.down")
+                } else {
+                    symbolView.image = nil
+                }
+            } else if let parent = parent?.filter as? SelectFilter,
+                      let index = parent.options.firstIndex(of: filter.value) {
+                if index == selectedIntValue {
+                    symbolView.image = UIImage(systemName: "checkmark")
+                } else {
+                    symbolView.image = nil
+                }
             }
-        } else if filter.type == .check || filter.type == .genre {
-            if let value = selectedIntValue {
-                symbolView.image = UIImage(systemName: value == 1 ? "checkmark" : "xmark")
+        } else if let filter = filter as? CheckFilter {
+            if let value = filter.value {
+                symbolView.image = UIImage(systemName: value ? "checkmark" : "xmark")
             } else {
                 symbolView.image = nil
             }
@@ -138,13 +175,16 @@ class FilterCell: UIView {
 
     func toggleSelectedValue() {
         var newArray = selectedFilters.filters
-        if let value = selectedIntValue {
-            newArray = newArray.filter { $0.name != filter.name }
-            if value == 1 && boolValue { // exclude
-                newArray.append(Filter(type: filter.type, name: filter.name, value: 2))
+        if let filter = filter as? CheckFilter {
+            newArray = newArray.filter { $0.id != filter.id }
+            if filter.value == true && filter.canExclude {
+                filter.value = false
+            } else if filter.value == false || (filter.value == true && !filter.canExclude) {
+                filter.value = nil
+            } else {
+                filter.value = true
             }
-        } else {
-            newArray.append(Filter(type: filter.type, name: filter.name, value: 1))
+            newArray.append(filter)
         }
         selectedFilters.filters = newArray
 

@@ -9,7 +9,7 @@ import UIKit
 
 class FilterStackView: UIStackView {
 
-    let filters: [Filter]
+    let filters: [FilterBase]
     let parent: FilterCell?
     var selectedFilters: SelectedFilters
 
@@ -17,7 +17,7 @@ class FilterStackView: UIStackView {
 
     let cellHeight: CGFloat = 40
 
-    init(filters: [Filter], parent: FilterCell? = nil, selectedFilters: SelectedFilters) {
+    init(filters: [FilterBase], parent: FilterCell? = nil, selectedFilters: SelectedFilters) {
         self.filters = filters
         self.parent = parent
         self.selectedFilters = selectedFilters
