@@ -67,9 +67,6 @@ class Source: Identifiable {
 
     var globalStore: WasmGlobalStore
 
-    var chapterCounter = 0
-    var currentManga = ""
-
     var actor: SourceActor!
 
     init(from url: URL) throws {
@@ -288,13 +285,10 @@ extension Source {
         filters = []
 
         for filter in manifest.filters ?? [] {
-            print("x \(filter)")
             if let result = parseFilter(from: filter) {
                 filters.append(result)
             }
         }
-
-        print("filters: \(filters)")
 
         _ = getDefaultFilters()
 

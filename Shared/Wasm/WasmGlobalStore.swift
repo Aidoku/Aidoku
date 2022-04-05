@@ -11,6 +11,9 @@ import WasmInterpreter
 class WasmGlobalStore {
     var vm: WasmInterpreter
 
+    var chapterCounter = 0
+    var currentManga = ""
+
     // std
     var stdDescriptorPointer: Int32 = -1
     var stdDescriptors: [Int32: Any?] = [:]
