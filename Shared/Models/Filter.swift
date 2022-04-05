@@ -8,6 +8,19 @@
 import Foundation
 import WasmInterpreter
 
+enum FilterType: Int {
+    case base = 0
+    case group = 1
+    case text = 2
+    case check = 3
+    case select = 4
+    case sort = 5
+    case sortSelection = 6
+    case title = 7
+    case author = 8
+    case genre = 9
+}
+
 class FilterBase: KVCObject, Identifiable, Equatable {
     static func == (lhs: FilterBase, rhs: FilterBase) -> Bool {
         lhs.id == rhs.id
@@ -15,8 +28,8 @@ class FilterBase: KVCObject, Identifiable, Equatable {
 
     var name: String
 
-    var type: String {
-        "Filter"
+    var type: FilterType {
+        .base
     }
 
     init(name: String) {
@@ -25,7 +38,7 @@ class FilterBase: KVCObject, Identifiable, Equatable {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "type": return type
+        case "type": return type.rawValue
         case "name": return self.name
         default: return nil
         }
@@ -61,8 +74,8 @@ class StringFilter: Filter<String> {
 
 // MARK: Text
 class TextFilter: Filter<String> {
-    override var type: String {
-        "TextFilter"
+    override var type: FilterType {
+        .text
     }
 
     override init(name: String, value: String = "") {
@@ -74,8 +87,8 @@ class TextFilter: Filter<String> {
 class CheckFilter: Filter<Bool?> {
     var canExclude: Bool
 
-    override var type: String {
-        "CheckFilter"
+    override var type: FilterType {
+        .check
     }
 
     init(name: String, canExclude: Bool, value: Bool? = nil) {
@@ -95,8 +108,8 @@ class CheckFilter: Filter<Bool?> {
 class SelectFilter: Filter<Int> {
     var options: [String]
 
-    override var type: String {
-        "SelectFilter"
+    override var type: FilterType {
+        .select
     }
 
     init(name: String, options: [String], value: Int = 0) {
@@ -117,6 +130,10 @@ class SortSelection: FilterBase {
     var index: Int
     var ascending: Bool
 
+    override var type: FilterType {
+        .sortSelection
+    }
+
     init(index: Int, ascending: Bool) {
         self.index = index
         self.ascending = ascending
@@ -136,8 +153,8 @@ class SortFilter: Filter<SortSelection?> {
     var options: [String]
     var canAscend: Bool
 
-    override var type: String {
-        "SortFilter"
+    override var type: FilterType {
+        .sort
     }
 
     init(name: String, options: [String], canAscend: Bool = true, value: SortSelection? = nil) {
@@ -159,8 +176,8 @@ class SortFilter: Filter<SortSelection?> {
 class GroupFilter: Filter<Any?> {
     var filters: [FilterBase]
 
-    override var type: String {
-        "GroupFilter"
+    override var type: FilterType {
+        .group
     }
 
     init(name: String, filters: [FilterBase]) {
@@ -178,8 +195,8 @@ class GroupFilter: Filter<Any?> {
 
 // MARK: Common types
 class TitleFilter: TextFilter {
-    override var type: String {
-        "TitleFilter"
+    override var type: FilterType {
+        .title
     }
 
     init(value: String = "") {
@@ -188,8 +205,8 @@ class TitleFilter: TextFilter {
 }
 
 class AuthorFilter: TextFilter {
-    override var type: String {
-        "AuthorFilter"
+    override var type: FilterType {
+        .author
     }
 
     init(value: String = "") {
@@ -198,7 +215,7 @@ class AuthorFilter: TextFilter {
 }
 
 class GenreFilter: CheckFilter {
-    override var type: String {
-        "GenreFilter"
+    override var type: FilterType {
+        .genre
     }
 }

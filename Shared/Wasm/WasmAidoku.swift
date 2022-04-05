@@ -13,19 +13,16 @@ class WasmAidoku: WasmModule {
     var globalStore: WasmGlobalStore
     let sourceId: String
 
-    var chapterCounter = 0
-    var currentManga = ""
-
     init(globalStore: WasmGlobalStore, sourceId: String) {
         self.globalStore = globalStore
         self.sourceId = sourceId
     }
 
     func export(into namespace: String = "aidoku") {
-        try? globalStore.vm.addImportHandler(named: "manga", namespace: namespace, block: self.create_manga)
-        try? globalStore.vm.addImportHandler(named: "manga_result", namespace: namespace, block: self.create_manga_result)
-        try? globalStore.vm.addImportHandler(named: "chapter", namespace: namespace, block: self.create_chapter)
-        try? globalStore.vm.addImportHandler(named: "page", namespace: namespace, block: self.create_page)
+        try? globalStore.vm.addImportHandler(named: "create_manga", namespace: namespace, block: self.create_manga)
+        try? globalStore.vm.addImportHandler(named: "create_manga_result", namespace: namespace, block: self.create_manga_result)
+        try? globalStore.vm.addImportHandler(named: "create_chapter", namespace: namespace, block: self.create_chapter)
+        try? globalStore.vm.addImportHandler(named: "create_page", namespace: namespace, block: self.create_page)
 
 //        try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
 //        try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
@@ -43,7 +40,7 @@ extension WasmAidoku {
         Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32
     ) -> Int32 {
         // swiftlint:disable:next line_length
-        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, _, _, description, description_len, status, tags, tag_str_lens, tag_count, url, url_len, nsfw, viewer in
+        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, _, _, description, description_len, url, url_len, tags, tag_str_lens, tag_count, status, nsfw, viewer in
             guard id_len > 0 else { return -1 }
             if let mangaId = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 var tagList: [String] = []
@@ -95,7 +92,7 @@ extension WasmAidoku {
                 let chapter = Chapter(
                     sourceId: self.sourceId,
                     id: chapterId,
-                    mangaId: self.currentManga,
+                    mangaId: self.globalStore.currentManga,
                     title: name_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
                     scanlator: scanlator_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(scanlator),
                                                                                            length: Int(scanlator_len)) : nil,
@@ -104,8 +101,9 @@ extension WasmAidoku {
                     chapterNum: chapter >= 0 ? Float(chapter) : nil,
                     volumeNum: volume >= 0 ? Float(volume) : nil,
                     dateUploaded: dateUploaded > 0 ? Date(timeIntervalSince1970: TimeInterval(dateUploaded)) : nil,
-                    sourceOrder: self.chapterCounter
+                    sourceOrder: self.globalStore.chapterCounter
                 )
+                self.globalStore.chapterCounter += 1
                 return self.globalStore.storeStdValue(chapter)
             }
             return -1
