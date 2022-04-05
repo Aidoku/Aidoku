@@ -69,12 +69,12 @@ actor SourceActor {
     func getChapterList(manga: Manga) throws -> [Chapter] {
         let mangaPointer = source.globalStore.storeStdValue(manga)
 
-        source.chapterCounter = 0
-        source.currentManga = manga.id
+        source.globalStore.chapterCounter = 0
+        source.globalStore.currentManga = manga.id
 
         let descriptor: Int32 = try source.vm.call("chapter_list_request", mangaPointer)
 
-        source.chapterCounter = 0
+        source.globalStore.chapterCounter = 0
 
         let chapters = source.globalStore.readStdValue(descriptor) as? [Chapter] ?? []
         source.globalStore.removeStdValue(descriptor)
