@@ -474,6 +474,8 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
         )
 
         if let chapter = chapter, let cell = cell as? ReaderPageCollectionViewCell {
+            cell.sourceId = chapter.sourceId
+
             if indexPath.section == 0 || indexPath.section == 2 {
                 cell.convertToPage()
                 cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
@@ -554,6 +556,8 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
 // MARK: - Reader Page Collection Cell
 class ReaderPageCollectionViewCell: UICollectionViewCell {
 
+    var sourceId: String?
+
     var pageView: ReaderPageView?
     var infoView: ReaderInfoPageView?
 
@@ -563,7 +567,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         infoView?.removeFromSuperview()
         infoView = nil
 
-        pageView = ReaderPageView()
+        pageView = ReaderPageView(sourceId: sourceId ?? "")
         pageView?.zoomEnabled = false
         pageView?.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageView!)
