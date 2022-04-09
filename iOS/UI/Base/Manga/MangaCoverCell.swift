@@ -74,31 +74,6 @@ class MangaCoverCell: UICollectionViewCell {
         layer.borderWidth = 1
         layer.borderColor = UIColor.quaternarySystemFill.cgColor
 
-        let processor = DownsamplingImageProcessor(size: bounds.size) // |> RoundCornerImageProcessor(cornerRadius: 5)
-        let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
-        imageView.kf.setImage(
-            with: URL(string: manga?.cover ?? ""),
-            placeholder: UIImage(named: "MangaPlaceholder"),
-            options: [
-                .processor(processor),
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .cacheOriginalImage
-            ]
-        ) { result in
-            switch result {
-            case .success(let value):
-                if self.manga?.tintColor == nil {
-                    value.image.getColors(quality: .low) { colors in
-                        let luma = colors?.background.luminance ?? 0
-                        self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
-                    }
-                }
-            default:
-                break
-            }
-        }
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
@@ -147,6 +122,10 @@ class MangaCoverCell: UICollectionViewCell {
         overlayView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
 
         activateConstraints()
+
+        Task {
+            await loadImage()
+        }
     }
 
     func activateConstraints() {
@@ -176,6 +155,60 @@ class MangaCoverCell: UICollectionViewCell {
     func unhighlight(animated: Bool = true) {
         UIView.animate(withDuration: animated ? 0.3 : 0) {
             self.highlightView.alpha = 0
+        }
+    }
+
+    func loadImage() async {
+        let url = manga?.cover ?? ""
+
+        let userAgentModifier: AnyModifier?
+
+        if let sourceId = manga?.sourceId,
+           let request = try? await SourceManager.shared.source(for: sourceId)?.getImageRequest(url: url) {
+            userAgentModifier = AnyModifier { urlRequest in
+                var r = urlRequest
+                for (key, value) in request.headers {
+                    r.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { r.httpBody = body }
+                return r
+            }
+        } else {
+            userAgentModifier = nil
+        }
+
+        // Run the image loading code immediately on the main actor
+        await MainActor.run {
+            let processor = DownsamplingImageProcessor(size: bounds.size) // |> RoundCornerImageProcessor(cornerRadius: 5)
+            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
+            var kfOptions: [KingfisherOptionsInfoItem] = [
+                .processor(processor),
+                .scaleFactor(UIScreen.main.scale),
+                .transition(.fade(0.3)),
+                .retryStrategy(retry),
+                .cacheOriginalImage
+            ]
+            if let userAgentModifier = userAgentModifier {
+                kfOptions.append(.requestModifier(userAgentModifier))
+            }
+
+            imageView.kf.setImage(
+                with: URL(string: url),
+                placeholder: UIImage(named: "MangaPlaceholder"),
+                options: kfOptions
+            ) { result in
+                switch result {
+                case .success(let value):
+                    if self.manga?.tintColor == nil {
+                        value.image.getColors(quality: .low) { colors in
+                            let luma = colors?.background.luminance ?? 0
+                            self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
+                        }
+                    }
+                default:
+                    break
+                }
+            }
         }
     }
 }

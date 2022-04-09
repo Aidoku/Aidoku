@@ -16,6 +16,8 @@ class ReaderPageView: UIView {
 
     weak var delegate: ReaderPageViewDelegate?
 
+    var sourceId: String
+
     var zoomableView = ZoomableScrollView(frame: UIScreen.main.bounds)
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
@@ -41,7 +43,8 @@ class ReaderPageView: UIView {
         }
     }
 
-    init() {
+    init(sourceId: String) {
+        self.sourceId = sourceId
         super.init(frame: UIScreen.main.bounds)
         configureViews()
     }
@@ -126,13 +129,24 @@ class ReaderPageView: UIView {
         if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
 
+        let request = try? await SourceManager.shared.source(for: sourceId)?.actor.getImageRequest(url: currentUrl ?? "")
+
         // Run the image loading code immediately on the main actor
         await MainActor.run {
+            let userAgentModifier = AnyModifier { urlRequest in
+                var r = urlRequest
+                for (key, value) in request?.headers ?? [:] {
+                    r.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request?.body { r.httpBody = body }
+                return r
+            }
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
             var kfOptions: [KingfisherOptionsInfoItem] = [
                 .scaleFactor(UIScreen.main.scale),
                 .transition(.fade(0.3)),
-                .retryStrategy(retry)
+                .retryStrategy(retry),
+                .requestModifier(userAgentModifier)
             ]
 
             if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {

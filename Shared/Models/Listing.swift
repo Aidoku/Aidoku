@@ -7,7 +7,15 @@
 
 import Foundation
 
-struct Listing: Hashable {
+struct Listing: KVCObject, Hashable {
     var name: String
     var flags: Int32 // currently unused
+
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "name": return self.name
+        case "flags": return flags
+        default: return nil
+        }
+    }
 }

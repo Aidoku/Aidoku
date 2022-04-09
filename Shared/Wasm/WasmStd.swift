@@ -37,6 +37,7 @@ class WasmStd: WasmModule {
         try? globalStore.vm.addImportHandler(named: "create_bool", namespace: namespace, block: self.create_bool)
         try? globalStore.vm.addImportHandler(named: "create_array", namespace: namespace, block: self.create_array)
         try? globalStore.vm.addImportHandler(named: "create_object", namespace: namespace, block: self.create_object)
+        try? globalStore.vm.addImportHandler(named: "create_date", namespace: namespace, block: self.create_date)
 
         try? globalStore.vm.addImportHandler(named: "typeof", namespace: namespace, block: self.typeof)
         try? globalStore.vm.addImportHandler(named: "string_len", namespace: namespace, block: self.string_len)
@@ -44,6 +45,8 @@ class WasmStd: WasmModule {
         try? globalStore.vm.addImportHandler(named: "read_int", namespace: namespace, block: self.read_int)
         try? globalStore.vm.addImportHandler(named: "read_float", namespace: namespace, block: self.read_float)
         try? globalStore.vm.addImportHandler(named: "read_bool", namespace: namespace, block: self.read_bool)
+        try? globalStore.vm.addImportHandler(named: "read_date", namespace: namespace, block: self.read_date)
+        try? globalStore.vm.addImportHandler(named: "read_date_string", namespace: namespace, block: self.read_date_string)
 
         try? globalStore.vm.addImportHandler(named: "object_len", namespace: namespace, block: self.object_len)
         try? globalStore.vm.addImportHandler(named: "object_get", namespace: namespace, block: self.object_get)
@@ -85,11 +88,11 @@ extension WasmStd {
 
     var create_null: () -> Int32 {
         {
-            self.globalStore.storeStdValue(-1)
+            self.globalStore.storeStdValue(nil)
         }
     }
 
-    var create_int: (Int32) -> Int32 {
+    var create_int: (Int64) -> Int32 {
         { int in
             self.globalStore.storeStdValue(int)
         }
@@ -125,6 +128,12 @@ extension WasmStd {
     var create_array: () -> Int32 {
         {
             self.globalStore.storeStdValue([])
+        }
+    }
+
+    var create_date: (Float64) -> Int32 {
+        { time in
+            self.globalStore.storeStdValue(Date(timeIntervalSince1970: time))
         }
     }
 }
@@ -177,25 +186,25 @@ extension WasmStd {
         }
     }
 
-    var read_int: (Int32) -> Int32 {
+    var read_int: (Int32) -> Int64 {
         { json in
             guard json >= 0 else { return 0 }
             if let int = self.globalStore.readStdValue(json) as? Int {
-                return Int32(int)
+                return Int64(int)
             } else if let int = Int(self.globalStore.readStdValue(json) as? String ?? "Error") {
-                return Int32(int)
+                return Int64(int)
             }
             return 0
         }
     }
 
-    var read_float: (Int32) -> Float32 {
+    var read_float: (Int32) -> Float64 {
         { json in
             guard json >= 0 else { return 0 }
             if let float = self.globalStore.readStdValue(json) as? Float {
-                return Float32(float)
+                return Float64(float)
             } else if let float = Float(self.globalStore.readStdValue(json) as? String ?? "Error") {
-                return Float32(float)
+                return Float64(float)
             }
             return 0
         }
@@ -210,6 +219,46 @@ extension WasmStd {
                 return Int32(int != 0 ? 1 : 0)
             }
             return 0
+        }
+    }
+
+    var read_date: (Int32) -> Float64 {
+        { json in
+            if json >= 0, let date = self.globalStore.readStdValue(json) as? Date {
+                return Float64(date.timeIntervalSince1970)
+            } else {
+                return -1
+            }
+        }
+    }
+
+    var read_date_string: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Float64 {
+        { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
+            guard json >= 0, format_len > 0 else { return -1 }
+            if let string = self.globalStore.readStdValue(json) as? String,
+               let formatString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(format), length: Int(format_len)) {
+                let localeString = locale_len > 0 ? (try? self.globalStore.vm.stringFromHeap(
+                    byteOffset: Int(locale),
+                    length: Int(locale_len))
+                ) : nil
+                let timeZoneString = timeZone_len > 0 ? (try? self.globalStore.vm.stringFromHeap(
+                    byteOffset: Int(timeZone),
+                    length: Int(timeZone_len))
+                ) : nil
+
+                let formatter = DateFormatter()
+                if let localeString = localeString {
+                    formatter.locale = Locale(identifier: localeString)
+                }
+                if let timeZoneString = timeZoneString {
+                    formatter.timeZone = TimeZone(identifier: timeZoneString)
+                }
+                formatter.dateFormat = formatString
+                if let date = formatter.date(from: string) {
+                    return Float64(date.timeIntervalSince1970)
+                }
+            }
+            return -1
         }
     }
 }
@@ -345,33 +394,4 @@ extension WasmStd {
 
 // TODO: move this
 // extension WasmJson {
-//
-//    let defaultLocale = "en_US_POSIX"
-//    let defaultTimeZone = "UTC"
-//
-//    var date_value: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int64 {
-//        { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
-//            guard json >= 0, format_len > 0 else { return -1 }
-//            if let string = self.globalStore.readStdValue(json) as? String,
-//               let formatString = try? self.vm.stringFromHeap(byteOffset: Int(format), length: Int(format_len)) {
-//                let localeString = locale_len > 0 ? (try? self.vm.stringFromHeap(
-//                    byteOffset: Int(locale),
-//                    length: Int(locale_len))
-//                ) ?? self.defaultLocale : self.defaultLocale
-//                let timeZoneString = timeZone_len > 0 ? (try? self.vm.stringFromHeap(
-//                    byteOffset: Int(timeZone),
-//                    length: Int(timeZone_len))
-//                ) ?? self.defaultTimeZone : self.defaultTimeZone
-//
-//                let formatter = DateFormatter()
-//                formatter.locale = Locale(identifier: localeString)
-//                formatter.timeZone = TimeZone(identifier: timeZoneString)
-//                formatter.dateFormat = formatString
-//                if let date = formatter.date(from: string) {
-//                    return Int64(date.timeIntervalSince1970)
-//                }
-//            }
-//            return -1
-//        }
-//    }
 // }

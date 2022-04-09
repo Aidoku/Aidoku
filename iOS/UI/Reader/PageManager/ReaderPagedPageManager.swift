@@ -193,7 +193,7 @@ extension ReaderPagedPageManager {
 
         for _ in urls {
             let c = UIViewController()
-            let page = ReaderPageView()
+            let page = ReaderPageView(sourceId: chapter.sourceId)
             page.frame = pageViewController.view.bounds
             page.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
             c.view = page
@@ -225,13 +225,13 @@ extension ReaderPagedPageManager {
 
         if hasPreviousChapter {
             let previousChapterPageController = UIViewController()
-            previousChapterPageController.view  = ReaderPageView()
+            previousChapterPageController.view = ReaderPageView(sourceId: chapter.sourceId)
             items.insert(previousChapterPageController, at: 0)
         }
 
         if hasNextChapter {
             let nextChapterPageController = UIViewController()
-            nextChapterPageController.view  = ReaderPageView()
+            nextChapterPageController.view = ReaderPageView(sourceId: chapter.sourceId)
             items.append(nextChapterPageController)
         }
 

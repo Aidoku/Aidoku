@@ -322,4 +322,8 @@ extension Source {
     func getPageList(chapter: Chapter) async throws -> [Page] {
         try await actor.getPageList(chapter: chapter)
     }
+
+    func getImageRequest(url: String) async throws -> WasmRequestObject {
+        try await actor.getImageRequest(url: url)
+    }
 }

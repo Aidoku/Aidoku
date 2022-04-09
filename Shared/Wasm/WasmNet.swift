@@ -9,28 +9,40 @@ import Foundation
 import WasmInterpreter
 import SwiftSoup
 
-struct WasmRequestObject {
+enum HttpMethod: Int {
+    case GET = 0
+    case POST = 1
+    case HEAD = 2
+    case PUT = 3
+    case DELETE = 4
+}
+
+struct WasmRequestObject: KVCObject {
     let id: Int
     var URL: String?
-    var method: String?
+    var method: HttpMethod?
     var headers: [String: String?] = [:]
     var body: Data?
 
     var data: Data?
+    var response: URLResponse?
+    var error: Error?
     var bytesRead: Int = 0
+
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
+        case "url": return URL
+        case "method": return method?.rawValue
+        case "headers": return headers
+        case "body": return body
+        default: return nil
+        }
+    }
 }
 
 class WasmNet: WasmModule {
 
     var globalStore: WasmGlobalStore
-
-    enum HttpMethod: Int {
-        case GET = 0
-        case POST = 1
-        case HEAD = 2
-        case PUT = 3
-        case DELETE = 4
-    }
 
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
@@ -38,13 +50,17 @@ class WasmNet: WasmModule {
 
     func export(into namespace: String = "net") {
         try? globalStore.vm.addImportHandler(named: "init", namespace: namespace, block: self.init_request)
+        try? globalStore.vm.addImportHandler(named: "send", namespace: namespace, block: self.send)
+        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
+
         try? globalStore.vm.addImportHandler(named: "set_url", namespace: namespace, block: self.set_url)
         try? globalStore.vm.addImportHandler(named: "set_header", namespace: namespace, block: self.set_header)
         try? globalStore.vm.addImportHandler(named: "set_body", namespace: namespace, block: self.set_header)
-        try? globalStore.vm.addImportHandler(named: "send", namespace: namespace, block: self.send)
+
+        try? globalStore.vm.addImportHandler(named: "get_url", namespace: namespace, block: self.get_url)
         try? globalStore.vm.addImportHandler(named: "get_data_size", namespace: namespace, block: self.get_data_size)
         try? globalStore.vm.addImportHandler(named: "get_data", namespace: namespace, block: self.get_data)
-        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
+
         try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
     }
@@ -55,16 +71,16 @@ extension WasmNet {
     var init_request: (Int32) -> Int32 {
         { method in
             var req = WasmRequestObject(id: self.globalStore.requests.count)
-            switch HttpMethod(rawValue: Int(method)) {
-            case .GET: req.method = "GET"
-            case .POST: req.method = "POST"
-            case .HEAD: req.method = "HEAD"
-            case .PUT: req.method = "PUT"
-            case .DELETE: req.method = "DELETE"
-            default: req.method = "GET"
-            }
+            req.method = HttpMethod(rawValue: Int(method))
             self.globalStore.requests.append(req)
             return Int32(req.id)
+        }
+    }
+
+    var close: (Int32) -> Void {
+        { descriptor in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return }
+            self.globalStore.requests.remove(at: Int(descriptor))
         }
     }
 
@@ -105,16 +121,30 @@ extension WasmNet {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
             if let body = request.body { urlRequest.httpBody = body }
-            if let method = request.method { urlRequest.httpMethod = method }
+            switch request.method {
+            case .GET: urlRequest.httpMethod = "GET"
+            case .POST: urlRequest.httpMethod = "POST"
+            case .HEAD: urlRequest.httpMethod = "HEAD"
+            case .PUT: urlRequest.httpMethod = "PUT"
+            case .DELETE: urlRequest.httpMethod = "DELETE"
+            default: break
+            }
 
-            URLSession.shared.dataTask(with: urlRequest) { data, _, _ in
-                if let data = data {
-                    self.globalStore.requests[Int(descriptor)].data = data
-                }
+            URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+                self.globalStore.requests[Int(descriptor)].data = data
+                self.globalStore.requests[Int(descriptor)].response = response
+                self.globalStore.requests[Int(descriptor)].error = error
                 semaphore.signal()
             }.resume()
 
             semaphore.wait()
+        }
+    }
+
+    var get_url: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
+            return self.globalStore.storeStdValue(self.globalStore.requests[Int(descriptor)].URL)
         }
     }
 
@@ -145,13 +175,6 @@ extension WasmNet {
         }
     }
 
-    var close: (Int32) -> Void {
-        { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return }
-            self.globalStore.requests.remove(at: Int(descriptor))
-        }
-    }
-
     var json: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
@@ -170,10 +193,15 @@ extension WasmNet {
         { descriptor in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
 
-            if let data = self.globalStore.requests[Int(descriptor)].data,
-               let content = String(data: data, encoding: .utf8),
-               let obj = try? SwiftSoup.parse(content) {
-                return self.globalStore.storeStdValue(obj)
+            let request = self.globalStore.requests[Int(descriptor)]
+            if let data = request.data,
+               let content = String(data: data, encoding: .utf8) {
+                if let baseUri = request.response?.url?.absoluteString,
+                   let obj = try? SwiftSoup.parse(content, baseUri) {
+                    return self.globalStore.storeStdValue(obj)
+                } else if let obj = try? SwiftSoup.parse(content) {
+                    return self.globalStore.storeStdValue(obj)
+                }
             }
 
             return -1
