@@ -20,14 +20,18 @@ class WasmHtml {
     func export(into namespace: String = "html") {
         try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
         try? globalStore.vm.addImportHandler(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
-        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.free)
+        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
 
         try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
+        try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
+
         try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
+        try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.first)
+        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
+
+        try? globalStore.vm.addImportHandler(named: "base_uri", namespace: namespace, block: self.baseUri)
         try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
-        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
-        try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
         try? globalStore.vm.addImportHandler(named: "outer_html", namespace: namespace, block: self.outerHtml)
 
@@ -35,6 +39,7 @@ class WasmHtml {
         try? globalStore.vm.addImportHandler(named: "tag_name", namespace: namespace, block: self.tagName)
         try? globalStore.vm.addImportHandler(named: "class_name", namespace: namespace, block: self.className)
         try? globalStore.vm.addImportHandler(named: "has_class", namespace: namespace, block: self.hasClass)
+        try? globalStore.vm.addImportHandler(named: "has_attr", namespace: namespace, block: self.hasAttr)
     }
 }
 
@@ -62,7 +67,7 @@ extension WasmHtml {
         }
     }
 
-    var free: (Int32) -> Void {
+    var close: (Int32) -> Void {
         { descriptor in
             self.globalStore.removeStdValue(descriptor)
         }
@@ -87,6 +92,26 @@ extension WasmHtml {
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.first() {
                 return self.globalStore.storeStdValue(element, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var last: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.last() {
+                return self.globalStore.storeStdValue(element, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var baseUri: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let uri = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Node)?.getBaseUri() {
+                return self.globalStore.storeStdValue(uri, from: descriptor)
             }
             return -1
         }
@@ -202,6 +227,18 @@ extension WasmHtml {
             guard descriptor >= 0 else { return 0 }
             if let classString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(className), length: Int(classLength)) {
                 if (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.hasClass(classString) ?? false {
+                    return 1
+                }
+            }
+            return 0
+        }
+    }
+
+    var hasAttr: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, attrName, attrLength in
+            guard descriptor >= 0 else { return 0 }
+            if let key = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(attrName), length: Int(attrLength)) {
+                if (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.hasAttr(key) ?? false {
                     return 1
                 }
             }

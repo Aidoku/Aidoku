@@ -26,7 +26,7 @@ actor SourceActor {
             filterPointer = source.globalStore.storeStdValue(filters)
         }
 
-        let descriptor: Int32 = try source.vm.call("manga_list_request", filterPointer, Int32(page))
+        let descriptor: Int32 = try source.vm.call("get_manga_list", filterPointer, Int32(page))
 
         let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(descriptor)
@@ -42,7 +42,7 @@ actor SourceActor {
         let listingPointer = source.globalStore.storeStdValue(listing)
 
         let descriptor: Int32 = try source.vm.call(
-            "manga_listing_request", listingPointer, Int32(page)
+            "get_manga_listing", listingPointer, Int32(page)
         )
 
         let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
@@ -55,7 +55,7 @@ actor SourceActor {
     func getMangaDetails(manga: Manga) throws -> Manga {
         let mangaPointer = source.globalStore.storeStdValue(manga)
 
-        let descriptor: Int32 = try source.vm.call("manga_details_request", mangaPointer)
+        let descriptor: Int32 = try source.vm.call("get_manga_details", mangaPointer)
 
         let manga = source.globalStore.readStdValue(descriptor) as? Manga
         source.globalStore.removeStdValue(descriptor)
@@ -72,7 +72,7 @@ actor SourceActor {
         source.globalStore.chapterCounter = 0
         source.globalStore.currentManga = manga.id
 
-        let descriptor: Int32 = try source.vm.call("chapter_list_request", mangaPointer)
+        let descriptor: Int32 = try source.vm.call("get_chapter_list", mangaPointer)
 
         source.globalStore.chapterCounter = 0
 
@@ -83,15 +83,32 @@ actor SourceActor {
         return chapters
     }
 
-    func getPageList(chapter: Chapter) async throws -> [Page] {
+    func getPageList(chapter: Chapter) throws -> [Page] {
         let chapterPointer = source.globalStore.storeStdValue(chapter)
 
-        let descriptor: Int32 = try source.vm.call("page_list_request", chapterPointer)
+        let descriptor: Int32 = try source.vm.call("get_page_list", chapterPointer)
 
         let pages = source.globalStore.readStdValue(descriptor) as? [Page] ?? []
         source.globalStore.removeStdValue(descriptor)
         source.globalStore.removeStdValue(chapterPointer)
 
         return pages
+    }
+
+    func getImageRequest(url: String) throws -> WasmRequestObject {
+        let request = WasmRequestObject(id: source.globalStore.requests.count)
+        source.globalStore.requests.append(request)
+
+        try source.vm.call("modify_image_request", Int32(request.id))
+
+        return source.globalStore.requests[request.id]
+    }
+
+    func handleUrl(url: String) throws {
+        let urlDescriptor = source.globalStore.storeStdValue(url)
+
+        _ = try source.vm.call("handle_url", urlDescriptor) // return manga or chapter
+
+        source.globalStore.removeStdValue(urlDescriptor)
     }
 }
