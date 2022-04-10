@@ -8,20 +8,30 @@
 import Foundation
 import WasmInterpreter
 
-class Source: Identifiable {
+struct FilterInfo: Codable {
+    let type: String
 
-    struct FilterInfo: Codable {
-        let type: String
+    let name: String?
+    let defaultValue: DefaultValue?
 
-        let name: String?
-        let defaultValue: DefaultValue?
+    let filters: [FilterInfo]?
+    let options: [String]?
 
-        let filters: [FilterInfo]?
-        let options: [String]?
+    let canExclude: Bool?
+    let canAscend: Bool?
 
-        let canExclude: Bool?
-        let canAscend: Bool?
+    enum CodingKeys: String, CodingKey {
+        case type
+        case name
+        case defaultValue = "default"
+        case filters
+        case options
+        case canExclude
+        case canAscend
     }
+}
+
+class Source: Identifiable {
 
     struct SourceInfo: Codable {
         let id: String
@@ -266,10 +276,11 @@ extension Source {
                 name: filter.name ?? "",
                 options: filter.options ?? [],
                 value: value?["index"] != nil ? SortSelection(index: value?["index"]?.intValue ?? 0,
-                                                              ascending: value?["ascending"]?.boolValue ?? false) : nil
+                                                              ascending: value?["ascending"]?.boolValue ?? false)
+                                              : SortSelection(index: 0, ascending: false)
             )
         case "check":
-            filters.append(CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue))
+            return CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue)
         case "genre":
             return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue)
         case "group":
