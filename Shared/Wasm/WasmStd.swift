@@ -188,25 +188,27 @@ extension WasmStd {
 
     var read_int: (Int32) -> Int64 {
         { json in
-            guard json >= 0 else { return 0 }
+            guard json >= 0 else { return -1 }
             if let int = self.globalStore.readStdValue(json) as? Int {
                 return Int64(int)
             } else if let int = Int(self.globalStore.readStdValue(json) as? String ?? "Error") {
                 return Int64(int)
+            } else if let bool = self.globalStore.readStdValue(json) as? Bool {
+                return Int64(bool ? 1 : 0)
             }
-            return 0
+            return -1
         }
     }
 
     var read_float: (Int32) -> Float64 {
         { json in
-            guard json >= 0 else { return 0 }
+            guard json >= 0 else { return -1 }
             if let float = self.globalStore.readStdValue(json) as? Float {
                 return Float64(float)
             } else if let float = Float(self.globalStore.readStdValue(json) as? String ?? "Error") {
                 return Float64(float)
             }
-            return 0
+            return -1
         }
     }
 
