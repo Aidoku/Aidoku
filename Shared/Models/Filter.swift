@@ -98,7 +98,7 @@ class CheckFilter: Filter<Bool?> {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "canExclude": return canExclude
+        case "can_exclude": return canExclude
         default: return super.valueByPropertyName(name: name)
         }
     }
@@ -166,7 +166,7 @@ class SortFilter: Filter<SortSelection?> {
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "options": return options
-        case "canAscend": return canAscend
+        case "can_ascend": return canAscend
         default: return super.valueByPropertyName(name: name)
         }
     }
