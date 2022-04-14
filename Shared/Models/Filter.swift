@@ -149,7 +149,7 @@ class SortSelection: FilterBase {
     }
 }
 
-class SortFilter: Filter<SortSelection?> {
+class SortFilter: Filter<SortSelection> {
     var options: [String]
     var canAscend: Bool
 
@@ -157,7 +157,7 @@ class SortFilter: Filter<SortSelection?> {
         .sort
     }
 
-    init(name: String, options: [String], canAscend: Bool = true, value: SortSelection? = nil) {
+    init(name: String, options: [String], canAscend: Bool = true, value: SortSelection = SortSelection(index: 0, ascending: false)) {
         self.options = options
         self.canAscend = canAscend
         super.init(name: name, value: value)
