@@ -55,6 +55,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     var targetPage: Int?
     var shouldMoveToTargetPage = true
+    var transitioningChapter = false
 
     var previousPageIndex = 0
 
@@ -159,6 +160,12 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
         self.chapter = chapter
         targetPage = startPage
+
+        if transitioningChapter {
+            transitioningChapter = false
+        } else {
+            shouldMoveToTargetPage = true
+        }
 
         Task { @MainActor in
             await loadPages()
@@ -303,6 +310,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
+            transitioningChapter = true
             delegate?.move(toChapter: chapter)
         }
     }
@@ -319,6 +327,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
+            transitioningChapter = true
             delegate?.move(toChapter: chapter)
         }
     }
