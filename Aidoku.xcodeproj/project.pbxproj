@@ -504,8 +504,8 @@
 			children = (
 				FB67EE5F27F3708400C468EA /* WasmModule.swift */,
 				FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */,
-				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
 				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
+				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
 				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
 				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
 				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,

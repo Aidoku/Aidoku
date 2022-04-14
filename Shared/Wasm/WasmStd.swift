@@ -94,13 +94,13 @@ extension WasmStd {
 
     var create_int: (Int64) -> Int32 {
         { int in
-            self.globalStore.storeStdValue(int)
+            self.globalStore.storeStdValue(Int(int))
         }
     }
 
-    var create_float: (Float32) -> Int32 {
+    var create_float: (Float64) -> Int32 {
         { float in
-            self.globalStore.storeStdValue(float)
+            self.globalStore.storeStdValue(Float(float))
         }
     }
 
@@ -143,7 +143,7 @@ extension WasmStd {
 
     var typeof: (Int32) -> Int32 {
         { json in
-            guard json >= 0 else { return -1 }
+            guard json >= 0 else { return Int32(ObjectType.null.rawValue) }
             let value = self.globalStore.readStdValue(json)
             if value is Int {
                 return Int32(ObjectType.int.rawValue)
@@ -155,12 +155,12 @@ extension WasmStd {
                 return Int32(ObjectType.bool.rawValue)
             } else if value is [Any?] {
                 return Int32(ObjectType.array.rawValue)
-            } else if value is [String: Any?] {
+            } else if value is [String: Any?] || value is KVCObject {
                 return Int32(ObjectType.object.rawValue)
             } else if value is Date {
                 return Int32(ObjectType.date.rawValue)
             }
-            return -1
+            return Int32(ObjectType.null.rawValue)
         }
     }
 
@@ -191,6 +191,8 @@ extension WasmStd {
             guard json >= 0 else { return -1 }
             if let int = self.globalStore.readStdValue(json) as? Int {
                 return Int64(int)
+            } else if let float = self.globalStore.readStdValue(json) as? Float {
+                return Int64(float)
             } else if let int = Int(self.globalStore.readStdValue(json) as? String ?? "Error") {
                 return Int64(int)
             } else if let bool = self.globalStore.readStdValue(json) as? Bool {
@@ -205,6 +207,8 @@ extension WasmStd {
             guard json >= 0 else { return -1 }
             if let float = self.globalStore.readStdValue(json) as? Float {
                 return Float64(float)
+            } else if let int = self.globalStore.readStdValue(json) as? Int {
+                return Float64(int)
             } else if let float = Float(self.globalStore.readStdValue(json) as? String ?? "Error") {
                 return Float64(float)
             }
@@ -292,7 +296,7 @@ extension WasmStd {
 
     var object_set: (Int32, Int32, Int32, Int32) -> Void {
         { json, key, key_len, value in
-            guard json >= 0, key >= 0, value >= 0 else { return }
+            guard json >= 0, key_len >= 0, value >= 0 else { return }
             if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
                var object = self.globalStore.readStdValue(json) as? [String: Any?],
                let valueToSet = self.globalStore.readStdValue(value) {
