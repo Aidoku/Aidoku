@@ -312,7 +312,7 @@ extension SourceViewController: MiniModalDelegate {
             for filter in oldSelectedFilters {
                 if let target = selectedFilters.filters.first(where: { filter.name == $0.name }) as? SortFilter,
                    let filter = filter as? SortFilter {
-                    if filter.value?.index != target.value?.index {
+                    if filter.value.index != target.value.index {
                         update = true
                         break
                     }

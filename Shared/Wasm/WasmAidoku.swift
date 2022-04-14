@@ -86,7 +86,7 @@ extension WasmAidoku {
         }
     }
 
-    var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Int64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
+    var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Float64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
         { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, _, _, lang, lang_len in
             if let chapterId = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 let chapter = Chapter(
