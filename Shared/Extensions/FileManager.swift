@@ -28,7 +28,7 @@ extension URL {
         return self.contents
     }
 
-    func createDirctory() {
+    func createDirectory() {
         try? FileManager.default.createDirectory(at: self, withIntermediateDirectories: true, attributes: nil)
     }
 }

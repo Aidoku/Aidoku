@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct Listing: KVCObject, Hashable {
+struct Listing: KVCObject, Hashable, Codable {
     var name: String
-    var flags: Int32 // currently unused
+    var flags: Int32 = 0 // currently unused
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {

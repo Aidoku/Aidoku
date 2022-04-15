@@ -20,7 +20,6 @@ class WasmHtml {
     func export(into namespace: String = "html") {
         try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
         try? globalStore.vm.addImportHandler(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
-        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
 
         try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
@@ -64,12 +63,6 @@ extension WasmHtml {
                 return self.globalStore.storeStdValue(obj)
             }
             return -1
-        }
-    }
-
-    var close: (Int32) -> Void {
-        { descriptor in
-            self.globalStore.removeStdValue(descriptor)
         }
     }
 

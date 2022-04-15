@@ -12,6 +12,52 @@ class SourceInfoViewController: SettingsTableViewController {
 
     var source: Source
 
+    let languageCodes = [
+        "en": "English",
+        "ja": "Japanese",
+        "zh": "Chinese (Simplified)",
+        "zh-hk": "Chinese (Traditional)",
+        "es": "Spanish",
+        "es-la": "Spanish (Latin America)",
+        "fr": "French",
+        "it": "Italian",
+        "de": "German",
+        "nl": "Dutch",
+        "pl": "Polish",
+        "ru": "Russian",
+        "hu": "Hungarian",
+        "fi": "Finnish",
+        "vi": "Vietnamese",
+        "el": "Greek",
+        "bg": "Bulgarian",
+        "pt-br": "Portuguese (Brazil)",
+        "pt": "Portuguese (Portugal)",
+        "sv": "Swedish",
+        "no": "Norwegian",
+        "ar": "Arabic",
+        "da": "Danish",
+        "bn": "Bengali",
+        "ro": "Romanian",
+        "cs": "Czech",
+        "mn": "Mongolian",
+        "tr": "Turkish",
+        "id": "Indonesian",
+        "ko": "Korean",
+        "fa": "Persian",
+        "ms": "Malay",
+        "th": "Thai",
+        "ca": "Catalan",
+        "tl": "Filipino",
+        "uk": "Ukranian",
+        "my": "Burmese",
+        "lt": "Lithuanian",
+        "he": "Hebrew",
+        "hi": "Hindi",
+        "ne": "Nepali",
+        "sh": "Serbo-Croatian",
+        "other": "Other"
+    ]
+
     init(source: Source) {
         self.source = source
         super.init(items: source.settingItems)
@@ -104,10 +150,11 @@ extension SourceInfoViewController {
             }
 
             cell?.textLabel?.text = "Language"
-            if let value = UserDefaults.standard.string(forKey: "\(source.id)._language"),
-               let index = source.languages.firstIndex(of: value) {
-                cell?.detailTextLabel?.text = source.languages[index]
-            }
+//            if let value = UserDefaults.standard.array(forKey: "\(source.id).languages").first,
+//               let index = source.languages.firstIndex(of: value) {
+//                cell?.detailTextLabel?.text = source.languages[index]
+//            }
+            cell?.detailTextLabel?.text = nil
             cell?.accessoryType = .disclosureIndicator
 
             return cell!
@@ -147,11 +194,11 @@ extension SourceInfoViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !source.languages.isEmpty && indexPath.section == 0 {
             let item = SettingItem(
-                type: "select",
-                key: "\(source.id)._language",
+                type: "multi-select",
+                key: "\(source.id).languages",
                 title: "Language",
-                values: source.languages,
-                titles: source.languages,
+                values: source.languages.map { $0.value ?? $0.code },
+                titles: source.languages.map { languageCodes[$0.code] ?? $0.code },
                 notification: "languageChange"
             )
             navigationController?.pushViewController(SettingSelectViewController(source: source, item: item, style: tableView.style), animated: true)
