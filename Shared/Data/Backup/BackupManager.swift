@@ -22,7 +22,7 @@ class BackupManager {
     }
 
     func save(backup: Backup, url: URL? = nil) {
-        Self.directory.createDirctory()
+        Self.directory.createDirectory()
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         if let json = try? encoder.encode(backup) {
@@ -43,7 +43,7 @@ class BackupManager {
     }
 
     func importBackup(from url: URL) -> Bool {
-        Self.directory.createDirctory()
+        Self.directory.createDirectory()
         var targetLocation = Self.directory.appendingPathComponent(url.lastPathComponent)
         while targetLocation.exists {
             targetLocation = targetLocation.deletingLastPathComponent().appendingPathComponent(

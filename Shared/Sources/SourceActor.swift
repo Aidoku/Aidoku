@@ -105,10 +105,18 @@ actor SourceActor {
     }
 
     func handleUrl(url: String) throws {
-        let urlDescriptor = source.globalStore.storeStdValue(url)
+        let descriptor = source.globalStore.storeStdValue(url)
 
-        _ = try source.vm.call("handle_url", urlDescriptor) // return manga or chapter
+        _ = try source.vm.call("handle_url", descriptor) // return manga or chapter
 
-        source.globalStore.removeStdValue(urlDescriptor)
+        source.globalStore.removeStdValue(descriptor)
+    }
+
+    func handleNotification(notification: String) throws {
+        let descriptor = source.globalStore.storeStdValue(notification)
+
+        try source.vm.call("handle_notification", descriptor)
+
+        source.globalStore.removeStdValue(descriptor)
     }
 }
