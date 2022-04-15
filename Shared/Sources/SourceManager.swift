@@ -37,7 +37,7 @@ class SourceManager {
     }
 
     func importSource(from url: URL) async -> Source? {
-        Self.directory.createDirctory()
+        Self.directory.createDirectory()
 
         var fileUrl = url
 

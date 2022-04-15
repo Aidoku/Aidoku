@@ -8,6 +8,26 @@
 import Foundation
 import WasmInterpreter
 
+struct SourceInfo: Codable {
+    let id: String
+    let lang: String
+    let name: String
+    let version: Int
+    let nsfw: Int?
+}
+
+struct LanguageInfo: Codable {
+    let code: String
+    let value: String?
+    let isDefault: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case code
+        case value
+        case isDefault = "default"
+    }
+}
+
 struct FilterInfo: Codable {
     let type: String
 
@@ -33,18 +53,10 @@ struct FilterInfo: Codable {
 
 class Source: Identifiable {
 
-    struct SourceInfo: Codable {
-        let id: String
-        let lang: String
-        let name: String
-        let version: Int
-        let nsfw: Int?
-    }
-
     struct SourceManifest: Codable {
         let info: SourceInfo
-        let languages: [String]?
-        let listings: [String]?
+        let languages: [LanguageInfo]?
+        let listings: [Listing]?
         let filters: [FilterInfo]?
     }
 
@@ -56,9 +68,13 @@ class Source: Identifiable {
 
     var filters: [FilterBase] = []
     var defaultFilters: [FilterBase] = []
-    var listings: [Listing] = []
+    var listings: [Listing] {
+        manifest.listings ?? []
+    }
 
-    var languages: [String] = []
+    var languages: [LanguageInfo] {
+        manifest.languages ?? []
+    }
     var settingItems: [SettingItem] = []
 
     var titleSearchable: Bool {
@@ -86,28 +102,20 @@ class Source: Identifiable {
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
-        globalStore = WasmGlobalStore(vm: vm)
+        globalStore = WasmGlobalStore(id: manifest.info.id, vm: vm)
         actor = SourceActor(source: self)
-
-        languages = manifest.languages ?? []
-        listings = manifest.listings?.map { Listing(name: $0, flags: 0) } ?? []
 
         prepareVirtualMachine()
         loadSettings()
     }
 
     func prepareVirtualMachine() {
-        try? vm.addImportHandler(named: "setting_get_string", namespace: "env", block: self.setting_get_string)
-        try? vm.addImportHandler(named: "setting_get_int", namespace: "env", block: self.setting_get_int)
-        try? vm.addImportHandler(named: "setting_get_float", namespace: "env", block: self.setting_get_float)
-        try? vm.addImportHandler(named: "setting_get_bool", namespace: "env", block: self.setting_get_bool)
-        try? vm.addImportHandler(named: "setting_get_array", namespace: "env", block: self.setting_get_array)
-
         try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
         try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
 
+        WasmAidoku(globalStore: globalStore).export()
         WasmStd(globalStore: globalStore).export()
-        WasmAidoku(globalStore: globalStore, sourceId: id).export()
+        WasmDefaults(globalStore: globalStore).export()
         WasmNet(globalStore: globalStore).export()
         WasmJson(globalStore: globalStore).export()
         WasmHtml(globalStore: globalStore).export()
@@ -142,10 +150,12 @@ extension Source {
 
             // Load defaults
             var defaults: [String: Any] = [:]
+            var defaultLanguages: [String] = []
 
-            if let defaultLang = languages.first {
-                defaults["\(id)._language"] = defaultLang
+            for lang in languages where lang.isDefault ?? false {
+                defaultLanguages.append(lang.value ?? lang.code)
             }
+            defaults["\(id).languages"] = defaultLanguages
 
             for (i, item) in settingItems.enumerated() where item.type == "group" {
                 for (j, subItem) in (item.items ?? []).enumerated() {
@@ -173,67 +183,6 @@ extension Source {
 
             UserDefaults.standard.register(defaults: defaults)
         }
-    }
-
-    var setting_get_string: (Int32, Int32) -> Int32 {
-        { _, key_len in
-            guard key_len >= 0 else { return 0 }
-//            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-//               let string = UserDefaults.standard.string(forKey: "\(self.id).\(key)") {
-//                return self.vm.write(string: string, memory: self.memory)
-//            }
-            return 0
-        }
-    }
-
-    var setting_get_int: (Int32, Int32) -> Int32 {
-        { key, key_len in
-            guard key_len >= 0 else { return -1 }
-            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
-                return Int32(UserDefaults.standard.integer(forKey: "\(self.id).\(key)"))
-            }
-            return -1
-        }
-    }
-
-    var setting_get_float: (Int32, Int32) -> Float32 {
-        { key, key_len in
-            guard key_len >= 0 else { return -1 }
-            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
-                return Float32(UserDefaults.standard.float(forKey: "\(self.id).\(key)"))
-            }
-            return -1
-        }
-    }
-
-    var setting_get_bool: (Int32, Int32) -> Int32 {
-        { key, key_len in
-            guard key_len >= 0 else { return 0 }
-            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)) {
-                return UserDefaults.standard.bool(forKey: "\(self.id).\(key)") ? 1 : 0
-            }
-            return 0
-        }
-    }
-
-    var setting_get_array: (Int32, Int32) -> Int32 {
-        { _, key_len in
-            guard key_len >= 0 else { return -1 }
-//            if let key = try? self.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
-//               let array = UserDefaults.standard.array(forKey: "\(self.id).\(key)") {
-//                self.globalStore.swiftDescriptorPointer += 1
-//                self.globalStore.swiftDescriptors.append(array)
-//                return Int32(self.globalStore.swiftDescriptorPointer)
-//            }
-            return -1
-        }
-    }
-
-    func performAction(key: String) {
-//        let string = vm.write(string: key, memory: memory)
-//        guard string > 0 else { return }
-//        try? vm.call("perform_action", string, Int32(key.count))
-//        memory.free(string)
     }
 }
 
@@ -336,5 +285,11 @@ extension Source {
 
     func getImageRequest(url: String) async throws -> WasmRequestObject {
         try await actor.getImageRequest(url: url)
+    }
+
+    func performAction(key: String) {
+        Task {
+            try? await actor.handleNotification(notification: key)
+        }
     }
 }

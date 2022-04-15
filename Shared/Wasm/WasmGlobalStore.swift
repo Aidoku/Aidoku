@@ -9,6 +9,7 @@ import Foundation
 import WasmInterpreter
 
 class WasmGlobalStore {
+    var id: String
     var vm: WasmInterpreter
 
     var chapterCounter = 0
@@ -22,7 +23,8 @@ class WasmGlobalStore {
     // net
     var requests: [WasmRequestObject] = []
 
-    init(vm: WasmInterpreter) {
+    init(id: String, vm: WasmInterpreter) {
+        self.id = id
         self.vm = vm
     }
 

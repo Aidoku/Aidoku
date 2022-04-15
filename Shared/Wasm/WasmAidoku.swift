@@ -11,11 +11,9 @@ import WasmInterpreter
 class WasmAidoku: WasmModule {
 
     var globalStore: WasmGlobalStore
-    let sourceId: String
 
-    init(globalStore: WasmGlobalStore, sourceId: String) {
+    init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
-        self.sourceId = sourceId
     }
 
     func export(into namespace: String = "aidoku") {
@@ -55,7 +53,7 @@ extension WasmAidoku {
                     }
                 }
                 let manga = Manga(
-                    sourceId: self.sourceId,
+                    sourceId: self.globalStore.id,
                     id: mangaId,
                     title: title_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(title), length: Int(title_len)) : nil,
                     author: author_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(author), length: Int(author_len)) : nil,
@@ -90,7 +88,7 @@ extension WasmAidoku {
         { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, _, _, lang, lang_len in
             if let chapterId = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(id), length: Int(id_len)) {
                 let chapter = Chapter(
-                    sourceId: self.sourceId,
+                    sourceId: self.globalStore.id,
                     id: chapterId,
                     mangaId: self.globalStore.currentManga,
                     title: name_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(name), length: Int(name_len)) : nil,
