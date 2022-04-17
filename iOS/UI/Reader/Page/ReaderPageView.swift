@@ -129,25 +129,34 @@ class ReaderPageView: UIView {
         if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
 
-        let request = try? await SourceManager.shared.source(for: sourceId)?.actor.getImageRequest(url: currentUrl ?? "")
+        let requestModifier: AnyModifier?
+
+        if let source = SourceManager.shared.source(for: sourceId),
+           source.handlesImageRequests,
+           let request = try? await source.getImageRequest(url: url) {
+            requestModifier = AnyModifier { urlRequest in
+                var r = urlRequest
+                for (key, value) in request.headers {
+                    r.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { r.httpBody = body }
+                return r
+            }
+        } else {
+            requestModifier = nil
+        }
 
         // Run the image loading code immediately on the main actor
         await MainActor.run {
-            let userAgentModifier = AnyModifier { urlRequest in
-                var r = urlRequest
-                for (key, value) in request?.headers ?? [:] {
-                    r.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request?.body { r.httpBody = body }
-                return r
-            }
             let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
             var kfOptions: [KingfisherOptionsInfoItem] = [
                 .scaleFactor(UIScreen.main.scale),
                 .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .requestModifier(userAgentModifier)
+                .retryStrategy(retry)
             ]
+            if let requestModifier = requestModifier {
+                kfOptions.append(.requestModifier(requestModifier))
+            }
 
             if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
                 let downsampleProcessor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)

@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/onevcat/Kingfisher.git",
         "state": {
           "branch": null,
-          "revision": "0c02c46cfdc0656ce74fd0963a75e5000a0b7f23",
-          "version": "7.1.2"
+          "revision": "1a7b5480eb750a8e171654b9b1cb0a2cbeb27a55",
+          "version": "7.2.1"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/scinfu/SwiftSoup.git",
         "state": {
           "branch": null,
-          "revision": "13ba661fd1146967270fca92ce8195b223631436",
-          "version": "2.3.8"
+          "revision": "41e7c263fb8c277e980ebcb9b0b5f6031d3d4886",
+          "version": "2.4.2"
         }
       },
       {
@@ -42,7 +42,7 @@
         "repositoryURL": "https://github.com/Skittyblock/wasm-interpreter-apple.git",
         "state": {
           "branch": "main",
-          "revision": "c7b18a63d79d8e9e317dbefc8145c7892c079ab0",
+          "revision": "aa354d26b1121eaa40938f4b713d644952cb5bb1",
           "version": null
         }
       },

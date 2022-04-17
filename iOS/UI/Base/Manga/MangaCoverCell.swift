@@ -123,9 +123,7 @@ class MangaCoverCell: UICollectionViewCell {
 
         activateConstraints()
 
-        Task {
-            await loadImage()
-        }
+        loadImage()
     }
 
     func activateConstraints() {
@@ -158,55 +156,61 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
-    func loadImage() async {
+    func loadImage() {
         let url = manga?.cover ?? ""
 
-        let userAgentModifier: AnyModifier?
+        imageView.image = nil
 
-        if let sourceId = manga?.sourceId,
-           let request = try? await SourceManager.shared.source(for: sourceId)?.getImageRequest(url: url) {
-            userAgentModifier = AnyModifier { urlRequest in
-                var r = urlRequest
-                for (key, value) in request.headers {
-                    r.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { r.httpBody = body }
-                return r
-            }
-        } else {
-            userAgentModifier = nil
-        }
+        Task {
+            let requestModifier: AnyModifier?
 
-        // Run the image loading code immediately on the main actor
-        await MainActor.run {
-            let processor = DownsamplingImageProcessor(size: bounds.size) // |> RoundCornerImageProcessor(cornerRadius: 5)
-            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
-            var kfOptions: [KingfisherOptionsInfoItem] = [
-                .processor(processor),
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .cacheOriginalImage
-            ]
-            if let userAgentModifier = userAgentModifier {
-                kfOptions.append(.requestModifier(userAgentModifier))
-            }
-
-            imageView.kf.setImage(
-                with: URL(string: url),
-                placeholder: UIImage(named: "MangaPlaceholder"),
-                options: kfOptions
-            ) { result in
-                switch result {
-                case .success(let value):
-                    if self.manga?.tintColor == nil {
-                        value.image.getColors(quality: .low) { colors in
-                            let luma = colors?.background.luminance ?? 0
-                            self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
-                        }
+            if let sourceId = manga?.sourceId,
+               let source = SourceManager.shared.source(for: sourceId),
+               source.handlesImageRequests,
+               let request = try? await source.getImageRequest(url: url) {
+                requestModifier = AnyModifier { urlRequest in
+                    var r = urlRequest
+                    for (key, value) in request.headers {
+                        r.setValue(value, forHTTPHeaderField: key)
                     }
-                default:
-                    break
+                    if let body = request.body { r.httpBody = body }
+                    return r
+                }
+            } else {
+                requestModifier = nil
+            }
+
+            // Run the image loading code immediately on the main actor
+            await MainActor.run {
+                let processor = DownsamplingImageProcessor(size: bounds.size) // |> RoundCornerImageProcessor(cornerRadius: 5)
+                let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
+                var kfOptions: [KingfisherOptionsInfoItem] = [
+                    .processor(processor),
+                    .scaleFactor(UIScreen.main.scale),
+                    .transition(.fade(0.3)),
+                    .retryStrategy(retry),
+                    .cacheOriginalImage
+                ]
+                if let requestModifier = requestModifier {
+                    kfOptions.append(.requestModifier(requestModifier))
+                }
+
+                imageView.kf.setImage(
+                    with: URL(string: url),
+                    placeholder: UIImage(named: "MangaPlaceholder"),
+                    options: kfOptions
+                ) { result in
+                    switch result {
+                    case .success(let value):
+                        if self.manga?.tintColor == nil {
+                            value.image.getColors(quality: .low) { colors in
+                                let luma = colors?.background.luminance ?? 0
+                                self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
+                            }
+                        }
+                    default:
+                        break
+                    }
                 }
             }
         }

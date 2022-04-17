@@ -89,6 +89,8 @@ class Source: Identifiable {
         filters.contains { !($0 is TextFilter) }
     }
 
+    var handlesImageRequests = false
+
     var needsFilterRefresh = true
 
     var vm: WasmInterpreter
@@ -109,6 +111,8 @@ class Source: Identifiable {
 
         prepareVirtualMachine()
         loadSettings()
+
+        handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
     }
 
     func prepareVirtualMachine() {
