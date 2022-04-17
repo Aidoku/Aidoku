@@ -124,6 +124,16 @@ class ReaderPageView: UIView {
         }
     }
 
+    func setPageText(text: String) {
+        // TODO: support text
+    }
+
+    func setPageImage(base64: String) {
+        if let data = Data(base64Encoded: base64) {
+            self.imageView.image = UIImage(data: data)
+        }
+    }
+
     @MainActor
     func setPageImage(url: String) async {
         if currentUrl == url && imageView.image != nil { return }

@@ -109,11 +109,15 @@ extension WasmAidoku {
     }
 
     var create_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { index, image_url, image_url_len, _, _, _, _ in
+        { index, imageUrl, imageUrlLength, base64, base64Length, text, textLength in
             let page = Page(
                 index: Int(index),
-                imageURL: image_url_len > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(image_url),
-                                                                                      length: Int(image_url_len)) : nil
+                imageURL: imageUrlLength > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(imageUrl),
+                                                                                       length: Int(imageUrlLength)) : nil,
+                base64: base64Length > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(base64),
+                                                                                   length: Int(base64Length)) : nil,
+                text: textLength > 0 ? try? self.globalStore.vm.stringFromHeap(byteOffset: Int(text),
+                                                                               length: Int(textLength)) : nil
             )
             return self.globalStore.storeStdValue(page)
         }
