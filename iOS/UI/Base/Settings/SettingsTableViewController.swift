@@ -58,6 +58,10 @@ extension SettingsTableViewController {
         items[section].title
     }
 
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        items[section].footer
+    }
+
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath,
                    settingItem item: SettingItem) -> UITableViewCell {
