@@ -80,8 +80,8 @@ class BrowseViewController: UIViewController {
         }
     }
     var filteredInstallableSources: [ExternalSourceInfo] {
-        installableSources.filter {
-            let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+        let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+        return installableSources.filter {
             if !showNsfw && $0.nsfw ?? 0 > 1 {
                 return false
             } else if searchText.isEmpty {
@@ -173,6 +173,12 @@ class BrowseViewController: UIViewController {
         if externalSources.isEmpty {
             Task {
                 await updateSourceList()
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.showNsfwSources"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                self.reloadData()
             }
         }
 

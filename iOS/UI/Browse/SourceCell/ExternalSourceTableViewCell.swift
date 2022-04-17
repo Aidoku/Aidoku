@@ -21,6 +21,8 @@ class ExternalSourceTableViewCell: UITableViewCell {
     let iconView = UIImageView()
     let titleLabel = UILabel()
     let versionLabel = UILabel()
+    let badgeView = UIView()
+    let badgeLabel = UILabel()
     let subtitleLabel = UILabel()
     let getButton = GetButtonView()
 
@@ -70,9 +72,9 @@ class ExternalSourceTableViewCell: UITableViewCell {
         contentView.addSubview(labelStack)
 
         let titleStack = UIStackView()
-        titleStack.distribution = .equalSpacing
+        titleStack.distribution = .fill
         titleStack.axis = .horizontal
-        titleStack.spacing = 6
+        titleStack.spacing = 5
         labelStack.addArrangedSubview(titleStack)
 
         titleLabel.font = UIFont.systemFont(ofSize: 16)
@@ -81,6 +83,19 @@ class ExternalSourceTableViewCell: UITableViewCell {
         versionLabel.font = titleLabel.font
         versionLabel.textColor = .secondaryLabel
         titleStack.addArrangedSubview(versionLabel)
+        titleStack.setCustomSpacing(8, after: versionLabel)
+
+        badgeView.backgroundColor = .systemRed.withAlphaComponent(0.3)
+        badgeView.layer.cornerRadius = 6
+        badgeView.layer.cornerCurve = .continuous
+
+        badgeLabel.text = "18+"
+        badgeLabel.textColor = .secondaryLabel
+        badgeLabel.font = .systemFont(ofSize: 10)
+        badgeLabel.textAlignment = .center
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.addSubview(badgeLabel)
+        titleStack.addArrangedSubview(badgeView)
 
         subtitleLabel.font = titleLabel.font
         subtitleLabel.textColor = .secondaryLabel
@@ -103,6 +118,11 @@ class ExternalSourceTableViewCell: UITableViewCell {
         labelStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10).isActive = true
         labelStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
 
+        badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true
+        badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor).isActive = true
+        badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10).isActive = true
+        badgeView.heightAnchor.constraint(equalTo: badgeLabel.heightAnchor, constant: 4).isActive = true
+
         getButton.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor).isActive = true
         getButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         getButtonWidthConstraint = getButton.widthAnchor.constraint(equalToConstant: buttonWidth)
@@ -118,6 +138,7 @@ class ExternalSourceTableViewCell: UITableViewCell {
     func loadInfo() {
         titleLabel.text = source?.name
         versionLabel.text = "v\(source?.version ?? 1)"
+        badgeView.isHidden = source?.nsfw ?? 0 <= 1
         subtitleLabel.text = source?.id
         iconView.kf.setImage(
             with: URL(string: "\(sourceURL)/icons/\(source?.icon ??  "")"),
