@@ -243,7 +243,15 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 continue
             }
             let path = IndexPath(item: i + 1, section: 1)
-            (collectionView(collectionView, cellForItemAt: path) as? ReaderPageCollectionViewCell)?.setPageImage(url: pages[i].imageURL ?? "")
+            if let cell = collectionView(collectionView, cellForItemAt: path) as? ReaderPageCollectionViewCell {
+                if let url = pages[i].imageURL {
+                    cell.setPageImage(url: url)
+                } else if let base64 = pages[i].base64 {
+                    cell.setPageImage(base64: base64)
+                } else if let text = pages[i].text {
+                    cell.setPageText(text: text)
+                }
+            }
         }
     }
 
@@ -428,14 +436,14 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if let cell = cell as? ReaderPageCollectionViewCell {
-            var url: String?
+            var page: Page?
             if indexPath.section == 0 {
                 if indexPath.item < previousPages.count {
-                    url = previousPages[indexPath.item].imageURL ?? ""
+                    page = previousPages[indexPath.item]
                 }
             } else if indexPath.section == 2 {
                 if indexPath.item < nextPages.count {
-                    url = nextPages[indexPath.item].imageURL ?? ""
+                    page = nextPages[indexPath.item]
                 }
             } else if indexPath.item == 0 {
                 if let chapter = chapter {
@@ -450,10 +458,14 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 cell.infoView?.nextChapter = hasNextChapter ? chapterList[chapterIndex - 1] : nil
                 cell.infoView?.previousChapter = nil
             } else {
-                url = pages[indexPath.item - 1].imageURL
+                page = pages[indexPath.item - 1]
             }
-            if let url = url {
+            if let url = page?.imageURL {
                 cell.setPageImage(url: url)
+            } else if let base64 = page?.base64 {
+                cell.setPageImage(base64: base64)
+            } else if let text = page?.text {
+                cell.setPageText(text: text)
             }
         }
     }
@@ -607,5 +619,13 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         Task {
             await pageView?.setPageImage(url: url)
         }
+    }
+
+    func setPageImage(base64: String) {
+        pageView?.setPageImage(base64: base64)
+    }
+
+    func setPageText(text: String) {
+        pageView?.setPageText(text: text)
     }
 }
