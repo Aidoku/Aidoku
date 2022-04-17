@@ -27,8 +27,7 @@ class TextInputTableViewCell: UITableViewCell {
 
     var item: SettingItem? {
         didSet {
-            placeholder = item?.placeholder
-            textField.text = UserDefaults.standard.string(forKey: item?.key ?? "")
+            configureTextField()
         }
     }
 
@@ -40,6 +39,39 @@ class TextInputTableViewCell: UITableViewCell {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func configureTextField() {
+        placeholder = item?.placeholder
+        textField.text = UserDefaults.standard.string(forKey: item?.key ?? "")
+        if let value = item?.autocapitalizationType,
+           let autocapitalizationType = UITextAutocapitalizationType(rawValue: value) {
+            textField.autocapitalizationType = autocapitalizationType
+        }
+        if let value = item?.autocorrectionType,
+           let autocorrectionType = UITextAutocorrectionType(rawValue: value) {
+            textField.autocorrectionType = autocorrectionType
+        }
+        if let value = item?.spellCheckingType,
+           let spellCheckingType = UITextSpellCheckingType(rawValue: value) {
+            textField.spellCheckingType = spellCheckingType
+        }
+        if let value = item?.keyboardType,
+           let keyboardType = UIKeyboardType(rawValue: value) {
+            textField.keyboardType = keyboardType
+        }
+        if let value = item?.returnKeyType,
+           let returnKeyType = UIReturnKeyType(rawValue: value) {
+            textField.returnKeyType = returnKeyType
+        }
+
+        if let key = item?.key {
+            NotificationCenter.default.addObserver(forName: Notification.Name(key), object: nil, queue: nil) { _ in
+                Task { @MainActor in
+                    self.textField.text = UserDefaults.standard.string(forKey: key)
+                }
+            }
+        }
     }
 
     func activateConstraints() {

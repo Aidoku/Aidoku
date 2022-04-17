@@ -54,25 +54,35 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
-            if url.pathExtension == "aix" {
+            if url.scheme == "aidoku" { // aidoku://
+                if url.host == "setSourceList" { // setSourceList?url=
+                    let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                    if let listUrl = components?.queryItems?.first(where: { $0.name == "url" })?.value {
+                        UserDefaults.standard.set(listUrl, forKey: "Browse.sourceListURL")
+                        NotificationCenter.default.post(name: Notification.Name("Browse.sourceListURL"), object: nil)
+                        sendAlert(title: "Source List Configured",
+                                  message: "You can now browse external sources in the Browse tab.")
+                    }
+                }
+            } else if url.pathExtension == "aix" {
                 Task {
                     _ = await SourceManager.shared.importSource(from: url)
                 }
             } else if url.pathExtension == "json" {
-                let success = BackupManager.shared.importBackup(from: url)
-                let title: String
-                let message: String
-                if success {
-                    title = "Backup Imported"
-                    message = "To restore to this backup, find it in the backups page in settings."
+                if BackupManager.shared.importBackup(from: url) {
+                    sendAlert(title: "Backup Imported",
+                              message: "To restore to this backup, find it in the backups page in settings.")
                 } else {
-                    title = "Import Failed"
-                    message = "Failed to save backup. Maybe try importing from a different location."
+                    sendAlert(title: "Import Failed",
+                              message: "Failed to save backup. Maybe try importing from a different location.")
                 }
-                let importAlert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                importAlert.addAction(UIAlertAction(title: "OK", style: .cancel))
-                UIApplication.shared.windows.first?.rootViewController?.present(importAlert, animated: true)
             }
         }
+    }
+
+    func sendAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
 }
