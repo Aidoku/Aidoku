@@ -13,6 +13,8 @@ struct SourceInfo: Codable {
     let lang: String
     let name: String
     let version: Int
+    let url: String?
+    let urls: [String]?
     let nsfw: Int?
 }
 
@@ -244,7 +246,16 @@ extension Source {
 
         filters = []
 
-        for filter in manifest.filters ?? [] {
+        var filterObjects: [FilterInfo] = []
+
+        if let filters = manifest.filters {
+            filterObjects = filters
+        } else if let data = try? Data(contentsOf: url.appendingPathComponent("filters.json")),
+                  let filters = try? JSONDecoder().decode([FilterInfo].self, from: data) {
+            filterObjects = filters
+        }
+
+        for filter in filterObjects {
             if let result = parseFilter(from: filter) {
                 filters.append(result)
             }
