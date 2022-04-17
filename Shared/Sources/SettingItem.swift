@@ -1,5 +1,5 @@
 //
-//  SourceSettings.swift
+//  SettingItem.swift
 //  Aidoku
 //
 //  Created by Skitty on 2/17/22.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-// possible types: group, select, multi-select, switch, segment, text, page, button, link
+// types: group, select, multi-select, switch, segment, text, page, button, link
 // TODO: slider
 struct SettingItem: Codable {
     var type: String
@@ -31,9 +31,15 @@ struct SettingItem: Codable {
 
     var items: [SettingItem]? // group, page
 
+    // text
+    var autocapitalizationType: Int?
+    var autocorrectionType: Int?
+    var spellCheckingType: Int?
+    var keyboardType: Int?
+    var returnKeyType: Int?
+
     enum CodingKeys: String, CodingKey {
         case type
-        case items
         case key
         case action
         case title
@@ -43,6 +49,19 @@ struct SettingItem: Codable {
         case values
         case titles
         case defaultValue = "default"
+        case notification
+
+        case requires
+        case requiresFalse
+        case destructive
+        case external
+        case items
+
+        case autocapitalizationType
+        case autocorrectionType
+        case spellCheckingType
+        case keyboardType
+        case returnKeyType
     }
 }
 

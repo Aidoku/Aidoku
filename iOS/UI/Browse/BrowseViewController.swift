@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 class SourceSectionHeaderView: UITableViewHeaderFooterView {
 
@@ -37,7 +38,9 @@ class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
-    let sourceURL = "https://sources.aidoku.app"
+    var sourceURL: String? {
+        UserDefaults.standard.string(forKey: "Browse.sourceListURL")
+    }
 
     var sources = SourceManager.shared.sources {
         didSet {
@@ -99,6 +102,8 @@ class BrowseViewController: UIViewController {
         !filteredInstallableSources.isEmpty
     }
 
+    let emptyTextStackView = UIStackView()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Browse"
@@ -129,21 +134,58 @@ class BrowseViewController: UIViewController {
         tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
+        emptyTextStackView.isHidden = true
+        emptyTextStackView.axis = .vertical
+        emptyTextStackView.distribution = .fill
+        emptyTextStackView.spacing = 5
+        emptyTextStackView.alignment = .center
+
+        let emptyTitleLabel = UILabel()
+        emptyTitleLabel.text = "No Sources"
+        emptyTitleLabel.font = .systemFont(ofSize: 25, weight: .semibold)
+        emptyTitleLabel.textColor = .secondaryLabel
+        emptyTextStackView.addArrangedSubview(emptyTitleLabel)
+
+        let emptyTextLabel = UILabel()
+        let attributedString = NSMutableAttributedString(string: "Configure your source list or open a\nsource in Aidoku to get started")
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 1.8
+        attributedString.addAttribute(NSAttributedString.Key.paragraphStyle, value: paragraphStyle, range: NSRange(0..<attributedString.length))
+        emptyTextLabel.attributedText = attributedString
+        emptyTextLabel.font = .systemFont(ofSize: 15)
+        emptyTextLabel.textColor = .secondaryLabel
+        emptyTextLabel.numberOfLines = 2
+        emptyTextLabel.textAlignment = .center
+        emptyTextStackView.addArrangedSubview(emptyTextLabel)
+        emptyTextStackView.setCustomSpacing(3, after: emptyTextLabel)
+
+        let emptyGuideButton = UIButton(type: .roundedRect)
+        emptyGuideButton.setTitle("Adding Sources Guide", for: .normal)
+        emptyGuideButton.addTarget(self, action: #selector(openGuidePage), for: .touchUpInside)
+        emptyTextStackView.addArrangedSubview(emptyGuideButton)
+
+        emptyTextStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(emptyTextStackView)
+
+        emptyTextStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        emptyTextStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+
+        if externalSources.isEmpty {
+            Task {
+                await updateSourceList()
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.sourceListURL"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateSourceList()
+            }
+        }
+
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
             Task { @MainActor in
                 self.sources = SourceManager.shared.sources
                 self.fetchUpdates()
-            }
-        }
-
-        if externalSources.isEmpty {
-            Task {
-                var sources = (try? await URLSession.shared.object(
-                    from: URL(string: "\(sourceURL)/index.min.json")!
-                ) as [ExternalSourceInfo]?) ?? []
-                sources.sort { $0.name < $1.name }
-                externalSources = sources
-                fetchUpdates()
             }
         }
     }
@@ -163,7 +205,10 @@ class BrowseViewController: UIViewController {
         UIView.transition(with: tableView,
                           duration: 0.3,
                           options: .transitionCrossDissolve,
-                          animations: { self.tableView.reloadData() })
+                          animations: { self.tableView.reloadData() },
+                          completion: { _ in
+            self.emptyTextStackView.isHidden = self.tableView.numberOfSections != 0
+        })
     }
 
     func fetchUpdates() {
@@ -176,6 +221,26 @@ class BrowseViewController: UIViewController {
             }
         }
         updates = newUpdates
+    }
+
+    @MainActor
+    func updateSourceList() async {
+        if let sourceURL = sourceURL,
+           let url = URL(string: sourceURL) {
+            var sources = (try? await URLSession.shared.object(
+                from: url.appendingPathComponent("index.min.json")
+            ) as [ExternalSourceInfo]?) ?? []
+            sources.sort { $0.name < $1.name }
+            externalSources = sources
+        } else {
+            externalSources = []
+        }
+        fetchUpdates()
+    }
+
+    @objc func openGuidePage() {
+        let safariViewController = SFSafariViewController(url: URL(string: "https://aidoku.app/help/guides/getting-started/#installing-a-source")!)
+        present(safariViewController, animated: true)
     }
 }
 
@@ -234,7 +299,7 @@ extension BrowseViewController: UITableViewDataSource {
             if cell == nil {
                 cell = ExternalSourceTableViewCell(style: .default,
                                                    reuseIdentifier: "ExternalSourceTableViewCell",
-                                                   sourceURL: sourceURL)
+                                                   sourceURL: sourceURL ?? "")
             }
             guard let cell = cell else { return UITableViewCell() }
 
@@ -262,7 +327,7 @@ extension BrowseViewController: UITableViewDataSource {
             if cell == nil {
                 cell = ExternalSourceTableViewCell(style: .default,
                                                    reuseIdentifier: "ExternalSourceTableViewCell",
-                                                   sourceURL: sourceURL)
+                                                   sourceURL: sourceURL ?? "")
             }
             guard let cell = cell else { return UITableViewCell() }
 
