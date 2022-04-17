@@ -331,7 +331,7 @@ extension WasmStd {
     var object_values: (Int32) -> Int32 {
         { json in
             guard json >= 0 else { return -1 }
-            if let object = self.globalStore.readStdValue(json) as? [String: Any] {
+            if let object = self.globalStore.readStdValue(json) as? [String: Any?] {
                 return self.globalStore.storeStdValue(Array(object.values), from: json)
             }
             return -1

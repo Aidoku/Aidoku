@@ -368,6 +368,9 @@ extension MangaViewController: UITableViewDataSource {
         if let scanlator = chapter.scanlator {
             subtitleString.append(scanlator)
         }
+        if UserDefaults.standard.array(forKey: "\(manga.sourceId).languages")?.count ?? 0 > 1 {
+            subtitleString.append(" • \(chapter.lang)")
+        }
         cell?.detailTextLabel?.text = subtitleString
 
         if readHistory[chapter.id] ?? 0 > 0 {
