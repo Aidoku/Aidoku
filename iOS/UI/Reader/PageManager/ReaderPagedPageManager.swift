@@ -157,14 +157,11 @@ extension ReaderPagedPageManager {
     }
 
     @MainActor
+    // swiftlint:disable:next cyclomatic_complexity
     func loadViewControllers(from direction: ChapterLoadDirection = .none, startPage: Int = 0) {
         guard pageViewController != nil, let chapter = chapter else { return }
 
-        var urls = pages.map { $0.imageURL ?? "" }
-//        let urls = urlStrings.map { str -> URL in
-//            URL(string: str)!
-//        }
-//        self.preloadImages(for: self.urls)
+        var pages = pages
 
         var storedPage: UIViewController?
 
@@ -172,26 +169,38 @@ extension ReaderPagedPageManager {
 
         if direction == .forward, let preview = items.last { // keep first page (last in items)
             items = [preview]
-            if let url = urls.first {
-                Task {
-                    await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+            if let page = pages.first {
+                if let url = page.imageURL {
+                    Task {
+                        await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+                    }
+                } else if let base64 = page.base64 {
+                    (preview.view as? ReaderPageView)?.setPageImage(base64: base64)
+                } else if let text = page.text {
+                    (preview.view as? ReaderPageView)?.setPageText(text: text)
                 }
-                urls.removeFirst(1)
+                pages.removeFirst(1)
             }
         } else if direction == .backward, let preview = items.first { // keep last page (first in items)
             items = []
             storedPage = preview
-            if let url = urls.last {
-                Task {
-                    await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+            if let page = pages.last {
+                if let url = page.imageURL {
+                    Task {
+                        await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+                    }
+                } else if let base64 = page.base64 {
+                    (preview.view as? ReaderPageView)?.setPageImage(base64: base64)
+                } else if let text = page.text {
+                    (preview.view as? ReaderPageView)?.setPageText(text: text)
                 }
-                urls.removeLast(1)
+                pages.removeLast(1)
             }
         } else {
             items = []
         }
 
-        for _ in urls {
+        for _ in pages {
             let c = UIViewController()
             let page = ReaderPageView(sourceId: chapter.sourceId)
             page.frame = pageViewController.view.bounds
@@ -270,13 +279,20 @@ extension ReaderPagedPageManager {
     }
 
     func setImages(for range: Range<Int>) async {
-        let urls = pages.map { $0.imageURL ?? "" }
         for i in range {
-            guard i < urls.count else { break }
+            guard i < pages.count else { break }
             if i < 0 {
                 continue
             }
-            await (items[i + 1 + (hasPreviousChapter ? 1 : 0)].view as? ReaderPageView)?.setPageImage(url: urls[i])
+            if let pageView = await items[i + 1 + (hasPreviousChapter ? 1 : 0)].view as? ReaderPageView {
+                if let url = pages[i].imageURL {
+                    await pageView.setPageImage(url: url)
+                } else if let base64 = pages[i].base64 {
+                    await pageView.setPageImage(base64: base64)
+                } else if let text = pages[i].text {
+                    await pageView.setPageText(text: text)
+                }
+            }
         }
     }
 }

@@ -10,4 +10,6 @@ import Foundation
 struct Page: Hashable {
     let index: Int
     let imageURL: String?
+    let base64: String?
+    let text: String?
 }
