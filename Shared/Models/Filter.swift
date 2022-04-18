@@ -21,7 +21,7 @@ enum FilterType: Int {
     case genre = 9
 }
 
-class FilterBase: KVCObject, Identifiable, Equatable {
+class FilterBase: KVCObject, Identifiable, Equatable, NSCopying {
     static func == (lhs: FilterBase, rhs: FilterBase) -> Bool {
         lhs.id == rhs.id
     }
@@ -43,10 +43,13 @@ class FilterBase: KVCObject, Identifiable, Equatable {
         default: return nil
         }
     }
+
+    func copy(with zone: NSZone? = nil) -> Any {
+        FilterBase(name: self.name)
+    }
 }
 
 class Filter<T>: FilterBase {
-
     var value: T
     var defaultValue: T
 
@@ -63,12 +66,20 @@ class Filter<T>: FilterBase {
         default: return super.valueByPropertyName(name: name)
         }
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        Filter(name: self.name, value: value)
+    }
 }
 
 // Just used for select and sort options internally
 class StringFilter: Filter<String> {
     init(value: String = "") {
         super.init(name: value, value: value)
+    }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        StringFilter(value: value)
     }
 }
 
@@ -80,6 +91,10 @@ class TextFilter: Filter<String> {
 
     override init(name: String, value: String = "") {
         super.init(name: name, value: value)
+    }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        TextFilter(name: name, value: value)
     }
 }
 
@@ -102,6 +117,10 @@ class CheckFilter: Filter<Bool?> {
         default: return super.valueByPropertyName(name: name)
         }
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        CheckFilter(name: name, canExclude: canExclude, value: value)
+    }
 }
 
 // MARK: Select
@@ -122,6 +141,10 @@ class SelectFilter: Filter<Int> {
         case "options": return options
         default: return super.valueByPropertyName(name: name)
         }
+    }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        SelectFilter(name: name, options: options, value: value)
     }
 }
 
@@ -147,6 +170,10 @@ class SortSelection: FilterBase {
         default: return nil
         }
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        SortSelection(index: index, ascending: ascending)
+    }
 }
 
 class SortFilter: Filter<SortSelection> {
@@ -170,6 +197,11 @@ class SortFilter: Filter<SortSelection> {
         default: return super.valueByPropertyName(name: name)
         }
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        // swiftlint:disable:next force_cast
+        SortFilter(name: name, options: options, canAscend: canAscend, value: value.copy(with: zone) as! SortSelection)
+    }
 }
 
 // MARK: Group
@@ -191,6 +223,10 @@ class GroupFilter: Filter<Any?> {
         default: return super.valueByPropertyName(name: name)
         }
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        GroupFilter(name: name, filters: filters)
+    }
 }
 
 // MARK: Common types
@@ -202,6 +238,10 @@ class TitleFilter: TextFilter {
     init(value: String = "") {
         super.init(name: "Title", value: value)
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        TitleFilter(value: value)
+    }
 }
 
 class AuthorFilter: TextFilter {
@@ -212,10 +252,18 @@ class AuthorFilter: TextFilter {
     init(value: String = "") {
         super.init(name: "Author", value: value)
     }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        AuthorFilter(value: value)
+    }
 }
 
 class GenreFilter: CheckFilter {
     override var type: FilterType {
         .genre
+    }
+
+    override func copy(with zone: NSZone? = nil) -> Any {
+        GenreFilter(name: name, canExclude: canExclude, value: value)
     }
 }

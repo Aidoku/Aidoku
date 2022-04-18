@@ -141,19 +141,21 @@ class ExternalSourceTableViewCell: UITableViewCell {
         badgeView.isHidden = source?.nsfw ?? 0 <= 1
         subtitleLabel.text = source?.id
         iconView.kf.setImage(
-            with: URL(string: "\(sourceURL)/icons/\(source?.icon ??  "")"),
+            with: URL(string: sourceURL)?.appendingPathComponent("icons", isDirectory: true).appendingPathComponent(source?.icon ??  ""),
             placeholder: UIImage(named: "MangaPlaceholder"),
             options: nil
         )
     }
 
     @objc func getPressed() {
-        Task {
-            getButton.buttonState = .downloading
-            let installedSource = await SourceManager.shared.importSource(
-                from: URL(string: "\(sourceURL)/sources/\(source?.file ?? "")")!
-            )
-            getButton.buttonState = installedSource == nil ? .fail : .get
+        if let url = URL(string: sourceURL) {
+            Task {
+                getButton.buttonState = .downloading
+                let installedSource = await SourceManager.shared.importSource(
+                    from: url.appendingPathComponent("sources", isDirectory: true).appendingPathComponent(source?.file ??  "")
+                )
+                getButton.buttonState = installedSource == nil ? .fail : .get
+            }
         }
     }
 }
