@@ -47,7 +47,7 @@ extension WasmHtml {
     var parse: (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
-            if let content = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(data), length: Int(size)),
+            if let content = self.globalStore.readString(offset: data, length: size),
                let obj = try? SwiftSoup.parse(content) {
                 return self.globalStore.storeStdValue(obj)
             }
@@ -58,7 +58,7 @@ extension WasmHtml {
     var parseFragment: (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
-            if let content = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(data), length: Int(size)),
+            if let content = self.globalStore.readString(offset: data, length: size),
                let obj = try? SwiftSoup.parseBodyFragment(content) {
                 return self.globalStore.storeStdValue(obj)
             }
@@ -69,7 +69,7 @@ extension WasmHtml {
     var select: (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selector >= 0 else { return -1 }
-            if let selectorString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
+            if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
                 if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.select(selectorString) {
                     return self.globalStore.storeStdValue(object, from: descriptor)
                 } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.select(selectorString) {
@@ -147,7 +147,7 @@ extension WasmHtml {
     var attr: (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selectorLength > 0 else { return -1 }
-            if let selectorString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(selector), length: Int(selectorLength)) {
+            if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
                 if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.attr(selectorString) {
                     return self.globalStore.storeStdValue(object, from: descriptor)
                 } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
@@ -218,7 +218,7 @@ extension WasmHtml {
     var hasClass: (Int32, Int32, Int32) -> Int32 {
         { descriptor, className, classLength in
             guard descriptor >= 0 else { return 0 }
-            if let classString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(className), length: Int(classLength)) {
+            if let classString = self.globalStore.readString(offset: className, length: classLength) {
                 if (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.hasClass(classString) ?? false {
                     return 1
                 }
@@ -230,7 +230,7 @@ extension WasmHtml {
     var hasAttr: (Int32, Int32, Int32) -> Int32 {
         { descriptor, attrName, attrLength in
             guard descriptor >= 0 else { return 0 }
-            if let key = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(attrName), length: Int(attrLength)) {
+            if let key = self.globalStore.readString(offset: attrName, length: attrLength) {
                 if (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.hasAttr(key) ?? false {
                     return 1
                 }

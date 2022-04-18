@@ -129,17 +129,17 @@ class Source: Identifiable {
 
     var printFunction: (Int32, Int32) -> Void {
         { string, length in
-            print((try? self.vm.stringFromHeap(byteOffset: Int(string), length: Int(length))) ?? "")
+            print(self.globalStore.readString(offset: string, length: length) ?? "")
         }
     }
 
     var abort: (Int32, Int32, Int32, Int32) -> Void {
         { msg, fileName, line, column in
-            let messageLength = (try? self.vm.bytesFromHeap(byteOffset: Int(msg - 4), length: 1).first) ?? 0
-            let fileLength = (try? self.vm.bytesFromHeap(byteOffset: Int(fileName - 4), length: 1).first) ?? 0
+            let messageLength = self.globalStore.readBytes(offset: msg - 4, length: 1)?.first ?? 0
+            let fileLength = self.globalStore.readBytes(offset: fileName - 4, length: 1)?.first ?? 0
 
-            let message = try? self.vm.stringFromHeap(byteOffset: Int(msg), length: Int(messageLength))
-            let file = try? self.vm.stringFromHeap(byteOffset: Int(fileName), length: Int(fileLength))
+            let message = self.globalStore.readString(offset: msg, length: Int32(messageLength))
+            let file = self.globalStore.readString(offset: fileName, length: Int32(fileLength))
 
             print("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
         }

@@ -24,7 +24,7 @@ class WasmJson {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
 
-            if let data = try? self.globalStore.vm.dataFromHeap(byteOffset: Int(data), length: Int(size)),
+            if let data = self.globalStore.readData(offset: data, length: size),
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
                json is [String: Any?] || json is [Any?] {
                 return self.globalStore.storeStdValue(json)

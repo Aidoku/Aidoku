@@ -87,15 +87,15 @@ extension WasmNet {
     var set_url: (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count, length > 0 else { return }
-            self.globalStore.requests[Int(descriptor)].URL = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(value), length: Int(length))
+            self.globalStore.requests[Int(descriptor)].URL = self.globalStore.readString(offset: value, length: length)
         }
     }
 
     var set_header: (Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, key, keyLength, value, valueLength in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count, keyLength > 0, valueLength > 0 else { return }
-            if let headerKey = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(keyLength)) {
-                let headerValue = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(value), length: Int(valueLength))
+            if let headerKey = self.globalStore.readString(offset: key, length: keyLength) {
+                let headerValue = self.globalStore.readString(offset: value, length: valueLength)
                 self.globalStore.requests[Int(descriptor)].headers[headerKey] = headerValue
             }
         }
@@ -104,7 +104,7 @@ extension WasmNet {
     var set_body: (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
             guard descriptor >= 0, descriptor < self.globalStore.requests.count, length > 0 else { return }
-            self.globalStore.requests[Int(descriptor)].body = try? self.globalStore.vm.dataFromHeap(byteOffset: Int(value), length: Int(length))
+            self.globalStore.requests[Int(descriptor)].body = self.globalStore.readData(offset: value, length: length)
         }
     }
 
@@ -169,7 +169,7 @@ extension WasmNet {
             if let data = self.globalStore.requests[Int(descriptor)].data,
                bytesRead + Int(size) <= data.count {
                 let result = Array(data.dropLast(data.count - Int(size) - bytesRead))
-                try? self.globalStore.vm.writeToHeap(bytes: result, byteOffset: Int(buffer))
+                self.globalStore.write(bytes: result, offset: buffer)
                 self.globalStore.requests[Int(descriptor)].bytesRead += Int(size)
             }
         }
