@@ -25,7 +25,7 @@ class WasmDefaults {
         { key, len in
             guard len > 0 else { return -1 }
 
-            if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(len)),
+            if let keyString = self.globalStore.readString(offset: key, length: len),
                let value = UserDefaults.standard.value(forKey: "\(self.globalStore.id).\(keyString)") {
                 return self.globalStore.storeStdValue(value)
             }
@@ -38,7 +38,7 @@ class WasmDefaults {
         { key, len, value in
             guard len > 0, value >= 0 else { return }
 
-            if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(len)) {
+            if let keyString = self.globalStore.readString(offset: key, length: len) {
                 UserDefaults.standard.set(self.globalStore.readStdValue(value), forKey: "\(self.globalStore.id).\(keyString)")
             }
         }

@@ -106,7 +106,7 @@ extension WasmStd {
 
     var create_string: (Int32, Int32) -> Int32 {
         { string, string_len in
-            if let value = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(string), length: Int(string_len)) {
+            if let value = self.globalStore.readString(offset: string, length: string_len) {
                 return self.globalStore.storeStdValue(value)
             }
             return -1
@@ -178,10 +178,7 @@ extension WasmStd {
         { json, buffer, size in
             guard json >= 0, size >= 0 else { return }
             if let string = self.globalStore.readStdValue(json) as? String, Int(size) <= string.utf8.count {
-                try? self.globalStore.vm.writeToHeap(
-                    bytes: string.utf8.dropLast(string.utf8.count - Int(size)),
-                    byteOffset: Int(buffer)
-                )
+                self.globalStore.write(bytes: string.utf8.dropLast(string.utf8.count - Int(size)), offset: buffer)
             }
         }
     }
@@ -242,15 +239,9 @@ extension WasmStd {
         { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
             guard json >= 0, format_len > 0 else { return -1 }
             if let string = self.globalStore.readStdValue(json) as? String,
-               let formatString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(format), length: Int(format_len)) {
-                let localeString = locale_len > 0 ? (try? self.globalStore.vm.stringFromHeap(
-                    byteOffset: Int(locale),
-                    length: Int(locale_len))
-                ) : nil
-                let timeZoneString = timeZone_len > 0 ? (try? self.globalStore.vm.stringFromHeap(
-                    byteOffset: Int(timeZone),
-                    length: Int(timeZone_len))
-                ) : nil
+               let formatString = self.globalStore.readString(offset: format, length: format_len) {
+                let localeString = locale_len > 0 ? self.globalStore.readString(offset: locale, length: locale_len) : nil
+                let timeZoneString = timeZone_len > 0 ? self.globalStore.readString(offset: timeZone, length: timeZone_len) : nil
 
                 let formatter = DateFormatter()
                 if let localeString = localeString {
@@ -282,7 +273,7 @@ extension WasmStd {
     var object_get: (Int32, Int32, Int32) -> Int32 {
         { json, key, keyLength in
             guard json >= 0, keyLength > 0 else { return -1 }
-            if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(keyLength)) {
+            if let keyString = self.globalStore.readString(offset: key, length: keyLength) {
                 if let object = (self.globalStore.readStdValue(json) as? [String: Any?])?[keyString] {
                     return self.globalStore.storeStdValue(object, from: json)
                 } else if let object = self.globalStore.readStdValue(json) as? KVCObject,
@@ -297,7 +288,7 @@ extension WasmStd {
     var object_set: (Int32, Int32, Int32, Int32) -> Void {
         { json, key, key_len, value in
             guard json >= 0, key_len >= 0, value >= 0 else { return }
-            if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+            if let keyString = self.globalStore.readString(offset: key, length: key_len),
                var object = self.globalStore.readStdValue(json) as? [String: Any?],
                let valueToSet = self.globalStore.readStdValue(value) {
                 object[keyString] = valueToSet
@@ -310,7 +301,7 @@ extension WasmStd {
     var object_remove: (Int32, Int32, Int32) -> Void {
         { json, key, key_len in
             guard json >= 0, key >= 0 else { return }
-            if let keyString = try? self.globalStore.vm.stringFromHeap(byteOffset: Int(key), length: Int(key_len)),
+            if let keyString = self.globalStore.readString(offset: key, length: key_len),
                var object = self.globalStore.readStdValue(json) as? [String: Any?] {
                 object.removeValue(forKey: keyString)
                 self.globalStore.stdDescriptors[json] = object

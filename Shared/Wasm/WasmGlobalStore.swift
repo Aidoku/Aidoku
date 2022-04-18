@@ -56,4 +56,40 @@ class WasmGlobalStore {
         refs.append(target)
         stdReferences[to] = refs
     }
+
+    func readString(offset: Int, length: Int) -> String? {
+        try? vm.stringFromHeap(byteOffset: offset, length: length)
+    }
+
+    func readString(offset: Int32, length: Int32) -> String? {
+        try? vm.stringFromHeap(byteOffset: Int(offset), length: Int(length))
+    }
+
+    func readData(offset: Int32, length: Int32) -> Data? {
+        try? vm.dataFromHeap(byteOffset: Int(offset), length: Int(length))
+    }
+
+    func readValue<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> T? {
+        try? vm.valueFromHeap(byteOffset: Int(offset))
+    }
+
+    func readValues<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> [T]? {
+        try? vm.valuesFromHeap(byteOffset: Int(offset), length: Int(length))
+    }
+
+    func readBytes(offset: Int32, length: Int32) -> [UInt8]? {
+        try? vm.bytesFromHeap(byteOffset: Int(offset), length: Int(length))
+    }
+
+    func write<T: WasmTypeProtocol>(value: T, offset: Int32) {
+        try? vm.writeToHeap(value: value, byteOffset: Int(offset))
+    }
+
+    func write(bytes: [UInt8], offset: Int32) {
+        try? vm.writeToHeap(bytes: bytes, byteOffset: Int(offset))
+    }
+
+    func write(data: Data, offset: Int32) {
+        try? vm.writeToHeap(data: data, byteOffset: Int(offset))
+    }
 }
