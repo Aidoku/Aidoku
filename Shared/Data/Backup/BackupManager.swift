@@ -137,5 +137,9 @@ class BackupManager {
         _ = DataManager.shared.save()
 
         DataManager.shared.loadLibrary()
+
+        Task {
+            await DataManager.shared.updateLibrary()
+        }
     }
 }

@@ -120,7 +120,7 @@ class FilterCell: UIView {
                let index = parent.options.firstIndex(of: filter.value) {
                 selectedSortValue = SortSelection(
                     index: index,
-                    ascending: parent.value.index == index && !selectedSortValue.ascending
+                    ascending: parent.canAscend ? parent.value.index == index && !selectedSortValue.ascending : false
                 )
             } else if let parent = parent?.filter as? SelectFilter,
                       let index = parent.options.firstIndex(of: filter.value) {

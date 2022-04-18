@@ -185,7 +185,7 @@ class SourceViewController: MangaCollectionViewController {
     }
 
     @objc func openFilterPopover(_ sender: UIBarButtonItem) {
-        oldSelectedFilters = selectedFilters.filters
+        oldSelectedFilters = selectedFilters.filters.compactMap { $0.copy() as? FilterBase }
 
         let vc = FilterModalViewController(filters: filters, selectedFilters: selectedFilters)
         vc.delegate = self
@@ -306,15 +306,21 @@ extension SourceViewController: MiniModalDelegate {
 
     func modalWillDismiss() {
         var update = false
-        if oldSelectedFilters != selectedFilters.filters {
+        if oldSelectedFilters.count != selectedFilters.filters.count {
             update = true
         } else {
             for filter in oldSelectedFilters {
-                if let target = selectedFilters.filters.first(where: { filter.name == $0.name }) as? SortFilter,
-                   let filter = filter as? SortFilter {
-                    if filter.value.index != target.value.index {
-                        update = true
-                        break
+                if let target = selectedFilters.filters.first(where: { filter.type == $0.type && filter.name == $0.name }) {
+                    if let target = target as? SortFilter, let filter = filter as? SortFilter {
+                        if filter.value.index != target.value.index || filter.value.ascending != target.value.ascending {
+                            update = true
+                            break
+                        }
+                    } else {
+                        if target.valueByPropertyName(name: "value") as? AnyHashable? != filter.valueByPropertyName(name: "value") as? AnyHashable? {
+                            update = true
+                            break
+                        }
                     }
                 } else {
                     update = true

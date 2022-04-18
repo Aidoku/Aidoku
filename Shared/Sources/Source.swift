@@ -230,6 +230,7 @@ extension Source {
             return SortFilter(
                 name: filter.name ?? "",
                 options: filter.options ?? [],
+                canAscend: filter.canAscend ?? false,
                 value: value?["index"] != nil ? SortSelection(index: value?["index"]?.intValue ?? 0,
                                                               ascending: value?["ascending"]?.boolValue ?? false)
                                               : SortSelection(index: 0, ascending: false)
