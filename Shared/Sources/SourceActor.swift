@@ -13,7 +13,7 @@ actor SourceActor {
 
     enum SourceError: Error {
         case vmNotLoaded
-        case mangaDetailsFailed
+        case missingValue
     }
 
     init(source: Source) {
@@ -53,7 +53,7 @@ actor SourceActor {
         source.globalStore.removeStdValue(resultMangaDescriptor)
         source.globalStore.removeStdValue(mangaDescriptor)
 
-        guard let manga = manga else { throw SourceError.mangaDetailsFailed }
+        guard let manga = manga else { throw SourceError.missingValue }
 
         return manga
     }
@@ -97,12 +97,18 @@ actor SourceActor {
         return source.globalStore.requests[request.id] ?? request
     }
 
-    func handleUrl(url: String) throws {
+    func handleUrl(url: String) throws -> DeepLink {
         let urlDescriptor = source.globalStore.storeStdValue(url)
 
-        _ = try source.vm.call("handle_url", urlDescriptor) // return manga or chapter
+        let deepLinkDescriptor: Int32 = try source.vm.call("handle_url", urlDescriptor)
 
+        let deepLink = source.globalStore.readStdValue(deepLinkDescriptor) as? DeepLink
+        source.globalStore.removeStdValue(deepLinkDescriptor)
         source.globalStore.removeStdValue(urlDescriptor)
+
+        guard let deepLink = deepLink else { throw SourceError.missingValue }
+
+        return deepLink
     }
 
     func handleNotification(notification: String) throws {

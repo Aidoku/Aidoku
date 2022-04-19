@@ -11,6 +11,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
+    private var navigationController: UINavigationController? {
+        (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?.selectedViewController as? UINavigationController
+    }
+
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
         let libraryViewController = UINavigationController(rootViewController: LibraryViewController())
@@ -63,6 +67,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                         sendAlert(title: "Source List Configured",
                                   message: "You can now browse external sources in the Browse tab.")
                     }
+                } else if let source = SourceManager.shared.sources.first(where: { $0.id == url.host }) { // sourceId/mangaId
+                    Task { @MainActor in
+                        if let manga = try? await source.getMangaDetails(manga: Manga(sourceId: source.id, id: url.lastPathComponent)) {
+                            navigationController?.pushViewController(
+                                MangaViewController(manga: manga, chapters: []), animated: true
+                            )
+                        }
+                    }
+                } else { // deep links
+                    handleDeepLink(url: url)
                 }
             } else if url.pathExtension == "aix" {
                 Task {
@@ -75,6 +89,39 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 } else {
                     sendAlert(title: "Import Failed",
                               message: "Failed to save backup. Maybe try importing from a different location.")
+                }
+            } else {
+                handleDeepLink(url: url)
+            }
+        }
+    }
+
+    func handleDeepLink(url: URL) {
+        if let targetUrl = (url as NSURL).resourceSpecifier {
+            var targetSource: Source?
+            for source in SourceManager.shared.sources {
+                if let sourceUrl = source.manifest.info.url,
+                   let url = NSURL(string: sourceUrl)?.resourceSpecifier,
+                   targetUrl.hasPrefix(url) {
+                    targetSource = source
+                } else if let urls = source.manifest.info.urls {
+                    for sourceUrl in urls {
+                        if let url = NSURL(string: sourceUrl)?.resourceSpecifier,
+                           targetUrl.hasPrefix(url) {
+                            targetSource = source
+                        }
+                    }
+                }
+                if targetSource != nil { break }
+            }
+            if let targetSource = targetSource {
+                Task { @MainActor in
+                    let link = try? await targetSource.handleUrl(url: url.absoluteString)
+                    if let manga = link?.manga {
+                        navigationController?.pushViewController(
+                            MangaViewController(manga: manga, chapters: []), animated: true
+                        )
+                    }
                 }
             }
         }

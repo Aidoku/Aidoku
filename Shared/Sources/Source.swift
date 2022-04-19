@@ -303,6 +303,10 @@ extension Source {
         try await actor.getImageRequest(url: url)
     }
 
+    func handleUrl(url: String) async throws -> DeepLink {
+        try await actor.handleUrl(url: url)
+    }
+
     func performAction(key: String) {
         Task {
             try? await actor.handleNotification(notification: key)
