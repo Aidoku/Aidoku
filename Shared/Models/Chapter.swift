@@ -14,6 +14,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
     let mangaId: String
     let title: String?
     let scanlator: String?
+    let url: String?
     let lang: String
     let chapterNum: Float?
     let volumeNum: Float?
@@ -26,6 +27,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         mangaId: String,
         title: String?,
         scanlator: String? = nil,
+        url: String? = nil,
         lang: String = "en",
         chapterNum: Float? = nil,
         volumeNum: Float? = nil,
@@ -37,6 +39,7 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         self.mangaId = mangaId
         self.title = title == "" ? nil : title
         self.scanlator = scanlator == "" ? nil : scanlator
+        self.url = url == "" ? nil : url
         self.lang = lang
         self.chapterNum = chapterNum
         self.volumeNum = volumeNum

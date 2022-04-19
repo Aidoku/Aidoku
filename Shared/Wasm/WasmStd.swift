@@ -67,9 +67,9 @@ class WasmStd: WasmModule {
 extension WasmStd {
 
     var copy: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let object = self.globalStore.readStdValue(json) {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let object = self.globalStore.readStdValue(descriptor) {
                 return self.globalStore.storeStdValue(object)
             }
             return -1
@@ -77,8 +77,8 @@ extension WasmStd {
     }
 
     var destroy: (Int32) -> Void {
-        { json in
-            self.globalStore.removeStdValue(json)
+        { descriptor in
+            self.globalStore.removeStdValue(descriptor)
         }
     }
 }
@@ -105,8 +105,8 @@ extension WasmStd {
     }
 
     var create_string: (Int32, Int32) -> Int32 {
-        { string, string_len in
-            if let value = self.globalStore.readString(offset: string, length: string_len) {
+        { string, stringLen in
+            if let value = self.globalStore.readString(offset: string, length: stringLen) {
                 return self.globalStore.storeStdValue(value)
             }
             return -1
@@ -142,9 +142,9 @@ extension WasmStd {
 extension WasmStd {
 
     var typeof: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return Int32(ObjectType.null.rawValue) }
-            let value = self.globalStore.readStdValue(json)
+        { descriptor in
+            guard descriptor >= 0 else { return Int32(ObjectType.null.rawValue) }
+            let value = self.globalStore.readStdValue(descriptor)
             if value is Int {
                 return Int32(ObjectType.int.rawValue)
             } else if value is Float {
@@ -165,9 +165,9 @@ extension WasmStd {
     }
 
     var string_len: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let string = self.globalStore.readStdValue(json) as? String {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let string = self.globalStore.readStdValue(descriptor) as? String {
                 return Int32(string.utf8.count)
             }
             return -1
@@ -175,24 +175,24 @@ extension WasmStd {
     }
 
     var read_string: (Int32, Int32, Int32) -> Void {
-        { json, buffer, size in
-            guard json >= 0, size >= 0 else { return }
-            if let string = self.globalStore.readStdValue(json) as? String, Int(size) <= string.utf8.count {
+        { descriptor, buffer, size in
+            guard descriptor >= 0, size >= 0 else { return }
+            if let string = self.globalStore.readStdValue(descriptor) as? String, Int(size) <= string.utf8.count {
                 self.globalStore.write(bytes: string.utf8.dropLast(string.utf8.count - Int(size)), offset: buffer)
             }
         }
     }
 
     var read_int: (Int32) -> Int64 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let int = self.globalStore.readStdValue(json) as? Int {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let int = self.globalStore.readStdValue(descriptor) as? Int {
                 return Int64(int)
-            } else if let float = self.globalStore.readStdValue(json) as? Float {
+            } else if let float = self.globalStore.readStdValue(descriptor) as? Float {
                 return Int64(float)
-            } else if let int = Int(self.globalStore.readStdValue(json) as? String ?? "Error") {
+            } else if let int = Int(self.globalStore.readStdValue(descriptor) as? String ?? "Error") {
                 return Int64(int)
-            } else if let bool = self.globalStore.readStdValue(json) as? Bool {
+            } else if let bool = self.globalStore.readStdValue(descriptor) as? Bool {
                 return Int64(bool ? 1 : 0)
             }
             return -1
@@ -200,13 +200,13 @@ extension WasmStd {
     }
 
     var read_float: (Int32) -> Float64 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let float = self.globalStore.readStdValue(json) as? Float {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let float = self.globalStore.readStdValue(descriptor) as? Float {
                 return Float64(float)
-            } else if let int = self.globalStore.readStdValue(json) as? Int {
+            } else if let int = self.globalStore.readStdValue(descriptor) as? Int {
                 return Float64(int)
-            } else if let float = Float(self.globalStore.readStdValue(json) as? String ?? "Error") {
+            } else if let float = Float(self.globalStore.readStdValue(descriptor) as? String ?? "Error") {
                 return Float64(float)
             }
             return -1
@@ -214,11 +214,11 @@ extension WasmStd {
     }
 
     var read_bool: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return 0 }
-            if let bool = self.globalStore.readStdValue(json) as? Bool {
+        { descriptor in
+            guard descriptor >= 0 else { return 0 }
+            if let bool = self.globalStore.readStdValue(descriptor) as? Bool {
                 return Int32(bool ? 1 : 0)
-            } else if let int = self.globalStore.readStdValue(json) as? Int {
+            } else if let int = self.globalStore.readStdValue(descriptor) as? Int {
                 return Int32(int != 0 ? 1 : 0)
             }
             return 0
@@ -226,8 +226,8 @@ extension WasmStd {
     }
 
     var read_date: (Int32) -> Float64 {
-        { json in
-            if json >= 0, let date = self.globalStore.readStdValue(json) as? Date {
+        { descriptor in
+            if descriptor >= 0, let date = self.globalStore.readStdValue(descriptor) as? Date {
                 return Float64(date.timeIntervalSince1970)
             } else {
                 return -1
@@ -236,12 +236,12 @@ extension WasmStd {
     }
 
     var read_date_string: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Float64 {
-        { json, format, format_len, locale, locale_len, timeZone, timeZone_len in
-            guard json >= 0, format_len > 0 else { return -1 }
-            if let string = self.globalStore.readStdValue(json) as? String,
-               let formatString = self.globalStore.readString(offset: format, length: format_len) {
-                let localeString = locale_len > 0 ? self.globalStore.readString(offset: locale, length: locale_len) : nil
-                let timeZoneString = timeZone_len > 0 ? self.globalStore.readString(offset: timeZone, length: timeZone_len) : nil
+        { descriptor, format, formatLen, locale, localeLen, timeZone, timeZoneLen in
+            guard descriptor >= 0, formatLen > 0 else { return -1 }
+            if let string = self.globalStore.readStdValue(descriptor) as? String,
+               let formatString = self.globalStore.readString(offset: format, length: formatLen) {
+                let localeString = localeLen > 0 ? self.globalStore.readString(offset: locale, length: localeLen) : nil
+                let timeZoneString = timeZoneLen > 0 ? self.globalStore.readString(offset: timeZone, length: timeZoneLen) : nil
 
                 let formatter = DateFormatter()
                 if let localeString = localeString {
@@ -264,21 +264,21 @@ extension WasmStd {
 extension WasmStd {
 
     var object_len: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return 0 }
-            return Int32((self.globalStore.readStdValue(json) as? [String: Any?])?.count ?? 0)
+        { descriptor in
+            guard descriptor >= 0 else { return 0 }
+            return Int32((self.globalStore.readStdValue(descriptor) as? [String: Any?])?.count ?? 0)
         }
     }
 
     var object_get: (Int32, Int32, Int32) -> Int32 {
-        { json, key, keyLength in
-            guard json >= 0, keyLength > 0 else { return -1 }
-            if let keyString = self.globalStore.readString(offset: key, length: keyLength) {
-                if let object = (self.globalStore.readStdValue(json) as? [String: Any?])?[keyString] {
-                    return self.globalStore.storeStdValue(object, from: json)
-                } else if let object = self.globalStore.readStdValue(json) as? KVCObject,
+        { descriptor, key, keyLen in
+            guard descriptor >= 0, keyLen > 0 else { return -1 }
+            if let keyString = self.globalStore.readString(offset: key, length: keyLen) {
+                if let object = (self.globalStore.readStdValue(descriptor) as? [String: Any?])?[keyString] {
+                    return self.globalStore.storeStdValue(object, from: descriptor)
+                } else if let object = self.globalStore.readStdValue(descriptor) as? KVCObject,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: json)
+                    return self.globalStore.storeStdValue(value, from: descriptor)
                 }
             }
             return -1
@@ -286,44 +286,44 @@ extension WasmStd {
     }
 
     var object_set: (Int32, Int32, Int32, Int32) -> Void {
-        { json, key, key_len, value in
-            guard json >= 0, key_len >= 0, value >= 0 else { return }
-            if let keyString = self.globalStore.readString(offset: key, length: key_len),
-               var object = self.globalStore.readStdValue(json) as? [String: Any?],
+        { descriptor, key, keyLen, value in
+            guard descriptor >= 0, keyLen >= 0, value >= 0 else { return }
+            if let keyString = self.globalStore.readString(offset: key, length: keyLen),
+               var object = self.globalStore.readStdValue(descriptor) as? [String: Any?],
                let valueToSet = self.globalStore.readStdValue(value) {
                 object[keyString] = valueToSet
-                self.globalStore.stdDescriptors[json] = object
-                self.globalStore.addStdReference(to: json, target: value)
+                self.globalStore.stdDescriptors[descriptor] = object
+                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
 
     var object_remove: (Int32, Int32, Int32) -> Void {
-        { json, key, key_len in
-            guard json >= 0, key >= 0 else { return }
-            if let keyString = self.globalStore.readString(offset: key, length: key_len),
-               var object = self.globalStore.readStdValue(json) as? [String: Any?] {
+        { descriptor, key, keyLen in
+            guard descriptor >= 0, keyLen >= 0 else { return }
+            if let keyString = self.globalStore.readString(offset: key, length: keyLen),
+               var object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
                 object.removeValue(forKey: keyString)
-                self.globalStore.stdDescriptors[json] = object
+                self.globalStore.stdDescriptors[descriptor] = object
             }
         }
     }
 
     var object_keys: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let object = self.globalStore.readStdValue(json) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.keys), from: json)
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
+                return self.globalStore.storeStdValue(Array(object.keys), from: descriptor)
             }
             return -1
         }
     }
 
     var object_values: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return -1 }
-            if let object = self.globalStore.readStdValue(json) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.values), from: json)
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
+                return self.globalStore.storeStdValue(Array(object.values), from: descriptor)
             }
             return -1
         }
@@ -334,61 +334,57 @@ extension WasmStd {
 extension WasmStd {
 
     var array_len: (Int32) -> Int32 {
-        { json in
-            guard json >= 0 else { return 0 }
-            return Int32((self.globalStore.readStdValue(json) as? [Any?])?.count ?? 0)
+        { descriptor in
+            guard descriptor >= 0 else { return 0 }
+            return Int32((self.globalStore.readStdValue(descriptor) as? [Any?])?.count ?? 0)
         }
     }
 
     var array_get: (Int32, Int32) -> Int32 {
-        { json, index in
-            guard json >= 0, index >= 0 else { return -1 }
-            if let array = self.globalStore.readStdValue(json) as? [Any?] {
+        { descriptor, index in
+            guard descriptor >= 0, index >= 0 else { return -1 }
+            if let array = self.globalStore.readStdValue(descriptor) as? [Any?] {
                 guard index < array.count else { return -1 }
                 let value = array[Int(index)]
-                return self.globalStore.storeStdValue(value, from: json)
+                return self.globalStore.storeStdValue(value, from: descriptor)
             }
             return -1
         }
     }
 
     var array_set: (Int32, Int32, Int32) -> Void {
-        { json, index, value in
-            guard json >= 0, value >= 0, index >= 0 else { return }
-            if var array = self.globalStore.readStdValue(json) as? [Any?],
+        { descriptor, index, value in
+            guard descriptor >= 0, value >= 0, index >= 0 else { return }
+            if var array = self.globalStore.readStdValue(descriptor) as? [Any?],
                let valueToSet = self.globalStore.readStdValue(value),
                index < array.count {
                 array[Int(index)] = valueToSet
-                self.globalStore.stdDescriptors[json] = array
-                self.globalStore.addStdReference(to: json, target: value)
+                self.globalStore.stdDescriptors[descriptor] = array
+                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
 
     var array_append: (Int32, Int32) -> Void {
-        { json, value in
-            guard json >= 0, value >= 0 else { return }
-            if var array = self.globalStore.readStdValue(json) as? [Any?],
+        { descriptor, value in
+            guard descriptor >= 0, value >= 0 else { return }
+            if var array = self.globalStore.readStdValue(descriptor) as? [Any?],
                let valueToAppend = self.globalStore.readStdValue(value) {
                 array.append(valueToAppend)
-                self.globalStore.stdDescriptors[json] = array
-                self.globalStore.addStdReference(to: json, target: value)
+                self.globalStore.stdDescriptors[descriptor] = array
+                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
 
     var array_remove: (Int32, Int32) -> Void {
-        { json, index in
-            guard json >= 0, index >= 0 else { return }
-            if var array = self.globalStore.readStdValue(json) as? [Any?] {
+        { descriptor, index in
+            guard descriptor >= 0, index >= 0 else { return }
+            if var array = self.globalStore.readStdValue(descriptor) as? [Any?] {
                 guard index < array.count else { return }
                 array.remove(at: Int(index))
-                self.globalStore.stdDescriptors[json] = array
+                self.globalStore.stdDescriptors[descriptor] = array
             }
         }
     }
 }
-
-// TODO: move this
-// extension WasmJson {
-// }

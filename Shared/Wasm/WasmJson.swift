@@ -22,7 +22,7 @@ class WasmJson {
 
     var parse: (Int32, Int32) -> Int32 {
         { data, size in
-            guard data > 0, size > 0 else { return -1 }
+            guard size > 0 else { return -1 }
 
             if let data = self.globalStore.readData(offset: data, length: size),
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),

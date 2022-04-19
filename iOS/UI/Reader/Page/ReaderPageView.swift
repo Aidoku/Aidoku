@@ -152,6 +152,7 @@ class ReaderPageView: UIView {
                 if let body = request.body { r.httpBody = body }
                 return r
             }
+            source.globalStore.requests.removeValue(forKey: request.id)
         } else {
             requestModifier = nil
         }

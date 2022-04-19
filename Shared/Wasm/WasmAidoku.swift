@@ -32,13 +32,13 @@ extension WasmAidoku {
         Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32, Int32
     ) -> Int32 {
         // swiftlint:disable:next line_length
-        { id, id_len, cover_url, cover_url_len, title, title_len, author, author_len, _, _, description, description_len, url, url_len, tags, tag_str_lens, tag_count, status, nsfw, viewer in
-            guard id_len > 0 else { return -1 }
-            if let mangaId = self.globalStore.readString(offset: id, length: id_len) {
+        { id, idLen, coverUrl, coverUrlLen, title, titleLen, author, authorLen, artist, artistLen, description, descriptionLen, url, urlLen, tags, tagStrLens, tagCount, status, nsfw, viewer in
+            guard idLen > 0 else { return -1 }
+            if let mangaId = self.globalStore.readString(offset: id, length: idLen) {
                 var tagList: [String] = []
-                let tagStrings: [Int32] = self.globalStore.readValues(offset: tags, length: tag_count) ?? []
-                let tagStringLengths: [Int32] = self.globalStore.readValues(offset: tag_str_lens, length: tag_count) ?? []
-                for i in 0..<Int(tag_count) {
+                let tagStrings: [Int32] = self.globalStore.readValues(offset: tags, length: tagCount) ?? []
+                let tagStringLengths: [Int32] = self.globalStore.readValues(offset: tagStrLens, length: tagCount) ?? []
+                for i in 0..<Int(tagCount) {
                     if let str = self.globalStore.readString(offset: tagStrings[i], length: tagStringLengths[i]) {
                         tagList.append(str)
                     }
@@ -46,13 +46,14 @@ extension WasmAidoku {
                 let manga = Manga(
                     sourceId: self.globalStore.id,
                     id: mangaId,
-                    title: title_len > 0 ? self.globalStore.readString(offset: title, length: title_len) : nil,
-                    author: author_len > 0 ? self.globalStore.readString(offset: author, length: author_len) : nil,
-                    description: description_len > 0 ? self.globalStore.readString(offset: description,
-                                                                                   length: description_len) : nil,
+                    title: titleLen > 0 ? self.globalStore.readString(offset: title, length: titleLen) : nil,
+                    author: authorLen > 0 ? self.globalStore.readString(offset: author, length: authorLen) : nil,
+                    artist: artistLen > 0 ? self.globalStore.readString(offset: artist, length: artistLen) : nil,
+                    description: descriptionLen > 0 ? self.globalStore.readString(offset: description,
+                                                                                  length: descriptionLen) : nil,
                     tags: tagList,
-                    cover: cover_url_len > 0 ? self.globalStore.readString(offset: cover_url, length: cover_url_len) : nil,
-                    url: url_len > 0 ? self.globalStore.readString(offset: url, length: url_len) : nil,
+                    cover: coverUrlLen > 0 ? self.globalStore.readString(offset: coverUrl, length: coverUrlLen) : nil,
+                    url: urlLen > 0 ? self.globalStore.readString(offset: url, length: urlLen) : nil,
                     status: MangaStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
                     viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
@@ -75,16 +76,16 @@ extension WasmAidoku {
     }
 
     var create_chapter: (Int32, Int32, Int32, Int32, Float32, Float32, Float64, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
-        { id, id_len, name, name_len, volume, chapter, dateUploaded, scanlator, scanlator_len, _, _, lang, lang_len in
-            if let chapterId = self.globalStore.readString(offset: id, length: id_len) {
+        { id, idLen, name, nameLen, volume, chapter, dateUploaded, scanlator, scanlatorLen, url, urlLen, lang, langLen in
+            if let chapterId = self.globalStore.readString(offset: id, length: idLen) {
                 let chapter = Chapter(
                     sourceId: self.globalStore.id,
                     id: chapterId,
                     mangaId: self.globalStore.currentManga,
-                    title: name_len > 0 ? self.globalStore.readString(offset: name, length: name_len) : nil,
-                    scanlator: scanlator_len > 0 ? self.globalStore.readString(offset: scanlator,
-                                                                               length: scanlator_len) : nil,
-                    lang: lang_len > 0 ? self.globalStore.readString(offset: lang, length: lang_len) ?? "en" : "en",
+                    title: nameLen > 0 ? self.globalStore.readString(offset: name, length: nameLen) : nil,
+                    scanlator: scanlatorLen > 0 ? self.globalStore.readString(offset: scanlator, length: scanlatorLen) : nil,
+                    url: urlLen > 0 ? self.globalStore.readString(offset: url, length: urlLen) : nil,
+                    lang: langLen > 0 ? self.globalStore.readString(offset: lang, length: langLen) ?? "en" : "en",
                     chapterNum: chapter >= 0 ? Float(chapter) : nil,
                     volumeNum: volume >= 0 ? Float(volume) : nil,
                     dateUploaded: dateUploaded > 0 ? Date(timeIntervalSince1970: TimeInterval(dateUploaded)) : nil,
