@@ -18,7 +18,7 @@ enum HttpMethod: Int {
 }
 
 struct WasmRequestObject: KVCObject {
-    let id: Int
+    let id: Int32
     var URL: String?
     var method: HttpMethod?
     var headers: [String: String?] = [:]
@@ -70,51 +70,51 @@ extension WasmNet {
 
     var init_request: (Int32) -> Int32 {
         { method in
-            var req = WasmRequestObject(id: self.globalStore.requests.count)
+            self.globalStore.requestsPointer += 1
+            var req = WasmRequestObject(id: self.globalStore.requestsPointer)
             req.method = HttpMethod(rawValue: Int(method))
-            self.globalStore.requests.append(req)
+            self.globalStore.requests[self.globalStore.requestsPointer] = req
             return Int32(req.id)
         }
     }
 
     var close: (Int32) -> Void {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return }
-            self.globalStore.requests.remove(at: Int(descriptor))
+            guard descriptor >= 0 else { return }
+            self.globalStore.requests.removeValue(forKey: descriptor)
         }
     }
 
     var set_url: (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count, length > 0 else { return }
-            self.globalStore.requests[Int(descriptor)].URL = self.globalStore.readString(offset: value, length: length)
+            guard descriptor >= 0, length > 0 else { return }
+            self.globalStore.requests[descriptor]?.URL = self.globalStore.readString(offset: value, length: length)
         }
     }
 
     var set_header: (Int32, Int32, Int32, Int32, Int32) -> Void {
-        { descriptor, key, keyLength, value, valueLength in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count, keyLength > 0, valueLength > 0 else { return }
-            if let headerKey = self.globalStore.readString(offset: key, length: keyLength) {
-                let headerValue = self.globalStore.readString(offset: value, length: valueLength)
-                self.globalStore.requests[Int(descriptor)].headers[headerKey] = headerValue
+        { descriptor, key, keyLen, value, valueLen in
+            guard descriptor >= 0, keyLen > 0, valueLen > 0 else { return }
+            if let headerKey = self.globalStore.readString(offset: key, length: keyLen) {
+                let headerValue = self.globalStore.readString(offset: value, length: valueLen)
+                self.globalStore.requests[descriptor]?.headers[headerKey] = headerValue
             }
         }
     }
 
     var set_body: (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count, length > 0 else { return }
-            self.globalStore.requests[Int(descriptor)].body = self.globalStore.readData(offset: value, length: length)
+            guard descriptor >= 0, length > 0 else { return }
+            self.globalStore.requests[descriptor]?.body = self.globalStore.readData(offset: value, length: length)
         }
     }
 
     var send: (Int32) -> Void {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return }
-            let semaphore = DispatchSemaphore(value: 0)
-
-            let request = self.globalStore.requests[Int(descriptor)]
+            guard let request = self.globalStore.requests[descriptor] else { return }
             guard let url = URL(string: request.URL ?? "") else { return }
+
+            let semaphore = DispatchSemaphore(value: 0)
 
             var urlRequest = URLRequest(url: url)
             for (key, value) in request.headers {
@@ -131,9 +131,9 @@ extension WasmNet {
             }
 
             URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                self.globalStore.requests[Int(descriptor)].data = data
-                self.globalStore.requests[Int(descriptor)].response = response
-                self.globalStore.requests[Int(descriptor)].error = error
+                self.globalStore.requests[descriptor]?.data = data
+                self.globalStore.requests[descriptor]?.response = response
+                self.globalStore.requests[descriptor]?.error = error
                 semaphore.signal()
             }.resume()
 
@@ -143,58 +143,51 @@ extension WasmNet {
 
     var get_url: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
-            return self.globalStore.storeStdValue(self.globalStore.requests[Int(descriptor)].URL)
+            if let url = self.globalStore.requests[descriptor]?.URL {
+                return self.globalStore.storeStdValue(url)
+            }
+            return -1
         }
     }
 
     var get_data_size: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
-
-            if let data = self.globalStore.requests[Int(descriptor)].data {
-                return Int32(data.count - self.globalStore.requests[Int(descriptor)].bytesRead)
+            if let data = self.globalStore.requests[descriptor]?.data {
+                return Int32(data.count - (self.globalStore.requests[descriptor]?.bytesRead ?? 0))
             }
-
             return -1
         }
     }
 
     var get_data: (Int32, Int32, Int32) -> Void {
         { descriptor, buffer, size in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count, size > 0 else { return }
+            guard descriptor >= 0, size > 0 else { return }
 
-            let bytesRead = self.globalStore.requests[Int(descriptor)].bytesRead
-
-            if let data = self.globalStore.requests[Int(descriptor)].data,
-               bytesRead + Int(size) <= data.count {
-                let result = Array(data.dropLast(data.count - Int(size) - bytesRead))
+            if let request = self.globalStore.requests[descriptor],
+               let data = request.data,
+               request.bytesRead + Int(size) <= data.count {
+                let result = Array(data.dropLast(data.count - Int(size) - request.bytesRead))
                 self.globalStore.write(bytes: result, offset: buffer)
-                self.globalStore.requests[Int(descriptor)].bytesRead += Int(size)
+                self.globalStore.requests[descriptor]?.bytesRead += Int(size)
             }
         }
     }
 
     var json: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
-
-            if let data = self.globalStore.requests[Int(descriptor)].data,
+            if let data = self.globalStore.requests[descriptor]?.data,
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
                json is [String: Any?] || json is [Any?] {
                 return self.globalStore.storeStdValue(json)
             }
-
             return -1
         }
     }
 
     var html: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0, descriptor < self.globalStore.requests.count else { return -1 }
-
-            let request = self.globalStore.requests[Int(descriptor)]
-            if let data = request.data,
+            if let request = self.globalStore.requests[descriptor],
+               let data = request.data,
                let content = String(data: data, encoding: .utf8) {
                 if let baseUri = request.response?.url?.absoluteString,
                    let obj = try? SwiftSoup.parse(content, baseUri) {
@@ -203,7 +196,6 @@ extension WasmNet {
                     return self.globalStore.storeStdValue(obj)
                 }
             }
-
             return -1
         }
     }
