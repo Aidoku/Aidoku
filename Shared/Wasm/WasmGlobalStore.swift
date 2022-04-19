@@ -21,7 +21,8 @@ class WasmGlobalStore {
     var stdReferences: [Int32: [Int32]] = [:]
 
     // net
-    var requests: [WasmRequestObject] = []
+    var requestsPointer: Int32 = -1
+    var requests: [Int32: WasmRequestObject] = [:]
 
     init(id: String, vm: WasmInterpreter) {
         self.id = id

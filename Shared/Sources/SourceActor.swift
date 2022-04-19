@@ -21,45 +21,37 @@ actor SourceActor {
     }
 
     func getMangaList(filters: [FilterBase], page: Int = 1) throws -> MangaPageResult {
-        var filterPointer: Int32 = -1
-        if !filters.isEmpty {
-            filterPointer = source.globalStore.storeStdValue(filters)
-        }
+        let filterDescriptor = source.globalStore.storeStdValue(filters)
 
-        let descriptor: Int32 = try source.vm.call("get_manga_list", filterPointer, Int32(page))
+        let pageResultDescriptor: Int32 = try source.vm.call("get_manga_list", filterDescriptor, Int32(page))
 
-        let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
-        source.globalStore.removeStdValue(descriptor)
-
-        if filterPointer > -1 {
-            source.globalStore.removeStdValue(filterPointer)
-        }
+        let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
+        source.globalStore.removeStdValue(pageResultDescriptor)
+        source.globalStore.removeStdValue(filterDescriptor)
 
         return result
     }
 
     func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
-        let listingPointer = source.globalStore.storeStdValue(listing)
+        let listingDescriptor = source.globalStore.storeStdValue(listing)
 
-        let descriptor: Int32 = try source.vm.call(
-            "get_manga_listing", listingPointer, Int32(page)
-        )
+        let pageResultDescriptor: Int32 = try source.vm.call("get_manga_listing", listingDescriptor, Int32(page))
 
-        let result = source.globalStore.readStdValue(descriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
-        source.globalStore.removeStdValue(descriptor)
-        source.globalStore.removeStdValue(listingPointer)
+        let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
+        source.globalStore.removeStdValue(pageResultDescriptor)
+        source.globalStore.removeStdValue(listingDescriptor)
 
         return result
     }
 
     func getMangaDetails(manga: Manga) throws -> Manga {
-        let mangaPointer = source.globalStore.storeStdValue(manga)
+        let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
-        let descriptor: Int32 = try source.vm.call("get_manga_details", mangaPointer)
+        let resultMangaDescriptor: Int32 = try source.vm.call("get_manga_details", mangaDescriptor)
 
-        let manga = source.globalStore.readStdValue(descriptor) as? Manga
-        source.globalStore.removeStdValue(descriptor)
-        source.globalStore.removeStdValue(mangaPointer)
+        let manga = source.globalStore.readStdValue(resultMangaDescriptor) as? Manga
+        source.globalStore.removeStdValue(resultMangaDescriptor)
+        source.globalStore.removeStdValue(mangaDescriptor)
 
         guard let manga = manga else { throw SourceError.mangaDetailsFailed }
 
@@ -67,56 +59,57 @@ actor SourceActor {
     }
 
     func getChapterList(manga: Manga) throws -> [Chapter] {
-        let mangaPointer = source.globalStore.storeStdValue(manga)
+        let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
         source.globalStore.chapterCounter = 0
         source.globalStore.currentManga = manga.id
 
-        let descriptor: Int32 = try source.vm.call("get_chapter_list", mangaPointer)
+        let chapterListDescriptor: Int32 = try source.vm.call("get_chapter_list", mangaDescriptor)
 
         source.globalStore.chapterCounter = 0
 
-        let chapters = source.globalStore.readStdValue(descriptor) as? [Chapter] ?? []
-        source.globalStore.removeStdValue(descriptor)
-        source.globalStore.removeStdValue(mangaPointer)
+        let chapters = source.globalStore.readStdValue(chapterListDescriptor) as? [Chapter] ?? []
+        source.globalStore.removeStdValue(chapterListDescriptor)
+        source.globalStore.removeStdValue(mangaDescriptor)
 
         return chapters
     }
 
     func getPageList(chapter: Chapter) throws -> [Page] {
-        let chapterPointer = source.globalStore.storeStdValue(chapter)
+        let chapterDescriptor = source.globalStore.storeStdValue(chapter)
 
-        let descriptor: Int32 = try source.vm.call("get_page_list", chapterPointer)
+        let pageListDescriptor: Int32 = try source.vm.call("get_page_list", chapterDescriptor)
 
-        let pages = source.globalStore.readStdValue(descriptor) as? [Page] ?? []
-        source.globalStore.removeStdValue(descriptor)
-        source.globalStore.removeStdValue(chapterPointer)
+        let pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
+        source.globalStore.removeStdValue(pageListDescriptor)
+        source.globalStore.removeStdValue(chapterDescriptor)
 
         return pages
     }
 
     func getImageRequest(url: String) throws -> WasmRequestObject {
-        let request = WasmRequestObject(id: source.globalStore.requests.count)
-        source.globalStore.requests.append(request)
+        source.globalStore.requestsPointer += 1
+        let request = WasmRequestObject(id: source.globalStore.requestsPointer)
+        source.globalStore.requests[source.globalStore.requestsPointer] = request
 
         try source.vm.call("modify_image_request", Int32(request.id))
 
-        return source.globalStore.requests[request.id]
+        return source.globalStore.requests[request.id] ?? request
     }
 
     func handleUrl(url: String) throws {
-        let descriptor = source.globalStore.storeStdValue(url)
+        let urlDescriptor = source.globalStore.storeStdValue(url)
 
-        _ = try source.vm.call("handle_url", descriptor) // return manga or chapter
+        _ = try source.vm.call("handle_url", urlDescriptor) // return manga or chapter
 
-        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(urlDescriptor)
     }
 
     func handleNotification(notification: String) throws {
-        let descriptor = source.globalStore.storeStdValue(notification)
+        let notificationDescriptor = source.globalStore.storeStdValue(notification)
 
-        try source.vm.call("handle_notification", descriptor)
+        try source.vm.call("handle_notification", notificationDescriptor)
 
-        source.globalStore.removeStdValue(descriptor)
+        source.globalStore.removeStdValue(notificationDescriptor)
     }
 }
