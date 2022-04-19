@@ -21,6 +21,7 @@ class WasmAidoku: WasmModule {
         try? globalStore.vm.addImportHandler(named: "create_manga_result", namespace: namespace, block: self.create_manga_result)
         try? globalStore.vm.addImportHandler(named: "create_chapter", namespace: namespace, block: self.create_chapter)
         try? globalStore.vm.addImportHandler(named: "create_page", namespace: namespace, block: self.create_page)
+        try? globalStore.vm.addImportHandler(named: "create_deeplink", namespace: namespace, block: self.create_deeplink)
     }
 }
 
@@ -100,13 +101,21 @@ extension WasmAidoku {
 
     var create_page: (Int32, Int32, Int32, Int32, Int32, Int32, Int32) -> Int32 {
         { index, imageUrl, imageUrlLength, base64, base64Length, text, textLength in
-            let page = Page(
+            self.globalStore.storeStdValue(Page(
                 index: Int(index),
                 imageURL: imageUrlLength > 0 ? self.globalStore.readString(offset: imageUrl, length: imageUrlLength) : nil,
                 base64: base64Length > 0 ? self.globalStore.readString(offset: base64, length: base64Length) : nil,
                 text: textLength > 0 ? self.globalStore.readString(offset: text, length: textLength) : nil
-            )
-            return self.globalStore.storeStdValue(page)
+            ))
+        }
+    }
+
+    var create_deeplink: (Int32, Int32) -> Int32 {
+        { manga, chapter in
+            self.globalStore.storeStdValue(DeepLink(
+                manga: manga > 0 ? self.globalStore.readStdValue(manga) as? Manga : nil,
+                chapter: chapter > 0 ? self.globalStore.readStdValue(chapter) as? Chapter : nil
+            ))
         }
     }
 }
