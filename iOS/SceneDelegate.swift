@@ -99,24 +99,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func handleDeepLink(url: URL) {
         if let targetUrl = (url as NSURL).resourceSpecifier {
             var targetSource: Source?
+            var finalUrl: String?
             for source in SourceManager.shared.sources {
                 if let sourceUrl = source.manifest.info.url,
                    let url = NSURL(string: sourceUrl)?.resourceSpecifier,
                    targetUrl.hasPrefix(url) {
                     targetSource = source
+                    finalUrl = "\(URL(string: url)?.scheme ?? "https"):\(targetUrl)"
                 } else if let urls = source.manifest.info.urls {
                     for sourceUrl in urls {
                         if let url = NSURL(string: sourceUrl)?.resourceSpecifier,
                            targetUrl.hasPrefix(url) {
                             targetSource = source
+                            finalUrl = "\(URL(string: url)?.scheme ?? "https"):\(targetUrl)"
                         }
                     }
                 }
                 if targetSource != nil { break }
             }
-            if let targetSource = targetSource {
+            if let targetSource = targetSource, let finalUrl = finalUrl {
                 Task { @MainActor in
-                    let link = try? await targetSource.handleUrl(url: url.absoluteString)
+                    let link = try? await targetSource.handleUrl(url: finalUrl)
                     if let manga = link?.manga {
                         navigationController?.pushViewController(
                             MangaViewController(manga: manga, chapters: []), animated: true
