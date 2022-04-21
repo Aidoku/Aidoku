@@ -38,9 +38,7 @@ class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
-    var sourceURL: String? {
-        UserDefaults.standard.string(forKey: "Browse.sourceListURL")
-    }
+    var sourceLists: [URL] = SourceManager.shared.sourceLists
 
     var sources = SourceManager.shared.sources {
         didSet {
@@ -172,7 +170,7 @@ class BrowseViewController: UIViewController {
 
         if externalSources.isEmpty {
             Task {
-                await updateSourceList()
+                await updateSourceLists()
             }
         }
 
@@ -182,9 +180,10 @@ class BrowseViewController: UIViewController {
             }
         }
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.sourceListURL"), object: nil, queue: nil) { _ in
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceLists"), object: nil, queue: nil) { _ in
             Task {
-                await self.updateSourceList()
+                self.sourceLists = SourceManager.shared.sourceLists
+                await self.updateSourceLists()
             }
         }
 
@@ -230,17 +229,20 @@ class BrowseViewController: UIViewController {
     }
 
     @MainActor
-    func updateSourceList() async {
-        if let sourceURL = sourceURL,
-           let url = URL(string: sourceURL) {
+    func updateSourceLists() async {
+        externalSources = []
+
+        for url in sourceLists {
             var sources = (try? await URLSession.shared.object(
                 from: url.appendingPathComponent("index.min.json")
             ) as [ExternalSourceInfo]?) ?? []
-            sources.sort { $0.name < $1.name }
-            externalSources = sources
-        } else {
-            externalSources = []
+            for index in sources.indices {
+                sources[index].sourceUrl = url
+            }
+            externalSources.append(contentsOf: sources)
         }
+
+        externalSources.sort { $0.name < $1.name }
         fetchUpdates()
     }
 
@@ -303,9 +305,7 @@ extension BrowseViewController: UITableViewDataSource {
         if indexPath.section == 0 && hasUpdates {
             var cell = tableView.dequeueReusableCell(withIdentifier: "ExternalSourceTableViewCell") as? ExternalSourceTableViewCell
             if cell == nil {
-                cell = ExternalSourceTableViewCell(style: .default,
-                                                   reuseIdentifier: "ExternalSourceTableViewCell",
-                                                   sourceURL: sourceURL ?? "")
+                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell")
             }
             guard let cell = cell else { return UITableViewCell() }
 
@@ -331,9 +331,7 @@ extension BrowseViewController: UITableViewDataSource {
                     || (indexPath.section == 2 && hasSources && hasUpdates) {
             var cell = tableView.dequeueReusableCell(withIdentifier: "ExternalSourceTableViewCell") as? ExternalSourceTableViewCell
             if cell == nil {
-                cell = ExternalSourceTableViewCell(style: .default,
-                                                   reuseIdentifier: "ExternalSourceTableViewCell",
-                                                   sourceURL: sourceURL ?? "")
+                cell = ExternalSourceTableViewCell(style: .default, reuseIdentifier: "ExternalSourceTableViewCell")
             }
             guard let cell = cell else { return UITableViewCell() }
 
