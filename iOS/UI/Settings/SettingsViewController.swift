@@ -29,23 +29,9 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "switch", key: "Library.unreadChapterBadges", title: "Unread Chapter Badges")
             ]),
             SettingItem(type: "group", title: "Browse", items: [
+                SettingItem(type: "page", key: "Browse.sourceLists", title: "Source Lists"),
                 SettingItem(type: "switch", key: "Browse.showNsfwSources", title: "Show NSFW Sources")
             ]),
-            SettingItem(
-                type: "group",
-                footer: "The source list URL is used to display an external source list and allow source updating in-app.",
-                items: [
-                    SettingItem(
-                        type: "text",
-                        key: "Browse.sourceListURL",
-                        placeholder: "Source List URL",
-                        autocapitalizationType: 0,
-                        autocorrectionType: 1,
-                        spellCheckingType: 1,
-                        keyboardType: 3
-                    )
-                ]
-            ),
             SettingItem(type: "group", title: "Reader", items: [
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
             ]),
@@ -114,6 +100,9 @@ extension SettingsViewController {
             switch item.key {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
+
+            case "Browse.sourceLists":
+                navigationController?.pushViewController(SourceListsViewController(), animated: true)
 
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)

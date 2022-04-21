@@ -17,4 +17,6 @@ struct ExternalSourceInfo: Codable, Hashable {
     let nsfw: Int?
     let minAppVersion: String?
     let maxAppVersion: String?
+
+    var sourceUrl: URL?
 }

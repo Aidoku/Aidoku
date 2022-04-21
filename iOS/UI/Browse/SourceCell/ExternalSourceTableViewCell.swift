@@ -16,8 +16,6 @@ class ExternalSourceTableViewCell: UITableViewCell {
         }
     }
 
-    let sourceURL: String
-
     let iconView = UIImageView()
     let titleLabel = UILabel()
     let versionLabel = UILabel()
@@ -34,14 +32,12 @@ class ExternalSourceTableViewCell: UITableViewCell {
 
     var getButtonWidthConstraint: NSLayoutConstraint?
 
-    init(reuseIdentifier: String?, sourceURL: String) {
-        self.sourceURL = sourceURL
+    init(reuseIdentifier: String?) {
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
 
-    init(style: UITableViewCell.CellStyle, reuseIdentifier: String?, sourceURL: String) {
-        self.sourceURL = sourceURL
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
     }
@@ -141,14 +137,14 @@ class ExternalSourceTableViewCell: UITableViewCell {
         badgeView.isHidden = source?.nsfw ?? 0 <= 1
         subtitleLabel.text = source?.id
         iconView.kf.setImage(
-            with: URL(string: sourceURL)?.appendingPathComponent("icons", isDirectory: true).appendingPathComponent(source?.icon ??  ""),
+            with: source?.sourceUrl?.appendingPathComponent("icons", isDirectory: true).appendingPathComponent(source?.icon ??  ""),
             placeholder: UIImage(named: "MangaPlaceholder"),
             options: nil
         )
     }
 
     @objc func getPressed() {
-        if let url = URL(string: sourceURL) {
+        if let url = source?.sourceUrl {
             Task {
                 getButton.buttonState = .downloading
                 let installedSource = await SourceManager.shared.importSource(

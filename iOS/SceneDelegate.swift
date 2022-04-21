@@ -59,12 +59,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         if let url = URLContexts.first?.url {
             if url.scheme == "aidoku" { // aidoku://
-                if url.host == "setSourceList" { // setSourceList?url=
+                if url.host == "addSourceList" { // addSourceList?url=
                     let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-                    if let listUrl = components?.queryItems?.first(where: { $0.name == "url" })?.value {
-                        UserDefaults.standard.set(listUrl, forKey: "Browse.sourceListURL")
-                        NotificationCenter.default.post(name: Notification.Name("Browse.sourceListURL"), object: nil)
-                        sendAlert(title: "Source List Configured",
+                    if let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
+                       let listUrl = URL(string: listUrlString) {
+                        SourceManager.shared.addSourceList(url: listUrl)
+                        sendAlert(title: "Source List Added",
                                   message: "You can now browse external sources in the Browse tab.")
                     }
                 } else if let source = SourceManager.shared.sources.first(where: { $0.id == url.host }) { // sourceId/mangaId
