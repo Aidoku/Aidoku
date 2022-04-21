@@ -158,9 +158,17 @@ extension Source {
             var defaults: [String: Any] = [:]
             var defaultLanguages: [String] = []
 
-            for lang in languages where lang.isDefault ?? false {
+            // if local language is supported, use it
+            for lang in languages where lang.code == Locale.current.languageCode {
                 defaultLanguages.append(lang.value ?? lang.code)
             }
+            // otherwise, fall back to source-defined default
+            if defaultLanguages.isEmpty {
+                for lang in languages where lang.isDefault ?? false {
+                    defaultLanguages.append(lang.value ?? lang.code)
+                }
+            }
+
             defaults["\(id).languages"] = defaultLanguages
 
             for (i, item) in settingItems.enumerated() where item.type == "group" {
