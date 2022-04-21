@@ -24,6 +24,10 @@ class SettingsViewController: SettingsTableViewController {
                             values: ["Light", "Dark"], requiresFalse: "General.useSystemAppearance"),
                 SettingItem(type: "switch", key: "General.useSystemAppearance", title: "Use System Appearance")
             ]),
+            SettingItem(type: "group", title: "Manga Per Row", items: [
+                SettingItem(type: "stepper", key: "General.portraitRows", title: "Portrait", maximumValue: 15, minimumValue: 1),
+                SettingItem(type: "stepper", key: "General.landscapeRows", title: "Landscape")
+            ]),
             SettingItem(type: "group", title: "Library", items: [
                 SettingItem(type: "switch", key: "Library.opensReaderView", title: "Open Reader View"),
                 SettingItem(type: "switch", key: "Library.unreadChapterBadges", title: "Unread Chapter Badges")

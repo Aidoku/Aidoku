@@ -9,7 +9,11 @@ import UIKit
 
 class MangaGridFlowLayout: UICollectionViewFlowLayout {
 
-    let cellsPerRow: Int
+    var cellsPerRow: Int {
+        didSet {
+            invalidateLayout()
+        }
+    }
 
     init(cellsPerRow: Int, minimumInteritemSpacing: CGFloat = 0, minimumLineSpacing: CGFloat = 0, sectionInset: UIEdgeInsets = .zero) {
         self.cellsPerRow = cellsPerRow
