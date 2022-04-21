@@ -15,10 +15,16 @@ class SourceManager {
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Sources", isDirectory: true)
 
     var sources: [Source] = []
+    var sourceLists: [URL] = []
+
+    private var sourceListsStrings: [String] {
+        sourceLists.map { $0.absoluteString }
+    }
 
     init() {
         sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
         sources.sort { $0.manifest.info.name < $1.manifest.info.name }
+        sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
 
         Task {
             for source in sources {
@@ -27,6 +33,10 @@ class SourceManager {
             NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
         }
     }
+}
+
+// MARK: - Source Management
+extension SourceManager {
 
     func source(for id: String) -> Source? {
         sources.first { $0.id == id }
@@ -98,5 +108,21 @@ class SourceManager {
         DataManager.shared.delete(source: source)
         sources.removeAll { $0.id == source.id }
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+    }
+}
+
+// MARK: - Source List Management
+extension SourceManager {
+
+    func addSourceList(url: URL) {
+        sourceLists.append(url)
+        UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
+        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+    }
+
+    func removeSourceList(url: URL) {
+        sourceLists.removeAll { $0 == url }
+        UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
+        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
     }
 }
