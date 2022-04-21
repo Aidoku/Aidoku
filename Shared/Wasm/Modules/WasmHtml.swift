@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 import SwiftSoup
 
 class WasmHtml {
@@ -18,33 +17,33 @@ class WasmHtml {
     }
 
     func export(into namespace: String = "html") {
-        try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
-        try? globalStore.vm.addImportHandler(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
+        globalStore.export(named: "parse", namespace: namespace, block: self.parse)
+        globalStore.export(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
 
-        try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
-        try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
+        globalStore.export(named: "select", namespace: namespace, block: self.select)
+        globalStore.export(named: "attr", namespace: namespace, block: self.attr)
 
-        try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
-        try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.first)
-        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
+        globalStore.export(named: "first", namespace: namespace, block: self.first)
+        globalStore.export(named: "last", namespace: namespace, block: self.first)
+        globalStore.export(named: "array", namespace: namespace, block: self.array)
 
-        try? globalStore.vm.addImportHandler(named: "base_uri", namespace: namespace, block: self.baseUri)
-        try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
-        try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
-        try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
-        try? globalStore.vm.addImportHandler(named: "outer_html", namespace: namespace, block: self.outerHtml)
+        globalStore.export(named: "base_uri", namespace: namespace, block: self.baseUri)
+        globalStore.export(named: "body", namespace: namespace, block: self.select)
+        globalStore.export(named: "text", namespace: namespace, block: self.text)
+        globalStore.export(named: "html", namespace: namespace, block: self.html)
+        globalStore.export(named: "outer_html", namespace: namespace, block: self.outerHtml)
 
-        try? globalStore.vm.addImportHandler(named: "id", namespace: namespace, block: self.id)
-        try? globalStore.vm.addImportHandler(named: "tag_name", namespace: namespace, block: self.tagName)
-        try? globalStore.vm.addImportHandler(named: "class_name", namespace: namespace, block: self.className)
-        try? globalStore.vm.addImportHandler(named: "has_class", namespace: namespace, block: self.hasClass)
-        try? globalStore.vm.addImportHandler(named: "has_attr", namespace: namespace, block: self.hasAttr)
+        globalStore.export(named: "id", namespace: namespace, block: self.id)
+        globalStore.export(named: "tag_name", namespace: namespace, block: self.tagName)
+        globalStore.export(named: "class_name", namespace: namespace, block: self.className)
+        globalStore.export(named: "has_class", namespace: namespace, block: self.hasClass)
+        globalStore.export(named: "has_attr", namespace: namespace, block: self.hasAttr)
     }
 }
 
 extension WasmHtml {
 
-    var parse: (Int32, Int32) -> Int32 {
+    var parse: @convention(block) (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
             if let content = self.globalStore.readString(offset: data, length: size),
@@ -55,7 +54,7 @@ extension WasmHtml {
         }
     }
 
-    var parseFragment: (Int32, Int32) -> Int32 {
+    var parseFragment: @convention(block) (Int32, Int32) -> Int32 {
         { data, size in
             guard data > 0, size > 0 else { return -1 }
             if let content = self.globalStore.readString(offset: data, length: size),
@@ -66,7 +65,7 @@ extension WasmHtml {
         }
     }
 
-    var select: (Int32, Int32, Int32) -> Int32 {
+    var select: @convention(block) (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selector >= 0 else { return -1 }
             if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
@@ -80,7 +79,7 @@ extension WasmHtml {
         }
     }
 
-    var first: (Int32) -> Int32 {
+    var first: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.first() {
@@ -90,7 +89,7 @@ extension WasmHtml {
         }
     }
 
-    var last: (Int32) -> Int32 {
+    var last: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.last() {
@@ -100,7 +99,7 @@ extension WasmHtml {
         }
     }
 
-    var baseUri: (Int32) -> Int32 {
+    var baseUri: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let uri = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Node)?.getBaseUri() {
@@ -110,7 +109,7 @@ extension WasmHtml {
         }
     }
 
-    var body: (Int32) -> Int32 {
+    var body: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Document)?.body() {
@@ -120,7 +119,7 @@ extension WasmHtml {
         }
     }
 
-    var text: (Int32) -> Int32 {
+    var text: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text() {
@@ -134,7 +133,7 @@ extension WasmHtml {
         }
     }
 
-    var array: (Int32) -> Int32 {
+    var array: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let array = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.array() {
@@ -144,7 +143,7 @@ extension WasmHtml {
         }
     }
 
-    var attr: (Int32, Int32, Int32) -> Int32 {
+    var attr: @convention(block) (Int32, Int32, Int32) -> Int32 {
         { descriptor, selector, selectorLength in
             guard descriptor >= 0, selectorLength > 0 else { return -1 }
             if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
@@ -158,7 +157,7 @@ extension WasmHtml {
         }
     }
 
-    var html: (Int32) -> Int32 {
+    var html: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.html() {
@@ -170,7 +169,7 @@ extension WasmHtml {
         }
     }
 
-    var outerHtml: (Int32) -> Int32 {
+    var outerHtml: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.outerHtml() {
@@ -185,7 +184,7 @@ extension WasmHtml {
 
 extension WasmHtml {
 
-    var id: (Int32) -> Int32 {
+    var id: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.id() {
@@ -195,7 +194,7 @@ extension WasmHtml {
         }
     }
 
-    var tagName: (Int32) -> Int32 {
+    var tagName: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.tagName() {
@@ -205,7 +204,7 @@ extension WasmHtml {
         }
     }
 
-    var className: (Int32) -> Int32 {
+    var className: @convention(block) (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.className() {
@@ -215,7 +214,7 @@ extension WasmHtml {
         }
     }
 
-    var hasClass: (Int32, Int32, Int32) -> Int32 {
+    var hasClass: @convention(block) (Int32, Int32, Int32) -> Int32 {
         { descriptor, className, classLength in
             guard descriptor >= 0 else { return 0 }
             if let classString = self.globalStore.readString(offset: className, length: classLength) {
@@ -227,7 +226,7 @@ extension WasmHtml {
         }
     }
 
-    var hasAttr: (Int32, Int32, Int32) -> Int32 {
+    var hasAttr: @convention(block) (Int32, Int32, Int32) -> Int32 {
         { descriptor, attrName, attrLength in
             guard descriptor >= 0 else { return 0 }
             if let key = self.globalStore.readString(offset: attrName, length: attrLength) {

@@ -43,6 +43,8 @@
 		FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB31AD0E27AE18DA00D50410 /* SwiftSoup */; };
 		FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD1027B1792600D50410 /* ReaderPageView.swift */; };
 		FB4ADC6C2810ECD000F6D7FB /* SourceListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */; };
+		FB4ADC6E2811845B00F6D7FB /* WasmWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC6D2811845B00F6D7FB /* WasmWrapper.swift */; };
+		FB4ADC6F2811845B00F6D7FB /* WasmWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC6D2811845B00F6D7FB /* WasmWrapper.swift */; };
 		FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4CB19227A70B9A00A05445 /* MangaViewController.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -57,14 +59,12 @@
 		FB4EEBE527A5F6B7005081A3 /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBE427A5F6B7005081A3 /* LibraryViewController.swift */; };
 		FB5FB5F62794EBD60059632B /* ChapterListPopoverContentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */; };
 		FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */; };
-		FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340B0278E61600072A2A2 /* WasmInterpreter */; };
 		FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B4278F89930072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B52791DA130072A2A2 /* KVCObject.swift */; };
 		FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B52791DA130072A2A2 /* KVCObject.swift */; };
 		FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
 		FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340BA2792202B0072A2A2 /* Listing.swift */; };
-		FB6340C7279246CF0072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C6279246CF0072A2A2 /* WasmInterpreter */; };
 		FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340C8279246D50072A2A2 /* ZIPFoundation */; };
 		FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */; };
 		FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */; };
@@ -103,8 +103,6 @@
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
 		FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
-		FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
-		FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */; };
 		FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED0278CE670001E6EAF /* SourceManager.swift */; };
 		FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED0278CE670001E6EAF /* SourceManager.swift */; };
 		FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7ED3278CE692001E6EAF /* Source.swift */; };
@@ -172,6 +170,7 @@
 		FB31AD0A27AE180300D50410 /* WasmHtml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmHtml.swift; sourceTree = "<group>"; };
 		FB31AD1027B1792600D50410 /* ReaderPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageView.swift; sourceTree = "<group>"; };
 		FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListsViewController.swift; sourceTree = "<group>"; };
+		FB4ADC6D2811845B00F6D7FB /* WasmWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmWrapper.swift; sourceTree = "<group>"; };
 		FB4CB19227A70B9A00A05445 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
@@ -211,7 +210,6 @@
 		FB72502927CC6A9A0037F1C9 /* ReaderSettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSettingsViewController.swift; sourceTree = "<group>"; };
 		FB7B7E942787740A001E6EAF /* WasmJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmJson.swift; sourceTree = "<group>"; };
 		FB7B7E9727877416001E6EAF /* WasmNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNet.swift; sourceTree = "<group>"; };
-		FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmExtensions.swift; sourceTree = "<group>"; };
 		FB7B7ED0278CE670001E6EAF /* SourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceManager.swift; sourceTree = "<group>"; };
 		FB7B7ED3278CE692001E6EAF /* Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Source.swift; sourceTree = "<group>"; };
 		FB7B7ED9278CEA6A001E6EAF /* FileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManager.swift; sourceTree = "<group>"; };
@@ -247,7 +245,6 @@
 			files = (
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
-				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
 			);
@@ -257,7 +254,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB6340C7279246CF0072A2A2 /* WasmInterpreter in Frameworks */,
 				FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */,
 				FBED233327C091D70095D0C0 /* SwiftSoup in Frameworks */,
 			);
@@ -423,7 +419,6 @@
 				FBFDD40227838AB90055ED9F /* Sequence.swift */,
 				FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */,
 				FB7B7ED9278CEA6A001E6EAF /* FileManager.swift */,
-				FB7B7EC22788970E001E6EAF /* WasmExtensions.swift */,
 				FB31AD0027AC2C3000D50410 /* UIImageColors.swift */,
 			);
 			path = Extensions;
@@ -436,6 +431,19 @@
 				FBED231627B83B670095D0C0 /* UISwitch.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		FB4ADC702811851E00F6D7FB /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
+				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
+				FB28CF4528090A2200BC7663 /* WasmDefaults.swift */,
+				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
+				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
+				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,
+			);
+			path = Modules;
 			sourceTree = "<group>";
 		};
 		FB4EEBB327A2EC9C005081A3 /* Database */ = {
@@ -512,14 +520,10 @@
 		FB7B7E8D27874DEB001E6EAF /* Wasm */ = {
 			isa = PBXGroup;
 			children = (
-				FB67EE5F27F3708400C468EA /* WasmModule.swift */,
+				FB4ADC702811851E00F6D7FB /* Modules */,
+				FB4ADC6D2811845B00F6D7FB /* WasmWrapper.swift */,
 				FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */,
-				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
-				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
-				FB28CF4528090A2200BC7663 /* WasmDefaults.swift */,
-				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
-				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
-				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,
+				FB67EE5F27F3708400C468EA /* WasmModule.swift */,
 			);
 			path = Wasm;
 			sourceTree = "<group>";
@@ -633,7 +637,6 @@
 			packageProductDependencies = (
 				FB1B4873277CE7E60056D02C /* Kingfisher */,
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
-				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
 			);
 			productName = "Aidoku (iOS)";
@@ -654,7 +657,6 @@
 			);
 			name = "Aidoku (macOS)";
 			packageProductDependencies = (
-				FB6340C6279246CF0072A2A2 /* WasmInterpreter */,
 				FB6340C8279246D50072A2A2 /* ZIPFoundation */,
 				FBED233227C091D70095D0C0 /* SwiftSoup */,
 			);
@@ -692,7 +694,6 @@
 			packageReferences = (
 				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
 				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
@@ -789,11 +790,11 @@
 				FB1B485D277CE6600056D02C /* DataManager.swift in Sources */,
 				FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
-				FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */,
 				FB5FB5F62794EBD60059632B /* ChapterListPopoverContentController.swift in Sources */,
 				FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */,
 				FB71E38427E2A29600BE4860 /* ReaderPageManager.swift in Sources */,
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
+				FB4ADC6E2811845B00F6D7FB /* WasmWrapper.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
@@ -851,6 +852,7 @@
 				FB1B485E277CE6600056D02C /* DataManager.swift in Sources */,
 				FB72501727CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB4EEBCB27A35171005081A3 /* HistoryObject.swift in Sources */,
+				FB4ADC6F2811845B00F6D7FB /* WasmWrapper.swift in Sources */,
 				FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB1B4869277CE76B0056D02C /* Manga.swift in Sources */,
 				FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */,
@@ -873,7 +875,6 @@
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
-				FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
 				FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */,
@@ -1176,14 +1177,6 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
@@ -1204,16 +1197,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
-		};
-		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
-			productName = WasmInterpreter;
-		};
-		FB6340C6279246CF0072A2A2 /* WasmInterpreter */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
-			productName = WasmInterpreter;
 		};
 		FB6340C8279246D50072A2A2 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;

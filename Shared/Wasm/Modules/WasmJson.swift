@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmJson {
 
@@ -17,10 +16,10 @@ class WasmJson {
     }
 
     func export(into namespace: String = "json") {
-        try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
+        globalStore.export(named: "parse", namespace: namespace, block: self.parse)
     }
 
-    var parse: (Int32, Int32) -> Int32 {
+    var parse: @convention(block) (Int32, Int32) -> Int32 {
         { data, size in
             guard size > 0 else { return -1 }
 

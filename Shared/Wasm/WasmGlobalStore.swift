@@ -6,11 +6,11 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmGlobalStore {
+
     var id: String
-    var vm: WasmInterpreter
+    var wrapper: WasmWrapper
 
     var chapterCounter = 0
     var currentManga = ""
@@ -24,9 +24,9 @@ class WasmGlobalStore {
     var requestsPointer: Int32 = -1
     var requests: [Int32: WasmRequestObject] = [:]
 
-    init(id: String, vm: WasmInterpreter) {
+    init(id: String, wrapper: WasmWrapper) {
         self.id = id
-        self.vm = vm
+        self.wrapper = wrapper
     }
 
     func readStdValue(_ descriptor: Int32) -> Any? {
@@ -58,39 +58,43 @@ class WasmGlobalStore {
         stdReferences[to] = refs
     }
 
-    func readString(offset: Int, length: Int) -> String? {
-        try? vm.stringFromHeap(byteOffset: offset, length: length)
+    func call(_ function: String, args: [WasmTypeProtocol]) -> Int32? {
+        wrapper.call(function, args: args)
+    }
+
+    func export(named: String, namespace: String, block: Any) {
+        wrapper.addImportHandler(named: named, namespace: namespace, block: block)
     }
 
     func readString(offset: Int32, length: Int32) -> String? {
-        try? vm.stringFromHeap(byteOffset: Int(offset), length: Int(length))
+        wrapper.readString(offset: offset, length: length)
     }
 
     func readData(offset: Int32, length: Int32) -> Data? {
-        try? vm.dataFromHeap(byteOffset: Int(offset), length: Int(length))
+        wrapper.readData(offset: offset, length: length)
     }
 
-    func readValue<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> T? {
-        try? vm.valueFromHeap(byteOffset: Int(offset))
+    func readValue(offset: Int32) -> Int32? {
+        wrapper.readValue(offset: offset)
     }
 
-    func readValues<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> [T]? {
-        try? vm.valuesFromHeap(byteOffset: Int(offset), length: Int(length))
+    func readValues(offset: Int32, length: Int32) -> [Int32]? {
+        wrapper.readValues(offset: offset, length: length)
     }
 
     func readBytes(offset: Int32, length: Int32) -> [UInt8]? {
-        try? vm.bytesFromHeap(byteOffset: Int(offset), length: Int(length))
+        wrapper.readBytes(offset: offset, length: length)
     }
 
-    func write<T: WasmTypeProtocol>(value: T, offset: Int32) {
-        try? vm.writeToHeap(value: value, byteOffset: Int(offset))
+    func write(value: Int32, offset: Int32) {
+        wrapper.write(value: value, offset: offset)
     }
 
     func write(bytes: [UInt8], offset: Int32) {
-        try? vm.writeToHeap(bytes: bytes, byteOffset: Int(offset))
+        wrapper.write(bytes: bytes, offset: offset)
     }
 
     func write(data: Data, offset: Int32) {
-        try? vm.writeToHeap(data: data, byteOffset: Int(offset))
+        wrapper.write(data: data, offset: offset)
     }
 }

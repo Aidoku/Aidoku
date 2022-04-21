@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 struct SourceInfo: Codable {
     let id: String
@@ -93,8 +92,6 @@ class Source: Identifiable {
 
     var needsFilterRefresh = true
 
-    var vm: WasmInterpreter
-
     var globalStore: WasmGlobalStore
 
     var actor: SourceActor!
@@ -105,19 +102,18 @@ class Source: Identifiable {
         manifest = try JSONDecoder().decode(SourceManifest.self, from: data)
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
-        vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
-        globalStore = WasmGlobalStore(id: manifest.info.id, vm: vm)
+        globalStore = WasmGlobalStore(id: manifest.info.id, wrapper: WasmWrapper(module: [UInt8](bytes)))
         actor = SourceActor(source: self)
 
-        prepareVirtualMachine()
+        exportFunctions()
         loadSettings()
 
-        handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
+//        handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
     }
 
-    func prepareVirtualMachine() {
-        try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
-        try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
+    func exportFunctions() {
+        globalStore.export(named: "print", namespace: "env", block: self.printFunction)
+        globalStore.export(named: "abort", namespace: "env", block: self.abort)
 
         WasmAidoku(globalStore: globalStore).export()
         WasmStd(globalStore: globalStore).export()
@@ -127,13 +123,13 @@ class Source: Identifiable {
         WasmHtml(globalStore: globalStore).export()
     }
 
-    var printFunction: (Int32, Int32) -> Void {
+    var printFunction: @convention(block) (Int32, Int32) -> Void {
         { string, length in
             print(self.globalStore.readString(offset: string, length: length) ?? "")
         }
     }
 
-    var abort: (Int32, Int32, Int32, Int32) -> Void {
+    var abort: @convention(block) (Int32, Int32, Int32, Int32) -> Void {
         { msg, fileName, line, column in
             let messageLength = self.globalStore.readBytes(offset: msg - 4, length: 1)?.first ?? 0
             let fileLength = self.globalStore.readBytes(offset: fileName - 4, length: 1)?.first ?? 0

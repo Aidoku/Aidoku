@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmDefaults {
 
@@ -17,11 +16,11 @@ class WasmDefaults {
     }
 
     func export(into namespace: String = "defaults") {
-        try? globalStore.vm.addImportHandler(named: "get", namespace: namespace, block: self.get)
-        try? globalStore.vm.addImportHandler(named: "set", namespace: namespace, block: self.set)
+        globalStore.export(named: "get", namespace: namespace, block: self.get)
+        globalStore.export(named: "set", namespace: namespace, block: self.set)
     }
 
-    var get: (Int32, Int32) -> Int32 {
+    var get: @convention(block) (Int32, Int32) -> Int32 {
         { key, len in
             guard len > 0 else { return -1 }
 
@@ -34,7 +33,7 @@ class WasmDefaults {
         }
     }
 
-    var set: (Int32, Int32, Int32) -> Void {
+    var set: @convention(block) (Int32, Int32, Int32) -> Void {
         { key, len, value in
             guard len > 0, value >= 0 else { return }
 

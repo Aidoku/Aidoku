@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 import SwiftSoup
 
 enum HttpMethod: Int {
@@ -49,26 +48,26 @@ class WasmNet: WasmModule {
     }
 
     func export(into namespace: String = "net") {
-        try? globalStore.vm.addImportHandler(named: "init", namespace: namespace, block: self.init_request)
-        try? globalStore.vm.addImportHandler(named: "send", namespace: namespace, block: self.send)
-        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
+        globalStore.export(named: "init", namespace: namespace, block: self.init_request)
+        globalStore.export(named: "send", namespace: namespace, block: self.send)
+        globalStore.export(named: "close", namespace: namespace, block: self.close)
 
-        try? globalStore.vm.addImportHandler(named: "set_url", namespace: namespace, block: self.set_url)
-        try? globalStore.vm.addImportHandler(named: "set_header", namespace: namespace, block: self.set_header)
-        try? globalStore.vm.addImportHandler(named: "set_body", namespace: namespace, block: self.set_header)
+        globalStore.export(named: "set_url", namespace: namespace, block: self.set_url)
+        globalStore.export(named: "set_header", namespace: namespace, block: self.set_header)
+        globalStore.export(named: "set_body", namespace: namespace, block: self.set_header)
 
-        try? globalStore.vm.addImportHandler(named: "get_url", namespace: namespace, block: self.get_url)
-        try? globalStore.vm.addImportHandler(named: "get_data_size", namespace: namespace, block: self.get_data_size)
-        try? globalStore.vm.addImportHandler(named: "get_data", namespace: namespace, block: self.get_data)
+        globalStore.export(named: "get_url", namespace: namespace, block: self.get_url)
+        globalStore.export(named: "get_data_size", namespace: namespace, block: self.get_data_size)
+        globalStore.export(named: "get_data", namespace: namespace, block: self.get_data)
 
-        try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
-        try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
+        globalStore.export(named: "json", namespace: namespace, block: self.json)
+        globalStore.export(named: "html", namespace: namespace, block: self.html)
     }
 }
 
 extension WasmNet {
 
-    var init_request: (Int32) -> Int32 {
+    var init_request: @convention(block) (Int32) -> Int32 {
         { method in
             self.globalStore.requestsPointer += 1
             var req = WasmRequestObject(id: self.globalStore.requestsPointer)
@@ -78,21 +77,21 @@ extension WasmNet {
         }
     }
 
-    var close: (Int32) -> Void {
+    var close: @convention(block) (Int32) -> Void {
         { descriptor in
             guard descriptor >= 0 else { return }
             self.globalStore.requests.removeValue(forKey: descriptor)
         }
     }
 
-    var set_url: (Int32, Int32, Int32) -> Void {
+    var set_url: @convention(block) (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
             guard descriptor >= 0, length > 0 else { return }
             self.globalStore.requests[descriptor]?.URL = self.globalStore.readString(offset: value, length: length)
         }
     }
 
-    var set_header: (Int32, Int32, Int32, Int32, Int32) -> Void {
+    var set_header: @convention(block) (Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, key, keyLen, value, valueLen in
             guard descriptor >= 0, keyLen > 0, valueLen > 0 else { return }
             if let headerKey = self.globalStore.readString(offset: key, length: keyLen) {
@@ -102,14 +101,14 @@ extension WasmNet {
         }
     }
 
-    var set_body: (Int32, Int32, Int32) -> Void {
+    var set_body: @convention(block) (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
             guard descriptor >= 0, length > 0 else { return }
             self.globalStore.requests[descriptor]?.body = self.globalStore.readData(offset: value, length: length)
         }
     }
 
-    var send: (Int32) -> Void {
+    var send: @convention(block) (Int32) -> Void {
         { descriptor in
             guard let request = self.globalStore.requests[descriptor] else { return }
             guard let url = URL(string: request.URL ?? "") else { return }
@@ -141,7 +140,7 @@ extension WasmNet {
         }
     }
 
-    var get_url: (Int32) -> Int32 {
+    var get_url: @convention(block) (Int32) -> Int32 {
         { descriptor in
             if let url = self.globalStore.requests[descriptor]?.URL {
                 return self.globalStore.storeStdValue(url)
@@ -150,7 +149,7 @@ extension WasmNet {
         }
     }
 
-    var get_data_size: (Int32) -> Int32 {
+    var get_data_size: @convention(block) (Int32) -> Int32 {
         { descriptor in
             if let data = self.globalStore.requests[descriptor]?.data {
                 return Int32(data.count - (self.globalStore.requests[descriptor]?.bytesRead ?? 0))
@@ -159,7 +158,7 @@ extension WasmNet {
         }
     }
 
-    var get_data: (Int32, Int32, Int32) -> Void {
+    var get_data: @convention(block) (Int32, Int32, Int32) -> Void {
         { descriptor, buffer, size in
             guard descriptor >= 0, size > 0 else { return }
 
@@ -173,7 +172,7 @@ extension WasmNet {
         }
     }
 
-    var json: (Int32) -> Int32 {
+    var json: @convention(block) (Int32) -> Int32 {
         { descriptor in
             if let data = self.globalStore.requests[descriptor]?.data,
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
@@ -184,7 +183,7 @@ extension WasmNet {
         }
     }
 
-    var html: (Int32) -> Int32 {
+    var html: @convention(block) (Int32) -> Int32 {
         { descriptor in
             if let request = self.globalStore.requests[descriptor],
                let data = request.data,

@@ -23,7 +23,7 @@ actor SourceActor {
     func getMangaList(filters: [FilterBase], page: Int = 1) throws -> MangaPageResult {
         let filterDescriptor = source.globalStore.storeStdValue(filters)
 
-        let pageResultDescriptor: Int32 = try source.vm.call("get_manga_list", filterDescriptor, Int32(page))
+        let pageResultDescriptor: Int32 = source.globalStore.call("get_manga_list", args: [filterDescriptor, Int32(page)]) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -35,7 +35,7 @@ actor SourceActor {
     func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
         let listingDescriptor = source.globalStore.storeStdValue(listing)
 
-        let pageResultDescriptor: Int32 = try source.vm.call("get_manga_listing", listingDescriptor, Int32(page))
+        let pageResultDescriptor: Int32 = source.globalStore.call("get_manga_listing", args: [listingDescriptor, Int32(page)]) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -47,7 +47,7 @@ actor SourceActor {
     func getMangaDetails(manga: Manga) throws -> Manga {
         let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
-        let resultMangaDescriptor: Int32 = try source.vm.call("get_manga_details", mangaDescriptor)
+        let resultMangaDescriptor: Int32 = source.globalStore.call("get_manga_details", args: [mangaDescriptor]) ?? -1
 
         let manga = source.globalStore.readStdValue(resultMangaDescriptor) as? Manga
         source.globalStore.removeStdValue(resultMangaDescriptor)
@@ -64,7 +64,7 @@ actor SourceActor {
         source.globalStore.chapterCounter = 0
         source.globalStore.currentManga = manga.id
 
-        let chapterListDescriptor: Int32 = try source.vm.call("get_chapter_list", mangaDescriptor)
+        let chapterListDescriptor: Int32 = source.globalStore.call("get_chapter_list", args: [mangaDescriptor]) ?? -1
 
         source.globalStore.chapterCounter = 0
 
@@ -78,7 +78,7 @@ actor SourceActor {
     func getPageList(chapter: Chapter) throws -> [Page] {
         let chapterDescriptor = source.globalStore.storeStdValue(chapter)
 
-        let pageListDescriptor: Int32 = try source.vm.call("get_page_list", chapterDescriptor)
+        let pageListDescriptor: Int32 = source.globalStore.call("get_page_list", args: [chapterDescriptor]) ?? -1
 
         let pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
         source.globalStore.removeStdValue(pageListDescriptor)
@@ -92,7 +92,7 @@ actor SourceActor {
         let request = WasmRequestObject(id: source.globalStore.requestsPointer)
         source.globalStore.requests[source.globalStore.requestsPointer] = request
 
-        try source.vm.call("modify_image_request", Int32(request.id))
+        _ = source.globalStore.call("modify_image_request", args: [Int32(request.id)])
 
         return source.globalStore.requests[request.id] ?? request
     }
@@ -100,7 +100,7 @@ actor SourceActor {
     func handleUrl(url: String) throws -> DeepLink {
         let urlDescriptor = source.globalStore.storeStdValue(url)
 
-        let deepLinkDescriptor: Int32 = try source.vm.call("handle_url", urlDescriptor)
+        let deepLinkDescriptor: Int32 = source.globalStore.call("handle_url", args: [urlDescriptor]) ?? -1
 
         let deepLink = source.globalStore.readStdValue(deepLinkDescriptor) as? DeepLink
         source.globalStore.removeStdValue(deepLinkDescriptor)
@@ -114,7 +114,7 @@ actor SourceActor {
     func handleNotification(notification: String) throws {
         let notificationDescriptor = source.globalStore.storeStdValue(notification)
 
-        try source.vm.call("handle_notification", notificationDescriptor)
+        _ = source.globalStore.call("handle_notification", args: [notificationDescriptor])
 
         source.globalStore.removeStdValue(notificationDescriptor)
     }
