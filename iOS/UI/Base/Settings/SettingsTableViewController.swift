@@ -62,6 +62,81 @@ extension SettingsTableViewController {
         items[section].footer
     }
 
+    // MARK: Switch Cell
+    func switchCell(for item: SettingItem) -> UITableViewCell {
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "UITableViewCell.Subtitle")
+
+        cell.detailTextLabel?.text = item.subtitle
+        cell.detailTextLabel?.textColor = .secondaryLabel
+        let switchView = UISwitch()
+        switchView.defaultsKey = item.key ?? ""
+        switchView.handleChange { _ in
+            if let notification = item.notification {
+                NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
+            }
+        }
+        if let requires = item.requires {
+            switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+            }
+            observers.append(item)
+        } else if let requires = item.requiresFalse {
+            switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+            }
+            observers.append(item)
+        } else {
+            switchView.isEnabled = true
+        }
+        cell.accessoryView = switchView
+        cell.selectionStyle = .none
+
+        return cell
+    }
+
+    // MARK: Stepper Cell
+    func stepperCell(for item: SettingItem) -> UITableViewCell {
+        let cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
+
+        cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
+        cell.detailTextLabel?.textColor = .secondaryLabel
+        let stepperView = UIStepper()
+        if let max = item.maximumValue {
+            stepperView.maximumValue = max
+        }
+        if let min = item.minimumValue {
+            stepperView.minimumValue = min
+        }
+        stepperView.defaultsKey = item.key ?? ""
+        stepperView.handleChange { _ in
+            cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
+            if let notification = item.notification {
+                NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
+            }
+        }
+        if let requires = item.requires {
+            stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+            }
+            observers.append(item)
+        } else if let requires = item.requiresFalse {
+            stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+            }
+            observers.append(item)
+        } else {
+            stepperView.isEnabled = true
+        }
+        cell.accessoryView = stepperView
+        cell.selectionStyle = .none
+
+        return cell
+    }
+
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath,
                    settingItem item: SettingItem) -> UITableViewCell {
@@ -82,34 +157,10 @@ extension SettingsTableViewController {
             cell.accessoryType = .disclosureIndicator
 
         case "switch":
-            cell = UITableViewCell(style: .subtitle, reuseIdentifier: "UITableViewCell.Subtitle")
+            cell = switchCell(for: item)
 
-            cell.detailTextLabel?.text = item.subtitle
-            cell.detailTextLabel?.textColor = .secondaryLabel
-            let switchView = UISwitch()
-            switchView.defaultsKey = item.key ?? ""
-            switchView.handleChange { _ in
-                if let notification = item.notification {
-                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
-                }
-            }
-            if let requires = item.requires {
-                switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-                NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-                }
-                observers.append(item)
-            } else if let requires = item.requiresFalse {
-                switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-                NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-                }
-                observers.append(item)
-            } else {
-                switchView.isEnabled = true
-            }
-            cell.accessoryView = switchView
-            cell.selectionStyle = .none
+        case "stepper":
+            cell = stepperCell(for: item)
 
         case "button", "link":
             cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)

@@ -7,7 +7,7 @@
 
 import Foundation
 
-// types: group, select, multi-select, switch, segment, text, page, button, link
+// types: group, select, multi-select, switch, stepper, segment, text, page, button, link
 // TODO: slider
 struct SettingItem: Codable {
     var type: String
@@ -25,6 +25,10 @@ struct SettingItem: Codable {
 
     var requires: String?
     var requiresFalse: String?
+
+    // stepper
+    var maximumValue: Double?
+    var minimumValue: Double?
 
     var destructive: Bool? // button
     var external: Bool? // link
@@ -53,6 +57,8 @@ struct SettingItem: Codable {
 
         case requires
         case requiresFalse
+        case maximumValue
+        case minimumValue
         case destructive
         case external
         case items

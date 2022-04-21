@@ -40,12 +40,9 @@ class MangaCollectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let cellsPerRow: Int
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            cellsPerRow = view.bounds.width > view.bounds.height ? 6 : 4
-        } else {
-            cellsPerRow = view.bounds.width > view.bounds.height ? 5 : 2
-        }
+        let cellsPerRow = UserDefaults.standard.integer(
+            forKey: view.bounds.width > view.bounds.height ? "General.landscapeRows" : "General.portraitRows"
+        )
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: MangaGridFlowLayout(
             cellsPerRow: cellsPerRow,
@@ -64,6 +61,21 @@ class MangaCollectionViewController: UIViewController {
 
         collectionView?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         collectionView?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("General.portraitRows"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                (self.collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.cellsPerRow = UserDefaults.standard.integer(
+                    forKey: self.view.bounds.width > self.view.bounds.height ? "General.landscapeRows" : "General.portraitRows"
+                )
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("General.landscapeRows"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                (self.collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.cellsPerRow = UserDefaults.standard.integer(
+                    forKey: self.view.bounds.width > self.view.bounds.height ? "General.landscapeRows" : "General.portraitRows"
+                )
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
