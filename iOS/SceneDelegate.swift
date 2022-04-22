@@ -63,6 +63,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
                     if let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
                        let listUrl = URL(string: listUrlString) {
+                        guard !SourceManager.shared.sourceLists.contains(listUrl) else { return }
                         SourceManager.shared.addSourceList(url: listUrl)
                         sendAlert(title: "Source List Added",
                                   message: "You can now browse external sources in the Browse tab.")
