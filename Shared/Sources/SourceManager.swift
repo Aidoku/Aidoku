@@ -115,6 +115,7 @@ extension SourceManager {
 extension SourceManager {
 
     func addSourceList(url: URL) {
+        guard !sourceLists.contains(url) else { return }
         sourceLists.append(url)
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
