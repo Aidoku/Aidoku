@@ -155,7 +155,8 @@ extension WasmStd {
                 return Int32(ObjectType.bool.rawValue)
             } else if value is [Any?] {
                 return Int32(ObjectType.array.rawValue)
-            } else if value is [String: Any?] || value is KVCObject {
+            } else if value is [String: Any?] || value is KVCObject
+                        || value is Manga || value is Chapter || value is FilterBase || value is Listing || value is WasmRequestObject {
                 return Int32(ObjectType.object.rawValue)
             } else if value is Date {
                 return Int32(ObjectType.date.rawValue)
@@ -277,6 +278,23 @@ extension WasmStd {
                 if let object = (self.globalStore.readStdValue(descriptor) as? [String: Any?])?[keyString] {
                     return self.globalStore.storeStdValue(object, from: descriptor)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? KVCObject,
+                          let value = object.valueByPropertyName(name: keyString) {
+                    return self.globalStore.storeStdValue(value, from: descriptor)
+
+                // for iOS 14
+                } else if let object = self.globalStore.readStdValue(descriptor) as? Manga,
+                          let value = object.valueByPropertyName(name: keyString) {
+                    return self.globalStore.storeStdValue(value, from: descriptor)
+                } else if let object = self.globalStore.readStdValue(descriptor) as? Chapter,
+                          let value = object.valueByPropertyName(name: keyString) {
+                    return self.globalStore.storeStdValue(value, from: descriptor)
+                } else if let object = self.globalStore.readStdValue(descriptor) as? FilterBase,
+                          let value = object.valueByPropertyName(name: keyString) {
+                    return self.globalStore.storeStdValue(value, from: descriptor)
+                } else if let object = self.globalStore.readStdValue(descriptor) as? Listing,
+                          let value = object.valueByPropertyName(name: keyString) {
+                    return self.globalStore.storeStdValue(value, from: descriptor)
+                } else if let object = self.globalStore.readStdValue(descriptor) as? WasmRequestObject,
                           let value = object.valueByPropertyName(name: keyString) {
                     return self.globalStore.storeStdValue(value, from: descriptor)
                 }
