@@ -1,5 +1,5 @@
 //
-//  WasmWrapper.swift
+//  WasmJSCoreModule.swift
 //  Aidoku
 //
 //  Created by Skitty on 4/21/22.
@@ -7,37 +7,6 @@
 
 import Foundation
 import JavaScriptCore
-
-protocol WasmTypeProtocol {
-    func toString() -> String
-}
-
-extension Int32: WasmTypeProtocol {
-    func toString() -> String {
-        String(self)
-    }
-}
-extension Int64: WasmTypeProtocol {
-    func toString() -> String {
-        String(self)
-    }
-}
-extension Float32: WasmTypeProtocol {
-    func toString() -> String {
-        String(self)
-    }
-}
-extension Float64: WasmTypeProtocol {
-    func toString() -> String {
-        String(self)
-    }
-}
-
-extension NSNumber {
-    var type: CFNumberType {
-        CFNumberGetType(self as CFNumber)
-    }
-}
 
 class WasmWrapper {
 

@@ -102,7 +102,9 @@ class Source: Identifiable {
         manifest = try JSONDecoder().decode(SourceManifest.self, from: data)
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
-        globalStore = WasmGlobalStore(id: manifest.info.id, wrapper: WasmWrapper(module: [UInt8](bytes)))
+        globalStore = WasmGlobalStore(id: manifest.info.id,
+                                      wrapper: WasmWrapper(module: [UInt8](bytes)),
+                                      module: WasmWebKitManager.shared.createModule([UInt8](bytes)))
         actor = SourceActor(source: self)
 
         exportFunctions()
@@ -129,7 +131,7 @@ class Source: Identifiable {
         }
     }
 
-    var abort: @convention(block) (Int32, Int32, Int32, Int32) -> Void {
+    var abort: (Int32, Int32, Int32, Int32) -> Void {
         { msg, fileName, line, column in
             let messageLength = self.globalStore.readBytes(offset: msg - 4, length: 1)?.first ?? 0
             let fileLength = self.globalStore.readBytes(offset: fileName - 4, length: 1)?.first ?? 0

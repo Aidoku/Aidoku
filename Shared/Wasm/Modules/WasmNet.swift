@@ -48,17 +48,17 @@ class WasmNet: WasmModule {
     }
 
     func export(into namespace: String = "net") {
-        globalStore.export(named: "init", namespace: namespace, block: self.init_request)
-        globalStore.export(named: "send", namespace: namespace, block: self.send)
-        globalStore.export(named: "close", namespace: namespace, block: self.close)
+        globalStore.export(named: "init", namespace: namespace, block: self.init_request_wrapper)
+        globalStore.export(named: "send", namespace: namespace, block: self.send_wrapper)
+        globalStore.export(named: "close", namespace: namespace, block: self.close_wrapper)
 
-        globalStore.export(named: "set_url", namespace: namespace, block: self.set_url)
+        globalStore.export(named: "set_url", namespace: namespace, block: self.set_url_wrapper)
         globalStore.export(named: "set_header", namespace: namespace, block: self.set_header)
-        globalStore.export(named: "set_body", namespace: namespace, block: self.set_header)
+        globalStore.export(named: "set_body", namespace: namespace, block: self.set_body)
 
         globalStore.export(named: "get_url", namespace: namespace, block: self.get_url)
         globalStore.export(named: "get_data_size", namespace: namespace, block: self.get_data_size)
-        globalStore.export(named: "get_data", namespace: namespace, block: self.get_data)
+        globalStore.export(named: "get_data", namespace: namespace, block: self.get_data_wrapper)
 
         globalStore.export(named: "json", namespace: namespace, block: self.json)
         globalStore.export(named: "html", namespace: namespace, block: self.html)
@@ -77,6 +77,16 @@ extension WasmNet {
         }
     }
 
+    var init_request_wrapper: WasmWrapperReturningFunction {
+        { args in
+            guard args.count == 1 else { return -1 }
+            if let arg1 = args[0] as? Int32 {
+                return self.init_request(arg1)
+            }
+            return -1
+        }
+    }
+
     var close: @convention(block) (Int32) -> Void {
         { descriptor in
             guard descriptor >= 0 else { return }
@@ -84,10 +94,28 @@ extension WasmNet {
         }
     }
 
+    var close_wrapper: WasmWrapperVoidFunction {
+        { args in
+            guard args.count == 1 else { return }
+            if let arg1 = args[0] as? Int32 {
+                self.close(arg1)
+            }
+        }
+    }
+
     var set_url: @convention(block) (Int32, Int32, Int32) -> Void {
         { descriptor, value, length in
             guard descriptor >= 0, length > 0 else { return }
             self.globalStore.requests[descriptor]?.URL = self.globalStore.readString(offset: value, length: length)
+        }
+    }
+
+    var set_url_wrapper: WasmWrapperVoidFunction {
+        { args in
+            guard args.count == 3 else { return }
+            if let arg1 = args[0] as? Int32, let arg2 = args[1] as? Int32, let arg3 = args[2] as? Int32 {
+                self.set_url(arg1, arg2, arg3)
+            }
         }
     }
 
@@ -140,6 +168,15 @@ extension WasmNet {
         }
     }
 
+    var send_wrapper: WasmWrapperVoidFunction {
+        { args in
+            guard args.count == 1 else { return }
+            if let arg1 = args[0] as? Int32 {
+                self.send(arg1)
+            }
+        }
+    }
+
     var get_url: @convention(block) (Int32) -> Int32 {
         { descriptor in
             if let url = self.globalStore.requests[descriptor]?.URL {
@@ -168,6 +205,15 @@ extension WasmNet {
                 let result = Array(data.dropLast(data.count - Int(size) - request.bytesRead))
                 self.globalStore.write(bytes: result, offset: buffer)
                 self.globalStore.requests[descriptor]?.bytesRead += Int(size)
+            }
+        }
+    }
+
+    var get_data_wrapper: WasmWrapperVoidFunction {
+        { args in
+            guard args.count == 3 else { return }
+            if let arg1 = args[0] as? Int32, let arg2 = args[1] as? Int32, let arg3 = args[2] as? Int32 {
+                self.get_data(arg1, arg2, arg3)
             }
         }
     }

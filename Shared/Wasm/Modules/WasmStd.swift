@@ -272,6 +272,7 @@ extension WasmStd {
 
     var object_get: @convention(block) (Int32, Int32, Int32) -> Int32 {
         { descriptor, key, keyLen in
+            print("object_get")
             guard descriptor >= 0, keyLen > 0 else { return -1 }
             if let keyString = self.globalStore.readString(offset: key, length: keyLen) {
                 if let object = (self.globalStore.readStdValue(descriptor) as? [String: Any?])?[keyString] {

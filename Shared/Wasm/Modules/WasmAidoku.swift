@@ -33,6 +33,7 @@ extension WasmAidoku {
     ) -> Int32 {
         // swiftlint:disable:next line_length
         { id, idLen, coverUrl, coverUrlLen, title, titleLen, author, authorLen, artist, artistLen, description, descriptionLen, url, urlLen, tags, tagStrLens, tagCount, status, nsfw, viewer in
+            print("create_manga")
             guard idLen > 0 else { return -1 }
             if let mangaId = self.globalStore.readString(offset: id, length: idLen) {
                 var tagList: [String] = []

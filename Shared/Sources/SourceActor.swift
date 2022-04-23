@@ -20,10 +20,10 @@ actor SourceActor {
         self.source = source
     }
 
-    func getMangaList(filters: [FilterBase], page: Int = 1) throws -> MangaPageResult {
+    func getMangaList(filters: [FilterBase], page: Int = 1) async throws -> MangaPageResult {
         let filterDescriptor = source.globalStore.storeStdValue(filters)
 
-        let pageResultDescriptor: Int32 = source.globalStore.call("get_manga_list", args: [filterDescriptor, Int32(page)]) ?? -1
+        let pageResultDescriptor: Int32 = await source.globalStore.call("get_manga_list", args: [filterDescriptor, Int32(page)]) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -32,10 +32,10 @@ actor SourceActor {
         return result
     }
 
-    func getMangaListing(listing: Listing, page: Int = 1) throws -> MangaPageResult {
+    func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
         let listingDescriptor = source.globalStore.storeStdValue(listing)
 
-        let pageResultDescriptor: Int32 = source.globalStore.call("get_manga_listing", args: [listingDescriptor, Int32(page)]) ?? -1
+        let pageResultDescriptor: Int32 = await source.globalStore.call("get_manga_listing", args: [listingDescriptor, Int32(page)]) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -44,10 +44,10 @@ actor SourceActor {
         return result
     }
 
-    func getMangaDetails(manga: Manga) throws -> Manga {
+    func getMangaDetails(manga: Manga) async throws -> Manga {
         let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
-        let resultMangaDescriptor: Int32 = source.globalStore.call("get_manga_details", args: [mangaDescriptor]) ?? -1
+        let resultMangaDescriptor: Int32 = await source.globalStore.call("get_manga_details", args: [mangaDescriptor]) ?? -1
 
         let manga = source.globalStore.readStdValue(resultMangaDescriptor) as? Manga
         source.globalStore.removeStdValue(resultMangaDescriptor)
@@ -58,13 +58,13 @@ actor SourceActor {
         return manga
     }
 
-    func getChapterList(manga: Manga) throws -> [Chapter] {
+    func getChapterList(manga: Manga) async throws -> [Chapter] {
         let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
         source.globalStore.chapterCounter = 0
         source.globalStore.currentManga = manga.id
 
-        let chapterListDescriptor: Int32 = source.globalStore.call("get_chapter_list", args: [mangaDescriptor]) ?? -1
+        let chapterListDescriptor: Int32 = await source.globalStore.call("get_chapter_list", args: [mangaDescriptor]) ?? -1
 
         source.globalStore.chapterCounter = 0
 
@@ -75,10 +75,10 @@ actor SourceActor {
         return chapters
     }
 
-    func getPageList(chapter: Chapter) throws -> [Page] {
+    func getPageList(chapter: Chapter) async throws -> [Page] {
         let chapterDescriptor = source.globalStore.storeStdValue(chapter)
 
-        let pageListDescriptor: Int32 = source.globalStore.call("get_page_list", args: [chapterDescriptor]) ?? -1
+        let pageListDescriptor: Int32 = await source.globalStore.call("get_page_list", args: [chapterDescriptor]) ?? -1
 
         let pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
         source.globalStore.removeStdValue(pageListDescriptor)
@@ -87,20 +87,20 @@ actor SourceActor {
         return pages
     }
 
-    func getImageRequest(url: String) throws -> WasmRequestObject {
+    func getImageRequest(url: String) async throws -> WasmRequestObject {
         source.globalStore.requestsPointer += 1
         let request = WasmRequestObject(id: source.globalStore.requestsPointer)
         source.globalStore.requests[source.globalStore.requestsPointer] = request
 
-        _ = source.globalStore.call("modify_image_request", args: [Int32(request.id)])
+        _ = await source.globalStore.call("modify_image_request", args: [Int32(request.id)])
 
         return source.globalStore.requests[request.id] ?? request
     }
 
-    func handleUrl(url: String) throws -> DeepLink {
+    func handleUrl(url: String) async throws -> DeepLink {
         let urlDescriptor = source.globalStore.storeStdValue(url)
 
-        let deepLinkDescriptor: Int32 = source.globalStore.call("handle_url", args: [urlDescriptor]) ?? -1
+        let deepLinkDescriptor: Int32 = await source.globalStore.call("handle_url", args: [urlDescriptor]) ?? -1
 
         let deepLink = source.globalStore.readStdValue(deepLinkDescriptor) as? DeepLink
         source.globalStore.removeStdValue(deepLinkDescriptor)
@@ -111,10 +111,10 @@ actor SourceActor {
         return deepLink
     }
 
-    func handleNotification(notification: String) throws {
+    func handleNotification(notification: String) async throws {
         let notificationDescriptor = source.globalStore.storeStdValue(notification)
 
-        _ = source.globalStore.call("handle_notification", args: [notificationDescriptor])
+        _ = await source.globalStore.call("handle_notification", args: [notificationDescriptor])
 
         source.globalStore.removeStdValue(notificationDescriptor)
     }

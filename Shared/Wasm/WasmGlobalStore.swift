@@ -11,6 +11,7 @@ class WasmGlobalStore {
 
     var id: String
     var wrapper: WasmWrapper
+    var module: WasmWebKitModule
 
     var chapterCounter = 0
     var currentManga = ""
@@ -24,9 +25,10 @@ class WasmGlobalStore {
     var requestsPointer: Int32 = -1
     var requests: [Int32: WasmRequestObject] = [:]
 
-    init(id: String, wrapper: WasmWrapper) {
+    init(id: String, wrapper: WasmWrapper, module: WasmWebKitModule) {
         self.id = id
         self.wrapper = wrapper
+        self.module = module
     }
 
     func readStdValue(_ descriptor: Int32) -> Any? {
@@ -58,43 +60,45 @@ class WasmGlobalStore {
         stdReferences[to] = refs
     }
 
-    func call(_ function: String, args: [WasmTypeProtocol]) -> Int32? {
-        wrapper.call(function, args: args)
+    func call(_ function: String, args: [WasmTypeProtocol]) async -> Int32? {
+//        wrapper.call(function, args: args)
+        await module.call(function, args: args)
     }
 
     func export(named: String, namespace: String, block: Any) {
-        wrapper.addImportHandler(named: named, namespace: namespace, block: block)
+//        wrapper.addImportHandler(named: named, namespace: namespace, block: block)
+        module.addImportHandler(named: named, namespace: namespace, block: block)
     }
 
     func readString(offset: Int32, length: Int32) -> String? {
-        wrapper.readString(offset: offset, length: length)
+        module.readString(offset: offset, length: length)
     }
 
     func readData(offset: Int32, length: Int32) -> Data? {
-        wrapper.readData(offset: offset, length: length)
+        module.readData(offset: offset, length: length)
     }
 
     func readValue(offset: Int32) -> Int32? {
-        wrapper.readValue(offset: offset)
+        module.readValue(offset: offset)
     }
 
     func readValues(offset: Int32, length: Int32) -> [Int32]? {
-        wrapper.readValues(offset: offset, length: length)
+        module.readValues(offset: offset, length: length)
     }
 
     func readBytes(offset: Int32, length: Int32) -> [UInt8]? {
-        wrapper.readBytes(offset: offset, length: length)
+        module.readBytes(offset: offset, length: length)
     }
 
     func write(value: Int32, offset: Int32) {
-        wrapper.write(value: value, offset: offset)
+        module.write(value: value, offset: offset)
     }
 
     func write(bytes: [UInt8], offset: Int32) {
-        wrapper.write(bytes: bytes, offset: offset)
+        module.write(bytes: bytes, offset: offset)
     }
 
     func write(data: Data, offset: Int32) {
-        wrapper.write(data: data, offset: offset)
+        module.write(data: data, offset: offset)
     }
 }

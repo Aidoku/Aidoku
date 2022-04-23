@@ -17,6 +17,8 @@ class SourceManager {
     var sources: [Source] = []
     var sourceLists: [URL] = []
 
+    let webKitMangager = WasmWebKitManager()
+
     private var sourceListsStrings: [String] {
         sourceLists.map { $0.absoluteString }
     }
