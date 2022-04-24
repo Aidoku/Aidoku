@@ -118,8 +118,10 @@ class MangaCoverCell: UICollectionViewCell {
         highlightView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(highlightView)
 
-        overlayView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        overlayView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        overlayView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        overlayView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        overlayView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        overlayView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
 
         activateConstraints()
 
@@ -127,8 +129,10 @@ class MangaCoverCell: UICollectionViewCell {
     }
 
     func activateConstraints() {
-        imageView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        imageView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        imageView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        imageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        imageView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        imageView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
 
         titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8).isActive = true
         titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8).isActive = true
@@ -142,8 +146,10 @@ class MangaCoverCell: UICollectionViewCell {
         badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor).isActive = true
         badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true
 
-        highlightView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        highlightView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        highlightView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        highlightView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        highlightView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        highlightView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
     }
 
     func highlight() {
