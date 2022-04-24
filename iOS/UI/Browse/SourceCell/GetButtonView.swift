@@ -27,7 +27,7 @@ class GetButtonView: UIView {
                 }
             } else {
                 UIView.animate(withDuration: 0.3) {
-                    self.button.setTitle(self.buttonState == .fail ? "ERROR" : self.title, for: .normal)
+                    self.button.setTitle(self.buttonState == .fail ? NSLocalizedString("BUTTON_ERROR", comment: "") : self.title, for: .normal)
                     self.activityIndicator.alpha = 0
                     self.buttonWidthConstraint?.isActive = false
                     self.buttonWidthConstraint = self.button.widthAnchor.constraint(equalTo: self.widthAnchor)
@@ -37,7 +37,7 @@ class GetButtonView: UIView {
         }
     }
 
-    var title: String? = "GET" {
+    var title: String? = NSLocalizedString("BUTTON_GET", comment: "") {
         didSet {
             self.button.setTitle(title, for: .normal)
         }

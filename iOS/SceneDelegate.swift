@@ -21,10 +21,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
         let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
-        libraryViewController.tabBarItem = UITabBarItem(title: "Library", image: UIImage(systemName: "books.vertical.fill"), tag: 0)
-        browseViewController.tabBarItem = UITabBarItem(title: "Browse", image: UIImage(systemName: "globe"), tag: 1)
-        searchViewController.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 2)
-        settingsViewController.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gear"), tag: 3)
+        libraryViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("LIBRARY", comment: ""),
+                                                        image: UIImage(systemName: "books.vertical.fill"), tag: 0)
+        browseViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("BROWSE", comment: ""),
+                                                       image: UIImage(systemName: "globe"), tag: 1)
+        searchViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("SEARCH", comment: ""),
+                                                       image: UIImage(systemName: "magnifyingglass"), tag: 2)
+        settingsViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("SETTINGS", comment: ""),
+                                                         image: UIImage(systemName: "gear"), tag: 3)
         tabController.viewControllers = [libraryViewController, browseViewController, searchViewController, settingsViewController]
 
         if let windowScene = scene as? UIWindowScene {
@@ -65,8 +69,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                        let listUrl = URL(string: listUrlString) {
                         guard !SourceManager.shared.sourceLists.contains(listUrl) else { return }
                         SourceManager.shared.addSourceList(url: listUrl)
-                        sendAlert(title: "Source List Added",
-                                  message: "You can now browse external sources in the Browse tab.")
+                        sendAlert(title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
+                                  message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: ""))
                     }
                 } else if let source = SourceManager.shared.sources.first(where: { $0.id == url.host }) { // sourceId/mangaId
                     Task { @MainActor in
@@ -85,11 +89,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 }
             } else if url.pathExtension == "json" {
                 if BackupManager.shared.importBackup(from: url) {
-                    sendAlert(title: "Backup Imported",
-                              message: "To restore to this backup, find it in the backups page in settings.")
+                    sendAlert(title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
+                              message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: ""))
                 } else {
-                    sendAlert(title: "Import Failed",
-                              message: "Failed to save backup. Maybe try importing from a different location.")
+                    sendAlert(title: NSLocalizedString("BACKUP_IMPORT_FAIL", comment: ""),
+                              message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: ""))
                 }
             } else {
                 handleDeepLink(url: url)
@@ -133,7 +137,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sendAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
         UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
 }

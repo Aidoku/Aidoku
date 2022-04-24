@@ -23,7 +23,7 @@ class BackupsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Backups"
+        title = NSLocalizedString("BACKUPS", comment: "")
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(createBackup))
 
@@ -84,17 +84,16 @@ extension BackupsViewController {
         cell?.detailTextLabel?.text = nil
 
         if let backup = Backup.load(from: backups[indexPath.row]) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "M/dd h:mm a"
+            let date = DateFormatter.localizedString(from: backup.date, dateStyle: .short, timeStyle: .short)
             if let name = backup.name {
                 cell?.textLabel?.text = name
-                cell?.detailTextLabel?.text = dateFormatter.string(from: backup.date)
+                cell?.detailTextLabel?.text = date
                 cell?.detailTextLabel?.textColor = .secondaryLabel
             } else {
-                cell?.textLabel?.text = "Backup \(dateFormatter.string(from: backup.date))"
+                cell?.textLabel?.text = "Backup \(date)"
             }
         } else {
-            cell?.textLabel?.text = "Corrupted Backup"
+            cell?.textLabel?.text = NSLocalizedString("CORRUPTED_BACKUP", comment: "")
         }
 
         let label = UILabel()
@@ -122,64 +121,65 @@ extension BackupsViewController {
         tableView.deselectRow(at: indexPath, animated: true)
 
         let restoreAlert = UIAlertController(
-            title: "Restore to this backup?",
-            message: "All current data will be removed and replaced by the data from this backup.",
+            title: NSLocalizedString("RESTORE_BACKUP", comment: ""),
+            message: NSLocalizedString("RESTORE_BACKUP_TEXT", comment: ""),
             preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
         )
 
-        restoreAlert.addAction(UIAlertAction(title: "Restore", style: .destructive) { _ in
+        restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("RESTORE", comment: ""), style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
                 BackupManager.shared.restore(from: backup)
                 let missingSources = (backup.sources ?? []).filter {
                     !DataManager.shared.hasSource(id: $0)
                 }
                 if !missingSources.isEmpty {
-                    var message = "The restored backup may contain data from the following sources, which are not currently installed:"
+                    var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
                     message += missingSources.map { "\n- \($0)" }.joined()
                     let missingAlert = UIAlertController(
-                        title: "Missing Sources",
+                        title: NSLocalizedString("MISSING_SOURCES", comment: ""),
                         message: message,
                         preferredStyle: .alert
                     )
-                    missingAlert.addAction(UIAlertAction(title: "OK", style: .cancel))
+                    missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
                     self.present(missingAlert, animated: true)
                 }
             }
         })
 
-        restoreAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(restoreAlert, animated: true)
     }
 
     override func tableView(_ tableView: UITableView,
                             trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
 
-        let rename = UIContextualAction(style: .normal, title: "Rename") { _, _, completion in
+        let rename = UIContextualAction(style: .normal, title: NSLocalizedString("RENAME", comment: "")) { _, _, completion in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
-                let alert = UIAlertController(title: "Rename Backup", message: "Enter a new name for your backup", preferredStyle: .alert)
+                let alert = UIAlertController(title: NSLocalizedString("RENAME_BACKUP", comment: ""),
+                                              message: NSLocalizedString("RENAME_BACKUP_TEXT", comment: ""), preferredStyle: .alert)
                 alert.addTextField { textField in
-                    textField.placeholder = backup.name ?? "Backup Name"
+                    textField.placeholder = backup.name ?? NSLocalizedString("BACKUP_NAME", comment: "")
                 }
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in }))
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+                alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: { _ in }))
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { _ in
                     let textField = alert.textFields![0]
                     BackupManager.shared.renameBackup(url: self.backups[indexPath.row], name: textField.text)
                 }))
                 self.present(alert, animated: true, completion: nil)
             } else {
                 let alert = UIAlertController(
-                    title: "Corrupted Backup",
-                    message: "This backup seems to have misconfigured data. Renaming is not possible.",
+                    title: NSLocalizedString("CORRUPTED_BACKUP", comment: ""),
+                    message: NSLocalizedString("CORRUPTED_BACKUP_TEXT", comment: ""),
                     preferredStyle: .alert
                 )
-                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { _ in }))
                 self.present(alert, animated: true, completion: nil)
             }
             completion(true)
         }
         rename.backgroundColor = .systemIndigo
 
-        let delete = UIContextualAction(style: .normal, title: "Delete") { _, _, completion in
+        let delete = UIContextualAction(style: .normal, title: NSLocalizedString("DELETE", comment: "")) { _, _, completion in
             BackupManager.shared.removeBackup(url: self.backups[indexPath.row])
             completion(true)
         }
@@ -192,7 +192,7 @@ extension BackupsViewController {
                             contextMenuConfigurationForRowAt indexPath: IndexPath,
                             point: CGPoint) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            let action = UIAction(title: "Export", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+            let action = UIAction(title: NSLocalizedString("EXPORT", comment: ""), image: UIImage(systemName: "square.and.arrow.up")) { _ in
                 self.present(UIActivityViewController(activityItems: [self.backups[indexPath.row]], applicationActivities: nil),
                              animated: true)
             }
@@ -201,6 +201,6 @@ extension BackupsViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        "Long press on a backup to export it, or swipe to the left to delete."
+        NSLocalizedString("BACKUP_INFO", comment: "")
     }
 }

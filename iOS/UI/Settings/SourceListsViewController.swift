@@ -22,7 +22,7 @@ class SourceListsViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Source Lists" // https://skitty.xyz/aidoku-sources/
+        title = NSLocalizedString("SOURCE_LISTS", comment: "")
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addSourceList))
 
@@ -65,7 +65,7 @@ class SourceListsViewController: UITableViewController {
             textField.keyboardType = .URL
         }
 
-        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
             guard let textField = alert.textFields?.first else { return }
             if let urlString = textField.text,
                let url = URL(string: urlString) {

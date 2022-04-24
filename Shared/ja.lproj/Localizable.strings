@@ -1,0 +1,21 @@
+/* 
+  Localizable.strings
+  Aidoku
+
+  Created by Skitty on 4/23/22.
+  
+*/
+
+"LIBRARY" = "ライブラリ";
+"LIBRARY_SEARCH" = "ライブラリ検索";
+"LIBRARY_EMPTY" = "ライブラリは空です";
+"LIBRARY_ADD_FROM_BROWSE" = "ブラウズからマンガを追加";
+
+"BROWSE" = "ブラウズ";
+"INSTALLED" = "インストールのソース";
+
+"VERSION" = "バージョン";
+
+"SEARCH" = "検索";
+
+"SETTINGS" = "設定";

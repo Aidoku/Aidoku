@@ -216,8 +216,8 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
             }
             header?.delegate = nil
             var options = listings.map { $0.name }
-            options.append("All")
-            header?.title = "List"
+            options.append(NSLocalizedString("LIST_ALL", comment: ""))
+            header?.title = NSLocalizedString("LIST_HEADER", comment: "")
             header?.options = options
             header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
 

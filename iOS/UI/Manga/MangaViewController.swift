@@ -22,7 +22,7 @@ class MangaViewController: UIViewController {
             if !chapters.isEmpty {
                 (tableView.tableHeaderView as? MangaViewHeaderView)?.headerTitle.text = "\(chapters.count) chapters"
             } else {
-                (tableView.tableHeaderView as? MangaViewHeaderView)?.headerTitle.text = "No chapters"
+                (tableView.tableHeaderView as? MangaViewHeaderView)?.headerTitle.text = NSLocalizedString("NO_CHAPTERS", comment: "")
             }
             updateReadButton()
         }
@@ -81,7 +81,7 @@ class MangaViewController: UIViewController {
 
         // TODO: only show relevant actions
         let mangaOptions: [UIAction] = [
-            UIAction(title: "Read", image: nil) { _ in
+            UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
                 DataManager.shared.setCompleted(chapters: self.chapters, date: Date().addingTimeInterval(-1))
                 // Make most recent chapter appear as the most recently read
                 if let firstChapter = self.chapters.first {
@@ -90,7 +90,7 @@ class MangaViewController: UIViewController {
                 self.updateReadHistory()
                 self.tableView.reloadData()
             },
-            UIAction(title: "Unread", image: nil) { _ in
+            UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
                 for chapter in self.chapters {
                     DataManager.shared.removeHistory(for: chapter)
                 }
@@ -98,7 +98,7 @@ class MangaViewController: UIViewController {
                 self.tableView.reloadData()
             }
         ]
-        let markSubmenu = UIMenu(title: "Mark All", children: mangaOptions)
+        let markSubmenu = UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions)
 
         let menu = UIMenu(title: "", children: [markSubmenu])
 
@@ -121,7 +121,7 @@ class MangaViewController: UIViewController {
         if !chapters.isEmpty {
             headerView.headerTitle.text = "\(chapters.count) chapters"
         } else {
-            headerView.headerTitle.text = "No chapters"
+            headerView.headerTitle.text = NSLocalizedString("NO_CHAPTERS", comment: "")
         }
         headerView.safariButton.addTarget(self, action: #selector(openWebView), for: .touchUpInside)
         headerView.readButton.addTarget(self, action: #selector(readButtonPressed), for: .touchUpInside)
@@ -233,7 +233,7 @@ extension MangaViewController {
     func updateSortMenu() {
         if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
             let sortOptions: [UIAction] = [
-                UIAction(title: "Source Order",
+                UIAction(title: NSLocalizedString("SOURCE_ORDER", comment: ""),
                          image: sortOption == 0 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
                     if self.sortOption == 0 {
                         self.sortAscending.toggle()
@@ -243,7 +243,7 @@ extension MangaViewController {
                     }
                     self.updateSortMenu()
                 },
-                UIAction(title: "Chapter",
+                UIAction(title: NSLocalizedString("CHAPTER", comment: ""),
                          image: sortOption == 1 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
                     if self.sortOption == 1 {
                         self.sortAscending.toggle()
@@ -263,12 +263,12 @@ extension MangaViewController {
     func updateReadButton(_ headerView: MangaViewHeaderView? = nil) {
         var titleString = ""
         if SourceManager.shared.source(for: manga.sourceId) == nil {
-            titleString = "Unavailable"
+            titleString = NSLocalizedString("UNAVAILABLE", comment: "")
         } else if let chapter = getNextChapter() {
             if readHistory[chapter.id] ?? 0 == 0 {
-                titleString.append("Start Reading")
+                titleString.append(NSLocalizedString("START_READING", comment: ""))
             } else {
-                titleString.append("Continue Reading")
+                titleString.append(NSLocalizedString("CONTINUE_READING", comment: ""))
             }
             if let volumeNum = chapter.volumeNum {
                 titleString.append(String(format: " Vol.%g", volumeNum))
@@ -277,7 +277,7 @@ extension MangaViewController {
                 titleString.append(String(format: " Ch.%g", chapterNum))
             }
         } else {
-            titleString = "No chapters available"
+            titleString = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
         }
         if let headerView = headerView {
             headerView.readButton.setTitle(titleString, for: .normal)
@@ -300,8 +300,8 @@ extension MangaViewController {
 
     func showMissingSourceWarning() {
         let alert = UIAlertController(
-            title: "Missing Source",
-            message: "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library",
+            title: NSLocalizedString("MANGA_MISSING_SOURCE", comment: ""),
+            message: NSLocalizedString("MANGA_MISSING_SOURCE_TEXT", comment: ""),
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
@@ -352,15 +352,13 @@ extension MangaViewController: UITableViewDataSource {
         if let title = chapter.title {
             titleString.append(title)
         } else if chapter.chapterNum == nil {
-            titleString = "Untitled"
+            titleString = NSLocalizedString("UNTITLED", comment: "")
         }
         cell?.textLabel?.text = titleString
 
         var subtitleString = ""
         if let dateUploaded = chapter.dateUploaded {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM d, yyyy"
-            subtitleString.append(formatter.string(from: dateUploaded))
+            subtitleString.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
         }
         if chapter.dateUploaded != nil && chapter.scanlator != nil {
             subtitleString.append(" • ")
@@ -393,13 +391,13 @@ extension MangaViewController: UITableViewDataSource {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             let action: UIAction
             if self.readHistory[self.sortedChapters[indexPath.row].id] ?? 0 > 0 {
-                action = UIAction(title: "Mark as unread", image: nil) { _ in
+                action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { _ in
                     DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
                 }
             } else {
-                action = UIAction(title: "Mark as read", image: nil) { _ in
+                action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { _ in
                     DataManager.shared.addHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
@@ -407,8 +405,8 @@ extension MangaViewController: UITableViewDataSource {
             }
             var actions: [UIMenuElement] = [action]
             if indexPath.row != self.chapters.count - 1 {
-                let previousSubmenu = UIMenu(title: "Mark Previous", children: [
-                    UIAction(title: "Read", image: nil) { _ in
+                let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
+                    UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
                         DataManager.shared.setCompleted(
                             chapters: [Chapter](self.sortedChapters[indexPath.row + 1 ..< self.sortedChapters.count]),
                             date: Date().addingTimeInterval(-1)
@@ -417,7 +415,7 @@ extension MangaViewController: UITableViewDataSource {
                         self.updateReadHistory()
                         tableView.reloadData()
                     },
-                    UIAction(title: "Unread", image: nil) { _ in
+                    UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
                         DataManager.shared.removeHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
                         self.updateReadHistory()
                         tableView.reloadData()

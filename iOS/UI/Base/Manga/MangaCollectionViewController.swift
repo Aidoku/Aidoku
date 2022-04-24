@@ -226,11 +226,13 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
             if DataManager.shared.libraryContains(manga: self.manga[indexPath.row]) {
-                actions.append(UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
+                actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                                        image: UIImage(systemName: "trash")) { _ in
                     DataManager.shared.delete(manga: self.manga[indexPath.row])
                 })
             } else {
-                actions.append(UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
+                actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
+                                        image: UIImage(systemName: "books.vertical.fill")) { _ in
                     Task { @MainActor in
                         let manga = self.manga[indexPath.row]
                         if let newManga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
@@ -240,7 +242,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                 })
             }
             if self.opensReaderView {
-                actions.append(UIAction(title: "Manga Info", image: UIImage(systemName: "info.circle")) { _ in
+                actions.append(UIAction(title: NSLocalizedString("MANGA_INFO", comment: ""), image: UIImage(systemName: "info.circle")) { _ in
                     self.openMangaView(for: self.manga[indexPath.row])
                 })
             }

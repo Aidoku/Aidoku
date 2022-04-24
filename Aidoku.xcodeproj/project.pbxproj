@@ -44,6 +44,9 @@
 		FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD1027B1792600D50410 /* ReaderPageView.swift */; };
 		FB4ADC6C2810ECD000F6D7FB /* SourceListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */; };
 		FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC74281206AD00F6D7FB /* UIStepper.swift */; };
+		FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */; };
+		FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */; };
+		FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FB4ADCA92815A75700F6D7FB /* InfoPlist.strings */; };
 		FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4CB19227A70B9A00A05445 /* MangaViewController.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -174,6 +177,11 @@
 		FB31AD1027B1792600D50410 /* ReaderPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageView.swift; sourceTree = "<group>"; };
 		FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListsViewController.swift; sourceTree = "<group>"; };
 		FB4ADC74281206AD00F6D7FB /* UIStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIStepper.swift; sourceTree = "<group>"; };
+		FB4ADC9E2814DAA200F6D7FB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB4ADCA02814DAE200F6D7FB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSLocalizedString.swift; sourceTree = "<group>"; };
+		FB4ADCA82815A75700F6D7FB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		FB4ADCAA2815A77400F6D7FB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FB4CB19227A70B9A00A05445 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
@@ -289,6 +297,8 @@
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
+				FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */,
+				FB4ADCA92815A75700F6D7FB /* InfoPlist.strings */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -434,6 +444,7 @@
 		FB31AD0527AC3A1900D50410 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */,
 				FB31AD0227AC39F500D50410 /* UIColor.swift */,
 				FBED231627B83B670095D0C0 /* UISwitch.swift */,
 				FB4ADC74281206AD00F6D7FB /* UIStepper.swift */,
@@ -689,6 +700,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
 				Base,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
@@ -714,6 +726,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4846277CE1920056D02C /* Assets.xcassets in Resources */,
+				FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */,
+				FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -801,6 +815,7 @@
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
+				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,
@@ -890,11 +905,33 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB4ADC9E2814DAA200F6D7FB /* en */,
+				FB4ADCA02814DAE200F6D7FB /* ja */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		FB4ADCA92815A75700F6D7FB /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB4ADCA82815A75700F6D7FB /* en */,
+				FB4ADCAA2815A77400F6D7FB /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		FB1B4848277CE1920056D02C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
@@ -954,6 +991,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";

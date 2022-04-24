@@ -13,41 +13,59 @@ class SettingsViewController: SettingsTableViewController {
 
     init() {
         super.init(items: [
-            SettingItem(type: "group", title: "About", items: [
-                SettingItem(type: "page", key: "About.about", title: "About"),
-                SettingItem(type: "link", key: "https://github.com/Aidoku/Aidoku", title: "GitHub Repository"),
-                SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: "Discord Server", external: true)
+            SettingItem(type: "group", title: NSLocalizedString("ABOUT", comment: ""), items: [
+                SettingItem(type: "page", key: "About.about", title: NSLocalizedString("ABOUT", comment: "")),
+                SettingItem(type: "link", key: "https://github.com/Aidoku/Aidoku", title: NSLocalizedString("GITHUB_REPO", comment: "")),
+                SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: NSLocalizedString("DISCORD_SERVER", comment: ""), external: true)
             ]),
-            SettingItem(type: "group", title: "General", items: [
-                SettingItem(type: "switch", key: "General.icloudSync", title: "iCloud Sync"),
-                SettingItem(type: "segment", key: "General.appearance", title: "Appearance",
-                            values: ["Light", "Dark"], requiresFalse: "General.useSystemAppearance"),
-                SettingItem(type: "switch", key: "General.useSystemAppearance", title: "Use System Appearance")
+            SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
+                SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
+                SettingItem(type: "segment",
+                            key: "General.appearance",
+                            title: NSLocalizedString("APPEARANCE", comment: ""),
+                            values: [
+                                NSLocalizedString("APPEARANCE_LIGHT", comment: ""),
+                                NSLocalizedString("APPEARANCE_DARK", comment: "")
+                            ],
+                            requiresFalse: "General.useSystemAppearance"),
+                SettingItem(type: "switch",
+                            key: "General.useSystemAppearance",
+                            title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Manga Per Row", items: [
-                SettingItem(type: "stepper", key: "General.portraitRows", title: "Portrait", maximumValue: 15, minimumValue: 1),
-                SettingItem(type: "stepper", key: "General.landscapeRows", title: "Landscape")
+            SettingItem(type: "group", title: NSLocalizedString("MANGA_PER_ROW", comment: ""), items: [
+                SettingItem(type: "stepper",
+                            key: "General.portraitRows",
+                            title: NSLocalizedString("PORTRAIT", comment: ""), maximumValue: 15, minimumValue: 1),
+                SettingItem(type: "stepper", key: "General.landscapeRows", title: NSLocalizedString("LANDSCAPE", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Library", items: [
-                SettingItem(type: "switch", key: "Library.opensReaderView", title: "Open Reader View"),
-                SettingItem(type: "switch", key: "Library.unreadChapterBadges", title: "Unread Chapter Badges")
+            SettingItem(type: "group", title: NSLocalizedString("LIBRARY", comment: ""), items: [
+                SettingItem(type: "switch",
+                            key: "Library.opensReaderView",
+                            title: NSLocalizedString("OPEN_READER_VIEW", comment: "")),
+                SettingItem(type: "switch",
+                            key: "Library.unreadChapterBadges",
+                            title: NSLocalizedString("UNREAD_CHAPTER_BADGES", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Browse", items: [
-                SettingItem(type: "page", key: "Browse.sourceLists", title: "Source Lists"),
-                SettingItem(type: "switch", key: "Browse.showNsfwSources", title: "Show NSFW Sources")
+            SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
+                SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),
+                SettingItem(type: "switch",
+                            key: "Browse.showNsfwSources",
+                            title: NSLocalizedString("SHOW_NSFW_SOURCES", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Reader", items: [
-                SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
+            SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
+                SettingItem(type: "switch",
+                            key: "Reader.downsampleImages",
+                            title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Backups", items: [
-                SettingItem(type: "page", key: "Backups.backups", title: "Backups")
+            SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
+                SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Advanced", items: [
-                SettingItem(type: "button", key: "Advanced.clearChapterCache", title: "Clear Chapter Cache"),
-                SettingItem(type: "button", key: "Advanced.clearMangaCache", title: "Clear Manga Cache"),
-                SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: "Clear Network Cache"),
-                SettingItem(type: "button", key: "Advanced.clearReadHistory", title: "Clear Read History"),
-                SettingItem(type: "button", key: "Advanced.reset", title: "Reset", destructive: true)
+            SettingItem(type: "group", title: NSLocalizedString("ADVANCED", comment: ""), items: [
+                SettingItem(type: "button", key: "Advanced.clearChapterCache", title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearMangaCache", title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
+                SettingItem(type: "button", key: "Advanced.reset", title: NSLocalizedString("RESET", comment: ""), destructive: true)
             ])
         ])
 
@@ -79,7 +97,7 @@ class SettingsViewController: SettingsTableViewController {
 
     func confirmAction(title: String,
                        message: String,
-                       continueActionName: String = "Continue",
+                       continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
                        destructive: Bool = true,
                        proceed: @escaping () -> Void) {
         let alertView = UIAlertController(
@@ -91,7 +109,7 @@ class SettingsViewController: SettingsTableViewController {
         let action = UIAlertAction(title: continueActionName, style: destructive ? .destructive : .default) { _ in proceed() }
         alertView.addAction(action)
 
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
     }
 }
@@ -112,33 +130,34 @@ extension SettingsViewController {
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
 
             case "Advanced.clearChapterCache":
-                confirmAction(title: "Clear Chapter Cache",
-                              message: "This action is irreversible. Cached chapters will be cleared and redownloaded.") {
+                confirmAction(title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: ""),
+                              message: NSLocalizedString("CLEAR_CHAPTER_CACHE_TEXT", comment: "")) {
                     DataManager.shared.clearChapters()
                     Task {
                         await DataManager.shared.updateLibrary()
                     }
                 }
             case "Advanced.clearMangaCache":
-                confirmAction(title: "Clear Manga Cache",
-                              message: "This action is irreversible. Cached Manga not in your library will be removed.") {
+                confirmAction(title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: ""),
+                              message: NSLocalizedString("CLEAR_MANGA_CACHE_TEXT", comment: "")) {
                     DataManager.shared.purgeManga()
                 }
             case "Advanced.clearNetworkCache":
-                confirmAction(title: "Clear Network Cache",
-                              message: "This action is irreversible. Cached network requests and images will be cleared.") {
+                confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
+                              message: NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")) {
                     URLCache.shared.removeAllCachedResponses()
                     KingfisherManager.shared.cache.clearMemoryCache()
                     KingfisherManager.shared.cache.clearDiskCache()
                     KingfisherManager.shared.cache.cleanExpiredDiskCache()
                 }
             case "Advanced.clearReadHistory":
-                confirmAction(title: "Clear Read History", message: "This action is irreversible. All read history will be removed.") {
+                confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
+                              message: NSLocalizedString("CLEAR_READ_HISTORY_TEXT", comment: "")) {
                     DataManager.shared.clearHistory()
                 }
             case "Advanced.reset":
-                confirmAction(title: "Reset",
-                              message: "This action is irreversible. All data, settings, and caches will be cleared and reset.") {
+                confirmAction(title: NSLocalizedString("RESET", comment: ""),
+                              message: NSLocalizedString("RESET_TEXT", comment: "")) {
                     KingfisherManager.shared.cache.clearMemoryCache()
                     KingfisherManager.shared.cache.clearDiskCache()
                     KingfisherManager.shared.cache.cleanExpiredDiskCache()
