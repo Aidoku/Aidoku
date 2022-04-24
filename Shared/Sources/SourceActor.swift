@@ -94,7 +94,11 @@ actor SourceActor {
 
         try source.vm.call("modify_image_request", Int32(request.id))
 
-        return source.globalStore.requests[request.id] ?? request
+        guard let request = source.globalStore.requests[request.id] else { throw SourceError.missingValue }
+
+        source.globalStore.requests.removeValue(forKey: request.id)
+
+        return request
     }
 
     func handleUrl(url: String) throws -> DeepLink {
