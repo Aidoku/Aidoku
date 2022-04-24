@@ -20,7 +20,7 @@ class SettingsAboutViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "About"
+        title = NSLocalizedString("ABOUT", comment: "")
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -41,8 +41,9 @@ extension SettingsAboutViewController {
             cell = UITableViewCell(style: .value1, reuseIdentifier: "AboutCell")
         }
 
-        cell?.textLabel?.text = "Version"
-        cell?.detailTextLabel?.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
+        cell?.detailTextLabel?.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+                                        ?? NSLocalizedString("UNKNOWN", comment: "")
         cell?.detailTextLabel?.textColor = .secondaryLabel
         cell?.selectionStyle = .none
 

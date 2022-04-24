@@ -104,7 +104,7 @@ class BrowseViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Browse"
+        title = NSLocalizedString("BROWSE", comment: "")
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -139,13 +139,13 @@ class BrowseViewController: UIViewController {
         emptyTextStackView.alignment = .center
 
         let emptyTitleLabel = UILabel()
-        emptyTitleLabel.text = "No Sources"
+        emptyTitleLabel.text = NSLocalizedString("BROWSE_NO_SOURCES", comment: "")
         emptyTitleLabel.font = .systemFont(ofSize: 25, weight: .semibold)
         emptyTitleLabel.textColor = .secondaryLabel
         emptyTextStackView.addArrangedSubview(emptyTitleLabel)
 
         let emptyTextLabel = UILabel()
-        let attributedString = NSMutableAttributedString(string: "Configure your source list or open a\nsource in Aidoku to get started")
+        let attributedString = NSMutableAttributedString(string: NSLocalizedString("BROWSE_NO_SOURCES_TEXT", comment: ""))
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineSpacing = 1.8
         attributedString.addAttribute(NSAttributedString.Key.paragraphStyle, value: paragraphStyle, range: NSRange(0..<attributedString.length))
@@ -158,7 +158,7 @@ class BrowseViewController: UIViewController {
         emptyTextStackView.setCustomSpacing(3, after: emptyTextLabel)
 
         let emptyGuideButton = UIButton(type: .roundedRect)
-        emptyGuideButton.setTitle("Adding Sources Guide", for: .normal)
+        emptyGuideButton.setTitle(NSLocalizedString("ADDING_SOURCES_GUIDE_BUTTON", comment: ""), for: .normal)
         emptyGuideButton.addTarget(self, action: #selector(openGuidePage), for: .touchUpInside)
         emptyTextStackView.addArrangedSubview(emptyGuideButton)
 
@@ -275,14 +275,14 @@ extension BrowseViewController: UITableViewDataSource {
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "SourceSectionHeaderView") as? SourceSectionHeaderView
         guard let view = view else { return nil }
         if section == 0 && hasUpdates {
-            view.title.text = "Updates"
+            view.title.text = NSLocalizedString("UPDATES", comment: "")
         } else if (section == 0 && hasSources && !hasUpdates) || (section == 1 && hasSources && hasUpdates) {
-            view.title.text = "Installed"
+            view.title.text = NSLocalizedString("INSTALLED", comment: "")
         } else if (section == 0 && !hasSources && !hasUpdates)
                     || (section == 1 && hasSources && !hasUpdates)
                     || (section == 1 && !hasSources && hasUpdates)
                     || (section == 2 && hasSources && hasUpdates) {
-            view.title.text = "External"
+            view.title.text = NSLocalizedString("EXTERNAL", comment: "")
         }
         return view
     }
@@ -310,7 +310,7 @@ extension BrowseViewController: UITableViewDataSource {
             guard let cell = cell else { return UITableViewCell() }
 
             cell.source = filteredUpdates[indexPath.row]
-            cell.getButton.title = "UPDATE"
+            cell.getButton.title = NSLocalizedString("BUTTON_UPDATE", comment: "")
             cell.buttonWidth = 84
 
             return cell
@@ -337,7 +337,7 @@ extension BrowseViewController: UITableViewDataSource {
 
             if indexPath.row < filteredInstallableSources.count {
                 cell.source = filteredInstallableSources[indexPath.row]
-                cell.getButton.title = "GET"
+                cell.getButton.title = NSLocalizedString("BUTTON_GET", comment: "")
                 cell.buttonWidth = 67
             }
 
@@ -355,7 +355,7 @@ extension BrowseViewController: UITableViewDataSource {
                    point: CGPoint) -> UIContextMenuConfiguration? {
         if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-                let action = UIAction(title: "Uninstall", image: UIImage(systemName: "trash")) { _ in
+                let action = UIAction(title: NSLocalizedString("UNINSTALL", comment: ""), image: UIImage(systemName: "trash")) { _ in
                     SourceManager.shared.remove(source: self.sources[indexPath.row])
                     self.sources = SourceManager.shared.sources
                 }

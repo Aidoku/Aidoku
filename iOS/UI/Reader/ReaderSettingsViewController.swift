@@ -11,14 +11,20 @@ class ReaderSettingsViewController: SettingsTableViewController {
 
     init() {
         super.init(items: [
-            SettingItem(type: "group", title: "General", items: [
-                SettingItem(type: "select", key: "Reader.readingMode", title: "Reading Mode",
+            SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
+                SettingItem(type: "select", key: "Reader.readingMode", title: NSLocalizedString("READING_MODE", comment: ""),
                             values: ["default", "rtl", "ltr", "vertical", "scroll"],
-                            titles: ["Default", "Right to Left", "Left to Right", "Vertical", "Vertical Scroll"]),
-                SettingItem(type: "switch", key: "Reader.downsampleImages", title: "Downsample Images")
+                            titles: [
+                                NSLocalizedString("DEFAULT", comment: ""),
+                                NSLocalizedString("RTL", comment: ""),
+                                NSLocalizedString("LTR", comment: ""),
+                                NSLocalizedString("VERTICAL", comment: ""),
+                                NSLocalizedString("VERTICAL_SCROLL", comment: "")
+                            ]),
+                SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: ""))
             ]),
-            SettingItem(type: "group", title: "Experimental", items: [
-                SettingItem(type: "switch", key: "Reader.verticalInfiniteScroll", title: "Infinite Vertical Scrolling")
+            SettingItem(type: "group", title: NSLocalizedString("EXPERIMENTAL", comment: ""), items: [
+                SettingItem(type: "switch", key: "Reader.verticalInfiniteScroll", title: NSLocalizedString("INFINITE_VERTICAL_SCROLL", comment: ""))
             ])
         ])
     }
@@ -30,7 +36,7 @@ class ReaderSettingsViewController: SettingsTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Reader Settings"
+        title = NSLocalizedString("READER_SETTINGS", comment: "")
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .done,

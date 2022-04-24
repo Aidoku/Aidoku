@@ -89,11 +89,11 @@ class MangaViewHeaderView: UIView {
 
         let status: String
         switch manga?.status {
-        case .ongoing: status = "Ongoing"
-        case .cancelled: status = "Cancelled"
-        case .completed: status = "Completed"
-        case .hiatus: status = "Hiatus"
-        default: status = "Unknown"
+        case .ongoing: status = NSLocalizedString("ONGOING", comment: "")
+        case .cancelled: status = NSLocalizedString("CANCELLED", comment: "")
+        case .completed: status = NSLocalizedString("COMPLETED", comment: "")
+        case .hiatus: status = NSLocalizedString("HIATUS", comment: "")
+        default: status = NSLocalizedString("UNKNOWN", comment: "")
         }
         statusLabel.text = status
 
@@ -102,10 +102,10 @@ class MangaViewHeaderView: UIView {
             nsfwView.alpha = 0
         } else {
             if manga?.nsfw == .suggestive {
-                nsfwLabel.text = "Suggestive"
+                nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
                 nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
             } else if manga?.nsfw == .nsfw {
-                nsfwLabel.text = "NSFW"
+                nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
                 nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
             }
             nsfwView.alpha = 1
@@ -118,7 +118,7 @@ class MangaViewHeaderView: UIView {
             bookmarkButton.backgroundColor = .secondarySystemFill
         }
 
-        descriptionLabel.text = manga?.description ?? "No Description"
+        descriptionLabel.text = manga?.description
 
         UIView.animate(withDuration: 0.3) {
             self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
@@ -261,7 +261,7 @@ class MangaViewHeaderView: UIView {
 
         // Read button
         readButton.tintColor = .white
-        readButton.setTitle("No chapters available", for: .normal)
+        readButton.setTitle(NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: ""), for: .normal)
         readButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
         readButton.backgroundColor = tintColor
         readButton.layer.cornerRadius = 10
@@ -358,11 +358,15 @@ class MangaViewHeaderView: UIView {
         }
 
         var width: CGFloat = safeAreaInsets.left + 16
+        var lastAnchor: NSLayoutXAxisAnchor?
         for tag in manga?.tags ?? [] {
             let tagView = UIView()
             tagView.backgroundColor = .tertiarySystemFill
             tagView.layer.cornerRadius = 13
             tagView.translatesAutoresizingMaskIntoConstraints = false
+            if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+                tagView.transform = CGAffineTransform(scaleX: -1, y: 1)
+            }
             tagScrollView.addSubview(tagView)
 
             let tagLabel = UILabel()
@@ -376,13 +380,30 @@ class MangaViewHeaderView: UIView {
             tagLabel.topAnchor.constraint(equalTo: tagView.topAnchor, constant: 4).isActive = true
 
             tagView.centerYAnchor.constraint(equalTo: tagScrollView.centerYAnchor).isActive = true
-            tagView.leadingAnchor.constraint(equalTo: tagScrollView.leadingAnchor, constant: width).isActive = true
+            if let lastAnchor = lastAnchor {
+                if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+                    tagView.trailingAnchor.constraint(equalTo: lastAnchor, constant: -10).isActive = true
+                } else {
+                    tagView.leadingAnchor.constraint(equalTo: lastAnchor, constant: 10).isActive = true
+                }
+            } else {
+                if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+                    tagView.trailingAnchor.constraint(equalTo: tagScrollView.trailingAnchor, constant: -(safeAreaInsets.right + 16)).isActive = true
+                } else {
+                    tagView.leadingAnchor.constraint(equalTo: tagScrollView.leadingAnchor, constant: safeAreaInsets.left + 16).isActive = true
+                }
+            }
             tagView.widthAnchor.constraint(equalTo: tagLabel.widthAnchor, constant: 24).isActive = true
             tagView.heightAnchor.constraint(equalTo: tagLabel.heightAnchor, constant: 8).isActive = true
+
+            lastAnchor = effectiveUserInterfaceLayoutDirection == .rightToLeft ? tagView.leadingAnchor : tagView.trailingAnchor
 
             width += tagLabel.intrinsicContentSize.width + 24 + 10
         }
         tagScrollView.contentSize = CGSize(width: width + 16, height: 26)
+        if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+            tagScrollView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
 
         UIView.animate(withDuration: 0.3) {
             self.tagScrollView.isHidden = (self.manga?.tags ?? []).isEmpty

@@ -35,7 +35,7 @@ class LibraryViewController: MangaCollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Library"
+        title = NSLocalizedString("LIBRARY", comment: "")
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -43,7 +43,7 @@ class LibraryViewController: MangaCollectionViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = "Find in Library"
+        searchController.searchBar.placeholder = NSLocalizedString("LIBRARY_SEARCH", comment: "")
         navigationItem.searchController = searchController
 
         opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
@@ -61,13 +61,13 @@ class LibraryViewController: MangaCollectionViewController {
         emptyTextStackView.alignment = .center
 
         let emptyTitleLabel = UILabel()
-        emptyTitleLabel.text = "Library Empty"
+        emptyTitleLabel.text = NSLocalizedString("LIBRARY_EMPTY", comment: "")
         emptyTitleLabel.font = .systemFont(ofSize: 25, weight: .semibold)
         emptyTitleLabel.textColor = .secondaryLabel
         emptyTextStackView.addArrangedSubview(emptyTitleLabel)
 
         let emptyTextLabel = UILabel()
-        emptyTextLabel.text = "Add manga from the browse tab"
+        emptyTextLabel.text = NSLocalizedString("LIBRARY_ADD_FROM_BROWSE", comment: "")
         emptyTextLabel.font = .systemFont(ofSize: 15)
         emptyTextLabel.textColor = .secondaryLabel
         emptyTextStackView.addArrangedSubview(emptyTextLabel)

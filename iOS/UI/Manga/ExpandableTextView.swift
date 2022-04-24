@@ -70,7 +70,7 @@ class ExpandableTextView: UIView {
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(textLabel)
 
-        moreButton.setTitle("more", for: .normal)
+        moreButton.setTitle(NSLocalizedString("MORE", comment: "Description expansion button"), for: .normal)
         moreButton.addTarget(self, action: #selector(toggleExpanded), for: .touchUpInside)
         moreButton.backgroundColor = .systemBackground
         moreButton.titleLabel?.font = .systemFont(ofSize: 12)
@@ -78,8 +78,13 @@ class ExpandableTextView: UIView {
         addSubview(moreButton)
 
         fadeGradient.frame = CGRect(x: 0, y: 0, width: 20, height: 18)
-        fadeGradient.startPoint = CGPoint(x: 0, y: 0.5)
-        fadeGradient.endPoint = CGPoint(x: 1, y: 0.5)
+        if effectiveUserInterfaceLayoutDirection == .rightToLeft {
+            fadeGradient.startPoint = CGPoint(x: 1, y: 0.5)
+            fadeGradient.endPoint = CGPoint(x: 0, y: 0.5)
+        } else {
+            fadeGradient.startPoint = CGPoint(x: 0, y: 0.5)
+            fadeGradient.endPoint = CGPoint(x: 1, y: 0.5)
+        }
         fadeGradient.locations = [0, 1]
         fadeGradient.colors = [
             UIColor.systemBackground.withAlphaComponent(0).cgColor,

@@ -33,7 +33,7 @@ class MangaCarouselHeader: UICollectionReusableView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
 
-        viewMoreButton.setTitle("View More", for: .normal)
+        viewMoreButton.setTitle(NSLocalizedString("VIEW_MORE", comment: ""), for: .normal)
         viewMoreButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(viewMoreButton)
 
@@ -57,7 +57,7 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Search"
+        title = NSLocalizedString("SEARCH", comment: "")
 
         navigationController?.navigationBar.prefersLargeTitles = true
 
@@ -232,11 +232,13 @@ extension SearchViewController: UICollectionViewDelegate {
             var actions: [UIAction] = []
             if let manga = self.results[self.sources[indexPath.section].id]?.manga[indexPath.row] {
                 if DataManager.shared.libraryContains(manga: manga) {
-                    actions.append(UIAction(title: "Remove from Library", image: UIImage(systemName: "trash")) { _ in
+                    actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                                            image: UIImage(systemName: "trash")) { _ in
                         DataManager.shared.delete(manga: manga)
                     })
                 } else {
-                    actions.append(UIAction(title: "Add to Library", image: UIImage(systemName: "books.vertical.fill")) { _ in
+                    actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
+                                            image: UIImage(systemName: "books.vertical.fill")) { _ in
                         Task { @MainActor in
                             if let manga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
                                 _ = DataManager.shared.addToLibrary(manga: manga)

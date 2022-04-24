@@ -1,0 +1,151 @@
+/* 
+  Localizable.strings
+  Aidoku
+
+  Created by Skitty on 4/23/22.
+  
+*/
+
+// General
+"CONTINUE" = "Continue";
+"CANCEL" = "Cancel";
+"OK" = "OK";
+"UNKNOWN" = "Unknown";
+"UNAVAILABLE" = "Unavailable";
+"RESET" = "Reset";
+"DELETE" = "Delete";
+"RENAME" = "Rename";
+
+// Library
+"LIBRARY" = "Library";
+"LIBRARY_SEARCH" = "Find in Library";
+"LIBRARY_EMPTY" = "Library Empty";
+"LIBRARY_ADD_FROM_BROWSE" = "Add manga from the browse tab";
+"ADD_TO_LIBRARY" = "Add to Library";
+"REMOVE_FROM_LIBRARY" = "Remove from Library";
+"MANGA_INFO" = "Manga Info";
+
+// Browse
+"BROWSE" = "Browse";
+"BROWSE_NO_SOURCES" = "No sources";
+"BROWSE_NO_SOURCES_TEXT" = "Configure your source list or open a\nsource in Aidoku to get started";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Adding Sources Guide";
+"UPDATES" = "Updates";
+"INSTALLED" = "Installed";
+"EXTERNAL" = "External";
+
+"BUTTON_UPDATE" = "UPDATE";
+"BUTTON_GET" = "GET";
+"BUTTON_ERROR" = "ERROR";
+"UNINSTALL" = "Uninstall";
+
+// Source
+"SOURCE_INFO" = "Source Info";
+"LANGUAGE" = "Language";
+"INFO" = "Info";
+"VERSION" = "Version";
+"BUTTON_FILTER" = "Filter";
+"LIST_HEADER" = "List";
+"LIST_ALL" = "All";
+
+// Manga
+"UNTITLED" = "Untitled";
+"ONGOING" = "Ongoing";
+"CANCLLED" = "Cancelled";
+"COMPLETED" = "Completed";
+"HIATUS" = "Hiatus";
+"SUGGESTIVE" = "Suggestive";
+"NSFW" = "NSFW";
+"MORE" = "more";
+"SOURCE_ORDER" = "Source Order";
+
+"MANGA_MISSING_SOURCE" = "Missing Source";
+"MANGA_MISSING_SOURCE_TEXT" = "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library.";
+
+// Reader
+"CHAPTER" = "Chapter";
+"NO_CHAPTERS" = "No Chapters";
+"NO_CHAPTERS_AVAILABLE" = "No Chapters Available";
+"START_READING" = "Start Reading";
+"CONTINUE_READING" = "Continue Reading";
+"READ" = "Read";
+"UNREAD" = "Unread";
+"MARK_ALL" = "Mark All";
+"MARK_PREVIOUS" = "Mark Previous";
+"MARK_READ" = "Mark as Read";
+"MARK_UNREAD" = "Mark as Unread";
+
+"READER_SETTINGS" = "Reader Settings";
+"READING_MODE" = "Reading Mode";
+"DEFAULT" = "Default";
+"LTR" = "Left to Right";
+"RTL" = "Right to Left";
+"VERTICAL" = "Vertical";
+"VERTICAL_SCROLL" = "Vertical Scroll";
+"EXPERIMENTAL" = "Experimental";
+"INFINITE_VERTICAL_SCROLL" = "Infinite Vertical Scrolling";
+
+"SAVE_TO_PHOTOS" = "Save to Photos";
+
+// Search
+"SEARCH" = "Search";
+"VIEW_MORE" = "View More";
+
+// Settings
+"SETTINGS" = "Settings";
+
+"ABOUT" = "About";
+"GITHUB_REPO" = "GitHub Repository";
+"DISCORD_SERVER" = "Discord Server";
+"SUPPPORT_DEVELOPMENT" = "Support Development";
+
+"GENERAL" = "General";
+"ICLOUD_SYNC" = "iCloud Sync";
+"APPEARANCE" = "Appearance";
+"APPEARANCE_LIGHT" = "Light";
+"APPEARANCE_DARK" = "Dark";
+"USE_SYSTEM_APPEARANCE" = "Use System Appearance";
+
+"MANGA_PER_ROW" = "Manga per row";
+"PORTRAIT" = "Portrait";
+"LANDSCAPE" = "Landscape";
+
+"OPEN_READER_VIEW" = "Open Reader View";
+"UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
+
+"SOURCE_LISTS" = "Source Lists";
+"SOURCE_LIST_ADDED" = "Source List Added";
+"SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";
+"SHOW_NSFW_SOURCES" = "Show NSFW Sources";
+
+"DOWNSAMPLE_IMAGES" = "Downsample Images";
+
+"BACKUPS" = "Backups";
+"BACKUP_NAME" = "Backup Name";
+"RENAME_BACKUP" = "Rename Backup";
+"RENAME_BACKUP_TEXT" = "Enter a new name for your backup";
+"CORRUPTED_BACKUP" = "Corrupted Backup";
+"CORRUPTED_BACKUP_TEXT" = "This backup seems to have misconfigured data. Renaming is not possible.";
+"BACKUP_INFO" = "Long press on a backup to export it, or swipe to the left to delete.";
+"BACKUP_MISSING_SOURCES" = "Missing Sources";
+"BACKUP_MISSING_SOURCES_TEXT" = "The restored backup may contain data from the following sources, which are not currently installed:";
+"RESTORE_BACKUP" = "Restore to this backup?";
+"RESTORE_BACKUP_TEXT" = "All current data will be removed and replaced by the data from this backup.";
+"BACKUP_IMPORT_SUCCESS" = "Backup Imported";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "To restore to this backup, find it in the backups page in settings.";
+"BACKUP_IMPORT_FAIL" = "Import Failed";
+"BACKUP_IMPORT_FAIL_TEXT" = "Failed to save backup. Please ensure that your backup is in the proper format.";
+"EXPORT" = "Export";
+"RESTORE" = "Restore";
+
+"ADVANCED" = "Advanced";
+"RESET" = "Reset";
+"RESET_TEXT" = "This action is irreversible. All data, settings, and caches will be cleared and reset.";
+"CLEAR_CHAPTER_CACHE" = "Clear Chapter Cache";
+"CLEAR_CHAPTER_CACHE_TEXT" = "This action is irreversible. Cached chapters will be cleared and redownloaded.";
+"CLEAR_MANGA_CACHE" = "Clear Manga Cache";
+"CLEAR_MANGA_CACHE_TEXT" = "This action is irreversible. Cached Manga not in your library will be removed.";
+"CLEAR_NETWORK_CACHE" = "Clear Network Cache";
+"CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
+"CLEAR_READ_HISTORY" = "Clear Read History";
+"CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
