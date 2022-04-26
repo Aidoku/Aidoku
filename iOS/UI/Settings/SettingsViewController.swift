@@ -44,7 +44,18 @@ class SettingsViewController: SettingsTableViewController {
                             title: NSLocalizedString("OPEN_READER_VIEW", comment: "")),
                 SettingItem(type: "switch",
                             key: "Library.unreadChapterBadges",
-                            title: NSLocalizedString("UNREAD_CHAPTER_BADGES", comment: ""))
+                            title: NSLocalizedString("UNREAD_CHAPTER_BADGES", comment: "")),
+                SettingItem(type: "switch",
+                            key: "Library.pinManga",
+                            title: NSLocalizedString("PIN_MANGA", comment: "")),
+                SettingItem(type: "segment",
+                            key: "Library.pinMangaType",
+                            title: NSLocalizedString("PIN_MANGA_TYPE", comment: ""),
+                            values: [
+                                NSLocalizedString("PIN_MANGA_UNREAD", comment: ""),
+                                NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
+                            ],
+                           requires: "Library.pinManga")
             ]),
             SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
                 SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),

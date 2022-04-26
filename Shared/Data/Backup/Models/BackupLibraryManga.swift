@@ -10,6 +10,7 @@ import CoreData
 struct BackupLibraryManga: Codable {
     var lastOpened: Date
     var lastUpdated: Date
+    var lastRead: Date?
     var dateAdded: Date
     var categories: [String]
 
@@ -19,6 +20,7 @@ struct BackupLibraryManga: Codable {
     init(libraryObject: LibraryMangaObject) {
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
+        lastRead = libraryObject.lastRead
         dateAdded = libraryObject.dateAdded
         mangaId = libraryObject.manga?.id ?? ""
         sourceId = libraryObject.manga?.sourceId ?? ""
@@ -34,6 +36,7 @@ struct BackupLibraryManga: Codable {
         }
         obj.lastOpened = lastOpened
         obj.lastUpdated = lastUpdated
+        obj.lastRead = lastRead
         obj.dateAdded = dateAdded
         return obj
     }

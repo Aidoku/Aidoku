@@ -25,6 +25,13 @@
 "REMOVE_FROM_LIBRARY" = "Remove from Library";
 "MANGA_INFO" = "Manga Info";
 
+"SORT_BY" = "Sort By";
+"TITLE" = "Title";
+"LAST_OPENED" = "Last Opened";
+"LAST_READ" = "Last Read";
+"LATEST_CHAPTER" = "Latest Chapter";
+"DATE_ADDED" = "Date Added";
+
 // Browse
 "BROWSE" = "Browse";
 "BROWSE_NO_SOURCES" = "No sources";
@@ -113,6 +120,10 @@
 "READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
+"PIN_MANGA" = "Pin Manga";
+"PIN_MANGA_TYPE" = "Pin Type";
+"PIN_MANGA_UNREAD" = "Unread";
+"PIN_MANGA_UPDATED" = "Updated";
 
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";

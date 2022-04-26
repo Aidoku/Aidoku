@@ -39,13 +39,16 @@ public class MangaObject: NSManagedObject {
             url: url,
             status: MangaStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
-            viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
+            viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,
+            lastUpdated: libraryObject?.lastUpdated,
+            lastOpened: libraryObject?.lastOpened,
+            lastRead: libraryObject?.lastRead,
+            dateAdded: libraryObject?.dateAdded
         )
     }
 
     public override func awakeFromInsert() {
         super.awakeFromInsert()
-        lastUpdate = Date()
     }
 }
 
@@ -68,8 +71,6 @@ extension MangaObject {
     @NSManaged public var status: Int16
     @NSManaged public var nsfw: Int16
     @NSManaged public var viewer: Int16
-
-    @NSManaged public var lastUpdate: Date
 
     @NSManaged public var libraryObject: LibraryMangaObject?
     @NSManaged public var chapters: NSSet?

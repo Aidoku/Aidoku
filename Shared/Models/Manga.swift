@@ -60,6 +60,11 @@ class Manga: KVCObject {
 
     var tintColor: UIColor?
 
+    var lastUpdated: Date?
+    var lastOpened: Date?
+    var lastRead: Date?
+    var dateAdded: Date?
+
     init(
         sourceId: String,
         id: String,
@@ -73,7 +78,11 @@ class Manga: KVCObject {
         status: MangaStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
-        tintColor: UIColor? = nil
+        tintColor: UIColor? = nil,
+        lastUpdated: Date? = nil,
+        lastOpened: Date? = nil,
+        lastRead: Date? = nil,
+        dateAdded: Date? = nil
     ) {
         self.sourceId = sourceId
         self.id = id
@@ -88,23 +97,31 @@ class Manga: KVCObject {
         self.nsfw = nsfw
         self.viewer = viewer
         self.tintColor = tintColor
+        self.lastUpdated = lastUpdated
+        self.lastOpened = lastOpened
+        self.lastRead = lastRead
+        self.dateAdded = dateAdded
     }
 
     func copy(from manga: Manga) -> Manga {
         Manga(
             sourceId: manga.sourceId,
             id: manga.id,
-            title: manga.title,
-            author: manga.author ?? self.author,
-            artist: manga.artist ?? self.artist,
-            description: manga.description ?? self.description,
-            tags: manga.tags ?? self.tags,
-            cover: manga.cover ?? self.cover,
-            url: manga.url ?? self.url,
+            title: manga.title ?? title,
+            author: manga.author ?? author,
+            artist: manga.artist ?? artist,
+            description: manga.description ?? description,
+            tags: manga.tags ?? tags,
+            cover: manga.cover ?? cover,
+            url: manga.url ?? url,
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer,
-            tintColor: tintColor ?? self.tintColor
+            tintColor: manga.tintColor ?? tintColor,
+            lastUpdated: manga.lastUpdated ?? lastUpdated,
+            lastOpened: manga.lastOpened ?? lastOpened,
+            lastRead: manga.lastRead ?? lastRead,
+            dateAdded: manga.dateAdded ?? dateAdded
         )
     }
 
