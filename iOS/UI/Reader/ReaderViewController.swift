@@ -366,6 +366,9 @@ extension ReaderViewController {
 
     @MainActor
     func loadChapter() async {
+        if let manga = manga {
+            DataManager.shared.setRead(manga: manga)
+        }
         DataManager.shared.addHistory(for: chapter)
 
         navigationItem.setTitle(

@@ -12,7 +12,7 @@ class MangaCoverCell: UICollectionViewCell {
 
     var manga: Manga? {
         didSet {
-            layoutViews()
+            reloadData()
         }
     }
 
@@ -128,6 +128,11 @@ class MangaCoverCell: UICollectionViewCell {
         loadImage()
     }
 
+    func reloadData() {
+        titleLabel.text = manga?.title ?? "No Title"
+        loadImage()
+    }
+
     func activateConstraints() {
         imageView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         imageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
@@ -159,6 +164,13 @@ class MangaCoverCell: UICollectionViewCell {
     func unhighlight(animated: Bool = true) {
         UIView.animate(withDuration: animated ? 0.3 : 0) {
             self.highlightView.alpha = 0
+        }
+    }
+
+    func getTintColor(from image: UIImage) {
+        image.getColors(quality: .low) { colors in
+            let luma = colors?.background.luminance ?? 0
+            self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
         }
     }
 
@@ -209,10 +221,7 @@ class MangaCoverCell: UICollectionViewCell {
                     switch result {
                     case .success(let value):
                         if self.manga?.tintColor == nil {
-                            value.image.getColors(quality: .low) { colors in
-                                let luma = colors?.background.luminance ?? 0
-                                self.manga?.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
-                            }
+                            self.getTintColor(from: value.image)
                         }
                     default:
                         break
