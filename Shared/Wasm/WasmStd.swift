@@ -156,7 +156,8 @@ extension WasmStd {
             } else if value is [Any?] {
                 return Int32(ObjectType.array.rawValue)
             } else if value is [String: Any?] || value is KVCObject
-                        || value is Manga || value is Chapter || value is FilterBase || value is Listing || value is WasmRequestObject {
+                        || value is Manga || value is Chapter || value is FilterBase || value is Listing
+                        || value is WasmRequestObject || value is WasmResponseObject {
                 return Int32(ObjectType.object.rawValue)
             } else if value is Date {
                 return Int32(ObjectType.date.rawValue)

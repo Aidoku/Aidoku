@@ -17,13 +17,7 @@ enum HttpMethod: Int {
     case DELETE = 4
 }
 
-struct WasmRequestObject: KVCObject {
-    let id: Int32
-    var URL: String?
-    var method: HttpMethod?
-    var headers: [String: String?] = [:]
-    var body: Data?
-
+struct WasmResponseObject: KVCObject {
     var data: Data?
     var response: URLResponse?
     var error: Error?
@@ -31,10 +25,30 @@ struct WasmRequestObject: KVCObject {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
+        case "data": return data != nil ? [UInt8](data!) : []
+        case "headers": return (response as? HTTPURLResponse)?.allHeaderFields
+        case "status_code": return (response as? HTTPURLResponse)?.statusCode
+        default: return nil
+        }
+    }
+}
+
+struct WasmRequestObject: KVCObject {
+    let id: Int32
+    var URL: String?
+    var method: HttpMethod?
+    var headers: [String: String?] = [:]
+    var body: Data?
+
+    var response: WasmResponseObject?
+
+    func valueByPropertyName(name: String) -> Any? {
+        switch name {
         case "url": return URL
         case "method": return method?.rawValue
         case "headers": return headers
         case "body": return body
+        case "response": return response
         default: return nil
         }
     }
@@ -131,9 +145,8 @@ extension WasmNet {
             }
 
             URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                self.globalStore.requests[descriptor]?.data = data
+                let response = WasmResponseObject(data: data, response: response, error: error)
                 self.globalStore.requests[descriptor]?.response = response
-                self.globalStore.requests[descriptor]?.error = error
                 semaphore.signal()
             }.resume()
 
@@ -152,8 +165,8 @@ extension WasmNet {
 
     var get_data_size: (Int32) -> Int32 {
         { descriptor in
-            if let data = self.globalStore.requests[descriptor]?.data {
-                return Int32(data.count - (self.globalStore.requests[descriptor]?.bytesRead ?? 0))
+            if let data = self.globalStore.requests[descriptor]?.response?.data {
+                return Int32(data.count - (self.globalStore.requests[descriptor]?.response?.bytesRead ?? 0))
             }
             return -1
         }
@@ -163,19 +176,19 @@ extension WasmNet {
         { descriptor, buffer, size in
             guard descriptor >= 0, size > 0 else { return }
 
-            if let request = self.globalStore.requests[descriptor],
-               let data = request.data,
-               request.bytesRead + Int(size) <= data.count {
-                let result = Array(data.dropLast(data.count - Int(size) - request.bytesRead))
+            if let response = self.globalStore.requests[descriptor]?.response,
+               let data = response.data,
+               response.bytesRead + Int(size) <= data.count {
+                let result = Array(data.dropLast(data.count - Int(size) - response.bytesRead))
                 self.globalStore.write(bytes: result, offset: buffer)
-                self.globalStore.requests[descriptor]?.bytesRead += Int(size)
+                self.globalStore.requests[descriptor]?.response?.bytesRead += Int(size)
             }
         }
     }
 
     var json: (Int32) -> Int32 {
         { descriptor in
-            if let data = self.globalStore.requests[descriptor]?.data,
+            if let data = self.globalStore.requests[descriptor]?.response?.data,
                let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed),
                json is [String: Any?] || json is [Any?] {
                 return self.globalStore.storeStdValue(json)
@@ -187,9 +200,9 @@ extension WasmNet {
     var html: (Int32) -> Int32 {
         { descriptor in
             if let request = self.globalStore.requests[descriptor],
-               let data = request.data,
+               let data = request.response?.data,
                let content = String(data: data, encoding: .utf8) {
-                if let baseUri = request.response?.url?.absoluteString,
+                if let baseUri = request.response?.response?.url?.absoluteString,
                    let obj = try? SwiftSoup.parse(content, baseUri) {
                     return self.globalStore.storeStdValue(obj)
                 } else if let obj = try? SwiftSoup.parse(content) {
