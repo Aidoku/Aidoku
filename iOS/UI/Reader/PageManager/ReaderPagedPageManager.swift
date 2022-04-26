@@ -170,14 +170,17 @@ extension ReaderPagedPageManager {
         if direction == .forward, let preview = items.last { // keep first page (last in items)
             items = [preview]
             if let page = pages.first {
+                let pageView = preview.view as? ReaderPageView
                 if let url = page.imageURL {
-                    Task {
-                        await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+                    if pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil {
+                        Task {
+                            await pageView?.setPageImage(url: url)
+                        }
                     }
                 } else if let base64 = page.base64 {
-                    (preview.view as? ReaderPageView)?.setPageImage(base64: base64)
+                    pageView?.setPageImage(base64: base64)
                 } else if let text = page.text {
-                    (preview.view as? ReaderPageView)?.setPageText(text: text)
+                    pageView?.setPageText(text: text)
                 }
                 pages.removeFirst(1)
             }
@@ -185,14 +188,17 @@ extension ReaderPagedPageManager {
             items = []
             storedPage = preview
             if let page = pages.last {
+                let pageView = preview.view as? ReaderPageView
                 if let url = page.imageURL {
-                    Task {
-                        await (preview.view as? ReaderPageView)?.setPageImage(url: url)
+                    if pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil {
+                        Task {
+                            await pageView?.setPageImage(url: url)
+                        }
                     }
                 } else if let base64 = page.base64 {
-                    (preview.view as? ReaderPageView)?.setPageImage(base64: base64)
+                    pageView?.setPageImage(base64: base64)
                 } else if let text = page.text {
-                    (preview.view as? ReaderPageView)?.setPageText(text: text)
+                    pageView?.setPageText(text: text)
                 }
                 pages.removeLast(1)
             }

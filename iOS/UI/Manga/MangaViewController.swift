@@ -82,6 +82,7 @@ class MangaViewController: UIViewController {
         // TODO: only show relevant actions
         let mangaOptions: [UIAction] = [
             UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                DataManager.shared.setRead(manga: self.manga)
                 DataManager.shared.setCompleted(chapters: self.chapters, date: Date().addingTimeInterval(-1))
                 // Make most recent chapter appear as the most recently read
                 if let firstChapter = self.chapters.first {
@@ -91,9 +92,7 @@ class MangaViewController: UIViewController {
                 self.tableView.reloadData()
             },
             UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                for chapter in self.chapters {
-                    DataManager.shared.removeHistory(for: chapter)
-                }
+                DataManager.shared.removeHistory(for: self.manga)
                 self.updateReadHistory()
                 self.tableView.reloadData()
             }
@@ -398,6 +397,7 @@ extension MangaViewController: UITableViewDataSource {
                 }
             } else {
                 action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { _ in
+                    DataManager.shared.setRead(manga: self.manga)
                     DataManager.shared.addHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
@@ -407,6 +407,7 @@ extension MangaViewController: UITableViewDataSource {
             if indexPath.row != self.chapters.count - 1 {
                 let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
                     UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                        DataManager.shared.setRead(manga: self.manga)
                         DataManager.shared.setCompleted(
                             chapters: [Chapter](self.sortedChapters[indexPath.row + 1 ..< self.sortedChapters.count]),
                             date: Date().addingTimeInterval(-1)
