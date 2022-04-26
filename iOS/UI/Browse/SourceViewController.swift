@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 class SourceViewController: MangaCollectionViewController {
 
@@ -115,7 +116,17 @@ class SourceViewController: MangaCollectionViewController {
                     image: filterImage,
                     style: .plain,
                     target: self,
-                    action: #selector(openFilterPopover(_:))
+                    action: #selector(openFilterPopover)
+                )
+            )
+        }
+        if source.manifest.info.url != nil || !(source.manifest.info.urls?.isEmpty ?? true) {
+            items.append(
+                UIBarButtonItem(
+                    image: UIImage(systemName: "safari"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(openSourceWebView)
                 )
             )
         }
@@ -184,7 +195,7 @@ class SourceViewController: MangaCollectionViewController {
         present(infoController, animated: true)
     }
 
-    @objc func openFilterPopover(_ sender: UIBarButtonItem) {
+    @objc func openFilterPopover() {
         oldSelectedFilters = selectedFilters.filters.compactMap { $0.copy() as? FilterBase }
 
         let vc = FilterModalViewController(filters: filters, selectedFilters: selectedFilters)
@@ -192,6 +203,16 @@ class SourceViewController: MangaCollectionViewController {
         vc.resetButton.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: false)
+    }
+
+    @objc func openSourceWebView() {
+        if let urlString = source.manifest.info.url, let url = URL(string: urlString) {
+            let safariViewController = SFSafariViewController(url: url)
+            present(safariViewController, animated: true)
+        } else if let urlString = source.manifest.info.urls?.first, let url = URL(string: urlString) {
+            let safariViewController = SFSafariViewController(url: url)
+            present(safariViewController, animated: true)
+        }
     }
 }
 
@@ -222,7 +243,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
             header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
 
             header?.filterButton.alpha = source.filterable ? 1 : 0
-            header?.filterButton.addTarget(self, action: #selector(openFilterPopover(_:)), for: .touchUpInside)
+            header?.filterButton.addTarget(self, action: #selector(openFilterPopover), for: .touchUpInside)
 
             header?.delegate = self
             return header ?? UICollectionReusableView()
