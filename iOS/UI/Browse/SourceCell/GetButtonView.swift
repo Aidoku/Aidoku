@@ -20,18 +20,21 @@ class GetButtonView: UIView {
             if buttonState == .downloading {
                 UIView.animate(withDuration: 0.3) {
                     self.button.setTitle("", for: .normal)
-                    self.activityIndicator.alpha = 1
-                    self.buttonWidthConstraint?.isActive = false
-                    self.buttonWidthConstraint = self.button.widthAnchor.constraint(equalToConstant: 28)
-                    self.buttonWidthConstraint?.isActive = true
+                    self.activityIndicator.startAnimating()
+
+                    self.widthConstraint?.isActive = false
+                    self.widthConstraint = self.backgroundView.widthAnchor.constraint(equalToConstant: 28)
+                    self.widthConstraint?.isActive = true
                 }
             } else {
                 UIView.animate(withDuration: 0.3) {
                     self.button.setTitle(self.buttonState == .fail ? NSLocalizedString("BUTTON_ERROR", comment: "") : self.title, for: .normal)
-                    self.activityIndicator.alpha = 0
-                    self.buttonWidthConstraint?.isActive = false
-                    self.buttonWidthConstraint = self.button.widthAnchor.constraint(equalTo: self.widthAnchor)
-                    self.buttonWidthConstraint?.isActive = true
+                    self.calculatePadding()
+                    self.activityIndicator.stopAnimating()
+
+                    self.widthConstraint?.isActive = false
+                    self.widthConstraint = self.backgroundView.widthAnchor.constraint(equalTo: self.button.widthAnchor, constant: self.sidePadding)
+                    self.widthConstraint?.isActive = true
                 }
             }
         }
@@ -39,26 +42,32 @@ class GetButtonView: UIView {
 
     var title: String? = NSLocalizedString("BUTTON_GET", comment: "") {
         didSet {
-            self.button.setTitle(title, for: .normal)
+            button.setTitle(title, for: .normal)
+            calculatePadding()
         }
     }
 
+    var sidePadding: CGFloat = 16
+
+    let backgroundView = UIView()
     let activityIndicator = UIActivityIndicatorView()
     let button = UIButton()
-    var buttonWidthConstraint: NSLayoutConstraint?
+    var widthConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        activityIndicator.startAnimating()
-        activityIndicator.alpha = 0
+        backgroundView.clipsToBounds = true
+        backgroundView.backgroundColor = .tertiarySystemFill
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(backgroundView)
+
+        activityIndicator.hidesWhenStopped = true
         activityIndicator.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         addSubview(activityIndicator)
 
-        button.backgroundColor = .tertiarySystemFill
-
-        button.setTitle(self.title, for: .normal)
+        button.setTitle(title, for: .normal)
         button.setTitleColor(tintColor, for: .normal)
 
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .bold)
@@ -71,13 +80,17 @@ class GetButtonView: UIView {
         button.translatesAutoresizingMaskIntoConstraints = false
         addSubview(button)
 
+        backgroundView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        backgroundView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        widthConstraint = backgroundView.widthAnchor.constraint(equalTo: button.widthAnchor, constant: sidePadding)
+        widthConstraint?.isActive = true
+        backgroundView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+
         activityIndicator.centerYAnchor.constraint(equalTo: button.centerYAnchor).isActive = true
         activityIndicator.centerXAnchor.constraint(equalTo: button.centerXAnchor).isActive = true
 
-        button.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         button.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        buttonWidthConstraint = button.widthAnchor.constraint(equalTo: widthAnchor)
-        buttonWidthConstraint?.isActive = true
+        button.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         button.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
     }
 
@@ -87,18 +100,33 @@ class GetButtonView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        button.layer.cornerRadius = frame.height / 2
+        backgroundView.layer.cornerRadius = frame.height / 2
+    }
+
+    func calculatePadding() {
+        if !(button.currentTitle ?? "").isEmpty {
+            if button.currentTitle?.count ?? 0 < 4 {
+                sidePadding = 38
+            } else if button.currentTitle?.count ?? 0 < 7 {
+                sidePadding = 26
+            } else {
+                sidePadding = 22
+            }
+            widthConstraint?.constant = sidePadding
+        }
     }
 
     @objc func touchDown() {
         UIView.animate(withDuration: 0.1) {
             self.button.alpha = 0.5
+            self.backgroundView.alpha = 0.5
         }
     }
 
     @objc func touchUp() {
         UIView.animate(withDuration: 0.2) {
             self.button.alpha = 1
+            self.backgroundView.alpha = 1
         }
     }
 }

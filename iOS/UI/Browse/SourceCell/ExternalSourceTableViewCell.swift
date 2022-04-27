@@ -24,14 +24,6 @@ class ExternalSourceTableViewCell: UITableViewCell {
     let subtitleLabel = UILabel()
     let getButton = GetButtonView()
 
-    var buttonWidth: CGFloat = 67 {
-        didSet {
-            getButtonWidthConstraint?.constant = buttonWidth
-        }
-    }
-
-    var getButtonWidthConstraint: NSLayoutConstraint?
-
     init(reuseIdentifier: String?) {
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
         setupViews()
@@ -121,8 +113,7 @@ class ExternalSourceTableViewCell: UITableViewCell {
 
         getButton.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor).isActive = true
         getButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
-        getButtonWidthConstraint = getButton.widthAnchor.constraint(equalToConstant: buttonWidth)
-        getButtonWidthConstraint?.isActive = true
+        getButton.widthAnchor.constraint(equalTo: getButton.backgroundView.widthAnchor).isActive = true
         getButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
 
         separator.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor).isActive = true
