@@ -311,7 +311,6 @@ extension BrowseViewController: UITableViewDataSource {
 
             cell.source = filteredUpdates[indexPath.row]
             cell.getButton.title = NSLocalizedString("BUTTON_UPDATE", comment: "")
-            cell.buttonWidth = 84
 
             return cell
         } else if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
@@ -338,7 +337,6 @@ extension BrowseViewController: UITableViewDataSource {
             if indexPath.row < filteredInstallableSources.count {
                 cell.source = filteredInstallableSources[indexPath.row]
                 cell.getButton.title = NSLocalizedString("BUTTON_GET", comment: "")
-                cell.buttonWidth = 67
             }
 
             return cell
