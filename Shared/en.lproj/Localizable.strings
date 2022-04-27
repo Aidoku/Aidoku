@@ -110,6 +110,7 @@
 "PORTRAIT" = "Portrait";
 "LANDSCAPE" = "Landscape";
 
+"READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
 
