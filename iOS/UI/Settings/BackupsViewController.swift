@@ -193,8 +193,10 @@ extension BackupsViewController {
                             point: CGPoint) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             let action = UIAction(title: NSLocalizedString("EXPORT", comment: ""), image: UIImage(systemName: "square.and.arrow.up")) { _ in
-                self.present(UIActivityViewController(activityItems: [self.backups[indexPath.row]], applicationActivities: nil),
-                             animated: true)
+                let vc = UIActivityViewController(activityItems: [self.backups[indexPath.row]], applicationActivities: nil)
+                vc.popoverPresentationController?.sourceView = tableView
+                vc.popoverPresentationController?.sourceRect = tableView.cellForRow(at: indexPath)!.frame
+                self.present(vc, animated: true)
             }
             return UIMenu(title: "", children: [action])
         }
