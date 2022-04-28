@@ -1,0 +1,157 @@
+// Translated by keafay#6908 on Discord
+
+// General
+"CONTINUE" = "Continuar";
+"CANCEL" = "Cancelar";
+"OK" = "OK";
+"UNKNOWN" = "Desconhecido";
+"UNAVAILABLE" = "Indisponível";
+"RESET" = "Redefinir";
+"DELETE" = "Deletar";
+"RENAME" = "Renomear";
+
+// Library
+"LIBRARY" = "Bibliteca";
+"LIBRARY_SEARCH" = "Encontrar na Biblioteca";
+"LIBRARY_EMPTY" = "Biblioteca Vazia";
+"LIBRARY_ADD_FROM_BROWSE" = "Adicionar Mangás da Aba Explorar";
+"ADD_TO_LIBRARY" = "Adicionar para Biblioteca";
+"REMOVE_FROM_LIBRARY" = "Remover da Biblioteca";
+"MANGA_INFO" = "Informação do Mangá";
+
+"SORT_BY" = "Ordenar Por";
+"TITLE" = "Título";
+"LAST_OPENED" = "Último Aberto";
+"LAST_READ" = "Último Lido";
+"LATEST_CHAPTER" = "Capítulo Mais Recente";
+"DATE_ADDED" = "Data Adicionado";
+
+// Browse
+"BROWSE" = "Explorar";
+"BROWSE_NO_SOURCES" = "Sem Fontes";
+"BROWSE_NO_SOURCES_TEXT" = "Configure sua lista de fontes ou abra\numa fonte no Aidoku para iniciar";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Guia para Adicionar Fontas";
+"UPDATES" = "Atualizações";
+"INSTALLED" = "Instalado";
+"EXTERNAL" = "Externo";
+
+"BUTTON_UPDATE" = "ATUALIZAR";
+"BUTTON_GET" = "OBTER";
+"BUTTON_ERROR" = "ERRO";
+"UNINSTALL" = "Desinstalar";
+
+// Source
+"SOURCE_INFO" = "Informações da Fonte";
+"LANGUAGE" = "Linguagem";
+"INFO" = "Informação";
+"VERSION" = "Versão";
+"BUTTON_FILTER" = "Filtrar";
+"LIST_HEADER" = "Lista";
+"LIST_ALL" = "Tudo";
+
+// Manga
+"UNTITLED" = "Sem Título";
+"ONGOING" = "Em Progresso";
+"CANCLLED" = "Cancelado";
+"COMPLETED" = "Completo";
+"HIATUS" = "Hiato";
+"SUGGESTIVE" = "Suggestivo";
+"NSFW" = "NSFW";
+"MORE" = "mais";
+"SOURCE_ORDER" = "Ordem da Fonte";
+
+"MANGA_MISSING_SOURCE" = "Fonte Não Encontrada";
+"MANGA_MISSING_SOURCE_TEXT" = "A fonte original parece estar ausente para esse mangá. Por favor, reinstale-o ou remova esse título da sua biblioteca.";
+
+// Reader
+"CHAPTER" = "Capítulo";
+"NO_CHAPTERS" = "Sem Capítulos";
+"NO_CHAPTERS_AVAILABLE" = "Nenhum Capítulo Disponível";
+"START_READING" = "Começar a ler";
+"CONTINUE_READING" = "Continuar Lendo";
+"READ" = "Lido";
+"UNREAD" = "Não Lido";
+"MARK_ALL" = "Marcar Tudo";
+"MARK_PREVIOUS" = "Marcar Anterior";
+"MARK_READ" = "Marcar como Lido";
+"MARK_UNREAD" = "Marcar como Não Lido";
+
+"READER_SETTINGS" = "Configurações do Leitor";
+"READING_MODE" = "Modo de Leitura";
+"DEFAULT" = "Padrão";
+"LTR" = "Esquerda para Direita";
+"RTL" = "Direita para Esquerda";
+"VERTICAL" = "Vertical";
+"VERTICAL_SCROLL" = "Rolagem Vertical";
+"EXPERIMENTAL" = "Experimental";
+"INFINITE_VERTICAL_SCROLL" = "Rolagem Vertical Infinita";
+
+"SAVE_TO_PHOTOS" = "Salvar para Fotos";
+
+// Search
+"SEARCH" = "Procurar";
+"VIEW_MORE" = "Ver Mais";
+
+// Settings
+"SETTINGS" = "Configurações";
+
+"ABOUT" = "Sobre";
+"GITHUB_REPO" = "Repositório GitHub";
+"DISCORD_SERVER" = "Servidor do Discord";
+"SUPPPORT_DEVELOPMENT" = "Apoiar Desenvolvimento";
+
+"GENERAL" = "Geral";
+"ICLOUD_SYNC" = "Sincronizar com ICloud";
+"APPEARANCE" = "Aparência";
+"APPEARANCE_LIGHT" = "Claro";
+"APPEARANCE_DARK" = "Escuro";
+"USE_SYSTEM_APPEARANCE" = "Usar Aparência do Sistema";
+
+"MANGA_PER_ROW" = "Mangás por Linha";
+"PORTRAIT" = "Retrato";
+"LANDSCAPE" = "Paisagem";
+
+"READER" = "Leitor";
+"OPEN_READER_VIEW" = "Abrir Visualização do Leitor";
+"UNREAD_CHAPTER_BADGES" = "Bolha de Capítulos Não Lidos";
+"PIN_MANGA" = "Fixar Mangás";
+"PIN_MANGA_TYPE" = "Tipo de Fixação";
+"PIN_MANGA_UNREAD" = "Não Lido";
+"PIN_MANGA_UPDATED" = "Atualizado";
+
+"SOURCE_LISTS" = "Listas de Fontes";
+"SOURCE_LIST_ADDED" = "Lista de Fontes Adicionada";
+"SOURCE_LIST_ADDED_TEXT" = "Agora você pode procurar fontes externas na aba Explorar.";
+"SHOW_NSFW_SOURCES" = "Mostrar Fontes NSFW";
+
+"DOWNSAMPLE_IMAGES" = "Comprimir Imagens";
+
+"BACKUPS" = "Backups";
+"BACKUP_NAME" = "Nome do Backup";
+"RENAME_BACKUP" = "Renomear Backup";
+"RENAME_BACKUP_TEXT" = "Digite um novo nome para seu Backup";
+"CORRUPTED_BACKUP" = "Backup Corrompido";
+"CORRUPTED_BACKUP_TEXT" = "Esse Backup parece ter dados configurados errôneamente. Renomear não é possível.";
+"BACKUP_INFO" = "Aperte e segure em um Backup para exportá-lo, ou arraste para a esquerda para deletá-lo.";
+"BACKUP_MISSING_SOURCES" = "Fontes Não Encontradas";
+"BACKUP_MISSING_SOURCES_TEXT" = "O Backup restaurado pode conter dados das seguintes fontes, que não estão instaladas no momento:";
+"RESTORE_BACKUP" = "Restaurar para este Backup?";
+"RESTORE_BACKUP_TEXT" = "Todos os dados atuais serão removidos e substituídos pelos dados deste Backup.";
+"BACKUP_IMPORT_SUCCESS" = "Backup Importado";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Para restaurar para este Backup, encontre-o na página de Backups nas configurações.";
+"BACKUP_IMPORT_FAIL" = "Importação Falhou";
+"BACKUP_IMPORT_FAIL_TEXT" = "Salvamento do Backup falhou. Please ensure that your backup is in the proper format.Por favor, garanta que seu Backup está no formato apropriado.";
+"EXPORT" = "Exportar";
+"RESTORE" = "Restaurar";
+
+"ADVANCED" = "Avançado";
+"RESET" = "Redefinir";
+"RESET_TEXT" = "Essa ação é irreversível. Todos os dados, configurações e caches serão limpos e redefinidos.";
+"CLEAR_CHAPTER_CACHE" = "Limpar Cache do Capítulo";
+"CLEAR_CHAPTER_CACHE_TEXT" = "Essa ação é irreversível. Capítulos em cache serão limpos e reinstalados.";
+"CLEAR_MANGA_CACHE" = "Limpar Cache dos Mangás";
+"CLEAR_MANGA_CACHE_TEXT" = "Essa ação é irreversível. Mangás em cache que não estão em sua biblioteca serão removidos.";
+"CLEAR_NETWORK_CACHE" = "Limpar Cache de Rede";
+"CLEAR_NETWORK_CACHE_TEXT" = "Essa ação é irreversível. Pedidos de Rede e imagens em cache serão limpos.";
+"CLEAR_READ_HISTORY" = "Limpar Histórico de Leitura";
+"CLEAR_READ_HISTORY_TEXT" = "Essa ação é irreversível. Todo o histórico de leitura será removido.";

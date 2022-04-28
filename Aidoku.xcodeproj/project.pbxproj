@@ -231,6 +231,7 @@
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBED14542819FCFC004B8050 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FBED1455281A2B9D004B8050 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FBED231227B816D50095D0C0 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutViewController.swift; sourceTree = "<group>"; };
 		FBED231627B83B670095D0C0 /* UISwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UISwitch.swift; sourceTree = "<group>"; };
@@ -706,6 +707,7 @@
 				Base,
 				es,
 				ar,
+				"pt-BR",
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -917,6 +919,7 @@
 				FB4ADCA02814DAE200F6D7FB /* ja */,
 				FB4ADCAB2818F54000F6D7FB /* es */,
 				FBED14542819FCFC004B8050 /* ar */,
+				FBED1455281A2B9D004B8050 /* pt-BR */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
