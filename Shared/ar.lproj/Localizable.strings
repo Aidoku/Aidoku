@@ -1,10 +1,4 @@
-/*
-  Localizable.strings
-  Aidoku
-
-  Created by Skitty on 4/23/22.
-
-*/
+// Translated by Dix#0246 on Discord
 
 // General
 "CONTINUE" = "اكمل";
@@ -64,8 +58,8 @@
 "MORE" = "المزيد";
 "SOURCE_ORDER" = "ترتيب المصادر";
 
-"MANGA_MISSING_SOURCE" = "مصادر غير متاحة";
-"MANGA_MISSING_SOURCE_TEXT" = "يبدو أن المصدر الأصلي لهذه المانغا مفقودالمرجو تحميله أو مسح العنوان من المكتبة";
+"MISSING_SOURCE" = "مصادر غير متاحة";
+"MISSING_SOURCE_TEXT" = "يبدو أن المصدر الأصلي لهذه المانغا مفقودالمرجو تحميله أو مسح العنوان من المكتبة";
 
 // Reader
 "CHAPTER" = "الفصل";

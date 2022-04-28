@@ -1,10 +1,4 @@
-/*
-  Localizable.strings
-  Aidoku
-
-  Created by Skitty on 4/23/22.
-
-*/
+// Translated by Rob#9273 on Discord
 
 // General
 "CONTINUE" = "Continuar";
@@ -24,6 +18,13 @@
 "ADD_TO_LIBRARY" = "Agregar a la Biblioteca";
 "REMOVE_FROM_LIBRARY" = "Eliminar de la Biblioteca";
 "MANGA_INFO" = "Información del manga";
+
+"SORT_BY" = "Ordenar Por";
+"TITLE" = "Título";
+"LAST_OPENED" = "Última vez abierto";
+"LAST_READ" = "Último leído";
+"LATEST_CHAPTER" = "Último capítulo actualizado";
+"DATE_ADDED" = "Fecha de agregado";
 
 // Browse
 "BROWSE" = "Explorar";
@@ -59,8 +60,8 @@
 "MORE" = "más";
 "SOURCE_ORDER" = "Orden de fuentes";
 
-"MANGA_MISSING_SOURCE" = "Fuente faltante";
-"MANGA_MISSING_SOURCE_TEXT" = "Parece que falta la fuente original para este manga. Vuelve a descargarla o elimina este manga de tu biblioteca.";
+"MISSING_SOURCE" = "Fuente faltante";
+"MISSING_SOURCE_TEXT" = "Parece que falta la fuente original para este manga. Vuelve a descargarla o elimina este manga de tu biblioteca.";
 
 // Reader
 "CHAPTER" = "Capítulo";
@@ -112,12 +113,17 @@
 
 "OPEN_READER_VIEW" = "Abrir vista del lector";
 "UNREAD_CHAPTER_BADGES" = "Insignias de capítulos sin leer";
+"PIN_MANGA" = "Anclar Manga";
+"PIN_MANGA_TYPE" = "Anclar por Tipo";
+"PIN_MANGA_UNREAD" = "No leído";
+"PIN_MANGA_UPDATED" = "Actualizado";
 
 "SOURCE_LISTS" = "Lista de fuentes";
 "SOURCE_LIST_ADDED" = "Lista de fuentes agregadas";
 "SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración";
 "SHOW_NSFW_SOURCES" = "Mostrar fuentes NSFW";
 
+"READER" = "Lector";
 "DOWNSAMPLE_IMAGES" = "Reducir resolución de imágenes";
 
 "BACKUPS" = "Copias de seguridad";

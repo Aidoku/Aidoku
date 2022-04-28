@@ -59,8 +59,8 @@
 "MORE" = "more";
 "SOURCE_ORDER" = "Source Order";
 
-"MANGA_MISSING_SOURCE" = "Missing Source";
-"MANGA_MISSING_SOURCE_TEXT" = "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library.";
+"MISSING_SOURCE" = "Missing Source";
+"MISSING_SOURCE_TEXT" = "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library.";
 
 // Reader
 "CHAPTER" = "Chapter";
