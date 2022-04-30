@@ -201,27 +201,28 @@ class LibraryViewController: MangaCollectionViewController {
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
         let filtered = manga.filter { searchText.isEmpty ? true : $0.title?.lowercased().contains(searchText.lowercased()) ?? true }
-        if sortOption == 0 { // title
+        switch sortOption {
+        case 0:
             return filtered
                 .sorted(by: sortAscending ? { $0.title ?? "" > $1.title ?? "" }
                                           : { $0.title ?? "" < $1.title ?? "" })
-        } else if sortOption == 1 { // last opened
+        case 1:
             return filtered
                 .sorted(by: sortAscending ? { $0.lastOpened ?? Date.distantPast < $1.lastOpened ?? Date.distantPast }
                                           : { $0.lastOpened ?? Date.distantPast > $1.lastOpened ?? Date.distantPast })
-        } else if sortOption == 2 { // last read
+        case 2:
             return filtered
                 .sorted(by: sortAscending ? { $0.lastRead ?? Date.distantPast < $1.lastRead ?? Date.distantPast }
                                           : { $0.lastRead ?? Date.distantPast > $1.lastRead ?? Date.distantPast })
-        } else if sortOption == 3 { // latest chapter
+        case 3:
             return filtered
                 .sorted(by: sortAscending ? { $0.lastUpdated ?? Date.distantPast < $1.lastUpdated ?? Date.distantPast }
                                           : { $0.lastUpdated ?? Date.distantPast > $1.lastUpdated ?? Date.distantPast })
-        } else if sortOption == 4 { // date added
+        case 4:
             return filtered
                 .sorted(by: sortAscending ? { $0.dateAdded ?? Date.distantPast < $1.dateAdded ?? Date.distantPast }
                                           : { $0.dateAdded ?? Date.distantPast > $1.dateAdded ?? Date.distantPast })
-        } else {
+        default:
             return filtered
         }
     }
