@@ -43,6 +43,8 @@ class MangaViewController: UIViewController {
     }
     var readHistory: [String: Int] = [:]
 
+    var source: Source?
+
     var tintColor: UIColor? {
         didSet {
             setTintColor(tintColor)
@@ -61,6 +63,7 @@ class MangaViewController: UIViewController {
     }
 
     let tableView = UITableView(frame: .zero, style: .grouped)
+    let refreshControl = UIRefreshControl()
 
     init(manga: Manga, chapters: [Chapter] = []) {
         self.manga = manga
@@ -133,17 +136,21 @@ class MangaViewController: UIViewController {
 
         getTintColor()
 
-        guard let source = SourceManager.shared.source(for: manga.sourceId) else {
+        source = SourceManager.shared.source(for: manga.sourceId)
+        guard let source = source else {
             showMissingSourceWarning()
             return
         }
+
         Task {
             if let newManga = try? await source.getMangaDetails(manga: manga) {
                 manga = manga.copy(from: newManga)
                 if chapters.isEmpty {
-                    chapters = await DataManager.shared.getChapters(for: manga,
-                                                                    fromSource: !DataManager.shared.libraryContains(manga: manga))
-                    self.tableView.reloadSections(IndexSet(integer: 0), with: .fade)
+                    chapters = await DataManager.shared.getChapters(
+                        for: manga,
+                        fromSource: !DataManager.shared.libraryContains(manga: manga)
+                    )
+                    tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                 }
             }
         }
@@ -160,6 +167,11 @@ class MangaViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         setTintColor(tintColor)
+
+        refreshControl.addTarget(self, action: #selector(refreshChapters), for: .valueChanged)
+        if source != nil {
+            tableView.refreshControl = refreshControl
+        }
     }
 
     override func viewWillLayoutSubviews() {
@@ -183,6 +195,26 @@ class MangaViewController: UIViewController {
             headerView.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
             headerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
             headerView.heightAnchor.constraint(equalTo: headerView.contentStackView.heightAnchor, constant: 10).isActive = true
+        }
+    }
+
+    @objc func refreshChapters(refreshControl: UIRefreshControl) {
+        guard let source = source else { return }
+        Task { @MainActor in
+            async let newManga = try? source.getMangaDetails(manga: manga)
+            async let newChapters = DataManager.shared.getChapters(for: manga, fromSource: true)
+
+            if let newManga = await newManga {
+                manga = manga.copy(from: newManga)
+            }
+            chapters = await newChapters
+
+            if DataManager.shared.libraryContains(manga: manga) {
+                DataManager.shared.set(chapters: chapters, for: manga)
+                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+            }
+            tableView.reloadSections(IndexSet(integer: 0), with: .fade)
+            refreshControl.endRefreshing()
         }
     }
 }
