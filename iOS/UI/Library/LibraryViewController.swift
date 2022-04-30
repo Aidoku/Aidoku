@@ -489,6 +489,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 extension LibraryViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchText = searchController.searchBar.text ?? ""
-        collectionView?.reloadData()
+        resortManga()
     }
 }
