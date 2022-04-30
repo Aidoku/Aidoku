@@ -21,13 +21,15 @@ struct WasmResponseObject: KVCObject {
     var data: Data?
     var response: URLResponse?
     var error: Error?
+    var statusCode: Int?
+
     var bytesRead: Int = 0
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "data": return data != nil ? [UInt8](data!) : []
         case "headers": return (response as? HTTPURLResponse)?.allHeaderFields
-        case "status_code": return (response as? HTTPURLResponse)?.statusCode
+        case "status_code": return statusCode != nil ? statusCode : (response as? HTTPURLResponse)?.statusCode
         default: return nil
         }
     }
@@ -58,6 +60,11 @@ class WasmNet: WasmModule {
 
     var globalStore: WasmGlobalStore
 
+    var rateLimit: Int = -1 // how many requests to let through during the period
+    var period: TimeInterval = 60 // seconds in the rate limit period
+    var lastRequestTime: Date?
+    var passedRequests: Int = 0
+
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
     }
@@ -77,6 +84,9 @@ class WasmNet: WasmModule {
 
         try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
+
+        try? globalStore.vm.addImportHandler(named: "set_rate_limit", namespace: namespace, block: self.set_rate_limit)
+        try? globalStore.vm.addImportHandler(named: "set_rate_limit_period", namespace: namespace, block: self.set_rate_limit_period)
     }
 }
 
@@ -123,10 +133,30 @@ extension WasmNet {
         }
     }
 
+    var set_rate_limit: (Int32) -> Void {
+        { limit in
+            self.rateLimit = Int(limit)
+        }
+    }
+
+    var set_rate_limit_period: (Int32) -> Void {
+        { period in
+            self.period = TimeInterval(period)
+        }
+    }
+
     var send: (Int32) -> Void {
         { descriptor in
             guard let request = self.globalStore.requests[descriptor] else { return }
             guard let url = URL(string: request.URL ?? "") else { return }
+
+            // check rate limit
+            if self.rateLimit > 0
+                && self.lastRequestTime?.timeIntervalSinceNow ?? self.period < self.period
+                && self.passedRequests >= self.rateLimit {
+                    self.globalStore.requests[descriptor]?.response = WasmResponseObject(statusCode: 429) // HTTP 429: too many requests
+                    return
+            }
 
             let semaphore = DispatchSemaphore(value: 0)
 
@@ -147,6 +177,13 @@ extension WasmNet {
             URLSession.shared.dataTask(with: urlRequest) { data, response, error in
                 let response = WasmResponseObject(data: data, response: response, error: error)
                 self.globalStore.requests[descriptor]?.response = response
+
+                if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
+                    self.passedRequests += 1
+                } else {
+                    self.lastRequestTime = Date()
+                    self.passedRequests = 1
+                }
                 semaphore.signal()
             }.resume()
 

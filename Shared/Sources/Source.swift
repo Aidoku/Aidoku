@@ -113,6 +113,7 @@ class Source: Identifiable {
         loadSettings()
 
         handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
+        initialize()
     }
 
     func prepareVirtualMachine() {
@@ -279,6 +280,12 @@ extension Source {
         needsFilterRefresh = false
 
         return filters
+    }
+
+    func initialize() {
+        Task {
+            try? await actor.initialize()
+        }
     }
 
     func fetchSearchManga(query: String, filters: [FilterBase] = [], page: Int = 1) async throws -> MangaPageResult {
