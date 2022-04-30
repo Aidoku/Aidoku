@@ -28,11 +28,12 @@ class MangaViewController: UIViewController {
         }
     }
     var sortedChapters: [Chapter] {
-        if sortOption == 0 {
+        switch sortOption {
+        case 0:
             return sortAscending ? chapters.reversed() : chapters
-        } else if sortOption == 1 {
+        case 1:
             return sortAscending ? orderedChapters.reversed() : orderedChapters
-        } else {
+        default:
             return chapters
         }
     }

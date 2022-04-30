@@ -98,16 +98,16 @@ class MangaViewHeaderView: UIView {
         statusLabel.text = status
 
         self.statusView.isHidden = self.manga?.status == .unknown
-        if manga?.nsfw == .safe {
+        switch manga?.nsfw {
+        case .safe, .none:
             nsfwView.alpha = 0
-        } else {
-            if manga?.nsfw == .suggestive {
-                nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
-                nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
-            } else if manga?.nsfw == .nsfw {
-                nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
-                nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
-            }
+        case .suggestive:
+            nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
+            nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
+            nsfwView.alpha = 1
+        case .nsfw:
+            nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
+            nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
             nsfwView.alpha = 1
         }
         if inLibrary {
