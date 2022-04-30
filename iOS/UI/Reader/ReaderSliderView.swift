@@ -41,6 +41,7 @@ class ReaderSliderView: UIControl {
     let trackView = UIView()
     let progressedTrackView = UIView()
     let thumbView = UIView()
+    let grabberView = UIView()
 
     private var trackWidthConstraint: NSLayoutConstraint?
     private var trackPositionConstraint: NSLayoutConstraint?
@@ -69,17 +70,19 @@ class ReaderSliderView: UIControl {
         progressedTrackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(progressedTrackView)
 
-        thumbView.backgroundColor = .white
-        thumbView.layer.shadowPath = UIBezierPath(rect: thumbView.bounds).cgPath
-        thumbView.layer.shadowRadius = 1.5
-        thumbView.layer.shadowOffset = CGSize(width: 0, height: 1)
-        thumbView.layer.shadowColor = UIColor.black.cgColor
-        thumbView.layer.shadowOpacity = 0.2
-        thumbView.layer.cornerRadius = 15
         thumbView.isUserInteractionEnabled = false
-        thumbView.transform = CGAffineTransform(scaleX: 1/3, y: 1/3)
         thumbView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(thumbView)
+
+        grabberView.backgroundColor = .white
+        grabberView.layer.shadowPath = UIBezierPath(rect: grabberView.bounds).cgPath
+        grabberView.layer.shadowRadius = 1.5
+        grabberView.layer.shadowOffset = CGSize(width: 0, height: 1)
+        grabberView.layer.shadowColor = UIColor.black.cgColor
+        grabberView.layer.shadowOpacity = 0.2
+        grabberView.layer.cornerRadius = 5
+        grabberView.translatesAutoresizingMaskIntoConstraints = false
+        thumbView.addSubview(grabberView)
 
         trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
         trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
@@ -98,6 +101,11 @@ class ReaderSliderView: UIControl {
         thumbView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         thumbView.heightAnchor.constraint(equalToConstant: 30).isActive = true
         thumbView.widthAnchor.constraint(equalToConstant: 30).isActive = true
+
+        grabberView.centerXAnchor.constraint(equalTo: thumbView.centerXAnchor).isActive = true
+        grabberView.centerYAnchor.constraint(equalTo: thumbView.centerYAnchor).isActive = true
+        grabberView.heightAnchor.constraint(equalToConstant: 10).isActive = true
+        grabberView.widthAnchor.constraint(equalToConstant: 10).isActive = true
     }
 
     required init?(coder: NSCoder) {
@@ -139,7 +147,7 @@ class ReaderSliderView: UIControl {
         if thumbView.frame.contains(previousLocation) {
             thumbView.tag = 1
             UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) {
-                self.thumbView.transform = CGAffineTransform(scaleX: 1/2, y: 1/2)
+                self.grabberView.transform = CGAffineTransform(scaleX: 3/2, y: 3/2)
             }
             return true
         }
@@ -183,7 +191,7 @@ class ReaderSliderView: UIControl {
     override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         thumbView.tag = 0
         UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut) {
-            self.thumbView.transform = CGAffineTransform(scaleX: 1/3, y: 1/3)
+            self.grabberView.transform = .identity
         }
         sendActions(for: .editingDidEnd)
     }
