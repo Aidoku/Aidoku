@@ -20,6 +20,10 @@ actor SourceActor {
         self.source = source
     }
 
+    func initialize() throws {
+        try source.vm.call("initialize")
+    }
+
     func getMangaList(filters: [FilterBase], page: Int = 1) throws -> MangaPageResult {
         let filterDescriptor = source.globalStore.storeStdValue(filters)
 
