@@ -42,6 +42,8 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     var hasNextChapter = false
     var hasPreviousChapter = false
 
+    var nextChapter: Chapter?
+
     var currentIndex: Int = 0
     var currentPageIndex: Int {
         currentIndex - 1 - (hasPreviousChapter ? 1 : 0)
@@ -122,6 +124,22 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
 }
 
 extension ReaderPagedPageManager {
+
+    // find next non-duplicate chapter
+    func getNextChapter() -> Chapter? {
+        guard !chapterList.isEmpty && chapterIndex != 0 else { return nil }
+
+        var i = chapterIndex
+        while true {
+            i -= 1
+            if i < 0 { return nil }
+            let newChapter = chapterList[i]
+            if newChapter.chapterNum != chapter?.chapterNum || newChapter.volumeNum != chapter?.volumeNum {
+                return newChapter
+            }
+        }
+    }
+
     func loadPages() async {
         guard pageViewController != nil, let chapter = chapter else { return }
 
@@ -133,8 +151,9 @@ extension ReaderPagedPageManager {
             }
         }
         if let chapterIndex = chapterList.firstIndex(of: chapter) {
+            nextChapter = getNextChapter()
             hasPreviousChapter = chapterIndex != chapterList.count - 1
-            hasNextChapter = chapterIndex != 0
+            hasNextChapter = nextChapter != nil
         } else {
             hasPreviousChapter = false
             hasNextChapter = false
@@ -232,7 +251,7 @@ extension ReaderPagedPageManager {
         let finalPageController = UIViewController()
         let finalPage = ReaderInfoPageView(type: .next, currentChapter: chapter)
         if hasNextChapter {
-            finalPage.nextChapter = chapterList[chapterIndex - 1]
+            finalPage.nextChapter = nextChapter
         }
         finalPage.frame = pageViewController.view.bounds
         finalPageController.view = finalPage
@@ -337,16 +356,15 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
                     await (items.first?.view as? ReaderPageView)?.setPageImage(url: preloadedPages.last?.imageURL ?? "")
                 }
             }
-        } else if hasNextChapter {
+        } else if let nextChapter = nextChapter {
             let itemCount = items.count
             if index == itemCount - 2 { // preload next chapter
                 Task {
-                    let nextChapter = chapterList[chapterIndex - 1]
                     await preload(chapter: nextChapter)
                     await (items.last?.view as? ReaderPageView)?.setPageImage(url: preloadedPages.first?.imageURL ?? "")
                 }
             } else if index == itemCount - 1 { // switch to next chapter
-                chapter = chapterList[chapterIndex - 1]
+                chapter = nextChapter
                 Task {
                     await loadPages()
                     if let chapter = chapter {
