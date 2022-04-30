@@ -36,6 +36,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var nextChapter: Chapter?
     var nextPages: [Page] = []
 
+    var targetNextChapter: Chapter?
+
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
@@ -163,6 +165,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
         if transitioningChapter {
             transitioningChapter = false
+            shouldMoveToTargetPage = false
         } else {
             shouldMoveToTargetPage = true
         }
@@ -172,7 +175,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             setImages(for: 0..<startPage+1)
             if collectionView != nil {
                 collectionView.reloadData()
-                // Move to the first page immidiately
+                // Move to the first page immediately
                 if targetPage == 0 && shouldMoveToTargetPage {
                     shouldMoveToTargetPage = false
                     move(toPage: 0)
@@ -182,6 +185,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func move(toPage page: Int) {
+        guard collectionView.numberOfSections > 1 && collectionView.numberOfItems(inSection: 1) >= page + 1 else { return }
         collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 1), at: .top, animated: false)
         delegate?.didMove(toPage: page)
     }
@@ -196,6 +200,21 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 self.sizeCache[key] = newValue
             }
             self.collectionView?.collectionViewLayout.invalidateLayout()
+        }
+    }
+
+    // find next non-duplicate chapter
+    func getNextChapter() -> Chapter? {
+        guard !chapterList.isEmpty && chapterIndex != 0 else { return nil }
+
+        var i = chapterIndex
+        while true {
+            i -= 1
+            if i < 0 { return nil }
+            let newChapter = chapterList[i]
+            if newChapter.chapterNum != chapter?.chapterNum || newChapter.volumeNum != chapter?.volumeNum {
+                return newChapter
+            }
         }
     }
 
@@ -223,8 +242,9 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     func getChapterInfo() {
         if let chapter = chapter, let chapterIndex = chapterList.firstIndex(of: chapter) {
+            targetNextChapter = getNextChapter()
             hasPreviousChapter = chapterIndex != chapterList.count - 1
-            hasNextChapter = chapterIndex != 0
+            hasNextChapter = targetNextChapter != nil
         } else {
             hasPreviousChapter = false
             hasNextChapter = false
@@ -418,13 +438,12 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
             }
         }
 
-        if bottomCellIndex == pages.count && hasNextChapter { // preload next chapter
+        if bottomCellIndex == pages.count, let nextChapter = targetNextChapter { // preload next chapter
             Task {
-                await preload(chapter: chapterList[chapterIndex - 1])
+                await preload(chapter: nextChapter)
             }
         } else if bottomCellIndex >= pages.count + 1 && hasNextChapter { // append next chapter
-            let nextChapter = chapterList[chapterIndex - 1]
-            if self.nextChapter != nextChapter {
+            if nextChapter != targetNextChapter, let nextChapter = targetNextChapter {
                 Task {
                     await append(chapter: nextChapter)
                 }
@@ -455,7 +474,7 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 if let chapter = chapter {
                     cell.infoView?.currentChapter = chapter
                 }
-                cell.infoView?.nextChapter = hasNextChapter ? chapterList[chapterIndex - 1] : nil
+                cell.infoView?.nextChapter = targetNextChapter
                 cell.infoView?.previousChapter = nil
             } else {
                 page = pages[indexPath.item - 1]
@@ -512,7 +531,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                 } else if item == pages.count + 1 {
                     cell.convertToInfo(type: .next, currentChapter: chapter)
                     if hasNextChapter {
-                        cell.infoView?.nextChapter = chapterList[chapterIndex - 1]
+                        cell.infoView?.nextChapter = targetNextChapter
                         cell.infoView?.previousChapter = nil
                     }
                 } else {
@@ -548,8 +567,8 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
                 sizeCache[key] = imageResult.image.sizeToFit(collectionView.frame.size)
                 collectionView.collectionViewLayout.invalidateLayout()
                 if let targetPage = targetPage, shouldMoveToTargetPage, sizeCache.count >= targetPage {
-                    move(toPage: targetPage)
                     shouldMoveToTargetPage = false
+                    move(toPage: targetPage)
                 }
             }
         case .failure:
