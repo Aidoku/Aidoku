@@ -8,6 +8,7 @@
 import UIKit
 import SafariServices
 import Kingfisher
+import WebKit
 
 class SettingsViewController: SettingsTableViewController {
 
@@ -157,6 +158,12 @@ extension SettingsViewController {
                 confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
                               message: NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")) {
                     URLCache.shared.removeAllCachedResponses()
+                    HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+                    WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+                        records.forEach { record in
+                            WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                        }
+                    }
                     KingfisherManager.shared.cache.clearMemoryCache()
                     KingfisherManager.shared.cache.clearDiskCache()
                     KingfisherManager.shared.cache.cleanExpiredDiskCache()
