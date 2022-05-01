@@ -8,6 +8,7 @@
 import Foundation
 import WasmInterpreter
 import SwiftSoup
+import WebKit
 
 enum HttpMethod: Int {
     case GET = 0
@@ -56,14 +57,85 @@ struct WasmRequestObject: KVCObject {
     }
 }
 
+// MARK: - Web View Handler
+class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
+
+    var netModule: WasmNet
+    var request: URLRequest
+    var requestDescriptor: Int32
+
+    var webView: WKWebView?
+
+    var done = false
+
+    init(netModule: WasmNet, request: URLRequest, requestDescriptor: Int32) {
+        self.netModule = netModule
+        self.request = request
+        self.requestDescriptor = requestDescriptor
+    }
+
+    func load() {
+        webView = WKWebView(frame: .zero)
+        webView?.navigationDelegate = self
+        webView?.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
+        webView?.load(request)
+        UIApplication.shared.windows.first?.rootViewController?.view.addSubview(webView!)
+
+        // timeout after 12s if bypass doesn't work
+        perform(#selector(timeout), with: nil, afterDelay: 12)
+    }
+
+    @objc func timeout() {
+        if !done {
+            done = true
+            netModule.semaphore.signal()
+            webView?.removeFromSuperview()
+        }
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        WKWebsiteDataStore.default().httpCookieStore.getAllCookies { webViewCookies in
+            guard let url = self.request.url else { return }
+
+            // check for old (expired) clearance cookie
+            let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
+
+            // check for clearance cookie
+            guard webViewCookies.contains(where: { $0.name == "cf_clearance" && $0.value != oldCookie?.value ?? "" }) else { return }
+
+            webView.removeFromSuperview()
+            self.done = true
+
+            // save cookies for future requests
+            HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
+            if let cookies = HTTPCookie.requestHeaderFields(with: webViewCookies)["Cookie"] {
+                self.request.addValue(cookies, forHTTPHeaderField: "Cookie")
+            }
+
+            // re-send request
+            URLSession.shared.dataTask(with: self.request) { data, response, error in
+                let response = WasmResponseObject(data: data, response: response, error: error)
+                self.netModule.globalStore.requests[self.requestDescriptor]?.response = response
+                self.netModule.semaphore.signal()
+            }.resume()
+        }
+    }
+}
+
+// MARK: - Net Module
 class WasmNet: WasmModule {
 
     var globalStore: WasmGlobalStore
+
+    let semaphore = DispatchSemaphore(value: 0)
 
     var rateLimit: Int = -1 // how many requests to let through during the period
     var period: TimeInterval = 60 // seconds in the rate limit period
     var lastRequestTime: Date?
     var passedRequests: Int = 0
+
+    // swiftlint:disable:next line_length
+    var defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63"
 
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
@@ -158,12 +230,16 @@ extension WasmNet {
                     return
             }
 
-            let semaphore = DispatchSemaphore(value: 0)
-
             var urlRequest = URLRequest(url: url)
+
+            // set headers
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
+            // set user agent
+            urlRequest.setValue(request.headers["User-Agent"] ?? self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
+
+            // set body
             if let body = request.body { urlRequest.httpBody = body }
             switch request.method {
             case .GET: urlRequest.httpMethod = "GET"
@@ -174,20 +250,40 @@ extension WasmNet {
             default: break
             }
 
-            URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                let response = WasmResponseObject(data: data, response: response, error: error)
-                self.globalStore.requests[descriptor]?.response = response
-
-                if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
-                    self.passedRequests += 1
-                } else {
-                    self.lastRequestTime = Date()
-                    self.passedRequests = 1
+            // set cookies
+            if let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
+                var cookieString = cookies
+                if let oldCookie = urlRequest.value(forHTTPHeaderField: "Cookie") {
+                    cookieString += "; " + oldCookie
                 }
-                semaphore.signal()
+                urlRequest.setValue(cookieString, forHTTPHeaderField: "Cookie")
+            }
+
+            URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+                let headers = ((response as? HTTPURLResponse)?.allHeaderFields as? [String: String]) ?? [:]
+                let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+
+                // check for cloudflare block
+                if headers["Server"] == "cloudflare" && (code == 503 || code == 403) {
+                    DispatchQueue.main.async {
+                        let handler = WasmNetWebViewHandler(netModule: self, request: urlRequest, requestDescriptor: descriptor)
+                        handler.load()
+                    }
+                } else {
+                    let response = WasmResponseObject(data: data, response: response, error: error)
+                    self.globalStore.requests[descriptor]?.response = response
+
+                    if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
+                        self.passedRequests += 1
+                    } else {
+                        self.lastRequestTime = Date()
+                        self.passedRequests = 1
+                    }
+                    self.semaphore.signal()
+                }
             }.resume()
 
-            semaphore.wait()
+            self.semaphore.wait()
         }
     }
 
