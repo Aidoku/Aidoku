@@ -73,8 +73,8 @@
 		FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */; };
 		FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */; };
 		FB67EE5E27ECC6D200C468EA /* ToolbarContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE5D27ECC6D200C468EA /* ToolbarContainerView.swift */; };
-		FB67EE6027F3708400C468EA /* WasmModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE5F27F3708400C468EA /* WasmModule.swift */; };
-		FB67EE6127F3708500C468EA /* WasmModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE5F27F3708400C468EA /* WasmModule.swift */; };
+		FB67EE6027F3708400C468EA /* WasmImports.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE5F27F3708400C468EA /* WasmImports.swift */; };
+		FB67EE6127F3708500C468EA /* WasmImports.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE5F27F3708400C468EA /* WasmImports.swift */; };
 		FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */; };
 		FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */; };
 		FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */; };
@@ -199,7 +199,7 @@
 		FB6340BA2792202B0072A2A2 /* Listing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listing.swift; sourceTree = "<group>"; };
 		FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSourceInfo.swift; sourceTree = "<group>"; };
 		FB67EE5D27ECC6D200C468EA /* ToolbarContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarContainerView.swift; sourceTree = "<group>"; };
-		FB67EE5F27F3708400C468EA /* WasmModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmModule.swift; sourceTree = "<group>"; };
+		FB67EE5F27F3708400C468EA /* WasmImports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmImports.swift; sourceTree = "<group>"; };
 		FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmAidoku.swift; sourceTree = "<group>"; };
 		FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmGlobalStore.swift; sourceTree = "<group>"; };
 		FB6E34C5279DF6AB00BFE54B /* BrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewController.swift; sourceTree = "<group>"; };
@@ -529,14 +529,9 @@
 		FB7B7E8D27874DEB001E6EAF /* Wasm */ = {
 			isa = PBXGroup;
 			children = (
-				FB67EE5F27F3708400C468EA /* WasmModule.swift */,
+				FBF9DC02281FFCCC0056FA9A /* Imports */,
 				FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */,
-				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
-				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
-				FB28CF4528090A2200BC7663 /* WasmDefaults.swift */,
-				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
-				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
-				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,
+				FB67EE5F27F3708400C468EA /* WasmImports.swift */,
 			);
 			path = Wasm;
 			sourceTree = "<group>";
@@ -628,6 +623,19 @@
 				FBED232227BB461D0095D0C0 /* SourceObject.swift */,
 			);
 			path = Objects;
+			sourceTree = "<group>";
+		};
+		FBF9DC02281FFCCC0056FA9A /* Imports */ = {
+			isa = PBXGroup;
+			children = (
+				FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */,
+				FB9B9EAF27F6559D009ED073 /* WasmStd.swift */,
+				FB28CF4528090A2200BC7663 /* WasmDefaults.swift */,
+				FB7B7E9727877416001E6EAF /* WasmNet.swift */,
+				FB7B7E942787740A001E6EAF /* WasmJson.swift */,
+				FB31AD0A27AE180300D50410 /* WasmHtml.swift */,
+			);
+			path = Imports;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -838,7 +846,7 @@
 				FB6E34C6279DF6AB00BFE54B /* BrowseViewController.swift in Sources */,
 				FB72501627CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */,
-				FB67EE6027F3708400C468EA /* WasmModule.swift in Sources */,
+				FB67EE6027F3708400C468EA /* WasmImports.swift in Sources */,
 				FB72501F27CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */,
 				FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */,
@@ -891,7 +899,7 @@
 				FB7B7EDB278CEA6A001E6EAF /* FileManager.swift in Sources */,
 				FB72501427CAAC9F0037F1C9 /* Backup.swift in Sources */,
 				FB4EEBC527A34ED4005081A3 /* ChapterObject.swift in Sources */,
-				FB67EE6127F3708500C468EA /* WasmModule.swift in Sources */,
+				FB67EE6127F3708500C468EA /* WasmImports.swift in Sources */,
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,

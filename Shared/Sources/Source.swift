@@ -93,8 +93,6 @@ class Source: Identifiable {
 
     var needsFilterRefresh = true
 
-    var vm: WasmInterpreter
-
     var globalStore: WasmGlobalStore
 
     var actor: SourceActor!
@@ -105,20 +103,20 @@ class Source: Identifiable {
         manifest = try JSONDecoder().decode(SourceManifest.self, from: data)
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
-        vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
+        let vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
         globalStore = WasmGlobalStore(id: manifest.info.id, vm: vm)
         actor = SourceActor(source: self)
 
-        prepareVirtualMachine()
+        exportFunctions()
         loadSettings()
 
         handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
         initialize()
     }
 
-    func prepareVirtualMachine() {
-        try? vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
-        try? vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
+    func exportFunctions() {
+        try? globalStore.vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
+        try? globalStore.vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
 
         WasmAidoku(globalStore: globalStore).export()
         WasmStd(globalStore: globalStore).export()
@@ -291,15 +289,15 @@ extension Source {
     func fetchSearchManga(query: String, filters: [FilterBase] = [], page: Int = 1) async throws -> MangaPageResult {
         var newFilters = filters
         newFilters.append(TitleFilter(value: query))
-        return try await actor.getMangaList(filters: newFilters, page: page)
+        return await actor.getMangaList(filters: newFilters, page: page)
     }
 
     func getMangaList(filters: [FilterBase], page: Int = 1) async throws -> MangaPageResult {
-        try await actor.getMangaList(filters: filters, page: page)
+        await actor.getMangaList(filters: filters, page: page)
     }
 
     func getMangaListing(listing: Listing, page: Int = 1) async throws -> MangaPageResult {
-        try await actor.getMangaListing(listing: listing, page: page)
+        await actor.getMangaListing(listing: listing, page: page)
     }
 
     func getMangaDetails(manga: Manga) async throws -> Manga {
@@ -307,11 +305,11 @@ extension Source {
     }
 
     func getChapterList(manga: Manga) async throws -> [Chapter] {
-        try await actor.getChapterList(manga: manga)
+        await actor.getChapterList(manga: manga)
     }
 
     func getPageList(chapter: Chapter) async throws -> [Page] {
-        try await actor.getPageList(chapter: chapter)
+        await actor.getPageList(chapter: chapter)
     }
 
     func getImageRequest(url: String) async throws -> WasmRequestObject {
@@ -324,7 +322,7 @@ extension Source {
 
     func performAction(key: String) {
         Task {
-            try? await actor.handleNotification(notification: key)
+            await actor.handleNotification(notification: key)
         }
     }
 }

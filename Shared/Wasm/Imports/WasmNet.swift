@@ -123,7 +123,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 }
 
 // MARK: - Net Module
-class WasmNet: WasmModule {
+class WasmNet: WasmImports {
 
     var globalStore: WasmGlobalStore
 
