@@ -7,7 +7,7 @@
 
 import Foundation
 
-class WasmStd: WasmModule {
+class WasmStd: WasmImports {
 
     var globalStore: WasmGlobalStore
 

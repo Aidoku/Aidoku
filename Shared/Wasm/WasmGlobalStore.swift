@@ -57,6 +57,10 @@ class WasmGlobalStore {
         refs.append(target)
         stdReferences[to] = refs
     }
+}
+
+// MARK: - Memory R/W
+extension WasmGlobalStore {
 
     func readString(offset: Int, length: Int) -> String? {
         try? vm.stringFromHeap(byteOffset: offset, length: length)

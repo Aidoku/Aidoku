@@ -8,7 +8,7 @@
 import Foundation
 import WasmInterpreter
 
-class WasmAidoku: WasmModule {
+class WasmAidoku: WasmImports {
 
     var globalStore: WasmGlobalStore
 
