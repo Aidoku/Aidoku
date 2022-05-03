@@ -350,11 +350,14 @@ class LibraryViewController: MangaCollectionViewController {
                     } else {
                         tempManga.append(m)
                     }
+                } else {
+                    tempManga.append(m)
                 }
             }
         } else {
             chapters = [:]
             readHistory = [:]
+            tempManga = DataManager.shared.libraryManga
         }
 
         unfilteredManga = tempManga
