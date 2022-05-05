@@ -133,7 +133,7 @@ extension WasmStd {
 
     var create_date: (Float64) -> Int32 {
         { time in
-            self.globalStore.storeStdValue(Date(timeIntervalSince1970: time))
+            self.globalStore.storeStdValue(time < 0 ? Date() : Date(timeIntervalSince1970: time))
         }
     }
 }

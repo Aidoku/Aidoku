@@ -148,7 +148,7 @@ class WasmNet: WasmImports {
 
         try? globalStore.vm.addImportHandler(named: "set_url", namespace: namespace, block: self.set_url)
         try? globalStore.vm.addImportHandler(named: "set_header", namespace: namespace, block: self.set_header)
-        try? globalStore.vm.addImportHandler(named: "set_body", namespace: namespace, block: self.set_header)
+        try? globalStore.vm.addImportHandler(named: "set_body", namespace: namespace, block: self.set_body)
 
         try? globalStore.vm.addImportHandler(named: "get_url", namespace: namespace, block: self.get_url)
         try? globalStore.vm.addImportHandler(named: "get_data_size", namespace: namespace, block: self.get_data_size)
