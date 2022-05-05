@@ -239,9 +239,9 @@ extension SearchViewController: UICollectionViewDelegate {
                 } else {
                     actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
                                             image: UIImage(systemName: "books.vertical.fill")) { _ in
-                        Task { @MainActor in
+                        Task {
                             if let manga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
-                                _ = DataManager.shared.addToLibrary(manga: manga)
+                                DataManager.shared.addToLibrary(manga: manga)
                             }
                         }
                     })

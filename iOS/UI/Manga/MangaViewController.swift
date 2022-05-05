@@ -66,6 +66,8 @@ class MangaViewController: UIViewController {
     let tableView = UITableView(frame: .zero, style: .grouped)
     let refreshControl = UIRefreshControl()
 
+    var loadingAlert: UIAlertController?
+
     init(manga: Manga, chapters: [Chapter] = []) {
         self.manga = manga
         self.chapters = chapters
@@ -86,19 +88,21 @@ class MangaViewController: UIViewController {
         // TODO: only show relevant actions
         let mangaOptions: [UIAction] = [
             UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                self.showLoadingIndicator()
                 DataManager.shared.setRead(manga: self.manga)
-                DataManager.shared.setCompleted(chapters: self.chapters, date: Date().addingTimeInterval(-1))
+                DataManager.shared.setCompleted(
+                    chapters: self.chapters,
+                    date: Date().addingTimeInterval(-1),
+                    context: DataManager.shared.backgroundContext
+                )
                 // Make most recent chapter appear as the most recently read
                 if let firstChapter = self.chapters.first {
-                    DataManager.shared.setCompleted(chapter: firstChapter)
+                    DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
                 }
-                self.updateReadHistory()
-                self.tableView.reloadData()
             },
             UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                DataManager.shared.removeHistory(for: self.manga)
-                self.updateReadHistory()
-                self.tableView.reloadData()
+                self.showLoadingIndicator()
+                DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
             }
         ]
         let markSubmenu = UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions)
@@ -141,6 +145,14 @@ class MangaViewController: UIViewController {
         guard let source = source else {
             showMissingSourceWarning()
             return
+        }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateHistory"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                self.updateReadHistory()
+                self.loadingAlert?.dismiss(animated: true)
+                self.tableView.reloadData()
+            }
         }
 
         Task {
@@ -197,6 +209,18 @@ class MangaViewController: UIViewController {
             headerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
             headerView.heightAnchor.constraint(equalTo: headerView.contentStackView.heightAnchor, constant: 10).isActive = true
         }
+    }
+
+    func showLoadingIndicator() {
+        if loadingAlert == nil {
+            loadingAlert = UIAlertController(title: nil, message: "Loading...", preferredStyle: .alert)
+            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.style = .medium
+            loadingIndicator.startAnimating()
+            loadingAlert?.view.addSubview(loadingIndicator)
+        }
+        present(loadingAlert!, animated: true, completion: nil)
     }
 
     @objc func refreshChapters(refreshControl: UIRefreshControl) {

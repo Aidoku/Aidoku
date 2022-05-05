@@ -76,18 +76,17 @@ extension SourceManager {
 
                 source.url = destination
 
-                if DataManager.shared.add(source: source) != nil {
-                    sources.append(source)
-                    sources.sort { $0.manifest.info.name < $1.manifest.info.name }
+                await DataManager.shared.add(source: source, context: DataManager.shared.backgroundContext)
+                sources.append(source)
+                sources.sort { $0.manifest.info.name < $1.manifest.info.name }
 
-                    NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+                NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
 
-                    Task {
-                        _ = try? await source.getFilters()
-                    }
-
-                    return source
+                Task {
+                    _ = try? await source.getFilters()
                 }
+
+                return source
             }
         }
 
