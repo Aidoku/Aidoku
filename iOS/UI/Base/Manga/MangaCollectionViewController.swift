@@ -212,9 +212,9 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
             } else {
                 actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
                                         image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    Task { @MainActor in
+                    Task {
                         if let newManga = try? await SourceManager.shared.source(for: targetManga.sourceId)?.getMangaDetails(manga: targetManga) {
-                            _ = DataManager.shared.addToLibrary(manga: newManga)
+                            DataManager.shared.addToLibrary(manga: newManga)
                         }
                     }
                 })

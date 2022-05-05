@@ -136,8 +136,8 @@ class ExternalSourceTableViewCell: UITableViewCell {
 
     @objc func getPressed() {
         if let url = source?.sourceUrl {
+            getButton.buttonState = .downloading
             Task {
-                getButton.buttonState = .downloading
                 let installedSource = await SourceManager.shared.importSource(
                     from: url.appendingPathComponent("sources", isDirectory: true).appendingPathComponent(source?.file ??  "")
                 )

@@ -290,6 +290,18 @@ class MangaViewHeaderView: UIView {
         updateViews()
 
         contentStackView.frame = CGRect(origin: .zero, size: contentStackView.intrinsicContentSize)
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("addToLibrary"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                if self.inLibrary {
+                    self.bookmarkButton.tintColor = .white
+                    self.bookmarkButton.backgroundColor = self.tintColor
+                } else {
+                    self.bookmarkButton.tintColor = self.tintColor
+                    self.bookmarkButton.backgroundColor = .secondarySystemFill
+                }
+            }
+        }
     }
 
     func activateConstraints() {
@@ -417,7 +429,7 @@ class MangaViewHeaderView: UIView {
             if inLibrary {
                 DataManager.shared.delete(manga: manga)
             } else {
-                _ = DataManager.shared.addToLibrary(manga: manga)
+                DataManager.shared.addToLibrary(manga: manga)
             }
             if inLibrary {
                 bookmarkButton.tintColor = .white
