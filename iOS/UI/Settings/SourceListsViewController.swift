@@ -31,22 +31,24 @@ class SourceListsViewController: UITableViewController {
         }
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceLists"), object: nil, queue: nil) { _ in
-            let previousLists = self.sourceLists
-            self.sourceLists = SourceManager.shared.sourceLists
-            if previousLists.count == self.sourceLists.count {
-                self.tableView.reloadData()
-            } else {
-                self.tableView.performBatchUpdates {
-                    if previousLists.count > self.sourceLists.count { // remove
-                        for (i, url) in previousLists.enumerated() {
-                            if !self.sourceLists.contains(url) {
-                                self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
+            Task { @MainActor in
+                let previousLists = self.sourceLists
+                self.sourceLists = SourceManager.shared.sourceLists
+                if previousLists.count == self.sourceLists.count {
+                    self.tableView.reloadData()
+                } else {
+                    self.tableView.performBatchUpdates {
+                        if previousLists.count > self.sourceLists.count { // remove
+                            for (i, url) in previousLists.enumerated() {
+                                if !self.sourceLists.contains(url) {
+                                    self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
+                                }
                             }
-                        }
-                    } else { // add
-                        for (i, url) in self.sourceLists.enumerated() {
-                            if !previousLists.contains(url) {
-                                self.tableView.insertRows(at: [IndexPath(row: i, section: 0)], with: .automatic)
+                        } else { // add
+                            for (i, url) in self.sourceLists.enumerated() {
+                                if !previousLists.contains(url) {
+                                    self.tableView.insertRows(at: [IndexPath(row: i, section: 0)], with: .automatic)
+                                }
                             }
                         }
                     }
@@ -56,10 +58,14 @@ class SourceListsViewController: UITableViewController {
     }
 
     @objc func addSourceList() {
-        let alert = UIAlertController(title: "Add Source List", message: "Enter the source list URL", preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: NSLocalizedString("SOURCE_LIST_ADD", comment: ""),
+            message: NSLocalizedString("SOURCE_LIST_ADD_TEXT", comment: ""),
+            preferredStyle: .alert
+        )
 
         alert.addTextField { textField in
-            textField.placeholder = "Source List URL"
+            textField.placeholder = NSLocalizedString("SOURCE_LIST_URL", comment: "")
             textField.autocapitalizationType = .none
             textField.autocorrectionType = .no
             textField.keyboardType = .URL
@@ -69,7 +75,18 @@ class SourceListsViewController: UITableViewController {
             guard let textField = alert.textFields?.first else { return }
             if let urlString = textField.text,
                let url = URL(string: urlString) {
-                SourceManager.shared.addSourceList(url: url)
+                Task {
+                    let success = await SourceManager.shared.addSourceList(url: url)
+                    if !success {
+                        let alert = UIAlertController(
+                            title: NSLocalizedString("SOURCE_LIST_ADD_FAIL", comment: ""),
+                            message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT", comment: ""),
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                        self.present(alert, animated: true)
+                    }
+                }
             }
         })
 

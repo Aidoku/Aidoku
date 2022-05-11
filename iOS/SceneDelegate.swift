@@ -68,9 +68,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     if let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
                        let listUrl = URL(string: listUrlString) {
                         guard !SourceManager.shared.sourceLists.contains(listUrl) else { return }
-                        SourceManager.shared.addSourceList(url: listUrl)
-                        sendAlert(title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
-                                  message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: ""))
+                        Task {
+                            let success = await SourceManager.shared.addSourceList(url: listUrl)
+                            if success {
+                                sendAlert(title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
+                                          message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: ""))
+                            } else {
+                                sendAlert(title: NSLocalizedString("SOURCE_LIST_ADD_FAIL", comment: ""),
+                                          message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT", comment: ""))
+                            }
+                        }
                     }
                 } else if let source = SourceManager.shared.sources.first(where: { $0.id == url.host }) { // sourceId/mangaId
                     Task { @MainActor in

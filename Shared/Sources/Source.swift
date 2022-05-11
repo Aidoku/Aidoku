@@ -57,6 +57,7 @@ class Source: Identifiable {
 
     struct SourceManifest: Codable {
         let info: SourceInfo
+        let languageSelectType: String?
         let languages: [LanguageInfo]?
         let listings: [Listing]?
         let filters: [FilterInfo]?
@@ -185,7 +186,7 @@ extension Source {
                             defaults[key] = subItem.defaultValue?.boolValue
 //                        case "select", "text":
 //                            defaults[key] = subItem.defaultValue?.stringValue
-                        case "multi-select":
+                        case "multi-select", "multi-single-select":
                             defaults[key] = subItem.defaultValue?.stringArrayValue
                         default:
                             defaults[key] = subItem.defaultValue?.stringValue

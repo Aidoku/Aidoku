@@ -13,7 +13,10 @@ class SettingSelectViewController: UITableViewController {
     let item: SettingItem
 
     var multi: Bool {
-        item.type == "multi-select"
+        item.type == "multi-select" || item.type == "multi-single-select"
+    }
+    var forceSingle: Bool {
+        item.type == "multi-single-select"
     }
 
     // single
@@ -111,7 +114,7 @@ extension SettingSelectViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if multi {
+        if multi && !forceSingle {
             if let cell = tableView.cellForRow(at: indexPath), let itemValues = item.values {
                 if cell.accessoryType == .checkmark {
                     cell.accessoryType = .none
@@ -122,10 +125,14 @@ extension SettingSelectViewController {
                 }
             }
         } else {
-            if let values = item.values, indexPath.row < values.count {
+            if let itemValues = item.values, indexPath.row < itemValues.count {
                 tableView.cellForRow(at: IndexPath(row: index, section: 0))?.accessoryType = .none
                 tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-                value = values[indexPath.row]
+                if forceSingle {
+                    values = [itemValues[indexPath.row]]
+                } else {
+                    value = itemValues[indexPath.row]
+                }
             }
         }
         if let notification = item.notification {

@@ -151,7 +151,7 @@ extension SettingsTableViewController {
             }
             cell.accessoryType = .disclosureIndicator
 
-        case "multi-select", "page":
+        case "multi-select", "multi-single-select", "page":
             cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
             cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
@@ -198,7 +198,7 @@ extension SettingsTableViewController {
     }
 
     func performAction(for item: SettingItem) {
-        if item.type == "select" || item.type == "multi-select" {
+        if item.type == "select" || item.type == "multi-select" || item.type == "multi-single-select" {
             navigationController?.pushViewController(SettingSelectViewController(item: item, style: tableView.style), animated: true)
         } else if item.type == "link" {
             if let url = URL(string: item.key ?? "") {
