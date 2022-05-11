@@ -130,6 +130,12 @@
 "SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";
 "SHOW_NSFW_SOURCES" = "Show NSFW Sources";
 
+"SOURCE_LIST_URL" = "Source List URL";
+"SOURCE_LIST_ADD" = "Add Source List";
+"SOURCE_LIST_ADD_TEXT" = "Enter the source list URL";
+"SOURCE_LIST_ADD_FAIL" = "Failed to Add Source List";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
+
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 
 "BACKUPS" = "Backups";
@@ -161,3 +167,5 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
 "CLEAR_READ_HISTORY" = "Clear Read History";
 "CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
+"RESET_SETTINGS" = "Reset Settings";
+"RESET_SETTINGS_TEXT" = "This action is irreversible. All app and source settings will be reset.";

@@ -113,16 +113,30 @@ extension SourceManager {
 // MARK: - Source List Management
 extension SourceManager {
 
-    func addSourceList(url: URL) {
-        guard !sourceLists.contains(url) else { return }
+    func addSourceList(url: URL) async -> Bool {
+        guard !sourceLists.contains(url) else { return false }
+
+        if (try? await URLSession.shared.object(
+            from: url.appendingPathComponent("index.min.json")
+        ) as [ExternalSourceInfo]?) == nil {
+            return false
+        }
+
         sourceLists.append(url)
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+        return true
     }
 
     func removeSourceList(url: URL) {
         sourceLists.removeAll { $0 == url }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
+        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+    }
+
+    func clearSourceLists() {
+        sourceLists = []
+        UserDefaults.standard.set([], forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
     }
 }

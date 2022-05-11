@@ -86,6 +86,13 @@ class SourceViewController: MangaCollectionViewController {
                 activityIndicator.alpha = 0
             }
         }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("\(source.id).languages"), object: nil, queue: nil) { _ in
+            Task {
+                await self.fetchData()
+                self.reloadData()
+            }
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -77,6 +77,7 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "button", key: "Advanced.clearMangaCache", title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
+                SettingItem(type: "button", key: "Advanced.resetSettings", title: NSLocalizedString("RESET_SETTINGS", comment: "")),
                 SettingItem(type: "button", key: "Advanced.reset", title: NSLocalizedString("RESET", comment: ""), destructive: true)
             ])
         ])
@@ -157,34 +158,29 @@ extension SettingsViewController {
             case "Advanced.clearNetworkCache":
                 confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
                               message: NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")) {
-                    URLCache.shared.removeAllCachedResponses()
-                    HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
-                    WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-                        records.forEach { record in
-                            WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
-                        }
-                    }
-                    KingfisherManager.shared.cache.clearMemoryCache()
-                    KingfisherManager.shared.cache.clearDiskCache()
-                    KingfisherManager.shared.cache.cleanExpiredDiskCache()
+                    self.clearNetworkCache()
                 }
             case "Advanced.clearReadHistory":
                 confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
                               message: NSLocalizedString("CLEAR_READ_HISTORY_TEXT", comment: "")) {
                     DataManager.shared.clearHistory()
                 }
+            case "Advanced.resetSettings":
+                confirmAction(title: NSLocalizedString("RESET_SETTINGS", comment: ""),
+                              message: NSLocalizedString("RESET_SETTINGS_TEXT", comment: "")) {
+                    self.resetSettings()
+                }
             case "Advanced.reset":
                 confirmAction(title: NSLocalizedString("RESET", comment: ""),
                               message: NSLocalizedString("RESET_TEXT", comment: "")) {
-                    KingfisherManager.shared.cache.clearMemoryCache()
-                    KingfisherManager.shared.cache.clearDiskCache()
-                    KingfisherManager.shared.cache.cleanExpiredDiskCache()
+                    self.clearNetworkCache()
                     DataManager.shared.clearLibrary()
                     DataManager.shared.clearHistory()
                     DataManager.shared.clearManga()
                     DataManager.shared.clearChapters()
                     SourceManager.shared.clearSources()
-                    UserDefaults.resetStandardUserDefaults()
+                    SourceManager.shared.clearSourceLists()
+                    self.resetSettings()
                 }
 
             default:
@@ -196,5 +192,28 @@ extension SettingsViewController {
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         44
+    }
+}
+
+// MARK: - Data Clearing Methods
+extension SettingsViewController {
+
+    func clearNetworkCache() {
+        URLCache.shared.removeAllCachedResponses()
+        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+          records.forEach { record in
+              WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+          }
+        }
+        KingfisherManager.shared.cache.clearMemoryCache()
+        KingfisherManager.shared.cache.clearDiskCache()
+        KingfisherManager.shared.cache.cleanExpiredDiskCache()
+    }
+
+    func resetSettings() {
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+        }
     }
 }
