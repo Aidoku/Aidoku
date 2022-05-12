@@ -259,7 +259,7 @@ extension MangaViewController {
     }
 
     func getTintColor() {
-        if let tintColor = manga.tintColor {
+        if let tintColor = manga.tintColor?.color {
             // Adjust tint color for readability
             let luma = tintColor.luminance
             if luma >= 0.6 {
@@ -272,7 +272,13 @@ extension MangaViewController {
         } else if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
             headerView.coverImageView.image?.getColors(quality: .low) { colors in
                 let luma = colors?.background.luminance ?? 0
-                self.manga.tintColor = luma >= 0.9 || luma <= 0.1 ? colors?.secondary : colors?.background
+                if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
+                    self.manga.tintColor = CodableColor(color: secondary)
+                } else if let background = colors?.background {
+                    self.manga.tintColor = CodableColor(color: background)
+                } else {
+                    self.manga.tintColor = nil
+                }
                 self.getTintColor()
             }
         }
