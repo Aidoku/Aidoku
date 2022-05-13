@@ -34,7 +34,8 @@ struct FilterInfo: Codable {
     let type: String
 
     let name: String?
-    let defaultValue: DefaultValue?
+    let defaultValue: JsonAnyValue?
+    let id: JsonAnyValue?
 
     let filters: [FilterInfo]?
     let options: [String]?
@@ -46,6 +47,7 @@ struct FilterInfo: Codable {
         case type
         case name
         case defaultValue = "default"
+        case id
         case filters
         case options
         case canExclude
@@ -149,15 +151,11 @@ class Source: Identifiable {
 // MARK: - Settings
 extension Source {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func loadSettings() {
-        if let data = try? Data(contentsOf: url.appendingPathComponent("settings.json")),
-           let settingsPlist = try? JSONDecoder().decode([SettingItem].self, from: data) {
-            settingItems = settingsPlist
+        var defaultLanguages: [String] = []
 
-            // Load defaults
-            var defaults: [String: Any] = [:]
-            var defaultLanguages: [String] = []
-
+        if !languages.isEmpty {
             // if local language is supported, use it
             for lang in languages where lang.code == Locale.current.languageCode {
                 defaultLanguages.append(lang.value ?? lang.code)
@@ -168,6 +166,18 @@ extension Source {
                     defaultLanguages.append(lang.value ?? lang.code)
                 }
             }
+            // if no default, use first
+            if defaultLanguages.isEmpty, let lang = languages.first {
+                defaultLanguages.append(lang.value ?? lang.code)
+            }
+        }
+
+        if let data = try? Data(contentsOf: url.appendingPathComponent("settings.json")),
+           let settingsPlist = try? JSONDecoder().decode([SettingItem].self, from: data) {
+            settingItems = settingsPlist
+
+            // Load defaults
+            var defaults: [String: Any] = [:]
 
             defaults["\(id).languages"] = defaultLanguages
 
@@ -184,8 +194,8 @@ extension Source {
                         switch subItem.type {
                         case "switch":
                             defaults[key] = subItem.defaultValue?.boolValue
-//                        case "select", "text":
-//                            defaults[key] = subItem.defaultValue?.stringValue
+                        case "select", "text":
+                            defaults[key] = subItem.defaultValue?.stringValue
                         case "multi-select", "multi-single-select":
                             defaults[key] = subItem.defaultValue?.stringArrayValue
                         default:
@@ -196,6 +206,8 @@ extension Source {
             }
 
             UserDefaults.standard.register(defaults: defaults)
+        } else {
+            UserDefaults.standard.register(defaults: ["\(id).languages": defaultLanguages])
         }
     }
 }
@@ -244,9 +256,9 @@ extension Source {
                                               : SortSelection(index: 0, ascending: false)
             )
         case "check":
-            return CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue)
+            return CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
         case "genre":
-            return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, value: filter.defaultValue?.boolValue)
+            return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
         case "group":
             return GroupFilter(name: filter.name ?? "", filters: filter.filters?.compactMap { parseFilter(from: $0) } ?? [])
         default: break
