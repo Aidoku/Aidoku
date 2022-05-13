@@ -101,25 +101,28 @@ class TextFilter: Filter<String> {
 // MARK: Check
 class CheckFilter: Filter<Bool?> {
     var canExclude: Bool
+    var id: JsonAnyValue?
 
     override var type: FilterType {
         .check
     }
 
-    init(name: String, canExclude: Bool, value: Bool? = nil) {
+    init(name: String, canExclude: Bool, id: JsonAnyValue? = nil, value: Bool? = nil) {
         self.canExclude = canExclude
+        self.id = id
         super.init(name: name, value: value)
     }
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "can_exclude": return canExclude
+        case "canExclude": return canExclude
+        case "id": return id?.toRaw()
         default: return super.valueByPropertyName(name: name)
         }
     }
 
     override func copy(with zone: NSZone? = nil) -> Any {
-        CheckFilter(name: name, canExclude: canExclude, value: value)
+        CheckFilter(name: name, canExclude: canExclude, id: id, value: value)
     }
 }
 
@@ -193,7 +196,7 @@ class SortFilter: Filter<SortSelection> {
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "options": return options
-        case "can_ascend": return canAscend
+        case "canAscend": return canAscend
         default: return super.valueByPropertyName(name: name)
         }
     }
@@ -264,6 +267,6 @@ class GenreFilter: CheckFilter {
     }
 
     override func copy(with zone: NSZone? = nil) -> Any {
-        GenreFilter(name: name, canExclude: canExclude, value: value)
+        GenreFilter(name: name, canExclude: canExclude, id: id, value: value)
     }
 }
