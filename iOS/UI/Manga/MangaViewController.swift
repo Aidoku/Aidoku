@@ -394,6 +394,7 @@ extension MangaViewController: UITableViewDataSource {
         chapters.count
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "ChapterTableViewCell")
         if cell == nil {
@@ -401,23 +402,32 @@ extension MangaViewController: UITableViewDataSource {
         }
 
         let chapter = sortedChapters[indexPath.row]
+
+        // title string
+        // Vol.X Ch.X - Title
         var titleString = ""
-        if let volumeNum = chapter.volumeNum {
-            titleString.append(String(format: "Vol.%g ", volumeNum))
-        }
-        if let chapterNum = chapter.chapterNum {
-            titleString.append(String(format: "Ch.%g ", chapterNum))
-        }
-        if (chapter.volumeNum != nil || chapter.chapterNum != nil) && chapter.title != nil {
-            titleString.append("- ")
-        }
-        if let title = chapter.title {
-            titleString.append(title)
-        } else if chapter.chapterNum == nil {
-            titleString = NSLocalizedString("UNTITLED", comment: "")
+        if chapter.volumeNum == nil && chapter.title == nil, let chapterNum = chapter.chapterNum {
+            titleString = String(format: "Chapter %g", chapterNum)
+        } else {
+            if let volumeNum = chapter.volumeNum {
+                titleString.append(String(format: "Vol.%g ", volumeNum))
+            }
+            if let chapterNum = chapter.chapterNum {
+                titleString.append(String(format: "Ch.%g ", chapterNum))
+            }
+            if (chapter.volumeNum != nil || chapter.chapterNum != nil) && chapter.title != nil {
+                titleString.append("- ")
+            }
+            if let title = chapter.title {
+                titleString.append(title)
+            } else if chapter.chapterNum == nil {
+                titleString = NSLocalizedString("UNTITLED", comment: "")
+            }
         }
         cell?.textLabel?.text = titleString
 
+        // subtitle string
+        // date • scanlator • language
         var subtitleString = ""
         if let dateUploaded = chapter.dateUploaded {
             subtitleString.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
@@ -439,6 +449,15 @@ extension MangaViewController: UITableViewDataSource {
             cell?.textLabel?.textColor = .label
         }
 
+        if DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+            let downloadedView = UIImageView(image: UIImage(systemName: "arrow.down.circle.fill"))
+            downloadedView.tintColor = .tertiaryLabel
+            cell?.accessoryView = downloadedView
+            cell?.accessoryView?.bounds = CGRect(x: 0, y: 0, width: 15, height: 15)
+        } else {
+            cell?.accessoryView = nil
+        }
+
         cell?.textLabel?.font = .systemFont(ofSize: 15)
         cell?.detailTextLabel?.font = .systemFont(ofSize: 14)
         cell?.detailTextLabel?.textColor = .secondaryLabel
@@ -451,6 +470,20 @@ extension MangaViewController: UITableViewDataSource {
                    contextMenuConfigurationForRowAt indexPath: IndexPath,
                    point: CGPoint) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+            var actions: [UIMenuElement] = []
+            // download action
+            let downloadAction: UIMenuElement
+            if DownloadManager.shared.isChapterDownloaded(chapter: self.sortedChapters[indexPath.row]) {
+                downloadAction = UIAction(title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""), image: nil, attributes: .destructive) { _ in
+                    DownloadManager.shared.delete(chapters: [self.sortedChapters[indexPath.row]])
+                }
+            } else {
+                downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { _ in
+                    DownloadManager.shared.download(chapters: [self.sortedChapters[indexPath.row]])
+                }
+            }
+            actions.append(UIMenu(title: "", options: .displayInline, children: [downloadAction]))
+            // marking actions
             let action: UIAction
             if self.readHistory[self.sortedChapters[indexPath.row].id] ?? 0 > 0 {
                 action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { _ in
@@ -466,7 +499,7 @@ extension MangaViewController: UITableViewDataSource {
                     tableView.reloadData()
                 }
             }
-            var actions: [UIMenuElement] = [action]
+            actions.append(action)
             if indexPath.row != self.chapters.count - 1 {
                 let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
                     UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in

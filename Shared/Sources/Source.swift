@@ -309,8 +309,11 @@ extension Source {
         await actor.getChapterList(manga: manga)
     }
 
-    func getPageList(chapter: Chapter) async throws -> [Page] {
-        await actor.getPageList(chapter: chapter)
+    func getPageList(chapter: Chapter, skipDownloadedCheck: Bool = false) async throws -> [Page] {
+        if !skipDownloadedCheck && DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+            return DownloadManager.shared.getDownloadedPages(for: chapter)
+        }
+        return await actor.getPageList(chapter: chapter)
     }
 
     func getImageRequest(url: String) async throws -> WasmRequestObject {

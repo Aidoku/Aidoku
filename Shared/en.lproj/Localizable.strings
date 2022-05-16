@@ -15,6 +15,8 @@
 "RESET" = "Reset";
 "DELETE" = "Delete";
 "RENAME" = "Rename";
+"DOWNLOAD" = "Download";
+"REMOVE_DOWNLOAD" = "Remove Download";
 
 // Library
 "LIBRARY" = "Library";

@@ -124,6 +124,18 @@ class ReaderPageView: UIView {
         }
     }
 
+    func setPage(page: Page) {
+        if let url = page.imageURL {
+            Task {
+                await setPageImage(url: url)
+            }
+        } else if let base64 = page.base64 {
+            setPageImage(base64: base64)
+        } else if let text = page.text {
+            setPageText(text: text)
+        }
+    }
+
     func setPageText(text: String) {
         // TODO: support text
     }
@@ -131,6 +143,12 @@ class ReaderPageView: UIView {
     func setPageImage(base64: String) {
         if let data = Data(base64Encoded: base64) {
             self.imageView.image = UIImage(data: data)
+            if self.progressView.progress != 1 {
+                self.progressView.setProgress(value: 1, withAnimation: true)
+            }
+            self.progressView.isHidden = true
+            self.reloadButton.alpha = 0
+            self.updateZoomBounds()
         }
     }
 

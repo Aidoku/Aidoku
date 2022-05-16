@@ -264,13 +264,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             }
             let path = IndexPath(item: i + 1, section: 1)
             if let cell = collectionView(collectionView, cellForItemAt: path) as? ReaderPageCollectionViewCell {
-                if let url = pages[i].imageURL {
-                    cell.setPageImage(url: url)
-                } else if let base64 = pages[i].base64 {
-                    cell.setPageImage(base64: base64)
-                } else if let text = pages[i].text {
-                    cell.setPageText(text: text)
-                }
+                cell.setPage(page: pages[i])
             }
         }
     }
@@ -479,12 +473,8 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
             } else {
                 page = pages[indexPath.item - 1]
             }
-            if let url = page?.imageURL {
-                cell.setPageImage(url: url)
-            } else if let base64 = page?.base64 {
-                cell.setPageImage(base64: base64)
-            } else if let text = page?.text {
-                cell.setPageText(text: text)
+            if let page = page {
+                cell.setPage(page: page)
             }
         }
     }
@@ -633,6 +623,16 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         infoView?.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
         infoView?.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         infoView?.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+    }
+
+    func setPage(page: Page) {
+        if let url = page.imageURL {
+            setPageImage(url: url)
+        } else if let base64 = page.base64 {
+            setPageImage(base64: base64)
+        } else if let text = page.text {
+            setPageText(text: text)
+        }
     }
 
     func setPageImage(url: String) {
