@@ -16,6 +16,7 @@
 "DELETE" = "Delete";
 "RENAME" = "Rename";
 "DOWNLOAD" = "Download";
+"DOWNLOADED" = "Downloaded";
 "REMOVE_DOWNLOAD" = "Remove Download";
 
 // Library
@@ -28,6 +29,7 @@
 "MANGA_INFO" = "Manga Info";
 
 "SORT_BY" = "Sort By";
+"FILTER_BY" = "Filter By";
 "TITLE" = "Title";
 "LAST_OPENED" = "Last Opened";
 "LAST_READ" = "Last Read";

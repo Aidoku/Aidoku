@@ -59,6 +59,13 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
+    struct LibraryFilter {
+        var name: String
+        var exclude: Bool = false
+    }
+
+    var filters: [LibraryFilter] = []
+
     var readHistory: [String: [String: Int]] = [:]
     var opensReaderView = false
     var preloadsChapters = false
@@ -181,9 +188,35 @@ class LibraryViewController: MangaCollectionViewController {
         updateSortMenu()
     }
 
+    func toggleFilter(_ name: String) {
+        if let idx = filters.firstIndex(where: { $0.name == name }) {
+            if filters[idx].exclude {
+                filters.remove(at: idx)
+            } else {
+                filters[idx].exclude = true
+            }
+        } else {
+            filters.append(LibraryFilter(name: name))
+        }
+        resortManga()
+        updateSortMenu()
+    }
+
+    func filterImage(for name: String) -> UIImage? {
+        if let idx = filters.firstIndex(where: { $0.name == name }) {
+            if filters[idx].exclude {
+                return UIImage(systemName: "xmark")
+            } else {
+                return UIImage(systemName: "checkmark")
+            }
+        } else {
+            return nil
+        }
+    }
+
     func updateSortMenu() {
         let chevronIcon = UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down")
-        navigationItem.rightBarButtonItem?.menu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), children: [
+        let sortMenu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), options: .displayInline, children: [
             UIAction(title: NSLocalizedString("TITLE", comment: ""), image: sortOption == 0 ? chevronIcon : nil) { _ in
                 self.toggleSort(0)
             },
@@ -200,10 +233,26 @@ class LibraryViewController: MangaCollectionViewController {
                 self.toggleSort(4)
             }
         ])
+        let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
+            UIAction(title: NSLocalizedString("DOWNLOADED", comment: ""), image: filterImage(for: "downloaded")) { _ in
+                self.toggleFilter("downloaded")
+            }
+        ])
+        navigationItem.rightBarButtonItem?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
     }
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
-        let filtered = manga.filter { searchText.isEmpty ? true : $0.title?.lowercased().contains(searchText.lowercased()) ?? true }
+        var filtered = manga.filter { searchText.isEmpty ? true : $0.title?.lowercased().contains(searchText.lowercased()) ?? true }
+        for filter in filters {
+            switch filter.name {
+            case "downloaded":
+                filtered = manga.filter {
+                    let downloaded = DownloadManager.shared.hasDownloadedChapter(manga: $0)
+                    return filter.exclude ? !downloaded : downloaded
+                }
+            default: break
+            }
+        }
         switch sortOption {
         case 0:
             return filtered

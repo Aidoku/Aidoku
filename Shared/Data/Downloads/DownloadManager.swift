@@ -58,6 +58,10 @@ class DownloadManager {
     func isChapterDownloaded(chapter: Chapter) -> Bool {
         cache.isChapterDownloaded(chapter: chapter)
     }
+
+    func hasDownloadedChapter(manga: Manga) -> Bool {
+        cache.hasDownloadedChapter(manga: manga)
+    }
 }
 
 extension DownloadManager {
