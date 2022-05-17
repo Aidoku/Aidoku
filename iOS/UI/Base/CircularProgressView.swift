@@ -39,7 +39,6 @@ class CircularProgressView: UIView {
     var lineWidth: CGFloat = 3
 
     override func draw(_ rect: CGRect) {
-        backgroundColor = UIColor.clear
         layer.cornerRadius = frame.size.width / 2
 
         let circlePath = UIBezierPath(
@@ -72,7 +71,7 @@ class CircularProgressView: UIView {
         if withAnimation {
             let endAnimation = CABasicAnimation(keyPath: "strokeEnd")
             endAnimation.duration = 1
-            endAnimation.fromValue = 0
+            endAnimation.fromValue = oldProgress
             endAnimation.toValue = value
             endAnimation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
             progressLayer.add(endAnimation, forKey: "animateProgress")

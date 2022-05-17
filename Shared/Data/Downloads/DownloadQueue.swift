@@ -79,11 +79,15 @@ extension DownloadQueue: DownloadTaskDelegate {
         tasks.removeValue(forKey: task.id)
         self.running = !tasks.isEmpty
         if !running {
-            print("finished download")
+            // all downloads finished
         }
     }
 
-    func taskProgressChanged(task: DownloadTask, progress: Int, total: Int) async {
-        print("\(progress)/\(total)")
+    func downloadFinished(download: Download) async {
+        NotificationCenter.default.post(name: NSNotification.Name("downloadFinished"), object: download)
+    }
+
+    func downloadProgressChanged(download: Download, progress: Int, total: Int) async {
+        NotificationCenter.default.post(name: NSNotification.Name("downloadProgressed"), object: download)
     }
 }

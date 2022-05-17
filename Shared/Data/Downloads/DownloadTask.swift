@@ -11,7 +11,8 @@ protocol DownloadTaskDelegate: AnyObject {
     func taskCancelled(task: DownloadTask) async
     func taskPaused(task: DownloadTask) async
     func taskFinished(task: DownloadTask) async
-    func taskProgressChanged(task: DownloadTask, progress: Int, total: Int) async
+    func downloadProgressChanged(download: Download, progress: Int, total: Int) async
+    func downloadFinished(download: Download) async
 }
 
 // performs the actual download operations
@@ -35,6 +36,10 @@ actor DownloadTask: Identifiable {
 
     func setDelegate(delegate: DownloadTaskDelegate?) {
         self.delegate = delegate
+    }
+
+    func getCurrentDownload() -> Download? {
+        downloads.first
     }
 
     func next() async {
@@ -90,7 +95,8 @@ actor DownloadTask: Identifiable {
             )) ?? []
         }
         while currentPage < pages.count && running {
-            await delegate?.taskProgressChanged(task: self, progress: currentPage + 1, total: pages.count)
+            downloads[0].progress = Float(currentPage + 1) / Float(pages.count)
+            await delegate?.downloadProgressChanged(download: getCurrentDownload()!, progress: currentPage + 1, total: pages.count)
             let page = pages[currentPage]
             let pageNumber = String(format: "%03d", page.index + 1) // XXX.png
             if let urlString = page.imageURL, let url = URL(string: urlString) {
@@ -118,6 +124,7 @@ actor DownloadTask: Identifiable {
                 cache.add(chapter: chapter)
             }
             downloads[0].status = .finished
+            await delegate?.downloadFinished(download: getCurrentDownload()!)
             downloads.removeFirst()
             pages = []
             currentPage = 0

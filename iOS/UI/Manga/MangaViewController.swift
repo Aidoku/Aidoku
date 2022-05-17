@@ -394,76 +394,12 @@ extension MangaViewController: UITableViewDataSource {
         chapters.count
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCell(withIdentifier: "ChapterTableViewCell")
-        if cell == nil {
-            cell = UITableViewCell(style: .subtitle, reuseIdentifier: "ChapterTableViewCell")
-        }
-
-        let chapter = sortedChapters[indexPath.row]
-
-        // title string
-        // Vol.X Ch.X - Title
-        var titleString = ""
-        if chapter.volumeNum == nil && chapter.title == nil, let chapterNum = chapter.chapterNum {
-            titleString = String(format: "Chapter %g", chapterNum)
-        } else {
-            if let volumeNum = chapter.volumeNum {
-                titleString.append(String(format: "Vol.%g ", volumeNum))
-            }
-            if let chapterNum = chapter.chapterNum {
-                titleString.append(String(format: "Ch.%g ", chapterNum))
-            }
-            if (chapter.volumeNum != nil || chapter.chapterNum != nil) && chapter.title != nil {
-                titleString.append("- ")
-            }
-            if let title = chapter.title {
-                titleString.append(title)
-            } else if chapter.chapterNum == nil {
-                titleString = NSLocalizedString("UNTITLED", comment: "")
-            }
-        }
-        cell?.textLabel?.text = titleString
-
-        // subtitle string
-        // date • scanlator • language
-        var subtitleString = ""
-        if let dateUploaded = chapter.dateUploaded {
-            subtitleString.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
-        }
-        if chapter.dateUploaded != nil && chapter.scanlator != nil {
-            subtitleString.append(" • ")
-        }
-        if let scanlator = chapter.scanlator {
-            subtitleString.append(scanlator)
-        }
-        if UserDefaults.standard.array(forKey: "\(manga.sourceId).languages")?.count ?? 0 > 1 {
-            subtitleString.append(" • \(chapter.lang)")
-        }
-        cell?.detailTextLabel?.text = subtitleString
-
-        if readHistory[chapter.id] ?? 0 > 0 {
-            cell?.textLabel?.textColor = .secondaryLabel
-        } else {
-            cell?.textLabel?.textColor = .label
-        }
-
-        if DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
-            let downloadedView = UIImageView(image: UIImage(systemName: "arrow.down.circle.fill"))
-            downloadedView.tintColor = .tertiaryLabel
-            cell?.accessoryView = downloadedView
-            cell?.accessoryView?.bounds = CGRect(x: 0, y: 0, width: 15, height: 15)
-        } else {
-            cell?.accessoryView = nil
-        }
-
-        cell?.textLabel?.font = .systemFont(ofSize: 15)
-        cell?.detailTextLabel?.font = .systemFont(ofSize: 14)
-        cell?.detailTextLabel?.textColor = .secondaryLabel
-        cell?.backgroundColor = .clear
-
-        return cell ?? UITableViewCell()
+        MangaChapterTableViewCell(
+            chapter: sortedChapters[indexPath.row],
+            read: readHistory[sortedChapters[indexPath.row].id] ?? 0 > 0,
+            reuseIdentifier: "ChapterTableViewCell"
+        )
     }
 
     func tableView(_ tableView: UITableView,

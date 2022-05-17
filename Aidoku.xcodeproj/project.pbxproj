@@ -131,6 +131,8 @@
 		FBE7813028308DC60038C0E3 /* Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7812E28308DC60038C0E3 /* Download.swift */; };
 		FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE781332830A34B0038C0E3 /* DownloadTask.swift */; };
 		FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE781332830A34B0038C0E3 /* DownloadTask.swift */; };
+		FBE7813728333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */; };
+		FBE7813828333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */; };
 		FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231227B816D50095D0C0 /* SettingsViewController.swift */; };
 		FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */; };
 		FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231627B83B670095D0C0 /* UISwitch.swift */; };
@@ -244,6 +246,7 @@
 		FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueue.swift; sourceTree = "<group>"; };
 		FBE7812E28308DC60038C0E3 /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
 		FBE781332830A34B0038C0E3 /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
+		FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaChapterTableViewCell.swift; sourceTree = "<group>"; };
 		FBED14542819FCFC004B8050 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBED1455281A2B9D004B8050 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FBED231227B816D50095D0C0 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -400,6 +403,7 @@
 			isa = PBXGroup;
 			children = (
 				FB4CB19227A70B9A00A05445 /* MangaViewController.swift */,
+				FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */,
 				FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */,
 				FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */,
 			);
@@ -593,6 +597,7 @@
 				FB72502627CC067E0037F1C9 /* Manga */,
 				FB72502527CC06610037F1C9 /* Settings */,
 				FBED231827B8BA7C0095D0C0 /* MiniModalViewController.swift */,
+				0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -632,7 +637,6 @@
 				FB31AD1027B1792600D50410 /* ReaderPageView.swift */,
 				FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */,
 				FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */,
-				0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */,
 			);
 			path = Page;
 			sourceTree = "<group>";
@@ -900,6 +904,7 @@
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB4ADC6C2810ECD000F6D7FB /* SourceListsViewController.swift in Sources */,
 				FB72500B27CA8DED0037F1C9 /* BackupsViewController.swift in Sources */,
+				FBE7813728333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */,
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
@@ -960,6 +965,7 @@
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
+				FBE7813828333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

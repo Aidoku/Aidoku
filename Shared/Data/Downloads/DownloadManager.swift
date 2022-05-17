@@ -65,6 +65,9 @@ extension DownloadManager {
     func download(chapters: [Chapter]) {
         Task {
             await queue.add(chapters: chapters)
+            for chapter in chapters {
+                NotificationCenter.default.post(name: NSNotification.Name("downloadQueued"), object: chapter)
+            }
         }
     }
 
@@ -72,6 +75,7 @@ extension DownloadManager {
         for chapter in chapters {
             cache.directory(for: chapter).removeItem()
             cache.remove(chapter: chapter)
+            NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
         }
     }
 }

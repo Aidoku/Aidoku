@@ -21,6 +21,7 @@ struct Download: Equatable {
     let mangaId: String
     let chapterId: String
     var status: DownloadStatus = .queued
+    var progress: Float = 0
 
     static func from(chapter: Chapter, status: DownloadStatus = .queued) -> Download {
         Download(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id, status: status)
