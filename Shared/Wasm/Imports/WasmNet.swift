@@ -135,7 +135,7 @@ class WasmNet: WasmImports {
     var passedRequests: Int = 0
 
     // swiftlint:disable:next line_length
-    var defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63"
+    static let defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63"
 
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
@@ -237,7 +237,7 @@ extension WasmNet {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
             // set user agent
-            urlRequest.setValue(request.headers["User-Agent"] ?? self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
+            urlRequest.setValue(request.headers["User-Agent"] ?? Self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
 
             // set body
             if let body = request.body { urlRequest.httpBody = body }
