@@ -15,10 +15,13 @@
 "RESET" = "Reset";
 "DELETE" = "Delete";
 "RENAME" = "Rename";
+
+// Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
+"REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 
 // Library
 "LIBRARY" = "Library";

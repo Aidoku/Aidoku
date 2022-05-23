@@ -85,33 +85,8 @@ class MangaViewController: UIViewController {
 
         navigationItem.largeTitleDisplayMode = .never
 
-        // TODO: only show relevant actions
-        let mangaOptions: [UIAction] = [
-            UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
-                self.showLoadingIndicator()
-                DataManager.shared.setRead(manga: self.manga)
-                DataManager.shared.setCompleted(
-                    chapters: self.chapters,
-                    date: Date().addingTimeInterval(-1),
-                    context: DataManager.shared.backgroundContext
-                )
-                // Make most recent chapter appear as the most recently read
-                if let firstChapter = self.chapters.first {
-                    DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
-                }
-            },
-            UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                self.showLoadingIndicator()
-                DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
-            }
-        ]
-        let markSubmenu = UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions)
-
-        let menu = UIMenu(title: "", children: [markSubmenu])
-
-        let ellipsisButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
-        ellipsisButton.menu = menu
-        navigationItem.rightBarButtonItem = ellipsisButton
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
+        updateMoreMenu()
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -153,6 +128,16 @@ class MangaViewController: UIViewController {
                 self.loadingAlert?.dismiss(animated: true)
                 self.tableView.reloadData()
             }
+        }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
+            self.updateMoreMenu()
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadRemoved"), object: nil, queue: nil) { _ in
+            self.updateMoreMenu()
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil) { _ in
+            self.updateMoreMenu()
         }
 
         Task {
@@ -208,6 +193,46 @@ class MangaViewController: UIViewController {
             headerView.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
             headerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor).isActive = true
             headerView.heightAnchor.constraint(equalTo: headerView.contentStackView.heightAnchor, constant: 10).isActive = true
+        }
+    }
+
+    func updateMoreMenu() {
+        var subMenus: [UIMenu] = []
+
+        // TODO: only show relevant actions
+        let mangaOptions: [UIAction] = [
+            UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                self.showLoadingIndicator()
+                DataManager.shared.setRead(manga: self.manga)
+                DataManager.shared.setCompleted(
+                    chapters: self.chapters,
+                    date: Date().addingTimeInterval(-1),
+                    context: DataManager.shared.backgroundContext
+                )
+                // Make most recent chapter appear as the most recently read
+                if let firstChapter = self.chapters.first {
+                    DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
+                }
+            },
+            UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                self.showLoadingIndicator()
+                DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
+            }
+        ]
+        subMenus.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions))
+
+        if DownloadManager.shared.hasDownloadedChapter(for: manga) {
+            subMenus.append(UIMenu(title: "", options: .displayInline, children: [
+                UIAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""), image: nil) { _ in
+                    DownloadManager.shared.deleteChapters(for: self.manga)
+                }
+            ]))
+        }
+
+        let menu = UIMenu(title: "", children: subMenus)
+
+        Task { @MainActor in
+            navigationItem.rightBarButtonItem?.menu = menu
         }
     }
 

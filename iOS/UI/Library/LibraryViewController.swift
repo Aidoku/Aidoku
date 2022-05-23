@@ -278,7 +278,7 @@ class LibraryViewController: MangaCollectionViewController {
             switch filter.name {
             case "downloaded":
                 filtered = manga.filter {
-                    let downloaded = DownloadManager.shared.hasDownloadedChapter(manga: $0)
+                    let downloaded = DownloadManager.shared.hasDownloadedChapter(for: $0)
                     return filter.exclude ? !downloaded : downloaded
                 }
             default: break

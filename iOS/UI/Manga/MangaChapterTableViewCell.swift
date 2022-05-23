@@ -67,6 +67,15 @@ class MangaChapterTableViewCell: UITableViewCell {
             }
         }
 
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsRemoved"), object: nil, queue: nil) { notification in
+            if let download = notification.object as? Manga,
+               download.id == chapter.mangaId {
+                 Task { @MainActor in
+                     self.checkDownloaded()
+                 }
+            }
+        }
+
         NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadCancelled"), object: nil, queue: nil) { notification in
             if let download = notification.object as? Chapter,
                download.id == chapter.id {

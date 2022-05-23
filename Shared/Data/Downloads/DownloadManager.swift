@@ -77,8 +77,8 @@ class DownloadManager {
         }
     }
 
-    func hasDownloadedChapter(manga: Manga) -> Bool {
-        cache.hasDownloadedChapter(manga: manga)
+    func hasDownloadedChapter(for manga: Manga) -> Bool {
+        cache.hasDownloadedChapter(for: manga)
     }
 
     func hasQueuedDownloads() async -> Bool {
@@ -103,6 +103,12 @@ extension DownloadManager {
             cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
         }
+    }
+
+    func deleteChapters(for manga: Manga) {
+        cache.directory(for: manga).removeItem()
+        cache.remove(manga: manga)
+        NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
     }
 
     func cancelDownload(for chapter: Chapter) {

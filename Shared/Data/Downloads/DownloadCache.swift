@@ -67,6 +67,11 @@ class DownloadCache {
         }
     }
 
+    func remove(manga: Manga) {
+        rootDirectory.subdirectories[manga.sourceId.directoryName]?
+            .subdirectories[manga.id.directoryName] = nil
+    }
+
     func remove(chapter: Chapter) {
         rootDirectory.subdirectories[chapter.sourceId.directoryName]?
             .subdirectories[chapter.mangaId.directoryName]?
@@ -85,7 +90,7 @@ extension DownloadCache {
         return false
     }
 
-    func hasDownloadedChapter(manga: Manga) -> Bool {
+    func hasDownloadedChapter(for manga: Manga) -> Bool {
         if !loaded { load() }
         if let sourceDirectory = rootDirectory.subdirectories[manga.sourceId.directoryName],
            let mangaDirectory = sourceDirectory.subdirectories[manga.id.directoryName] {
