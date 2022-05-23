@@ -39,13 +39,19 @@ class DownloadQueueViewController: UITableViewController {
                 let index = self.queue.firstIndex(where: { $0.sourceId == download.sourceId })
                 var downloads = index != nil ? self.queue[index!].downloads : []
                 downloads.append(download)
-                if index != nil {
-                    self.queue[index!].downloads = downloads
+                if let index = index {
+                    let downloads = downloads
+                    self.queue[index].downloads = downloads
+                    Task { @MainActor in
+                        self.tableView.insertRows(at: [IndexPath(row: downloads.count - 1, section: index)], with: .automatic)
+                    }
                 } else {
                     self.queue.append((download.sourceId, downloads))
-                }
-                Task { @MainActor in
-                    self.tableView.reloadData()
+                    Task { @MainActor in
+                        self.tableView.performBatchUpdates {
+                            self.tableView.insertSections(IndexSet(integer: self.queue.count - 1), with: .automatic)
+                        }
+                    }
                 }
             }
         }
@@ -55,14 +61,23 @@ class DownloadQueueViewController: UITableViewController {
             if let download = notification.object as? Download,
                let index = self.queue.firstIndex(where: { $0.sourceId == download.sourceId }) {
                 var downloads = self.queue[index].downloads
-                downloads.removeAll { $0 == download }
+                let indexToRemove = downloads.firstIndex(where: { $0 == download })
+                guard let indexToRemove = indexToRemove else { return } // nothing to remove
+                downloads.remove(at: indexToRemove)
                 if downloads.isEmpty {
                     self.queue.remove(at: index)
+                    Task { @MainActor in
+                        self.tableView.performBatchUpdates {
+                            self.tableView.deleteSections(IndexSet(integer: index), with: .fade)
+                        }
+                    }
                 } else {
                     self.queue[index].downloads = downloads
-                }
-                Task { @MainActor in
-                    self.tableView.reloadData()
+                    Task { @MainActor in
+                        self.tableView.performBatchUpdates {
+                            self.tableView.deleteRows(at: [IndexPath(row: indexToRemove, section: index)], with: .automatic)
+                        }
+                    }
                 }
             }
         }
@@ -138,9 +153,17 @@ extension DownloadQueueViewController {
         // progress update block
         if let chapter = download.chapter {
             DownloadManager.shared.onProgress(for: chapter) { progress, total in
-                Task { @MainActor in
-                    if total != cell.total { cell.total = total }
-                    cell.progress = progress
+                if let queueIndex = self.queue.firstIndex(where: { $0.sourceId == download.sourceId }),
+                   let downloadIndex = self.queue[queueIndex].downloads.firstIndex(where: { $0 == download }) {
+                    self.queue[queueIndex].downloads[downloadIndex].progress = progress
+                    self.queue[queueIndex].downloads[downloadIndex].total = total
+
+                    Task { @MainActor in
+                        if let cell = tableView.cellForRow(at: IndexPath(row: queueIndex, section: downloadIndex)) as? DownloadTableViewCell {
+                            if total != cell.total { cell.total = total }
+                            cell.progress = progress
+                        }
+                    }
                 }
             }
         }
