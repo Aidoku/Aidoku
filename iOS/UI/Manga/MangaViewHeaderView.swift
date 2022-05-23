@@ -72,18 +72,51 @@ class MangaViewHeaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func updateViews() {
-        let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.1))
-        coverImageView.kf.setImage(
-            with: URL(string: manga?.cover ?? ""),
-            placeholder: UIImage(named: "MangaPlaceholder"),
-            options: [
+    func setCover() async {
+        let url = manga?.cover ?? ""
+
+        let requestModifier: AnyModifier?
+
+        if !url.isEmpty,
+           let sourceId = manga?.sourceId,
+           let source = SourceManager.shared.source(for: sourceId),
+           source.handlesImageRequests,
+           let request = try? await source.getImageRequest(url: url) {
+            requestModifier = AnyModifier { urlRequest in
+                var r = urlRequest
+                for (key, value) in request.headers {
+                    r.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { r.httpBody = body }
+                return r
+            }
+        } else {
+            requestModifier = nil
+        }
+
+        await MainActor.run {
+            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.1))
+            var kfOptions: [KingfisherOptionsInfoItem] = [
                 .scaleFactor(UIScreen.main.scale),
                 .transition(.fade(0.3)),
                 .retryStrategy(retry),
                 .cacheOriginalImage
             ]
-        )
+            if let requestModifier = requestModifier {
+                kfOptions.append(.requestModifier(requestModifier))
+            }
+            coverImageView.kf.setImage(
+                with: URL(string: url),
+                placeholder: UIImage(named: "MangaPlaceholder"),
+                options: kfOptions
+            )
+        }
+    }
+
+    func updateViews() {
+        Task {
+            await setCover()
+        }
         titleLabel.text = manga?.title ?? "No Title"
         authorLabel.text = manga?.author ?? "No Author"
 
