@@ -74,6 +74,7 @@ class LibraryViewController: MangaCollectionViewController {
     var updatedLibrary = false
 
     let emptyTextStackView = UIStackView()
+    var filterButton: UIBarButtonItem?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,15 +84,10 @@ class LibraryViewController: MangaCollectionViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
 
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+        Task {
+            await updateNavbarButtons()
+            updateSortMenu()
         }
-        let filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
-        navigationItem.rightBarButtonItem = filterButton
-        updateSortMenu()
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -151,6 +147,16 @@ class LibraryViewController: MangaCollectionViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
             self.refreshManga()
         }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadQueued"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateNavbarButtons()
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateNavbarButtons()
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -175,6 +181,31 @@ class LibraryViewController: MangaCollectionViewController {
         collectionView?.refreshControl = refreshControl
 
         navigationItem.hidesSearchBarWhenScrolling = true
+    }
+
+    func updateNavbarButtons() async {
+        var buttons: [UIBarButtonItem] = []
+
+        let filterImage: UIImage?
+        if #available(iOS 15.0, *) {
+            filterImage = UIImage(systemName: "line.3.horizontal.decrease")
+        } else {
+            filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+        }
+        filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
+        buttons.append(filterButton!)
+
+        if await DownloadManager.shared.hasQueuedDownloads() {
+            let downloadQueueButton = UIBarButtonItem(
+                image: UIImage(systemName: "square.and.arrow.down"),
+                style: .plain,
+                target: self,
+                action: #selector(openDownloadQueue)
+            )
+            buttons.append(downloadQueueButton)
+        }
+
+        navigationItem.rightBarButtonItems = buttons
     }
 
     func toggleSort(_ option: Int) {
@@ -238,7 +269,7 @@ class LibraryViewController: MangaCollectionViewController {
                 self.toggleFilter("downloaded")
             }
         ])
-        navigationItem.rightBarButtonItem?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
+        filterButton?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
     }
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
@@ -426,6 +457,10 @@ class LibraryViewController: MangaCollectionViewController {
             return chapters[mangaId]?.first { $0.id == id }
         }
         return chapters[mangaId]?.last
+    }
+
+    @objc func openDownloadQueue() {
+        present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
     }
 }
 

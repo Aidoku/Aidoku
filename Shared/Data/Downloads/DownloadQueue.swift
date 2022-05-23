@@ -16,6 +16,7 @@ actor DownloadQueue {
 
     var queue: [String: [Download]] = [:] // all queued downloads stored under source id
     var tasks: [String: DownloadTask] = [:] // tasks for each source
+    var progressBlocks: [Chapter: (Int, Int) -> Void] = [:]
 
     var running: Bool = false
 
@@ -24,7 +25,7 @@ actor DownloadQueue {
     }
 
     func start() async {
-        guard !running else { return }
+//        guard !running else { return }
         running = true
 
         for source in queue {
@@ -49,9 +50,13 @@ actor DownloadQueue {
         guard running else { return }
     }
 
-    func add(chapters: [Chapter], autoStart: Bool = true) async {
+    @discardableResult
+    func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
+        var downloads: [Download] = []
         for chapter in chapters {
-            let download = Download.from(chapter: chapter)
+            var download = Download.from(chapter: chapter)
+            download.manga = manga
+            downloads.append(download)
             if queue[chapter.sourceId] == nil {
                 queue[chapter.sourceId] = [download]
             } else {
@@ -59,9 +64,21 @@ actor DownloadQueue {
                 await tasks[chapter.sourceId]?.add(download: download)
             }
         }
-        if autoStart && !running {
+        if autoStart {
             await start()
         }
+        return downloads
+    }
+
+    // register callback for download progress change
+    func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
+        progressBlocks[chapter] = block
+    }
+}
+
+extension DownloadQueue {
+    func hasQueuedDownloads() -> Bool {
+        !queue.isEmpty
     }
 }
 
@@ -84,10 +101,23 @@ extension DownloadQueue: DownloadTaskDelegate {
     }
 
     func downloadFinished(download: Download) async {
+        var sourceDownloads = queue[download.sourceId] ?? []
+        sourceDownloads.removeAll { $0 == download }
+        if sourceDownloads.isEmpty {
+            queue.removeValue(forKey: download.sourceId)
+        } else {
+            queue[download.sourceId] = sourceDownloads
+        }
+        if let chapter = download.chapter {
+            progressBlocks[chapter] = nil
+        }
         NotificationCenter.default.post(name: NSNotification.Name("downloadFinished"), object: download)
     }
 
-    func downloadProgressChanged(download: Download, progress: Int, total: Int) async {
+    func downloadProgressChanged(download: Download) async {
+        if let chapter = download.chapter, let block = progressBlocks[chapter] {
+            block(download.progress, download.total)
+        }
         NotificationCenter.default.post(name: NSNotification.Name("downloadProgressed"), object: download)
     }
 }

@@ -415,7 +415,7 @@ extension MangaViewController: UITableViewDataSource {
                 }
             } else {
                 downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { _ in
-                    DownloadManager.shared.download(chapters: [self.sortedChapters[indexPath.row]])
+                    DownloadManager.shared.download(chapters: [self.sortedChapters[indexPath.row]], manga: self.manga)
                 }
             }
             actions.append(UIMenu(title: "", options: .displayInline, children: [downloadAction]))

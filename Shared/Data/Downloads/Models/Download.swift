@@ -17,17 +17,32 @@ enum DownloadStatus {
 }
 
 struct Download: Equatable {
+
     let sourceId: String
     let mangaId: String
     let chapterId: String
+
     var status: DownloadStatus = .queued
-    var progress: Float = 0
+
+    var progress: Int = 0
+    var total: Int = 0
+
+    var manga: Manga?
+    var chapter: Chapter?
+
+    static func == (lhs: Download, rhs: Download) -> Bool {
+        lhs.sourceId == rhs.sourceId && lhs.mangaId == rhs.mangaId && lhs.chapterId == rhs.chapterId
+    }
 
     static func from(chapter: Chapter, status: DownloadStatus = .queued) -> Download {
-        Download(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id, status: status)
+        Download(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id, status: status, chapter: chapter)
     }
 
     func toChapter() -> Chapter {
-        Chapter(sourceId: sourceId, id: chapterId, mangaId: mangaId, title: nil, sourceOrder: -1)
+        if let chapter = chapter {
+            return chapter
+        } else {
+            return Chapter(sourceId: sourceId, id: chapterId, mangaId: mangaId, title: nil, sourceOrder: -1)
+        }
     }
 }

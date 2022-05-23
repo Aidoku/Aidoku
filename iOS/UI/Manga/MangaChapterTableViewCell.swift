@@ -1,6 +1,6 @@
 //
 //  MangaChapterTableViewCell.swift
-//  Aidoku
+//  Aidoku (iOS)
 //
 //  Created by Skitty on 5/16/22.
 //
@@ -44,7 +44,7 @@ class MangaChapterTableViewCell: UITableViewCell {
                download.chapterId == chapter.id {
                 Task { @MainActor in
                     self.accessoryView?.isHidden = false
-                    self.progressView.setProgress(value: download.progress, withAnimation: false)
+                    self.progressView.setProgress(value: Float(download.progress) / Float(download.total), withAnimation: false)
                 }
             }
         }
@@ -68,8 +68,8 @@ class MangaChapterTableViewCell: UITableViewCell {
         }
 
         NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadQueued"), object: nil, queue: nil) { notification in
-            if let download = notification.object as? Chapter,
-               download.id == chapter.id {
+            if let download = notification.object as? Download,
+               download.chapterId == chapter.id {
                 Task { @MainActor in
                     self.accessoryView?.isHidden = false
                 }

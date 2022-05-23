@@ -11,7 +11,7 @@ protocol DownloadTaskDelegate: AnyObject {
     func taskCancelled(task: DownloadTask) async
     func taskPaused(task: DownloadTask) async
     func taskFinished(task: DownloadTask) async
-    func downloadProgressChanged(download: Download, progress: Int, total: Int) async
+    func downloadProgressChanged(download: Download) async
     func downloadFinished(download: Download) async
 }
 
@@ -38,8 +38,8 @@ actor DownloadTask: Identifiable {
         self.delegate = delegate
     }
 
-    func getCurrentDownload() -> Download? {
-        downloads.first
+    func getDownload(_ index: Int = 0) -> Download? {
+        downloads.count >= index ? downloads[index] : nil
     }
 
     func next() async {
@@ -71,7 +71,7 @@ actor DownloadTask: Identifiable {
             }
 
             Task {
-                await self.download(download, from: source, to: directory)
+                await self.download(0, from: source, to: directory)
             }
         } else {
             downloads.removeFirst()
@@ -80,23 +80,24 @@ actor DownloadTask: Identifiable {
     }
 
     // perform download
-    func download(_ download: Download, from source: Source, to directory: URL) async {
-        let chapter = download.toChapter()
+    func download(_ downloadIndex: Int, from source: Source, to directory: URL) async {
+        let chapter = downloads[downloadIndex].toChapter()
         let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
             .appendingSafePathComponent(".tmp_\(chapter.id)")
         tmpDirectory.createDirectory()
 
-        downloads[0].status = .downloading
+        downloads[downloadIndex].status = .downloading
 
         if pages.isEmpty {
             pages = (try? await source.getPageList(
                 chapter: chapter,
                 skipDownloadedCheck: true
             )) ?? []
+            downloads[downloadIndex].total = pages.count
         }
         while currentPage < pages.count && running {
-            downloads[0].progress = Float(currentPage + 1) / Float(pages.count)
-            await delegate?.downloadProgressChanged(download: getCurrentDownload()!, progress: currentPage + 1, total: pages.count)
+            downloads[downloadIndex].progress = currentPage + 1
+            await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
             let page = pages[currentPage]
             let pageNumber = String(format: "%03d", page.index + 1) // XXX.png
             if let urlString = page.imageURL, let url = URL(string: urlString) {
@@ -123,9 +124,9 @@ actor DownloadTask: Identifiable {
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
                 cache.add(chapter: chapter)
             }
-            downloads[0].status = .finished
-            await delegate?.downloadFinished(download: getCurrentDownload()!)
-            downloads.removeFirst()
+            downloads[downloadIndex].status = .finished
+            await delegate?.downloadFinished(download: getDownload(downloadIndex)!)
+            downloads.remove(at: downloadIndex)
             pages = []
             currentPage = 0
             await next()
@@ -142,7 +143,9 @@ actor DownloadTask: Identifiable {
 
     func pause() async {
         running = false
-        downloads[0].status = .paused
+        for (i, download) in downloads.enumerated() where download.status == .downloading {
+            downloads[i].status = .paused
+        }
         Task {
             await delegate?.taskPaused(task: self)
         }
@@ -150,7 +153,9 @@ actor DownloadTask: Identifiable {
 
     func cancel() {
         running = false
-        downloads[0].status = .cancelled
+        for i in downloads.indices {
+            downloads[i].status = .cancelled
+        }
         pages = []
         currentPage = 0
         Task {

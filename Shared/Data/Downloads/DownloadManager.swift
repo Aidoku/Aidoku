@@ -37,6 +37,10 @@ class DownloadManager {
         }
     }
 
+    func getDownloadQueue() async -> [String: [Download]] {
+        await queue.queue
+    }
+
     func getDownloadedPages(for chapter: Chapter) -> [Page] {
         var pages: [Page] = []
         let pageUrls = cache.directory(for: chapter).contents
@@ -62,15 +66,19 @@ class DownloadManager {
     func hasDownloadedChapter(manga: Manga) -> Bool {
         cache.hasDownloadedChapter(manga: manga)
     }
+
+    func hasQueuedDownloads() async -> Bool {
+        await queue.hasQueuedDownloads()
+    }
 }
 
 extension DownloadManager {
 
-    func download(chapters: [Chapter]) {
+    func download(chapters: [Chapter], manga: Manga? = nil) {
         Task {
-            await queue.add(chapters: chapters)
-            for chapter in chapters {
-                NotificationCenter.default.post(name: NSNotification.Name("downloadQueued"), object: chapter)
+            let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
+            for download in downloads {
+                NotificationCenter.default.post(name: NSNotification.Name("downloadQueued"), object: download)
             }
         }
     }
@@ -80,6 +88,12 @@ extension DownloadManager {
             cache.directory(for: chapter).removeItem()
             cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
+        }
+    }
+
+    func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
+        Task {
+            await queue.onProgress(for: chapter, block: block)
         }
     }
 }
