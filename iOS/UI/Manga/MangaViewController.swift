@@ -409,9 +409,14 @@ extension MangaViewController: UITableViewDataSource {
             var actions: [UIMenuElement] = []
             // download action
             let downloadAction: UIMenuElement
-            if DownloadManager.shared.isChapterDownloaded(chapter: self.sortedChapters[indexPath.row]) {
+            let downloadStatus = DownloadManager.shared.getDownloadStatus(for: self.sortedChapters[indexPath.row])
+            if downloadStatus == .finished {
                 downloadAction = UIAction(title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""), image: nil, attributes: .destructive) { _ in
                     DownloadManager.shared.delete(chapters: [self.sortedChapters[indexPath.row]])
+                }
+            } else if downloadStatus == .downloading {
+                downloadAction = UIAction(title: NSLocalizedString("CANCEL_DOWNLOAD", comment: ""), image: nil, attributes: .destructive) { _ in
+                    DownloadManager.shared.cancelDownload(for: self.sortedChapters[indexPath.row])
                 }
             } else {
                 downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { _ in

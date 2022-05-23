@@ -67,6 +67,15 @@ class MangaChapterTableViewCell: UITableViewCell {
             }
         }
 
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadCancelled"), object: nil, queue: nil) { notification in
+            if let download = notification.object as? Chapter,
+               download.id == chapter.id {
+                Task { @MainActor in
+                    self.checkDownloaded()
+                }
+            }
+        }
+
         NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadQueued"), object: nil, queue: nil) { notification in
             if let download = notification.object as? Download,
                download.chapterId == chapter.id {
@@ -140,15 +149,17 @@ class MangaChapterTableViewCell: UITableViewCell {
     }
 
     func checkDownloaded() {
-        if DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+        let downloadStatus = DownloadManager.shared.getDownloadStatus(for: chapter)
+        if downloadStatus == .finished {
             progressView.isHidden = true
             downloadedView.isHidden = false
             progressView.progress = 0
             accessoryView?.isHidden = false
         } else {
             downloadedView.isHidden = true
+            progressView.progress = 0
             progressView.isHidden = false
-            accessoryView?.isHidden = true
+            accessoryView?.isHidden = downloadStatus == .none
         }
     }
 }

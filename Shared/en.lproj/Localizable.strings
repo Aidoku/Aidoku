@@ -17,6 +17,7 @@
 "RENAME" = "Rename";
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
+"CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
 
 // Library

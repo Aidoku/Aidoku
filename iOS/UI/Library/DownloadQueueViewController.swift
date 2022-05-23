@@ -147,4 +147,17 @@ extension DownloadQueueViewController {
 
         return cell
     }
+
+    override func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let cancelAction = UIContextualAction(style: .destructive, title: NSLocalizedString("CANCEL", comment: "")) { _, _, completion in
+            if let chapter = self.queue[indexPath.section].downloads[indexPath.row].chapter {
+                DownloadManager.shared.cancelDownload(for: chapter)
+                completion(true)
+            }
+        }
+        return UISwipeActionsConfiguration(actions: [cancelAction])
+    }
 }

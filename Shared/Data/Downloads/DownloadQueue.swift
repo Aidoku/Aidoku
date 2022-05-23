@@ -70,6 +70,18 @@ actor DownloadQueue {
         return downloads
     }
 
+    func cancelDownload(for chapter: Chapter) async {
+        if let task = tasks[chapter.sourceId] {
+            await task.cancel(chapter: chapter)
+        } else {
+            // no longer in queue but the tmp download directory still exists, so we should remove it
+            cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                .appendingSafePathComponent(".tmp_\(chapter.id)")
+                .removeItem()
+        }
+        NotificationCenter.default.post(name: NSNotification.Name("downloadCancelled"), object: chapter)
+    }
+
     // register callback for download progress change
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
         progressBlocks[chapter] = block
@@ -77,8 +89,16 @@ actor DownloadQueue {
 }
 
 extension DownloadQueue {
+
     func hasQueuedDownloads() -> Bool {
         !queue.isEmpty
+    }
+
+    func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
+        if let download = queue[chapter.sourceId]?.first(where: { $0.chapterId == chapter.id }) {
+            return download.status
+        }
+        return .none
     }
 }
 

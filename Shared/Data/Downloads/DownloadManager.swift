@@ -63,6 +63,20 @@ class DownloadManager {
         cache.isChapterDownloaded(chapter: chapter)
     }
 
+    func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
+        if cache.isChapterDownloaded(chapter: chapter) {
+            return .finished
+        } else {
+            let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                .appendingSafePathComponent(".tmp_\(chapter.id)")
+            if tmpDirectory.exists {
+                return .downloading
+            } else {
+                return .none
+            }
+        }
+    }
+
     func hasDownloadedChapter(manga: Manga) -> Bool {
         cache.hasDownloadedChapter(manga: manga)
     }
@@ -88,6 +102,12 @@ extension DownloadManager {
             cache.directory(for: chapter).removeItem()
             cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
+        }
+    }
+
+    func cancelDownload(for chapter: Chapter) {
+        Task {
+            await queue.cancelDownload(for: chapter)
         }
     }
 

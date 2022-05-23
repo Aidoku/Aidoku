@@ -8,6 +8,7 @@
 import Foundation
 
 enum DownloadStatus {
+    case none
     case queued
     case downloading
     case paused

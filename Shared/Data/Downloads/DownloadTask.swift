@@ -65,7 +65,7 @@ actor DownloadTask: Identifiable {
             }
 
             // download has been cancelled or failed, move to next
-            if download.status != .queued && download.status != .paused {
+            if download.status != .queued && download.status != .downloading && download.status != .paused {
                 downloads.removeFirst()
                 return await next()
             }
@@ -151,21 +151,53 @@ actor DownloadTask: Identifiable {
         }
     }
 
-    func cancel() {
-        running = false
-        for i in downloads.indices {
-            downloads[i].status = .cancelled
-        }
-        pages = []
-        currentPage = 0
-        Task {
-            await delegate?.taskCancelled(task: self)
+    func cancel(chapter: Chapter? = nil) {
+        if let chapter = chapter,
+           let index = downloads.firstIndex(where: { $0.chapterId == chapter.id }) {
+            // cancel specific chapter download
+            let wasRunning = running
+            running = false
+            downloads[index].status = .cancelled
+            if index == 0 {
+                pages = []
+                currentPage = 0
+            }
+            // remove chapter tmp download directory
+            cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                .appendingSafePathComponent(".tmp_\(chapter.id)")
+                .removeItem()
+            let download = downloads[index]
+            Task {
+                await delegate?.downloadFinished(download: download)
+                downloads.removeAll { $0 == download }
+                if wasRunning {
+                    resume()
+                }
+            }
+        } else {
+            // cancel all downloads in task
+            running = false
+            for i in downloads.indices {
+                guard i < downloads.count else { continue }
+                downloads[i].status = .cancelled
+                downloads.remove(at: i)
+            }
+            pages = []
+            currentPage = 0
+            Task {
+                await delegate?.taskCancelled(task: self)
+            }
         }
     }
 
     func add(download: Download, autostart: Bool = false) {
         guard !downloads.contains(where: { $0 == download }) else { return }
         downloads.append(download)
+        Task {
+            cache.directory(forSourceId: download.sourceId, mangaId: download.mangaId)
+                .appendingSafePathComponent(".tmp_\(download.chapterId)")
+                .createDirectory()
+        }
         if !running && autostart {
             resume()
         }
