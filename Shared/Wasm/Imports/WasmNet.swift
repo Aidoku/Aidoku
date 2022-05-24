@@ -18,13 +18,20 @@ enum HttpMethod: Int {
     case DELETE = 4
 }
 
-struct WasmResponseObject: KVCObject {
+class WasmResponseObject: KVCObject {
     var data: Data?
     var response: URLResponse?
     var error: Error?
     var statusCode: Int?
 
     var bytesRead: Int = 0
+
+    init(data: Data? = nil, response: URLResponse? = nil, error: Error? = nil, statusCode: Int? = nil) {
+        self.data = data
+        self.response = response
+        self.error = error
+        self.statusCode = statusCode ?? (response as? HTTPURLResponse)?.statusCode
+    }
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
@@ -62,16 +69,14 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 
     var netModule: WasmNet
     var request: URLRequest
-    var requestDescriptor: Int32
 
     var webView: WKWebView?
 
     var done = false
 
-    init(netModule: WasmNet, request: URLRequest, requestDescriptor: Int32) {
+    init(netModule: WasmNet, request: URLRequest) {
         self.netModule = netModule
         self.request = request
-        self.requestDescriptor = requestDescriptor
     }
 
     func load() {
@@ -114,8 +119,8 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 
             // re-send request
             URLSession.shared.dataTask(with: self.request) { data, response, error in
-                let response = WasmResponseObject(data: data, response: response, error: error)
-                self.netModule.globalStore.requests[self.requestDescriptor]?.response = response
+                self.netModule.storedResponse = WasmResponseObject(data: data, response: response, error: error)
+                self.netModule.incrementRequest()
                 self.netModule.semaphore.signal()
             }.resume()
         }
@@ -133,6 +138,8 @@ class WasmNet: WasmImports {
     var period: TimeInterval = 60 // seconds in the rate limit period
     var lastRequestTime: Date?
     var passedRequests: Int = 0
+
+    var storedResponse: WasmResponseObject?
 
     // swiftlint:disable:next line_length
     static let defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.63"
@@ -163,6 +170,77 @@ class WasmNet: WasmImports {
 }
 
 extension WasmNet {
+
+    func modifyRequest(_ urlRequest: URLRequest) -> URLRequest? {
+        guard let url = urlRequest.url else { return nil }
+        var request = urlRequest
+
+        // ensure a user-agent is passed
+        if request.value(forHTTPHeaderField: "User-Agent") == nil {
+            request.setValue(Self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
+        }
+
+        // add stored cookies
+        if let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
+            var cookieString = cookies
+            // keep cookies in original request
+            if let oldCookie = request.value(forHTTPHeaderField: "Cookie") {
+                cookieString += "; " + oldCookie
+            }
+            request.setValue(cookieString, forHTTPHeaderField: "Cookie")
+        }
+
+        return request
+    }
+
+    func performRequest(_ urlRequest: URLRequest, cloudflare: Bool = true) -> WasmResponseObject? {
+        // check rate limit
+        if self.isRateLimited() {
+            return WasmResponseObject(statusCode: 429) // HTTP 429: too many requests
+        }
+
+        guard let request = modifyRequest(urlRequest) else { return nil }
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            self.incrementRequest()
+
+            let headers = ((response as? HTTPURLResponse)?.allHeaderFields as? [String: String]) ?? [:]
+            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+
+            // check for cloudflare block
+            if cloudflare && headers["Server"] == "cloudflare" && (code == 503 || code == 403) {
+                DispatchQueue.main.async {
+                    let request = request
+                    let handler = WasmNetWebViewHandler(netModule: self, request: request)
+                    handler.load()
+                }
+            } else {
+                self.storedResponse = WasmResponseObject(data: data, response: response, error: error)
+                self.semaphore.signal()
+            }
+        }.resume()
+
+        self.semaphore.wait()
+
+        let response = storedResponse
+        storedResponse = nil
+        return response
+    }
+
+    func isRateLimited() -> Bool {
+        self.rateLimit > 0
+            && self.lastRequestTime?.timeIntervalSinceNow ?? self.period < self.period
+            && self.passedRequests >= self.rateLimit
+    }
+
+    func incrementRequest() {
+        if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
+            self.passedRequests += 1
+        } else {
+            self.lastRequestTime = Date()
+            self.passedRequests = 1
+        }
+    }
 
     var init_request: (Int32) -> Int32 {
         { method in
@@ -222,22 +300,12 @@ extension WasmNet {
             guard let request = self.globalStore.requests[descriptor] else { return }
             guard let url = URL(string: request.URL ?? "") else { return }
 
-            // check rate limit
-            if self.rateLimit > 0
-                && self.lastRequestTime?.timeIntervalSinceNow ?? self.period < self.period
-                && self.passedRequests >= self.rateLimit {
-                    self.globalStore.requests[descriptor]?.response = WasmResponseObject(statusCode: 429) // HTTP 429: too many requests
-                    return
-            }
-
             var urlRequest = URLRequest(url: url)
 
             // set headers
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
-            // set user agent
-            urlRequest.setValue(request.headers["User-Agent"] ?? Self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
 
             // set body
             if let body = request.body { urlRequest.httpBody = body }
@@ -250,40 +318,8 @@ extension WasmNet {
             default: break
             }
 
-            // set cookies
-            if let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
-                var cookieString = cookies
-                if let oldCookie = urlRequest.value(forHTTPHeaderField: "Cookie") {
-                    cookieString += "; " + oldCookie
-                }
-                urlRequest.setValue(cookieString, forHTTPHeaderField: "Cookie")
-            }
-
-            URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                let headers = ((response as? HTTPURLResponse)?.allHeaderFields as? [String: String]) ?? [:]
-                let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-
-                // check for cloudflare block
-                if headers["Server"] == "cloudflare" && (code == 503 || code == 403) {
-                    DispatchQueue.main.async {
-                        let handler = WasmNetWebViewHandler(netModule: self, request: urlRequest, requestDescriptor: descriptor)
-                        handler.load()
-                    }
-                } else {
-                    let response = WasmResponseObject(data: data, response: response, error: error)
-                    self.globalStore.requests[descriptor]?.response = response
-
-                    if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
-                        self.passedRequests += 1
-                    } else {
-                        self.lastRequestTime = Date()
-                        self.passedRequests = 1
-                    }
-                    self.semaphore.signal()
-                }
-            }.resume()
-
-            self.semaphore.wait()
+            let response = self.performRequest(urlRequest, cloudflare: true)
+            self.globalStore.requests[descriptor]?.response = response
         }
     }
 
