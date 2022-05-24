@@ -85,8 +85,7 @@ class MangaViewController: UIViewController {
 
         navigationItem.largeTitleDisplayMode = .never
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
-        updateMoreMenu()
+        updateNavbarButtons()
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -94,6 +93,8 @@ class MangaViewController: UIViewController {
         tableView.delaysContentTouches = false
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.allowsSelectionDuringEditing = true
+        tableView.allowsMultipleSelectionDuringEditing = true
         tableView.backgroundColor = .systemBackground
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
@@ -131,13 +132,19 @@ class MangaViewController: UIViewController {
         }
 
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
-            self.updateMoreMenu()
+            Task { @MainActor in
+                self.updateNavbarButtons()
+            }
         }
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadRemoved"), object: nil, queue: nil) { _ in
-            self.updateMoreMenu()
+            Task { @MainActor in
+                self.updateNavbarButtons()
+            }
         }
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil) { _ in
-            self.updateMoreMenu()
+            Task { @MainActor in
+                self.updateNavbarButtons()
+            }
         }
 
         Task {
@@ -188,6 +195,10 @@ class MangaViewController: UIViewController {
         tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
+//        editingToolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+//        editingToolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+//        editingToolbar.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+
         if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
             headerView.topAnchor.constraint(equalTo: tableView.topAnchor).isActive = true
             headerView.widthAnchor.constraint(equalTo: tableView.widthAnchor).isActive = true
@@ -196,43 +207,142 @@ class MangaViewController: UIViewController {
         }
     }
 
-    func updateMoreMenu() {
-        var subMenus: [UIMenu] = []
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        tableView.setEditing(editing, animated: animated)
+        updateNavbarButtons()
+        updateToolbar()
+    }
 
-        // TODO: only show relevant actions
-        let mangaOptions: [UIAction] = [
-            UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
-                self.showLoadingIndicator()
-                DataManager.shared.setRead(manga: self.manga)
-                DataManager.shared.setCompleted(
-                    chapters: self.chapters,
-                    date: Date().addingTimeInterval(-1),
-                    context: DataManager.shared.backgroundContext
-                )
-                // Make most recent chapter appear as the most recently read
-                if let firstChapter = self.chapters.first {
-                    DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
+    func updateNavbarButtons() {
+        if tableView.isEditing {
+            Task { @MainActor in
+                navigationItem.hidesBackButton = true
+                if tableView.indexPathsForSelectedRows?.count ?? 0 == tableView.numberOfRows(inSection: 0) {
+                    navigationItem.leftBarButtonItem = UIBarButtonItem(
+                        title: NSLocalizedString("DESELECT_ALL", comment: ""),
+                        style: .plain,
+                        target: self,
+                        action: #selector(deselectAllRows)
+                    )
+                } else {
+                    navigationItem.leftBarButtonItem = UIBarButtonItem(
+                        title: NSLocalizedString("SELECT_ALL", comment: ""),
+                        style: .plain,
+                        target: self,
+                        action: #selector(selectAllRows)
+                    )
                 }
-            },
-            UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                self.showLoadingIndicator()
-                DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
+                navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(stopEditing))
             }
-        ]
-        subMenus.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions))
+        } else {
+            navigationItem.hidesBackButton = false
+            navigationItem.leftBarButtonItem = nil
 
-        if DownloadManager.shared.hasDownloadedChapter(for: manga) {
-            subMenus.append(UIMenu(title: "", options: .displayInline, children: [
-                UIAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""), image: nil) { _ in
-                    DownloadManager.shared.deleteChapters(for: self.manga)
+            var subMenus: [UIMenu] = []
+
+            // TODO: only show relevant actions
+            let mangaOptions: [UIAction] = [
+                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                    self.showLoadingIndicator()
+                    DataManager.shared.setRead(manga: self.manga)
+                    DataManager.shared.setCompleted(
+                        chapters: self.chapters,
+                        date: Date().addingTimeInterval(-1),
+                        context: DataManager.shared.backgroundContext
+                    )
+                    // Make most recent chapter appear as the most recently read
+                    if let firstChapter = self.chapters.first {
+                        DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
+                    }
+                },
+                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                    self.showLoadingIndicator()
+                    DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
                 }
-            ]))
+            ]
+            subMenus.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions))
+
+            var subActions: [UIAction] = []
+
+            subActions.append(UIAction(title: NSLocalizedString("SELECT_CHAPTERS", comment: ""), image: nil) { _ in
+                self.setEditing(true, animated: true)
+            })
+
+            if DownloadManager.shared.hasDownloadedChapter(for: manga) {
+                subActions.append(UIAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""), image: nil) { _ in
+                    DownloadManager.shared.deleteChapters(for: self.manga)
+                })
+            }
+
+            subMenus.append(UIMenu(title: "", options: .displayInline, children: subActions))
+
+            let menu = UIMenu(title: "", children: subMenus)
+
+            Task { @MainActor in
+                let moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
+                moreButton.menu = menu
+                navigationItem.rightBarButtonItem = moreButton
+            }
         }
+    }
 
-        let menu = UIMenu(title: "", children: subMenus)
+    func updateToolbar() {
+        if tableView.isEditing {
+            if self.navigationController?.isToolbarHidden ?? true {
+                UIView.animate(withDuration: 0.3) {
+                    self.navigationController?.isToolbarHidden = false
+                    self.navigationController?.toolbar.alpha = 1
+                }
+            }
 
-        Task { @MainActor in
-            navigationItem.rightBarButtonItem?.menu = menu
+            let markButton = UIBarButtonItem(title: NSLocalizedString("MARK", comment: ""), style: .plain, target: self, action: nil)
+            let downloadButton = UIBarButtonItem(
+                title: NSLocalizedString("DOWNLOAD", comment: ""),
+                style: .plain,
+                target: self,
+                action: #selector(downloadSelectedChapters)
+            )
+
+            let selectedRowCount = tableView.indexPathsForSelectedRows?.count ?? 0
+
+            if selectedRowCount > 0 {
+                let chapters = selectedRowCount > 1 ? NSLocalizedString("CHAPTERS", comment: "") : NSLocalizedString("CHAPTER", comment: "")
+                markButton.menu = UIMenu(
+                    title: "\(selectedRowCount) \(chapters)",
+                    children: [
+                        UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                            self.showLoadingIndicator()
+                            DataManager.shared.removeHistory(
+                                for: self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? [],
+                                context: DataManager.shared.backgroundContext
+                            )
+                            self.setEditing(false, animated: true)
+                        },
+                        UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                            self.showLoadingIndicator()
+                            let chapters = self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? []
+                            DataManager.shared.addHistory(for: chapters, context: DataManager.shared.backgroundContext)
+                            self.setEditing(false, animated: true)
+                        }
+                    ]
+                )
+            }
+
+            markButton.isEnabled = selectedRowCount > 0
+            downloadButton.isEnabled = selectedRowCount > 0
+
+            toolbarItems = [
+                markButton,
+                UIBarButtonItem(systemItem: .flexibleSpace),
+                downloadButton
+            ]
+        } else if !(self.navigationController?.isToolbarHidden ?? true) {
+            UIView.animate(withDuration: 0.3) {
+                self.navigationController?.toolbar.alpha = 0
+            } completion: { _ in
+                self.navigationController?.isToolbarHidden = true
+            }
         }
     }
 
@@ -267,6 +377,32 @@ class MangaViewController: UIViewController {
             refreshControl.endRefreshing()
         }
     }
+
+    @objc func stopEditing() {
+        setEditing(false, animated: true)
+    }
+
+    @objc func selectAllRows() {
+        for row in 0..<tableView.numberOfRows(inSection: 0) {
+            tableView.selectRow(at: IndexPath(row: row, section: 0), animated: false, scrollPosition: .none)
+        }
+        updateNavbarButtons()
+        updateToolbar()
+    }
+
+    @objc func deselectAllRows() {
+        for row in 0..<tableView.numberOfRows(inSection: 0) {
+            tableView.deselectRow(at: IndexPath(row: row, section: 0), animated: false)
+        }
+        updateNavbarButtons()
+        updateToolbar()
+    }
+
+    @objc func downloadSelectedChapters() {
+        guard let selected = tableView.indexPathsForSelectedRows else { return }
+        DownloadManager.shared.download(chapters: selected.map { self.sortedChapters[$0.row] }, manga: manga)
+        setEditing(false, animated: true)
+    }
 }
 
 extension MangaViewController {
@@ -275,6 +411,7 @@ extension MangaViewController {
         if let color = color {
             navigationController?.navigationBar.tintColor = color
             navigationController?.tabBarController?.tabBar.tintColor = color
+            navigationController?.toolbar.tintColor = color
             view.tintColor = color
         } else {
             navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
@@ -494,10 +631,20 @@ extension MangaViewController: UITableViewDataSource {
 // MARK: - Table View Delegate
 extension MangaViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+        if !tableView.isEditing { // open reader view
+            tableView.deselectRow(at: indexPath, animated: true)
 
-        if SourceManager.shared.source(for: manga.sourceId) != nil {
-            openReaderView(for: sortedChapters[indexPath.row])
+            if SourceManager.shared.source(for: manga.sourceId) != nil {
+                openReaderView(for: sortedChapters[indexPath.row])
+            }
+        } else {
+            updateToolbar()
+        }
+    }
+
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        if tableView.isEditing {
+            updateToolbar()
         }
     }
 }

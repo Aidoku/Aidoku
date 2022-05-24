@@ -193,11 +193,6 @@ actor DownloadTask: Identifiable {
     func add(download: Download, autostart: Bool = false) {
         guard !downloads.contains(where: { $0 == download }) else { return }
         downloads.append(download)
-        Task {
-            cache.directory(forSourceId: download.sourceId, mangaId: download.mangaId)
-                .appendingSafePathComponent(".tmp_\(download.chapterId)")
-                .createDirectory()
-        }
         if !running && autostart {
             resume()
         }
