@@ -14,7 +14,7 @@ import Foundation
     import UIKit
 #endif
 
-enum MangaStatus: Int {
+enum MangaStatus: Int, Codable {
     case unknown = 0
     case ongoing = 1
     case completed = 2
@@ -22,13 +22,13 @@ enum MangaStatus: Int {
     case hiatus = 4
 }
 
-enum MangaContentRating: Int {
+enum MangaContentRating: Int, Codable {
     case safe = 0
     case suggestive = 1
     case nsfw = 2
 }
 
-enum MangaViewer: Int {
+enum MangaViewer: Int, Codable {
     case defaultViewer = 0
     case rtl = 1
     case ltr = 2
@@ -36,7 +36,31 @@ enum MangaViewer: Int {
     case scroll = 4
 }
 
-class Manga: KVCObject {
+struct CodableColor {
+    var color: UIColor
+}
+
+extension CodableColor: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let data = try container.decode(Data.self)
+        guard let newColor = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Invalid color"
+            )
+        }
+        color = newColor
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: true)
+        try container.encode(data)
+    }
+}
+
+class Manga: KVCObject, Codable {
     static func == (lhs: Manga, rhs: Manga) -> Bool {
         lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
     }
@@ -58,7 +82,7 @@ class Manga: KVCObject {
     var nsfw: MangaContentRating
     var viewer: MangaViewer
 
-    var tintColor: UIColor?
+    var tintColor: CodableColor?
 
     var lastUpdated: Date?
     var lastOpened: Date?
@@ -96,7 +120,7 @@ class Manga: KVCObject {
         self.status = status
         self.nsfw = nsfw
         self.viewer = viewer
-        self.tintColor = tintColor
+        self.tintColor = tintColor != nil ? CodableColor(color: tintColor!) : nil
         self.lastUpdated = lastUpdated
         self.lastOpened = lastOpened
         self.lastRead = lastRead
@@ -117,7 +141,7 @@ class Manga: KVCObject {
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer,
-            tintColor: manga.tintColor ?? tintColor,
+            tintColor: manga.tintColor?.color ?? tintColor?.color,
             lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
             lastRead: manga.lastRead ?? lastRead,

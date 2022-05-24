@@ -16,6 +16,13 @@
 "DELETE" = "Delete";
 "RENAME" = "Rename";
 
+// Downloads
+"DOWNLOAD" = "Download";
+"DOWNLOADED" = "Downloaded";
+"CANCEL_DOWNLOAD" = "Cancel Download";
+"REMOVE_DOWNLOAD" = "Remove Download";
+"REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
+
 // Library
 "LIBRARY" = "Library";
 "LIBRARY_SEARCH" = "Find in Library";
@@ -26,6 +33,7 @@
 "MANGA_INFO" = "Manga Info";
 
 "SORT_BY" = "Sort By";
+"FILTER_BY" = "Filter By";
 "TITLE" = "Title";
 "LAST_OPENED" = "Last Opened";
 "LAST_READ" = "Last Read";
@@ -70,14 +78,20 @@
 "MISSING_SOURCE" = "Missing Source";
 "MISSING_SOURCE_TEXT" = "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library.";
 
+"SELECT_CHAPTERS" = "Select Chapters";
+"SELECT_ALL" = "Select All";
+"DESELECT_ALL" = "Deselect All";
+
 // Reader
 "CHAPTER" = "Chapter";
+"CHAPTERS" = "Chapters";
 "NO_CHAPTERS" = "No Chapters";
 "NO_CHAPTERS_AVAILABLE" = "No Chapters Available";
 "START_READING" = "Start Reading";
 "CONTINUE_READING" = "Continue Reading";
 "READ" = "Read";
 "UNREAD" = "Unread";
+"MARK" = "Mark";
 "MARK_ALL" = "Mark All";
 "MARK_PREVIOUS" = "Mark Previous";
 "MARK_READ" = "Mark as Read";

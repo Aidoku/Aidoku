@@ -176,7 +176,6 @@ extension ReaderPagedPageManager {
     }
 
     @MainActor
-    // swiftlint:disable:next cyclomatic_complexity
     func loadViewControllers(from direction: ChapterLoadDirection = .none, startPage: Int = 0) {
         guard pageViewController != nil, let chapter = chapter else { return }
 
@@ -190,17 +189,7 @@ extension ReaderPagedPageManager {
             items = [preview]
             if let page = pages.first {
                 let pageView = preview.view as? ReaderPageView
-                if let url = page.imageURL {
-                    if pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil {
-                        Task {
-                            await pageView?.setPageImage(url: url)
-                        }
-                    }
-                } else if let base64 = page.base64 {
-                    pageView?.setPageImage(base64: base64)
-                } else if let text = page.text {
-                    pageView?.setPageText(text: text)
-                }
+                pageView?.setPage(page: page)
                 pages.removeFirst(1)
             }
         } else if direction == .backward, let preview = items.first { // keep last page (first in items)
@@ -208,17 +197,7 @@ extension ReaderPagedPageManager {
             storedPage = preview
             if let page = pages.last {
                 let pageView = preview.view as? ReaderPageView
-                if let url = page.imageURL {
-                    if pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil {
-                        Task {
-                            await pageView?.setPageImage(url: url)
-                        }
-                    }
-                } else if let base64 = page.base64 {
-                    pageView?.setPageImage(base64: base64)
-                } else if let text = page.text {
-                    pageView?.setPageText(text: text)
-                }
+                pageView?.setPage(page: page)
                 pages.removeLast(1)
             }
         } else {
@@ -310,13 +289,7 @@ extension ReaderPagedPageManager {
                 continue
             }
             if let pageView = await items[i + 1 + (hasPreviousChapter ? 1 : 0)].view as? ReaderPageView {
-                if let url = pages[i].imageURL {
-                    await pageView.setPageImage(url: url)
-                } else if let base64 = pages[i].base64 {
-                    await pageView.setPageImage(base64: base64)
-                } else if let text = pages[i].text {
-                    await pageView.setPageText(text: text)
-                }
+                await pageView.setPage(page: pages[i])
             }
         }
     }
@@ -353,7 +326,9 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
                 Task {
                     let previousChapter = chapterList[chapterIndex + 1]
                     await preload(chapter: previousChapter)
-                    await (items.first?.view as? ReaderPageView)?.setPageImage(url: preloadedPages.last?.imageURL ?? "")
+                    if let page = preloadedPages.last {
+                        (items.first?.view as? ReaderPageView)?.setPage(page: page)
+                    }
                 }
             }
         } else if let nextChapter = nextChapter {
@@ -361,7 +336,9 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
             if index == itemCount - 2 { // preload next chapter
                 Task {
                     await preload(chapter: nextChapter)
-                    await (items.last?.view as? ReaderPageView)?.setPageImage(url: preloadedPages.first?.imageURL ?? "")
+                    if let page = preloadedPages.first {
+                        (items.last?.view as? ReaderPageView)?.setPage(page: page)
+                    }
                 }
             } else if index == itemCount - 1 { // switch to next chapter
                 chapter = nextChapter

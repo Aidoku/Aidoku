@@ -84,7 +84,12 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
         webView?.navigationDelegate = self
         webView?.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
         webView?.load(request)
+
+        #if os(OSX)
+        NSApplication.shared.windows.first?.contentView?.addSubview(webView!)
+        #else
         UIApplication.shared.windows.first?.rootViewController?.view.addSubview(webView!)
+        #endif
 
         // timeout after 12s if bypass doesn't work
         perform(#selector(timeout), with: nil, afterDelay: 12)
