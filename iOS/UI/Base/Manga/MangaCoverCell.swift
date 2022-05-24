@@ -226,7 +226,7 @@ class MangaCoverCell: UICollectionViewCell {
                 ) { result in
                     switch result {
                     case .success(let value):
-                        if self.manga?.tintColor == nil {
+                        if UserDefaults.standard.bool(forKey: "General.useMangaTint") && self.manga?.tintColor == nil {
                             self.getTintColor(from: value.image)
                         }
                     default:

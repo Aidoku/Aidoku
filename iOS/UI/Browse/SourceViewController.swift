@@ -89,6 +89,7 @@ class SourceViewController: MangaCollectionViewController {
 
         NotificationCenter.default.addObserver(forName: Notification.Name("\(source.id).languages"), object: nil, queue: nil) { _ in
             Task {
+                self.page = nil
                 await self.fetchData()
                 self.reloadData()
             }

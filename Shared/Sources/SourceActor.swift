@@ -93,7 +93,15 @@ actor SourceActor {
 
     func getImageRequest(url: String) throws -> WasmRequestObject {
         source.globalStore.requestsPointer += 1
-        let request = WasmRequestObject(id: source.globalStore.requestsPointer)
+        var request = WasmRequestObject(id: source.globalStore.requestsPointer)
+        guard !url.isEmpty else { return request }
+
+        // add cloudflare headers
+        request.headers["User-Agent"] = WasmNet.defaultUserAgent
+        if let url = URL(string: url),
+           let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
+            request.headers["Cookie"] = cookies
+        }
         source.globalStore.requests[source.globalStore.requestsPointer] = request
 
         try? source.globalStore.vm.call("modify_image_request", Int32(request.id))

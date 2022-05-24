@@ -57,6 +57,7 @@
 // Source
 "SOURCE_INFO" = "Source Info";
 "LANGUAGE" = "Language";
+"LANGUAGES" = "Languages";
 "INFO" = "Info";
 "VERSION" = "Version";
 "BUTTON_FILTER" = "Filter";
@@ -126,6 +127,11 @@
 "APPEARANCE_LIGHT" = "Light";
 "APPEARANCE_DARK" = "Dark";
 "USE_SYSTEM_APPEARANCE" = "Use System Appearance";
+
+"MANGA_PAGE" = "Manga Page";
+"SHOW_SOURCE_LABEL" = "Show Source Label";
+"USE_MANGA_TINT" = "Use Manga Tint";
+"USE_MANGA_TINT_INFO" = "Tint manga pages based on the color of the cover image";
 
 "MANGA_PER_ROW" = "Manga per row";
 "PORTRAIT" = "Portrait";
