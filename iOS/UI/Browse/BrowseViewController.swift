@@ -82,10 +82,23 @@ class BrowseViewController: UIViewController {
         return installableSources.filter {
             if !showNsfw && $0.nsfw ?? 0 > 1 {
                 return false
-            } else if searchText.isEmpty {
-                return true
             } else {
-                return $0.name.lowercased().contains(searchText.lowercased())
+                if let appVersion = Float(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0") {
+                    if let maxVersion = $0.maxAppVersion {
+                        guard Float(maxVersion) ?? 0 >= appVersion else { return false }
+                    }
+                    if let minVersion = $0.minAppVersion {
+                        guard Float(minVersion) ?? 0 <= appVersion else { return false }
+                    }
+                }
+                let languages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
+                if !languages.contains($0.lang) {
+                    return false
+                } else if !searchText.isEmpty {
+                    return $0.name.lowercased().contains(searchText.lowercased())
+                } else {
+                    return true
+                }
             }
         }
     }
@@ -108,6 +121,13 @@ class BrowseViewController: UIViewController {
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "globe.americas.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(openLanguageSelectPage)
+        )
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -174,6 +194,12 @@ class BrowseViewController: UIViewController {
             }
         }
 
+        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.languages"), object: nil, queue: nil) { _ in
+            Task { @MainActor in
+                self.reloadData()
+            }
+        }
+
         NotificationCenter.default.addObserver(forName: Notification.Name("Browse.showNsfwSources"), object: nil, queue: nil) { _ in
             Task { @MainActor in
                 self.reloadData()
@@ -181,9 +207,10 @@ class BrowseViewController: UIViewController {
         }
 
         NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceLists"), object: nil, queue: nil) { _ in
-            Task {
+            Task { @MainActor in
                 self.sourceLists = SourceManager.shared.sourceLists
                 await self.updateSourceLists()
+                self.reloadData()
             }
         }
 
@@ -249,6 +276,10 @@ class BrowseViewController: UIViewController {
     @objc func openGuidePage() {
         let safariViewController = SFSafariViewController(url: URL(string: "https://aidoku.app/help/guides/getting-started/#installing-a-source")!)
         present(safariViewController, animated: true)
+    }
+
+    @objc func openLanguageSelectPage() {
+        present(UINavigationController(rootViewController: LanguageSelectViewController()), animated: true)
     }
 }
 

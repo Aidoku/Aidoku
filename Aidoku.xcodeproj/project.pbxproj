@@ -83,6 +83,7 @@
 		FB6E34C8279DF76300BFE54B /* MangaGridFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34C7279DF76300BFE54B /* MangaGridFlowLayout.swift */; };
 		FB6E34CA279DF9D800BFE54B /* MangaCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34C9279DF9D800BFE54B /* MangaCollectionViewController.swift */; };
 		FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34CB279E189300BFE54B /* GetButtonView.swift */; };
+		FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */; };
 		FB71E37F27E0FBB800BE4860 /* ReaderPagedPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */; };
 		FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */; };
 		FB71E38427E2A29600BE4860 /* ReaderPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */; };
@@ -206,6 +207,7 @@
 		FB6E34C7279DF76300BFE54B /* MangaGridFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridFlowLayout.swift; sourceTree = "<group>"; };
 		FB6E34C9279DF9D800BFE54B /* MangaCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCollectionViewController.swift; sourceTree = "<group>"; };
 		FB6E34CB279E189300BFE54B /* GetButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetButtonView.swift; sourceTree = "<group>"; };
+		FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectViewController.swift; sourceTree = "<group>"; };
 		FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedPageManager.swift; sourceTree = "<group>"; };
 		FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderScrollPageManager.swift; sourceTree = "<group>"; };
 		FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageManager.swift; sourceTree = "<group>"; };
@@ -544,6 +546,7 @@
 				FBED232F27C08FA80095D0C0 /* Filters */,
 				FB6E34C5279DF6AB00BFE54B /* BrowseViewController.swift */,
 				FBED62B1279DB3FC0096B717 /* SourceViewController.swift */,
+				FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */,
 			);
 			path = Browse;
 			sourceTree = "<group>";
@@ -799,6 +802,7 @@
 				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
 				FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
+				FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
