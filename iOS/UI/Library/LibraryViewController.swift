@@ -59,6 +59,13 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
+    struct LibraryFilter {
+        var name: String
+        var exclude: Bool = false
+    }
+
+    var filters: [LibraryFilter] = []
+
     var readHistory: [String: [String: Int]] = [:]
     var opensReaderView = false
     var preloadsChapters = false
@@ -67,6 +74,7 @@ class LibraryViewController: MangaCollectionViewController {
     var updatedLibrary = false
 
     let emptyTextStackView = UIStackView()
+    var filterButton: UIBarButtonItem?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,15 +84,10 @@ class LibraryViewController: MangaCollectionViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
 
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+        Task {
+            await updateNavbarButtons()
+            updateSortMenu()
         }
-        let filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
-        navigationItem.rightBarButtonItem = filterButton
-        updateSortMenu()
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -144,6 +147,16 @@ class LibraryViewController: MangaCollectionViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
             self.refreshManga()
         }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadQueued"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateNavbarButtons()
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
+            Task {
+                await self.updateNavbarButtons()
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -170,6 +183,33 @@ class LibraryViewController: MangaCollectionViewController {
         navigationItem.hidesSearchBarWhenScrolling = true
     }
 
+    func updateNavbarButtons() async {
+        var buttons: [UIBarButtonItem] = []
+
+        if filterButton == nil {
+            let filterImage: UIImage?
+            if #available(iOS 15.0, *) {
+                filterImage = UIImage(systemName: "line.3.horizontal.decrease")
+            } else {
+                filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+            }
+            filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
+        }
+        buttons.append(filterButton!)
+
+        if await DownloadManager.shared.hasQueuedDownloads() {
+            let downloadQueueButton = UIBarButtonItem(
+                image: UIImage(systemName: "square.and.arrow.down"),
+                style: .plain,
+                target: self,
+                action: #selector(openDownloadQueue)
+            )
+            buttons.append(downloadQueueButton)
+        }
+
+        navigationItem.rightBarButtonItems = buttons
+    }
+
     func toggleSort(_ option: Int) {
         if sortOption == option {
             sortAscending.toggle()
@@ -181,9 +221,35 @@ class LibraryViewController: MangaCollectionViewController {
         updateSortMenu()
     }
 
+    func toggleFilter(_ name: String) {
+        if let idx = filters.firstIndex(where: { $0.name == name }) {
+            if filters[idx].exclude {
+                filters.remove(at: idx)
+            } else {
+                filters[idx].exclude = true
+            }
+        } else {
+            filters.append(LibraryFilter(name: name))
+        }
+        resortManga(reload: true)
+        updateSortMenu()
+    }
+
+    func filterImage(for name: String) -> UIImage? {
+        if let idx = filters.firstIndex(where: { $0.name == name }) {
+            if filters[idx].exclude {
+                return UIImage(systemName: "xmark")
+            } else {
+                return UIImage(systemName: "checkmark")
+            }
+        } else {
+            return nil
+        }
+    }
+
     func updateSortMenu() {
         let chevronIcon = UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down")
-        navigationItem.rightBarButtonItem?.menu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), children: [
+        let sortMenu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), options: .displayInline, children: [
             UIAction(title: NSLocalizedString("TITLE", comment: ""), image: sortOption == 0 ? chevronIcon : nil) { _ in
                 self.toggleSort(0)
             },
@@ -200,10 +266,26 @@ class LibraryViewController: MangaCollectionViewController {
                 self.toggleSort(4)
             }
         ])
+        let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
+            UIAction(title: NSLocalizedString("DOWNLOADED", comment: ""), image: filterImage(for: "downloaded")) { _ in
+                self.toggleFilter("downloaded")
+            }
+        ])
+        filterButton?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
     }
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
-        let filtered = manga.filter { searchText.isEmpty ? true : $0.title?.lowercased().contains(searchText.lowercased()) ?? true }
+        var filtered = manga.filter { searchText.isEmpty ? true : $0.title?.lowercased().contains(searchText.lowercased()) ?? true }
+        for filter in filters {
+            switch filter.name {
+            case "downloaded":
+                filtered = manga.filter {
+                    let downloaded = DownloadManager.shared.hasDownloadedChapter(for: $0)
+                    return filter.exclude ? !downloaded : downloaded
+                }
+            default: break
+            }
+        }
         switch sortOption {
         case 0:
             return filtered
@@ -230,22 +312,6 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-    func reorder(manga newManga: [Manga], from oldManga: [Manga] = [], in section: Int) {
-        collectionView?.performBatchUpdates {
-            for (i, manga) in oldManga.enumerated() {
-                let from = IndexPath(row: i, section: section)
-                if let cell = collectionView?.cellForItem(at: from) as? MangaCoverCell {
-                    cell.badgeNumber = badges["\(manga.sourceId).\(manga.id)"]
-                }
-                if let j = newManga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }),
-                   j != i {
-                    let to = IndexPath(row: j, section: section)
-                    self.collectionView?.moveItem(at: from, to: to)
-                }
-            }
-        }
-    }
-
     func refreshManga() {
         let previousManga = manga
         let previousPinnedManga = pinnedManga
@@ -256,14 +322,18 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-    func resortManga() {
+    func resortManga(reload: Bool = false) {
         let previousManga = manga
         let previousPinnedManga = pinnedManga
 
         manga = sortManga(unfilteredManga)
         pinnedManga = sortManga(unfilteredPinnedManga)
 
-        reorderManga(previousManga: previousManga, previousPinnedManga: previousPinnedManga)
+        if reload {
+            reloadData()
+        } else {
+            reorderManga(previousManga: previousManga, previousPinnedManga: previousPinnedManga)
+        }
     }
 
     func reorderManga(previousManga: [Manga], previousPinnedManga: [Manga]) {
@@ -298,6 +368,22 @@ class LibraryViewController: MangaCollectionViewController {
                     collectionView?.reloadSections(IndexSet(integer: 0))
                 } else {
                     collectionView?.reloadSections(IndexSet(integersIn: 0...1))
+                }
+            }
+        }
+    }
+
+    func reorder(manga newManga: [Manga], from oldManga: [Manga] = [], in section: Int) {
+        collectionView?.performBatchUpdates {
+            for (i, manga) in oldManga.enumerated() {
+                let from = IndexPath(row: i, section: section)
+                if let cell = collectionView?.cellForItem(at: from) as? MangaCoverCell {
+                    cell.badgeNumber = badges["\(manga.sourceId).\(manga.id)"]
+                }
+                if let j = newManga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }),
+                   j != i {
+                    let to = IndexPath(row: j, section: section)
+                    self.collectionView?.moveItem(at: from, to: to)
                 }
             }
         }
@@ -377,6 +463,10 @@ class LibraryViewController: MangaCollectionViewController {
             return chapters[mangaId]?.first { $0.id == id }
         }
         return chapters[mangaId]?.last
+    }
+
+    @objc func openDownloadQueue() {
+        present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
     }
 }
 
@@ -496,6 +586,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 extension LibraryViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchText = searchController.searchBar.text ?? ""
-        resortManga()
+        resortManga(reload: true)
     }
 }

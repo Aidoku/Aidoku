@@ -551,7 +551,17 @@ extension DataManager {
             historyObject.progress = Int16(page)
         }
         _ = save()
-        NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
+        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+    }
+
+    func addHistory(for chapters: [Chapter], date: Date = Date(), context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        for chapter in chapters {
+            guard let historyObject = getHistoryObject(for: chapter, context: context) else { continue }
+            historyObject.dateRead = date
+        }
+        _ = save(context: context)
+        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
     func removeHistory(for manga: Manga, context: NSManagedObjectContext? = nil) {
@@ -573,16 +583,17 @@ extension DataManager {
         guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return }
         container.viewContext.delete(historyObject)
         _ = save()
-        NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
+        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
-    func removeHistory(for chapters: [Chapter]) {
+    func removeHistory(for chapters: [Chapter], context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
         for chapter in chapters {
-            guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { continue }
-            container.viewContext.delete(historyObject)
+            guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false, context: context) else { continue }
+            context.delete(historyObject)
         }
-        _ = save()
-        NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
+        _ = save(context: context)
+        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
     func clearHistory() {
