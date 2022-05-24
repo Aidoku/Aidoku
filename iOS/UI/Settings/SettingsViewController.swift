@@ -22,7 +22,6 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(
                 type: "group",
                 title: NSLocalizedString("GENERAL", comment: ""),
-                footer: NSLocalizedString("USE_MANGA_TINT_INFO", comment: ""),
                 items: [
                     SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
                     SettingItem(
@@ -39,6 +38,18 @@ class SettingsViewController: SettingsTableViewController {
                         type: "switch",
                         key: "General.useSystemAppearance",
                         title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: "")
+                    )
+                ]
+            ),
+            SettingItem(
+                type: "group",
+                title: NSLocalizedString("MANGA_PAGE", comment: ""),
+                footer: NSLocalizedString("USE_MANGA_TINT_INFO", comment: ""),
+                items: [
+                    SettingItem(
+                        type: "switch",
+                        key: "General.showSourceLabel",
+                        title: NSLocalizedString("SHOW_SOURCE_LABEL", comment: "")
                     ),
                     SettingItem(
                         type: "switch",
