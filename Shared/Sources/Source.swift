@@ -93,10 +93,10 @@ class Source: Identifiable {
     }
 
     var handlesImageRequests = false
-
     var needsFilterRefresh = true
 
     var globalStore: WasmGlobalStore
+    var netModule: WasmNet
 
     var actor: SourceActor!
 
@@ -108,6 +108,7 @@ class Source: Identifiable {
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
         let vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
         globalStore = WasmGlobalStore(id: manifest.info.id, vm: vm)
+        netModule = WasmNet(globalStore: globalStore)
         actor = SourceActor(source: self)
 
         exportFunctions()
@@ -124,7 +125,7 @@ class Source: Identifiable {
         WasmAidoku(globalStore: globalStore).export()
         WasmStd(globalStore: globalStore).export()
         WasmDefaults(globalStore: globalStore).export()
-        WasmNet(globalStore: globalStore).export()
+        netModule.export()
         WasmJson(globalStore: globalStore).export()
         WasmHtml(globalStore: globalStore).export()
     }
@@ -135,6 +136,7 @@ class Source: Identifiable {
         }
     }
 
+    // needed for assemblyscript
     var abort: (Int32, Int32, Int32, Int32) -> Void {
         { msg, fileName, line, column in
             let messageLength = self.globalStore.readBytes(offset: msg - 4, length: 1)?.first ?? 0
@@ -327,6 +329,11 @@ extension Source {
 
     func getImageRequest(url: String) async throws -> WasmRequestObject {
         try await actor.getImageRequest(url: url)
+    }
+
+    func modifyUrlRequest(request: URLRequest) -> URLRequest? {
+        guard !netModule.isRateLimited() else { return nil }
+        return netModule.modifyRequest(request)
     }
 
     func handleUrl(url: String) async throws -> DeepLink {
