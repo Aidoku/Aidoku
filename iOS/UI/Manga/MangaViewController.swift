@@ -259,6 +259,7 @@ extension MangaViewController {
     }
 
     func getTintColor() {
+        guard UserDefaults.standard.bool(forKey: "General.useMangaTint") else { return }
         if let tintColor = manga.tintColor {
             // Adjust tint color for readability
             let luma = tintColor.luminance

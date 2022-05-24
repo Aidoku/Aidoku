@@ -19,24 +19,34 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "link", key: "https://github.com/Aidoku/Aidoku", title: NSLocalizedString("GITHUB_REPO", comment: "")),
                 SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: NSLocalizedString("DISCORD_SERVER", comment: ""), external: true)
             ]),
-            SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
-                SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
-                SettingItem(
-                    type: "segment",
-                    key: "General.appearance",
-                    title: NSLocalizedString("APPEARANCE", comment: ""),
-                    values: [
-                        NSLocalizedString("APPEARANCE_LIGHT", comment: ""),
-                        NSLocalizedString("APPEARANCE_DARK", comment: "")
-                    ],
-                    requiresFalse: "General.useSystemAppearance"
-                ),
-                SettingItem(
-                    type: "switch",
-                    key: "General.useSystemAppearance",
-                    title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: "")
-                )
-            ]),
+            SettingItem(
+                type: "group",
+                title: NSLocalizedString("GENERAL", comment: ""),
+                footer: NSLocalizedString("USE_MANGA_TINT_INFO", comment: ""),
+                items: [
+                    SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
+                    SettingItem(
+                        type: "segment",
+                        key: "General.appearance",
+                        title: NSLocalizedString("APPEARANCE", comment: ""),
+                        values: [
+                            NSLocalizedString("APPEARANCE_LIGHT", comment: ""),
+                            NSLocalizedString("APPEARANCE_DARK", comment: "")
+                        ],
+                        requiresFalse: "General.useSystemAppearance"
+                    ),
+                    SettingItem(
+                        type: "switch",
+                        key: "General.useSystemAppearance",
+                        title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: "")
+                    ),
+                    SettingItem(
+                        type: "switch",
+                        key: "General.useMangaTint",
+                        title: NSLocalizedString("USE_MANGA_TINT", comment: "")
+                    )
+                ]
+            ),
             SettingItem(type: "group", title: NSLocalizedString("MANGA_PER_ROW", comment: ""), items: [
                 SettingItem(
                     type: "stepper",
