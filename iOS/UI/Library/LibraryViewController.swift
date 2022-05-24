@@ -186,13 +186,15 @@ class LibraryViewController: MangaCollectionViewController {
     func updateNavbarButtons() async {
         var buttons: [UIBarButtonItem] = []
 
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+        if filterButton == nil {
+            let filterImage: UIImage?
+            if #available(iOS 15.0, *) {
+                filterImage = UIImage(systemName: "line.3.horizontal.decrease")
+            } else {
+                filterImage = UIImage(systemName: "line.horizontal.3.decrease")
+            }
+            filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
         }
-        filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
         buttons.append(filterButton!)
 
         if await DownloadManager.shared.hasQueuedDownloads() {
@@ -229,7 +231,7 @@ class LibraryViewController: MangaCollectionViewController {
         } else {
             filters.append(LibraryFilter(name: name))
         }
-        resortManga()
+        resortManga(reload: true)
         updateSortMenu()
     }
 
@@ -310,22 +312,6 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-    func reorder(manga newManga: [Manga], from oldManga: [Manga] = [], in section: Int) {
-        collectionView?.performBatchUpdates {
-            for (i, manga) in oldManga.enumerated() {
-                let from = IndexPath(row: i, section: section)
-                if let cell = collectionView?.cellForItem(at: from) as? MangaCoverCell {
-                    cell.badgeNumber = badges["\(manga.sourceId).\(manga.id)"]
-                }
-                if let j = newManga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }),
-                   j != i {
-                    let to = IndexPath(row: j, section: section)
-                    self.collectionView?.moveItem(at: from, to: to)
-                }
-            }
-        }
-    }
-
     func refreshManga() {
         let previousManga = manga
         let previousPinnedManga = pinnedManga
@@ -336,14 +322,18 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-    func resortManga() {
+    func resortManga(reload: Bool = false) {
         let previousManga = manga
         let previousPinnedManga = pinnedManga
 
         manga = sortManga(unfilteredManga)
         pinnedManga = sortManga(unfilteredPinnedManga)
 
-        reorderManga(previousManga: previousManga, previousPinnedManga: previousPinnedManga)
+        if reload {
+            reloadData()
+        } else {
+            reorderManga(previousManga: previousManga, previousPinnedManga: previousPinnedManga)
+        }
     }
 
     func reorderManga(previousManga: [Manga], previousPinnedManga: [Manga]) {
@@ -378,6 +368,22 @@ class LibraryViewController: MangaCollectionViewController {
                     collectionView?.reloadSections(IndexSet(integer: 0))
                 } else {
                     collectionView?.reloadSections(IndexSet(integersIn: 0...1))
+                }
+            }
+        }
+    }
+
+    func reorder(manga newManga: [Manga], from oldManga: [Manga] = [], in section: Int) {
+        collectionView?.performBatchUpdates {
+            for (i, manga) in oldManga.enumerated() {
+                let from = IndexPath(row: i, section: section)
+                if let cell = collectionView?.cellForItem(at: from) as? MangaCoverCell {
+                    cell.badgeNumber = badges["\(manga.sourceId).\(manga.id)"]
+                }
+                if let j = newManga.firstIndex(where: { $0.sourceId == manga.sourceId && $0.id == manga.id }),
+                   j != i {
+                    let to = IndexPath(row: j, section: section)
+                    self.collectionView?.moveItem(at: from, to: to)
                 }
             }
         }
@@ -580,6 +586,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 extension LibraryViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchText = searchController.searchBar.text ?? ""
-        resortManga()
+        resortManga(reload: true)
     }
 }
