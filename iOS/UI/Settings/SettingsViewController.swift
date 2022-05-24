@@ -21,53 +21,77 @@ class SettingsViewController: SettingsTableViewController {
             ]),
             SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
                 SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
-                SettingItem(type: "segment",
-                            key: "General.appearance",
-                            title: NSLocalizedString("APPEARANCE", comment: ""),
-                            values: [
-                                NSLocalizedString("APPEARANCE_LIGHT", comment: ""),
-                                NSLocalizedString("APPEARANCE_DARK", comment: "")
-                            ],
-                            requiresFalse: "General.useSystemAppearance"),
-                SettingItem(type: "switch",
-                            key: "General.useSystemAppearance",
-                            title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: ""))
+                SettingItem(
+                    type: "segment",
+                    key: "General.appearance",
+                    title: NSLocalizedString("APPEARANCE", comment: ""),
+                    values: [
+                        NSLocalizedString("APPEARANCE_LIGHT", comment: ""),
+                        NSLocalizedString("APPEARANCE_DARK", comment: "")
+                    ],
+                    requiresFalse: "General.useSystemAppearance"
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "General.useSystemAppearance",
+                    title: NSLocalizedString("USE_SYSTEM_APPEARANCE", comment: "")
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("MANGA_PER_ROW", comment: ""), items: [
-                SettingItem(type: "stepper",
-                            key: "General.portraitRows",
-                            title: NSLocalizedString("PORTRAIT", comment: ""), maximumValue: 15, minimumValue: 1),
-                SettingItem(type: "stepper", key: "General.landscapeRows", title: NSLocalizedString("LANDSCAPE", comment: ""))
+                SettingItem(
+                    type: "stepper",
+                    key: "General.portraitRows",
+                    title: NSLocalizedString("PORTRAIT", comment: ""),
+                    minimumValue: 1, maximumValue: 15
+                ),
+                SettingItem(
+                    type: "stepper",
+                    key: "General.landscapeRows",
+                    title: NSLocalizedString("LANDSCAPE", comment: ""),
+                    minimumValue: 1, maximumValue: 15
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("LIBRARY", comment: ""), items: [
-                SettingItem(type: "switch",
-                            key: "Library.opensReaderView",
-                            title: NSLocalizedString("OPEN_READER_VIEW", comment: "")),
-                SettingItem(type: "switch",
-                            key: "Library.unreadChapterBadges",
-                            title: NSLocalizedString("UNREAD_CHAPTER_BADGES", comment: "")),
-                SettingItem(type: "switch",
-                            key: "Library.pinManga",
-                            title: NSLocalizedString("PIN_MANGA", comment: "")),
-                SettingItem(type: "segment",
-                            key: "Library.pinMangaType",
-                            title: NSLocalizedString("PIN_MANGA_TYPE", comment: ""),
-                            values: [
-                                NSLocalizedString("PIN_MANGA_UNREAD", comment: ""),
-                                NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
-                            ],
-                           requires: "Library.pinManga")
+                SettingItem(
+                    type: "switch",
+                    key: "Library.opensReaderView",
+                    title: NSLocalizedString("OPEN_READER_VIEW", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Library.unreadChapterBadges",
+                    title: NSLocalizedString("UNREAD_CHAPTER_BADGES", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Library.pinManga",
+                    title: NSLocalizedString("PIN_MANGA", comment: "")
+                ),
+                SettingItem(
+                    type: "segment",
+                    key: "Library.pinMangaType",
+                    title: NSLocalizedString("PIN_MANGA_TYPE", comment: ""),
+                    values: [
+                        NSLocalizedString("PIN_MANGA_UNREAD", comment: ""),
+                        NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
+                    ],
+                   requires: "Library.pinManga"
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
                 SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),
-                SettingItem(type: "switch",
-                            key: "Browse.showNsfwSources",
-                            title: NSLocalizedString("SHOW_NSFW_SOURCES", comment: ""))
+                SettingItem(
+                    type: "switch",
+                    key: "Browse.showNsfwSources",
+                    title: NSLocalizedString("SHOW_NSFW_SOURCES", comment: "")
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
-                SettingItem(type: "switch",
-                            key: "Reader.downsampleImages",
-                            title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: ""))
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.downsampleImages",
+                    title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
                 SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
@@ -108,11 +132,13 @@ class SettingsViewController: SettingsTableViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func confirmAction(title: String,
-                       message: String,
-                       continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
-                       destructive: Bool = true,
-                       proceed: @escaping () -> Void) {
+    func confirmAction(
+        title: String,
+        message: String,
+        continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
+        destructive: Bool = true,
+        proceed: @escaping () -> Void
+    ) {
         let alertView = UIAlertController(
             title: title,
             message: message,

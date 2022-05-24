@@ -27,8 +27,8 @@ struct SettingItem: Codable {
     var requiresFalse: String?
 
     // stepper
-    var maximumValue: Double?
     var minimumValue: Double?
+    var maximumValue: Double?
 
     var destructive: Bool? // button
     var external: Bool? // link
@@ -57,8 +57,8 @@ struct SettingItem: Codable {
 
         case requires
         case requiresFalse
-        case maximumValue
         case minimumValue
+        case maximumValue
         case destructive
         case external
         case items
