@@ -12,52 +12,6 @@ class SourceInfoViewController: SettingsTableViewController {
 
     var source: Source
 
-    let languageCodes = [
-        "en": "English",
-        "ja": "Japanese",
-        "zh": "Chinese (Simplified)",
-        "zh-hk": "Chinese (Traditional)",
-        "es": "Spanish",
-        "es-la": "Spanish (Latin America)",
-        "fr": "French",
-        "it": "Italian",
-        "de": "German",
-        "nl": "Dutch",
-        "pl": "Polish",
-        "ru": "Russian",
-        "hu": "Hungarian",
-        "fi": "Finnish",
-        "vi": "Vietnamese",
-        "el": "Greek",
-        "bg": "Bulgarian",
-        "pt-br": "Portuguese (Brazil)",
-        "pt": "Portuguese (Portugal)",
-        "sv": "Swedish",
-        "no": "Norwegian",
-        "ar": "Arabic",
-        "da": "Danish",
-        "bn": "Bengali",
-        "ro": "Romanian",
-        "cs": "Czech",
-        "mn": "Mongolian",
-        "tr": "Turkish",
-        "id": "Indonesian",
-        "ko": "Korean",
-        "fa": "Persian",
-        "ms": "Malay",
-        "th": "Thai",
-        "ca": "Catalan",
-        "tl": "Filipino",
-        "uk": "Ukranian",
-        "my": "Burmese",
-        "lt": "Lithuanian",
-        "he": "Hebrew",
-        "hi": "Hindi",
-        "ne": "Nepali",
-        "sh": "Serbo-Croatian",
-        "other": "Other"
-    ]
-
     init(source: Source) {
         self.source = source
         super.init(items: source.settingItems)
@@ -198,7 +152,7 @@ extension SourceInfoViewController {
                 key: "\(source.id).languages",
                 title: NSLocalizedString("LANGUAGE", comment: ""),
                 values: source.languages.map { $0.value ?? $0.code },
-                titles: source.languages.map { languageCodes[$0.code] ?? $0.code },
+                titles: source.languages.map { (Locale.current as NSLocale).displayName(forKey: .identifier, value: $0.code) ?? $0.code },
                 notification: "languageChange"
             )
             navigationController?.pushViewController(SettingSelectViewController(source: source, item: item, style: tableView.style), animated: true)
