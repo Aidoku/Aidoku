@@ -28,6 +28,8 @@ class MangaViewHeaderView: UIView {
         return DataManager.shared.libraryContains(manga: manga)
     }
 
+    var showSourceLabel: Bool = false
+
     let contentStackView = UIStackView()
 
     let titleStackView = UIStackView()
@@ -40,6 +42,8 @@ class MangaViewHeaderView: UIView {
     let statusLabel = UILabel()
     let nsfwView = UIView()
     let nsfwLabel = UILabel()
+    let sourceView = UIView()
+    let sourceLabel = UILabel()
     let buttonStackView = UIStackView()
     let bookmarkButton = UIButton(type: .roundedRect)
     let safariButton = UIButton(type: .roundedRect)
@@ -113,12 +117,14 @@ class MangaViewHeaderView: UIView {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func updateViews() {
         Task {
             await setCover()
         }
-        titleLabel.text = manga?.title ?? "No Title"
-        authorLabel.text = manga?.author ?? "No Author"
+        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+        authorLabel.text = manga?.author
+        authorLabel.isHidden = manga?.author == nil
 
         let status: String
         switch manga?.status {
@@ -129,20 +135,33 @@ class MangaViewHeaderView: UIView {
         default: status = NSLocalizedString("UNKNOWN", comment: "")
         }
         statusLabel.text = status
+        statusView.isHidden = manga?.status == .unknown
 
-        self.statusView.isHidden = self.manga?.status == .unknown
         switch manga?.nsfw {
         case .safe, .none:
             nsfwView.alpha = 0
+            nsfwView.isHidden = true
         case .suggestive:
             nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
             nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
             nsfwView.alpha = 1
+            nsfwView.isHidden = false
         case .nsfw:
             nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
             nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
             nsfwView.alpha = 1
+            nsfwView.isHidden = false
         }
+
+        if showSourceLabel,
+           let sourceId = manga?.sourceId,
+           let source = SourceManager.shared.source(for: sourceId) {
+            sourceLabel.text = source.manifest.info.name
+            sourceView.isHidden = false
+        } else {
+            sourceView.isHidden = true
+        }
+
         if inLibrary {
             bookmarkButton.tintColor = .white
             bookmarkButton.backgroundColor = tintColor
@@ -169,13 +188,17 @@ class MangaViewHeaderView: UIView {
             // Necessary because pre-iOS 15 stack view won't adjust its size automatically for some reason
             self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
         }
+
         loadTags()
+
         if superview != nil {
             layoutIfNeeded()
         }
     }
 
     func configureContents() {
+        showSourceLabel = UserDefaults.standard.bool(forKey: "General.showSourceLabel") && inLibrary
+
         contentStackView.distribution = .fill
         contentStackView.axis = .vertical
         contentStackView.spacing = 14
@@ -246,6 +269,18 @@ class MangaViewHeaderView: UIView {
         nsfwLabel.translatesAutoresizingMaskIntoConstraints = false
         nsfwView.addSubview(nsfwLabel)
         labelStackView.addArrangedSubview(nsfwView)
+
+        // Source label
+        sourceView.backgroundColor = UIColor(red: 0.25, green: 0.55, blue: 1, alpha: 0.3)
+        sourceView.layer.cornerRadius = 6
+        sourceView.layer.cornerCurve = .continuous
+
+        sourceLabel.textColor = .secondaryLabel
+        sourceLabel.font = .systemFont(ofSize: 10)
+        sourceLabel.textAlignment = .center
+        sourceLabel.translatesAutoresizingMaskIntoConstraints = false
+        sourceView.addSubview(sourceLabel)
+        labelStackView.addArrangedSubview(sourceView)
 
         // Buttons
         buttonStackView.distribution = .equalSpacing
@@ -356,10 +391,15 @@ class MangaViewHeaderView: UIView {
             statusView.widthAnchor.constraint(equalTo: statusLabel.widthAnchor, constant: 16),
             statusView.heightAnchor.constraint(equalTo: statusLabel.heightAnchor, constant: 8),
 
+            nsfwLabel.topAnchor.constraint(equalTo: nsfwView.topAnchor, constant: 4),
+            nsfwLabel.leadingAnchor.constraint(equalTo: nsfwView.leadingAnchor, constant: 8),
             nsfwView.widthAnchor.constraint(equalTo: nsfwLabel.widthAnchor, constant: 16),
             nsfwView.heightAnchor.constraint(equalTo: nsfwLabel.heightAnchor, constant: 8),
-            nsfwLabel.leadingAnchor.constraint(equalTo: nsfwView.leadingAnchor, constant: 8),
-            nsfwLabel.topAnchor.constraint(equalTo: nsfwView.topAnchor, constant: 4),
+
+            sourceLabel.topAnchor.constraint(equalTo: sourceView.topAnchor, constant: 4),
+            sourceLabel.leadingAnchor.constraint(equalTo: sourceView.leadingAnchor, constant: 8),
+            sourceView.widthAnchor.constraint(equalTo: sourceLabel.widthAnchor, constant: 16),
+            sourceView.heightAnchor.constraint(equalTo: sourceLabel.heightAnchor, constant: 8),
 
             descriptionLabel.heightAnchor.constraint(equalTo: descriptionLabel.textLabel.heightAnchor),
 
