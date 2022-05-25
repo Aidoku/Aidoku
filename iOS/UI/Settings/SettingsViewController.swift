@@ -117,6 +117,19 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
                 SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
             ]),
+            SettingItem(type: "group", title: NSLocalizedString("LOGGING", comment: ""), items: [
+                SettingItem(
+                    type: "text",
+                    key: "Logs.logServer",
+                    placeholder: NSLocalizedString("LOG_SERVER", comment: ""),
+                    autocapitalizationType: 0,
+                    autocorrectionType: 1,
+                    spellCheckingType: 1,
+                    keyboardType: 3
+                ),
+                SettingItem(type: "button", key: "Logs.export", title: NSLocalizedString("EXPORT_LOGS", comment: "")),
+                SettingItem(type: "button", key: "Logs.display", title: NSLocalizedString("DISPLAY_LOGS", comment: ""))
+            ]),
             SettingItem(type: "group", title: NSLocalizedString("ADVANCED", comment: ""), items: [
                 SettingItem(type: "button", key: "Advanced.clearChapterCache", title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearMangaCache", title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: "")),
@@ -146,6 +159,9 @@ class SettingsViewController: SettingsTableViewController {
                     self.view.window?.overrideUserInterfaceStyle = .dark
                 }
             }
+        }
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
+            LogManager.logger.streamUrl = URL(string: UserDefaults.standard.string(forKey: "Logs.logServer") ?? "")
         }
     }
 
@@ -177,6 +193,7 @@ class SettingsViewController: SettingsTableViewController {
 // MARK: - Table View Data Source
 extension SettingsViewController {
 
+    // swiftlint:disable:next cyclomatic_complexity
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
             switch item.key {
@@ -188,6 +205,15 @@ extension SettingsViewController {
 
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
+
+            case "Logs.export":
+                let url = LogManager.export()
+                let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                vc.popoverPresentationController?.sourceView = tableView
+                vc.popoverPresentationController?.sourceRect = tableView.cellForRow(at: indexPath)!.frame
+                present(vc, animated: true)
+            case "Logs.display":
+                navigationController?.pushViewController(LogViewController(), animated: true)
 
             case "Advanced.clearChapterCache":
                 confirmAction(title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: ""),

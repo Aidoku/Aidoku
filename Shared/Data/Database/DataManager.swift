@@ -76,7 +76,7 @@ class DataManager {
 
         container.loadPersistentStores { desciption, error in
             if let error = error {
-                print("[Error] CoreData Error: \(error)")
+                LogManager.logger.error("CoreData Error: \(error)")
             } else if desciption.configuration == "Cloud" {
                 self.loadLibrary()
             }
@@ -113,7 +113,7 @@ class DataManager {
                 try context.save()
                 return true
             } catch {
-                print("[Error] save: \(error)")
+                LogManager.logger.error("CoreData save: \(error)")
                 return false
             }
         }
@@ -202,7 +202,7 @@ extension DataManager {
                 return manga.copy(from: newInfo)
             }
         } catch {
-            print("[Error] getLastestMangaDetails: \(error)")
+            LogManager.logger.error("getLastestMangaDetails failed: \(error)")
         }
     }
 
