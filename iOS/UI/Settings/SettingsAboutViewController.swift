@@ -32,7 +32,7 @@ class SettingsAboutViewController: UITableViewController {
 extension SettingsAboutViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        1
+        2
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -41,9 +41,17 @@ extension SettingsAboutViewController {
             cell = UITableViewCell(style: .value1, reuseIdentifier: "AboutCell")
         }
 
-        cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
-        cell?.detailTextLabel?.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-                                        ?? NSLocalizedString("UNKNOWN", comment: "")
+        switch indexPath.row {
+        case 0:
+            cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
+            cell?.detailTextLabel?.text = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+                                            ?? NSLocalizedString("UNKNOWN", comment: "")
+        case 1:
+            cell?.textLabel?.text = NSLocalizedString("BUILD", comment: "")
+            cell?.detailTextLabel?.text = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+                                            ?? NSLocalizedString("UNKNOWN", comment: "")
+        default: break
+        }
         cell?.detailTextLabel?.textColor = .secondaryLabel
         cell?.selectionStyle = .none
 
