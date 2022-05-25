@@ -12,4 +12,9 @@ struct Page: Hashable {
     let imageURL: String?
     let base64: String?
     let text: String?
+
+    var key: String {
+        // using the full base64 string as a key slows stuff down because it's so large, so hopefully this is unique enough
+        imageURL ?? (base64 != nil ? base64!.take(first: 10) + base64!.take(last: 20) : nil) ?? String(index)
+    }
 }

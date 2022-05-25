@@ -318,7 +318,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     func switchToNextChapter() {
         var extraHeight: CGFloat = 0
         if previousChapter != nil {
-            extraHeight = previousPages.map { sizeCache[$0.imageURL ?? ""]?.height ?? 100 }.reduce(0, +)
+            extraHeight = previousPages.map { sizeCache[$0.key]?.height ?? 100 }.reduce(0, +)
         }
 
         previousChapter = chapter
@@ -368,17 +368,17 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
 
         if indexPath.section == 0 {
             if indexPath.item < previousPages.count {
-                key = previousPages[indexPath.item].imageURL
+                key = previousPages[indexPath.item].key
             }
         } else if indexPath.section == 2 {
             if indexPath.item < nextPages.count {
-                key = nextPages[indexPath.item].imageURL
+                key = nextPages[indexPath.item].key
             }
         } else if indexPath.item == 0 || indexPath.item >= pages.count + 1 {
             return CGSize(width: collectionView.frame.size.width, height: 300)
         } else {
             if indexPath.item - 1 < pages.count {
-                key = pages[indexPath.item - 1].imageURL
+                key = pages[indexPath.item - 1].key
             }
         }
 
@@ -563,6 +563,17 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
             }
         case .failure:
             break
+        }
+    }
+
+    func imageLoaded(key: String, image: UIImage) {
+        if sizeCache[key] == nil {
+            sizeCache[key] = image.sizeToFit(collectionView.frame.size)
+            collectionView.collectionViewLayout.invalidateLayout()
+            if let targetPage = targetPage, shouldMoveToTargetPage, sizeCache.count >= targetPage {
+                shouldMoveToTargetPage = false
+                move(toPage: targetPage)
+            }
         }
     }
 }
