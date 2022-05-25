@@ -9,7 +9,7 @@ import UIKit
 import Kingfisher
 
 protocol ReaderPageViewDelegate: AnyObject {
-    func imageLoaded(result: Result<RetrieveImageResult, KingfisherError>)
+    func imageLoaded(key: String, image: UIImage)
 }
 
 class ReaderPageView: UIView {
@@ -142,13 +142,17 @@ class ReaderPageView: UIView {
 
     func setPageImage(base64: String) {
         if let data = Data(base64Encoded: base64) {
-            self.imageView.image = UIImage(data: data)
-            if self.progressView.progress != 1 {
-                self.progressView.setProgress(value: 1, withAnimation: true)
+            let image = UIImage(data: data)
+            imageView.image = image
+            if progressView.progress != 1 {
+                progressView.setProgress(value: 1, withAnimation: true)
             }
-            self.progressView.isHidden = true
-            self.reloadButton.alpha = 0
-            self.updateZoomBounds()
+            progressView.isHidden = true
+            reloadButton.alpha = 0
+            updateZoomBounds()
+            if let image = image {
+                delegate?.imageLoaded(key: base64.take(first: 10) + base64.take(last: 20), image: image)
+            }
         }
     }
 
@@ -207,6 +211,7 @@ class ReaderPageView: UIView {
                         self.progressView.isHidden = true
                         self.reloadButton.alpha = 0
                         self.updateZoomBounds()
+                        self.delegate?.imageLoaded(key: self.cacheKey ?? "", image: imageResult.image)
                     case .failure(let error):
                         // If the error isn't part of the current task, we don't care.
                         if error.isNotCurrentTask || error.isTaskCancelled {
@@ -218,7 +223,6 @@ class ReaderPageView: UIView {
                             self.reloadButton.alpha = 1
                         }
                     }
-                    self.delegate?.imageLoaded(result: result)
                 }
             )
         }
