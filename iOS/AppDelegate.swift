@@ -31,7 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.sortOption": 1,
                 "Library.sortAscending": false,
 
-                "Browse.languages": ["multi", Locale.current.languageCode ?? "en"],
+                "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
                 "Browse.showNsfwSources": false,
                 "Browse.labelNsfwSources": true,
 

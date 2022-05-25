@@ -60,6 +60,7 @@
 "LANGUAGES" = "Languages";
 "INFO" = "Info";
 "VERSION" = "Version";
+"BUILD" = "Build";
 "BUTTON_FILTER" = "Filter";
 "LIST_HEADER" = "List";
 "LIST_ALL" = "All";

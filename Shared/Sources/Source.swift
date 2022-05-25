@@ -159,7 +159,8 @@ extension Source {
 
         if !languages.isEmpty {
             // if local language is supported, use it
-            for lang in languages where lang.code == Locale.current.languageCode {
+            let preferredLanguages = Locale.preferredLanguages.map { Locale(identifier: $0).languageCode }
+            for lang in languages where preferredLanguages.contains(lang.code) {
                 defaultLanguages.append(lang.value ?? lang.code)
             }
             // otherwise, fall back to source-defined default
@@ -207,6 +208,9 @@ extension Source {
                 }
             }
 
+            if manifest.languageSelectType == "single", let first = defaultLanguages.first {
+                defaultLanguages = [first]
+            }
             UserDefaults.standard.register(defaults: defaults)
         } else {
             UserDefaults.standard.register(defaults: ["\(id).languages": defaultLanguages])
