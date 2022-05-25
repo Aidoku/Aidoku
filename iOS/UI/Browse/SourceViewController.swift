@@ -144,16 +144,22 @@ class SourceViewController: MangaCollectionViewController {
         }
     }
 
-    @objc func resetFilters() {
-        for filter in selectedFilters.filters {
+    func resetFilters(filters: [FilterBase]) {
+        for filter in filters {
             if let filter = filter as? CheckFilter {
                 filter.value = filter.defaultValue
             } else if let filter = filter as? SortFilter {
                 filter.value = filter.defaultValue
             } else if let filter = filter as? SelectFilter {
                 filter.value = filter.defaultValue
+            } else if let filter = filter as? GroupFilter {
+                resetFilters(filters: filter.filters)
             }
         }
+    }
+
+    @objc func resetSelectedFilters() {
+        resetFilters(filters: filters)
         selectedFilters.filters = source.getDefaultFilters()
     }
 
@@ -161,7 +167,7 @@ class SourceViewController: MangaCollectionViewController {
         let reset = source.needsFilterRefresh
         filters = (try? await source.getFilters()) ?? []
         if selectedFilters.filters.isEmpty || reset {
-            resetFilters()
+            resetSelectedFilters()
         }
     }
 
@@ -208,7 +214,7 @@ class SourceViewController: MangaCollectionViewController {
 
         let vc = FilterModalViewController(filters: filters, selectedFilters: selectedFilters)
         vc.delegate = self
-        vc.resetButton.addTarget(self, action: #selector(resetFilters), for: .touchUpInside)
+        vc.resetButton.addTarget(self, action: #selector(resetSelectedFilters), for: .touchUpInside)
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: false)
     }
