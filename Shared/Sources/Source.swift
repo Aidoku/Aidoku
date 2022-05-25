@@ -132,7 +132,7 @@ class Source: Identifiable {
 
     var printFunction: (Int32, Int32) -> Void {
         { string, length in
-            print(self.globalStore.readString(offset: string, length: length) ?? "")
+            LogManager.logger.log(self.globalStore.readString(offset: string, length: length) ?? "")
         }
     }
 
@@ -145,7 +145,7 @@ class Source: Identifiable {
             let message = self.globalStore.readString(offset: msg, length: Int32(messageLength))
             let file = self.globalStore.readString(offset: fileName, length: Int32(fileLength))
 
-            print("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
+            LogManager.logger.error("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
         }
     }
 }

@@ -85,6 +85,13 @@
 		FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34CB279E189300BFE54B /* GetButtonView.swift */; };
 		FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE4283B024100F1BB5D /* DownloadTableViewCell.swift */; };
 		FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */; };
+		FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
+		FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
+		FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFB283DA2D400F1BB5D /* Logger.swift */; };
+		FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFB283DA2D400F1BB5D /* Logger.swift */; };
+		FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFE283DA2D900F1BB5D /* LogStore.swift */; };
+		FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFE283DA2D900F1BB5D /* LogStore.swift */; };
+		FB716E02283DD6BE00F1BB5D /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E01283DD6BE00F1BB5D /* LogViewController.swift */; };
 		FB71E37F27E0FBB800BE4860 /* ReaderPagedPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */; };
 		FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */; };
 		FB71E38427E2A29600BE4860 /* ReaderPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */; };
@@ -222,6 +229,10 @@
 		FB6E34CB279E189300BFE54B /* GetButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetButtonView.swift; sourceTree = "<group>"; };
 		FB716DE4283B024100F1BB5D /* DownloadTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTableViewCell.swift; sourceTree = "<group>"; };
 		FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectViewController.swift; sourceTree = "<group>"; };
+		FB716DE9283D5F3E00F1BB5D /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
+		FB716DFB283DA2D400F1BB5D /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		FB716DFE283DA2D900F1BB5D /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
+		FB716E01283DD6BE00F1BB5D /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedPageManager.swift; sourceTree = "<group>"; };
 		FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderScrollPageManager.swift; sourceTree = "<group>"; };
 		FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageManager.swift; sourceTree = "<group>"; };
@@ -321,6 +332,7 @@
 				FB1B4862277CE7370056D02C /* Models */,
 				FB1B4891277CECF60056D02C /* Sources */,
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
+				FB716DE8283D5F2000F1BB5D /* Logging */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
 				FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */,
@@ -429,9 +441,10 @@
 			isa = PBXGroup;
 			children = (
 				FBED231227B816D50095D0C0 /* SettingsViewController.swift */,
+				FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */,
 				FB72500A27CA8DED0037F1C9 /* BackupsViewController.swift */,
 				FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */,
-				FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */,
+				FB716E01283DD6BE00F1BB5D /* LogViewController.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -488,6 +501,16 @@
 				FB1B485C277CE6600056D02C /* DataManager.swift */,
 			);
 			path = Database;
+			sourceTree = "<group>";
+		};
+		FB716DE8283D5F2000F1BB5D /* Logging */ = {
+			isa = PBXGroup;
+			children = (
+				FB716DE9283D5F3E00F1BB5D /* LogManager.swift */,
+				FB716DFB283DA2D400F1BB5D /* Logger.swift */,
+				FB716DFE283DA2D900F1BB5D /* LogStore.swift */,
+			);
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		FB71E38227E2A28200BE4860 /* PageManager */ = {
@@ -747,9 +770,11 @@
 				TargetAttributes = {
 					FB1B4834277CE1920056D02C = {
 						CreatedOnToolsVersion = 13.2.1;
+						LastSwiftMigration = 1340;
 					};
 					FB1B483A277CE1920056D02C = {
 						CreatedOnToolsVersion = 13.2.1;
+						LastSwiftMigration = 1340;
 					};
 				};
 			};
@@ -831,6 +856,7 @@
 				FB4EEBCA27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB6E34C8279DF76300BFE54B /* MangaGridFlowLayout.swift in Sources */,
 				FB72501C27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
+				FB716E02283DD6BE00F1BB5D /* LogViewController.swift in Sources */,
 				FB4EEBC427A34ED4005081A3 /* ChapterObject.swift in Sources */,
 				FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */,
 				FBE7813A283406EB0038C0E3 /* DownloadQueueViewController.swift in Sources */,
@@ -853,6 +879,7 @@
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
+				FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
@@ -866,6 +893,7 @@
 				FB1B486A277CE76B0056D02C /* Page.swift in Sources */,
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
 				FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */,
+				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */,
 				FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */,
 				FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */,
@@ -883,6 +911,7 @@
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
+				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB72502A27CC6A9B0037F1C9 /* ReaderSettingsViewController.swift in Sources */,
@@ -930,6 +959,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
@@ -953,6 +983,7 @@
 				FBE7812D282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */,
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
+				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
 				FB72501027CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
 				FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */,
@@ -963,6 +994,7 @@
 				FB67EE6127F3708500C468EA /* WasmImports.swift in Sources */,
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
+				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
@@ -1124,6 +1156,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1150,6 +1183,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1160,6 +1194,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -1197,6 +1232,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -1217,6 +1253,7 @@
 				PRODUCT_NAME = Aidoku;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -1226,6 +1263,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;

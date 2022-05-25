@@ -176,6 +176,11 @@
 "EXPORT" = "Export";
 "RESTORE" = "Restore";
 
+"LOGGING" = "Logging";
+"LOG_SERVER" = "Log Server";
+"EXPORT_LOGS" = "Export Logs";
+"DISPLAY_LOGS" = "Display Logs";
+
 "ADVANCED" = "Advanced";
 "RESET" = "Reset";
 "RESET_TEXT" = "This action is irreversible. All data, settings, and caches will be cleared and reset.";
