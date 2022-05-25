@@ -71,6 +71,7 @@ actor DownloadTask: Identifiable {
             }
 
             Task {
+                guard downloads.count >= 1 else { return }
                 await self.download(0, from: source, to: directory)
             }
         } else {
@@ -81,6 +82,8 @@ actor DownloadTask: Identifiable {
 
     // perform download
     func download(_ downloadIndex: Int, from source: Source, to directory: URL) async {
+        guard downloads.count >= downloadIndex else { return }
+
         let chapter = downloads[downloadIndex].toChapter()
         let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
             .appendingSafePathComponent(".tmp_\(chapter.id)")

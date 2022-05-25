@@ -374,6 +374,7 @@ class LibraryViewController: MangaCollectionViewController {
     }
 
     func reorder(manga newManga: [Manga], from oldManga: [Manga] = [], in section: Int) {
+        // FIXME: there's a crash here somehow
         collectionView?.performBatchUpdates {
             for (i, manga) in oldManga.enumerated() {
                 let from = IndexPath(row: i, section: section)
