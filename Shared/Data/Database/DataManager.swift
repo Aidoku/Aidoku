@@ -105,6 +105,7 @@ class DataManager {
         return try context.fetch(fetchRequest)
     }
 
+    @discardableResult
     func save(context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? container.viewContext
 
@@ -738,6 +739,86 @@ extension DataManager {
     ) throws -> [SourceObject] {
         try fetch(
             request: SourceObject.fetchRequest(),
+            predicate: predicate,
+            sortDescriptors: sortDescriptors,
+            limit: limit,
+            context: context
+        )
+    }
+}
+
+// MARK: - Categories
+extension DataManager {
+
+    func getCategories() -> [String] {
+        ((try? getCategoryObjects()) ?? []).compactMap { $0.title }
+    }
+
+    func addCategory(title: String) {
+        guard getCategoryObject(title: title, createIfMissing: false) == nil else { return }
+        let categoryObject = CategoryObject(context: container.viewContext)
+        categoryObject.title = title
+        save()
+    }
+
+    func deleteCategory(title: String) {
+        guard let categoryObject = getCategoryObject(title: title, createIfMissing: false) else { return }
+        container.viewContext.delete(categoryObject)
+        save()
+    }
+
+    func clearCategories() {
+        let categories = (try? getCategoryObjects()) ?? []
+        for category in categories {
+            container.viewContext.delete(category)
+        }
+        save()
+    }
+
+    func getManga(inCategory category: String) -> [Manga] {
+        ((try? getLibraryObjects(predicate: NSPredicate(
+            format: "ANY categories.title = %@",
+            category
+        ))) ?? []).compactMap { libraryObject -> Manga? in
+            libraryManga.first(where: {
+                $0.sourceId == libraryObject.manga?.sourceId && $0.id == libraryObject.manga?.id }
+            )
+        }
+    }
+
+    func addMangaToCategory(manga: Manga, category: String) {
+        guard let libraryObject = getLibraryObject(for: manga),
+              let categoryObject = getCategoryObject(title: category) else { return }
+        libraryObject.addToCategories(categoryObject)
+        save()
+    }
+
+    func getCategoryObject(title: String, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> CategoryObject? {
+        if let object = try? getCategoryObjects(
+            predicate: NSPredicate(
+                format: "title = %@", title
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            return object
+        } else if createIfMissing {
+            let categoryObject = CategoryObject(context: context ?? container.viewContext)
+            categoryObject.title = title
+            return categoryObject
+        } else {
+            return nil
+        }
+    }
+
+    func getCategoryObjects(
+        predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor]? = nil,
+        limit: Int? = nil,
+        context: NSManagedObjectContext? = nil
+    ) throws -> [CategoryObject] {
+        try fetch(
+            request: CategoryObject.fetchRequest(),
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit,

@@ -40,7 +40,7 @@ extension LibraryMangaObject {
 }
 
 // MARK: Generated accessors for categories
-extension MangaObject {
+extension LibraryMangaObject {
 
     @objc(addCategoriesObject:)
     @NSManaged public func addToCategories(_ value: CategoryObject)
