@@ -400,7 +400,7 @@ class MangaViewController: UIViewController {
 
     @objc func downloadSelectedChapters() {
         guard let selected = tableView.indexPathsForSelectedRows else { return }
-        DownloadManager.shared.download(chapters: selected.map { self.sortedChapters[$0.row] }, manga: manga)
+        DownloadManager.shared.download(chapters: selected.map { self.sortedChapters[$0.row] }.reversed(), manga: manga)
         setEditing(false, animated: true)
     }
 }

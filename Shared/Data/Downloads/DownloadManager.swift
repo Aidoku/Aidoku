@@ -91,9 +91,7 @@ extension DownloadManager {
     func download(chapters: [Chapter], manga: Manga? = nil) {
         Task {
             let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
-            for download in downloads {
-                NotificationCenter.default.post(name: NSNotification.Name("downloadQueued"), object: download)
-            }
+            NotificationCenter.default.post(name: NSNotification.Name("downloadsQueued"), object: downloads)
         }
     }
 

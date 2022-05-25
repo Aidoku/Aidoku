@@ -85,11 +85,13 @@ class MangaChapterTableViewCell: UITableViewCell {
             }
         }
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadQueued"), object: nil, queue: nil) { notification in
-            if let download = notification.object as? Download,
-               download.chapterId == chapter.id {
-                Task { @MainActor in
-                    self.accessoryView?.isHidden = false
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil) { notification in
+            if let downloads = notification.object as? [Download] {
+                for download in downloads where download.chapterId == chapter.id {
+                    Task { @MainActor in
+                        self.accessoryView?.isHidden = false
+                    }
+                    break
                 }
             }
         }

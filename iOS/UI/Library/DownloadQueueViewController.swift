@@ -34,27 +34,38 @@ class DownloadQueueViewController: UITableViewController {
         tableView.register(DownloadTableViewCell.self, forCellReuseIdentifier: "DownloadTableViewCell")
 
         // add download to queue list
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadQueued"), object: nil, queue: nil) { notification in
-            if let download = notification.object as? Download {
-                let index = self.queue.firstIndex(where: { $0.sourceId == download.sourceId })
-                var downloads = index != nil ? self.queue[index!].downloads : []
-                downloads.append(download)
-                if let index = index {
-                    let downloads = downloads
-                    self.queue[index].downloads = downloads
-                    Task { @MainActor in
-                        guard downloads.count >= 1 else { return }
-                        self.tableView.insertRows(at: [IndexPath(row: downloads.count - 1, section: index)], with: .automatic)
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil) { notification in
+            if let downloads = notification.object as? [Download] {
+                var sectionsToInsert: [Int] = []
+                var rowsToInsert: [IndexPath] = []
+
+                for download in downloads {
+                    let index = self.queue.firstIndex(where: { $0.sourceId == download.sourceId })
+                    var downloads = index != nil ? self.queue[index!].downloads : []
+                    downloads.append(download)
+                    if let index = index {
+                        self.queue[index].downloads = downloads
+                        rowsToInsert.append(IndexPath(row: downloads.count - 1, section: index))
+                    } else {
+                        self.queue.append((download.sourceId, downloads))
+                        sectionsToInsert.append(self.queue.count - 1)
                     }
-                } else {
-                    self.queue.append((download.sourceId, downloads))
-                    Task { @MainActor in
-                        guard self.queue.count >= 1 else { return }
-                        self.tableView.performBatchUpdates {
-                            self.tableView.insertSections(IndexSet(integer: self.queue.count - 1), with: .automatic)
+                }
+
+                let newSections = sectionsToInsert
+                let newRows = rowsToInsert
+
+                Task { @MainActor in
+                    self.tableView.performBatchUpdates {
+                        if !newSections.isEmpty {
+                            self.tableView.insertSections(IndexSet(newSections), with: .automatic)
+                        }
+                        if !newRows.isEmpty {
+                            self.tableView.insertRows(at: newRows, with: .automatic)
                         }
                     }
                 }
+
             }
         }
 
