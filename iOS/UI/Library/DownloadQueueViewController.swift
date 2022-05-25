@@ -43,11 +43,13 @@ class DownloadQueueViewController: UITableViewController {
                     let downloads = downloads
                     self.queue[index].downloads = downloads
                     Task { @MainActor in
+                        guard downloads.count >= 1 else { return }
                         self.tableView.insertRows(at: [IndexPath(row: downloads.count - 1, section: index)], with: .automatic)
                     }
                 } else {
                     self.queue.append((download.sourceId, downloads))
                     Task { @MainActor in
+                        guard self.queue.count >= 1 else { return }
                         self.tableView.performBatchUpdates {
                             self.tableView.insertSections(IndexSet(integer: self.queue.count - 1), with: .automatic)
                         }
