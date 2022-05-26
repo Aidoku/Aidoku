@@ -97,8 +97,19 @@ class SettingsViewController: SettingsTableViewController {
                         NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
                     ],
                    requires: "Library.pinManga"
-                ),
-                SettingItem(type: "page", key: "Library.categories", title: NSLocalizedString("CATEGORIES", comment: ""))
+                )
+            ]),
+            SettingItem(type: "group", title: NSLocalizedString("CATEGORIES", comment: ""), items: [
+                SettingItem(type: "page", key: "Library.categories", title: NSLocalizedString("CATEGORIES", comment: "")),
+                SettingItem(
+                    type: "multi-single-select",
+                    key: "Library.defaultCategory",
+                    title: NSLocalizedString("DEFAULT_CATEGORY", comment: ""),
+                    values: ["", "none"] + DataManager.shared.getCategories(),
+                    titles: [
+                        NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
+                    ] + DataManager.shared.getCategories()
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
                 SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),
@@ -164,10 +175,33 @@ class SettingsViewController: SettingsTableViewController {
         NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
             LogManager.logger.streamUrl = URL(string: UserDefaults.standard.string(forKey: "Logs.logServer") ?? "")
         }
+
+        // update default category select setting when categories change
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("updateCategories"), object: nil, queue: nil) { _ in
+            if let categorySettingsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("CATEGORIES", comment: "") }),
+               let categoryIndex = self.items[categorySettingsIndex].items?.firstIndex(where: { $0.key == "Library.defaultCategory" }) {
+                let categories = DataManager.shared.getCategories()
+                self.items[categorySettingsIndex].items?[categoryIndex].values = ["", "none"] + categories
+                self.items[categorySettingsIndex].items?[categoryIndex].titles = [
+                    NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
+                ] + categories
+                // if a deleted category was selected, reset to always ask
+                if let selected = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                   !categories.contains(selected) {
+                    UserDefaults.standard.set([""], forKey: "Library.defaultCategory")
+                }
+            }
+        }
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // needed to update the selected value text for select settings
+        tableView.reloadData()
     }
 
     func confirmAction(

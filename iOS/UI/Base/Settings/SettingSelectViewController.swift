@@ -98,8 +98,8 @@ extension SettingSelectViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
 
-        if indexPath.row < item.titles?.count ?? 0 {
-            cell.textLabel?.text = item.titles?[indexPath.row]
+        if indexPath.row < item.values?.count ?? 0 {
+            cell.textLabel?.text = item.titles?[indexPath.row] ?? item.values?[indexPath.row]
             cell.accessoryType = .none
             if multi {
                 if indexes.contains(indexPath.row) {

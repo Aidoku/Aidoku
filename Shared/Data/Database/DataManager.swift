@@ -129,7 +129,7 @@ extension DataManager {
         libraryManga.contains { $0.sourceId == manga.sourceId && $0.id == manga.id }
     }
 
-    func addToLibrary(manga: Manga, context: NSManagedObjectContext? = nil) {
+    func addToLibrary(manga: Manga, context: NSManagedObjectContext? = nil, completion: (() -> Void)? = nil) {
         let context = context ?? container.viewContext
         context.perform {
             if self.libraryContains(manga: manga) { return }
@@ -143,7 +143,8 @@ extension DataManager {
             if let newManga = libraryObject.manga?.toManga() {
                 self.libraryManga.append(newManga)
             }
-            NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: nil)
+            completion?()
+            NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
 
             Task {
                 let chapters = await self.getChapters(for: manga, fromSource: true)
@@ -806,6 +807,16 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
+    func addMangaToCategories(manga: Manga, categories: [String]) {
+        guard let libraryObject = getLibraryObject(for: manga) else { return }
+        for category in categories {
+            guard let categoryObject = getCategoryObject(title: category) else { continue }
+            libraryObject.addToCategories(categoryObject)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
     func getManga(inCategory category: String) -> [Manga] {
         ((try? getLibraryObjects(predicate: NSPredicate(
             format: "ANY categories.title = %@",
@@ -817,12 +828,9 @@ extension DataManager {
         }
     }
 
-    func addMangaToCategory(manga: Manga, category: String) {
-        guard let libraryObject = getLibraryObject(for: manga),
-              let categoryObject = getCategoryObject(title: category) else { return }
-        libraryObject.addToCategories(categoryObject)
-        save()
-        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    func getCategories(for manga: Manga) -> [String] {
+        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false) else { return [] }
+        return ((libraryObject.categories?.allObjects as? [CategoryObject]) ?? []).compactMap { $0.title }
     }
 
     private func getNextCategoryIndex() -> Int16 {

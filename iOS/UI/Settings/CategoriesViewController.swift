@@ -49,7 +49,7 @@ class CategoriesViewController: UITableViewController {
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
             guard let textField = alert.textFields?.first else { return }
-            if let title = textField.text {
+            if let title = textField.text, !title.isEmpty, title.lowercased() != "none" {
                 DataManager.shared.addCategory(title: title)
                 self.categories.append(title)
                 self.tableView.insertRows(at: [IndexPath(row: self.categories.count - 1, section: 0)], with: .automatic)

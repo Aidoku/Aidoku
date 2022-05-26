@@ -29,6 +29,7 @@ class MangaViewHeaderView: UIView {
     }
 
     var showSourceLabel: Bool = false
+    var shouldAskCategory: Bool = false
 
     let contentStackView = UIStackView()
 
@@ -198,6 +199,12 @@ class MangaViewHeaderView: UIView {
 
     func configureContents() {
         showSourceLabel = UserDefaults.standard.bool(forKey: "General.showSourceLabel") && inLibrary
+        let categories = DataManager.shared.getCategories()
+        shouldAskCategory = !categories.isEmpty
+        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+           defaultCategory == "none" || categories.contains(defaultCategory) {
+            shouldAskCategory = false
+        }
 
         contentStackView.distribution = .fill
         contentStackView.axis = .vertical
@@ -290,9 +297,10 @@ class MangaViewHeaderView: UIView {
 
         // Bookmark button
         bookmarkButton.addTarget(self, action: #selector(bookmarkPressed), for: .touchUpInside)
-        bookmarkButton.setImage(UIImage(systemName: "bookmark.fill",
-                                        withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
-                                for: .normal)
+        bookmarkButton.setImage(
+            UIImage(systemName: "bookmark.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
+            for: .normal
+        )
         bookmarkButton.layer.cornerRadius = 6
         bookmarkButton.layer.cornerCurve = .continuous
         bookmarkButton.translatesAutoresizingMaskIntoConstraints = false
@@ -502,7 +510,16 @@ class MangaViewHeaderView: UIView {
             if inLibrary {
                 DataManager.shared.delete(manga: manga)
             } else {
-                DataManager.shared.addToLibrary(manga: manga)
+                if shouldAskCategory {
+                    host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
+                } else {
+                    DataManager.shared.addToLibrary(manga: manga) {
+                        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                           DataManager.shared.getCategories().contains(defaultCategory) {
+                            DataManager.shared.addMangaToCategories(manga: manga, categories: [defaultCategory])
+                        }
+                    }
+                }
             }
             if inLibrary {
                 bookmarkButton.tintColor = .white

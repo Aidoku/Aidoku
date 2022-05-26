@@ -42,10 +42,13 @@
 
 // Categories
 "ALL" = "All";
+"NONE" = "None";
 "CATEGORIES" = "Categories";
 "CATEGORY_ADD" = "Add Category";
 "CATEGORY_ADD_TEXT" = "Enter the title of the new category to create.";
 "CATEGORY_TITLE" = "Category Title";
+"DEFAULT_CATEGORY" = "Default Category";
+"ALWAYS_ASK" = "Always Ask";
 
 // Browse
 "BROWSE" = "Browse";

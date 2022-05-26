@@ -144,17 +144,23 @@ extension SettingsTableViewController {
         switch item.type {
         case "select":
             cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
-
+            cell.textLabel?.textColor = .label
             if let value = UserDefaults.standard.string(forKey: item.key ?? ""),
                let index = item.values?.firstIndex(of: value) {
-                cell.detailTextLabel?.text = item.titles?[index]
+                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
             }
             cell.accessoryType = .disclosureIndicator
 
         case "multi-select", "multi-single-select", "page":
-            cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
+            cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
             cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
+
+            if item.type == "multi-single-select",
+               let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
+               let index = item.values?.firstIndex(of: value) {
+                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+            }
 
         case "switch":
             cell = switchCell(for: item)
