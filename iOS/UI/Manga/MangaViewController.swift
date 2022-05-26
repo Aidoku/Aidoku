@@ -130,7 +130,6 @@ class MangaViewController: UIViewController {
                 self.tableView.reloadData()
             }
         }
-
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
             Task { @MainActor in
                 self.updateNavbarButtons()
@@ -144,6 +143,11 @@ class MangaViewController: UIViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil) { _ in
             Task { @MainActor in
                 self.updateNavbarButtons()
+            }
+        }
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateNavbarButtons()
             }
         }
 
@@ -241,36 +245,49 @@ class MangaViewController: UIViewController {
 
             var subMenus: [UIMenu] = []
 
-            // TODO: only show relevant actions
-            let mangaOptions: [UIAction] = [
-                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
-                    self.showLoadingIndicator()
-                    DataManager.shared.setRead(manga: self.manga)
-                    DataManager.shared.setCompleted(
-                        chapters: self.chapters,
-                        date: Date().addingTimeInterval(-1),
-                        context: DataManager.shared.backgroundContext
-                    )
-                    // Make most recent chapter appear as the most recently read
-                    if let firstChapter = self.chapters.first {
-                        DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
-                    }
-                },
-                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                    self.showLoadingIndicator()
-                    DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
-                }
-            ]
-            subMenus.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions))
+            // no longer needed because select chapters has a select all
+//            let mangaOptions: [UIAction] = [
+//                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+//                    self.showLoadingIndicator()
+//                    DataManager.shared.setRead(manga: self.manga)
+//                    DataManager.shared.setCompleted(
+//                        chapters: self.chapters,
+//                        date: Date().addingTimeInterval(-1),
+//                        context: DataManager.shared.backgroundContext
+//                    )
+//                    // Make most recent chapter appear as the most recently read
+//                    if let firstChapter = self.chapters.first {
+//                        DataManager.shared.setCompleted(chapter: firstChapter, context: DataManager.shared.backgroundContext)
+//                    }
+//                },
+//                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+//                    self.showLoadingIndicator()
+//                    DataManager.shared.removeHistory(for: self.manga, context: DataManager.shared.backgroundContext)
+//                }
+//            ]
+//            subMenus.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: mangaOptions))
 
             var subActions: [UIAction] = []
 
-            subActions.append(UIAction(title: NSLocalizedString("SELECT_CHAPTERS", comment: ""), image: nil) { _ in
+            subActions.append(UIAction(
+                title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
+                image: UIImage(systemName: "checkmark.circle")
+            ) { _ in
                 self.setEditing(true, animated: true)
             })
 
+            if DataManager.shared.libraryContains(manga: manga), !DataManager.shared.getCategories().isEmpty {
+                subActions.append(UIAction(title: NSLocalizedString("EDIT_CATEGORIES", comment: ""), image: UIImage(systemName: "folder")) { _ in
+                    self.present(UINavigationController(rootViewController: CategorySelectViewController(manga: self.manga)), animated: true)
+                })
+            }
+
             if DownloadManager.shared.hasDownloadedChapter(for: manga) {
-                subActions.append(UIAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""), image: nil) { _ in
+                subActions.append(UIAction(
+                    title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                    image: UIImage(systemName: "trash"),
+                    attributes: .destructive
+                ) { _ in
                     DownloadManager.shared.deleteChapters(for: self.manga)
                 })
             }
@@ -525,8 +542,8 @@ extension MangaViewController {
 
     func showMissingSourceWarning() {
         let alert = UIAlertController(
-            title: NSLocalizedString("MANGA_MISSING_SOURCE", comment: ""),
-            message: NSLocalizedString("MANGA_MISSING_SOURCE_TEXT", comment: ""),
+            title: NSLocalizedString("MISSING_SOURCE", comment: ""),
+            message: NSLocalizedString("MISSING_SOURCE_TEXT", comment: ""),
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))

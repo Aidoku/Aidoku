@@ -44,6 +44,7 @@
 "ALL" = "All";
 "NONE" = "None";
 "CATEGORIES" = "Categories";
+"EDIT_CATEGORIES" = "Edit Categories";
 "CATEGORY_ADD" = "Add Category";
 "CATEGORY_ADD_TEXT" = "Enter the title of the new category to create.";
 "CATEGORY_TITLE" = "Category Title";

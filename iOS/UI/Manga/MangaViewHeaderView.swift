@@ -31,6 +31,8 @@ class MangaViewHeaderView: UIView {
     var showSourceLabel: Bool = false
     var shouldAskCategory: Bool = false
 
+    var cancelBookmarkTouchUp: Bool = false
+
     let contentStackView = UIStackView()
 
     let titleStackView = UIStackView()
@@ -297,6 +299,9 @@ class MangaViewHeaderView: UIView {
 
         // Bookmark button
         bookmarkButton.addTarget(self, action: #selector(bookmarkPressed), for: .touchUpInside)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkStartedHold), for: .touchDown)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchCancel)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchDragExit)
         bookmarkButton.setImage(
             UIImage(systemName: "bookmark.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
             for: .normal
@@ -376,6 +381,15 @@ class MangaViewHeaderView: UIView {
                     self.bookmarkButton.tintColor = self.tintColor
                     self.bookmarkButton.backgroundColor = .secondarySystemFill
                 }
+            }
+        }
+
+        NotificationCenter.default.addObserver(forName: Notification.Name("Library.defaultCategory"), object: nil, queue: nil) { _ in
+            let categories = DataManager.shared.getCategories()
+            self.shouldAskCategory = !categories.isEmpty
+            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+               defaultCategory == "none" || categories.contains(defaultCategory) {
+                self.shouldAskCategory = false
             }
         }
     }
@@ -506,28 +520,48 @@ class MangaViewHeaderView: UIView {
     }
 
     @objc func bookmarkPressed() {
-        if let manga = manga {
-            if inLibrary {
-                DataManager.shared.delete(manga: manga)
-            } else {
-                if shouldAskCategory {
-                    host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
-                } else {
-                    DataManager.shared.addToLibrary(manga: manga) {
-                        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
-                           DataManager.shared.getCategories().contains(defaultCategory) {
-                            DataManager.shared.addMangaToCategories(manga: manga, categories: [defaultCategory])
-                        }
-                    }
-                }
-            }
-            if inLibrary {
-                bookmarkButton.tintColor = .white
-                bookmarkButton.backgroundColor = tintColor
-            } else {
+        bookmarkHoldCancelled()
+        if cancelBookmarkTouchUp {
+            cancelBookmarkTouchUp = false
+            return
+        }
+        guard let manga = manga else { return }
+        if inLibrary {
+            DataManager.shared.delete(manga: manga)
+            if !inLibrary {
                 bookmarkButton.tintColor = tintColor
                 bookmarkButton.backgroundColor = .secondarySystemFill
             }
+        } else {
+            if shouldAskCategory {
+                host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
+            } else {
+                DataManager.shared.addToLibrary(manga: manga) {
+                    if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                       DataManager.shared.getCategories().contains(defaultCategory) {
+                        DataManager.shared.addMangaToCategories(manga: manga, categories: [defaultCategory])
+                    }
+                    if self.inLibrary {
+                        self.bookmarkButton.tintColor = .white
+                        self.bookmarkButton.backgroundColor = self.tintColor
+                    }
+                }
+            }
         }
+    }
+
+    @objc func bookmarkStartedHold() {
+        cancelBookmarkTouchUp = false
+        perform(#selector(bookmarkHeld), with: nil, afterDelay: 0.6)
+    }
+
+    @objc func bookmarkHoldCancelled() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
+    }
+
+    @objc func bookmarkHeld() {
+        guard let manga = manga else { return }
+        cancelBookmarkTouchUp = true
+        host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
     }
 }

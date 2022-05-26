@@ -30,6 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.pinMangaType": 0,
                 "Library.sortOption": 1,
                 "Library.sortAscending": false,
+                "Library.defaultCategory": [""],
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
                 "Browse.showNsfwSources": false,

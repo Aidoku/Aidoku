@@ -807,6 +807,14 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
+    func setMangaCategories(manga: Manga, categories: [String]) {
+        guard let libraryObject = getLibraryObject(for: manga) else { return }
+        let objects = categories.compactMap { getCategoryObject(title: $0) }
+        libraryObject.categories = NSSet(array: objects)
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
     func addMangaToCategories(manga: Manga, categories: [String]) {
         guard let libraryObject = getLibraryObject(for: manga) else { return }
         for category in categories {

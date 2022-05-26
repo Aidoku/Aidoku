@@ -14,6 +14,10 @@ class CategorySelectViewController: UITableViewController {
     var categories: [String] = []
     var selectedCategories: [String] = []
 
+    var inLibrary: Bool {
+        DataManager.shared.libraryContains(manga: manga)
+    }
+
     init(manga: Manga) {
         self.manga = manga
         super.init(style: .plain)
@@ -34,18 +38,29 @@ class CategorySelectViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
         categories = DataManager.shared.getCategories()
+        if inLibrary {
+            selectedCategories = DataManager.shared.getCategories(for: manga)
+        }
     }
 
     @objc func close() {
         dismiss(animated: true)
     }
 
+    func setCategories() {
+        if !selectedCategories.isEmpty {
+            DataManager.shared.setMangaCategories(manga: manga, categories: selectedCategories)
+        }
+        close()
+    }
+
     @objc func add() {
-        DataManager.shared.addToLibrary(manga: manga) {
-            if !self.selectedCategories.isEmpty {
-                DataManager.shared.addMangaToCategories(manga: self.manga, categories: self.selectedCategories)
+        if inLibrary {
+            setCategories()
+        } else {
+            DataManager.shared.addToLibrary(manga: manga) {
+                self.setCategories()
             }
-            self.close()
         }
     }
 }
