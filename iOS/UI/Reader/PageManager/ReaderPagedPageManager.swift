@@ -204,7 +204,7 @@ extension ReaderPagedPageManager {
             items = []
         }
 
-        func addChapter(_ index: Int) {
+        func insertPage(at index: Int) {
             let chapterPageController = UIViewController()
             let page = ReaderPageView(sourceId: chapter.sourceId)
             page.frame = pageViewController.view.bounds
@@ -214,7 +214,7 @@ extension ReaderPagedPageManager {
         }
 
         for _ in pages {
-            addChapter(items.endIndex)
+            insertPage(at: items.endIndex)
         }
 
         if let page = storedPage {
@@ -241,11 +241,11 @@ extension ReaderPagedPageManager {
         items.append(finalPageController)
 
         if hasNextChapter {
-            addChapter(items.endIndex)
+            insertPage(at: items.endIndex)
         }
 
         if hasPreviousChapter {
-            addChapter(0)
+            insertPage(at: 0)
         }
 
         Task {
