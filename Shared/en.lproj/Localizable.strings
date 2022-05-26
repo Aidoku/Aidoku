@@ -40,6 +40,13 @@
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
 
+// Categories
+"ALL" = "All";
+"CATEGORIES" = "Categories";
+"CATEGORY_ADD" = "Add Category";
+"CATEGORY_ADD_TEXT" = "Enter the title of the new category to create.";
+"CATEGORY_TITLE" = "Category Title";
+
 // Browse
 "BROWSE" = "Browse";
 "BROWSE_NO_SOURCES" = "No sources";

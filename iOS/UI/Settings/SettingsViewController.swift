@@ -97,7 +97,8 @@ class SettingsViewController: SettingsTableViewController {
                         NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
                     ],
                    requires: "Library.pinManga"
-                )
+                ),
+                SettingItem(type: "page", key: "Library.categories", title: NSLocalizedString("CATEGORIES", comment: ""))
             ]),
             SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
                 SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),
@@ -199,6 +200,9 @@ extension SettingsViewController {
             switch item.key {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
+
+            case "Library.categories":
+                navigationController?.pushViewController(CategoriesViewController(), animated: true)
 
             case "Browse.sourceLists":
                 navigationController?.pushViewController(SourceListsViewController(), animated: true)

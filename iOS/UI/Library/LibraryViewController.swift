@@ -139,6 +139,13 @@ class LibraryViewController: MangaCollectionViewController {
         NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
             self.refreshManga()
         }
+        NotificationCenter.default.addObserver(forName: Notification.Name("updateCategories"), object: nil, queue: nil) { _ in
+            self.categories = DataManager.shared.getCategories()
+            if self.currentCategory != nil && !self.categories.contains(self.currentCategory!) {
+                self.currentCategory = nil
+            }
+            self.fetchLibrary()
+        }
         NotificationCenter.default.addObserver(forName: Notification.Name("downloadsQueued"), object: nil, queue: nil) { _ in
             Task {
                 await self.updateNavbarButtons()

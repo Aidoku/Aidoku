@@ -756,15 +756,45 @@ extension DataManager {
 
     func addCategory(title: String) {
         guard getCategoryObject(title: title, createIfMissing: false) == nil else { return }
+        let sort = getNextCategoryIndex()
         let categoryObject = CategoryObject(context: container.viewContext)
         categoryObject.title = title
+        categoryObject.sort = sort
         save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
     func deleteCategory(title: String) {
         guard let categoryObject = getCategoryObject(title: title, createIfMissing: false) else { return }
+        let categories = (try? getCategoryObjects()) ?? []
+        // decrement category indexes that follow the removed category
+        for i in Int(categoryObject.sort)..<categories.count {
+            categories[i].sort -= 1
+        }
         container.viewContext.delete(categoryObject)
         save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func moveCategory(title: String, toPosition index: Int) {
+        guard index >= 0,
+              let categoryObject = getCategoryObject(title: title, createIfMissing: false),
+              categoryObject.sort != index else { return }
+        let currentIndex = Int(categoryObject.sort)
+        let categories = (try? getCategoryObjects()) ?? []
+        guard index < categories.count else { return }
+        if index > currentIndex { // move lower (higher index)
+            for i in currentIndex + 1...index {
+                categories[i].sort -= 1
+            }
+        } else { // move higher (lower index)
+            for i in index..<currentIndex {
+                categories[i].sort += 1
+            }
+        }
+        categoryObject.sort = Int16(index)
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
     func clearCategories() {
@@ -773,6 +803,7 @@ extension DataManager {
             container.viewContext.delete(category)
         }
         save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
     func getManga(inCategory category: String) -> [Manga] {
@@ -791,6 +822,14 @@ extension DataManager {
               let categoryObject = getCategoryObject(title: category) else { return }
         libraryObject.addToCategories(categoryObject)
         save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    private func getNextCategoryIndex() -> Int16 {
+        ((try? getCategoryObjects(
+            sortDescriptors: [NSSortDescriptor(key: "sort", ascending: false)],
+            limit: 1
+        ).first?.sort) ?? -1) + 1
     }
 
     func getCategoryObject(title: String, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> CategoryObject? {
@@ -803,8 +842,10 @@ extension DataManager {
         ).first {
             return object
         } else if createIfMissing {
+            let sort = getNextCategoryIndex()
             let categoryObject = CategoryObject(context: context ?? container.viewContext)
             categoryObject.title = title
+            categoryObject.sort = sort
             return categoryObject
         } else {
             return nil
@@ -813,7 +854,7 @@ extension DataManager {
 
     func getCategoryObjects(
         predicate: NSPredicate? = nil,
-        sortDescriptors: [NSSortDescriptor]? = nil,
+        sortDescriptors: [NSSortDescriptor]? = [NSSortDescriptor(key: "sort", ascending: true)],
         limit: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [CategoryObject] {
