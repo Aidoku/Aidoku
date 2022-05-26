@@ -44,6 +44,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var collectionView: UICollectionView!
 
     var sizeCache: [String: CGSize] = [:]
+    var dataCache: [String: Data] = [:] // in order to avoid re-parsing base64 data
     var lastSize: CGSize?
 
     var chapterList: [Chapter] = []
@@ -185,6 +186,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func move(toPage page: Int) {
+        collectionView.reloadData()
         guard collectionView.numberOfSections > 1 && collectionView.numberOfItems(inSection: 1) >= page + 1 else { return }
         collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 1), at: .top, animated: false)
         delegate?.didMove(toPage: page)
@@ -474,7 +476,11 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 page = pages[indexPath.item - 1]
             }
             if let page = page {
-                cell.setPage(page: page)
+                if let data = dataCache[page.key] {
+                    cell.setPageData(data: data)
+                } else {
+                    cell.setPage(page: page)
+                }
             }
         }
     }
@@ -549,30 +555,18 @@ extension ReaderScrollPageManager: UICollectionViewDataSourcePrefetching {
 
 // MARK: - Reader Page Delegate
 extension ReaderScrollPageManager: ReaderPageViewDelegate {
-    func imageLoaded(result: Result<RetrieveImageResult, KingfisherError>) {
-        switch result {
-        case .success(let imageResult):
-            let key = imageResult.source.cacheKey
-            if sizeCache[key] == nil {
-                sizeCache[key] = imageResult.image.sizeToFit(collectionView.frame.size)
-                collectionView.collectionViewLayout.invalidateLayout()
-                if let targetPage = targetPage, shouldMoveToTargetPage, sizeCache.count >= targetPage {
-                    shouldMoveToTargetPage = false
-                    move(toPage: targetPage)
-                }
-            }
-        case .failure:
-            break
-        }
-    }
-
     func imageLoaded(key: String, image: UIImage) {
         if sizeCache[key] == nil {
-            sizeCache[key] = image.sizeToFit(collectionView.frame.size)
-            collectionView.collectionViewLayout.invalidateLayout()
-            if let targetPage = targetPage, shouldMoveToTargetPage, sizeCache.count >= targetPage {
-                shouldMoveToTargetPage = false
-                move(toPage: targetPage)
+            Task.detached {
+                self.sizeCache[key] = await image.sizeToFit(self.collectionView.frame.size)
+                self.dataCache[key] = image.pngData()
+                Task { @MainActor in
+                    self.collectionView.collectionViewLayout.invalidateLayout()
+                    if let targetPage = self.targetPage, self.shouldMoveToTargetPage, self.sizeCache.count >= targetPage {
+                        self.shouldMoveToTargetPage = false
+                        self.move(toPage: targetPage)
+                    }
+                }
             }
         }
     }
@@ -640,7 +634,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         if let url = page.imageURL {
             setPageImage(url: url)
         } else if let base64 = page.base64 {
-            setPageImage(base64: base64)
+            setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
             setPageText(text: text)
         }
@@ -653,8 +647,12 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    func setPageImage(base64: String) {
-        pageView?.setPageImage(base64: base64)
+    func setPageImage(base64: String, key: String) {
+        self.pageView?.setPageImage(base64: base64, key: key)
+    }
+
+    func setPageData(data: Data, key: String? = nil) {
+        pageView?.setPageData(data: data, key: key)
     }
 
     func setPageText(text: String) {

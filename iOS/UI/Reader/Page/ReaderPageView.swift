@@ -130,7 +130,7 @@ class ReaderPageView: UIView {
                 await setPageImage(url: url)
             }
         } else if let base64 = page.base64 {
-            setPageImage(base64: base64)
+            setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
             setPageText(text: text)
         }
@@ -140,19 +140,27 @@ class ReaderPageView: UIView {
         // TODO: support text
     }
 
-    func setPageImage(base64: String) {
-        if let data = Data(base64Encoded: base64) {
-            let image = UIImage(data: data)
-            imageView.image = image
-            if progressView.progress != 1 {
-                progressView.setProgress(value: 1, withAnimation: true)
+    func setPageImage(base64: String, key: String) {
+        Task.detached {
+            if let data = Data(base64Encoded: base64) {
+                await self.setPageData(data: data, key: key)
             }
-            progressView.isHidden = true
-            reloadButton.alpha = 0
-            updateZoomBounds()
-            if let image = image {
-                delegate?.imageLoaded(key: base64.take(first: 10) + base64.take(last: 20), image: image)
-            }
+        }
+    }
+
+    @MainActor
+    func setPageData(data: Data, key: String? = nil) {
+        currentUrl = nil
+        let image = UIImage(data: data)
+        imageView.image = image
+        if progressView.progress != 1 {
+            progressView.setProgress(value: 1, withAnimation: true)
+        }
+        progressView.isHidden = true
+        reloadButton.alpha = 0
+        updateZoomBounds()
+        if let key = key, let image = image {
+            delegate?.imageLoaded(key: key, image: image)
         }
     }
 
