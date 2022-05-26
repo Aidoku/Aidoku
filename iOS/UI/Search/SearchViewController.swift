@@ -54,6 +54,14 @@ class SearchViewController: UIViewController {
 
     var query: String?
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -110,18 +118,24 @@ class SearchViewController: UIViewController {
         collectionView?.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         collectionView?.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceList"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
                 self.collectionView?.reloadData()
             }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("loadedSourceFilters"), object: nil, queue: nil) { _ in
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("loadedSourceFilters"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
                 self.collectionView?.reloadData()
             }
-        }
+        })
     }
 
     override func viewWillAppear(_ animated: Bool) {

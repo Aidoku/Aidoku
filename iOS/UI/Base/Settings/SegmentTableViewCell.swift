@@ -24,6 +24,14 @@ class SegmentTableViewCell: UITableViewCell {
 
     var segmentedLeadingConstraint: NSLayoutConstraint?
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     init(source: Source? = nil, item: SettingItem? = nil, reuseIdentifier: String?) {
         self.source = source
         self.item = item
@@ -48,14 +56,18 @@ class SegmentTableViewCell: UITableViewCell {
 
         if let requires = item?.requires {
             segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                self.segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            }
+            observers.append(NotificationCenter.default.addObserver(
+                forName: NSNotification.Name(requires), object: nil, queue: nil
+            ) { [weak self] _ in
+                self?.segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
+            })
         } else if let requires = item?.requiresFalse {
             segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                self.segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            }
+            observers.append(NotificationCenter.default.addObserver(
+                forName: NSNotification.Name(requires), object: nil, queue: nil
+            ) { [weak self] _ in
+                self?.segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+            })
         }
 
         if item?.title == nil {

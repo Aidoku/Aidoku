@@ -24,9 +24,7 @@ class LogViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Logs"
-
-        LogManager.logger.debug("hey")
+        title = NSLocalizedString("LOGS", comment: "")
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearLog))
 
@@ -45,9 +43,9 @@ class LogViewController: UIViewController {
         entries = LogManager.logger.store.entries
         loadLog()
 
-        observerId = LogManager.logger.store.addObserver { entry in
-            self.entries.append(entry)
-            self.logEntry(entry: entry)
+        observerId = LogManager.logger.store.addObserver { [weak self] entry in
+            self?.entries.append(entry)
+            self?.logEntry(entry: entry)
         }
     }
 

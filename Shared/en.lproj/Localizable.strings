@@ -188,6 +188,7 @@
 "EXPORT" = "Export";
 "RESTORE" = "Restore";
 
+"LOGS" = "Logs";
 "LOGGING" = "Logging";
 "LOG_SERVER" = "Log Server";
 "EXPORT_LOGS" = "Export Logs";

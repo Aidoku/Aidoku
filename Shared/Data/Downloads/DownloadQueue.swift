@@ -91,6 +91,10 @@ actor DownloadQueue {
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
         progressBlocks[chapter] = block
     }
+
+    func removeProgressBlock(for chapter: Chapter) {
+        progressBlocks.removeValue(forKey: chapter)
+    }
 }
 
 extension DownloadQueue {

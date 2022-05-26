@@ -11,6 +11,18 @@ class DownloadQueueViewController: UITableViewController {
 
     var queue: [(sourceId: String, downloads: [Download])] = []
 
+    var observers: [NSObjectProtocol] = []
+    var chapters: [Chapter] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        for chapter in chapters {
+            DownloadManager.shared.removeProgressBlock(for: chapter)
+        }
+    }
+
     init() {
         super.init(style: .insetGrouped)
     }
@@ -34,7 +46,10 @@ class DownloadQueueViewController: UITableViewController {
         tableView.register(DownloadTableViewCell.self, forCellReuseIdentifier: "DownloadTableViewCell")
 
         // add download to queue list
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let downloads = notification.object as? [Download] {
                 var sectionsToInsert: [Int] = []
                 var rowsToInsert: [IndexPath] = []
@@ -67,10 +82,13 @@ class DownloadQueueViewController: UITableViewController {
                 }
 
             }
-        }
+        })
 
         // remove download from queue list
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadFinished"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadFinished"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Download,
                let index = self.queue.firstIndex(where: { $0.sourceId == download.sourceId }) {
                 var downloads = self.queue[index].downloads
@@ -93,7 +111,7 @@ class DownloadQueueViewController: UITableViewController {
                     }
                 }
             }
-        }
+        })
 
         // get initial download queue
         Task {
@@ -165,7 +183,11 @@ extension DownloadQueueViewController {
 
         // progress update block
         if let chapter = download.chapter {
-            DownloadManager.shared.onProgress(for: chapter) { progress, total in
+            if !chapters.contains(chapter) {
+                chapters.append(chapter)
+            }
+            DownloadManager.shared.onProgress(for: chapter) { [weak self] progress, total in
+                guard let self = self else { return }
                 if let queueIndex = self.queue.firstIndex(where: { $0.sourceId == download.sourceId }),
                    let downloadIndex = self.queue[queueIndex].downloads.firstIndex(where: { $0 == download }) {
                     self.queue[queueIndex].downloads[downloadIndex].progress = progress

@@ -11,6 +11,14 @@ class SourceListsViewController: UITableViewController {
 
     var sourceLists: [URL] = SourceManager.shared.sourceLists
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     init() {
         super.init(style: .insetGrouped)
     }
@@ -30,7 +38,10 @@ class SourceListsViewController: UITableViewController {
             tableView.sectionHeaderTopPadding = 0
         }
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceLists"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceLists"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 let previousLists = self.sourceLists
                 self.sourceLists = SourceManager.shared.sourceLists
@@ -54,7 +65,7 @@ class SourceListsViewController: UITableViewController {
                     }
                 }
             }
-        }
+        })
     }
 
     @objc func addSourceList() {

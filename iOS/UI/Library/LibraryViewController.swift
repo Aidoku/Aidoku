@@ -121,41 +121,54 @@ class LibraryViewController: MangaCollectionViewController {
         fetchLibrary()
         categories = DataManager.shared.getCategories()
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("Library.pinManga"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
+        let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
+            self?.fetchLibrary()
         }
-        NotificationCenter.default.addObserver(forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
+        let updateNavbarBlock: (Notification) -> Void = { [weak self] _ in
+            guard let self = self else { return }
+            Task {
+                await self.updateNavbarButtons()
+            }
         }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateHistory"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("reloadLibrary"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("resortLibrary"), object: nil, queue: nil) { _ in
-            self.resortManga()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
-            self.refreshManga()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateCategories"), object: nil, queue: nil) { _ in
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Library.pinManga"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateHistory"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("reloadLibrary"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("resortLibrary"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.resortManga()
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateLibrary"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.refreshManga()
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateCategories"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             self.categories = DataManager.shared.getCategories()
             if self.currentCategory != nil && !self.categories.contains(self.currentCategory!) {
                 self.currentCategory = nil
             }
             self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadsQueued"), object: nil, queue: nil) { _ in
-            Task {
-                await self.updateNavbarButtons()
-            }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
-            Task {
-                await self.updateNavbarButtons()
-            }
-        }
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadsQueued"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadFinished"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
     }
 
     override func viewWillAppear(_ animated: Bool) {

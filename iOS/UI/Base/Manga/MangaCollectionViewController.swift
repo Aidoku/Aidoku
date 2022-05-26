@@ -41,6 +41,14 @@ class MangaCollectionViewController: UIViewController {
         }
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -64,16 +72,22 @@ class MangaCollectionViewController: UIViewController {
         collectionView?.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         collectionView?.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("General.portraitRows"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("General.portraitRows"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 (self.collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.cellsPerRow = self.cellsPerRow
             }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("General.landscapeRows"), object: nil, queue: nil) { _ in
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("General.landscapeRows"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 (self.collectionView?.collectionViewLayout as? MangaGridFlowLayout)?.cellsPerRow = self.cellsPerRow
             }
-        }
+        })
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -126,8 +140,10 @@ class MangaCollectionViewController: UIViewController {
     }
 
     func openMangaView(for manga: Manga) {
-        let vc = MangaViewController(manga: manga, chapters: chapters["\(manga.sourceId).\(manga.id)"] ?? [])
-        navigationController?.pushViewController(vc, animated: true)
+        navigationController?.pushViewController(
+            MangaViewController(manga: manga, chapters: chapters["\(manga.sourceId).\(manga.id)"] ?? []),
+            animated: true
+        )
     }
 }
 

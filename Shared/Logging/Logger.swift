@@ -43,6 +43,12 @@ class Logger {
         }
     }
 
+    deinit {
+        if let streamObserverId = streamObserverId {
+            store.removeObserver(id: streamObserverId)
+        }
+    }
+
     init(store: LogStore = LogStore(), streamUrl: URL? = nil) {
         self.store = store
         self.streamUrl = streamUrl
@@ -52,7 +58,6 @@ class Logger {
     private func updateStreamUrl() {
         if let oldId = streamObserverId { store.removeObserver(id: oldId) }
         if let newUrl = streamUrl {
-            print(newUrl)
             streamObserverId = store.addObserver { entry in
                 Task {
                     var request = URLRequest(url: newUrl)

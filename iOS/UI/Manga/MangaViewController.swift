@@ -68,6 +68,8 @@ class MangaViewController: UIViewController {
 
     var loadingAlert: UIAlertController?
 
+    var observers: [NSObjectProtocol] = []
+
     init(manga: Manga, chapters: [Chapter] = []) {
         self.manga = manga
         self.chapters = chapters
@@ -76,6 +78,12 @@ class MangaViewController: UIViewController {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     override func viewDidLoad() {
@@ -123,33 +131,36 @@ class MangaViewController: UIViewController {
             return
         }
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateHistory"), object: nil, queue: nil) { _ in
+        let navbarUpdateBlock: (Notification) -> Void = { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.updateNavbarButtons()
+                print("!!!!!")
+            }
+        }
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateHistory"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.updateReadHistory()
                 self.loadingAlert?.dismiss(animated: true)
                 self.tableView.reloadData()
             }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
-            Task { @MainActor in
-                self.updateNavbarButtons()
-            }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadRemoved"), object: nil, queue: nil) { _ in
-            Task { @MainActor in
-                self.updateNavbarButtons()
-            }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil) { _ in
-            Task { @MainActor in
-                self.updateNavbarButtons()
-            }
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { [weak self] _ in
-            Task { @MainActor in
-                self?.updateNavbarButtons()
-            }
-        }
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadFinished"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadRemoved"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateLibrary"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
 
         Task {
             if let newManga = try? await source.getMangaDetails(manga: manga) {
@@ -272,12 +283,16 @@ class MangaViewController: UIViewController {
             subActions.append(UIAction(
                 title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
                 image: UIImage(systemName: "checkmark.circle")
-            ) { _ in
-                self.setEditing(true, animated: true)
+            ) { [weak self] _ in
+                self?.setEditing(true, animated: true)
             })
 
             if DataManager.shared.libraryContains(manga: manga), !DataManager.shared.getCategories().isEmpty {
-                subActions.append(UIAction(title: NSLocalizedString("EDIT_CATEGORIES", comment: ""), image: UIImage(systemName: "folder")) { _ in
+                subActions.append(UIAction(
+                    title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
+                    image: UIImage(systemName: "folder")
+                ) { [weak self] _ in
+                    guard let self = self else { return }
                     self.present(UINavigationController(rootViewController: CategorySelectViewController(manga: self.manga)), animated: true)
                 })
             }
@@ -287,7 +302,8 @@ class MangaViewController: UIViewController {
                     title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
                     image: UIImage(systemName: "trash"),
                     attributes: .destructive
-                ) { _ in
+                ) { [weak self] _ in
+                    guard let self = self else { return }
                     DownloadManager.shared.deleteChapters(for: self.manga)
                 })
             }
@@ -328,7 +344,8 @@ class MangaViewController: UIViewController {
                 markButton.menu = UIMenu(
                     title: "\(selectedRowCount) \(chapters)",
                     children: [
-                        UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                        UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { [weak self] _ in
+                            guard let self = self else { return }
                             self.showLoadingIndicator()
                             DataManager.shared.removeHistory(
                                 for: self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? [],
@@ -336,7 +353,8 @@ class MangaViewController: UIViewController {
                             )
                             self.setEditing(false, animated: true)
                         },
-                        UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                        UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { [weak self] _ in
+                            guard let self = self else { return }
                             self.showLoadingIndicator()
                             let chapters = self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? []
                             DataManager.shared.addHistory(for: chapters, context: DataManager.shared.backgroundContext)
@@ -450,7 +468,8 @@ extension MangaViewController {
                 self.tintColor = tintColor
             }
         } else if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
-            headerView.coverImageView.image?.getColors(quality: .low) { colors in
+            headerView.coverImageView.image?.getColors(quality: .low) { [weak self] colors in
+                guard let self = self else { return }
                 let luma = colors?.background.luminance ?? 0
                 if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
                     self.manga.tintColor = CodableColor(color: secondary)
@@ -473,36 +492,41 @@ extension MangaViewController {
     }
 
     func updateSortMenu() {
-        if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
-            let sortOptions: [UIAction] = [
-                UIAction(title: NSLocalizedString("SOURCE_ORDER", comment: ""),
-                         image: sortOption == 0 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
-                    if self.sortOption == 0 {
-                        self.sortAscending.toggle()
-                    } else {
-                        self.sortAscending = false
-                        self.sortOption = 0
-                    }
-                    self.updateSortMenu()
-                },
-                UIAction(title: NSLocalizedString("CHAPTER", comment: ""),
-                         image: sortOption == 1 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil) { _ in
-                    if self.sortOption == 1 {
-                        self.sortAscending.toggle()
-                    } else {
-                        self.sortAscending = false
-                        self.sortOption = 1
-                    }
-                    self.updateSortMenu()
+        guard tableView.tableHeaderView != nil else { return }
+        let sortOptions: [UIAction] = [
+            UIAction(
+                title: NSLocalizedString("SOURCE_ORDER", comment: ""),
+                image: sortOption == 0 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                if self.sortOption == 0 {
+                    self.sortAscending.toggle()
+                } else {
+                    self.sortAscending = false
+                    self.sortOption = 0
                 }
-            ]
-            let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: sortOptions)
-            headerView.sortButton.showsMenuAsPrimaryAction = true
-            headerView.sortButton.menu = menu
-        }
+                self.updateSortMenu()
+            },
+            UIAction(
+                title: NSLocalizedString("CHAPTER", comment: ""),
+                image: sortOption == 1 ? UIImage(systemName: sortAscending ? "chevron.up" : "chevron.down") : nil
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                if self.sortOption == 1 {
+                    self.sortAscending.toggle()
+                } else {
+                    self.sortAscending = false
+                    self.sortOption = 1
+                }
+                self.updateSortMenu()
+            }
+        ]
+        let menu = UIMenu(title: "", image: nil, identifier: nil, options: [], children: sortOptions)
+        (tableView.tableHeaderView as? MangaViewHeaderView)?.sortButton.showsMenuAsPrimaryAction = true
+        (tableView.tableHeaderView as? MangaViewHeaderView)?.sortButton.menu = menu
     }
 
-    func updateReadButton(_ headerView: MangaViewHeaderView? = nil) {
+    func updateReadButton() {
         var titleString = ""
         if SourceManager.shared.source(for: manga.sourceId) == nil {
             titleString = NSLocalizedString("UNAVAILABLE", comment: "")
@@ -521,11 +545,7 @@ extension MangaViewController {
         } else {
             titleString = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
         }
-        if let headerView = headerView {
-            headerView.readButton.setTitle(titleString, for: .normal)
-        } else {
-            (tableView.tableHeaderView as? MangaViewHeaderView)?.readButton.setTitle(titleString, for: .normal)
-        }
+        (tableView.tableHeaderView as? MangaViewHeaderView)?.readButton.setTitle(titleString, for: .normal)
     }
 
     func updateReadHistory() {
@@ -585,21 +605,31 @@ extension MangaViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView,
                    contextMenuConfigurationForRowAt indexPath: IndexPath,
                    point: CGPoint) -> UIContextMenuConfiguration? {
-        UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
+            guard let self = self else { return nil }
             var actions: [UIMenuElement] = []
             // download action
             let downloadAction: UIMenuElement
             let downloadStatus = DownloadManager.shared.getDownloadStatus(for: self.sortedChapters[indexPath.row])
             if downloadStatus == .finished {
-                downloadAction = UIAction(title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""), image: nil, attributes: .destructive) { _ in
+                downloadAction = UIAction(
+                    title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""),
+                    image: nil, attributes: .destructive
+                ) { [weak self] _ in
+                    guard let self = self else { return }
                     DownloadManager.shared.delete(chapters: [self.sortedChapters[indexPath.row]])
                 }
             } else if downloadStatus == .downloading {
-                downloadAction = UIAction(title: NSLocalizedString("CANCEL_DOWNLOAD", comment: ""), image: nil, attributes: .destructive) { _ in
+                downloadAction = UIAction(
+                    title: NSLocalizedString("CANCEL_DOWNLOAD", comment: ""),
+                    image: nil, attributes: .destructive
+                ) { [weak self] _ in
+                    guard let self = self else { return }
                     DownloadManager.shared.cancelDownload(for: self.sortedChapters[indexPath.row])
                 }
             } else {
-                downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { _ in
+                downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { [weak self] _ in
+                    guard let self = self else { return }
                     DownloadManager.shared.download(chapters: [self.sortedChapters[indexPath.row]], manga: self.manga)
                 }
             }
@@ -607,13 +637,15 @@ extension MangaViewController: UITableViewDataSource {
             // marking actions
             let action: UIAction
             if self.readHistory[self.sortedChapters[indexPath.row].id] ?? 0 > 0 {
-                action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { _ in
+                action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { [weak self] _ in
+                    guard let self = self else { return }
                     DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
                 }
             } else {
-                action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { _ in
+                action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { [weak self] _ in
+                    guard let self = self else { return }
                     DataManager.shared.setRead(manga: self.manga)
                     DataManager.shared.addHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
@@ -623,7 +655,8 @@ extension MangaViewController: UITableViewDataSource {
             actions.append(action)
             if indexPath.row != self.chapters.count - 1 {
                 let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
-                    UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                    UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { [weak self] _ in
+                        guard let self = self else { return }
                         DataManager.shared.setRead(manga: self.manga)
                         DataManager.shared.setCompleted(
                             chapters: [Chapter](self.sortedChapters[indexPath.row + 1 ..< self.sortedChapters.count]),
@@ -633,7 +666,8 @@ extension MangaViewController: UITableViewDataSource {
                         self.updateReadHistory()
                         tableView.reloadData()
                     },
-                    UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                    UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { [weak self] _ in
+                        guard let self = self else { return }
                         DataManager.shared.removeHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
                         self.updateReadHistory()
                         tableView.reloadData()

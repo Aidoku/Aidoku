@@ -109,6 +109,14 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         }
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     func attach(toParent parent: UIViewController) {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
@@ -135,7 +143,10 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
         infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
             if !self.infiniteScroll {
                 self.previousPages = []
@@ -146,7 +157,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             Task { @MainActor in
                 self.collectionView?.reloadData()
             }
-        }
+        })
     }
 
     func remove() {

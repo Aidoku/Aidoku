@@ -9,7 +9,7 @@ import UIKit
 
 class ExpandableTextView: UIView {
 
-    var host: UIViewController?
+    weak var host: UIViewController?
 
     var text: String? {
         get {

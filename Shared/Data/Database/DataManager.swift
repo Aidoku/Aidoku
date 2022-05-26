@@ -22,20 +22,34 @@ class DataManager {
         }
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     init(inMemory: Bool = false) {
         self.inMemory = inMemory
 
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceList"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task {
                 await self.updateLibrary()
             }
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil) { _ in
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             self.setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
-        }
+        })
     }
 
     func setupContainer(cloudSync: Bool = false) {

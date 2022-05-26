@@ -152,32 +152,31 @@ class SettingsViewController: SettingsTableViewController {
             ])
         ])
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.appearance"), object: nil, queue: nil) { _ in
+        let updateAppearanceBlock: (Notification) -> Void = { [weak self] _ in
             if !UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
                 if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
-                    self.view.window?.overrideUserInterfaceStyle = .light
+                    self?.view.window?.overrideUserInterfaceStyle = .light
                 } else {
-                    self.view.window?.overrideUserInterfaceStyle = .dark
+                    self?.view.window?.overrideUserInterfaceStyle = .dark
                 }
             }
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.useSystemAppearance"), object: nil, queue: nil) { _ in
-            if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
-                self.view.window?.overrideUserInterfaceStyle = .unspecified
-            } else {
-                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
-                    self.view.window?.overrideUserInterfaceStyle = .light
-                } else {
-                    self.view.window?.overrideUserInterfaceStyle = .dark
-                }
-            }
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
-            LogManager.logger.streamUrl = URL(string: UserDefaults.standard.string(forKey: "Logs.logServer") ?? "")
         }
 
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.appearance"), object: nil, queue: nil, using: updateAppearanceBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.useSystemAppearance"), object: nil, queue: nil, using: updateAppearanceBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
+            LogManager.logger.streamUrl = URL(string: UserDefaults.standard.string(forKey: "Logs.logServer") ?? "")
+        })
+
         // update default category select setting when categories change
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("updateCategories"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("updateCategories"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             if let categorySettingsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("CATEGORIES", comment: "") }),
                let categoryIndex = self.items[categorySettingsIndex].items?.firstIndex(where: { $0.key == "Library.defaultCategory" }) {
                 let categories = DataManager.shared.getCategories()
@@ -191,7 +190,7 @@ class SettingsViewController: SettingsTableViewController {
                     UserDefaults.standard.set([""], forKey: "Library.defaultCategory")
                 }
             }
-        }
+        })
     }
 
     required init?(coder: NSCoder) {
@@ -250,6 +249,7 @@ extension SettingsViewController {
                 vc.popoverPresentationController?.sourceView = tableView
                 vc.popoverPresentationController?.sourceRect = tableView.cellForRow(at: indexPath)!.frame
                 present(vc, animated: true)
+
             case "Logs.display":
                 navigationController?.pushViewController(LogViewController(), animated: true)
 
