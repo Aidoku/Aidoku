@@ -207,7 +207,9 @@ class LibraryViewController: MangaCollectionViewController {
             }
             filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
         }
-        buttons.append(filterButton!)
+        if categories.isEmpty {
+            buttons.append(filterButton!)
+        }
 
         if await DownloadManager.shared.hasQueuedDownloads() {
             let downloadQueueButton = UIBarButtonItem(
@@ -284,6 +286,9 @@ class LibraryViewController: MangaCollectionViewController {
             }
         ])
         filterButton?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
+        (collectionView?.supplementaryView(
+            forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(row: 0, section: 0)
+        ) as? MangaListSelectionHeader)?.filterButton.menu = filterButton?.menu
     }
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
@@ -491,7 +496,11 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         referenceSizeForHeaderInSection section: Int) -> CGSize {
-        CGSize(width: collectionView.bounds.width, height: !categories.isEmpty ? 40 : 0)
+        if section == 0 {
+            return CGSize(width: collectionView.bounds.width, height: !categories.isEmpty ? 40 : 0)
+        } else {
+            return .zero
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView,
@@ -510,6 +519,9 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
             header?.options = ["All"] + categories
             header?.selectedOption = currentCategory == nil ? 0 : (categories.firstIndex(of: currentCategory!) ?? -1) + 1
             header?.delegate = self
+            header?.filterButton.alpha = 1
+            header?.filterButton.menu = filterButton?.menu
+            header?.filterButton.showsMenuAsPrimaryAction = true
             return header ?? UICollectionReusableView()
         }
         return UICollectionReusableView()
@@ -557,26 +569,24 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
 
-            if DataManager.shared.libraryContains(manga: targetManga) {
-                actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "trash")) { _ in
-                    DataManager.shared.delete(manga: targetManga)
-                })
-            } else {
-                actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    Task {
-                        if let newManga = try? await SourceManager.shared.source(for: targetManga.sourceId)?.getMangaDetails(manga: targetManga) {
-                            DataManager.shared.addToLibrary(manga: newManga)
-                        }
-                    }
-                })
-            }
             if self.opensReaderView {
                 actions.append(UIAction(title: NSLocalizedString("MANGA_INFO", comment: ""), image: UIImage(systemName: "info.circle")) { _ in
                     self.openMangaView(for: targetManga)
                 })
             }
+            if !self.categories.isEmpty {
+                actions.append(UIAction(title: NSLocalizedString("EDIT_CATEGORIES", comment: ""), image: UIImage(systemName: "folder")) { _ in
+                    self.present(UINavigationController(rootViewController: CategorySelectViewController(manga: targetManga)), animated: true)
+                })
+            }
+            actions.append(UIAction(
+                title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { _ in
+                DataManager.shared.delete(manga: targetManga)
+            })
+
             return UIMenu(title: "", children: actions)
         }
     }

@@ -24,7 +24,7 @@ struct BackupLibraryManga: Codable {
         dateAdded = libraryObject.dateAdded
         mangaId = libraryObject.manga?.id ?? ""
         sourceId = libraryObject.manga?.sourceId ?? ""
-        categories = []
+        categories = (libraryObject.categories?.allObjects as? [CategoryObject])?.compactMap { $0.title } ?? []
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> LibraryMangaObject {

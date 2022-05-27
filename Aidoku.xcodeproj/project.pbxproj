@@ -434,7 +434,6 @@
 				FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */,
 				FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */,
 				FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */,
-				FB716E08283F2E9D00F1BB5D /* CategorySelectViewController.swift */,
 			);
 			path = Manga;
 			sourceTree = "<group>";
@@ -641,6 +640,7 @@
 				FB72502627CC067E0037F1C9 /* Manga */,
 				FB72502527CC06610037F1C9 /* Settings */,
 				FBED231827B8BA7C0095D0C0 /* MiniModalViewController.swift */,
+				FB716E08283F2E9D00F1BB5D /* CategorySelectViewController.swift */,
 				0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */,
 			);
 			path = Base;

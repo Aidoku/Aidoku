@@ -177,8 +177,8 @@
 "CORRUPTED_BACKUP" = "Corrupted Backup";
 "CORRUPTED_BACKUP_TEXT" = "This backup seems to have misconfigured data. Renaming is not possible.";
 "BACKUP_INFO" = "Long press on a backup to export it, or swipe to the left to delete.";
-"BACKUP_MISSING_SOURCES" = "Missing Sources";
-"BACKUP_MISSING_SOURCES_TEXT" = "The restored backup may contain data from the following sources, which are not currently installed:";
+"MISSING_SOURCES" = "Missing Sources";
+"MISSING_SOURCES_TEXT" = "The restored backup may contain data from the following sources, which are not currently installed:";
 "RESTORE_BACKUP" = "Restore to this backup?";
 "RESTORE_BACKUP_TEXT" = "All current data will be removed and replaced by the data from this backup.";
 "BACKUP_IMPORT_SUCCESS" = "Backup Imported";

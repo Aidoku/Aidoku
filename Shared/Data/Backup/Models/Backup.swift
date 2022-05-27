@@ -12,6 +12,7 @@ struct Backup: Codable {
     var history: [BackupHistory]?
     var manga: [BackupManga]?
     var chapters: [BackupChapter]?
+    var categories: [String]?
     var sources: [String]?
     var date: Date
     var name: String?

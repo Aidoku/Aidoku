@@ -48,9 +48,7 @@ class CategorySelectViewController: UITableViewController {
     }
 
     func setCategories() {
-        if !selectedCategories.isEmpty {
-            DataManager.shared.setMangaCategories(manga: manga, categories: selectedCategories)
-        }
+        DataManager.shared.setMangaCategories(manga: manga, categories: selectedCategories)
         close()
     }
 
@@ -62,6 +60,7 @@ class CategorySelectViewController: UITableViewController {
                 self.setCategories()
             }
         }
+        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
     }
 }
 
