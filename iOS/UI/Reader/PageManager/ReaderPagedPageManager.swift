@@ -29,7 +29,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
-    var parentViewController: UIViewController!
+    weak var parentViewController: UIViewController!
     var pageViewController: UIPageViewController!
     var items: [UIViewController] = []
 

@@ -29,24 +29,6 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-//    override var manga: [Manga] {
-//        get {
-//            sortManga(unfilteredManga)
-//        }
-//        set {
-//            unfilteredManga = newValue
-//        }
-//    }
-//
-//    override var pinnedManga: [Manga] {
-//        get {
-//            sortManga(unfilteredPinnedManga)
-//        }
-//        set {
-//            unfilteredPinnedManga = newValue
-//        }
-//    }
-
     // 0 = title, 1 = last opened, 2 = last read, 3 = latest chapter, 4 = date added
     var sortOption = UserDefaults.standard.integer(forKey: "Library.sortOption") {
         didSet {
@@ -65,6 +47,13 @@ class LibraryViewController: MangaCollectionViewController {
     }
 
     var filters: [LibraryFilter] = []
+
+    var categories: [String] = []
+    var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
+        didSet {
+            UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+        }
+    }
 
     var readHistory: [String: [String: Int]] = [:]
     var opensReaderView = false
@@ -99,9 +88,11 @@ class LibraryViewController: MangaCollectionViewController {
         preloadsChapters = true
         badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
 
-//        collectionView?.register(MangaListSelectionHeader.self,
-//                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-//                                 withReuseIdentifier: "MangaListSelectionHeader")
+        collectionView?.register(
+            MangaListSelectionHeader.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: "MangaListSelectionHeader"
+        )
 
         emptyTextStackView.isHidden = true
         emptyTextStackView.axis = .vertical
@@ -128,35 +119,56 @@ class LibraryViewController: MangaCollectionViewController {
         emptyTextStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
 
         fetchLibrary()
+        categories = DataManager.shared.getCategories()
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("Library.pinManga"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
+        let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
+            self?.fetchLibrary()
         }
-        NotificationCenter.default.addObserver(forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateHistory"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("reloadLibrary"), object: nil, queue: nil) { _ in
-            self.fetchLibrary()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("resortLibrary"), object: nil, queue: nil) { _ in
-            self.resortManga()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateLibrary"), object: nil, queue: nil) { _ in
-            self.refreshManga()
-        }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadsQueued"), object: nil, queue: nil) { _ in
+        let updateNavbarBlock: (Notification) -> Void = { [weak self] _ in
+            guard let self = self else { return }
             Task {
                 await self.updateNavbarButtons()
             }
         }
-        NotificationCenter.default.addObserver(forName: Notification.Name("downloadFinished"), object: nil, queue: nil) { _ in
-            Task {
-                await self.updateNavbarButtons()
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Library.pinManga"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateHistory"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("reloadLibrary"), object: nil, queue: nil, using: fetchLibraryBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("resortLibrary"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.resortManga()
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateLibrary"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.refreshManga()
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateCategories"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.categories = DataManager.shared.getCategories()
+            if self.currentCategory != nil && !self.categories.contains(self.currentCategory!) {
+                self.currentCategory = nil
             }
-        }
+            self.fetchLibrary()
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadsQueued"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadFinished"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -195,7 +207,9 @@ class LibraryViewController: MangaCollectionViewController {
             }
             filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
         }
-        buttons.append(filterButton!)
+        if categories.isEmpty {
+            buttons.append(filterButton!)
+        }
 
         if await DownloadManager.shared.hasQueuedDownloads() {
             let downloadQueueButton = UIBarButtonItem(
@@ -272,6 +286,9 @@ class LibraryViewController: MangaCollectionViewController {
             }
         ])
         filterButton?.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
+        (collectionView?.supplementaryView(
+            forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(row: 0, section: 0)
+        ) as? MangaListSelectionHeader)?.filterButton.menu = filterButton?.menu
     }
 
     func sortManga(_ manga: [Manga]) -> [Manga] {
@@ -408,8 +425,10 @@ class LibraryViewController: MangaCollectionViewController {
         var tempManga: [Manga] = []
         var tempPinnedManga: [Manga] = []
 
+        let libraryManga = currentCategory == nil ? DataManager.shared.libraryManga : DataManager.shared.getManga(inCategory: currentCategory!)
+
         if opensReaderView || preloadsChapters || badgeType == .unread {
-            for m in DataManager.shared.libraryManga {
+            for m in libraryManga {
                 let mangaId = "\(m.sourceId).\(m.id)"
 
                 if opensReaderView {
@@ -447,7 +466,7 @@ class LibraryViewController: MangaCollectionViewController {
         } else {
             chapters = [:]
             readHistory = [:]
-            tempManga = DataManager.shared.libraryManga
+            tempManga = libraryManga
         }
 
         unfilteredManga = tempManga
@@ -474,42 +493,41 @@ class LibraryViewController: MangaCollectionViewController {
 // MARK: - Collection View Delegate
 extension LibraryViewController: UICollectionViewDelegateFlowLayout {
 
-//    func collectionView(_ collectionView: UICollectionView,
-//                        layout collectionViewLayout: UICollectionViewLayout,
-//                        referenceSizeForHeaderInSection section: Int) -> CGSize {
-//        CGSize(width: collectionView.bounds.width, height: 40)
-//    }
-//
-//    func collectionView(_ collectionView: UICollectionView,
-//                        viewForSupplementaryElementOfKind kind: String,
-//                        at indexPath: IndexPath) -> UICollectionReusableView {
-//        if kind == UICollectionView.elementKindSectionHeader {
-//            var header = collectionView.dequeueReusableSupplementaryView(
-//                ofKind: kind,
-//                withReuseIdentifier: "MangaListSelectionHeader",
-//                for: indexPath
-//            ) as? MangaListSelectionHeader
-//            if header == nil {
-//                header = MangaListSelectionHeader(frame: .zero)
-//            }
-//            header?.delegate = nil
-//            header?.options = ["Default"]
-//            header?.selectedOption = 0
-//            header?.delegate = self
-//            return header ?? UICollectionReusableView()
-//        }
-//        return UICollectionReusableView()
-//    }
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        if section == 0 {
+            return CGSize(width: collectionView.bounds.width, height: !categories.isEmpty ? 40 : 0)
+        } else {
+            return .zero
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        viewForSupplementaryElementOfKind kind: String,
+                        at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            var header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: "MangaListSelectionHeader",
+                for: indexPath
+            ) as? MangaListSelectionHeader
+            if header == nil {
+                header = MangaListSelectionHeader(frame: .zero)
+            }
+            header?.delegate = nil
+            header?.options = ["All"] + categories
+            header?.selectedOption = currentCategory == nil ? 0 : (categories.firstIndex(of: currentCategory!) ?? -1) + 1
+            header?.delegate = self
+            header?.filterButton.alpha = 1
+            header?.filterButton.menu = filterButton?.menu
+            header?.filterButton.showsMenuAsPrimaryAction = true
+            return header ?? UICollectionReusableView()
+        }
+        return UICollectionReusableView()
+    }
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        if indexPath.section == 0 && pinnedManga.count > indexPath.row {
-//            openMangaView(for: pinnedManga[indexPath.row])
-//        } else {
-//            if manga.count > indexPath.row {
-//                openMangaView(for: manga[indexPath.row])
-//            }
-//        }
-
         let targetManga: Manga
         if indexPath.section == 0 && !pinnedManga.isEmpty {
             guard pinnedManga.count > indexPath.row else { return }
@@ -533,7 +551,9 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
             openMangaView(for: targetManga)
         }
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            DataManager.shared.setOpened(manga: targetManga)
+            Task.detached {
+                DataManager.shared.setOpened(manga: targetManga, context: DataManager.shared.backgroundContext)
+            }
         }
     }
 
@@ -553,26 +573,24 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
 
-            if DataManager.shared.libraryContains(manga: targetManga) {
-                actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "trash")) { _ in
-                    DataManager.shared.delete(manga: targetManga)
-                })
-            } else {
-                actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    Task {
-                        if let newManga = try? await SourceManager.shared.source(for: targetManga.sourceId)?.getMangaDetails(manga: targetManga) {
-                            DataManager.shared.addToLibrary(manga: newManga)
-                        }
-                    }
-                })
-            }
             if self.opensReaderView {
                 actions.append(UIAction(title: NSLocalizedString("MANGA_INFO", comment: ""), image: UIImage(systemName: "info.circle")) { _ in
                     self.openMangaView(for: targetManga)
                 })
             }
+            if !self.categories.isEmpty {
+                actions.append(UIAction(title: NSLocalizedString("EDIT_CATEGORIES", comment: ""), image: UIImage(systemName: "folder")) { _ in
+                    self.present(UINavigationController(rootViewController: CategorySelectViewController(manga: targetManga)), animated: true)
+                })
+            }
+            actions.append(UIAction(
+                title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { _ in
+                DataManager.shared.delete(manga: targetManga)
+            })
+
             return UIMenu(title: "", children: actions)
         }
     }
@@ -581,6 +599,11 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - Listing Header Delegate
 extension LibraryViewController: MangaListSelectionHeaderDelegate {
     func optionSelected(_ index: Int) {
+        if index == 0 {
+            currentCategory = nil
+        } else {
+            currentCategory = categories[index - 1]
+        }
         fetchLibrary()
     }
 }

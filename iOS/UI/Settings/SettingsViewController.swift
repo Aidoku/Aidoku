@@ -105,6 +105,18 @@ class SettingsViewController: SettingsTableViewController {
                    requires: "Library.pinManga"
                 )
             ]),
+            SettingItem(type: "group", title: NSLocalizedString("CATEGORIES", comment: ""), items: [
+                SettingItem(type: "page", key: "Library.categories", title: NSLocalizedString("CATEGORIES", comment: "")),
+                SettingItem(
+                    type: "multi-single-select",
+                    key: "Library.defaultCategory",
+                    title: NSLocalizedString("DEFAULT_CATEGORY", comment: ""),
+                    values: ["", "none"] + DataManager.shared.getCategories(),
+                    titles: [
+                        NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
+                    ] + DataManager.shared.getCategories()
+                )
+            ]),
             SettingItem(type: "group", title: NSLocalizedString("BROWSE", comment: ""), items: [
                 SettingItem(type: "page", key: "Browse.sourceLists", title: NSLocalizedString("SOURCE_LISTS", comment: "")),
                 SettingItem(
@@ -146,33 +158,55 @@ class SettingsViewController: SettingsTableViewController {
             ])
         ])
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.appearance"), object: nil, queue: nil) { _ in
+        let updateAppearanceBlock: (Notification) -> Void = { [weak self] _ in
             if !UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
                 if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
-                    self.view.window?.overrideUserInterfaceStyle = .light
+                    self?.view.window?.overrideUserInterfaceStyle = .light
                 } else {
-                    self.view.window?.overrideUserInterfaceStyle = .dark
+                    self?.view.window?.overrideUserInterfaceStyle = .dark
                 }
             }
         }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.useSystemAppearance"), object: nil, queue: nil) { _ in
-            if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
-                self.view.window?.overrideUserInterfaceStyle = .unspecified
-            } else {
-                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
-                    self.view.window?.overrideUserInterfaceStyle = .light
-                } else {
-                    self.view.window?.overrideUserInterfaceStyle = .dark
-                }
-            }
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.appearance"), object: nil, queue: nil, using: updateAppearanceBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.useSystemAppearance"), object: nil, queue: nil, using: updateAppearanceBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name("Logs.logServer"), object: nil, queue: nil) { _ in
             LogManager.logger.streamUrl = URL(string: UserDefaults.standard.string(forKey: "Logs.logServer") ?? "")
-        }
+        })
+
+        // update default category select setting when categories change
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("updateCategories"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            if let categorySettingsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("CATEGORIES", comment: "") }),
+               let categoryIndex = self.items[categorySettingsIndex].items?.firstIndex(where: { $0.key == "Library.defaultCategory" }) {
+                let categories = DataManager.shared.getCategories()
+                self.items[categorySettingsIndex].items?[categoryIndex].values = ["", "none"] + categories
+                self.items[categorySettingsIndex].items?[categoryIndex].titles = [
+                    NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
+                ] + categories
+                // if a deleted category was selected, reset to always ask
+                if let selected = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                   !categories.contains(selected) {
+                    UserDefaults.standard.set([""], forKey: "Library.defaultCategory")
+                }
+            }
+        })
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // needed to update the selected value text for select settings
+        tableView.reloadData()
     }
 
     func confirmAction(
@@ -206,6 +240,9 @@ extension SettingsViewController {
             case "About.about":
                 navigationController?.pushViewController(SettingsAboutViewController(), animated: true)
 
+            case "Library.categories":
+                navigationController?.pushViewController(CategoriesViewController(), animated: true)
+
             case "Browse.sourceLists":
                 navigationController?.pushViewController(SourceListsViewController(), animated: true)
 
@@ -218,6 +255,7 @@ extension SettingsViewController {
                 vc.popoverPresentationController?.sourceView = tableView
                 vc.popoverPresentationController?.sourceRect = tableView.cellForRow(at: indexPath)!.frame
                 present(vc, animated: true)
+
             case "Logs.display":
                 navigationController?.pushViewController(LogViewController(), animated: true)
 
@@ -257,6 +295,7 @@ extension SettingsViewController {
                     DataManager.shared.clearHistory()
                     DataManager.shared.clearManga()
                     DataManager.shared.clearChapters()
+                    DataManager.shared.clearCategories()
                     SourceManager.shared.clearSources()
                     SourceManager.shared.clearSourceLists()
                     self.resetSettings()

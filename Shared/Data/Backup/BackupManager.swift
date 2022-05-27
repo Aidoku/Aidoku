@@ -73,6 +73,7 @@ class BackupManager {
         let chapters = (try? DataManager.shared.getChapterObjects())?.map {
             BackupChapter(chapterObject: $0)
         } ?? []
+        let categories = DataManager.shared.getCategories()
         let sources = (try? DataManager.shared.getSourceObjects())?.compactMap {
             $0.id
         } ?? []
@@ -82,6 +83,7 @@ class BackupManager {
             history: history,
             manga: manga,
             chapters: chapters,
+            categories: categories,
             sources: sources,
             date: Date(),
             version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
@@ -116,12 +118,20 @@ class BackupManager {
             }
         }
 
+        if backup.categories != nil {
+            DataManager.shared.clearCategories()
+            backup.categories?.forEach {
+                DataManager.shared.addCategory(title: $0)
+            }
+        }
+
         if backup.library != nil {
             DataManager.shared.clearLibrary()
             backup.library?.forEach {
                 let libraryObject = $0.toObject(context: DataManager.shared.container.viewContext)
                 if let manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId) {
                     libraryObject.manga = manga
+                    DataManager.shared.addMangaToCategories(manga: Manga(sourceId: $0.sourceId, id: $0.mangaId), categories: $0.categories)
                 }
             }
         }

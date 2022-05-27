@@ -115,6 +115,14 @@ class BrowseViewController: UIViewController {
 
     let emptyTextStackView = UIStackView()
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = NSLocalizedString("BROWSE", comment: "")
@@ -194,32 +202,44 @@ class BrowseViewController: UIViewController {
             }
         }
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.languages"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Browse.languages"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.reloadData()
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("Browse.showNsfwSources"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Browse.showNsfwSources"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.reloadData()
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceLists"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceLists"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.sourceLists = SourceManager.shared.sourceLists
                 await self.updateSourceLists()
                 self.reloadData()
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceList"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.sources = SourceManager.shared.sources
                 self.fetchUpdates()
             }
-        }
+        })
     }
 
     override func viewWillAppear(_ animated: Bool) {

@@ -142,6 +142,15 @@ class ReaderViewController: UIViewController {
         statusBarHidden
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        pageManager?.remove()
+    }
+
     init(manga: Manga?, chapter: Chapter, chapterList: [Chapter]) {
         self.manga = manga
         self.chapter = chapter
@@ -254,9 +263,11 @@ class ReaderViewController: UIViewController {
 
         setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("Reader.readingMode"), object: nil, queue: nil) { _ in
-            self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
-        }
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("Reader.readingMode"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+        })
 
         Task {
             await loadChapter()

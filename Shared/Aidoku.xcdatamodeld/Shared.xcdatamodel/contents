@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="CategoryObject" syncable="YES" codeGenerationType="class">
-        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
         <relationship name="libraryObjects" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LibraryManga" inverseName="categories" inverseEntity="LibraryManga"/>
@@ -71,7 +70,7 @@
         <memberEntity name="Source"/>
     </configuration>
     <elements>
-        <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="89"/>
+        <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="74"/>
         <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="194"/>
         <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="119"/>
         <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>

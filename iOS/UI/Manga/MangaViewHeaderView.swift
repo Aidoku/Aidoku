@@ -10,7 +10,7 @@ import Kingfisher
 
 class MangaViewHeaderView: UIView {
 
-    var host: UIViewController? {
+    weak var host: UIViewController? {
         didSet {
             descriptionLabel.host = host
         }
@@ -29,6 +29,9 @@ class MangaViewHeaderView: UIView {
     }
 
     var showSourceLabel: Bool = false
+    var shouldAskCategory: Bool = false
+
+    var cancelBookmarkTouchUp: Bool = false
 
     let contentStackView = UIStackView()
 
@@ -54,6 +57,8 @@ class MangaViewHeaderView: UIView {
     let headerTitle = UILabel()
     let sortButton = UIButton(type: .roundedRect)
 
+    var observers: [NSObjectProtocol] = []
+
     override var intrinsicContentSize: CGSize {
         CGSize(
             width: bounds.width,
@@ -76,128 +81,35 @@ class MangaViewHeaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setCover() async {
-        let url = manga?.cover ?? ""
-
-        let requestModifier: AnyModifier?
-
-        if !url.isEmpty,
-           let sourceId = manga?.sourceId,
-           let source = SourceManager.shared.source(for: sourceId),
-           source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: url) {
-            requestModifier = AnyModifier { urlRequest in
-                var r = urlRequest
-                for (key, value) in request.headers {
-                    r.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { r.httpBody = body }
-                return r
-            }
-        } else {
-            requestModifier = nil
-        }
-
-        await MainActor.run {
-            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.1))
-            var kfOptions: [KingfisherOptionsInfoItem] = [
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .cacheOriginalImage
-            ]
-            if let requestModifier = requestModifier {
-                kfOptions.append(.requestModifier(requestModifier))
-            }
-            coverImageView.kf.setImage(
-                with: URL(string: url),
-                placeholder: UIImage(named: "MangaPlaceholder"),
-                options: kfOptions
-            )
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
-    func updateViews() {
-        Task {
-            await setCover()
-        }
-        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
-        authorLabel.text = manga?.author
-        authorLabel.isHidden = manga?.author == nil
-
-        let status: String
-        switch manga?.status {
-        case .ongoing: status = NSLocalizedString("ONGOING", comment: "")
-        case .cancelled: status = NSLocalizedString("CANCELLED", comment: "")
-        case .completed: status = NSLocalizedString("COMPLETED", comment: "")
-        case .hiatus: status = NSLocalizedString("HIATUS", comment: "")
-        default: status = NSLocalizedString("UNKNOWN", comment: "")
-        }
-        statusLabel.text = status
-        statusView.isHidden = manga?.status == .unknown
-
-        switch manga?.nsfw {
-        case .safe, .none:
-            nsfwView.alpha = 0
-            nsfwView.isHidden = true
-        case .suggestive:
-            nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
-            nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
-            nsfwView.alpha = 1
-            nsfwView.isHidden = false
-        case .nsfw:
-            nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
-            nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
-            nsfwView.alpha = 1
-            nsfwView.isHidden = false
-        }
-
-        if showSourceLabel,
-           let sourceId = manga?.sourceId,
-           let source = SourceManager.shared.source(for: sourceId) {
-            sourceLabel.text = source.manifest.info.name
-            sourceView.isHidden = false
-        } else {
-            sourceView.isHidden = true
-        }
-
+    override func tintColorDidChange() {
+        super.tintColorDidChange()
+        readButton.backgroundColor = tintColor
         if inLibrary {
-            bookmarkButton.tintColor = .white
             bookmarkButton.backgroundColor = tintColor
         } else {
             bookmarkButton.tintColor = tintColor
-            bookmarkButton.backgroundColor = .secondarySystemFill
         }
+    }
 
-        descriptionLabel.text = manga?.description
-
-        UIView.animate(withDuration: 0.3) {
-            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
-
-            if (self.descriptionLabel.alpha == 0 || self.descriptionLabel.isHidden) && self.manga?.description != nil {
-                self.descriptionLabel.alpha = 1
-                self.descriptionLabel.isHidden = false
-            }
-
-            let targetAlpha: CGFloat = self.manga?.url == nil ? 0 : 1
-            if self.safariButton.alpha != targetAlpha {
-                self.safariButton.alpha = targetAlpha
-            }
-        } completion: { _ in
-            // Necessary because pre-iOS 15 stack view won't adjust its size automatically for some reason
-            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
-        }
-
+    override func safeAreaInsetsDidChange() {
+        super.safeAreaInsetsDidChange()
         loadTags()
-
-        if superview != nil {
-            layoutIfNeeded()
-        }
     }
 
     func configureContents() {
         showSourceLabel = UserDefaults.standard.bool(forKey: "General.showSourceLabel") && inLibrary
+        let categories = DataManager.shared.getCategories()
+        shouldAskCategory = !categories.isEmpty
+        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+           defaultCategory == "none" || categories.contains(defaultCategory) {
+            shouldAskCategory = false
+        }
 
         contentStackView.distribution = .fill
         contentStackView.axis = .vertical
@@ -290,9 +202,13 @@ class MangaViewHeaderView: UIView {
 
         // Bookmark button
         bookmarkButton.addTarget(self, action: #selector(bookmarkPressed), for: .touchUpInside)
-        bookmarkButton.setImage(UIImage(systemName: "bookmark.fill",
-                                        withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
-                                for: .normal)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkStartedHold), for: .touchDown)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchCancel)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchDragExit)
+        bookmarkButton.setImage(
+            UIImage(systemName: "bookmark.fill", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
+            for: .normal
+        )
         bookmarkButton.layer.cornerRadius = 6
         bookmarkButton.layer.cornerCurve = .continuous
         bookmarkButton.translatesAutoresizingMaskIntoConstraints = false
@@ -303,9 +219,10 @@ class MangaViewHeaderView: UIView {
             safariButton.alpha = 0
         }
         safariButton.backgroundColor = .secondarySystemFill
-        safariButton.setImage(UIImage(systemName: "safari",
-                                      withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
-                              for: .normal)
+        safariButton.setImage(
+            UIImage(systemName: "safari", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)),
+            for: .normal
+        )
         safariButton.layer.cornerRadius = 6
         safariButton.layer.cornerCurve = .continuous
         safariButton.translatesAutoresizingMaskIntoConstraints = false
@@ -359,7 +276,10 @@ class MangaViewHeaderView: UIView {
 
         contentStackView.frame = CGRect(origin: .zero, size: contentStackView.intrinsicContentSize)
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("addToLibrary"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("addToLibrary"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 if self.inLibrary {
                     self.bookmarkButton.tintColor = .white
@@ -369,7 +289,19 @@ class MangaViewHeaderView: UIView {
                     self.bookmarkButton.backgroundColor = .secondarySystemFill
                 }
             }
-        }
+        })
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("Library.defaultCategory"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            let categories = DataManager.shared.getCategories()
+            self.shouldAskCategory = !categories.isEmpty
+            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+               defaultCategory == "none" || categories.contains(defaultCategory) {
+                self.shouldAskCategory = false
+            }
+        })
     }
 
     func activateConstraints() {
@@ -421,20 +353,127 @@ class MangaViewHeaderView: UIView {
             sortButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
         ])
     }
+}
 
-    override func tintColorDidChange() {
-        super.tintColorDidChange()
-        readButton.backgroundColor = tintColor
+extension MangaViewHeaderView {
+    // swiftlint:disable:next cyclomatic_complexity
+    func updateViews() {
+        Task {
+            await setCover()
+        }
+        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+        authorLabel.text = manga?.author
+        authorLabel.isHidden = manga?.author == nil
+
+        let status: String
+        switch manga?.status {
+        case .ongoing: status = NSLocalizedString("ONGOING", comment: "")
+        case .cancelled: status = NSLocalizedString("CANCELLED", comment: "")
+        case .completed: status = NSLocalizedString("COMPLETED", comment: "")
+        case .hiatus: status = NSLocalizedString("HIATUS", comment: "")
+        default: status = NSLocalizedString("UNKNOWN", comment: "")
+        }
+        statusLabel.text = status
+        statusView.isHidden = manga?.status == .unknown
+
+        switch manga?.nsfw {
+        case .safe, .none:
+            nsfwView.alpha = 0
+            nsfwView.isHidden = true
+        case .suggestive:
+            nsfwLabel.text = NSLocalizedString("SUGGESTIVE", comment: "")
+            nsfwView.backgroundColor = .systemOrange.withAlphaComponent(0.3)
+            nsfwView.alpha = 1
+            nsfwView.isHidden = false
+        case .nsfw:
+            nsfwLabel.text = NSLocalizedString("NSFW", comment: "")
+            nsfwView.backgroundColor = .systemRed.withAlphaComponent(0.3)
+            nsfwView.alpha = 1
+            nsfwView.isHidden = false
+        }
+
+        if showSourceLabel,
+           let sourceId = manga?.sourceId,
+           let source = SourceManager.shared.source(for: sourceId) {
+            sourceLabel.text = source.manifest.info.name
+            sourceView.isHidden = false
+        } else {
+            sourceView.isHidden = true
+        }
+
         if inLibrary {
+            bookmarkButton.tintColor = .white
             bookmarkButton.backgroundColor = tintColor
         } else {
             bookmarkButton.tintColor = tintColor
+            bookmarkButton.backgroundColor = .secondarySystemFill
+        }
+
+        descriptionLabel.text = manga?.description
+
+        UIView.animate(withDuration: 0.3) {
+            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
+
+            if (self.descriptionLabel.alpha == 0 || self.descriptionLabel.isHidden) && self.manga?.description != nil {
+                self.descriptionLabel.alpha = 1
+                self.descriptionLabel.isHidden = false
+            }
+
+            let targetAlpha: CGFloat = self.manga?.url == nil ? 0 : 1
+            if self.safariButton.alpha != targetAlpha {
+                self.safariButton.alpha = targetAlpha
+            }
+        } completion: { _ in
+            // Necessary because pre-iOS 15 stack view won't adjust its size automatically for some reason
+            self.labelStackView.isHidden = self.manga?.status == .unknown && self.manga?.nsfw == .safe
+        }
+
+        loadTags()
+
+        if superview != nil {
+            layoutIfNeeded()
         }
     }
 
-    override func safeAreaInsetsDidChange() {
-        super.safeAreaInsetsDidChange()
-        loadTags()
+    func setCover() async {
+        let url = manga?.cover ?? ""
+
+        let requestModifier: AnyModifier?
+
+        if !url.isEmpty,
+           let sourceId = manga?.sourceId,
+           let source = SourceManager.shared.source(for: sourceId),
+           source.handlesImageRequests,
+           let request = try? await source.getImageRequest(url: url) {
+            requestModifier = AnyModifier { urlRequest in
+                var r = urlRequest
+                for (key, value) in request.headers {
+                    r.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { r.httpBody = body }
+                return r
+            }
+        } else {
+            requestModifier = nil
+        }
+
+        await MainActor.run {
+            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.1))
+            var kfOptions: [KingfisherOptionsInfoItem] = [
+                .scaleFactor(UIScreen.main.scale),
+                .transition(.fade(0.3)),
+                .retryStrategy(retry),
+                .cacheOriginalImage
+            ]
+            if let requestModifier = requestModifier {
+                kfOptions.append(.requestModifier(requestModifier))
+            }
+            coverImageView.kf.setImage(
+                with: URL(string: url),
+                placeholder: UIImage(named: "MangaPlaceholder"),
+                options: kfOptions
+            )
+        }
     }
 
     func loadTags() {
@@ -498,19 +537,50 @@ class MangaViewHeaderView: UIView {
     }
 
     @objc func bookmarkPressed() {
-        if let manga = manga {
-            if inLibrary {
-                DataManager.shared.delete(manga: manga)
-            } else {
-                DataManager.shared.addToLibrary(manga: manga)
+        bookmarkHoldCancelled()
+        if cancelBookmarkTouchUp {
+            cancelBookmarkTouchUp = false
+            return
+        }
+        guard let manga = manga else { return }
+        if inLibrary {
+            self.bookmarkButton.tintColor = self.tintColor
+            self.bookmarkButton.backgroundColor = .secondarySystemFill
+            Task.detached {
+                DataManager.shared.delete(manga: manga, context: DataManager.shared.backgroundContext)
             }
-            if inLibrary {
-                bookmarkButton.tintColor = .white
-                bookmarkButton.backgroundColor = tintColor
+        } else {
+            if shouldAskCategory {
+                host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
             } else {
-                bookmarkButton.tintColor = tintColor
-                bookmarkButton.backgroundColor = .secondarySystemFill
+                self.bookmarkButton.tintColor = .white
+                self.bookmarkButton.backgroundColor = self.tintColor
+                Task.detached {
+                    DataManager.shared.addToLibrary(manga: manga, context: DataManager.shared.backgroundContext) {
+                        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                           DataManager.shared.getCategories().contains(defaultCategory) {
+                            DataManager.shared.setMangaCategories(
+                                manga: manga, categories: [defaultCategory], context: DataManager.shared.backgroundContext
+                            )
+                        }
+                    }
+                }
             }
         }
+    }
+
+    @objc func bookmarkStartedHold() {
+        cancelBookmarkTouchUp = false
+        perform(#selector(bookmarkHeld), with: nil, afterDelay: 0.6)
+    }
+
+    @objc func bookmarkHoldCancelled() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
+    }
+
+    @objc func bookmarkHeld() {
+        guard let manga = manga else { return }
+        cancelBookmarkTouchUp = true
+        host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
     }
 }
