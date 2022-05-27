@@ -532,7 +532,9 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         } else {
             openMangaView(for: targetManga)
         }
-        DataManager.shared.setOpened(manga: targetManga)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            DataManager.shared.setOpened(manga: targetManga)
+        }
     }
 
     override func collectionView(
