@@ -229,6 +229,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                     Task.detached {
                         DataManager.shared.delete(manga: targetManga, context: DataManager.shared.backgroundContext)
                     }
+                    (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
                 })
             } else {
                 actions.append(UIAction(
@@ -240,6 +241,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                             DataManager.shared.addToLibrary(manga: newManga, context: DataManager.shared.backgroundContext)
                         }
                     }
+                    (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                 })
             }
             return UIMenu(title: "", children: actions)

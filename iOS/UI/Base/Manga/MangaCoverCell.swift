@@ -36,11 +36,24 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
+    var showsLibraryBadge = false {
+        didSet {
+            UIView.animate(withDuration: 0.3) {
+                if self.showsLibraryBadge {
+                    self.libraryBadgeView.alpha = 1
+                } else {
+                    self.libraryBadgeView.alpha = 0
+                }
+            }
+        }
+    }
+
     var imageView = UIImageView()
     var titleLabel = UILabel()
     var gradient = CAGradientLayer()
     var badgeView = UIView()
     var badgeLabel = UILabel()
+    var libraryBadgeView = UIImageView()
 
     var highlightView = UIView()
 
@@ -92,7 +105,7 @@ class MangaCoverCell: UICollectionViewCell {
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(overlayView)
 
-        titleLabel.text = manga?.title ?? "No Title"
+        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.font = .systemFont(ofSize: 15, weight: .medium)
@@ -112,6 +125,12 @@ class MangaCoverCell: UICollectionViewCell {
         badgeLabel.translatesAutoresizingMaskIntoConstraints = false
         badgeView.addSubview(badgeLabel)
 
+        libraryBadgeView.alpha = 0
+        libraryBadgeView.image = UIImage(named: "bookmark")
+        libraryBadgeView.contentMode = .scaleAspectFit
+        libraryBadgeView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(libraryBadgeView)
+
         highlightView.alpha = 0
         highlightView.backgroundColor = UIColor(white: 0, alpha: 0.5)
         highlightView.layer.cornerRadius = layer.cornerRadius
@@ -129,7 +148,7 @@ class MangaCoverCell: UICollectionViewCell {
     }
 
     func reloadData() {
-        titleLabel.text = manga?.title ?? "No Title"
+        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
         loadImage()
     }
 
@@ -150,6 +169,11 @@ class MangaCoverCell: UICollectionViewCell {
 
         badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor).isActive = true
         badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true
+
+        libraryBadgeView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8).isActive = true
+        libraryBadgeView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        libraryBadgeView.widthAnchor.constraint(equalToConstant: 17).isActive = true
+        libraryBadgeView.heightAnchor.constraint(equalToConstant: 27).isActive = true
 
         highlightView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         highlightView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true

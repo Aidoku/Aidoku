@@ -183,13 +183,17 @@ extension SearchViewController: UICollectionViewDataSource {
         results[sources[section].id]?.manga.count ?? 0
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        viewForSupplementaryElementOfKind kind: String,
-                        at indexPath: IndexPath) -> UICollectionReusableView {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
         if kind == "header" {
-            var headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
-                                                                             withReuseIdentifier: "MangaCarouselHeader",
-                                                                             for: indexPath) as? MangaCarouselHeader
+            var headerView = collectionView.dequeueReusableSupplementaryView(
+                ofKind: kind,
+                withReuseIdentifier: "MangaCarouselHeader",
+                for: indexPath
+            ) as? MangaCarouselHeader
             if headerView == nil {
                 headerView = MangaCarouselHeader(frame: .zero)
             }
@@ -208,7 +212,10 @@ extension SearchViewController: UICollectionViewDataSource {
         if cell == nil {
             cell = MangaCoverCell(frame: .zero)
         }
-        cell?.manga = results[sources[indexPath.section].id]?.manga[indexPath.row]
+        if let manga = results[sources[indexPath.section].id]?.manga[indexPath.row] {
+            cell?.manga = manga
+            cell?.showsLibraryBadge = DataManager.shared.libraryContains(manga: manga)
+        }
         return cell ?? UICollectionViewCell()
     }
 
@@ -239,23 +246,32 @@ extension SearchViewController: UICollectionViewDelegate {
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        contextMenuConfigurationForItemAt indexPath: IndexPath,
-                        point: CGPoint) -> UIContextMenuConfiguration? {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
             if let manga = self.results[self.sources[indexPath.section].id]?.manga[indexPath.row] {
                 if DataManager.shared.libraryContains(manga: manga) {
-                    actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
-                                            image: UIImage(systemName: "trash")) { _ in
+                    actions.append(UIAction(
+                        title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                        image: UIImage(systemName: "trash"),
+                        attributes: .destructive
+                    ) { _ in
                         DataManager.shared.delete(manga: manga)
+                        (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
                     })
                 } else {
-                    actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
-                                            image: UIImage(systemName: "books.vertical.fill")) { _ in
+                    actions.append(UIAction(
+                        title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
+                        image: UIImage(systemName: "books.vertical.fill")
+                    ) { _ in
                         Task {
                             if let manga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
                                 DataManager.shared.addToLibrary(manga: manga)
+                                (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                             }
                         }
                     })
