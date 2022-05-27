@@ -118,17 +118,13 @@ class ReaderPageView: UIView {
             reloadButton.alpha = 0
             progressView.alpha = 1
             currentUrl = nil
-            Task {
-                await setPageImage(url: url)
-            }
+            setPageImage(url: url)
         }
     }
 
     func setPage(page: Page) {
         if let url = page.imageURL {
-            Task {
-                await setPageImage(url: url)
-            }
+            setPageImage(url: url)
         } else if let base64 = page.base64 {
             setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
@@ -164,75 +160,76 @@ class ReaderPageView: UIView {
         }
     }
 
-    @MainActor
-    func setPageImage(url: String) async {
+    func setPageImage(url: String) {
         if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
 
-        let requestModifier: AnyModifier?
+        Task.detached {
+            let requestModifier: AnyModifier?
 
-        if let source = SourceManager.shared.source(for: sourceId),
-           source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: url) {
-            requestModifier = AnyModifier { urlRequest in
-                var r = urlRequest
-                for (key, value) in request.headers {
-                    r.setValue(value, forHTTPHeaderField: key)
+            if let source = await SourceManager.shared.source(for: self.sourceId),
+               source.handlesImageRequests,
+               let request = try? await source.getImageRequest(url: url) {
+                requestModifier = AnyModifier { urlRequest in
+                    var r = urlRequest
+                    for (key, value) in request.headers {
+                        r.setValue(value, forHTTPHeaderField: key)
+                    }
+                    if let body = request.body { r.httpBody = body }
+                    return r
                 }
-                if let body = request.body { r.httpBody = body }
-                return r
-            }
-        } else {
-            requestModifier = nil
-        }
-
-        // Run the image loading code immediately on the main actor
-        await MainActor.run {
-            let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
-            var kfOptions: [KingfisherOptionsInfoItem] = [
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry)
-            ]
-            if let requestModifier = requestModifier {
-                kfOptions.append(.requestModifier(requestModifier))
+            } else {
+                requestModifier = nil
             }
 
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                let downsampleProcessor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
-                kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
-            }
+            Task { @MainActor in
+                let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
+                var kfOptions: [KingfisherOptionsInfoItem] = [
+                    .scaleFactor(UIScreen.main.scale),
+                    .transition(.fade(0.3)),
+                    .retryStrategy(retry),
+                    .backgroundDecode
+                ]
+                if let requestModifier = requestModifier {
+                    kfOptions.append(.requestModifier(requestModifier))
+                }
 
-            imageView.kf.setImage(
-                with: URL(string: url),
-                options: kfOptions,
-                progressBlock: { receivedSize, totalSize in
-                    self.progressView.setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
-                },
-                completionHandler: { result in
-                    switch result {
-                    case .success(let imageResult):
-                        self.cacheKey = imageResult.source.cacheKey
-                        if self.progressView.progress != 1 {
-                            self.progressView.setProgress(value: 1, withAnimation: true)
-                        }
-                        self.progressView.isHidden = true
-                        self.reloadButton.alpha = 0
-                        self.updateZoomBounds()
-                        self.delegate?.imageLoaded(key: self.cacheKey ?? "", image: imageResult.image)
-                    case .failure(let error):
-                        // If the error isn't part of the current task, we don't care.
-                        if error.isNotCurrentTask || error.isTaskCancelled {
-                            return
-                        }
+                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                    let downsampleProcessor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
+                    kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
+                }
 
-                        if self.zoomEnabled {
-                            self.progressView.alpha = 0
-                            self.reloadButton.alpha = 1
+                self.imageView.kf.setImage(
+                    with: URL(string: url),
+                    options: kfOptions,
+                    progressBlock: { receivedSize, totalSize in
+                        self.progressView.setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
+                    },
+                    completionHandler: { result in
+                        switch result {
+                        case .success(let imageResult):
+                            self.cacheKey = imageResult.source.cacheKey
+                            if self.progressView.progress != 1 {
+                                self.progressView.setProgress(value: 1, withAnimation: true)
+                            }
+                            self.progressView.isHidden = true
+                            self.reloadButton.alpha = 0
+                            self.updateZoomBounds()
+                            self.delegate?.imageLoaded(key: self.cacheKey ?? "", image: imageResult.image)
+                        case .failure(let error):
+                            // If the error isn't part of the current task, we don't care.
+                            if error.isNotCurrentTask || error.isTaskCancelled {
+                                return
+                            }
+
+                            if self.zoomEnabled {
+                                self.progressView.alpha = 0
+                                self.reloadButton.alpha = 1
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

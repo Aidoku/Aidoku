@@ -97,7 +97,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
         guard pageViewController != nil else { return }
 
         Task {
-            await setImages(for: (page - 2)..<(page + 3))
+            await setImages(for: (page - 1)..<(page + 3))
         }
 
         let targetIndex = page + 1 + (hasPreviousChapter ? 1 : 0)
@@ -250,7 +250,7 @@ extension ReaderPagedPageManager {
         }
 
         Task {
-            await setImages(for: (startPage - 2)..<(startPage + 3))
+            await setImages(for: (startPage - 1)..<(startPage + 3))
         }
 
         let targetIndex = startIndex + 1 + (hasPreviousChapter ? 1 : 0)
@@ -357,7 +357,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
         currentIndex = index
         delegate?.didMove(toPage: currentPageIndex)
         Task {
-            await setImages(for: (index - 2)..<(index + 3))
+            await self.setImages(for: (index - 3)..<(index + 1))
         }
     }
 }

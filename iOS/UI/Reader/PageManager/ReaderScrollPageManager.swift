@@ -642,9 +642,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
 
     func setPageImage(url: String) {
         guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
-        Task {
-            await pageView?.setPageImage(url: url)
-        }
+        pageView?.setPageImage(url: url)
     }
 
     func setPageImage(base64: String, key: String) {
