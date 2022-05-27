@@ -280,6 +280,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
                 collectionView.insertItems(at: indexPaths)
             }
         }
+        (cell as? MangaCoverCell)?.showsLibraryBadge = DataManager.shared.libraryContains(manga: manga[indexPath.row])
     }
 }
 
