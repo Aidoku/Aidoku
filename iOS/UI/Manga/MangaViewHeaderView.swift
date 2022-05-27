@@ -544,23 +544,25 @@ extension MangaViewHeaderView {
         }
         guard let manga = manga else { return }
         if inLibrary {
-            DataManager.shared.delete(manga: manga)
-            if !inLibrary {
-                bookmarkButton.tintColor = tintColor
-                bookmarkButton.backgroundColor = .secondarySystemFill
+            self.bookmarkButton.tintColor = self.tintColor
+            self.bookmarkButton.backgroundColor = .secondarySystemFill
+            Task.detached {
+                DataManager.shared.delete(manga: manga, context: DataManager.shared.backgroundContext)
             }
         } else {
             if shouldAskCategory {
                 host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
             } else {
-                DataManager.shared.addToLibrary(manga: manga) {
-                    if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
-                       DataManager.shared.getCategories().contains(defaultCategory) {
-                        DataManager.shared.addMangaToCategories(manga: manga, categories: [defaultCategory])
-                    }
-                    if self.inLibrary {
-                        self.bookmarkButton.tintColor = .white
-                        self.bookmarkButton.backgroundColor = self.tintColor
+                self.bookmarkButton.tintColor = .white
+                self.bookmarkButton.backgroundColor = self.tintColor
+                Task.detached {
+                    DataManager.shared.addToLibrary(manga: manga, context: DataManager.shared.backgroundContext) {
+                        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                           DataManager.shared.getCategories().contains(defaultCategory) {
+                            DataManager.shared.setMangaCategories(
+                                manga: manga, categories: [defaultCategory], context: DataManager.shared.backgroundContext
+                            )
+                        }
                     }
                 }
             }

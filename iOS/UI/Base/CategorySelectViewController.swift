@@ -47,20 +47,25 @@ class CategorySelectViewController: UITableViewController {
         dismiss(animated: true)
     }
 
-    func setCategories() {
-        DataManager.shared.setMangaCategories(manga: manga, categories: selectedCategories)
-        close()
-    }
-
     @objc func add() {
-        if inLibrary {
-            setCategories()
-        } else {
-            DataManager.shared.addToLibrary(manga: manga) {
-                self.setCategories()
+        close()
+        Task.detached {
+            if await self.inLibrary {
+                await DataManager.shared.setMangaCategories(
+                    manga: self.manga, categories: self.selectedCategories, context: DataManager.shared.backgroundContext
+                )
+                NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
+            } else {
+                DataManager.shared.addToLibrary(manga: self.manga, context: DataManager.shared.backgroundContext) {
+                    Task {
+                        await DataManager.shared.setMangaCategories(
+                            manga: self.manga, categories: self.selectedCategories, context: DataManager.shared.backgroundContext
+                        )
+                        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
+                    }
+                }
             }
         }
-        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
     }
 }
 

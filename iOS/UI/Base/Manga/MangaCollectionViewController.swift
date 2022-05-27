@@ -221,16 +221,23 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
             var actions: [UIAction] = []
 
             if DataManager.shared.libraryContains(manga: targetManga) {
-                actions.append(UIAction(title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "trash")) { _ in
-                    DataManager.shared.delete(manga: targetManga)
+                actions.append(UIAction(
+                    title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                    image: UIImage(systemName: "trash"),
+                    attributes: .destructive
+                ) { _ in
+                    Task.detached {
+                        DataManager.shared.delete(manga: targetManga, context: DataManager.shared.backgroundContext)
+                    }
                 })
             } else {
-                actions.append(UIAction(title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
-                                        image: UIImage(systemName: "books.vertical.fill")) { _ in
-                    Task {
+                actions.append(UIAction(
+                    title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
+                    image: UIImage(systemName: "books.vertical.fill")
+                ) { _ in
+                    Task.detached {
                         if let newManga = try? await SourceManager.shared.source(for: targetManga.sourceId)?.getMangaDetails(manga: targetManga) {
-                            DataManager.shared.addToLibrary(manga: newManga)
+                            DataManager.shared.addToLibrary(manga: newManga, context: DataManager.shared.backgroundContext)
                         }
                     }
                 })

@@ -550,7 +550,9 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         } else {
             openMangaView(for: targetManga)
         }
-        DataManager.shared.setOpened(manga: targetManga)
+        Task.detached {
+            DataManager.shared.setOpened(manga: targetManga, context: DataManager.shared.backgroundContext)
+        }
     }
 
     override func collectionView(

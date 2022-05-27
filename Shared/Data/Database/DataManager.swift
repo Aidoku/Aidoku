@@ -163,22 +163,25 @@ extension DataManager {
             Task {
                 let chapters = await self.getChapters(for: manga, fromSource: true)
                 self.set(chapters: chapters, for: manga, context: self.backgroundContext)
-                self.loadLibrary()
+//                self.loadLibrary()
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
         }
     }
 
-    func setOpened(manga: Manga) {
-        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false) else { return }
-        libraryObject.lastOpened = Date()
-        guard save() else { return }
-        if let oldLibraryManga = libraryManga.first(where: {
-            $0.sourceId == manga.sourceId && $0.id == manga.id }
-        ) {
-            oldLibraryManga.lastOpened = libraryObject.lastOpened
+    func setOpened(manga: Manga, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let libraryObject = self.getLibraryObject(for: manga, createIfMissing: false, context: context) else { return }
+            libraryObject.lastOpened = Date()
+            guard self.save(context: context) else { return }
+            if let oldLibraryManga = self.libraryManga.first(where: {
+                $0.sourceId == manga.sourceId && $0.id == manga.id }
+            ) {
+                oldLibraryManga.lastOpened = libraryObject.lastOpened
+            }
+            NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
         }
-        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 
     func setRead(manga: Manga) {
@@ -821,12 +824,15 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
-    func setMangaCategories(manga: Manga, categories: [String]) {
-        guard let libraryObject = getLibraryObject(for: manga) else { return }
-        let objects = categories.compactMap { getCategoryObject(title: $0) }
-        libraryObject.categories = NSSet(array: objects)
-        save()
-        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    func setMangaCategories(manga: Manga, categories: [String], context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let libraryObject = self.getLibraryObject(for: manga, context: context) else { return }
+            let objects = categories.compactMap { self.getCategoryObject(title: $0, context: context) }
+            libraryObject.categories = NSSet(array: objects)
+            self.save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+        }
     }
 
     func addMangaToCategories(manga: Manga, categories: [String]) {

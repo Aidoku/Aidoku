@@ -135,7 +135,6 @@ class MangaViewController: UIViewController {
             guard let self = self else { return }
             Task { @MainActor in
                 self.updateNavbarButtons()
-                print("!!!!!")
             }
         }
 
