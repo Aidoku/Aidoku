@@ -124,6 +124,8 @@
 
 "GENERAL" = "General";
 "ICLOUD_SYNC" = "iCloud Sync";
+"INCOGNITO_MODE" = "Incognito Mode";
+"INCOGNITO_MODE_TEXT" = "Pauses reading history when enabled";
 "APPEARANCE" = "Appearance";
 "APPEARANCE_LIGHT" = "Light";
 "APPEARANCE_DARK" = "Dark";
