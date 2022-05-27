@@ -21,7 +21,8 @@ class ReaderSettingsViewController: SettingsTableViewController {
                                 NSLocalizedString("VERTICAL", comment: ""),
                                 NSLocalizedString("VERTICAL_SCROLL", comment: "")
                             ]),
-                SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: ""))
+                SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
+                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
             ]),
             SettingItem(type: "group", title: NSLocalizedString("EXPERIMENTAL", comment: ""), items: [
                 SettingItem(type: "switch", key: "Reader.verticalInfiniteScroll", title: NSLocalizedString("INFINITE_VERTICAL_SCROLL", comment: ""))
