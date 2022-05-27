@@ -32,6 +32,15 @@ class MangaChapterTableViewCell: UITableViewCell {
         return view
     }()
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
     init(chapter: Chapter, read: Bool = false, reuseIdentifier: String? = nil) {
         self.chapter = chapter
         self.read = read
@@ -39,7 +48,10 @@ class MangaChapterTableViewCell: UITableViewCell {
         loadLabels()
         checkDownloaded()
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadProgressed"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadProgressed"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Download,
                download.chapterId == chapter.id {
                 Task { @MainActor in
@@ -47,45 +59,60 @@ class MangaChapterTableViewCell: UITableViewCell {
                     self.progressView.setProgress(value: Float(download.progress) / Float(download.total), withAnimation: false)
                 }
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadFinished"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadFinished"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Download,
                download.chapterId == chapter.id {
                 Task { @MainActor in
                     self.checkDownloaded()
                 }
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadRemoved"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadRemoved"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Chapter,
                download.id == chapter.id {
                 Task { @MainActor in
                     self.checkDownloaded()
                 }
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsRemoved"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadsRemoved"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Manga,
                download.id == chapter.mangaId {
                  Task { @MainActor in
                      self.checkDownloaded()
                  }
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadCancelled"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadCancelled"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let download = notification.object as? Chapter,
                download.id == chapter.id {
                 Task { @MainActor in
                     self.checkDownloaded()
                 }
             }
-        }
+        })
 
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil) { notification in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
             if let downloads = notification.object as? [Download] {
                 for download in downloads where download.chapterId == chapter.id {
                     Task { @MainActor in
@@ -94,7 +121,7 @@ class MangaChapterTableViewCell: UITableViewCell {
                     break
                 }
             }
-        }
+        })
     }
 
     required init?(coder: NSCoder) {

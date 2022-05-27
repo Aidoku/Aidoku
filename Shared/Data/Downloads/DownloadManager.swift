@@ -120,4 +120,10 @@ extension DownloadManager {
             await queue.onProgress(for: chapter, block: block)
         }
     }
+
+    func removeProgressBlock(for chapter: Chapter) {
+        Task {
+            await queue.removeProgressBlock(for: chapter)
+        }
+    }
 }

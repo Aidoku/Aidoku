@@ -31,6 +31,14 @@ class TextInputTableViewCell: UITableViewCell {
         }
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     init(source: Source? = nil, reuseIdentifier: String?) {
         self.source = source
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
@@ -66,11 +74,12 @@ class TextInputTableViewCell: UITableViewCell {
         }
 
         if let key = item?.key {
-            NotificationCenter.default.addObserver(forName: Notification.Name(key), object: nil, queue: nil) { _ in
+            observers.append(NotificationCenter.default.addObserver(forName: Notification.Name(key), object: nil, queue: nil) { [weak self] _ in
+                guard let self = self else { return }
                 Task { @MainActor in
                     self.textField.text = UserDefaults.standard.string(forKey: key)
                 }
-            }
+            })
         }
     }
 

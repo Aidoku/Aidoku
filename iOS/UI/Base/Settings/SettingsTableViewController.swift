@@ -12,7 +12,15 @@ class SettingsTableViewController: UITableViewController {
 
     var items: [SettingItem]
 
-    var observers: [SettingItem] = []
+    var requireObservers: [SettingItem] = []
+
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
 
     init(items: [SettingItem] = [], style: UITableView.Style = .insetGrouped) {
         self.items = items
@@ -77,16 +85,16 @@ extension SettingsTableViewController {
         }
         if let requires = item.requires {
             switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
                 switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            }
-            observers.append(item)
+            })
+            requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
                 switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            }
-            observers.append(item)
+            })
+            requireObservers.append(item)
         } else {
             switchView.isEnabled = true
         }
@@ -121,13 +129,13 @@ extension SettingsTableViewController {
             NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
                 stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
             }
-            observers.append(item)
+            requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
             NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
                 stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
             }
-            observers.append(item)
+            requireObservers.append(item)
         } else {
             stepperView.isEnabled = true
         }
@@ -144,17 +152,23 @@ extension SettingsTableViewController {
         switch item.type {
         case "select":
             cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
-
+            cell.textLabel?.textColor = .label
             if let value = UserDefaults.standard.string(forKey: item.key ?? ""),
                let index = item.values?.firstIndex(of: value) {
-                cell.detailTextLabel?.text = item.titles?[index]
+                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
             }
             cell.accessoryType = .disclosureIndicator
 
         case "multi-select", "multi-single-select", "page":
-            cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
+            cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
             cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
+
+            if item.type == "multi-single-select",
+               let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
+               let index = item.values?.firstIndex(of: value) {
+                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+            }
 
         case "switch":
             cell = switchCell(for: item)

@@ -50,7 +50,6 @@ class LanguageSelectViewController: SettingSelectViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        title = "Languages"
         navigationController?.navigationBar.prefersLargeTitles = true
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -58,8 +57,6 @@ class LanguageSelectViewController: SettingSelectViewController {
             target: self,
             action: #selector(close)
         )
-//
-//        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
     }
 
     @objc func close() {

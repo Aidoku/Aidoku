@@ -22,20 +22,34 @@ class DataManager {
         }
     }
 
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
     init(inMemory: Bool = false) {
         self.inMemory = inMemory
 
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
 
-        NotificationCenter.default.addObserver(forName: Notification.Name("updateSourceList"), object: nil, queue: nil) { _ in
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateSourceList"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             Task {
                 await self.updateLibrary()
             }
-        }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil) { _ in
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
             self.setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
-        }
+        })
     }
 
     func setupContainer(cloudSync: Bool = false) {
@@ -105,6 +119,7 @@ class DataManager {
         return try context.fetch(fetchRequest)
     }
 
+    @discardableResult
     func save(context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? container.viewContext
 
@@ -128,7 +143,7 @@ extension DataManager {
         libraryManga.contains { $0.sourceId == manga.sourceId && $0.id == manga.id }
     }
 
-    func addToLibrary(manga: Manga, context: NSManagedObjectContext? = nil) {
+    func addToLibrary(manga: Manga, context: NSManagedObjectContext? = nil, completion: (() -> Void)? = nil) {
         let context = context ?? container.viewContext
         context.perform {
             if self.libraryContains(manga: manga) { return }
@@ -142,27 +157,31 @@ extension DataManager {
             if let newManga = libraryObject.manga?.toManga() {
                 self.libraryManga.append(newManga)
             }
-            NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: nil)
+            completion?()
+            NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
 
             Task {
                 let chapters = await self.getChapters(for: manga, fromSource: true)
                 self.set(chapters: chapters, for: manga, context: self.backgroundContext)
-                self.loadLibrary()
+//                self.loadLibrary()
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
         }
     }
 
-    func setOpened(manga: Manga) {
-        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false) else { return }
-        libraryObject.lastOpened = Date()
-        guard save() else { return }
-        if let oldLibraryManga = libraryManga.first(where: {
-            $0.sourceId == manga.sourceId && $0.id == manga.id }
-        ) {
-            oldLibraryManga.lastOpened = libraryObject.lastOpened
+    func setOpened(manga: Manga, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let libraryObject = self.getLibraryObject(for: manga, createIfMissing: false, context: context) else { return }
+            libraryObject.lastOpened = Date()
+            guard self.save(context: context) else { return }
+            if let oldLibraryManga = self.libraryManga.first(where: {
+                $0.sourceId == manga.sourceId && $0.id == manga.id }
+            ) {
+                oldLibraryManga.lastOpened = libraryObject.lastOpened
+            }
+            NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
         }
-        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 
     func setRead(manga: Manga) {
@@ -738,6 +757,145 @@ extension DataManager {
     ) throws -> [SourceObject] {
         try fetch(
             request: SourceObject.fetchRequest(),
+            predicate: predicate,
+            sortDescriptors: sortDescriptors,
+            limit: limit,
+            context: context
+        )
+    }
+}
+
+// MARK: - Categories
+extension DataManager {
+
+    func getCategories() -> [String] {
+        ((try? getCategoryObjects()) ?? []).compactMap { $0.title }
+    }
+
+    func addCategory(title: String) {
+        guard getCategoryObject(title: title, createIfMissing: false) == nil else { return }
+        let sort = getNextCategoryIndex()
+        let categoryObject = CategoryObject(context: container.viewContext)
+        categoryObject.title = title
+        categoryObject.sort = sort
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func deleteCategory(title: String) {
+        guard let categoryObject = getCategoryObject(title: title, createIfMissing: false) else { return }
+        let categories = (try? getCategoryObjects()) ?? []
+        // decrement category indexes that follow the removed category
+        for i in Int(categoryObject.sort)..<categories.count {
+            categories[i].sort -= 1
+        }
+        container.viewContext.delete(categoryObject)
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func moveCategory(title: String, toPosition index: Int) {
+        guard index >= 0,
+              let categoryObject = getCategoryObject(title: title, createIfMissing: false),
+              categoryObject.sort != index else { return }
+        let currentIndex = Int(categoryObject.sort)
+        let categories = (try? getCategoryObjects()) ?? []
+        guard index < categories.count else { return }
+        if index > currentIndex { // move lower (higher index)
+            for i in currentIndex + 1...index {
+                categories[i].sort -= 1
+            }
+        } else { // move higher (lower index)
+            for i in index..<currentIndex {
+                categories[i].sort += 1
+            }
+        }
+        categoryObject.sort = Int16(index)
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func clearCategories() {
+        let categories = (try? getCategoryObjects()) ?? []
+        for category in categories {
+            container.viewContext.delete(category)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func setMangaCategories(manga: Manga, categories: [String], context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let libraryObject = self.getLibraryObject(for: manga, context: context) else { return }
+            let objects = categories.compactMap { self.getCategoryObject(title: $0, context: context) }
+            libraryObject.categories = NSSet(array: objects)
+            self.save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+        }
+    }
+
+    func addMangaToCategories(manga: Manga, categories: [String]) {
+        guard let libraryObject = getLibraryObject(for: manga) else { return }
+        for category in categories {
+            guard let categoryObject = getCategoryObject(title: category) else { continue }
+            libraryObject.addToCategories(categoryObject)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+    }
+
+    func getManga(inCategory category: String) -> [Manga] {
+        ((try? getLibraryObjects(predicate: NSPredicate(
+            format: "ANY categories.title = %@",
+            category
+        ))) ?? []).compactMap { libraryObject -> Manga? in
+            libraryManga.first(where: {
+                $0.sourceId == libraryObject.manga?.sourceId && $0.id == libraryObject.manga?.id }
+            )
+        }
+    }
+
+    func getCategories(for manga: Manga) -> [String] {
+        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false) else { return [] }
+        return ((libraryObject.categories?.allObjects as? [CategoryObject]) ?? []).compactMap { $0.title }
+    }
+
+    private func getNextCategoryIndex() -> Int16 {
+        ((try? getCategoryObjects(
+            sortDescriptors: [NSSortDescriptor(key: "sort", ascending: false)],
+            limit: 1
+        ).first?.sort) ?? -1) + 1
+    }
+
+    func getCategoryObject(title: String, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> CategoryObject? {
+        if let object = try? getCategoryObjects(
+            predicate: NSPredicate(
+                format: "title = %@", title
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            return object
+        } else if createIfMissing {
+            let sort = getNextCategoryIndex()
+            let categoryObject = CategoryObject(context: context ?? container.viewContext)
+            categoryObject.title = title
+            categoryObject.sort = sort
+            return categoryObject
+        } else {
+            return nil
+        }
+    }
+
+    func getCategoryObjects(
+        predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor]? = [NSSortDescriptor(key: "sort", ascending: true)],
+        limit: Int? = nil,
+        context: NSManagedObjectContext? = nil
+    ) throws -> [CategoryObject] {
+        try fetch(
+            request: CategoryObject.fetchRequest(),
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit,

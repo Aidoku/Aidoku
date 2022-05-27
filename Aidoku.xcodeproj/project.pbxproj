@@ -94,6 +94,9 @@
 		FB716E02283DD6BE00F1BB5D /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E01283DD6BE00F1BB5D /* LogViewController.swift */; };
 		FB716E04283E7D4D00F1BB5D /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E03283E7D4D00F1BB5D /* String.swift */; };
 		FB716E05283E7D4D00F1BB5D /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E03283E7D4D00F1BB5D /* String.swift */; };
+		FB716E07283EEF3500F1BB5D /* CategoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E06283EEF3500F1BB5D /* CategoriesViewController.swift */; };
+		FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E08283F2E9D00F1BB5D /* CategorySelectViewController.swift */; };
+		FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716E0A283FF85400F1BB5D /* UIView.swift */; };
 		FB71E37F27E0FBB800BE4860 /* ReaderPagedPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */; };
 		FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */; };
 		FB71E38427E2A29600BE4860 /* ReaderPageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */; };
@@ -236,6 +239,9 @@
 		FB716DFE283DA2D900F1BB5D /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
 		FB716E01283DD6BE00F1BB5D /* LogViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
 		FB716E03283E7D4D00F1BB5D /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
+		FB716E06283EEF3500F1BB5D /* CategoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewController.swift; sourceTree = "<group>"; };
+		FB716E08283F2E9D00F1BB5D /* CategorySelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySelectViewController.swift; sourceTree = "<group>"; };
+		FB716E0A283FF85400F1BB5D /* UIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIView.swift; sourceTree = "<group>"; };
 		FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedPageManager.swift; sourceTree = "<group>"; };
 		FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderScrollPageManager.swift; sourceTree = "<group>"; };
 		FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageManager.swift; sourceTree = "<group>"; };
@@ -425,8 +431,8 @@
 			isa = PBXGroup;
 			children = (
 				FB4CB19227A70B9A00A05445 /* MangaViewController.swift */,
-				FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */,
 				FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */,
+				FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */,
 				FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */,
 			);
 			path = Manga;
@@ -445,6 +451,7 @@
 			children = (
 				FBED231227B816D50095D0C0 /* SettingsViewController.swift */,
 				FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */,
+				FB716E06283EEF3500F1BB5D /* CategoriesViewController.swift */,
 				FB72500A27CA8DED0037F1C9 /* BackupsViewController.swift */,
 				FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */,
 				FB716E01283DD6BE00F1BB5D /* LogViewController.swift */,
@@ -494,6 +501,7 @@
 				FB31AD0227AC39F500D50410 /* UIColor.swift */,
 				FBED231627B83B670095D0C0 /* UISwitch.swift */,
 				FB4ADC74281206AD00F6D7FB /* UIStepper.swift */,
+				FB716E0A283FF85400F1BB5D /* UIView.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -632,6 +640,7 @@
 				FB72502627CC067E0037F1C9 /* Manga */,
 				FB72502527CC06610037F1C9 /* Settings */,
 				FBED231827B8BA7C0095D0C0 /* MiniModalViewController.swift */,
+				FB716E08283F2E9D00F1BB5D /* CategorySelectViewController.swift */,
 				0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */,
 			);
 			path = Base;
@@ -865,6 +874,7 @@
 				FB71E38127E0FBC900BE4860 /* ReaderScrollPageManager.swift in Sources */,
 				FBE7813A283406EB0038C0E3 /* DownloadQueueViewController.swift in Sources */,
 				0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */,
+				FB716E07283EEF3500F1BB5D /* CategoriesViewController.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */,
@@ -940,6 +950,7 @@
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
 				FB6E34CA279DF9D800BFE54B /* MangaCollectionViewController.swift in Sources */,
+				FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */,
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
@@ -956,6 +967,7 @@
 				FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */,
 				FB1B48B7277CF8280056D02C /* ReaderViewController.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
+				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
