@@ -377,10 +377,12 @@ extension ReaderViewController {
 
     @MainActor
     func loadChapter() async {
-        if let manga = manga {
-            DataManager.shared.setRead(manga: manga)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            if let manga = manga {
+                DataManager.shared.setRead(manga: manga)
+            }
+            DataManager.shared.addHistory(for: chapter)
         }
-        DataManager.shared.addHistory(for: chapter)
 
         navigationItem.setTitle(
             upper: chapter.volumeNum != nil ? String(format: "Volume %g", chapter.volumeNum ?? 0) : nil,
@@ -400,7 +402,9 @@ extension ReaderViewController {
         } else if index >= pageCount {
             index = pageCount - 1
         }
-        DataManager.shared.setCurrentPage(index, for: chapter)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            DataManager.shared.setCurrentPage(index, for: chapter)
+        }
         self.dismiss(animated: true)
     }
 
@@ -482,7 +486,9 @@ extension ReaderViewController: ReaderPageManagerDelegate {
         } else if index >= pageCount {
             index = pageCount - 1
         }
-        DataManager.shared.setCurrentPage(index, for: chapter)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            DataManager.shared.setCurrentPage(index, for: chapter)
+        }
     }
 
     func pagesLoaded() {

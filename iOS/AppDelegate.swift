@@ -16,6 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         UserDefaults.standard.register(
             defaults: [
+                "General.incognitoMode": false,
                 "General.icloudSync": false,
                 "General.appearance": 0,
                 "General.useSystemAppearance": true,
@@ -37,7 +38,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Browse.labelNsfwSources": true,
 
                 "Reader.readingMode": "default",
-                "Reader.downsampleImages": false,
+                "Reader.downsampleImages": true,
+                "Reader.saveImageOption": true,
                 "Reader.verticalInfiniteScroll": false
             ]
         )

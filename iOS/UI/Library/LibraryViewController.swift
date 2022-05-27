@@ -550,8 +550,10 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         } else {
             openMangaView(for: targetManga)
         }
-        Task.detached {
-            DataManager.shared.setOpened(manga: targetManga, context: DataManager.shared.backgroundContext)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            Task.detached {
+                DataManager.shared.setOpened(manga: targetManga, context: DataManager.shared.backgroundContext)
+            }
         }
     }
 

@@ -23,6 +23,12 @@ class SettingsViewController: SettingsTableViewController {
                 type: "group",
                 title: NSLocalizedString("GENERAL", comment: ""),
                 items: [
+                    SettingItem(
+                        type: "switch",
+                        key: "General.incognitoMode",
+                        title: NSLocalizedString("INCOGNITO_MODE", comment: "")
+//                        subtitle: NSLocalizedString("INCOGNITO_MODE_TEXT", comment: "")
+                    ),
                     SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
                     SettingItem(
                         type: "segment",

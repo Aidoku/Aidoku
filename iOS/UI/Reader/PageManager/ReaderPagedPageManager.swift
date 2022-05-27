@@ -97,7 +97,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
         guard pageViewController != nil else { return }
 
         Task {
-            await setImages(for: (page - 2)..<(page + 3))
+            await setImages(for: (page - 1)..<(page + 3))
         }
 
         let targetIndex = page + 1 + (hasPreviousChapter ? 1 : 0)
@@ -204,13 +204,18 @@ extension ReaderPagedPageManager {
             items = []
         }
 
-        for _ in pages {
-            let c = UIViewController()
+        @MainActor
+        func insertPage(at index: Int) {
+            let chapterPageController = UIViewController()
             let page = ReaderPageView(sourceId: chapter.sourceId)
             page.frame = pageViewController.view.bounds
             page.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
-            c.view = page
-            items.append(c)
+            chapterPageController.view = page
+            items.insert(chapterPageController, at: index)
+        }
+
+        for _ in pages {
+            insertPage(at: items.endIndex)
         }
 
         if let page = storedPage {
@@ -236,20 +241,16 @@ extension ReaderPagedPageManager {
         finalPageController.view = finalPage
         items.append(finalPageController)
 
-        if hasPreviousChapter {
-            let previousChapterPageController = UIViewController()
-            previousChapterPageController.view = ReaderPageView(sourceId: chapter.sourceId)
-            items.insert(previousChapterPageController, at: 0)
+        if hasNextChapter {
+            insertPage(at: items.endIndex)
         }
 
-        if hasNextChapter {
-            let nextChapterPageController = UIViewController()
-            nextChapterPageController.view = ReaderPageView(sourceId: chapter.sourceId)
-            items.append(nextChapterPageController)
+        if hasPreviousChapter {
+            insertPage(at: 0)
         }
 
         Task {
-            await setImages(for: (startPage - 2)..<(startPage + 3))
+            await setImages(for: (startPage - 1)..<(startPage + 3))
         }
 
         let targetIndex = startIndex + 1 + (hasPreviousChapter ? 1 : 0)
@@ -356,7 +357,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
         currentIndex = index
         delegate?.didMove(toPage: currentPageIndex)
         Task {
-            await setImages(for: (index - 2)..<(index + 3))
+            await self.setImages(for: (index - 3)..<(index + 1))
         }
     }
 }
@@ -395,11 +396,17 @@ extension ReaderPagedPageManager: UIPageViewControllerDataSource {
 
 // MARK: - Context Menu Delegate
 extension ReaderPagedPageManager: UIContextMenuInteractionDelegate {
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
-                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-            let saveToPhotosAction = UIAction(title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
-                                              image: UIImage(systemName: "square.and.arrow.down")) { _ in
+
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard UserDefaults.standard.bool(forKey: "Reader.saveImageOption") else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(
+                title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
+                image: UIImage(systemName: "square.and.arrow.down")
+            ) { _ in
                 if let pageView = interaction.view as? UIImageView,
                    let image = pageView.image {
                     UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
