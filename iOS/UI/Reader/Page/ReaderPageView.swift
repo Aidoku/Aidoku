@@ -26,7 +26,6 @@ class ReaderPageView: UIView {
     var imageViewHeightConstraint: NSLayoutConstraint?
 
     var currentUrl: String?
-    var cacheKey: String?
 
     var zoomEnabled = true {
         didSet {
@@ -124,7 +123,7 @@ class ReaderPageView: UIView {
 
     func setPage(page: Page) {
         if let url = page.imageURL {
-            setPageImage(url: url)
+            setPageImage(url: url, key: page.key)
         } else if let base64 = page.base64 {
             setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
@@ -160,7 +159,7 @@ class ReaderPageView: UIView {
         }
     }
 
-    func setPageImage(url: String) {
+    func setPageImage(url: String, key: String? = nil) {
         if currentUrl == url && imageView.image != nil { return }
         currentUrl = url
 
@@ -208,14 +207,15 @@ class ReaderPageView: UIView {
                     completionHandler: { result in
                         switch result {
                         case .success(let imageResult):
-                            self.cacheKey = imageResult.source.cacheKey
                             if self.progressView.progress != 1 {
                                 self.progressView.setProgress(value: 1, withAnimation: true)
                             }
                             self.progressView.isHidden = true
                             self.reloadButton.alpha = 0
                             self.updateZoomBounds()
-                            self.delegate?.imageLoaded(key: self.cacheKey ?? "", image: imageResult.image)
+                            if let key = key {
+                                self.delegate?.imageLoaded(key: key, image: imageResult.image)
+                            }
                         case .failure(let error):
                             // If the error isn't part of the current task, we don't care.
                             if error.isNotCurrentTask || error.isTaskCancelled {

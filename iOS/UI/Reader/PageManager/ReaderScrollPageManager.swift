@@ -576,7 +576,8 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
 extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
                                 configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+        guard UserDefaults.standard.bool(forKey: "Reader.saveImageOption") else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
             let saveToPhotosAction = UIAction(title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
                                               image: UIImage(systemName: "square.and.arrow.down")) { _ in
                 if let pageView = interaction.view as? UIImageView,
@@ -632,7 +633,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
 
     func setPage(page: Page) {
         if let url = page.imageURL {
-            setPageImage(url: url)
+            setPageImage(url: url, key: page.key)
         } else if let base64 = page.base64 {
             setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
@@ -640,9 +641,9 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    func setPageImage(url: String) {
+    func setPageImage(url: String, key: String) {
         guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
-        pageView?.setPageImage(url: url)
+        pageView?.setPageImage(url: url, key: key)
     }
 
     func setPageImage(base64: String, key: String) {

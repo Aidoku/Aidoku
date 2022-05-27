@@ -36,7 +36,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Browse.labelNsfwSources": true,
 
                 "Reader.readingMode": "default",
-                "Reader.downsampleImages": false,
+                "Reader.downsampleImages": true,
+                "Reader.saveImageOption": true,
                 "Reader.verticalInfiniteScroll": false
             ]
         )

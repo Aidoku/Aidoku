@@ -158,6 +158,7 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
 
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
+"SAVE_IMAGE_OPTION" = "Save Image Option";
 
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
