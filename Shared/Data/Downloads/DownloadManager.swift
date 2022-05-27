@@ -115,6 +115,16 @@ extension DownloadManager {
         }
     }
 
+    func cancelDownloads(for chapters: [Chapter] = []) {
+        Task {
+            if chapters.isEmpty {
+                await queue.cancelAll()
+            } else {
+                await queue.cancelDownloads(for: chapters)
+            }
+        }
+    }
+
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
         Task {
             await queue.onProgress(for: chapter, block: block)

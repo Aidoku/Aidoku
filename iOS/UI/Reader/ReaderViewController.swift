@@ -385,8 +385,8 @@ extension ReaderViewController {
         }
 
         navigationItem.setTitle(
-            upper: chapter.volumeNum != nil ? String(format: "Volume %g", chapter.volumeNum ?? 0) : nil,
-            lower: String(format: "Chapter %g", chapter.chapterNum ?? 0)
+            upper: chapter.volumeNum != nil ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum ?? 0) : nil,
+            lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
         )
 
         if chapterList.isEmpty {

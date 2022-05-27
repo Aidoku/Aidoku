@@ -13,6 +13,7 @@ protocol DownloadTaskDelegate: AnyObject {
     func taskFinished(task: DownloadTask) async
     func downloadProgressChanged(download: Download) async
     func downloadFinished(download: Download) async
+    func downloadCancelled(download: Download) async
 }
 
 // performs the actual download operations
@@ -171,7 +172,7 @@ actor DownloadTask: Identifiable {
                 .removeItem()
             let download = downloads[index]
             Task {
-                await delegate?.downloadFinished(download: download)
+                await delegate?.downloadCancelled(download: download)
                 downloads.removeAll { $0 == download }
                 if wasRunning {
                     resume()
@@ -180,10 +181,21 @@ actor DownloadTask: Identifiable {
         } else {
             // cancel all downloads in task
             running = false
+            var manga: [Manga] = []
             for i in downloads.indices {
                 guard i < downloads.count else { continue }
                 downloads[i].status = .cancelled
+                if !manga.contains(where: { $0.id == downloads[i].mangaId }) {
+                    manga.append(Manga(sourceId: downloads[i].sourceId, id: downloads[i].mangaId))
+                }
                 downloads.remove(at: i)
+            }
+            // remove cached tmp directories
+            for manga in manga {
+                cache.directory(forSourceId: manga.sourceId, mangaId: manga.id)
+                    .contents
+                    .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                    .forEach { $0.removeItem() }
             }
             pages = []
             currentPage = 0
