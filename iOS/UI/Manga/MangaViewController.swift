@@ -329,19 +329,20 @@ class MangaViewController: UIViewController {
             }
 
             let markButton = UIBarButtonItem(title: NSLocalizedString("MARK", comment: ""), style: .plain, target: self, action: nil)
-            let downloadButton = UIBarButtonItem(
+
+            var downloadButton = UIBarButtonItem(
                 title: NSLocalizedString("DOWNLOAD", comment: ""),
                 style: .plain,
                 target: self,
                 action: #selector(downloadSelectedChapters)
             )
 
-            let selectedRowCount = tableView.indexPathsForSelectedRows?.count ?? 0
+            let selectedRows = tableView.indexPathsForSelectedRows ?? []
 
-            if selectedRowCount > 0 {
-                let chapters = selectedRowCount > 1 ? NSLocalizedString("CHAPTERS", comment: "") : NSLocalizedString("CHAPTER", comment: "")
+            if !selectedRows.isEmpty {
+                let chapters = selectedRows.count > 1 ? NSLocalizedString("CHAPTERS", comment: "") : NSLocalizedString("CHAPTER", comment: "")
                 markButton.menu = UIMenu(
-                    title: "\(selectedRowCount) \(chapters)",
+                    title: "\(selectedRows.count) \(chapters)",
                     children: [
                         UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { [weak self] _ in
                             guard let self = self else { return }
@@ -361,10 +362,23 @@ class MangaViewController: UIViewController {
                         }
                     ]
                 )
+                var allDownloaded = true
+                for path in selectedRows where !DownloadManager.shared.isChapterDownloaded(chapter: sortedChapters[path.row]) {
+                    allDownloaded = false
+                    break
+                }
+                if allDownloaded {
+                    downloadButton = UIBarButtonItem(
+                        title: NSLocalizedString("REMOVE", comment: ""),
+                        style: .plain,
+                        target: self,
+                        action: #selector(deleteSelectedChapters)
+                    )
+                }
             }
 
-            markButton.isEnabled = selectedRowCount > 0
-            downloadButton.isEnabled = selectedRowCount > 0
+            markButton.isEnabled = !selectedRows.isEmpty
+            downloadButton.isEnabled = !selectedRows.isEmpty
 
             toolbarItems = [
                 markButton,
@@ -434,8 +448,29 @@ class MangaViewController: UIViewController {
 
     @objc func downloadSelectedChapters() {
         guard let selected = tableView.indexPathsForSelectedRows else { return }
-        DownloadManager.shared.download(chapters: selected.map { self.sortedChapters[$0.row] }.reversed(), manga: manga)
+        // sort in reverse source order (oldest chapter to newest)
+        let chapters = selected.map { self.sortedChapters[$0.row] }
+            .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
+            .sorted { $0.sourceOrder > $1.sourceOrder }
+        DownloadManager.shared.download(chapters: chapters, manga: manga)
         setEditing(false, animated: true)
+    }
+
+    @objc func deleteSelectedChapters() {
+        guard let selected = tableView.indexPathsForSelectedRows else { return }
+
+        let alertView = UIAlertController(
+            title: NSLocalizedString("REMOVE_DOWNLOADS", comment: ""),
+            message: NSLocalizedString("REMOVE_DOWNLOADS_CONFIRM", comment: ""),
+            preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
+        )
+        alertView.addAction(UIAlertAction(title: NSLocalizedString("REMOVE", comment: ""), style: .destructive) { _ in
+            DownloadManager.shared.delete(chapters: selected.map { self.sortedChapters[$0.row] })
+            self.setEditing(false, animated: true)
+        })
+        alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+        present(alertView, animated: true)
+
     }
 }
 
@@ -536,10 +571,10 @@ extension MangaViewController {
                 titleString.append(NSLocalizedString("CONTINUE_READING", comment: ""))
             }
             if let volumeNum = chapter.volumeNum {
-                titleString.append(String(format: " Vol.%g", volumeNum))
+                titleString.append(String(format: " \(NSLocalizedString("VOL_X", comment: ""))", volumeNum))
             }
             if let chapterNum = chapter.chapterNum {
-                titleString.append(String(format: " Ch.%g", chapterNum))
+                titleString.append(String(format: " \(NSLocalizedString("CH_X", comment: ""))", chapterNum))
             }
         } else {
             titleString = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")

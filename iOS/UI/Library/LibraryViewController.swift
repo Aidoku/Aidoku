@@ -169,6 +169,12 @@ class LibraryViewController: MangaCollectionViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadFinished"), object: nil, queue: nil, using: updateNavbarBlock
         ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadCancelled"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadsCancelled"), object: nil, queue: nil, using: updateNavbarBlock
+        ))
     }
 
     override func viewWillAppear(_ animated: Bool) {

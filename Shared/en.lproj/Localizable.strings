@@ -14,14 +14,20 @@
 "UNAVAILABLE" = "Unavailable";
 "RESET" = "Reset";
 "DELETE" = "Delete";
+"REMOVE" = "Remove";
 "RENAME" = "Rename";
+"CLEAR" = "Clear";
+"LOADING_ELLPISIS" = "Loading...";
 
 // Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
+"DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
+"REMOVE_DOWNLOADS" = "Remove Downloads";
+"REMOVE_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all selected downloads?";
 
 // Library
 "LIBRARY" = "Library";
@@ -97,6 +103,10 @@
 // Reader
 "CHAPTER" = "Chapter";
 "CHAPTERS" = "Chapters";
+"VOLUME_X" = "Volume %g";
+"CHAPTER_X" = "Chapter %g";
+"VOL_X" = "Vol.%g";
+"CH_X" = "Ch.%g";
 "NO_CHAPTERS" = "No Chapters";
 "NO_CHAPTERS_AVAILABLE" = "No Chapters Available";
 "START_READING" = "Start Reading";
@@ -108,6 +118,12 @@
 "MARK_PREVIOUS" = "Mark Previous";
 "MARK_READ" = "Mark as Read";
 "MARK_UNREAD" = "Mark as Unread";
+"PREVIOUS_COLON" = "Previous:";
+"NEXT_COLON" = "Next:";
+"FINISHED_COLON" = "Finished:";
+"CURRENT_COLON" = "Current:";
+"NO_NEXT_CHAPTER" = "There is no next chapter";
+"NO_PREVIOUS_CHAPTER" = "There is no previous chapter";
 
 "READER_SETTINGS" = "Reader Settings";
 "READING_MODE" = "Reading Mode";

@@ -110,6 +110,18 @@ class MangaChapterTableViewCell: UITableViewCell {
         })
 
         observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("downloadsCancelled"), object: nil, queue: nil
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            if let downloads = notification.object as? [Chapter],
+               downloads.contains(chapter) {
+                Task { @MainActor in
+                    self.checkDownloaded()
+                }
+            }
+        })
+
+        observers.append(NotificationCenter.default.addObserver(
             forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil
         ) { [weak self] notification in
             guard let self = self else { return }
@@ -133,13 +145,13 @@ class MangaChapterTableViewCell: UITableViewCell {
         // Vol.X Ch.X - Title
         var titleString = ""
         if chapter.volumeNum == nil && chapter.title == nil, let chapterNum = chapter.chapterNum {
-            titleString = String(format: "Chapter %g", chapterNum)
+            titleString = String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
         } else {
             if let volumeNum = chapter.volumeNum {
-                titleString.append(String(format: "Vol.%g ", volumeNum))
+                titleString.append(String(format: "\(NSLocalizedString("VOL_X", comment: "")) ", volumeNum))
             }
             if let chapterNum = chapter.chapterNum {
-                titleString.append(String(format: "Ch.%g ", chapterNum))
+                titleString.append(String(format: "\(NSLocalizedString("CH_X", comment: "")) ", chapterNum))
             }
             if (chapter.volumeNum != nil || chapter.chapterNum != nil) && chapter.title != nil {
                 titleString.append("- ")
