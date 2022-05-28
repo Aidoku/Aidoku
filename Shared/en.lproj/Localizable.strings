@@ -17,7 +17,7 @@
 "REMOVE" = "Remove";
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
-"LOADING_ELLPISIS" = "Loading...";
+"LOADING_ELLIPSIS" = "Loading...";
 
 // Downloads
 "DOWNLOAD" = "Download";

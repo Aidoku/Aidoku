@@ -162,6 +162,9 @@ class LibraryViewController: MangaCollectionViewController {
                 self.currentCategory = nil
             }
             self.fetchLibrary()
+            Task {
+                await self.updateNavbarButtons()
+            }
         })
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadsQueued"), object: nil, queue: nil, using: updateNavbarBlock

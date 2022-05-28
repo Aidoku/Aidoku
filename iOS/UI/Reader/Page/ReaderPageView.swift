@@ -194,7 +194,8 @@ class ReaderPageView: UIView {
                 }
 
                 if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let downsampleProcessor = DownsamplingImageProcessor(size: UIScreen.main.bounds.size)
+                    // provide larger height so the width of the image is always downsampled to screen width (for long strips)
+                    let downsampleProcessor = DownsamplingImageProcessor(size: CGSize(width: UIScreen.main.bounds.width, height: 10000))
                     kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
                 }
 
