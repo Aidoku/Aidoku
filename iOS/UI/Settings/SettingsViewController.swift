@@ -192,7 +192,7 @@ class SettingsViewController: SettingsTableViewController {
                 ] + categories
                 // if a deleted category was selected, reset to always ask
                 if let selected = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
-                   !categories.contains(selected) {
+                   !selected.isEmpty && selected != "none" && !categories.contains(selected) {
                     UserDefaults.standard.set([""], forKey: "Library.defaultCategory")
                 }
             }

@@ -42,9 +42,6 @@ class CategoriesViewController: UITableViewController {
 
         alert.addTextField { textField in
             textField.placeholder = NSLocalizedString("CATEGORY_TITLE", comment: "")
-            textField.autocapitalizationType = .none
-            textField.autocorrectionType = .no
-            textField.keyboardType = .URL
         }
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in

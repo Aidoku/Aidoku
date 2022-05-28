@@ -801,6 +801,7 @@
 				es,
 				ar,
 				"pt-BR",
+				Base,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (

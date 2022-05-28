@@ -155,6 +155,12 @@ class MangaViewController: UIViewController {
             forName: Notification.Name("downloadRemoved"), object: nil, queue: nil, using: navbarUpdateBlock
         ))
         observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadCancelled"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("downloadsCancelled"), object: nil, queue: nil, using: navbarUpdateBlock
+        ))
+        observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadsRemoved"), object: nil, queue: nil, using: navbarUpdateBlock
         ))
         observers.append(NotificationCenter.default.addObserver(
@@ -396,7 +402,7 @@ class MangaViewController: UIViewController {
 
     func showLoadingIndicator() {
         if loadingAlert == nil {
-            loadingAlert = UIAlertController(title: nil, message: "Loading...", preferredStyle: .alert)
+            loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
             let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
             loadingIndicator.hidesWhenStopped = true
             loadingIndicator.style = .medium

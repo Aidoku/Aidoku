@@ -85,6 +85,8 @@ extension ChapterListPopoverContentController: UITableViewDataSource {
             cell.detailTextLabel?.text = title
             cell.detailTextLabel?.font = cell.textLabel?.font
             cell.detailTextLabel?.textColor = .secondaryLabel
+        } else {
+            cell.detailTextLabel?.text = nil
         }
         if indexPath.row == selectedIndex {
             cell.accessoryType = .checkmark
