@@ -165,6 +165,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         guard collectionView != nil else { return }
         pages.removeAll()
         sizeCache.removeAll()
+        dataCache.removeAll()
         collectionView.removeFromSuperview()
         collectionView = nil
     }
@@ -241,6 +242,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             pages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
         }
         sizeCache = [:]
+        dataCache = [:]
         delegate?.pagesLoaded()
 
         if chapterList.isEmpty {
