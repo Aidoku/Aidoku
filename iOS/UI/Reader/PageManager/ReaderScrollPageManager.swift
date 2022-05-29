@@ -570,11 +570,13 @@ extension ReaderScrollPageManager: UICollectionViewDataSourcePrefetching {
 extension ReaderScrollPageManager: ReaderPageViewDelegate {
     func imageLoaded(key: String, image: UIImage) {
         if sizeCache[key] == nil {
+            sizeCache[key] = image.sizeToFit(collectionView.frame.size)
+            collectionView.collectionViewLayout.invalidateLayout()
             Task.detached {
-                self.sizeCache[key] = await image.sizeToFit(self.collectionView.frame.size)
-                self.dataCache[key] = image.pngData()
+                // convert image to data in background
+                let imageData = image.pngData()
                 Task { @MainActor in
-                    self.collectionView.collectionViewLayout.invalidateLayout()
+                    self.dataCache[key] = imageData
                     if let targetPage = self.targetPage, self.shouldMoveToTargetPage, self.sizeCache.count >= targetPage {
                         self.shouldMoveToTargetPage = false
                         self.move(toPage: targetPage)
