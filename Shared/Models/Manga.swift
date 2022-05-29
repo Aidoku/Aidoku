@@ -65,6 +65,10 @@ class Manga: KVCObject, Codable {
         lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
     }
 
+    var key: String {
+        self.sourceId + "." + self.id
+    }
+
     let sourceId: String
     let id: String
 

@@ -140,7 +140,7 @@ class DataManager {
 extension DataManager {
 
     func libraryContains(manga: Manga) -> Bool {
-        libraryManga.contains { $0.sourceId == manga.sourceId && $0.id == manga.id }
+        libraryManga.contains { $0 == manga }
     }
 
     func addToLibrary(manga: Manga, context: NSManagedObjectContext? = nil, completion: (() -> Void)? = nil) {
@@ -198,7 +198,7 @@ extension DataManager {
 
     func loadLibrary() {
         guard let libraryObjects = try? getLibraryObjects() else { return }
-        libraryManga = libraryObjects.compactMap { libraryObject -> Manga? in
+        let newLibrary = libraryObjects.compactMap { libraryObject -> Manga? in
             if let oldManga = libraryManga.first(where: {
                 $0.sourceId == libraryObject.manga?.sourceId && $0.id == libraryObject.manga?.id }
             ) {
@@ -210,6 +210,34 @@ extension DataManager {
             }
             return libraryObject.manga?.toManga()
         }
+        // de-duplicate
+        var deduplicated = false
+        var finalLibrary: [Manga] = []
+        for manga in newLibrary {
+            if finalLibrary.contains(where: { $0 == manga }) {
+                LogManager.logger.debug("De-duplicating manga \(manga.title ?? manga.id)")
+                deduplicate(manga: manga)
+                deduplicated = true
+            } else {
+                finalLibrary.append(manga)
+            }
+        }
+        if deduplicated {
+            save()
+        }
+        libraryManga = finalLibrary
+    }
+
+    func deduplicate(manga: Manga) {
+        let mangaObjects = (try? getMangaObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND id = %@",
+                manga.sourceId, manga.id
+            )
+        )) ?? []
+        guard mangaObjects.count > 1 else { return }
+        let toRemove = mangaObjects.dropFirst()
+        toRemove.forEach { container.viewContext.delete($0) }
     }
 
     func getLatestMangaDetails() async {
