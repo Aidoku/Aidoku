@@ -18,6 +18,7 @@
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
 "LOADING_ELLIPSIS" = "Loading...";
+"SHARE" = "Share";
 
 // Downloads
 "DOWNLOAD" = "Download";

@@ -613,14 +613,27 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
                                 configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         guard UserDefaults.standard.bool(forKey: "Reader.saveImageOption") else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-            let saveToPhotosAction = UIAction(title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
-                                              image: UIImage(systemName: "square.and.arrow.down")) { _ in
+            let saveToPhotosAction = UIAction(
+                title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
+                image: UIImage(systemName: "photo")
+            ) { _ in
                 if let pageView = interaction.view as? UIImageView,
                    let image = pageView.image {
                     UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
                 }
             }
-            return UIMenu(title: "", children: [saveToPhotosAction])
+
+            let shareAction = UIAction(
+                title: NSLocalizedString("SHARE", comment: ""),
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                if let pageView = interaction.view as? UIImageView, let image = pageView.image {
+                    let items = [image]
+                    let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                    self.collectionView.parentViewController?.present(activityController, animated: true)
+                }
+            }
+            return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
         })
     }
 }
