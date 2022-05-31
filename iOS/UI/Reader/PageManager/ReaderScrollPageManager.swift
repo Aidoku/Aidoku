@@ -271,6 +271,23 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         preloadedChapter = chapter
     }
 
+    func preloadImages(for range: Range<Int>) {
+        guard !pages.isEmpty else { return }
+        var lower = range.lowerBound
+        var upper = range.upperBound
+        if lower < 0 {
+            lower = 0
+        }
+        if upper >= pages.count {
+            upper = pages.count - 1
+        }
+        guard lower <= upper else { return }
+        let newRange = lower..<upper
+        let pages = pages[newRange]
+        let urls = pages.compactMap { URL(string: $0.imageURL ?? "") }
+        ImagePrefetcher(urls: urls).start()
+    }
+
     func setImages(for range: Range<Int>) {
         guard collectionView != nil else { return }
         for i in range {
@@ -488,6 +505,7 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 cell.infoView?.previousChapter = nil
             } else {
                 page = pages[indexPath.item - 1]
+                preloadImages(for: indexPath.item..<(indexPath.item + 2))
             }
             if let page = page {
                 if let data = dataCache[page.key] {
