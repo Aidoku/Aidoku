@@ -333,15 +333,14 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
                 }
             }
         } else if let nextChapter = nextChapter {
-            let itemCount = items.count
-            if index == itemCount - 2 { // preload next chapter
+            if index == items.count - 2 { // preload next chapter
                 Task {
                     await preload(chapter: nextChapter)
                     if let page = preloadedPages.first {
                         (items.last?.view as? ReaderPageView)?.setPage(page: page)
                     }
                 }
-            } else if index == itemCount - 1 { // switch to next chapter
+            } else if index == items.count - 1 { // switch to next chapter
                 chapter = nextChapter
                 Task {
                     await loadPages()
@@ -357,7 +356,8 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
         currentIndex = index
         delegate?.didMove(toPage: currentPageIndex)
         Task {
-            await self.setImages(for: (index - 3)..<(index + 1))
+            await setImages(for: (index - 3)..<(index + 1))
+            preloadImages(for: index..<(index + 3))
         }
     }
 }
