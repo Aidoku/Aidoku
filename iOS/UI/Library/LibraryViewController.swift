@@ -204,6 +204,7 @@ class LibraryViewController: MangaCollectionViewController {
         navigationItem.hidesSearchBarWhenScrolling = true
     }
 
+    @MainActor
     func updateNavbarButtons() async {
         var buttons: [UIBarButtonItem] = []
 

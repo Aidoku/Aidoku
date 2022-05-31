@@ -272,6 +272,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func setImages(for range: Range<Int>) {
+        guard collectionView != nil else { return }
         for i in range {
             guard i < pages.count else { break }
             if i < 0 {
@@ -569,6 +570,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSourcePrefetching {
 // MARK: - Reader Page Delegate
 extension ReaderScrollPageManager: ReaderPageViewDelegate {
     func imageLoaded(key: String, image: UIImage) {
+        guard collectionView != nil else { return }
         if sizeCache[key] == nil {
             sizeCache[key] = image.sizeToFit(collectionView.frame.size)
             collectionView.collectionViewLayout.invalidateLayout()
