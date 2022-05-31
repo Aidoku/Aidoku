@@ -42,7 +42,7 @@ class MangaViewController: UIViewController {
             a.chapterNum ?? -1 < b.chapterNum ?? -1
         }
     }
-    var readHistory: [String: Int] = [:]
+    var readHistory: [String: (Int, Int)] = [:]
 
     var source: Source?
 
@@ -363,7 +363,7 @@ class MangaViewController: UIViewController {
                             guard let self = self else { return }
                             self.showLoadingIndicator()
                             let chapters = self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? []
-                            DataManager.shared.addHistory(for: chapters, context: DataManager.shared.backgroundContext)
+                            DataManager.shared.setCompleted(chapters: chapters, context: DataManager.shared.backgroundContext)
                             self.setEditing(false, animated: true)
                         }
                     ]
@@ -524,7 +524,7 @@ extension MangaViewController {
     }
 
     func getNextChapter() -> Chapter? {
-        let id = readHistory.max { a, b in a.value < b.value }?.key
+        let id = readHistory.max { a, b in a.value.1 < b.value.1 }?.key
         if let id = id {
             return chapters.first { $0.id == id }
         }
@@ -571,7 +571,7 @@ extension MangaViewController {
         if SourceManager.shared.source(for: manga.sourceId) == nil {
             titleString = NSLocalizedString("UNAVAILABLE", comment: "")
         } else if let chapter = getNextChapter() {
-            if readHistory[chapter.id] ?? 0 == 0 {
+            if readHistory[chapter.id]?.1 ?? 0 == 0 {
                 titleString.append(NSLocalizedString("START_READING", comment: ""))
             } else {
                 titleString.append(NSLocalizedString("CONTINUE_READING", comment: ""))
@@ -635,9 +635,11 @@ extension MangaViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        MangaChapterTableViewCell(
+        let history = readHistory[sortedChapters[indexPath.row].id]
+        return MangaChapterTableViewCell(
             chapter: sortedChapters[indexPath.row],
-            read: readHistory[sortedChapters[indexPath.row].id] ?? 0 > 0,
+            completed: history?.0 ?? 0 == -1,
+            page: history?.0 ?? 0,
             reuseIdentifier: "ChapterTableViewCell"
         )
     }
@@ -676,7 +678,7 @@ extension MangaViewController: UITableViewDataSource {
             actions.append(UIMenu(title: "", options: .displayInline, children: [downloadAction]))
             // marking actions
             let action: UIAction
-            if self.readHistory[self.sortedChapters[indexPath.row].id] ?? 0 > 0 {
+            if self.readHistory[self.sortedChapters[indexPath.row].id]?.1 ?? 0 > 0 {
                 action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { [weak self] _ in
                     guard let self = self else { return }
                     DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
@@ -687,7 +689,7 @@ extension MangaViewController: UITableViewDataSource {
                 action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { [weak self] _ in
                     guard let self = self else { return }
                     DataManager.shared.setRead(manga: self.manga)
-                    DataManager.shared.addHistory(for: self.sortedChapters[indexPath.row])
+                    DataManager.shared.setCompleted(chapter: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
                 }
@@ -738,5 +740,9 @@ extension MangaViewController: UITableViewDelegate {
         if tableView.isEditing {
             updateToolbar()
         }
+    }
+
+    func tableView(_ tableView: UITableView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
+        true
     }
 }

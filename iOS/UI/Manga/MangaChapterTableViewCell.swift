@@ -10,7 +10,8 @@ import UIKit
 class MangaChapterTableViewCell: UITableViewCell {
 
     let chapter: Chapter
-    var read: Bool
+    var completed: Bool
+    var page: Int = 0
 
     lazy var progressView: CircularProgressView = {
         let progressView = CircularProgressView(frame: CGRect(x: 1, y: 1, width: 13, height: 13))
@@ -41,9 +42,10 @@ class MangaChapterTableViewCell: UITableViewCell {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    init(chapter: Chapter, read: Bool = false, reuseIdentifier: String? = nil) {
+    init(chapter: Chapter, completed: Bool = false, page: Int = 0, reuseIdentifier: String? = nil) {
         self.chapter = chapter
-        self.read = read
+        self.completed = completed
+        self.page = page
         super.init(style: .subtitle, reuseIdentifier: reuseIdentifier)
         loadLabels()
         checkDownloaded()
@@ -170,6 +172,9 @@ class MangaChapterTableViewCell: UITableViewCell {
         if let dateUploaded = chapter.dateUploaded {
             subtitleString.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
         }
+        if page > 0 {
+            subtitleString.append(" • Page \(page)")
+        }
         if chapter.dateUploaded != nil && chapter.scanlator != nil {
             subtitleString.append(" • ")
         }
@@ -181,7 +186,7 @@ class MangaChapterTableViewCell: UITableViewCell {
         }
         detailTextLabel?.text = subtitleString
 
-        if read {
+        if completed {
             textLabel?.textColor = .secondaryLabel
         } else {
             textLabel?.textColor = .label

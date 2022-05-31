@@ -55,7 +55,7 @@ class LibraryViewController: MangaCollectionViewController {
         }
     }
 
-    var readHistory: [String: [String: Int]] = [:]
+    var readHistory: [String: [String: (Int, Int)]] = [:]
     var opensReaderView = false
     var preloadsChapters = false
 
@@ -453,7 +453,7 @@ class LibraryViewController: MangaCollectionViewController {
                     }
 
                     var ids = (chapters[mangaId] ?? []).map { $0.id }
-                    ids.removeAll { readHistory[mangaId]?.keys.contains($0) ?? false }
+                    ids.removeAll { readHistory[mangaId]?[$0]?.0 ?? 0 == -1 }
 
                     let badgeNum = ids.count
                     badges[mangaId] = badgeNum
@@ -488,7 +488,7 @@ class LibraryViewController: MangaCollectionViewController {
 
     func getNextChapter(for manga: Manga) -> Chapter? {
         let mangaId = "\(manga.sourceId).\(manga.id)"
-        let id = readHistory[mangaId]?.max { a, b in a.value < b.value }?.key
+        let id = readHistory[mangaId]?.max { a, b in a.value.1 < b.value.1 }?.key
         if let id = id {
             return chapters[mangaId]?.first { $0.id == id }
         }

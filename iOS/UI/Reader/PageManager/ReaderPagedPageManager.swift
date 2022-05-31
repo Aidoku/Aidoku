@@ -19,7 +19,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
                 remove()
                 createPageViewController()
                 if let chapter = chapter {
-                    setChapter(chapter: chapter, startPage: currentPageIndex)
+                    setChapter(chapter: chapter, startPage: currentPageIndex + 1)
                 }
             }
         }
@@ -176,14 +176,16 @@ extension ReaderPagedPageManager {
     }
 
     @MainActor
-    func loadViewControllers(from direction: ChapterLoadDirection = .none, startPage: Int = 0) {
+    // swiftlint:disable:next cyclomatic_complexity
+    func loadViewControllers(from direction: ChapterLoadDirection = .none, startPage: Int = 1) {
         guard pageViewController != nil, let chapter = chapter else { return }
 
         var pages = pages
 
         var storedPage: UIViewController?
 
-        var startIndex = startPage
+        var startIndex = startPage - 1
+        if startIndex < 0 { startIndex = 0 }
 
         if direction == .forward, let preview = items.last { // keep first page (last in items)
             items = [preview]
@@ -249,11 +251,12 @@ extension ReaderPagedPageManager {
             insertPage(at: 0)
         }
 
+        let startingIndex = startIndex
         Task {
-            await setImages(for: (startPage - 1)..<(startPage + 3))
+            await setImages(for: (startingIndex - 1)..<(startingIndex + 3))
         }
 
-        let targetIndex = startIndex + 1 + (hasPreviousChapter ? 1 : 0)
+        let targetIndex = startingIndex + 1 + (hasPreviousChapter ? 1 : 0)
 
         if targetIndex >= 0 && targetIndex < items.count {
             pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)

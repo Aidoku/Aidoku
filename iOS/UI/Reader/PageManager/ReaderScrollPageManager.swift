@@ -174,7 +174,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         guard collectionView != nil else { return }
 
         self.chapter = chapter
-        targetPage = startPage
+        targetPage = startPage - 1
 
         if transitioningChapter {
             transitioningChapter = false
@@ -185,7 +185,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
         Task { @MainActor in
             await loadPages()
-            setImages(for: 0..<startPage+1)
+            setImages(for: 0..<startPage)
             if collectionView != nil {
                 collectionView.reloadData()
                 // Move to the first page immediately
