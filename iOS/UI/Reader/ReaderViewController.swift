@@ -381,7 +381,6 @@ extension ReaderViewController {
             if let manga = manga {
                 DataManager.shared.setRead(manga: manga)
             }
-            DataManager.shared.addHistory(for: chapter)
         }
 
         navigationItem.setTitle(
@@ -402,8 +401,10 @@ extension ReaderViewController {
         } else if index >= pageCount {
             index = pageCount - 1
         }
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            DataManager.shared.setCurrentPage(index, for: chapter)
+        if index == 0 && !DataManager.shared.hasHistory(for: chapter) {
+            // if a chapter is opened and no pages are turned, no need to save history
+        } else if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            DataManager.shared.setCurrentPage(index + 1, for: chapter)
         }
         self.dismiss(animated: true)
     }
@@ -486,8 +487,13 @@ extension ReaderViewController: ReaderPageManagerDelegate {
         } else if index >= pageCount {
             index = pageCount - 1
         }
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            DataManager.shared.setCurrentPage(index, for: chapter)
+        if index == 0 && !DataManager.shared.hasHistory(for: chapter) {
+            // if a chapter is opened and no pages are turned, no need to save history
+        } else if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            DataManager.shared.setCurrentPage(index + 1, for: chapter, context: DataManager.shared.backgroundContext)
+            if index == pageCount - 1 {
+                DataManager.shared.setCompleted(chapter: chapter)
+            }
         }
     }
 

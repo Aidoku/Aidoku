@@ -555,15 +555,18 @@ extension DataManager {
 extension DataManager {
 
     func currentPage(for chapter: Chapter) -> Int {
-        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return 0 }
+        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return -1 }
         return Int(historyObject.progress)
     }
 
-    func setCurrentPage(_ page: Int, for chapter: Chapter) {
-        guard let historyObject = getHistoryObject(for: chapter) else { return }
-        historyObject.progress = Int16(page)
-        historyObject.dateRead = Date()
-        _ = save()
+    func setCurrentPage(_ page: Int, for chapter: Chapter, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
+            historyObject.progress = Int16(page)
+            historyObject.dateRead = Date()
+            self.save(context: context)
+        }
     }
 
     func setCompleted(chapter: Chapter, date: Date = Date(), context: NSManagedObjectContext? = nil) {
@@ -572,7 +575,7 @@ extension DataManager {
             guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
             historyObject.completed = true
             historyObject.dateRead = date
-            _ = self.save(context: context)
+            self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
     }
@@ -581,12 +584,12 @@ extension DataManager {
         let context = context ?? container.viewContext
         context.perform {
             for chapter in chapters {
-                if let historyObject = self.getHistoryObject(for: chapter, context: context) {
+                if let historyObject = self.getHistoryObject(for: chapter, context: context), !historyObject.completed {
                     historyObject.dateRead = date
                     historyObject.completed = true
                 }
             }
-            _ = self.save(context: context)
+            self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
     }
@@ -597,7 +600,7 @@ extension DataManager {
         if let page = page {
             historyObject.progress = Int16(page)
         }
-        _ = save()
+        save()
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
@@ -607,7 +610,7 @@ extension DataManager {
             guard let historyObject = getHistoryObject(for: chapter, context: context) else { continue }
             historyObject.dateRead = date
         }
-        _ = save(context: context)
+        save(context: context)
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
@@ -621,7 +624,7 @@ extension DataManager {
             for historyObject in readHistory {
                 context.delete(historyObject)
             }
-            _ = self.save(context: context)
+            self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
     }
@@ -629,7 +632,7 @@ extension DataManager {
     func removeHistory(for chapter: Chapter) {
         guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return }
         container.viewContext.delete(historyObject)
-        _ = save()
+        save()
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
@@ -639,37 +642,54 @@ extension DataManager {
             guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false, context: context) else { continue }
             context.delete(historyObject)
         }
-        _ = save(context: context)
+        save(context: context)
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
-    func clearHistory() {
-        if let items = try? getReadHistory() {
-            for item in items {
-                container.viewContext.delete(item)
-            }
-            _ = save()
-            NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
-        }
+    func hasHistory(for chapter: Chapter) -> Bool {
+        getHistoryObject(for: chapter, createIfMissing: false) != nil
     }
 
-    func getReadHistory(manga: Manga) -> [String: Int] {
+    func clearHistory() {
+        guard let items = try? getReadHistory() else { return }
+        for item in items {
+            container.viewContext.delete(item)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
+    }
+
+    // [chapterId: (page (-1 if completed), read date)]
+    func getReadHistory(manga: Manga) -> [String: (Int, Int)] {
         var readHistory: [HistoryObject]?
 
         container.viewContext.performAndWait {
             readHistory = try? getReadHistory(
-                predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id),
-                sortDescriptors: [NSSortDescriptor(key: "dateRead", ascending: false)]
+                predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id)
             )
+            // if progress is less than page 1 then it should be marked as completed
+            // previously, aidoku would only add read history when marking as read rather than marking as completed
+            // this can probably be removed in the future since it only exists to aid migration
+            for history in readHistory ?? [] where history.progress < 1 {
+                history.completed = true
+            }
         }
 
         guard let readHistory = readHistory else { return [:] }
 
-        var readHistoryDict: [String: Int] = [:]
+        var readHistoryDict: [String: (Int, Int)] = [:]
         for history in readHistory {
-            let chapterId = history.chapterId
-            readHistoryDict[chapterId] = Int(history.dateRead.timeIntervalSince1970)
+            // remove duplicate read history objects for the same chapter
+            if readHistoryDict[history.chapterId] != nil {
+                container.viewContext.delete(history)
+                continue
+            }
+            readHistoryDict[history.chapterId] = (history.completed || history.progress < 1
+                                          ? -1
+                                          : Int(history.progress), Int(history.dateRead.timeIntervalSince1970))
         }
+
+        save()
 
         return readHistoryDict
     }
@@ -694,7 +714,7 @@ extension DataManager {
 
     func getReadHistory(
         predicate: NSPredicate? = nil,
-        sortDescriptors: [NSSortDescriptor]? = nil,
+        sortDescriptors: [NSSortDescriptor]? = [NSSortDescriptor(key: "dateRead", ascending: false)],
         limit: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [HistoryObject] {
