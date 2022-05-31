@@ -54,6 +54,7 @@ class LogViewController: UIViewController {
         entries.forEach { logEntry(entry: $0) }
     }
 
+    @MainActor
     func logEntry(entry: LogEntry) {
         if let string = textView.attributedText.mutableCopy() as? NSMutableAttributedString {
         switch entry.type {
