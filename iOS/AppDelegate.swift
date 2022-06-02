@@ -25,12 +25,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.portraitRows": UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2,
                 "General.landscapeRows": UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4,
 
+                "Library.sortOption": 1,
+                "Library.sortAscending": false,
+
+                "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,
+
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
                 "Library.pinManga": false,
                 "Library.pinMangaType": 0,
-                "Library.sortOption": 1,
-                "Library.sortAscending": false,
+                "Library.updateInterval": "daily",
+                "Library.skipTitles": ["hasUnread", "completed", "notStarted"],
+                "Library.excludedUpdateCategories": [],
+                "Library.updateOnlyOnWifi": true,
+                "Library.refreshMetadata": false,
                 "Library.defaultCategory": [""],
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },

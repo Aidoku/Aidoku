@@ -22,3 +22,7 @@ class LogManager {
         return url
     }
 }
+
+func log(_ items: Any...) {
+    LogManager.logger.log(items.map { String(describing: $0) }.joined(separator: " "))
+}
