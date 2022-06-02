@@ -9,6 +9,10 @@ import CoreData
 
 class DataManager {
 
+    enum DataError: Error {
+        case fetchFailed
+    }
+
     static let shared = DataManager()
 
     var container: NSPersistentCloudKitContainer
@@ -36,14 +40,6 @@ class DataManager {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         setupContainer(cloudSync: UserDefaults.standard.bool(forKey: "General.icloudSync"))
 
-        observers.append(NotificationCenter.default.addObserver(
-            forName: Notification.Name("updateSourceList"), object: nil, queue: nil
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            Task {
-                await self.updateLibrary()
-            }
-        })
         observers.append(NotificationCenter.default.addObserver(
             forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
         ) { [weak self] _ in
@@ -106,33 +102,45 @@ class DataManager {
     ) throws -> [T] {
         let context = context ?? container.viewContext
 
-        let fetchRequest = request
-        if let predicate = predicate {
-            fetchRequest.predicate = predicate
+        var result: [T]?
+
+        context.performAndWait {
+            let fetchRequest = request
+            if let predicate = predicate {
+                fetchRequest.predicate = predicate
+            }
+            if let sortDescriptors = sortDescriptors {
+                fetchRequest.sortDescriptors = sortDescriptors
+            }
+            if let limit = limit {
+                fetchRequest.fetchLimit = limit
+            }
+            result = try? context.fetch(fetchRequest)
         }
-        if let sortDescriptors = sortDescriptors {
-            fetchRequest.sortDescriptors = sortDescriptors
+
+        guard let result = result else {
+            throw DataError.fetchFailed
         }
-        if let limit = limit {
-            fetchRequest.fetchLimit = limit
-        }
-        return try context.fetch(fetchRequest)
+
+        return result
     }
 
     @discardableResult
     func save(context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? container.viewContext
 
+        var result = false
         if context.hasChanges {
-            do {
-                try context.save()
-                return true
-            } catch {
-                LogManager.logger.error("CoreData save: \(error)")
-                return false
+            context.performAndWait {
+                do {
+                    try context.save()
+                    result = true
+                } catch {
+                    LogManager.logger.error("CoreData save: \(error)")
+                }
             }
         }
-        return false
+        return result
     }
 }
 
@@ -226,6 +234,21 @@ extension DataManager {
             save()
         }
         libraryManga = finalLibrary
+
+        Task.detached {
+            let lastUpdated = UserDefaults.standard.double(forKey: "Library.lastUpdated")
+            let interval: Double = [
+                "never": Double(-1),
+                "12hours": 43200,
+                "daily": 86400,
+                "2days": 172800,
+                "weekly": 604800
+            ][UserDefaults.standard.string(forKey: "Library.updateInterval")] ?? Double(0)
+            guard interval > 0 else { return }
+            if Date().timeIntervalSince1970 - lastUpdated > interval {
+                await self.updateLibrary()
+            }
+        }
     }
 
     func deduplicate(manga: Manga) {
@@ -274,25 +297,42 @@ extension DataManager {
     }
 
     func updateLibrary() async {
-        await getLatestMangaDetails()
+        if UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi") && Reachability.getConnectionType() != .wifi {
+            return
+        }
+
+        if UserDefaults.standard.bool(forKey: "Library.refreshMetadata") {
+            await getLatestMangaDetails()
+        }
+
+        let skipOptions = UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
+        let excludedCategories = UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
 
         for manga in libraryManga {
+            if (skipOptions.contains("completed") && manga.status == .completed)
+                || (skipOptions.contains("notStarted") && !hasHistory(for: manga, context: backgroundContext))
+                || (skipOptions.contains("hasUnread") && hasUnread(manga: manga, context: backgroundContext)) {
+                continue
+            }
+            let mangaCategories = getCategories(for: manga)
+            if excludedCategories.contains(where: mangaCategories.contains) {
+                continue
+            }
             let chapters = await getChapters(for: manga, fromSource: true)
-            self.backgroundContext.perform {
+            backgroundContext.perform {
                 if let mangaObject = self.getMangaObject(for: manga, context: self.backgroundContext) {
                     mangaObject.load(from: manga)
                     if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                        // TODO: do something with this -- notifications?
-    //                    if chapters.count > mangaObject.chapters?.count ?? 0 {
-    //                        _ = Int16(chapters.count - (mangaObject.chapters?.count ?? 0))
-    //                    }
                         self.set(chapters: chapters, for: manga, context: self.backgroundContext)
                         mangaObject.libraryObject?.lastUpdated = Date()
                     }
-                    _ = self.save(context: self.backgroundContext)
                 }
             }
         }
+
+        save(context: backgroundContext)
+
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
     }
 
     func clearLibrary(context: NSManagedObjectContext? = nil) {
@@ -646,8 +686,27 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
 
-    func hasHistory(for chapter: Chapter) -> Bool {
-        getHistoryObject(for: chapter, createIfMissing: false) != nil
+    func hasHistory(for chapter: Chapter, context: NSManagedObjectContext? = nil) -> Bool {
+        getHistoryObject(for: chapter, createIfMissing: false, context: context) != nil
+    }
+
+    func hasHistory(for manga: Manga, context: NSManagedObjectContext? = nil) -> Bool {
+        (try? getReadHistory(
+            predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id),
+            limit: 1,
+            context: context
+        ))?.first != nil
+    }
+
+    // check if stored chapter objects all have associated reading history
+    func hasUnread(manga: Manga, context: NSManagedObjectContext? = nil) -> Bool {
+        getChapterObjects(for: manga, context: context).contains { chapter in
+            !((try? getReadHistory(
+                predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@ AND chapterId = %@", chapter.sourceId, chapter.mangaId, chapter.id),
+                limit: 1,
+                context: context
+            ))?.first?.completed ?? false)
+        }
     }
 
     func clearHistory() {
@@ -696,7 +755,7 @@ extension DataManager {
 
     func getHistoryObject(for chapter: Chapter, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> HistoryObject? {
         if let historyObject = try? getReadHistory(
-            predicate: NSPredicate(format: "sourceId = %@ AND chapterId = %@", chapter.sourceId, chapter.id),
+            predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@ AND chapterId = %@", chapter.sourceId, chapter.mangaId, chapter.id),
             limit: 1,
             context: context
         ).first {
@@ -950,4 +1009,5 @@ extension DataManager {
             context: context
         )
     }
+    // swiftlint:disable:next file_length
 }

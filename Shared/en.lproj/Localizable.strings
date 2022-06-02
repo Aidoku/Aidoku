@@ -176,6 +176,21 @@
 "PIN_MANGA_UNREAD" = "Unread";
 "PIN_MANGA_UPDATED" = "Updated";
 
+"LIBRARY_UPDATING" = "Library Updating";
+"UPDATE_INTERVAL" = "Update Interval";
+"SKIP_TITLES" = "Skip Titles";
+"ONLY_UPDATE_ON_WIFI" = "Only Update on Wi-Fi";
+"EXCLUDED_CATEGORIES" = "Excluded Categories";
+"REFRESH_METADATA" = "Refresh Metadata";
+"NEVER" = "Never";
+"EVERY_12_HOURS" = "Every 12 hours";
+"DAILY" = "Daily";
+"EVERY_2_DAYS" = "Every 2 days";
+"WEEKLY" = "Weekly";
+"WITH_UNREAD_CHAPTERS" = "With unread chapters";
+"WITH_COMPLETED_STATUS" = "With completed status";
+"THAT_HAVENT_BEEN_READ" = "That haven't been read";
+
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";
 "SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";

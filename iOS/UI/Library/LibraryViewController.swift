@@ -60,7 +60,6 @@ class LibraryViewController: MangaCollectionViewController {
     var preloadsChapters = false
 
     var searchText: String = ""
-    var updatedLibrary = false
 
     let emptyTextStackView = UIStackView()
     var filterButton: UIBarButtonItem?
@@ -185,13 +184,6 @@ class LibraryViewController: MangaCollectionViewController {
         badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
 
         super.viewWillAppear(animated)
-
-        if !updatedLibrary {
-            updatedLibrary = true
-            Task {
-                await DataManager.shared.updateLibrary()
-            }
-        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
