@@ -599,12 +599,26 @@ extension DataManager {
         return Int(historyObject.progress)
     }
 
+    func pageCount(for chapter: Chapter) -> Int {
+        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return 0 }
+        return Int(historyObject.total)
+    }
+
     func setCurrentPage(_ page: Int, for chapter: Chapter, context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
         context.perform {
             guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
             historyObject.progress = Int16(page)
             historyObject.dateRead = Date()
+            self.save(context: context)
+        }
+    }
+
+    func setPageCount(_ pages: Int, for chapter: Chapter, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
+            historyObject.total = Int16(pages)
             self.save(context: context)
         }
     }
