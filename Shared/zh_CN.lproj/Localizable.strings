@@ -61,7 +61,7 @@
 // Browse
 "BROWSE" = "浏览";
 "BROWSE_NO_SOURCES" = "没有源";
-"BROWSE_NO_SOURCES_TEXT" = "Configure your source list or open a\nsource in Aidoku to get started";
+"BROWSE_NO_SOURCES_TEXT" = "配置您的源列表或在Aidoku中打开源以开始使用";
 "ADDING_SOURCES_GUIDE_BUTTON" = "添加源指南";
 "UPDATES" = "更新";
 "INSTALLED" = "已安装";
@@ -92,7 +92,7 @@
 "SUGGESTIVE" = "建议";
 "NSFW" = "NSFW";
 "MORE" = "更多";
-"SOURCE_ORDER" = "源头顺序";
+"SOURCE_ORDER" = "源顺序";
 
 "MISSING_SOURCE" = "缺少来源";
 "MISSING_SOURCE_TEXT" = "此漫画的原始来源似乎丢失. 请重新下载或从您的书架中删除此标题.";
@@ -119,14 +119,14 @@
 "MARK_PREVIOUS" = "标记上一个";
 "MARK_READ" = "标记为已读";
 "MARK_UNREAD" = "标记为未读";
-"PREVIOUS_COLON" = "上一篇:";
+"PREVIOUS_COLON" = "上一页:";
 "NEXT_COLON" = "下一页:";
-"FINISHED_COLON" = "已完成:";
-"CURRENT_COLON" = "Current:";
+"FINISHED_COLON" = "完成:";
+"CURRENT_COLON" = "当前:";
 "NO_NEXT_CHAPTER" = "没有下一章";
 "NO_PREVIOUS_CHAPTER" = "没有上一章";
 
-"READER_SETTINGS" = "阅读器设置";
+"READER_SETTINGS" = "阅读设置";
 "READING_MODE" = "阅读模式";
 "DEFAULT" = "默认";
 "LTR" = "从左到右";
