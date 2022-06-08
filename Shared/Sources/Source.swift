@@ -173,6 +173,10 @@ extension Source {
             if defaultLanguages.isEmpty, let lang = languages.first {
                 defaultLanguages.append(lang.value ?? lang.code)
             }
+
+            if manifest.languageSelectType == "single", let first = defaultLanguages.first {
+                defaultLanguages = [first]
+            }
         }
 
         if let data = try? Data(contentsOf: url.appendingPathComponent("settings.json")),
@@ -208,9 +212,6 @@ extension Source {
                 }
             }
 
-            if manifest.languageSelectType == "single", let first = defaultLanguages.first {
-                defaultLanguages = [first]
-            }
             UserDefaults.standard.register(defaults: defaults)
         } else {
             UserDefaults.standard.register(defaults: ["\(id).languages": defaultLanguages])
