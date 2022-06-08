@@ -26,6 +26,9 @@ struct SettingItem: Codable {
     var requires: String?
     var requiresFalse: String?
 
+    var authToEnable: Bool?
+    var authToDisable: Bool?
+
     // stepper
     var minimumValue: Double?
     var maximumValue: Double?
@@ -57,6 +60,8 @@ struct SettingItem: Codable {
 
         case requires
         case requiresFalse
+        case authToEnable
+        case authToDisable
         case minimumValue
         case maximumValue
         case destructive

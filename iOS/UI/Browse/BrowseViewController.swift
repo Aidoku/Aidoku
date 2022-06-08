@@ -8,32 +8,6 @@
 import UIKit
 import SafariServices
 
-class SourceSectionHeaderView: UITableViewHeaderFooterView {
-
-    let title = UILabel()
-
-    override init(reuseIdentifier: String?) {
-        super.init(reuseIdentifier: reuseIdentifier)
-        configureContents()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func configureContents() {
-        title.font = .systemFont(ofSize: 16, weight: .medium)
-        title.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(title)
-
-        NSLayoutConstraint.activate([
-            title.heightAnchor.constraint(equalToConstant: 20),
-            title.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            title.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-    }
-}
-
 class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)

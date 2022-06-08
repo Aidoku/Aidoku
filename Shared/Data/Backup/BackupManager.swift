@@ -148,6 +148,8 @@ class BackupManager {
 
         DataManager.shared.loadLibrary()
 
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+
         Task {
             await DataManager.shared.updateLibrary()
         }
