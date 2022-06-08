@@ -129,8 +129,7 @@ class HistoryViewController: UIViewController {
         lockedView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         lockedView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
 
-        updateNavbarItems()
-        updateLockState()
+        locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         fetchNewEntries()
 
         observers.append(NotificationCenter.default.addObserver(
@@ -219,6 +218,7 @@ class HistoryViewController: UIViewController {
         Task.detached {
             var historyDict: [Int: [HistoryEntry]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
             let historyObj = (try? DataManager.shared.getReadHistory(limit: 15, offset: offset)) ?? []
+            // all history is displayed
             if historyObj.isEmpty {
                 Task { @MainActor in
                     self.reachedEnd = true
@@ -255,19 +255,23 @@ class HistoryViewController: UIViewController {
                 self.shownMangaKeys = finalMangaKeys
                 self.entries = finalHistoryDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
                 self.offset += 15
-                self.tableView.performBatchUpdates {
-                    if self.entries.count > entries.count {
-                        self.tableView.insertSections(IndexSet(integersIn: entries.count..<self.entries.count), with: .fade)
-                    }
-                    if !entries.isEmpty {
-                        let previousRow = entries.count - 1
-                        if self.entries[previousRow].1.count != entries[previousRow].1.count {
-                            self.tableView.insertRows(
-                                at: (entries[previousRow].1.count..<self.entries[previousRow].1.count).map {
-                                    IndexPath(row: $0, section: previousRow)
-                                },
-                                with: .fade
-                            )
+                if self.entries.count < entries.count {
+                    self.tableView.reloadData()
+                } else {
+                    self.tableView.performBatchUpdates {
+                        if self.entries.count > entries.count {
+                            self.tableView.insertSections(IndexSet(integersIn: entries.count..<self.entries.count), with: .fade)
+                        }
+                        if !entries.isEmpty {
+                            let previousRow = entries.count - 1
+                            if self.entries[previousRow].1.count != entries[previousRow].1.count {
+                                self.tableView.insertRows(
+                                    at: (entries[previousRow].1.count..<self.entries[previousRow].1.count).map {
+                                        IndexPath(row: $0, section: previousRow)
+                                    },
+                                    with: .fade
+                                )
+                            }
                         }
                     }
                 }
@@ -325,9 +329,10 @@ class HistoryViewController: UIViewController {
             let reason = NSLocalizedString("AUTH_FOR_HISTORY", comment: "")
 
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, _ in
+                guard let self = self else { return }
                 Task { @MainActor in
                     if success {
-                        self?.locked = false
+                        self.locked = false
                     }
                 }
             }
