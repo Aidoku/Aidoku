@@ -126,7 +126,6 @@ extension SettingSelectViewController {
             }
         } else {
             if let itemValues = item.values, indexPath.row < itemValues.count {
-                tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
                 if forceSingle {
                     values.compactMap { itemValues.firstIndex(of: $0) }.forEach {
                         tableView.cellForRow(at: IndexPath(row: $0, section: 0))?.accessoryType = .none
@@ -136,6 +135,7 @@ extension SettingSelectViewController {
                     tableView.cellForRow(at: IndexPath(row: index, section: 0))?.accessoryType = .none
                     value = itemValues[indexPath.row]
                 }
+                tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
             }
         }
         if let notification = item.notification {
