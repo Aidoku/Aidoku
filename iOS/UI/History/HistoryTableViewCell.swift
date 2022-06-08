@@ -94,11 +94,15 @@ class HistoryTableViewCell: UITableViewCell {
         titleLabel.text = entry?.manga.title ?? ""
         var subtitleText = ""
         if entry?.chapter.chapterNum ?? -1 > 0 {
-            subtitleText += String(format: "Ch. %g - ", entry?.chapter.chapterNum ?? 0)
+            subtitleText += String(format: NSLocalizedString("CH_SPACE_X", comment: ""), entry?.chapter.chapterNum ?? 0)
+        }
+        if let currentPage = entry?.currentPage, let totalPages = entry?.totalPages, currentPage > 0, currentPage < totalPages {
+            subtitleText += " - " + String(format: NSLocalizedString("PAGE_X_OF_X", comment: ""), currentPage, totalPages)
         }
         let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        subtitleText += formatter.string(from: entry?.date ?? Date())
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        subtitleText += " - " + formatter.string(from: entry?.date ?? Date())
         subtitleLabel.text = subtitleText
     }
 }
