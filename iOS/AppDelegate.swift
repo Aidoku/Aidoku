@@ -45,6 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Browse.showNsfwSources": false,
                 "Browse.labelNsfwSources": true,
 
+                "History.lockHistoryTab": false,
+
                 "Reader.readingMode": "default",
                 "Reader.downsampleImages": true,
                 "Reader.saveImageOption": true,

@@ -14,6 +14,7 @@ public class HistoryObject: NSManagedObject {
     public override func awakeFromInsert() {
         super.awakeFromInsert()
         progress = -1
+        total = 0
         completed = false
     }
 }
@@ -30,6 +31,7 @@ extension HistoryObject {
     @NSManaged public var mangaId: String
 
     @NSManaged public var progress: Int16
+    @NSManaged public var total: Int16
     @NSManaged public var completed: Bool
 
 }
