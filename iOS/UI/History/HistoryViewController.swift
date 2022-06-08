@@ -31,7 +31,6 @@ class HistoryViewController: UITableViewController {
         }
     }
     var reachedEnd = false
-    var queueLoadMore = false
 
     var searchText = ""
 
@@ -109,11 +108,7 @@ class HistoryViewController: UITableViewController {
     }
 
     func fetchNewEntries() {
-        guard !reachedEnd else { return }
-        if loadingMore {
-            queueLoadMore = true
-            return
-        }
+        guard !loadingMore, !reachedEnd else { return }
         loadingMore = true
         let entries = entries
         let offset = offset
@@ -156,15 +151,27 @@ class HistoryViewController: UITableViewController {
                 self.shownMangaKeys = finalMangaKeys
                 self.entries = finalHistoryDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
                 self.offset += 15
-                if self.entries.count > entries.count {
-                    self.tableView.insertSections(IndexSet(integersIn: entries.count..<self.entries.count), with: .fade)
-                }
-                if !entries.isEmpty {
-                    self.tableView.reloadSections(IndexSet(integersIn: 0..<entries.count), with: .fade)
+                self.tableView.performBatchUpdates {
+                    if self.entries.count > entries.count {
+                        self.tableView.insertSections(IndexSet(integersIn: entries.count..<self.entries.count), with: .fade)
+                    }
+                    if !entries.isEmpty {
+                        let previousRow = entries.count - 1
+                        if self.entries[previousRow].1.count != entries[previousRow].1.count {
+                            self.tableView.insertRows(
+                                at: (entries[previousRow].1.count..<self.entries[previousRow].1.count).map {
+                                    IndexPath(row: $0, section: previousRow)
+                                },
+                                with: .fade
+                            )
+                        }
+                    }
                 }
                 self.loadingMore = false
-                if self.queueLoadMore {
-                    self.queueLoadMore = false
+                // last cell visible
+                if self.tableView.indexPathsForVisibleRows?.contains(
+                    IndexPath(row: (self.entries.last?.1.count ?? 1) - 1, section: self.entries.count - 1)
+                ) ?? false {
                     self.fetchNewEntries()
                 }
             }
