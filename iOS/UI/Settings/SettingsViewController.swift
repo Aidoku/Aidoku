@@ -176,6 +176,15 @@ class SettingsViewController: SettingsTableViewController {
                     title: NSLocalizedString("SHOW_NSFW_SOURCES", comment: "")
                 )
             ]),
+            // MARK: History
+            SettingItem(type: "group", title: NSLocalizedString("HISTORY", comment: ""), items: [
+                SettingItem(
+                    type: "switch",
+                    key: "History.lockHistoryTab",
+                    title: NSLocalizedString("LOCK_HISTORY_TAB", comment: ""),
+                    authToDisable: true
+                )
+            ]),
             // MARK: Reader
             SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
                 SettingItem(

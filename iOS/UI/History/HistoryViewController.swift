@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import LocalAuthentication
 
 struct HistoryEntry {
     var manga: Manga
@@ -13,7 +14,9 @@ struct HistoryEntry {
     var date: Date
 }
 
-class HistoryViewController: UITableViewController {
+class HistoryViewController: UIViewController {
+
+    let tableView = UITableView(frame: .zero, style: .grouped)
 
     // (days ago, entries)
     var entries: [(Int, [HistoryEntry])] = [] {
@@ -33,6 +36,17 @@ class HistoryViewController: UITableViewController {
     var reachedEnd = false
 
     var searchText = ""
+    var locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab") {
+        didSet {
+            updateNavbarItems()
+            updateLockState()
+        }
+    }
+
+    let lockedView = UIStackView()
+    let lockedImageView = UIImageView()
+    let lockedText = UILabel()
+    let lockedButton = UIButton(type: .roundedRect)
 
     var observers: [Any] = []
 
@@ -43,7 +57,7 @@ class HistoryViewController: UITableViewController {
     }
 
     init() {
-        super.init(style: .grouped)
+        super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
@@ -54,15 +68,9 @@ class HistoryViewController: UITableViewController {
         super.viewDidLoad()
 
         title = NSLocalizedString("HISTORY", comment: "")
+        view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
-
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "trash"),
-            style: .plain,
-            target: self,
-            action: #selector(clearAllHistory)
-        )
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -72,10 +80,20 @@ class HistoryViewController: UITableViewController {
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
+        tableView.delaysContentTouches = false
+        tableView.delegate = self
+        tableView.dataSource = self
         tableView.register(HistoryTableViewCell.self, forCellReuseIdentifier: "HistoryTableViewCell")
         tableView.register(SourceSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: "SourceSectionHeaderView")
         tableView.separatorStyle = .none
         tableView.backgroundColor = .systemBackground
+        view.addSubview(tableView)
+
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
         let spinner = UIActivityIndicatorView(style: .medium)
         spinner.startAnimating()
@@ -83,6 +101,36 @@ class HistoryViewController: UITableViewController {
         tableView.tableFooterView = spinner
         tableView.tableFooterView?.isHidden = true
 
+        lockedView.distribution = .fill
+        lockedView.spacing = 12
+        lockedView.alignment = .center
+        lockedView.axis = .vertical
+        lockedView.translatesAutoresizingMaskIntoConstraints = false
+        lockedView.isHidden = true
+        view.addSubview(lockedView)
+
+        lockedImageView.image = UIImage(systemName: "lock.fill")
+        lockedImageView.contentMode = .scaleAspectFit
+        lockedImageView.tintColor = .secondaryLabel
+        lockedImageView.translatesAutoresizingMaskIntoConstraints = false
+        lockedView.addArrangedSubview(lockedImageView)
+
+        lockedText.text = NSLocalizedString("HISTORY_LOCKED", comment: "")
+        lockedText.font = .systemFont(ofSize: 16, weight: .medium)
+        lockedView.addArrangedSubview(lockedText)
+        lockedView.setCustomSpacing(2, after: lockedText)
+
+        lockedButton.setTitle(NSLocalizedString("VIEW_HISTORY", comment: ""), for: .normal)
+        lockedButton.addTarget(self, action: #selector(unlock), for: .touchUpInside)
+        lockedView.addArrangedSubview(lockedButton)
+
+        lockedImageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        lockedImageView.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        lockedView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        lockedView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+
+        updateNavbarItems()
+        updateLockState()
         fetchNewEntries()
 
         observers.append(NotificationCenter.default.addObserver(
@@ -90,11 +138,67 @@ class HistoryViewController: UITableViewController {
         ) { [weak self] _ in
             self?.reloadHistory()
         })
+
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("History.lockHistoryTab"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
+        })
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationItem.hidesSearchBarWhenScrolling = true
+    }
+
+    func updateNavbarItems() {
+        let clearButton = UIBarButtonItem(
+            image: UIImage(systemName: "trash"),
+            style: .plain,
+            target: self,
+            action: #selector(clearAllHistory)
+        )
+        if UserDefaults.standard.bool(forKey: "History.lockHistoryTab") {
+            let lockButton: UIBarButtonItem
+            if locked {
+                lockButton = UIBarButtonItem(
+                    image: UIImage(systemName: "lock"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(unlock)
+                )
+                clearButton.isEnabled = false
+            } else {
+                lockButton = UIBarButtonItem(
+                    image: UIImage(systemName: "lock.open"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(lock)
+                )
+            }
+            navigationItem.rightBarButtonItems = [clearButton, lockButton]
+        } else {
+            navigationItem.rightBarButtonItems = [clearButton]
+        }
+    }
+
+    func updateLockState() {
+        if locked {
+            self.tableView.isHidden = true
+            self.lockedView.isHidden = false
+            self.tableView.alpha = 0
+            self.lockedView.alpha = 1
+        } else {
+            self.tableView.isHidden = false
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+                self.lockedView.alpha = 0
+            } completion: { _ in
+                self.lockedView.isHidden = true
+                UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+                    self.tableView.alpha = 1
+                }
+            }
+        }
     }
 
     func reloadHistory() {
@@ -213,38 +317,60 @@ class HistoryViewController: UITableViewController {
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
     }
+
+    @objc func unlock() {
+        let context = LAContext()
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+            let reason = NSLocalizedString("AUTH_FOR_HISTORY", comment: "")
+
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, _ in
+                Task { @MainActor in
+                    if success {
+                        self?.locked = false
+                    }
+                }
+            }
+        } else { // biometrics not supported
+            locked = false
+        }
+    }
+
+    @objc func lock() {
+        locked = true
+    }
 }
 
 // MARK: - Table View Data Source
-extension HistoryViewController {
+extension HistoryViewController: UITableViewDataSource {
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         filteredSearchEntries.count
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         filteredSearchEntries[section].1.count
     }
 
-    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         20
     }
 
-    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         12
     }
 
-    override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         UIView()
     }
 
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "SourceSectionHeaderView") as? SourceSectionHeaderView
         view?.title.text = self.tableView(tableView, titleForHeaderInSection: section)
         return view
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         let days = filteredSearchEntries[section].0
         let now = Date()
         let date = now.addingTimeInterval(-86400 * Double(days))
@@ -271,7 +397,7 @@ extension HistoryViewController {
         }
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "HistoryTableViewCell", for: indexPath) as? HistoryTableViewCell
         if cell == nil {
             cell = HistoryTableViewCell(reuseIdentifier: "HistoryTableViewCell")
@@ -283,9 +409,9 @@ extension HistoryViewController {
 }
 
 // MARK: - Table View Delegate
-extension HistoryViewController {
+extension HistoryViewController: UITableViewDelegate {
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let entry = entries[indexPath.section].1[indexPath.row]
         navigationController?.pushViewController(
             MangaViewController(manga: entry.manga),
@@ -294,14 +420,14 @@ extension HistoryViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         guard searchText.isEmpty else { return } // disable load more while searching
         if indexPath.section == entries.count - 1 && indexPath.row == (entries.last?.1.count ?? 1) - 1 {
             fetchNewEntries()
         }
     }
 
-    override func tableView(
+    func tableView(
         _ tableView: UITableView,
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {

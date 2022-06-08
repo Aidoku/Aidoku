@@ -143,6 +143,9 @@
 "%@_AGO" = "%@ ago"; // x days ago
 "REMOVE_CHAPTER_HISTORY_TEXT" = "This will remove history for this chapter. Are you sure you want to continue?";
 "REMOVE_ALL_MANGA_HISTORY" = "Remove All Manga History";
+"HISTORY_LOCKED" = "History is locked.";
+"VIEW_HISTORY" = "View History";
+"AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
 
 // Search
 "SEARCH" = "Search";
@@ -150,6 +153,9 @@
 
 // Settings
 "SETTINGS" = "Settings";
+
+"AUTH_TO_ENABLE" = "Authenticate to enable.";
+"AUTH_TO_DISABLE" = "Authenticate to disable.";
 
 "ABOUT" = "About";
 "GITHUB_REPO" = "GitHub Repository";
@@ -207,6 +213,8 @@
 "SOURCE_LIST_ADD_TEXT" = "Enter the source list URL";
 "SOURCE_LIST_ADD_FAIL" = "Failed to Add Source List";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
+
+"LOCK_HISTORY_TAB" = "Lock History Tab";
 
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "SAVE_IMAGE_OPTION" = "Save Image Option";

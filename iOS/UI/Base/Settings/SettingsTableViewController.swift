@@ -7,6 +7,7 @@
 
 import UIKit
 import SafariServices
+import LocalAuthentication
 
 class SettingsTableViewController: UITableViewController {
 
@@ -78,7 +79,38 @@ extension SettingsTableViewController {
         cell.detailTextLabel?.textColor = .secondaryLabel
         let switchView = UISwitch()
         switchView.defaultsKey = item.key ?? ""
-        switchView.handleChange { _ in
+        switchView.handleChange { isOn in
+            if item.authToDisable ?? false && !isOn {
+                let context = LAContext()
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                    context.evaluatePolicy(
+                        .deviceOwnerAuthenticationWithBiometrics,
+                        localizedReason: NSLocalizedString("AUTH_TO_DISABLE", comment: "")
+                    ) { success, _ in
+                        if !success {
+                            Task { @MainActor in
+                                switchView.setOn(true, animated: true)
+                                switchView.sendActions(for: .valueChanged)
+                            }
+                        }
+                    }
+                }
+            } else if item.authToEnable ?? false && isOn {
+                let context = LAContext()
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                    context.evaluatePolicy(
+                        .deviceOwnerAuthenticationWithBiometrics,
+                        localizedReason: NSLocalizedString("AUTH_TO_ENABLE", comment: "")
+                    ) { success, _ in
+                        if !success {
+                            Task { @MainActor in
+                                switchView.setOn(false, animated: true)
+                                switchView.sendActions(for: .valueChanged)
+                            }
+                        }
+                    }
+                }
+            }
             if let notification = item.notification {
                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
             }
