@@ -124,10 +124,13 @@ class HistoryViewController: UIViewController {
         lockedButton.addTarget(self, action: #selector(unlock), for: .touchUpInside)
         lockedView.addArrangedSubview(lockedButton)
 
-        lockedImageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        lockedImageView.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        lockedImageView.heightAnchor.constraint(equalToConstant: 66).isActive = true
+        lockedImageView.widthAnchor.constraint(equalToConstant: 66).isActive = true
         lockedView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         lockedView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+
+        let unlockTap = UITapGestureRecognizer(target: self, action: #selector(unlock))
+        lockedView.addGestureRecognizer(unlockTap)
 
         locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         fetchNewEntries()
