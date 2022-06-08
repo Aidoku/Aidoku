@@ -634,6 +634,7 @@ extension DataManager {
             historyObject.progress = Int16(page)
             historyObject.dateRead = Date()
             self.save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
     }
 

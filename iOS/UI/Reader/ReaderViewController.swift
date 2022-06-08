@@ -493,7 +493,7 @@ extension ReaderViewController: ReaderPageManagerDelegate {
         } else if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             DataManager.shared.setCurrentPage(index + 1, for: chapter, context: DataManager.shared.backgroundContext)
             if index == pageCount - 1 {
-                DataManager.shared.setCompleted(chapter: chapter)
+                DataManager.shared.setCompleted(chapter: chapter, context: DataManager.shared.backgroundContext)
             }
         }
     }

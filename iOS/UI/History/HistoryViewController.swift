@@ -12,6 +12,8 @@ struct HistoryEntry {
     var manga: Manga
     var chapter: Chapter
     var date: Date
+    var currentPage: Int?
+    var totalPages: Int?
 }
 
 class HistoryViewController: UIViewController {
@@ -34,6 +36,7 @@ class HistoryViewController: UIViewController {
         }
     }
     var reachedEnd = false
+    var queueRefresh = false
 
     var searchText = ""
     var locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab") {
@@ -138,7 +141,8 @@ class HistoryViewController: UIViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateHistory"), object: nil, queue: nil
         ) { [weak self] _ in
-            self?.reloadHistory()
+//            self?.reloadHistory()
+            self?.queueRefresh = true
         })
 
         observers.append(NotificationCenter.default.addObserver(
@@ -146,6 +150,14 @@ class HistoryViewController: UIViewController {
         ) { [weak self] _ in
             self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         })
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if queueRefresh {
+            queueRefresh = false
+            reloadHistory()
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -209,8 +221,10 @@ class HistoryViewController: UIViewController {
         shownMangaKeys = []
         offset = 0
         reachedEnd = false
-        tableView.reloadData()
-        fetchNewEntries()
+        Task { @MainActor in
+            tableView.reloadData()
+            fetchNewEntries()
+        }
     }
 
     func fetchNewEntries() {
@@ -247,7 +261,9 @@ class HistoryViewController: UIViewController {
                 let new = HistoryEntry(
                     manga: manga,
                     chapter: chapter,
-                    date: obj.dateRead
+                    date: obj.dateRead,
+                    currentPage: obj.completed ? -1 : Int(obj.progress),
+                    totalPages: Int(obj.total)
                 )
                 arr.append(new)
                 historyDict[days] = arr
@@ -258,7 +274,7 @@ class HistoryViewController: UIViewController {
                 self.shownMangaKeys = finalMangaKeys
                 self.entries = finalHistoryDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
                 self.offset += 15
-                if self.entries.count < entries.count {
+                if entries.isEmpty || self.entries.count < entries.count {
                     self.tableView.reloadData()
                 } else {
                     self.tableView.performBatchUpdates {

@@ -108,6 +108,8 @@
 "CHAPTER_X" = "Chapter %g";
 "VOL_X" = "Vol.%g";
 "CH_X" = "Ch.%g";
+"VOL_SPACE_X" = "Vol. %g";
+"CH_SPACE_X" = "Ch. %g";
 "NO_CHAPTERS" = "No Chapters";
 "NO_CHAPTERS_AVAILABLE" = "No Chapters Available";
 "START_READING" = "Start Reading";
@@ -141,6 +143,7 @@
 // History
 "HISTORY" = "History";
 "%@_AGO" = "%@ ago"; // x days ago
+"PAGE_X_OF_X" = "Page %i of %i";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "This will remove history for this chapter. Are you sure you want to continue?";
 "REMOVE_ALL_MANGA_HISTORY" = "Remove All Manga History";
 "HISTORY_LOCKED" = "History is locked.";
