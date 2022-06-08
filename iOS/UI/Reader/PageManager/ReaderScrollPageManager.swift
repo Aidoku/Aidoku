@@ -173,6 +173,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     func setChapter(chapter: Chapter, startPage: Int) {
         guard collectionView != nil else { return }
 
+        let startPage = startPage <= 0 ? 1 : startPage
+
         self.chapter = chapter
         targetPage = startPage - 1
 
