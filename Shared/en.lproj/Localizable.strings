@@ -138,6 +138,12 @@
 
 "SAVE_TO_PHOTOS" = "Save to Photos";
 
+// History
+"HISTORY" = "History";
+"%@_AGO" = "%@ ago"; // x days ago
+"REMOVE_CHAPTER_HISTORY_TEXT" = "This will remove history for this chapter. Are you sure you want to continue?";
+"REMOVE_ALL_MANGA_HISTORY" = "Remove All Manga History";
+
 // Search
 "SEARCH" = "Search";
 "VIEW_MORE" = "View More";

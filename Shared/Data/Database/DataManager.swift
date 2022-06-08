@@ -98,6 +98,7 @@ class DataManager {
         predicate: NSPredicate? = nil,
         sortDescriptors: [NSSortDescriptor]? = nil,
         limit: Int? = nil,
+        offset: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [T] {
         let context = context ?? container.viewContext
@@ -114,6 +115,9 @@ class DataManager {
             }
             if let limit = limit {
                 fetchRequest.fetchLimit = limit
+            }
+            if let offset = offset {
+                fetchRequest.fetchOffset = offset
             }
             result = try? context.fetch(fetchRequest)
         }
@@ -141,6 +145,25 @@ class DataManager {
             }
         }
         return result
+    }
+}
+
+// MARK: - Source Fallback
+extension DataManager {
+
+    func getManga(sourceId: String, mangaId: String) async -> Manga? {
+        if let manga = getMangaObject(withId: mangaId, sourceId: sourceId, context: backgroundContext)?.toManga() {
+            return manga
+        }
+        return try? await SourceManager.shared.source(for: sourceId)?.getMangaDetails(manga: Manga(sourceId: sourceId, id: mangaId))
+    }
+
+    func getChapter(sourceId: String, mangaId: String, chapterId: String) async -> Chapter? {
+        if let chapter = getChapterObject(for: sourceId, id: chapterId, mangaId: mangaId, context: backgroundContext)?.toChapter() {
+            return chapter
+        }
+        let chapters = (try? await SourceManager.shared.source(for: sourceId)?.getChapterList(manga: Manga(sourceId: sourceId, id: mangaId))) ?? []
+        return chapters.first { $0.id == chapterId }
     }
 }
 
@@ -789,6 +812,7 @@ extension DataManager {
         predicate: NSPredicate? = nil,
         sortDescriptors: [NSSortDescriptor]? = [NSSortDescriptor(key: "dateRead", ascending: false)],
         limit: Int? = nil,
+        offset: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [HistoryObject] {
         try fetch(
@@ -796,6 +820,7 @@ extension DataManager {
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit,
+            offset: offset,
             context: context
         )
     }

@@ -19,17 +19,37 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let tabController = UITabBarController()
         let libraryViewController = UINavigationController(rootViewController: LibraryViewController())
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
+        let historyViewController = UINavigationController(rootViewController: HistoryViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
         let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
-        libraryViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("LIBRARY", comment: ""),
-                                                        image: UIImage(systemName: "books.vertical.fill"), tag: 0)
-        browseViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("BROWSE", comment: ""),
-                                                       image: UIImage(systemName: "globe"), tag: 1)
-        searchViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("SEARCH", comment: ""),
-                                                       image: UIImage(systemName: "magnifyingglass"), tag: 2)
-        settingsViewController.tabBarItem = UITabBarItem(title: NSLocalizedString("SETTINGS", comment: ""),
-                                                         image: UIImage(systemName: "gear"), tag: 3)
-        tabController.viewControllers = [libraryViewController, browseViewController, searchViewController, settingsViewController]
+        libraryViewController.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("LIBRARY", comment: ""),
+            image: UIImage(systemName: "books.vertical.fill"),
+            tag: 0
+        )
+        browseViewController.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("BROWSE", comment: ""),
+            image: UIImage(systemName: "globe"),
+            tag: 1
+        )
+        historyViewController.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("HISTORY", comment: ""),
+            image: UIImage(systemName: "clock.fill"),
+            tag: 2
+        )
+        searchViewController.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("SEARCH", comment: ""),
+            image: UIImage(systemName: "magnifyingglass"),
+            tag: 3
+        )
+        settingsViewController.tabBarItem = UITabBarItem(
+            title: NSLocalizedString("SETTINGS", comment: ""),
+            image: UIImage(systemName: "gear"),
+            tag: 4
+        )
+        tabController.viewControllers = [
+            libraryViewController, browseViewController, historyViewController, searchViewController, settingsViewController
+        ]
 
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
