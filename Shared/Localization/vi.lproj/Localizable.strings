@@ -1,10 +1,4 @@
-/* 
-  Localizable.strings
-  Aidoku
-
-  Created by Skitty on 4/23/22.
-  
-*/
+// Translated by beerpsi
 
 // General
 "CONTINUE" = "Tiếp tục";
@@ -174,7 +168,7 @@
 "APPEARANCE_DARK" = "Tối";
 "USE_SYSTEM_APPEARANCE" = "Dùng giao diện hệ thống";
 
-"MANGA_PAGE" = "Thông tin truyện"
+"MANGA_PAGE" = "Thông tin truyện";
 "SHOW_SOURCE_LABEL" = "Hiển thị nguồn";
 "USE_MANGA_TINT" = "Dùng tông màu của truyện";
 "USE_MANGA_TINT_INFO" = "Thay đổi tông màu của mục thông tin truyện tuỳ vào màu của ảnh bìa truyện.";
