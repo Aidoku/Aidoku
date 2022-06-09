@@ -278,6 +278,8 @@
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSectionHeaderView.swift; sourceTree = "<group>"; };
 		FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageCollectionViewCell.swift; sourceTree = "<group>"; };
+		FBD6A40228525CAB007116C9 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FBD6A40328525CB4007116C9 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FBE78128282F481A0038C0E3 /* DownloadCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadCache.swift; sourceTree = "<group>"; };
 		FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueue.swift; sourceTree = "<group>"; };
 		FBE7812E28308DC60038C0E3 /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
@@ -355,10 +357,9 @@
 				FB1B4891277CECF60056D02C /* Sources */,
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
 				FB716DE8283D5F2000F1BB5D /* Logging */,
+				FBD6A40128525C77007116C9 /* Localization */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
-				FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */,
-				FB4ADCA92815A75700F6D7FB /* InfoPlist.strings */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -652,6 +653,15 @@
 			path = Reader;
 			sourceTree = "<group>";
 		};
+		FBD6A40128525C77007116C9 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */,
+				FB4ADCA92815A75700F6D7FB /* InfoPlist.strings */,
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
 		FBE7813128308DCA0038C0E3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -829,6 +839,8 @@
 				ar,
 				"pt-BR",
 				Base,
+				"zh-Hans",
+				vi,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -1074,6 +1086,8 @@
 				FB4ADCAB2818F54000F6D7FB /* es */,
 				FBED14542819FCFC004B8050 /* ar */,
 				FBED1455281A2B9D004B8050 /* pt-BR */,
+				FBD6A40228525CAB007116C9 /* vi */,
+				FBD6A40328525CB4007116C9 /* zh-Hans */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
