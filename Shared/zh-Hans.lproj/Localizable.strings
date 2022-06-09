@@ -28,7 +28,7 @@
 "REMOVE_DOWNLOAD" = "删除下载";
 "REMOVE_ALL_DOWNLOADS" = "删除所有下载";
 "REMOVE_DOWNLOADS" = "删除下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗？?";
+"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗？";
 
 // Library
 "LIBRARY" = "书架";
