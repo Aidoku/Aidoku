@@ -14,7 +14,7 @@
 "UNAVAILABLE" = "不可用";
 "RESET" = "重置";
 "DELETE" = "删除";
-"REMOVE" = "移除";
+"REMOVE" = "删除";
 "RENAME" = "重命名";
 "CLEAR" = "清除";
 "LOADING_ELLIPSIS" = "加载...";
@@ -25,9 +25,9 @@
 "DOWNLOADED" = "已下载";
 "DOWNLOAD_QUEUE" = "下载队列";
 "CANCEL_DOWNLOAD" = "取消下载";
-"REMOVE_DOWNLOAD" = "移除下载";
-"REMOVE_ALL_DOWNLOADS" = "移除所有下载";
-"REMOVE_DOWNLOADS" = "移除下载";
+"REMOVE_DOWNLOAD" = "删除下载";
+"REMOVE_ALL_DOWNLOADS" = "删除所有下载";
+"REMOVE_DOWNLOADS" = "删除下载";
 "REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗？?";
 
 // Library
@@ -49,7 +49,7 @@
 
 // Categories
 "ALL" = "全部";
-"NONE" = "没有";
+"NONE" = "无";
 "CATEGORIES" = "类别";
 "EDIT_CATEGORIES" = "编辑类别";
 "CATEGORY_ADD" = "添加类别";
@@ -138,6 +138,15 @@
 
 "SAVE_TO_PHOTOS" = "保存到照片";
 
+// History
+"HISTORY" = "历史";
+"%@_AGO" = "%@ ago"; // x 天前
+"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节历史记录。是否确实要继续?";
+"REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
+"HISTORY_LOCKED" = "历史记录已锁定.";
+"VIEW_HISTORY" = "查看历史";
+"AUTH_FOR_HISTORY" = "验证以查看历史.";
+
 // Search
 "SEARCH" = "搜索";
 "VIEW_MORE" = "查看更多";
@@ -201,6 +210,8 @@
 "SOURCE_LIST_ADD_TEXT" = "输入源列表链接";
 "SOURCE_LIST_ADD_FAIL" = "添加源列表失败";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "添加源列表链接无效或已添加.";
+
+"LOCK_HISTORY_TAB" = "锁定历史标签";
 
 "DOWNSAMPLE_IMAGES" = "降低采样图片";
 "SAVE_IMAGE_OPTION" = "保存图片选项";
