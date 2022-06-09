@@ -14,7 +14,7 @@
 "UNAVAILABLE" = "不可用";
 "RESET" = "重置";
 "DELETE" = "删除";
-"REMOVE" = "移除";
+"REMOVE" = "删除";
 "RENAME" = "重命名";
 "CLEAR" = "清除";
 "LOADING_ELLIPSIS" = "加载...";
@@ -25,10 +25,10 @@
 "DOWNLOADED" = "已下载";
 "DOWNLOAD_QUEUE" = "下载队列";
 "CANCEL_DOWNLOAD" = "取消下载";
-"REMOVE_DOWNLOAD" = "移除下载";
-"REMOVE_ALL_DOWNLOADS" = "移除所有下载";
-"REMOVE_DOWNLOADS" = "移除下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗？?";
+"REMOVE_DOWNLOAD" = "删除下载";
+"REMOVE_ALL_DOWNLOADS" = "删除所有下载";
+"REMOVE_DOWNLOADS" = "删除下载";
+"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗?";
 
 // Library
 "LIBRARY" = "书架";
@@ -49,7 +49,7 @@
 
 // Categories
 "ALL" = "全部";
-"NONE" = "没有";
+"NONE" = "无";
 "CATEGORIES" = "类别";
 "EDIT_CATEGORIES" = "编辑类别";
 "CATEGORY_ADD" = "添加类别";
@@ -61,14 +61,14 @@
 // Browse
 "BROWSE" = "浏览";
 "BROWSE_NO_SOURCES" = "没有源";
-"BROWSE_NO_SOURCES_TEXT" = "配置您的源列表或在Aidoku中打开源以开始使用";
+"BROWSE_NO_SOURCES_TEXT" = "自定义源列表或\n使用 Aidoku 打开源以开始使用";
 "ADDING_SOURCES_GUIDE_BUTTON" = "添加源指南";
 "UPDATES" = "更新";
 "INSTALLED" = "已安装";
 "EXTERNAL" = "外部";
 
 "BUTTON_UPDATE" = "更新";
-"BUTTON_GET" = "GET";
+"BUTTON_GET" = "获取";
 "BUTTON_ERROR" = "错误";
 "UNINSTALL" = "卸载";
 
@@ -78,24 +78,24 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "Build";
+"BUILD" = "内部版本号";
 "BUTTON_FILTER" = "过滤器";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
 
 // Manga
-"UNTITLED" = "无题";
+"UNTITLED" = "无标题";
 "ONGOING" = "正在进行中";
 "CANCELLED" = "取消";
-"COMPLETED" = "已完成";
-"HIATUS" = "中断";
+"COMPLETED" = "完成";
+"HIATUS" = "暂停";
 "SUGGESTIVE" = "建议";
 "NSFW" = "NSFW";
-"MORE" = "更多";
+"MORE" = "查看更多";
 "SOURCE_ORDER" = "源顺序";
 
-"MISSING_SOURCE" = "缺少来源";
-"MISSING_SOURCE_TEXT" = "此漫画的原始来源似乎丢失. 请重新下载或从您的书架中删除此标题.";
+"MISSING_SOURCE" = "缺少图源";
+"MISSING_SOURCE_TEXT" = "此漫画图源不可用. 请重新下载或从您的书架中删除.";
 
 "SELECT_CHAPTERS" = "选择章节";
 "SELECT_ALL" = "选择所有";
@@ -103,7 +103,7 @@
 
 // Reader
 "CHAPTER" = "章";
-"CHAPTERS" = "章节";
+"CHAPTERS" = "章";
 "VOLUME_X" = "卷 %g";
 "CHAPTER_X" = "章 %g";
 "VOL_X" = "Vol.%g";
@@ -138,6 +138,15 @@
 
 "SAVE_TO_PHOTOS" = "保存到照片";
 
+// History
+"HISTORY" = "历史";
+"%@_AGO" = "%@前"; // x days ago
+"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节历史记录。是否确实要继续?";
+"REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
+"HISTORY_LOCKED" = "历史记录已锁定.";
+"VIEW_HISTORY" = "查看历史";
+"AUTH_FOR_HISTORY" = "验证以查看历史.";
+
 // Search
 "SEARCH" = "搜索";
 "VIEW_MORE" = "查看更多";
@@ -164,7 +173,7 @@
 "USE_MANGA_TINT" = "使用漫画色调";
 "USE_MANGA_TINT_INFO" = "根据封面图片的颜色给漫画页着色";
 
-"MANGA_PER_ROW" = "每行漫画";
+"MANGA_PER_ROW" = "每行漫画数";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
 
@@ -179,7 +188,7 @@
 "LIBRARY_UPDATING" = "书架更新";
 "UPDATE_INTERVAL" = "更新周期";
 "SKIP_TITLES" = "跳过标题";
-"ONLY_UPDATE_ON_WIFI" = "仅在Wi-Fi上更新";
+"ONLY_UPDATE_ON_WIFI" = "仅通过 Wi-Fi 更新";
 "EXCLUDED_CATEGORIES" = "排除类别";
 "REFRESH_METADATA" = "刷新数据";
 "NEVER" = "从不";
@@ -188,12 +197,12 @@
 "EVERY_2_DAYS" = "每2天";
 "WEEKLY" = "每周";
 "WITH_UNREAD_CHAPTERS" = "有未读章节";
-"WITH_COMPLETED_STATUS" = "完成状态";
-"THAT_HAVENT_BEEN_READ" = "还没有被阅读";
+"WITH_COMPLETED_STATUS" = "已完成状态";
+"THAT_HAVENT_BEEN_READ" = "还没有阅读";
 
 "SOURCE_LISTS" = "源列表";
 "SOURCE_LIST_ADDED" = "添加源列表";
-"SOURCE_LIST_ADDED_TEXT" = "你现在可以在浏览选项中浏览外部源.";
+"SOURCE_LIST_ADDED_TEXT" = "您可以从源项目添加外部源.";
 "SHOW_NSFW_SOURCES" = "显示NSFW源";
 
 "SOURCE_LIST_URL" = "源列表链接";
@@ -202,7 +211,9 @@
 "SOURCE_LIST_ADD_FAIL" = "添加源列表失败";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "添加源列表链接无效或已添加.";
 
-"DOWNSAMPLE_IMAGES" = "降低采样图片";
+"LOCK_HISTORY_TAB" = "锁定历史标签";
+
+"DOWNSAMPLE_IMAGES" = "降低图像质量";
 "SAVE_IMAGE_OPTION" = "保存图片选项";
 
 "BACKUPS" = "备份";
@@ -231,14 +242,14 @@
 
 "ADVANCED" = "高级";
 "RESET" = "重置";
-"RESET_TEXT" = "此操作是不可逆的. 所有数据, 设置, 和缓存将被清除和重置.";
+"RESET_TEXT" = "此操作无法恢复. 所有数据, 设置和缓存将被清除.";
 "CLEAR_CHAPTER_CACHE" = "清除章节缓存";
-"CLEAR_CHAPTER_CACHE_TEXT" = "此操作是不可逆的. 缓存的章节将被清除并重新下载.";
+"CLEAR_CHAPTER_CACHE_TEXT" = "此操作无法恢复. 缓存的章节将被清除并重新下载.";
 "CLEAR_MANGA_CACHE" = "清除漫画缓存";
-"CLEAR_MANGA_CACHE_TEXT" = "此操作是不可逆的. 不在图书馆中的缓存漫画将被删除.";
+"CLEAR_MANGA_CACHE_TEXT" = "此操作无法恢复. 不在书架中的缓存漫画将被删除.";
 "CLEAR_NETWORK_CACHE" = "清除网络缓存";
-"CLEAR_NETWORK_CACHE_TEXT" = "此操作是不可逆的. 缓存的网络请求和图像将被清除.";
-"CLEAR_READ_HISTORY" = "清除阅读历史记录";
-"CLEAR_READ_HISTORY_TEXT" = "此操作是不可逆的. 所有读取历史记录都将被删除.";
+"CLEAR_NETWORK_CACHE_TEXT" = "此操作无法恢复. 缓存的网络请求和图像将被清除.";
+"CLEAR_READ_HISTORY" = "清除阅读记录";
+"CLEAR_READ_HISTORY_TEXT" = "此操作无法恢复. 阅读记录将被删除.";
 "RESET_SETTINGS" = "重置设置";
-"RESET_SETTINGS_TEXT" = "此操作是不可逆的. 所有应用程序和源设置都将重置.";
+"RESET_SETTINGS_TEXT" = "此操作无法恢复. 所有应用设置和源设置都将重置.";
