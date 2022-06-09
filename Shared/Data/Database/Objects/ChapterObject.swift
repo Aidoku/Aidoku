@@ -10,6 +10,7 @@ import CoreData
 
 @objc(ChapterObject)
 public class ChapterObject: NSManagedObject {
+
     func load(from chapter: Chapter) {
         sourceId = chapter.sourceId
         mangaId = chapter.mangaId
@@ -22,6 +23,7 @@ public class ChapterObject: NSManagedObject {
         dateUploaded = chapter.dateUploaded
         sourceOrder = Int16(chapter.sourceOrder)
     }
+
     func toChapter() -> Chapter {
         Chapter(
             sourceId: sourceId,

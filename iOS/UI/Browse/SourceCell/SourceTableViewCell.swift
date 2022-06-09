@@ -96,7 +96,7 @@ class SourceTableViewCell: UITableViewCell {
         iconView.widthAnchor.constraint(equalToConstant: 48).isActive = true
         iconView.heightAnchor.constraint(equalToConstant: 48).isActive = true
 
-        labelStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10).isActive = true
+        labelStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 12).isActive = true
         labelStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
 
         badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true

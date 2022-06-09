@@ -59,6 +59,8 @@ class LibraryViewController: MangaCollectionViewController {
     var opensReaderView = false
     var preloadsChapters = false
 
+    var queueFetchLibrary = false
+
     var searchText: String = ""
 
     let emptyTextStackView = UIStackView()
@@ -123,6 +125,9 @@ class LibraryViewController: MangaCollectionViewController {
         let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
             self?.fetchLibrary()
         }
+        let queueFetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
+            self?.queueFetchLibrary = true
+        }
         let updateNavbarBlock: (Notification) -> Void = { [weak self] _ in
             guard let self = self else { return }
             Task {
@@ -131,13 +136,13 @@ class LibraryViewController: MangaCollectionViewController {
         }
 
         observers.append(NotificationCenter.default.addObserver(
-            forName: Notification.Name("Library.pinManga"), object: nil, queue: nil, using: fetchLibraryBlock
+            forName: Notification.Name("Library.pinManga"), object: nil, queue: nil, using: queueFetchLibraryBlock
         ))
         observers.append(NotificationCenter.default.addObserver(
-            forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil, using: fetchLibraryBlock
+            forName: Notification.Name("Library.pinMangaType"), object: nil, queue: nil, using: queueFetchLibraryBlock
         ))
         observers.append(NotificationCenter.default.addObserver(
-            forName: Notification.Name("updateHistory"), object: nil, queue: nil, using: fetchLibraryBlock
+            forName: Notification.Name("updateHistory"), object: nil, queue: nil, using: queueFetchLibraryBlock
         ))
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("reloadLibrary"), object: nil, queue: nil, using: fetchLibraryBlock
@@ -184,6 +189,11 @@ class LibraryViewController: MangaCollectionViewController {
         badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
 
         super.viewWillAppear(animated)
+
+        if queueFetchLibrary {
+            queueFetchLibrary = false
+            fetchLibrary()
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {

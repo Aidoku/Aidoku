@@ -98,6 +98,7 @@ class DataManager {
         predicate: NSPredicate? = nil,
         sortDescriptors: [NSSortDescriptor]? = nil,
         limit: Int? = nil,
+        offset: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [T] {
         let context = context ?? container.viewContext
@@ -114,6 +115,9 @@ class DataManager {
             }
             if let limit = limit {
                 fetchRequest.fetchLimit = limit
+            }
+            if let offset = offset {
+                fetchRequest.fetchOffset = offset
             }
             result = try? context.fetch(fetchRequest)
         }
@@ -141,6 +145,25 @@ class DataManager {
             }
         }
         return result
+    }
+}
+
+// MARK: - Source Fallback
+extension DataManager {
+
+    func getManga(sourceId: String, mangaId: String) async -> Manga? {
+        if let manga = getMangaObject(withId: mangaId, sourceId: sourceId, context: backgroundContext)?.toManga() {
+            return manga
+        }
+        return try? await SourceManager.shared.source(for: sourceId)?.getMangaDetails(manga: Manga(sourceId: sourceId, id: mangaId))
+    }
+
+    func getChapter(sourceId: String, mangaId: String, chapterId: String) async -> Chapter? {
+        if let chapter = getChapterObject(for: sourceId, id: chapterId, mangaId: mangaId, context: backgroundContext)?.toChapter() {
+            return chapter
+        }
+        let chapters = (try? await SourceManager.shared.source(for: sourceId)?.getChapterList(manga: Manga(sourceId: sourceId, id: mangaId))) ?? []
+        return chapters.first { $0.id == chapterId }
     }
 }
 
@@ -599,12 +622,27 @@ extension DataManager {
         return Int(historyObject.progress)
     }
 
+    func pageCount(for chapter: Chapter) -> Int {
+        guard let historyObject = getHistoryObject(for: chapter, createIfMissing: false) else { return 0 }
+        return Int(historyObject.total)
+    }
+
     func setCurrentPage(_ page: Int, for chapter: Chapter, context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
         context.perform {
             guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
             historyObject.progress = Int16(page)
             historyObject.dateRead = Date()
+            self.save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+        }
+    }
+
+    func setPageCount(_ pages: Int, for chapter: Chapter, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
+            historyObject.total = Int16(pages)
             self.save(context: context)
         }
     }
@@ -775,6 +813,7 @@ extension DataManager {
         predicate: NSPredicate? = nil,
         sortDescriptors: [NSSortDescriptor]? = [NSSortDescriptor(key: "dateRead", ascending: false)],
         limit: Int? = nil,
+        offset: Int? = nil,
         context: NSManagedObjectContext? = nil
     ) throws -> [HistoryObject] {
         try fetch(
@@ -782,6 +821,7 @@ extension DataManager {
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit,
+            offset: offset,
             context: context
         )
     }
