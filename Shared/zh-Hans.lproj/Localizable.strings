@@ -28,7 +28,7 @@
 "REMOVE_DOWNLOAD" = "删除下载";
 "REMOVE_ALL_DOWNLOADS" = "删除所有下载";
 "REMOVE_DOWNLOADS" = "删除下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗？";
+"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗?";
 
 // Library
 "LIBRARY" = "书架";
@@ -141,7 +141,7 @@
 // History
 "HISTORY" = "历史";
 "%@_AGO" = "%@ ago"; // x days ago
-"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节历史记录。是否确实要继续？";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节历史记录。是否确实要继续?";
 "REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
 "HISTORY_LOCKED" = "历史记录已锁定.";
 "VIEW_HISTORY" = "查看历史";
