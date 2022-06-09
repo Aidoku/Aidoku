@@ -417,25 +417,38 @@ extension DataManager {
 
     func delete(manga: Manga, context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
-        guard let mangaObject = getMangaObject(for: manga, context: context) else { return }
+        context.perform {
+            guard let mangaObject = self.getMangaObject(for: manga, context: context) else { return }
 
-        context.delete(mangaObject)
+            context.delete(mangaObject)
 
-        if save(context: context) {
-            libraryManga.removeAll {
-                $0.sourceId == manga.sourceId && $0.id == manga.id
+            if self.save(context: context) {
+                self.libraryManga.removeAll {
+                    $0.sourceId == manga.sourceId && $0.id == manga.id
+                }
+                self.deleteChapters(for: manga, context: self.backgroundContext)
             }
-            deleteChapters(for: manga, context: backgroundContext)
+        }
+    }
+
+    func update(manga: Manga, context: NSManagedObjectContext? = nil) {
+        let context = context ?? container.viewContext
+        context.perform {
+            guard let mangaObject = self.getMangaObject(for: manga, context: context) else { return }
+            mangaObject.load(from: manga)
+            self.save(context: context)
         }
     }
 
     func clearManga(context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
-        if let items = try? getMangaObjects(context: context) {
-            for item in items {
-                context.delete(item)
+        context.perform {
+            if let items = try? self.getMangaObjects(context: context) {
+                for item in items {
+                    context.delete(item)
+                }
+                self.save(context: context)
             }
-            _ = save(context: context)
         }
     }
 
