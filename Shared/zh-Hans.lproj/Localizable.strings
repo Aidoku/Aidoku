@@ -61,7 +61,7 @@
 // Browse
 "BROWSE" = "浏览";
 "BROWSE_NO_SOURCES" = "没有源";
-"BROWSE_NO_SOURCES_TEXT" = "配置您的源列表或在Aidoku中打开源以开始使用";
+"BROWSE_NO_SOURCES_TEXT" = "自定义源列表或\使用 Aidoku 打开源以开始使用";
 "ADDING_SOURCES_GUIDE_BUTTON" = "添加源指南";
 "UPDATES" = "更新";
 "INSTALLED" = "已安装";
@@ -103,7 +103,7 @@
 
 // Reader
 "CHAPTER" = "章";
-"CHAPTERS" = "章节";
+"CHAPTERS" = "章";
 "VOLUME_X" = "卷 %g";
 "CHAPTER_X" = "章 %g";
 "VOL_X" = "Vol.%g";
