@@ -93,8 +93,6 @@ class MangaViewController: UIViewController {
 
         navigationItem.largeTitleDisplayMode = .never
 
-        updateNavbarButtons()
-
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -120,7 +118,6 @@ class MangaViewController: UIViewController {
         tableView.tableHeaderView = headerView
 
         updateSortMenu()
-        updateReadHistory()
         activateConstraints()
 
         getTintColor()
@@ -184,6 +181,7 @@ class MangaViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        updateNavbarButtons()
         updateReadHistory()
         tableView.reloadData()
         (tableView.tableHeaderView as? MangaViewHeaderView)?.updateViews()
@@ -327,7 +325,7 @@ class MangaViewController: UIViewController {
 
     func updateToolbar() {
         if tableView.isEditing {
-            if self.navigationController?.isToolbarHidden ?? true {
+            if navigationController?.isToolbarHidden ?? true {
                 UIView.animate(withDuration: 0.3) {
                     self.navigationController?.isToolbarHidden = false
                     self.navigationController?.toolbar.alpha = 1

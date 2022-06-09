@@ -272,7 +272,6 @@ class MangaViewHeaderView: UIView {
         headerView.addSubview(sortButton)
 
         activateConstraints()
-        updateViews()
 
         contentStackView.frame = CGRect(origin: .zero, size: contentStackView.intrinsicContentSize)
 
@@ -358,8 +357,18 @@ class MangaViewHeaderView: UIView {
 extension MangaViewHeaderView {
     // swiftlint:disable:next cyclomatic_complexity
     func updateViews() {
-        Task {
-            await setCover()
+        if let url = manga?.cover {
+            if KingfisherManager.shared.cache.isCached(forKey: url) {
+                coverImageView.kf.setImage(
+                    with: URL(string: url),
+                    placeholder: UIImage(named: "MangaPlaceholder"),
+                    options: []
+                )
+            } else {
+                Task {
+                    await setCover()
+                }
+            }
         }
         titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
         authorLabel.text = manga?.author

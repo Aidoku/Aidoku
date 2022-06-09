@@ -56,7 +56,7 @@ class MangaCollectionViewController: UIViewController {
             cellsPerRow: cellsPerRow,
             minimumInteritemSpacing: 12,
             minimumLineSpacing: 12,
-            sectionInset: view.layoutMargins
+            sectionInset: UIEdgeInsets(top: 0, left: view.layoutMargins.left, bottom: 10, right: view.layoutMargins.right)
         ))
         collectionView?.backgroundColor = .systemBackground
         collectionView?.delegate = self
@@ -113,7 +113,7 @@ class MangaCollectionViewController: UIViewController {
             cellsPerRow: cellsPerRow,
             minimumInteritemSpacing: 12,
             minimumLineSpacing: 12,
-            sectionInset: view.layoutMargins
+            sectionInset: UIEdgeInsets(top: 0, left: view.layoutMargins.left, bottom: 10, right: view.layoutMargins.right)
         )
     }
 
