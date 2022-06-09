@@ -298,8 +298,9 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 continue
             }
             let path = IndexPath(item: i + 1, section: 1)
-            if let cell = collectionView(collectionView, cellForItemAt: path) as? ReaderPageCollectionViewCell {
-                cell.setPage(page: pages[i])
+            if dataCache[pages[i].key] != nil {
+                // fetching the cell will automatically trigger it to fetch the image
+                _ = collectionView(collectionView, cellForItemAt: path)
             }
         }
     }
@@ -398,7 +399,6 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-
         var key: String?
 
         if indexPath.section == 0 {
@@ -506,8 +506,7 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 cell.infoView?.nextChapter = targetNextChapter
                 cell.infoView?.previousChapter = nil
             } else {
-                page = pages[indexPath.item - 1]
-                preloadImages(for: indexPath.item..<(indexPath.item + 2))
+                setImages(for: (indexPath.item)..<(indexPath.item + 2)) // preload next two pages
             }
             if let page = page {
                 if let data = dataCache[page.key] {
@@ -527,8 +526,10 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
         3
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        numberOfItemsInSection section: Int) -> Int {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         switch section {
         case 0: return previousPages.count
         case 1: return pages.isEmpty ? 0 : pages.count + 2
@@ -551,14 +552,13 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                 cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                 cell.pageView?.delegate = self
             } else {
-                let item = indexPath.item
-                if item == 0 {
+                if indexPath.item == 0 {
                     cell.convertToInfo(type: .previous, currentChapter: chapter)
                     if hasPreviousChapter {
                         cell.infoView?.previousChapter = chapterList[chapterIndex + 1]
                         cell.infoView?.nextChapter = nil
                     }
-                } else if item == pages.count + 1 {
+                } else if indexPath.item == pages.count + 1 {
                     cell.convertToInfo(type: .next, currentChapter: chapter)
                     if hasNextChapter {
                         cell.infoView?.nextChapter = targetNextChapter
@@ -568,6 +568,11 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                     cell.convertToPage()
                     cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                     cell.pageView?.delegate = self
+                    if let data = dataCache[pages[indexPath.item - 1].key] {
+                        cell.setPageData(data: data)
+                    } else {
+                        cell.setPage(page: pages[indexPath.item - 1])
+                    }
                 }
             }
         }
@@ -611,8 +616,10 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
 
 // MARK: - Context Menu Delegate
 extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction,
-                                configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
         guard UserDefaults.standard.bool(forKey: "Reader.saveImageOption") else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
             let saveToPhotosAction = UIAction(
@@ -637,74 +644,5 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
             }
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
         })
-    }
-}
-
-// MARK: - Reader Page Collection Cell
-class ReaderPageCollectionViewCell: UICollectionViewCell {
-
-    var sourceId: String?
-
-    var pageView: ReaderPageView?
-    var infoView: ReaderInfoPageView?
-
-    func convertToPage() {
-        guard pageView == nil else { return }
-
-        infoView?.removeFromSuperview()
-        infoView = nil
-
-        pageView = ReaderPageView(sourceId: sourceId ?? "")
-        pageView?.zoomEnabled = false
-        pageView?.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(pageView!)
-
-        pageView?.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        pageView?.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
-        pageView?.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
-        pageView?.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-    }
-
-    func convertToInfo(type: ReaderInfoPageType, currentChapter: Chapter) {
-        guard infoView == nil else { return }
-
-        pageView?.removeFromSuperview()
-        pageView = nil
-
-        infoView = ReaderInfoPageView(type: type, currentChapter: currentChapter)
-        infoView?.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(infoView!)
-
-        infoView?.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        infoView?.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
-        infoView?.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
-        infoView?.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-    }
-
-    func setPage(page: Page) {
-        if let url = page.imageURL {
-            setPageImage(url: url, key: page.key)
-        } else if let base64 = page.base64 {
-            setPageImage(base64: base64, key: page.key)
-        } else if let text = page.text {
-            setPageText(text: text)
-        }
-    }
-
-    func setPageImage(url: String, key: String) {
-        guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
-        pageView?.setPageImage(url: url, key: key)
-    }
-
-    func setPageImage(base64: String, key: String) {
-        self.pageView?.setPageImage(base64: base64, key: key)
-    }
-
-    func setPageData(data: Data, key: String? = nil) {
-        pageView?.setPageData(data: data, key: key)
-    }
-
-    func setPageText(text: String) {
-        pageView?.setPageText(text: text)
     }
 }

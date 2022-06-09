@@ -142,6 +142,8 @@
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FBD6A3FB2850D586007116C9 /* SourceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */; };
+		FBD6A3FE28523052007116C9 /* FLEX in Frameworks */ = {isa = PBXBuildFile; productRef = FBD6A3FD28523052007116C9 /* FLEX */; };
+		FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */; };
 		FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE78128282F481A0038C0E3 /* DownloadCache.swift */; };
 		FBE7812A282F481A0038C0E3 /* DownloadCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE78128282F481A0038C0E3 /* DownloadCache.swift */; };
 		FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */; };
@@ -275,6 +277,7 @@
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSectionHeaderView.swift; sourceTree = "<group>"; };
+		FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageCollectionViewCell.swift; sourceTree = "<group>"; };
 		FBE78128282F481A0038C0E3 /* DownloadCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadCache.swift; sourceTree = "<group>"; };
 		FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueue.swift; sourceTree = "<group>"; };
 		FBE7812E28308DC60038C0E3 /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
@@ -315,6 +318,7 @@
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
+				FBD6A3FE28523052007116C9 /* FLEX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,6 +546,7 @@
 				FB71E38327E2A29500BE4860 /* ReaderPageManager.swift */,
 				FB71E37E27E0FBB700BE4860 /* ReaderPagedPageManager.swift */,
 				FB71E38027E0FBC900BE4860 /* ReaderScrollPageManager.swift */,
+				FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */,
 			);
 			path = PageManager;
 			sourceTree = "<group>";
@@ -765,6 +770,7 @@
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
+				FBD6A3FD28523052007116C9 /* FLEX */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -830,6 +836,7 @@
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
 				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				FBD6A3FC28523052007116C9 /* XCRemoteSwiftPackageReference "FLEX" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -979,6 +986,7 @@
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
+				FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */,
 				FB67EE5E27ECC6D200C468EA /* ToolbarContainerView.swift in Sources */,
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
 				FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */,
@@ -1397,6 +1405,14 @@
 				minimumVersion = 0.9.9;
 			};
 		};
+		FBD6A3FC28523052007116C9 /* XCRemoteSwiftPackageReference "FLEX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/FLEXTool/FLEX";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1429,6 +1445,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		FBD6A3FD28523052007116C9 /* FLEX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FBD6A3FC28523052007116C9 /* XCRemoteSwiftPackageReference "FLEX" */;
+			productName = FLEX;
 		};
 		FBED233227C091D70095D0C0 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
