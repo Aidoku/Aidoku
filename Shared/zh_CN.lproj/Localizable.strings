@@ -68,7 +68,7 @@
 "EXTERNAL" = "外部";
 
 "BUTTON_UPDATE" = "更新";
-"BUTTON_GET" = "GET";
+"BUTTON_GET" = "获取";
 "BUTTON_ERROR" = "错误";
 "UNINSTALL" = "卸载";
 
@@ -78,20 +78,20 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "Build";
+"BUILD" = "内部版本号";
 "BUTTON_FILTER" = "过滤器";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
 
 // Manga
-"UNTITLED" = "无题";
+"UNTITLED" = "无标题";
 "ONGOING" = "正在进行中";
 "CANCELLED" = "取消";
-"COMPLETED" = "已完成";
-"HIATUS" = "中断";
+"COMPLETED" = "完成";
+"HIATUS" = "暂停";
 "SUGGESTIVE" = "建议";
 "NSFW" = "NSFW";
-"MORE" = "更多";
+"MORE" = "查看更多";
 "SOURCE_ORDER" = "源顺序";
 
 "MISSING_SOURCE" = "缺少来源";
@@ -173,7 +173,7 @@
 "USE_MANGA_TINT" = "使用漫画色调";
 "USE_MANGA_TINT_INFO" = "根据封面图片的颜色给漫画页着色";
 
-"MANGA_PER_ROW" = "每行漫画";
+"MANGA_PER_ROW" = "每行漫画数";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
 
