@@ -422,6 +422,7 @@ class MangaViewController: UIViewController {
             chapters = await newChapters
 
             if DataManager.shared.libraryContains(manga: manga) {
+                DataManager.shared.update(manga: manga, context: DataManager.shared.backgroundContext)
                 DataManager.shared.set(chapters: chapters, for: manga)
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
