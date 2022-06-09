@@ -8,6 +8,12 @@
 import UIKit
 import Kingfisher
 
+struct PageInfo {
+    var vc: UIViewController
+    var pageIndex: Int
+    var numPages: Int
+}
+
 class ReaderPagedPageManager: NSObject, ReaderPageManager {
 
     weak var delegate: ReaderPageManagerDelegate?
@@ -18,20 +24,23 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
             if (readingMode == .vertical && oldValue != .vertical) || oldValue == .vertical {
                 remove()
                 createPageViewController()
-                if let chapter = chapter {
-                    setChapter(chapter: chapter, startPage: currentPageIndex + 1)
-                }
+            }
+            if let chapter = chapter {
+                setChapter(chapter: chapter, startPage: items[currentIndex].pageIndex + 1)
             }
         }
     }
     var pages: [Page] = []
+
+    var pagesPerView: Int = UserDefaults.standard.integer(forKey: "Reader.pagesPerView")
+    var pagesToPreload: Int = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
     weak var parentViewController: UIViewController!
     var pageViewController: UIPageViewController!
-    var items: [UIViewController] = []
+    var items: [PageInfo] = []
 
     var chapterList: [Chapter] = []
     var chapterIndex: Int {
@@ -45,8 +54,28 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     var nextChapter: Chapter?
 
     var currentIndex: Int = 0
-    var currentPageIndex: Int {
-        currentIndex - 1 - (hasPreviousChapter ? 1 : 0)
+
+    var widePages: [Int] = []
+
+    var observers: [NSObjectProtocol] = []
+
+    deinit {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+
+    override init() {
+        super.init()
+        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagesPerView"), object: nil, queue: nil) { _ in
+            self.pagesPerView = UserDefaults.standard.integer(forKey: "Reader.pagesPerView")
+            if let chapter = self.chapter {
+                self.setChapter(chapter: chapter, startPage: self.items[self.currentIndex].pageIndex + 1)
+            }
+        })
+        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagesToPreload"), object: nil, queue: nil) { _ in
+            self.pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+        })
     }
 
     func createPageViewController() {
@@ -96,14 +125,14 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     func move(toPage page: Int) {
         guard pageViewController != nil else { return }
 
+        let targetIndex = getViewControllerIndex(for: page)
+
         Task {
-            await setImages(for: (page - 1)..<(page + 3))
+            await setImages(for: (targetIndex - pagesToPreload)..<(targetIndex + pagesToPreload + 1))
         }
 
-        let targetIndex = page + 1 + (hasPreviousChapter ? 1 : 0)
-
         if targetIndex >= 0 && targetIndex < items.count {
-            pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)
+            pageViewController.setViewControllers([items[targetIndex].vc], direction: .forward, animated: false, completion: nil)
             currentIndex = targetIndex
             delegate?.didMove(toPage: page)
         }
@@ -111,11 +140,11 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
 
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animate(alongsideTransition: nil) { _ in
-            for vc in self.items {
-                vc.view.frame = self.pageViewController.view.bounds
-                if let page = vc.view as? ReaderPageView {
+            for info in self.items {
+                info.vc.view.frame = self.pageViewController.view.bounds
+                if let page = info.vc.view as? ReaderPageView {
                     page.zoomableView.frame = page.bounds
-                    page.imageView.frame = page.bounds
+                    page.multiView.frame = page.bounds
                     page.updateZoomBounds()
                 }
             }
@@ -182,47 +211,61 @@ extension ReaderPagedPageManager {
 
         var pages = pages
 
-        var storedPage: UIViewController?
-
-        var startIndex = startPage - 1
-        if startIndex < 0 { startIndex = 0 }
+        var storedPage: PageInfo?
 
         if direction == .forward, let preview = items.last { // keep first page (last in items)
             items = [preview]
-            if let page = pages.first {
-                let pageView = preview.view as? ReaderPageView
-                pageView?.setPage(page: page)
-                pages.removeFirst(1)
+            items[0].pageIndex = 0
+            let pageView = preview.vc.view as? ReaderPageView
+            let subpages = pages[0..<preview.numPages]
+            for (i, page) in subpages.enumerated() {
+                pageView?.setPage(page: page, index: i)
             }
+            pages.removeFirst(subpages.count)
         } else if direction == .backward, let preview = items.first { // keep last page (first in items)
             items = []
             storedPage = preview
-            if let page = pages.last {
-                let pageView = preview.view as? ReaderPageView
-                pageView?.setPage(page: page)
-                pages.removeLast(1)
+            let pageView = preview.vc.view as? ReaderPageView
+            let subpages = pages[(pages.count - preview.numPages)..<pages.count]
+            for (i, page) in subpages.enumerated() {
+                pageView?.setPage(page: page, index: i)
             }
+            pages.removeLast(subpages.count)
         } else {
             items = []
         }
 
         @MainActor
-        func insertPage(at index: Int) {
+        func insertPage(at index: Int, pageIndex: Int, numPages: Int) {
+            guard numPages > 0 else { return }
             let chapterPageController = UIViewController()
-            let page = ReaderPageView(sourceId: chapter.sourceId)
+            let page = ReaderPageView(sourceId: chapter.sourceId, pages: numPages, mode: readingMode ?? .defaultViewer)
             page.frame = pageViewController.view.bounds
-            page.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+            page.multiView.subviews.forEach { $0.addInteraction(UIContextMenuInteraction(delegate: self)) }
             chapterPageController.view = page
-            items.insert(chapterPageController, at: index)
+            items.insert(PageInfo(vc: chapterPageController, pageIndex: pageIndex, numPages: numPages), at: index)
         }
 
-        for _ in pages {
-            insertPage(at: items.endIndex)
+        let offset = items.isEmpty ? 0 : items[0].numPages
+        var i = 0
+        while i < pages.count {
+            var wideIndex = -1
+            for j in 0..<pagesPerView {
+                if widePages.contains(i + j) { wideIndex = j }
+            }
+            if wideIndex != -1 {
+                insertPage(at: items.endIndex, pageIndex: i + offset, numPages: min(wideIndex, pages.count - i))
+                insertPage(at: items.endIndex, pageIndex: i + offset + wideIndex, numPages: 1)
+                i += wideIndex + 1
+            } else {
+                insertPage(at: items.endIndex, pageIndex: i + offset, numPages: min(pagesPerView, pages.count - i))
+                i += pagesPerView
+            }
         }
 
         if let page = storedPage {
             items.append(page)
-            startIndex = items.count - 1
+            items[items.count - 1].pageIndex = pages.count
         }
 
         let firstPageController = UIViewController()
@@ -232,7 +275,7 @@ extension ReaderPagedPageManager {
         }
         firstPage.frame = pageViewController.view.bounds
         firstPageController.view.addSubview(firstPage)
-        items.insert(firstPageController, at: 0)
+        items.insert(PageInfo(vc: firstPageController, pageIndex: -1, numPages: -1), at: 0)
 
         let finalPageController = UIViewController()
         let finalPage = ReaderInfoPageView(type: .next, currentChapter: chapter)
@@ -241,26 +284,25 @@ extension ReaderPagedPageManager {
         }
         finalPage.frame = pageViewController.view.bounds
         finalPageController.view = finalPage
-        items.append(finalPageController)
+        items.append(PageInfo(vc: finalPageController, pageIndex: -1, numPages: -1))
 
         if hasNextChapter {
-            insertPage(at: items.endIndex)
+            insertPage(at: items.endIndex, pageIndex: -1, numPages: 1)
         }
 
         if hasPreviousChapter {
-            insertPage(at: 0)
+            insertPage(at: 0, pageIndex: -1, numPages: 1)
         }
 
-        let startingIndex = startIndex
+        let targetIndex = getViewControllerIndex(for: startPage - 1)
+
         Task {
-            await setImages(for: (startingIndex - 1)..<(startingIndex + 3))
+            await setImages(for: (targetIndex - pagesToPreload)..<(targetIndex + pagesToPreload + 1))
         }
-
-        let targetIndex = startingIndex + 1 + (hasPreviousChapter ? 1 : 0)
 
         if targetIndex >= 0 && targetIndex < items.count {
-            pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)
-            delegate?.didMove(toPage: startIndex)
+            pageViewController.setViewControllers([items[targetIndex].vc], direction: .forward, animated: false, completion: nil)
+            delegate?.didMove(toPage: items[targetIndex].pageIndex)
         }
     }
 
@@ -286,22 +328,25 @@ extension ReaderPagedPageManager {
         ImagePrefetcher(urls: urls).start()
     }
 
-    func setImages(for range: Range<Int>) async {
+    func setImages(for range: Range<Int>) async { // now works to set images per vc range
         for i in range {
-            guard i < pages.count else { break }
-            if i < 0 {
-                continue
-            }
-            if let pageView = await items[i + 1 + (hasPreviousChapter ? 1 : 0)].view as? ReaderPageView {
-                await pageView.setPage(page: pages[i])
+            guard i < items.count - (hasNextChapter ? 2 : 1) else { break }
+            if i < (hasPreviousChapter ? 2 : 1) { continue }
+            for j in 0..<items[i].numPages {
+                await (items[i].vc.view as? ReaderPageView)?.setPage(page: pages[items[i].pageIndex + j], index: j)
             }
         }
+    }
+
+    func getViewControllerIndex(for pageIndex: Int) -> Int {
+        items.firstIndex(where: { $0.pageIndex <= pageIndex && $0.pageIndex + $0.numPages > pageIndex }) ?? (hasPreviousChapter ? 2 : 1)
     }
 }
 
 // MARK: - Page View Controller Delegate
 extension ReaderPagedPageManager: UIPageViewControllerDelegate {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func pageViewController(
         _ pageViewController: UIPageViewController,
         didFinishAnimating finished: Bool,
@@ -310,7 +355,7 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
     ) {
         guard completed,
               let vc = pageViewController.viewControllers?.first,
-              let index = items.firstIndex(of: vc) else {
+              let index = items.firstIndex(where: { $0.vc == vc }) else {
             return
         }
 
@@ -323,15 +368,25 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
                         delegate?.move(toChapter: chapter)
                     }
                     loadViewControllers(from: .backward)
-                    currentIndex = items.firstIndex(of: vc) ?? 0
+                    currentIndex = items.firstIndex(where: { $0.vc == vc }) ?? 0
                 }
                 return
             } else if index == 1 { // preload previous chapter
                 Task {
                     let previousChapter = chapterList[chapterIndex + 1]
                     await preload(chapter: previousChapter)
-                    if let page = preloadedPages.last {
-                        (items.first?.view as? ReaderPageView)?.setPage(page: page)
+                    let pageCount = preloadedPages.count < pagesPerView ? preloadedPages.count : (preloadedPages.count - 1) % pagesPerView + 1
+                    let subpages = preloadedPages[(preloadedPages.count - pageCount)..<preloadedPages.count]
+                    if let first = items.first, first.numPages != pageCount {
+                        let vc = UIViewController()
+                        let page = ReaderPageView(sourceId: previousChapter.sourceId, pages: pageCount, mode: readingMode ?? .defaultViewer)
+                        page.frame = pageViewController.view.bounds
+                        page.multiView.subviews.forEach { $0.addInteraction(UIContextMenuInteraction(delegate: self)) }
+                        vc.view = page
+                        items[0] = PageInfo(vc: vc, pageIndex: first.pageIndex, numPages: pageCount)
+                    }
+                    for (i, page) in subpages.enumerated() {
+                        (items.first?.vc.view as? ReaderPageView)?.setPage(page: page, index: i)
                     }
                 }
             }
@@ -339,8 +394,18 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
             if index == items.count - 2 { // preload next chapter
                 Task {
                     await preload(chapter: nextChapter)
-                    if let page = preloadedPages.first {
-                        (items.last?.view as? ReaderPageView)?.setPage(page: page)
+                    let pageCount = min(pagesPerView, preloadedPages.count)
+                    let subpages = preloadedPages[0..<pageCount]
+                    if let last = items.last, last.numPages != pageCount {
+                        let vc = UIViewController()
+                        let page = ReaderPageView(sourceId: nextChapter.sourceId, pages: pageCount, mode: readingMode ?? .defaultViewer)
+                        page.frame = pageViewController.view.bounds
+                        page.multiView.subviews.forEach { $0.addInteraction(UIContextMenuInteraction(delegate: self)) }
+                        vc.view = page
+                        items[items.count - 1] = PageInfo(vc: vc, pageIndex: last.pageIndex, numPages: pageCount)
+                    }
+                    for (i, page) in subpages.enumerated() {
+                        (items.last?.vc.view as? ReaderPageView)?.setPage(page: page, index: i)
                     }
                 }
             } else if index == items.count - 1 { // switch to next chapter
@@ -351,15 +416,15 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
                         delegate?.move(toChapter: chapter)
                     }
                     loadViewControllers(from: .forward)
-                    currentIndex = items.firstIndex(of: vc) ?? 0
+                    currentIndex = items.firstIndex(where: { $0.vc == vc }) ?? 0
                 }
                 return
             }
         }
         currentIndex = index
-        delegate?.didMove(toPage: currentPageIndex)
+        delegate?.didMove(toPage: items[currentIndex].pageIndex)
         Task {
-            await setImages(for: (index - 3)..<(index + 1))
+            await setImages(for: (index - pagesToPreload)..<(index + pagesToPreload + 1))
             preloadImages(for: index..<(index + 3))
         }
     }
@@ -369,30 +434,30 @@ extension ReaderPagedPageManager: UIPageViewControllerDelegate {
 extension ReaderPagedPageManager: UIPageViewControllerDataSource {
 
     func pageViewController(_: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
+        guard let viewControllerIndex = items.firstIndex(where: { $0.vc == viewController }) else { return nil }
 
         if readingMode == .ltr || readingMode == .vertical {
             let nextIndex = viewControllerIndex + 1
             guard items.count > nextIndex else { return nil }
-            return items[nextIndex]
+            return items[nextIndex].vc
         } else {
             let previousIndex = viewControllerIndex - 1
             guard previousIndex >= 0, items.count > previousIndex else { return nil }
-            return items[previousIndex]
+            return items[previousIndex].vc
         }
     }
 
     func pageViewController(_: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let viewControllerIndex = items.firstIndex(of: viewController) else { return nil }
+        guard let viewControllerIndex = items.firstIndex(where: { $0.vc == viewController }) else { return nil }
 
         if readingMode == .ltr || readingMode == .vertical {
             let previousIndex = viewControllerIndex - 1
             guard previousIndex >= 0, items.count > previousIndex else { return nil }
-            return items[previousIndex]
+            return items[previousIndex].vc
         } else {
             let nextIndex = viewControllerIndex + 1
             guard items.count > nextIndex else { return nil }
-            return items[nextIndex]
+            return items[nextIndex].vc
         }
     }
 }
@@ -404,8 +469,7 @@ extension ReaderPagedPageManager: UIContextMenuInteractionDelegate {
         _ interaction: UIContextMenuInteraction,
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
-        guard UserDefaults.standard.bool(forKey: "Reader.saveImageOption") else { return nil }
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
             let saveToPhotosAction = UIAction(
                 title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
                 image: UIImage(systemName: "photo")
@@ -427,7 +491,54 @@ extension ReaderPagedPageManager: UIContextMenuInteractionDelegate {
                 }
             }
 
-            return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
+            let pageIndex: Int = {
+                if let imageView = interaction.view as? UIImageView {
+                    for info in self.items {
+                        if let pageView = info.vc.view as? ReaderPageView {
+                            for (i, subview) in pageView.multiView.subviews.enumerated() where subview == imageView {
+                                return self.readingMode == .rtl ? info.pageIndex + info.numPages - i - 1 : info.pageIndex + i
+                            }
+                        }
+                    }
+                }
+                return -1
+            }()
+
+            let setAsWidePageAction = UIAction(
+                title: NSLocalizedString("SET_AS_WIDE_PAGE", comment: ""),
+                image: UIImage(systemName: "rectangle.portrait.arrowtriangle.2.outward")
+            ) { _ in
+                self.widePages.append(pageIndex)
+                if let chapter = self.chapter {
+                    self.setChapter(chapter: chapter, startPage: pageIndex + 1)
+                }
+            }
+
+            let setAsNormalPageAction = UIAction(
+                title: NSLocalizedString("SET_AS_NORMAL_PAGE", comment: ""),
+                image: UIImage(systemName: "rectangle.portrait.arrowtriangle.2.inward")
+            ) { _ in
+                self.widePages.removeAll(where: { $0 == pageIndex })
+                if let chapter = self.chapter {
+                    self.setChapter(chapter: chapter, startPage: pageIndex + 1)
+                }
+            }
+
+            var actions: [UIAction] = []
+
+            if UserDefaults.standard.bool(forKey: "Reader.saveImageOption") {
+                actions.append(contentsOf: [saveToPhotosAction, shareAction])
+            }
+
+            if pageIndex != -1 && self.pagesPerView != 1 {
+                if self.widePages.contains(where: { $0 == pageIndex }) {
+                    actions.append(setAsNormalPageAction)
+                } else {
+                    actions.append(setAsWidePageAction)
+                }
+            }
+
+            return UIMenu(title: "", children: actions)
         })
     }
 }
