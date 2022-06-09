@@ -140,7 +140,7 @@
 
 // History
 "HISTORY" = "历史";
-"%@_AGO" = "%@ ago"; // x days ago
+"%@_AGO" = "%@前"; // x days ago
 "REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节历史记录。是否确实要继续?";
 "REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
 "HISTORY_LOCKED" = "历史记录已锁定.";
