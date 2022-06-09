@@ -94,8 +94,8 @@
 "MORE" = "查看更多";
 "SOURCE_ORDER" = "源顺序";
 
-"MISSING_SOURCE" = "缺少源";
-"MISSING_SOURCE_TEXT" = "此漫画来源不可用. 请重新下载或从您的书架中删除.";
+"MISSING_SOURCE" = "缺少图源";
+"MISSING_SOURCE_TEXT" = "此漫画图源不可用. 请重新下载或从您的书架中删除.";
 
 "SELECT_CHAPTERS" = "选择章节";
 "SELECT_ALL" = "选择所有";
