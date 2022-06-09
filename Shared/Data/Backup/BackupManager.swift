@@ -51,14 +51,17 @@ class BackupManager {
             ).appendingPathExtension(url.pathExtension)
         }
         let secured = url.startAccessingSecurityScopedResource()
+        defer {
+            if secured {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
         do {
             try FileManager.default.copyItem(at: url, to: targetLocation)
             try? FileManager.default.removeItem(at: url)
-            if secured { url.stopAccessingSecurityScopedResource() }
             NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
             return true
         } catch {
-            if secured { url.stopAccessingSecurityScopedResource() }
             return false
         }
     }
