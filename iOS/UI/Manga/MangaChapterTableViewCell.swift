@@ -179,7 +179,7 @@ class MangaChapterTableViewCell: UITableViewCell {
             }
             subtitleString.append(String(format: NSLocalizedString("PAGE_X", comment: ""), page))
         }
-        if chapter.dateUploaded != nil && chapter.scanlator != nil {
+        if (chapter.dateUploaded != nil || page > 0) && chapter.scanlator != nil {
             subtitleString.append(" • ")
         }
         if let scanlator = chapter.scanlator {

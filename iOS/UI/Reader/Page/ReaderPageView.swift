@@ -171,8 +171,6 @@ class ReaderPageView: UIView {
             currentTask = nil
         }
 
-        let url = url.replacingOccurrences(of: "https", with: "http")
-
         currentUrl = url
 
         Task { @MainActor in
