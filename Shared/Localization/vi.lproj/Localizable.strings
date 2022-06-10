@@ -138,6 +138,7 @@
 "HISTORY" = "Lịch sử";
 "%@_AGO" = "%@ trước"; // x days ago
 "PAGE_X_OF_X" = "Trang %i/%i";
+"PAGE_X" = "Trang %i";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Lịch sử cho chương này sẽ bị xoá. Bạn có chắc muốn tiếp tục không?";
 "REMOVE_ALL_MANGA_HISTORY" = "Xoá toàn bộ lịch sử đọc";
 "HISTORY_LOCKED" = "Lịch sử bị khoá.";
