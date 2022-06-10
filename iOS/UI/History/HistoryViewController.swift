@@ -274,7 +274,7 @@ class HistoryViewController: UIViewController {
                 self.shownMangaKeys = finalMangaKeys
                 self.entries = finalHistoryDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
                 self.offset += 15
-                if entries.isEmpty || self.entries.count < entries.count {
+                if entries.isEmpty || self.entries.count < entries.count || self.tableView.numberOfSections == 0 {
                     self.tableView.reloadData()
                 } else {
                     self.tableView.performBatchUpdates {
