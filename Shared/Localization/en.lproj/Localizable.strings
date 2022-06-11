@@ -248,7 +248,6 @@
 "DISPLAY_LOGS" = "Display Logs";
 
 "ADVANCED" = "Advanced";
-"RESET" = "Reset";
 "RESET_TEXT" = "This action is irreversible. All data, settings, and caches will be cleared and reset.";
 "CLEAR_CHAPTER_CACHE" = "Clear Chapter Cache";
 "CLEAR_CHAPTER_CACHE_TEXT" = "This action is irreversible. Cached chapters will be cleared and redownloaded.";

@@ -235,7 +235,6 @@
 "DISPLAY_LOGS" = "显示日志";
 
 "ADVANCED" = "高级";
-"RESET" = "重置";
 "RESET_TEXT" = "此操作无法恢复. 所有数据, 设置和缓存将被清除.";
 "CLEAR_CHAPTER_CACHE" = "清除章节缓存";
 "CLEAR_CHAPTER_CACHE_TEXT" = "此操作无法恢复. 缓存的章节将被清除并重新下载.";

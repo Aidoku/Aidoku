@@ -241,7 +241,6 @@
 "DISPLAY_LOGS" = "Hiển thị nhật kí";
 
 "ADVANCED" = "Nâng cao";
-"RESET" = "Thiết lập lại";
 "RESET_TEXT" = "Hành động này không thể phục hồi. Tất cả mọi dữ liệu, cài đặt và bộ đệm sẽ bị xoá.";
 "CLEAR_CHAPTER_CACHE" = "Xoá bộ đệm chương";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Hành động này không thể phục hồi. Những chương đã lưu trong bộ đệm sẽ bị xoá và tải lại.";
