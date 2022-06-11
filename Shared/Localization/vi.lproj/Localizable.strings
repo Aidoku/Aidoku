@@ -231,3 +231,4 @@
 "CLEAR_READ_HISTORY_TEXT" = "Hành động này không thể phục hồi. Lịch sử đọc sẽ bị xoá.";
 "RESET_SETTINGS" = "Đặt lại tất cả cài đặt";
 "RESET_SETTINGS_TEXT" = "Hành động này không thể phục hồi. Các cài đặt nguồn và cài đặt ứng dụng sẽ quay lại mặc định.";
+"PAGE_X" = "Trang %i";
