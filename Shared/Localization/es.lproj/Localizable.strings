@@ -145,7 +145,6 @@
 "RESTORE" = "Restaurar";
 
 "ADVANCED" = "Avanzado";
-"RESET" = "Reiniciar";
 "RESET_TEXT" = "Esta acción es irreversible. Todos los datos, configuraciones y cachés se borrarán y restablecerán.";
 "CLEAR_CHAPTER_CACHE" = "Borrar caché de capítulos";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Esta acción es irreversible. Los capítulos almacenados en el caché se borrarán y se volverán a descargar.";

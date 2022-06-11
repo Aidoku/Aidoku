@@ -145,7 +145,6 @@
 "RESTORE" = "Restaurar";
 
 "ADVANCED" = "Avançado";
-"RESET" = "Redefinir";
 "RESET_TEXT" = "Essa ação é irreversível. Todos os dados, configurações e caches serão limpos e redefinidos.";
 "CLEAR_CHAPTER_CACHE" = "Limpar Cache do Capítulo";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Essa ação é irreversível. Capítulos em cache serão limpos e reinstalados.";
