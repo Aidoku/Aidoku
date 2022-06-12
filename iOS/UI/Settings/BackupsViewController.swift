@@ -139,20 +139,22 @@ extension BackupsViewController {
 
         restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("RESTORE", comment: ""), style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
-                BackupManager.shared.restore(from: backup)
-                let missingSources = (backup.sources ?? []).filter {
-                    !DataManager.shared.hasSource(id: $0)
-                }
-                if !missingSources.isEmpty {
-                    var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
-                    message += missingSources.map { "\n- \($0)" }.joined()
-                    let missingAlert = UIAlertController(
-                        title: NSLocalizedString("MISSING_SOURCES", comment: ""),
-                        message: message,
-                        preferredStyle: .alert
-                    )
-                    missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-                    self.present(missingAlert, animated: true)
+                Task {
+                    await BackupManager.shared.restore(from: backup)
+                    let missingSources = (backup.sources ?? []).filter {
+                        !DataManager.shared.hasSource(id: $0)
+                    }
+                    if !missingSources.isEmpty {
+                        var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
+                        message += missingSources.map { "\n- \($0)" }.joined()
+                        let missingAlert = UIAlertController(
+                            title: NSLocalizedString("MISSING_SOURCES", comment: ""),
+                            message: message,
+                            preferredStyle: .alert
+                        )
+                        missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                        self.present(missingAlert, animated: true)
+                    }
                 }
             }
         })

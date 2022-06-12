@@ -105,28 +105,56 @@ class ReaderInfoPageView: UIView {
     func updateLabelText() {
         if let previousChapter = previousChapter {
             topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
-            topChapterTitleLabel.text = String(
-                format: "\(NSLocalizedString("CH_X", comment: "")) - \(previousChapter.title ?? NSLocalizedString("UNTITLED", comment: ""))",
-                previousChapter.chapterNum ?? 0
-            )
+            if let previousTitle = previousChapter.title {
+                topChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(previousTitle)",
+                    previousChapter.chapterNum ?? 0
+                )
+            } else {
+                topChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    previousChapter.chapterNum ?? 0
+                )
+            }
             bottomChapterLabel.text = NSLocalizedString("CURRENT_COLON", comment: "")
-            bottomChapterTitleLabel.text = String(
-                format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentChapter.title ?? NSLocalizedString("UNTITLED", comment: ""))",
-                currentChapter.chapterNum ?? 0
-            )
+            if let currentTitle = currentChapter.title {
+                bottomChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentTitle)",
+                    currentChapter.chapterNum ?? 0
+                )
+            } else {
+                bottomChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    currentChapter.chapterNum ?? 0
+                )
+            }
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else if let nextChapter = nextChapter {
             topChapterLabel.text = NSLocalizedString("FINISHED_COLON", comment: "")
-            topChapterTitleLabel.text = String(
-                format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentChapter.title ?? NSLocalizedString("UNTITLED", comment: ""))",
-                currentChapter.chapterNum ?? 0
-            )
+            if let currentTitle = currentChapter.title {
+                topChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentTitle)",
+                    currentChapter.chapterNum ?? 0
+                )
+            } else {
+                topChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    currentChapter.chapterNum ?? 0
+                )
+            }
             bottomChapterLabel.text = NSLocalizedString("NEXT_COLON", comment: "")
-            bottomChapterTitleLabel.text = String(
-                format: "\(NSLocalizedString("CH_X", comment: "")) - \(nextChapter.title ?? NSLocalizedString("UNTITLED", comment: ""))",
-                nextChapter.chapterNum ?? 0
-            )
+            if let nextTitle = nextChapter.title {
+                bottomChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(nextTitle)",
+                    nextChapter.chapterNum ?? 0
+                )
+            } else {
+                bottomChapterTitleLabel.text = String(
+                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    nextChapter.chapterNum ?? 0
+                )
+            }
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else {

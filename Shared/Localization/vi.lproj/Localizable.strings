@@ -1,0 +1,234 @@
+// Translated by beerpsi
+
+// General
+"CONTINUE" = "Tiếp tục";
+"CANCEL" = "Huỷ";
+"OK" = "OK";
+"UNKNOWN" = "Không xác định";
+"UNAVAILABLE" = "Không có sẵn";
+"RESET" = "Thiết lập lại";
+"DELETE" = "Xoá";
+"REMOVE" = "Xoá";
+"RENAME" = "Đổi tên";
+"CLEAR" = "Huỷ tất cả";
+"LOADING_ELLIPSIS" = "Đang tải…";
+"SHARE" = "Share";
+
+// Downloads
+"DOWNLOAD" = "Tải về";
+"DOWNLOADED" = "Đã tải về";
+"DOWNLOAD_QUEUE" = "Hàng đợi tải về";
+"CANCEL_DOWNLOAD" = "Huỷ tải về";
+"REMOVE_DOWNLOAD" = "Xoá bản tải về";
+"REMOVE_ALL_DOWNLOADS" = "Xoá tất cả bản tải về";
+"REMOVE_DOWNLOADS" = "Xoá bản tải về";
+"REMOVE_DOWNLOADS_CONFIRM" = "Bạn có chắc bạn muốn xoá tất cả bản tải về?";
+
+// Library
+"LIBRARY" = "Thư viện";
+"LIBRARY_SEARCH" = "Tìm trong Thư viện";
+"LIBRARY_EMPTY" = "Thư viện trống";
+"LIBRARY_ADD_FROM_BROWSE" = "Thêm truyện từ mục Nguồn";
+"ADD_TO_LIBRARY" = "Thêm vào Thư viện";
+"REMOVE_FROM_LIBRARY" = "Xoá khỏi Thư viện";
+"MANGA_INFO" = "Thông tin truyện";
+"SORT_BY" = "Sắp xếp theo";
+"FILTER_BY" = "Lọc theo";
+"TITLE" = "Tiêu đề";
+"LAST_OPENED" = "Xem gần đây nhất";
+"LAST_READ" = "Đọc gần đây nhất";
+"LATEST_CHAPTER" = "Chương mới nhất";
+"DATE_ADDED" = "Ngày thêm";
+
+// Categories
+"ALL" = "Tất cả";
+"NONE" = "Không có";
+"CATEGORIES" = "Danh mục";
+"EDIT_CATEGORIES" = "Tuỳ chỉnh danh mục";
+"CATEGORY_ADD" = "Thêm danh mục";
+"CATEGORY_ADD_TEXT" = "Nhập tiêu đề của danh mục mới";
+"CATEGORY_TITLE" = "Tiêu đề danh mục";
+"DEFAULT_CATEGORY" = "Danh mục mặc định";
+"ALWAYS_ASK" = "Luôn hỏi";
+
+// Browse
+"BROWSE" = "Nguồn";
+"BROWSE_NO_SOURCES" = "Không có nguồn";
+"BROWSE_NO_SOURCES_TEXT" = "Tuỳ chỉnh danh sách nguồn hoặc\nmở một nguồn bằng Aidoku để bắt đầu";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Hướng dẫn thêm nguồn";
+"UPDATES" = "Cập nhật";
+"INSTALLED" = "Đã cài đặt";
+"EXTERNAL" = "Nguồn bên ngoài";
+"BUTTON_UPDATE" = "CẬP NHẬT";
+"BUTTON_GET" = "NHẬN";
+"BUTTON_ERROR" = "LỖI";
+"UNINSTALL" = "Gỡ cài đặt";
+
+// Source
+"SOURCE_INFO" = "Thông tin nguồn";
+"LANGUAGE" = "Ngôn ngữ";
+"LANGUAGES" = "Ngôn ngữ";
+"INFO" = "Thông tin";
+"VERSION" = "Phiên bản";
+"BUILD" = "Số bản dựng";
+"BUTTON_FILTER" = "Bộ lọc";
+"LIST_HEADER" = "Danh sách";
+"LIST_ALL" = "Tất cả";
+
+// Manga
+"UNTITLED" = "Không có tiêu đề";
+"ONGOING" = "Đang tiến hành";
+"CANCELLED" = "Đã bị huỷ";
+"COMPLETED" = "Đã hoàn thành";
+"HIATUS" = "Tạm ngưng";
+"SUGGESTIVE" = "Gợi cảm";
+"NSFW" = "18+";
+"MORE" = "xem thêm";
+"SOURCE_ORDER" = "Thứ tự nguồn";
+"MISSING_SOURCE" = "Không có nguồn";
+"MISSING_SOURCE_TEXT" = "Nguồn cho truyện này không có sẵn. Vui lòng xoá truyện này khỏi thư viện hoặc cài lại nguồn.";
+"SELECT_CHAPTERS" = "Lựa chọn chương";
+"SELECT_ALL" = "Chọn tất cả";
+"DESELECT_ALL" = "Huỷ chọn tất cả";
+
+// Reader
+"CHAPTER" = "Chương";
+"CHAPTERS" = "Chương";
+"VOLUME_X" = "Volume %g";
+"CHAPTER_X" = "Chương %g";
+"VOL_X" = "Vol.%g";
+"CH_X" = "Ch.%g";
+"VOL_SPACE_X" = "Vol. %g";
+"CH_SPACE_X" = "Ch. %g";
+"NO_CHAPTERS" = "Không có chương";
+"NO_CHAPTERS_AVAILABLE" = "Không có chương nào";
+"START_READING" = "Bắt đầu đọc";
+"CONTINUE_READING" = "Tiếp tục đọc";
+"READ" = "Đã đọc";
+"UNREAD" = "Chưa đọc";
+"MARK" = "Đánh dấu";
+"MARK_ALL" = "Đánh dấu tất cả";
+"MARK_PREVIOUS" = "Đánh dấu các chương trước";
+"MARK_READ" = "Đánh dấu là đã đọc";
+"MARK_UNREAD" = "Đánh dấu là chưa đọc";
+"PREVIOUS_COLON" = "Chương trước:";
+"NEXT_COLON" = "Chương sau:";
+"FINISHED_COLON" = "Đã xong:";
+"CURRENT_COLON" = "Hiện tại:";
+"NO_NEXT_CHAPTER" = "Không có chương kế tiếp";
+"NO_PREVIOUS_CHAPTER" = "Không có chương trước";
+"READER_SETTINGS" = "Cài đặt trình đọc";
+"READING_MODE" = "Hướng đọc";
+"DEFAULT" = "Mặc định";
+"LTR" = "Trái sang phải";
+"RTL" = "Phải sang trái";
+"VERTICAL" = "Dọc";
+"VERTICAL_SCROLL" = "Kéo cuộn";
+"EXPERIMENTAL" = "Đang thử nghiệm";
+"INFINITE_VERTICAL_SCROLL" = "Cuộn vô hạn";
+"SAVE_TO_PHOTOS" = "Lưu về Ảnh";
+
+// History
+"HISTORY" = "Lịch sử";
+"%@_AGO" = "%@ trước\"; // x days ago\"PAGE_X_OF_X\" = \"Trang %i/%i";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Lịch sử cho chương này sẽ bị xoá. Bạn có chắc muốn tiếp tục không?";
+"REMOVE_ALL_MANGA_HISTORY" = "Xoá toàn bộ lịch sử đọc";
+"HISTORY_LOCKED" = "Lịch sử bị khoá.";
+"VIEW_HISTORY" = "Xem lịch sử đọc";
+"AUTH_FOR_HISTORY" = "Xác minh để xem lịch sử đọc.";
+
+// Search
+"SEARCH" = "Tìm kiếm";
+"VIEW_MORE" = "Xem thêm";
+
+// Settings
+"SETTINGS" = "Cài đặt";
+"AUTH_TO_ENABLE" = "Xác minh để kích hoạt.";
+"AUTH_TO_DISABLE" = "Xác minh để huỷ kích hoạt.";
+"ABOUT" = "Thông tin";
+"GITHUB_REPO" = "Mã nguồn trên GitHub";
+"DISCORD_SERVER" = "Discord Server";
+"SUPPPORT_DEVELOPMENT" = "Ủng hộ nhà phát triển";
+"GENERAL" = "Chung";
+"ICLOUD_SYNC" = "Đồng bộ hoá với iCloud";
+"INCOGNITO_MODE" = "Chế độ ẩn danh";
+"INCOGNITO_MODE_TEXT" = "Lịch sử đọc sẽ không bị ghi lại khi bật chế độ ẩn danh.";
+"APPEARANCE" = "Giao diện";
+"APPEARANCE_LIGHT" = "Sáng";
+"APPEARANCE_DARK" = "Tối";
+"USE_SYSTEM_APPEARANCE" = "Dùng giao diện hệ thống";
+"MANGA_PAGE" = "Thông tin truyện";
+"SHOW_SOURCE_LABEL" = "Hiển thị nguồn";
+"USE_MANGA_TINT" = "Dùng tông màu của truyện";
+"USE_MANGA_TINT_INFO" = "Thay đổi tông màu của mục thông tin truyện tuỳ vào màu của ảnh bìa truyện.";
+"MANGA_PER_ROW" = "Số truyện mỗi dòng";
+"PORTRAIT" = "Dọc";
+"LANDSCAPE" = "Ngang";
+"READER" = "Trình đọc";
+"OPEN_READER_VIEW" = "Hiển thị trình đọc";
+"UNREAD_CHAPTER_BADGES" = "Hiển thị số chương chưa đọc";
+"PIN_MANGA" = "Ghim truyện";
+"PIN_MANGA_TYPE" = "Cách ghim";
+"PIN_MANGA_UNREAD" = "Chưa đọc";
+"PIN_MANGA_UPDATED" = "Cập nhật mới";
+"LIBRARY_UPDATING" = "Cập nhật Thư viện";
+"UPDATE_INTERVAL" = "Tần suất cập nhật";
+"SKIP_TITLES" = "Bỏ qua truyện";
+"ONLY_UPDATE_ON_WIFI" = "Chỉ cập nhật bằng Wi-Fi";
+"EXCLUDED_CATEGORIES" = "Danh mục bị bỏ qua";
+"REFRESH_METADATA" = "Cập nhật thông tin truyện";
+"NEVER" = "Không bao giờ";
+"EVERY_12_HOURS" = "Mỗi 12 tiếng";
+"DAILY" = "Hằng ngày";
+"EVERY_2_DAYS" = "Mỗi 2 ngày";
+"WEEKLY" = "Hàng tuần";
+"WITH_UNREAD_CHAPTERS" = "Có chương chưa đọc";
+"WITH_COMPLETED_STATUS" = "Đã hoàn thành";
+"THAT_HAVENT_BEEN_READ" = "Chưa đọc bao giờ";
+"SOURCE_LISTS" = "Danh sách nguồn";
+"SOURCE_LIST_ADDED" = "Đã thêm danh sách nguồn";
+"SOURCE_LIST_ADDED_TEXT" = "Bây giờ có thể thêm nguồn bên ngoài từ mục Nguồn.";
+"SHOW_NSFW_SOURCES" = "Hiển thị nguồn 18+";
+"SOURCE_LIST_URL" = "URL của danh sách nguồn";
+"SOURCE_LIST_ADD" = "Thêm danh sách nguồn";
+"SOURCE_LIST_ADD_TEXT" = "Nhập URL của danh sách nguồn";
+"SOURCE_LIST_ADD_FAIL" = "Không thể thêm danh sách nguồn";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "Danh sách nguồn không hợp lệ hoặc đã được thêm trước đó";
+"LOCK_HISTORY_TAB" = "Khoá Lịch sử đọc";
+"DOWNSAMPLE_IMAGES" = "Giảm chất lượng ảnh";
+"SAVE_IMAGE_OPTION" = "Hiển thị lựa chọn lưu ảnh";
+"BACKUPS" = "Sao lưu";
+"BACKUP_NAME" = "Tên bản sao lưu";
+"RENAME_BACKUP" = "Đổi tên bản sao lưu";
+"RENAME_BACKUP_TEXT" = "Nhập tên mới cho bản sao lưu";
+"CORRUPTED_BACKUP" = "Bản sao lưu bị hỏng";
+"CORRUPTED_BACKUP_TEXT" = "Không thể đổi tên bản sao lưu này vì dữ liệu đã bị hỏng.";
+"BACKUP_INFO" = "Nhấn giữ một bản sao lưu để xuất nó, hoặc kéo từ phải qua để xoá.";
+"BACKUP_MISSING_SOURCES" = "Nguồn bị thiếu";
+"BACKUP_MISSING_SOURCES_TEXT" = "Bản sao lưu được phục hồi có dữ liệu từ các nguồn chưa được cài đặt sau:";
+"RESTORE_BACKUP" = "Quay về bản sao lưu này?";
+"RESTORE_BACKUP_TEXT" = "Mọi dữ liệu hiện có sẽ bị ghi đè lên bởi bản sao lưu này.";
+"BACKUP_IMPORT_SUCCESS" = "Đã thêm bản sao lưu";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Để quay về bản sao lưu này, tìm bản sao lưu ở trong mục Cài đặt.";
+"BACKUP_IMPORT_FAIL" = "Không thể thêm bản sao lưu";
+"BACKUP_IMPORT_FAIL_TEXT" = "Hãy đảm bảo bản sao lưu có định dạng phù hợp.";
+"EXPORT" = "Xuất";
+"RESTORE" = "Phục hồi";
+"LOGS" = "Nhật kí";
+"LOGGING" = "Nhật kí";
+"LOG_SERVER" = "Máy chủ nhật kí";
+"EXPORT_LOGS" = "Lưu nhật kí";
+"DISPLAY_LOGS" = "Hiển thị nhật kí";
+"ADVANCED" = "Nâng cao";
+"RESET_TEXT" = "Hành động này không thể phục hồi. Tất cả mọi dữ liệu, cài đặt và bộ đệm sẽ bị xoá.";
+"CLEAR_CHAPTER_CACHE" = "Xoá bộ đệm chương";
+"CLEAR_CHAPTER_CACHE_TEXT" = "Hành động này không thể phục hồi. Những chương đã lưu trong bộ đệm sẽ bị xoá và tải lại.";
+"CLEAR_MANGA_CACHE" = "Xoá bộ đệm truyện";
+"CLEAR_MANGA_CACHE_TEXT" = "Hành động này không thể phục hồi. Những truyện đã lưu trong bộ đệm sẽ bị xoá, trừ truyện đã lưu vào thư viện.";
+"CLEAR_NETWORK_CACHE" = "Xoá bộ đệm mạng";
+"CLEAR_NETWORK_CACHE_TEXT" = "Hành động này không thể phục hồi. Ảnh và bộ đệm mạng sẽ bị xoá.";
+"CLEAR_READ_HISTORY" = "Xoá lịch sử đọc";
+"CLEAR_READ_HISTORY_TEXT" = "Hành động này không thể phục hồi. Lịch sử đọc sẽ bị xoá.";
+"RESET_SETTINGS" = "Đặt lại tất cả cài đặt";
+"RESET_SETTINGS_TEXT" = "Hành động này không thể phục hồi. Các cài đặt nguồn và cài đặt ứng dụng sẽ quay lại mặc định.";
+"PAGE_X" = "Trang %i";

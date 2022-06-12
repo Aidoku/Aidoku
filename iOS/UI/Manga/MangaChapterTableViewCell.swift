@@ -142,6 +142,7 @@ class MangaChapterTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func loadLabels() {
         // title string
         // Vol.X Ch.X - Title
@@ -167,15 +168,18 @@ class MangaChapterTableViewCell: UITableViewCell {
         textLabel?.text = titleString
 
         // subtitle string
-        // date • scanlator • language
+        // date • page • scanlator • language
         var subtitleString = ""
         if let dateUploaded = chapter.dateUploaded {
             subtitleString.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
         }
         if page > 0 {
-            subtitleString.append(" • Page \(page)")
+            if !subtitleString.isEmpty {
+                subtitleString.append(" • ")
+            }
+            subtitleString.append(String(format: NSLocalizedString("PAGE_X", comment: ""), page))
         }
-        if chapter.dateUploaded != nil && chapter.scanlator != nil {
+        if (chapter.dateUploaded != nil || page > 0) && chapter.scanlator != nil {
             subtitleString.append(" • ")
         }
         if let scanlator = chapter.scanlator {

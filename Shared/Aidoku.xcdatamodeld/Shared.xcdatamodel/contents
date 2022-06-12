@@ -25,6 +25,7 @@
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
         <attribute name="progress" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sourceId" attributeType="String" defaultValueString=""/>
+        <attribute name="total" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
     <entity name="LibraryManga" representedClassName="LibraryMangaObject" syncable="YES">
         <attribute name="dateAdded" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
@@ -72,7 +73,7 @@
     <elements>
         <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="74"/>
         <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="194"/>
-        <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="119"/>
+        <element name="History" positionX="257.6181030273438" positionY="127.7886962890625" width="128" height="134"/>
         <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>
         <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="239"/>
         <element name="Source" positionX="-126" positionY="18" width="128" height="134"/>

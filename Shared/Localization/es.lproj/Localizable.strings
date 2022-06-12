@@ -18,7 +18,6 @@
 "ADD_TO_LIBRARY" = "Agregar a la Biblioteca";
 "REMOVE_FROM_LIBRARY" = "Eliminar de la Biblioteca";
 "MANGA_INFO" = "Información del manga";
-
 "SORT_BY" = "Ordenar Por";
 "TITLE" = "Título";
 "LAST_OPENED" = "Última vez abierto";
@@ -34,7 +33,6 @@
 "UPDATES" = "Actualizaciones";
 "INSTALLED" = "Instalado";
 "EXTERNAL" = "Externo";
-
 "BUTTON_UPDATE" = "ACTUALIZAR";
 "BUTTON_GET" = "OBTENER";
 "BUTTON_ERROR" = "ERROR";
@@ -59,7 +57,6 @@
 "NSFW" = "NSFW";
 "MORE" = "más";
 "SOURCE_ORDER" = "Orden de fuentes";
-
 "MISSING_SOURCE" = "Fuente faltante";
 "MISSING_SOURCE_TEXT" = "Parece que falta la fuente original para este manga. Vuelve a descargarla o elimina este manga de tu biblioteca.";
 
@@ -75,7 +72,6 @@
 "MARK_PREVIOUS" = "Marcar anterior";
 "MARK_READ" = "Marcar como leído";
 "MARK_UNREAD" = "Marcar como no leído";
-
 "READER_SETTINGS" = "Configuración del lector";
 "READING_MODE" = "Modo de lectura";
 "DEFAULT" = "Por Defecto";
@@ -85,7 +81,6 @@
 "VERTICAL_SCROLL" = "Desplazamiento Vertical";
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = " Desplazamiento Vertical Infinito";
-
 "SAVE_TO_PHOTOS" = "Guardar en Fotos";
 
 // Search
@@ -94,38 +89,31 @@
 
 // Settings
 "SETTINGS" = "Configuración";
-
 "ABOUT" = "Acerca";
 "GITHUB_REPO" = "Repositorio de GitHub";
 "DISCORD_SERVER" = "Servidor de Discord";
 "SUPPPORT_DEVELOPMENT" = "Apoya el Desarrollo";
-
 "GENERAL" = "General";
 "ICLOUD_SYNC" = "Sincronización con iCloud";
 "APPEARANCE" = "Apariencia";
 "APPEARANCE_LIGHT" = "Claro";
 "APPEARANCE_DARK" = "Oscuro";
 "USE_SYSTEM_APPEARANCE" = "Usar apariencia del sistema";
-
 "MANGA_PER_ROW" = "Manga por fila";
 "PORTRAIT" = "Vertical";
 "LANDSCAPE" = "Horizontal";
-
 "OPEN_READER_VIEW" = "Abrir vista del lector";
 "UNREAD_CHAPTER_BADGES" = "Insignias de capítulos sin leer";
 "PIN_MANGA" = "Anclar Manga";
 "PIN_MANGA_TYPE" = "Anclar por Tipo";
 "PIN_MANGA_UNREAD" = "No leído";
 "PIN_MANGA_UPDATED" = "Actualizado";
-
 "SOURCE_LISTS" = "Lista de fuentes";
 "SOURCE_LIST_ADDED" = "Lista de fuentes agregadas";
-"SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración";
+"SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración.";
 "SHOW_NSFW_SOURCES" = "Mostrar fuentes NSFW";
-
 "READER" = "Lector";
 "DOWNSAMPLE_IMAGES" = "Reducir resolución de imágenes";
-
 "BACKUPS" = "Copias de seguridad";
 "BACKUP_NAME" = "Nombre de la copia de seguridad";
 "RENAME_BACKUP" = "Renombrar copia de seguridad";
@@ -143,9 +131,7 @@
 "BACKUP_IMPORT_FAIL_TEXT" = "No se pudo guardar la copia de seguridad. Revisa que la copia de seguridad esté en el formato adecuado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";
-
 "ADVANCED" = "Avanzado";
-"RESET" = "Reiniciar";
 "RESET_TEXT" = "Esta acción es irreversible. Todos los datos, configuraciones y cachés se borrarán y restablecerán.";
 "CLEAR_CHAPTER_CACHE" = "Borrar caché de capítulos";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Esta acción es irreversible. Los capítulos almacenados en el caché se borrarán y se volverán a descargar.";

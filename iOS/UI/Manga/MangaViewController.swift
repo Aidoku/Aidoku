@@ -93,8 +93,6 @@ class MangaViewController: UIViewController {
 
         navigationItem.largeTitleDisplayMode = .never
 
-        updateNavbarButtons()
-
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -120,7 +118,6 @@ class MangaViewController: UIViewController {
         tableView.tableHeaderView = headerView
 
         updateSortMenu()
-        updateReadHistory()
         activateConstraints()
 
         getTintColor()
@@ -184,6 +181,7 @@ class MangaViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        updateNavbarButtons()
         updateReadHistory()
         tableView.reloadData()
         (tableView.tableHeaderView as? MangaViewHeaderView)?.updateViews()
@@ -327,7 +325,7 @@ class MangaViewController: UIViewController {
 
     func updateToolbar() {
         if tableView.isEditing {
-            if self.navigationController?.isToolbarHidden ?? true {
+            if navigationController?.isToolbarHidden ?? true {
                 UIView.animate(withDuration: 0.3) {
                     self.navigationController?.isToolbarHidden = false
                     self.navigationController?.toolbar.alpha = 1
@@ -424,6 +422,7 @@ class MangaViewController: UIViewController {
             chapters = await newChapters
 
             if DataManager.shared.libraryContains(manga: manga) {
+                DataManager.shared.update(manga: manga, context: DataManager.shared.backgroundContext)
                 DataManager.shared.set(chapters: chapters, for: manga)
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
@@ -644,9 +643,12 @@ extension MangaViewController: UITableViewDataSource {
         )
     }
 
-    func tableView(_ tableView: UITableView,
-                   contextMenuConfigurationForRowAt indexPath: IndexPath,
-                   point: CGPoint) -> UIContextMenuConfiguration? {
+    // swiftlint:disable:next cyclomatic_complexity
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
             guard let self = self else { return nil }
             var actions: [UIMenuElement] = []
@@ -677,24 +679,24 @@ extension MangaViewController: UITableViewDataSource {
             }
             actions.append(UIMenu(title: "", options: .displayInline, children: [downloadAction]))
             // marking actions
-            let action: UIAction
-            if self.readHistory[self.sortedChapters[indexPath.row].id]?.1 ?? 0 > 0 {
-                action = UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { [weak self] _ in
-                    guard let self = self else { return }
-                    DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
-                    self.updateReadHistory()
-                    tableView.reloadData()
-                }
-            } else {
-                action = UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { [weak self] _ in
+            let history = self.readHistory[self.sortedChapters[indexPath.row].id] ?? (0, 0)
+            if history.1 <= 0 || history.0 > 0 {
+                actions.append(UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { [weak self] _ in
                     guard let self = self else { return }
                     DataManager.shared.setRead(manga: self.manga)
                     DataManager.shared.setCompleted(chapter: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
                     tableView.reloadData()
-                }
+                })
             }
-            actions.append(action)
+            if history.1 > 0 {
+                actions.append(UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { [weak self] _ in
+                    guard let self = self else { return }
+                    DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
+                    self.updateReadHistory()
+                    tableView.reloadData()
+                })
+            }
             if indexPath.row != self.chapters.count - 1 {
                 let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
                     UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { [weak self] _ in

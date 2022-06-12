@@ -35,6 +35,9 @@ class ReaderPageView: UIView {
     var numPages: Int {
         multiView.subviews.count
     }
+    var currentTask: Kingfisher.DownloadTask?
+    var requestModifier: AnyModifier?
+    var shouldCheckForRequestModifer = true
 
     var zoomEnabled = true {
         didSet {
@@ -209,79 +212,85 @@ class ReaderPageView: UIView {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func setPageImage(url: String, key: String? = nil, page: Int) {
         let page = backward ? numPages - page - 1 : page
         if currentUrls[page] == url && (multiView.subviews[safe: page] as? UIImageView)?.image != nil { return }
         currentUrls[page] = url
 
-        Task.detached {
-            let requestModifier: AnyModifier?
+        if currentTask != nil {
+            currentTask?.cancel()
+            currentTask = nil
+        }
 
-            if let source = await SourceManager.shared.source(for: self.sourceId),
-               source.handlesImageRequests,
-               let request = try? await source.getImageRequest(url: url) {
-                requestModifier = AnyModifier { urlRequest in
-                    var r = urlRequest
-                    for (key, value) in request.headers {
-                        r.setValue(value, forHTTPHeaderField: key)
+        Task { @MainActor in
+            if shouldCheckForRequestModifer {
+                if let source = SourceManager.shared.source(for: sourceId),
+                   source.handlesImageRequests,
+                   let request = try? await source.getImageRequest(url: url) {
+                    requestModifier = AnyModifier { urlRequest in
+                        var r = urlRequest
+                        for (key, value) in request.headers {
+                            r.setValue(value, forHTTPHeaderField: key)
+                        }
+                        if let body = request.body { r.httpBody = body }
+                        return r
                     }
-                    if let body = request.body { r.httpBody = body }
-                    return r
+                } else {
+                    requestModifier = nil
                 }
-            } else {
-                requestModifier = nil
+                shouldCheckForRequestModifer = false
             }
 
-            Task { @MainActor in
-                let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
-                var kfOptions: [KingfisherOptionsInfoItem] = [
-                    .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.3)),
-                    .retryStrategy(retry),
-                    .backgroundDecode
-                ]
-                if let requestModifier = requestModifier {
-                    kfOptions.append(.requestModifier(requestModifier))
-                }
+            let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
+            var kfOptions: [KingfisherOptionsInfoItem] = [
+                .scaleFactor(UIScreen.main.scale),
+                .transition(.fade(0.3)),
+                .retryStrategy(retry),
+                .backgroundDecode
+            ]
+            if let requestModifier = requestModifier {
+                kfOptions.append(.requestModifier(requestModifier))
+            }
 
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    // provide larger height so the width of the image is always downsampled to screen width (for long strips)
-                    let downsampleProcessor = DownsamplingImageProcessor(size: CGSize(width: UIScreen.main.bounds.width, height: 10000))
-                    kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
-                }
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                // provide larger height so the width of the image is always downsampled to screen width (for long strips)
+                let downsampleProcessor = DownsamplingImageProcessor(size: CGSize(width: UIScreen.main.bounds.width, height: 10000))
+                kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
+            }
 
-                (self.multiView.subviews[safe: page] as? UIImageView)?.kf.setImage(
-                    with: URL(string: url),
-                    options: kfOptions,
-                    progressBlock: { receivedSize, totalSize in
-                        self.progressViews[page].setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
-                    },
-                    completionHandler: { result in
-                        switch result {
-                        case .success(let imageResult):
-                            if self.progressViews[page].progress != 1 {
-                                self.progressViews[page].setProgress(value: 1, withAnimation: true)
-                            }
-                            self.progressViews[page].isHidden = true
-                            self.reloadButtons[page].alpha = 0
-                            self.updateZoomBounds()
-                            if let key = key {
-                                self.delegate?.imageLoaded(key: key, image: imageResult.image)
-                            }
-                        case .failure(let error):
-                            // If the error isn't part of the current task, we don't care.
-                            if error.isNotCurrentTask || error.isTaskCancelled {
-                                return
-                            }
+            currentTask = (self.multiView.subviews[safe: page] as? UIImageView)?.kf.setImage(
+                with: URL(string: url),
+                options: kfOptions,
+                progressBlock: { receivedSize, totalSize in
+                    self.progressViews[page].setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
+                },
+                completionHandler: { result in
+                    self.currentTask = nil
+                    switch result {
+                    case .success(let imageResult):
+                        if self.progressViews[page].progress != 1 {
+                            self.progressViews[page].setProgress(value: 1, withAnimation: true)
+                        }
+                        self.progressViews[page].isHidden = true
+                        self.reloadButtons[page].alpha = 0
+                        self.updateZoomBounds()
+                        if let key = key {
+                            self.delegate?.imageLoaded(key: key, image: imageResult.image)
+                        }
+                    case .failure(let error):
+                        // If the error isn't part of the current task, we don't care.
+                        if error.isNotCurrentTask || error.isTaskCancelled {
+                            return
+                        }
 
-                            if self.zoomEnabled {
-                                self.progressViews[page].alpha = 0
-                                self.reloadButtons[page].alpha = 1
-                            }
+                        if self.zoomEnabled {
+                            self.progressViews[page].alpha = 0
+                            self.reloadButtons[page].alpha = 1
                         }
                     }
-                )
-            }
+                }
+            )
         }
     }
 }

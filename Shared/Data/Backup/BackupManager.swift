@@ -50,6 +50,12 @@ class BackupManager {
                 targetLocation.deletingPathExtension().lastPathComponent.appending("_1")
             ).appendingPathExtension(url.pathExtension)
         }
+        let secured = url.startAccessingSecurityScopedResource()
+        defer {
+            if secured {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
         do {
             try FileManager.default.copyItem(at: url, to: targetLocation)
             try? FileManager.default.removeItem(at: url)
@@ -101,7 +107,7 @@ class BackupManager {
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
-    func restore(from backup: Backup) {
+    func restore(from backup: Backup) async {
         // this should probably do some more checks before running, idk
 
         if backup.history != nil {
@@ -131,7 +137,9 @@ class BackupManager {
                 let libraryObject = $0.toObject(context: DataManager.shared.container.viewContext)
                 if let manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId) {
                     libraryObject.manga = manga
-                    DataManager.shared.addMangaToCategories(manga: Manga(sourceId: $0.sourceId, id: $0.mangaId), categories: $0.categories)
+                    if !$0.categories.isEmpty {
+                        DataManager.shared.addMangaToCategories(manga: Manga(sourceId: $0.sourceId, id: $0.mangaId), categories: $0.categories)
+                    }
                 }
             }
         }
@@ -144,12 +152,12 @@ class BackupManager {
             }
         }
 
-        _ = DataManager.shared.save()
+        DataManager.shared.save()
 
-        DataManager.shared.loadLibrary()
+        DataManager.shared.loadLibrary(checkUpdate: false)
 
-        Task {
-            await DataManager.shared.updateLibrary()
-        }
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+
+        await DataManager.shared.updateLibrary(forceAll: true)
     }
 }
