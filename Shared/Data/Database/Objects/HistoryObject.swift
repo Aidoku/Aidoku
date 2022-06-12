@@ -13,6 +13,7 @@ public class HistoryObject: NSManagedObject {
 
     public override func awakeFromInsert() {
         super.awakeFromInsert()
+        dateRead = Date.distantPast
         progress = -1
         total = 0
         completed = false
@@ -25,7 +26,7 @@ extension HistoryObject {
         NSFetchRequest<HistoryObject>(entityName: "History")
     }
 
-    @NSManaged public var dateRead: Date
+    @NSManaged public var dateRead: Date?
     @NSManaged public var sourceId: String
     @NSManaged public var chapterId: String
     @NSManaged public var mangaId: String

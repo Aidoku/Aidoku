@@ -807,9 +807,10 @@ extension DataManager {
                 container.viewContext.delete(history)
                 continue
             }
-            readHistoryDict[history.chapterId] = (history.completed || history.progress < 1
-                                                  ? -1
-                                                  : Int(history.progress), Int(history.dateRead.timeIntervalSince1970))
+            readHistoryDict[history.chapterId] = (
+                history.completed || history.progress < 1 ? -1 : Int(history.progress),
+                Int((history.dateRead ?? Date.distantPast).timeIntervalSince1970)
+            )
         }
 
         if updatedReadHistory {
