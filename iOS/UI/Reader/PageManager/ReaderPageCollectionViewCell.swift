@@ -20,7 +20,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         infoView?.removeFromSuperview()
         infoView = nil
 
-        pageView = ReaderPageView(sourceId: sourceId ?? "")
+        pageView = ReaderPageView(sourceId: sourceId ?? "", mode: .scroll)
         pageView?.zoomEnabled = false
         pageView?.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageView!)
@@ -58,16 +58,16 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
     }
 
     func setPageImage(url: String, key: String) {
-        guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
-        pageView?.setPageImage(url: url, key: key)
+        guard pageView?.currentUrls[0] ?? "" != url || (pageView?.multiView.subviews[0] as? UIImageView)?.image == nil else { return }
+        pageView?.setPageImage(url: url, key: key, page: 0)
     }
 
     func setPageImage(base64: String, key: String) {
-        self.pageView?.setPageImage(base64: base64, key: key)
+        pageView?.setPageImage(base64: base64, key: key, page: 0)
     }
 
     func setPageData(data: Data, key: String? = nil) {
-        pageView?.setPageData(data: data, key: key)
+        pageView?.setPageData(data: data, key: key, page: 0)
     }
 
     func setPageText(text: String) {
