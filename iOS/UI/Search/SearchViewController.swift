@@ -54,6 +54,9 @@ class SearchViewController: UIViewController {
 
     var query: String?
 
+    var hoveredCell: MangaCoverCell?
+    var hovering = false
+
     var observers: [NSObjectProtocol] = []
 
     deinit {
@@ -140,6 +143,10 @@ class SearchViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
+        hoveredCell?.highlight()
+
         navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
         navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
@@ -305,5 +312,99 @@ extension SearchViewController: UISearchBarDelegate {
             results = [:]
             reloadData()
         }
+    }
+}
+
+// MARK: - Key Handler
+extension SearchViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        hoveredCell?.unhighlight()
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(title: "Select Item to the Left",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputLeftArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Item to the Right",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputRightArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Item Above",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputUpArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Item Below",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputDownArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Open Selected Item",
+                         action: #selector(enterKeyPressed),
+                         input: "\r",
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off)
+        ]
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard let collectionView = collectionView, collectionView.numberOfSections > 0, collectionView.numberOfSections > 0 else { return }
+        if !hovering {
+            hovering = true
+            if hoveredCell == nil {
+                hoveredCell = collectionView.cellForItem(at: IndexPath(row: 0, section: 0)) as? MangaCoverCell
+            }
+            hoveredCell?.highlight()
+            return
+        }
+        guard let hoveredCell = hoveredCell, let hoveredIndexPath = collectionView.indexPath(for: hoveredCell) else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        if sender.input == UIKeyCommand.inputUpArrow || sender.input == UIKeyCommand.inputDownArrow {
+            guard let previousFirstIndexPath = collectionView.indexPathsForVisibleItems.filter({ $0.section == section }).sorted(by: <)[safe: 0]
+                  else { return }
+            section += sender.input == UIKeyCommand.inputUpArrow ? -1 : 1
+            guard section >= 0, section < collectionView.numberOfSections else { return }
+            collectionView.scrollToItem(at: IndexPath(row: 0, section: section), at: .centeredVertically, animated: true)
+            guard let newFirstIndexPath = collectionView.indexPathsForVisibleItems.filter({ $0.section == section }).sorted(by: <)[safe: 0]
+                  else { return }
+            position += newFirstIndexPath.row - previousFirstIndexPath.row
+        } else if sender.input == UIKeyCommand.inputLeftArrow || sender.input == UIKeyCommand.inputRightArrow {
+            position += sender.input == UIKeyCommand.inputLeftArrow ? -1 : 1
+            guard position >= 0, collectionView.indexPathsForVisibleItems.contains(IndexPath(row: position, section: section)) else { return }
+        } else {
+            return
+        }
+        position = min(position, collectionView.numberOfItems(inSection: section))
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        hoveredCell.unhighlight()
+        (collectionView.cellForItem(at: newHoveredIndexPath) as? MangaCoverCell)?.highlight()
+        collectionView.scrollToItem(at: newHoveredIndexPath, at: [.centeredVertically, .centeredHorizontally], animated: true)
+        collectionView.accessibilityScroll(.down)
+        self.hoveredCell = (collectionView.cellForItem(at: newHoveredIndexPath) as? MangaCoverCell)
+    }
+    @objc func enterKeyPressed() {
+        guard let collectionView = collectionView, let hoveredCell = hoveredCell,
+              let hoveredIndexPath = collectionView.indexPath(for: hoveredCell) else { return }
+        self.collectionView(collectionView, didSelectItemAt: hoveredIndexPath)
     }
 }

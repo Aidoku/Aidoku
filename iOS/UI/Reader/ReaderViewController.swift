@@ -123,6 +123,12 @@ class ReaderViewController: UIViewController {
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
     let progressView = UIActivityIndicatorView(style: .medium)
+    let chapterSelectionPopoverButton = UIBarButtonItem(
+        image: UIImage(systemName: "list.bullet"),
+        style: .plain,
+        target: ReaderViewController.self,
+        action: #selector(openChapterSelectionPopover(_:))
+    )
 
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
 
@@ -175,12 +181,7 @@ class ReaderViewController: UIViewController {
                 target: self,
                 action: #selector(close)
             ),
-            UIBarButtonItem(
-                image: UIImage(systemName: "list.bullet"),
-                style: .plain,
-                target: self,
-                action: #selector(openChapterSelectionPopover(_:))
-            )
+            chapterSelectionPopoverButton
         ]
 
         navigationItem.rightBarButtonItems = [
@@ -335,10 +336,6 @@ class ReaderViewController: UIViewController {
 //            self.transitionView.isHidden = true
             self.updateLabels()
         }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
     }
 }
 
@@ -529,5 +526,104 @@ extension ReaderViewController: UIPopoverPresentationControllerDelegate {
     func adaptivePresentationStyle(for controller: UIPresentationController,
                                    traitCollection: UITraitCollection) -> UIModalPresentationStyle {
         .none
+    }
+}
+
+// MARK: - Key Handler
+extension ReaderViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        becomeFirstResponder()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        var nextPageKey: String
+        var previousPageKey: String
+        if readingMode == .rtl {
+            nextPageKey = UIKeyCommand.inputLeftArrow
+            previousPageKey = UIKeyCommand.inputRightArrow
+        } else if readingMode == .scroll || readingMode == .vertical {
+            nextPageKey = UIKeyCommand.inputDownArrow
+            previousPageKey = UIKeyCommand.inputUpArrow
+        } else {
+            nextPageKey = UIKeyCommand.inputRightArrow
+            previousPageKey = UIKeyCommand.inputLeftArrow
+        }
+        return [
+            UIKeyCommand(title: "Next Page",
+                         action: #selector(nextPage),
+                         input: nextPageKey,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Previous Page",
+                         action: #selector(previousPage),
+                         input: previousPageKey,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Next Chapter",
+                         action: #selector(nextChapter),
+                         input: nextPageKey,
+                         modifierFlags: [.command],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Previous Chapter",
+                         action: #selector(previousChapter),
+                         input: previousPageKey,
+                         modifierFlags: [.command],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Close Reader",
+                         action: #selector(close),
+                         input: UIKeyCommand.inputEscape,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Open Chapter List Popover",
+                         action: #selector(openChapterSelectionPopoverWrapper),
+                         input: "\t",
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off)
+        ]
+    }
+
+    @objc func nextPage() {
+        pageManager.move(toPage: currentPageIndex + 1, animated: true, reversed: false)
+    }
+    @objc func previousPage() {
+        pageManager.move(toPage: currentPageIndex - 1, animated: true, reversed: true)
+    }
+    @objc func nextChapter() {
+        chapter = chapterList[chapterIndex + 1]
+        pageManager.setChapter(chapter: chapter, startPage: DataManager.shared.currentPage(for: chapter))
+        Task {
+            await loadChapter()
+        }
+    }
+    @objc func previousChapter() {
+        chapter = chapterList[chapterIndex - 1]
+        pageManager.setChapter(chapter: chapter, startPage: DataManager.shared.currentPage(for: chapter))
+        Task {
+            await loadChapter()
+        }
+    }
+    @objc func openChapterSelectionPopoverWrapper() {
+        openChapterSelectionPopover(chapterSelectionPopoverButton)
     }
 }

@@ -20,6 +20,9 @@ class HistoryViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
+    var hoveredIndexPath: IndexPath?
+    var hovering = false
+
     // (days ago, entries)
     var entries: [(Int, [HistoryEntry])] = [] {
         didSet {
@@ -154,6 +157,9 @@ class HistoryViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
+
         if queueRefresh {
             queueRefresh = false
             reloadHistory()
@@ -492,5 +498,77 @@ extension HistoryViewController: UISearchResultsUpdating {
         searchText = searchController.searchBar.text ?? ""
         filterSearchEntries()
         tableView.reloadData()
+    }
+}
+
+// MARK: - Key Handler
+extension HistoryViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(title: "Select Previous Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputUpArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Next Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputDownArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Confirm Selection",
+                         action: #selector(enterKeyPressed),
+                         input: "\r",
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off)
+        ]
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        if !hovering {
+            hovering = true
+            if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
+            tableView.cellForRow(at: hoveredIndexPath!)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+            return
+        }
+        guard let hoveredIndexPath = hoveredIndexPath else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        switch sender.input {
+        case UIKeyCommand.inputUpArrow: position -= 1
+        case UIKeyCommand.inputDownArrow: position += 1
+        default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            position = tableView.numberOfRows(inSection: section) - 1
+        } else if position >= tableView.numberOfRows(inSection: section) {
+            guard section < tableView.numberOfSections - 1 else { return }
+            section += 1
+            position = 0
+        }
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        tableView.cellForRow(at: hoveredIndexPath)?.backgroundColor = .clear
+        tableView.cellForRow(at: newHoveredIndexPath)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+        tableView.scrollToRow(at: newHoveredIndexPath, at: .middle, animated: true)
+        self.hoveredIndexPath = newHoveredIndexPath
+    }
+    @objc func enterKeyPressed() {
+        guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        tableView(tableView, didSelectRowAt: hoveredIndexPath)
     }
 }

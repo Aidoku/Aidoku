@@ -14,6 +14,8 @@ protocol ChapterListPopoverDelegate: AnyObject {
 class ChapterListPopoverContentController: UIViewController {
     let chapterList: [Chapter]
     var selectedIndex: Int
+    var hoveredIndexPath: IndexPath?
+    var hovering = false
 
     weak var delegate: ChapterListPopoverDelegate?
 
@@ -46,6 +48,8 @@ class ChapterListPopoverContentController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
 
         tableView?.layoutIfNeeded()
         guard selectedIndex < chapterList.count else { return }
@@ -112,5 +116,89 @@ extension ChapterListPopoverContentController: UITableViewDelegate {
         }
 
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+// MARK: - Key Handler
+extension ChapterListPopoverContentController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(title: "Select Previous Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputUpArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Next Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputDownArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Confirm Selection",
+                         action: #selector(enterKeyPressed),
+                         input: "\r",
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Close Popover",
+                         action: #selector(escapeKeyPressed),
+                         input: UIKeyCommand.inputEscape,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off)
+        ]
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard let tableView = tableView else { return }
+        if !hovering {
+            hovering = true
+            if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
+            tableView.cellForRow(at: hoveredIndexPath!)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+            return
+        }
+        guard let hoveredIndexPath = hoveredIndexPath else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        switch sender.input {
+        case UIKeyCommand.inputUpArrow: position -= 1
+        case UIKeyCommand.inputDownArrow: position += 1
+        default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            position = tableView.numberOfRows(inSection: section) - 1
+        } else if position >= tableView.numberOfRows(inSection: section) {
+            guard section < tableView.numberOfSections - 1 else { return }
+            section += 1
+            position = 0
+        }
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        tableView.cellForRow(at: hoveredIndexPath)?.backgroundColor = .clear
+        tableView.cellForRow(at: newHoveredIndexPath)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+        tableView.scrollToRow(at: newHoveredIndexPath, at: .middle, animated: true)
+        self.hoveredIndexPath = newHoveredIndexPath
+    }
+    @objc func enterKeyPressed() {
+        guard let tableView = tableView, !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        self.tableView(tableView, didSelectRowAt: hoveredIndexPath)
+        self.dismiss(animated: true)
+    }
+    @objc func escapeKeyPressed() {
+        self.dismiss(animated: true)
     }
 }

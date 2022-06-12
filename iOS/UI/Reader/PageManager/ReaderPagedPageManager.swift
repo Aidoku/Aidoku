@@ -93,19 +93,20 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
         }
     }
 
-    func move(toPage page: Int) {
+    func move(toPage page: Int, animated: Bool = false, reversed: Bool = false) {
         guard pageViewController != nil else { return }
-
-        Task {
-            await setImages(for: (page - 1)..<(page + 3))
-        }
 
         let targetIndex = page + 1 + (hasPreviousChapter ? 1 : 0)
 
         if targetIndex >= 0 && targetIndex < items.count {
-            pageViewController.setViewControllers([items[targetIndex]], direction: .forward, animated: false, completion: nil)
-            currentIndex = targetIndex
-            delegate?.didMove(toPage: page)
+            pageViewController.setViewControllers([items[targetIndex]],
+                                                  direction: (reversed == (readingMode == .rtl)) ? .forward : .reverse,
+                                                  animated: animated) { completed in
+                self.pageViewController(self.pageViewController,
+                                        didFinishAnimating: true,
+                                        previousViewControllers: [],
+                                        transitionCompleted: completed)
+            }
         }
     }
 

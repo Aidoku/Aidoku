@@ -12,6 +12,9 @@ class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
+    var hoveredIndexPath: IndexPath?
+    var hovering = false
+
     var sourceLists: [URL] = SourceManager.shared.sourceLists
 
     var sources = SourceManager.shared.sources {
@@ -218,6 +221,9 @@ class BrowseViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
+
         navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
         navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
@@ -406,5 +412,84 @@ extension BrowseViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         searchText = searchController.searchBar.text ?? ""
         tableView.reloadData()
+    }
+}
+
+// MARK: - Key Handler
+extension BrowseViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(title: "Select Previous Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputUpArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Select Next Item in List",
+                         action: #selector(arrowKeyPressed(_:)),
+                         input: UIKeyCommand.inputDownArrow,
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off),
+            UIKeyCommand(title: "Confirm Selection",
+                         action: #selector(enterKeyPressed),
+                         input: "\r",
+                         modifierFlags: [],
+                         alternates: [],
+                         attributes: [],
+                         state: .off)
+        ]
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        if !hovering {
+            hovering = true
+            if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
+            tableView.cellForRow(at: hoveredIndexPath!)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+            return
+        }
+        guard let hoveredIndexPath = hoveredIndexPath else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        switch sender.input {
+        case UIKeyCommand.inputUpArrow: position -= 1
+        case UIKeyCommand.inputDownArrow: position += 1
+        default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            position = tableView.numberOfRows(inSection: section) - 1
+        } else if position >= tableView.numberOfRows(inSection: section) {
+            guard section < tableView.numberOfSections - 1 else { return }
+            section += 1
+            position = 0
+        }
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        tableView.cellForRow(at: hoveredIndexPath)?.backgroundColor = .clear
+        tableView.cellForRow(at: newHoveredIndexPath)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+        tableView.scrollToRow(at: newHoveredIndexPath, at: .middle, animated: true)
+        self.hoveredIndexPath = newHoveredIndexPath
+    }
+    @objc func enterKeyPressed() {
+        guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        if let cell = tableView.cellForRow(at: hoveredIndexPath) as? ExternalSourceTableViewCell {
+            cell.getButton.button.sendActions(for: .touchUpInside)
+            cell.backgroundColor = .clear
+            hovering = false
+            self.hoveredIndexPath = nil
+        } else {
+            tableView(tableView, didSelectRowAt: hoveredIndexPath)
+        }
     }
 }
