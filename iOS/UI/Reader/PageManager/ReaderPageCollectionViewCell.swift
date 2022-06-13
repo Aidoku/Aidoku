@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ReaderPageCollectionViewCell: UICollectionViewCell {
 
@@ -54,6 +55,17 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
             setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
             setPageText(text: text)
+        }
+    }
+
+    func setPage(cacheKey: String) {
+        KingfisherManager.shared.cache.retrieveImage(forKey: cacheKey) { result in
+            switch result {
+            case .success(let value):
+                self.pageView?.imageView.image = value.image
+            default:
+                break
+            }
         }
     }
 

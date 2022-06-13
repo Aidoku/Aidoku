@@ -583,6 +583,7 @@ extension LibraryViewController {
         return chapters[mangaId]?.last
     }
 
+    @MainActor
     func updateLockState(recheck: Bool = true, reload: Bool = true) {
         if recheck {
             if !UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
@@ -604,7 +605,11 @@ extension LibraryViewController {
             } completion: { _ in
                 self.lockedView.isHidden = true
                 if reload {
-                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                    if self.collectionView.numberOfSections == 1 {
+                        self.collectionView.reloadSections(IndexSet(integer: 0))
+                    } else {
+                        self.collectionView.reloadSections(IndexSet(integersIn: 0...1))
+                    }
                 }
             }
         }

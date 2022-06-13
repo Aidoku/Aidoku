@@ -8,15 +8,6 @@
 import UIKit
 import Kingfisher
 
-extension UIImage {
-    func sizeToFit(_ pageSize: CGSize) -> CGSize {
-        guard size.height * size.width * pageSize.width * pageSize.height > 0 else { return .zero }
-
-        let scaledHeight = size.height * (pageSize.width / size.width)
-        return CGSize(width: pageSize.width, height: scaledHeight)
-    }
-}
-
 class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     weak var delegate: ReaderPageManagerDelegate?
@@ -44,7 +35,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var collectionView: UICollectionView!
 
     var sizeCache: [String: CGSize] = [:]
-    var dataCache: [String: Data] = [:] // in order to avoid re-parsing base64 data
+    var dataCache: [String: Bool] = [:]
     var lastSize: CGSize?
 
     var chapterList: [Chapter] = []
@@ -298,7 +289,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 continue
             }
             let path = IndexPath(item: i + 1, section: 1)
-            if dataCache[pages[i].key] != nil {
+            if !(dataCache[pages[i].key] ?? false) {
                 // fetching the cell will automatically trigger it to fetch the image
                 _ = collectionView(collectionView, cellForItemAt: path)
             }
@@ -502,6 +493,11 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
             } else if indexPath.item >= pages.count + 1 {
                 if let chapter = chapter {
                     cell.infoView?.currentChapter = chapter
+
+                    // mark chapter read if next chapter info page is displayed
+                    if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                        DataManager.shared.setCompleted(chapter: chapter, context: DataManager.shared.backgroundContext)
+                    }
                 }
                 cell.infoView?.nextChapter = targetNextChapter
                 cell.infoView?.previousChapter = nil
@@ -509,8 +505,8 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 setImages(for: (indexPath.item)..<(indexPath.item + 2)) // preload next two pages
             }
             if let page = page {
-                if let data = dataCache[page.key] {
-                    cell.setPageData(data: data)
+                if dataCache[page.key] ?? false {
+                    cell.setPage(cacheKey: page.key)
                 } else {
                     cell.setPage(page: page)
                 }
@@ -568,8 +564,8 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                     cell.convertToPage()
                     cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                     cell.pageView?.delegate = self
-                    if let data = dataCache[pages[indexPath.item - 1].key] {
-                        cell.setPageData(data: data)
+                    if dataCache[pages[indexPath.item - 1].key] ?? false {
+                        cell.setPage(cacheKey: pages[indexPath.item - 1].key)
                     } else {
                         cell.setPage(page: pages[indexPath.item - 1])
                     }
@@ -600,10 +596,9 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
             sizeCache[key] = image.sizeToFit(collectionView.frame.size)
             collectionView.collectionViewLayout.invalidateLayout()
             Task.detached {
-                // convert image to data in background
-                let imageData = image.pngData()
+                KingfisherManager.shared.cache.store(image, forKey: key)
                 Task { @MainActor in
-                    self.dataCache[key] = imageData
+                    self.dataCache[key] = true
                     if let targetPage = self.targetPage, self.shouldMoveToTargetPage, self.sizeCache.count >= targetPage {
                         self.shouldMoveToTargetPage = false
                         self.move(toPage: targetPage)
@@ -637,8 +632,7 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
                 image: UIImage(systemName: "square.and.arrow.up")
             ) { _ in
                 if let pageView = interaction.view as? UIImageView, let image = pageView.image {
-                    let items = [image]
-                    let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                    let activityController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
                     self.collectionView.parentViewController?.present(activityController, animated: true)
                 }
             }
