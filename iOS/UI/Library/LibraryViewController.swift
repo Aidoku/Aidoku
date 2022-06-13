@@ -246,6 +246,12 @@ class LibraryViewController: MangaCollectionViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadsCancelled"), object: nil, queue: nil, using: updateNavbarBlock
         ))
+        // lock when app moves to background
+        observers.append(NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification, object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.updateLockState()
+        })
     }
 
     override func viewWillAppear(_ animated: Bool) {
