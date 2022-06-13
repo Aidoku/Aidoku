@@ -19,14 +19,11 @@
 "ADD_TO_LIBRARY" = "أضف إلى المكتبة";
 "REMOVE_FROM_LIBRARY" = "حذف من المكتبة";
 "MANGA_INFO" = "معلومات المانجا";
-
 "PIN_MANGA" = "تثبيت المانجا";
 "PIN_MANGA_TYPE" = "نوع التثبيت";
 "PIN_MANGA_UNREAD" = "غير مقروء";
 "PIN_MANGA_UPDATED" = "محدَث";
-
 "SORT_BY" = "ترتيب حسب";
-
 "TITLE" = "العنوان";
 "LAST_OPENED" = "آخر عملية فتح";
 "LAST_READ" = "آخر عملية قراءة";
@@ -41,7 +38,6 @@
 "UPDATES" = "التحديثات";
 "INSTALLED" = "المثبتة";
 "EXTERNAL" = "الخارجية";
-
 "BUTTON_UPDATE" = "تحديث";
 "BUTTON_GET" = "احصل";
 "BUTTON_ERROR" = "خطأ";
@@ -61,14 +57,12 @@
 // Manga
 "UNTITLED" = "بلا عنوان";
 "ONGOING" = "مستمر";
-"CANCLLED" = "ملغى";
 "COMPLETED" = "منتهي";
 "HIATUS" = "متوقف";
 "SUGGESTIVE" = "إيحائي";
 "NSFW" = "NSFW";
 "MORE" = "المزيد";
 "SOURCE_ORDER" = "ترتيب المصدر";
-
 "MISSING_SOURCE" = "المصدر مفقود";
 "MISSING_SOURCE_TEXT" = "يبدو أن المصدر الأصلي لهذه المانجا مفقود. يرجى إعادة تنزيله أو إزالة هذا العنوان من مكتبتك.";
 
@@ -82,9 +76,8 @@
 "UNREAD" = "غير مقروء";
 "MARK_ALL" = "علم على الكل";
 "MARK_PREVIOUS" = "علم على السابق";
-"MARK_READ" = " علم كمقروء";
+"MARK_READ" = "علم كمقروء";
 "MARK_UNREAD" = "علم كغير مقروء";
-
 "READER_SETTINGS" = "إعدادات القارئ";
 "READING_MODE" = "وضع القراءة";
 "DEFAULT" = "إفتراضي";
@@ -94,7 +87,6 @@
 "VERTICAL_SCROLL" = "سحب عمودي";
 "EXPERIMENTAL" = "تجريبي";
 "INFINITE_VERTICAL_SCROLL" = "سحب عمودي لا نهائي";
-
 "SAVE_TO_PHOTOS" = "حفظ في الصور";
 
 // Search
@@ -103,34 +95,27 @@
 
 // Settings
 "SETTINGS" = "الإعدادات";
-
 "ABOUT" = "عن التطبيق";
 "GITHUB_REPO" = "GitHub صفحة";
 "DISCORD_SERVER" = "الديسكورد الخاص بنا";
 "SUPPPORT_DEVELOPMENT" = "ادعم التطوير";
-
 "GENERAL" = "عام";
 "ICLOUD_SYNC" = "مزامنة مع iCloud";
 "APPEARANCE" = "المظهر";
 "APPEARANCE_LIGHT" = "فاتح";
 "APPEARANCE_DARK" = "داكن";
 "USE_SYSTEM_APPEARANCE" = "استخدم مظهر النظام";
-
 "MANGA_PER_ROW" = "عددالمانجا لكل صف";
 "PORTRAIT" = "عمودي";
 "LANDSCAPE" = "أفقي";
-
 "READER" = "القارئ";
 "OPEN_READER_VIEW" = "فتح وضع القارئ";
 "UNREAD_CHAPTER_BADGES" = "شارات الفصول غير المقروءة";
-
 "SOURCE_LISTS" = "قائمة المصادر";
 "SOURCE_LIST_ADDED" = "تم إضافة قائمة المصادر";
 "SOURCE_LIST_ADDED_TEXT" = "يمكنك الآن تصفح المصادر الخارجية من تبويب نصفح.";
 "SHOW_NSFW_SOURCES" = "NSFW إظهار مصادر";
-
 "DOWNSAMPLE_IMAGES" = "خفض جودة الصور";
-
 "BACKUPS" = "النسخ الإحتياطية";
 "BACKUP_NAME" = "إسم النسخة الإحتياطية";
 "RENAME_BACKUP" = "إعادة تسمية النسخة الإحتياطية";
@@ -138,8 +123,6 @@
 "CORRUPTED_BACKUP" = "نسخة إحتياطية فاسدة";
 "CORRUPTED_BACKUP_TEXT" = "يبدو أن هذه النسخة الاحتياطية بها بيانات مهيأة بشكل خاطئ. إعادة التسمية غير ممكنة.";
 "BACKUP_INFO" = "إضغط مطولا على النسخة الإحتياطية لتصديرها, أو إسحب إلى اليمين لحذفها.";
-"BACKUP_MISSING_SOURCES" = "مصادر النسخة الإحتياطية مفقودة";
-"BACKUP_MISSING_SOURCES_TEXT" = "قد تحتوي النسخة الإحتياطية المستعادة على بيانات من المصادر التالية، والتي لم يتم تثبيتها حاليًا:";
 "RESTORE_BACKUP" = "استعادة هذه النسخة الإحتياطية؟";
 "RESTORE_BACKUP_TEXT" = "ستتم إزالة جميع البيانات الحالية واستبدالها ببيانات هذه النسخة الإحتياطية.";
 "BACKUP_IMPORT_SUCCESS" = "تم إستيراد النسخة الإحتياطية";
@@ -148,7 +131,6 @@
 "BACKUP_IMPORT_FAIL_TEXT" = "فشلت عملية حفظ النسخة الإحتياطية. يرجى التأكد من أن نسختك الإحتياطية سليمة.";
 "EXPORT" = "إستخراج";
 "RESTORE" = "إستعادة";
-
 "ADVANCED" = "وضع متقدم";
 "RESET_TEXT" = "هذه العملية غير قابلة للعكس. سيتم مسح وإعادة تعيين جميع البيانات والإعدادات وذاكرة التخزين المؤقت.";
 "CLEAR_CHAPTER_CACHE" = "مسح ذاكرة التخزين المؤقت للفصل";
@@ -158,4 +140,4 @@
 "CLEAR_NETWORK_CACHE" = "مسح ذاكرة التخزين المؤقت للشبكة";
 "CLEAR_NETWORK_CACHE_TEXT" = "هذه العملية غير قابلة للعكس. سيتم مسح طلبات وصور الشبكة المخزنة مؤقتًا.";
 "CLEAR_READ_HISTORY" = "حذف سجل القراءة";
-"CLEAR_READ_HISTORY_TEXT" = "هذه العملية غير قابلة للعكس، سيتم حذف كل سجل القراءة";
+"CLEAR_READ_HISTORY_TEXT" = "هذه العملية غير قابلة للعكس. سيتم حذف كل سجل القراءة.";
