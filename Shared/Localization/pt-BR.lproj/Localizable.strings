@@ -18,7 +18,6 @@
 "ADD_TO_LIBRARY" = "Adicionar para Biblioteca";
 "REMOVE_FROM_LIBRARY" = "Remover da Biblioteca";
 "MANGA_INFO" = "Informação do Mangá";
-
 "SORT_BY" = "Ordenar Por";
 "TITLE" = "Título";
 "LAST_OPENED" = "Último Aberto";
@@ -34,7 +33,6 @@
 "UPDATES" = "Atualizações";
 "INSTALLED" = "Instalado";
 "EXTERNAL" = "Externo";
-
 "BUTTON_UPDATE" = "ATUALIZAR";
 "BUTTON_GET" = "OBTER";
 "BUTTON_ERROR" = "ERRO";
@@ -52,14 +50,12 @@
 // Manga
 "UNTITLED" = "Sem Título";
 "ONGOING" = "Em Progresso";
-"CANCLLED" = "Cancelado";
 "COMPLETED" = "Completo";
 "HIATUS" = "Hiato";
 "SUGGESTIVE" = "Suggestivo";
 "NSFW" = "NSFW";
 "MORE" = "mais";
 "SOURCE_ORDER" = "Ordem da Fonte";
-
 "MISSING_SOURCE" = "Fonte Não Encontrada";
 "MISSING_SOURCE_TEXT" = "A fonte original parece estar ausente para esse mangá. Por favor, reinstale-o ou remova esse título da sua biblioteca.";
 
@@ -75,7 +71,6 @@
 "MARK_PREVIOUS" = "Marcar Anterior";
 "MARK_READ" = "Marcar como Lido";
 "MARK_UNREAD" = "Marcar como Não Lido";
-
 "READER_SETTINGS" = "Configurações do Leitor";
 "READING_MODE" = "Modo de Leitura";
 "DEFAULT" = "Padrão";
@@ -85,7 +80,6 @@
 "VERTICAL_SCROLL" = "Rolagem Vertical";
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = "Rolagem Vertical Infinita";
-
 "SAVE_TO_PHOTOS" = "Salvar para Fotos";
 
 // Search
@@ -94,23 +88,19 @@
 
 // Settings
 "SETTINGS" = "Configurações";
-
 "ABOUT" = "Sobre";
 "GITHUB_REPO" = "Repositório GitHub";
 "DISCORD_SERVER" = "Servidor do Discord";
 "SUPPPORT_DEVELOPMENT" = "Apoiar Desenvolvimento";
-
 "GENERAL" = "Geral";
 "ICLOUD_SYNC" = "Sincronizar com ICloud";
 "APPEARANCE" = "Aparência";
 "APPEARANCE_LIGHT" = "Claro";
 "APPEARANCE_DARK" = "Escuro";
 "USE_SYSTEM_APPEARANCE" = "Usar Aparência do Sistema";
-
 "MANGA_PER_ROW" = "Mangás por Linha";
 "PORTRAIT" = "Retrato";
 "LANDSCAPE" = "Paisagem";
-
 "READER" = "Leitor";
 "OPEN_READER_VIEW" = "Abrir Visualização do Leitor";
 "UNREAD_CHAPTER_BADGES" = "Bolha de Capítulos Não Lidos";
@@ -118,14 +108,11 @@
 "PIN_MANGA_TYPE" = "Tipo de Fixação";
 "PIN_MANGA_UNREAD" = "Não Lido";
 "PIN_MANGA_UPDATED" = "Atualizado";
-
 "SOURCE_LISTS" = "Listas de Fontes";
 "SOURCE_LIST_ADDED" = "Lista de Fontes Adicionada";
 "SOURCE_LIST_ADDED_TEXT" = "Agora você pode procurar fontes externas na aba Explorar.";
 "SHOW_NSFW_SOURCES" = "Mostrar Fontes NSFW";
-
 "DOWNSAMPLE_IMAGES" = "Comprimir Imagens";
-
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Nome do Backup";
 "RENAME_BACKUP" = "Renomear Backup";
@@ -133,8 +120,6 @@
 "CORRUPTED_BACKUP" = "Backup Corrompido";
 "CORRUPTED_BACKUP_TEXT" = "Esse Backup parece ter dados configurados errôneamente. Renomear não é possível.";
 "BACKUP_INFO" = "Aperte e segure em um Backup para exportá-lo, ou arraste para a esquerda para deletá-lo.";
-"BACKUP_MISSING_SOURCES" = "Fontes Não Encontradas";
-"BACKUP_MISSING_SOURCES_TEXT" = "O Backup restaurado pode conter dados das seguintes fontes, que não estão instaladas no momento:";
 "RESTORE_BACKUP" = "Restaurar para este Backup?";
 "RESTORE_BACKUP_TEXT" = "Todos os dados atuais serão removidos e substituídos pelos dados deste Backup.";
 "BACKUP_IMPORT_SUCCESS" = "Backup Importado";
@@ -143,7 +128,6 @@
 "BACKUP_IMPORT_FAIL_TEXT" = "Salvamento do Backup falhou. Please ensure that your backup is in the proper format.Por favor, garanta que seu Backup está no formato apropriado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";
-
 "ADVANCED" = "Avançado";
 "RESET_TEXT" = "Essa ação é irreversível. Todos os dados, configurações e caches serão limpos e redefinidos.";
 "CLEAR_CHAPTER_CACHE" = "Limpar Cache do Capítulo";

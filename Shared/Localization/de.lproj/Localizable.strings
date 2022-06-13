@@ -1,0 +1,30 @@
+
+
+"CANCEL" = "Abbrechen";
+"OK" = "OK";
+// General
+"CONTINUE" = "Weiter";
+"UNKNOWN" = "Unbekannt";
+"UNAVAILABLE" = "Nicht verfügbar";
+"RESET" = "Zurücksetzen";
+"DELETE" = "Löschen";
+"REMOVE" = "Entfernen";
+"RENAME" = "Umbenennen";
+
+// Library
+"LIBRARY" = "Bibliothek";
+"LIBRARY_SEARCH" = "In der Bibliothek finden";
+"LIBRARY_EMPTY" = "Bibliothek leer";
+"CLEAR" = "Löschen";
+"DOWNLOADED" = "Heruntergeladen";
+"SHARE" = "Teilen";
+"LOADING_ELLIPSIS" = "Wird geladen…";
+
+// Downloads
+"DOWNLOAD" = "Herunterladen";
+"DOWNLOAD_QUEUE" = "Herunterladen-Warteschlange";
+"CANCEL_DOWNLOAD" = "Datenübertragung abbrechen";
+"LIBRARY_ADD_FROM_BROWSE" = "Manga über die „Durchsuchen“-Registerkarte hinzufügen";
+"ADD_TO_LIBRARY" = "Zur Bibliothek hinzufügen";
+"REMOVE_FROM_LIBRARY" = "Aus der Bibliothek entfernen";
+"MANGA_INFO" = "Manga-Infos";
