@@ -22,6 +22,7 @@ class BrowseViewController: UIViewController {
     var updates: [ExternalSourceInfo] = [] {
         didSet {
             reloadData()
+            checkUpdateCount()
         }
     }
     var externalSources: [ExternalSourceInfo] = [] {
@@ -134,6 +135,7 @@ class BrowseViewController: UIViewController {
         tableView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         tableView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
 
+        // no sources text
         emptyTextStackView.isHidden = true
         emptyTextStackView.axis = .vertical
         emptyTextStackView.distribution = .fill
@@ -202,6 +204,7 @@ class BrowseViewController: UIViewController {
                 self.sourceLists = SourceManager.shared.sourceLists
                 await self.updateSourceLists()
                 self.reloadData()
+                self.checkUpdateCount()
             }
         })
 
@@ -228,13 +231,15 @@ class BrowseViewController: UIViewController {
     }
 
     func reloadData() {
-        UIView.transition(with: tableView,
-                          duration: 0.3,
-                          options: .transitionCrossDissolve,
-                          animations: { self.tableView.reloadData() },
-                          completion: { _ in
-            self.emptyTextStackView.isHidden = self.tableView.numberOfSections != 0
-        })
+        UIView.transition(
+            with: tableView,
+            duration: 0.3,
+            options: .transitionCrossDissolve,
+            animations: { self.tableView.reloadData() },
+            completion: { _ in
+                self.emptyTextStackView.isHidden = self.tableView.numberOfSections != 0
+            }
+        )
     }
 
     func fetchUpdates() {
@@ -247,6 +252,13 @@ class BrowseViewController: UIViewController {
             }
         }
         updates = newUpdates
+    }
+
+    func checkUpdateCount() {
+        // store update count and display badge
+        let updateCount = filteredUpdates.count
+        UserDefaults.standard.set(updateCount, forKey: "Browse.updateCount")
+        tabBarController?.tabBar.items?[1].badgeValue = updateCount > 0 ? String(updateCount) : nil
     }
 
     @MainActor
@@ -373,9 +385,11 @@ extension BrowseViewController: UITableViewDataSource {
         72
     }
 
-    func tableView(_ tableView: UITableView,
-                   contextMenuConfigurationForRowAt indexPath: IndexPath,
-                   point: CGPoint) -> UIContextMenuConfiguration? {
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
         if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
                 let action = UIAction(title: NSLocalizedString("UNINSTALL", comment: ""), image: UIImage(systemName: "trash")) { _ in
@@ -396,7 +410,6 @@ extension BrowseViewController: UITableViewDelegate {
             let vc = SourceViewController(source: sources[indexPath.row])
             navigationController?.pushViewController(vc, animated: true)
         }
-
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }
