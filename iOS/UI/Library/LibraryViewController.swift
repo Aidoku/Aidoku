@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import LocalAuthentication
 
 class LibraryViewController: MangaCollectionViewController {
 
@@ -14,7 +15,6 @@ class LibraryViewController: MangaCollectionViewController {
             manga = sortManga(unfilteredManga)
             Task { @MainActor in
                 self.emptyTextStackView.isHidden = !self.unfilteredManga.isEmpty || !self.unfilteredPinnedManga.isEmpty
-                self.collectionView?.alwaysBounceVertical = !self.unfilteredManga.isEmpty || !self.unfilteredPinnedManga.isEmpty
             }
         }
     }
@@ -24,7 +24,6 @@ class LibraryViewController: MangaCollectionViewController {
             pinnedManga = sortManga(unfilteredPinnedManga)
             Task { @MainActor in
                 self.emptyTextStackView.isHidden = !self.unfilteredManga.isEmpty || !self.unfilteredPinnedManga.isEmpty
-                self.collectionView?.alwaysBounceVertical = !self.unfilteredManga.isEmpty || !self.unfilteredPinnedManga.isEmpty
             }
         }
     }
@@ -52,6 +51,13 @@ class LibraryViewController: MangaCollectionViewController {
     var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
         didSet {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+            if currentCategory == nil {
+                lockedText.text = NSLocalizedString("LIBRARY_LOCKED", comment: "")
+                emptyTitleLabel.text = NSLocalizedString("LIBRARY_EMPTY", comment: "")
+            } else {
+                lockedText.text = NSLocalizedString("CATEGORY_LOCKED", comment: "")
+                emptyTitleLabel.text = NSLocalizedString("CATEGORY_EMPTY", comment: "")
+            }
         }
     }
 
@@ -59,12 +65,20 @@ class LibraryViewController: MangaCollectionViewController {
     var opensReaderView = false
     var preloadsChapters = false
 
-    var queueFetchLibrary = false
-
     var searchText: String = ""
 
-    let emptyTextStackView = UIStackView()
+    var queueFetchLibrary = false
+    var locked = false
+
     var filterButton: UIBarButtonItem?
+
+    let emptyTextStackView = UIStackView()
+    let emptyTitleLabel = UILabel()
+
+    let lockedView = UIStackView()
+    let lockedImageView = UIImageView()
+    let lockedText = UILabel()
+    let lockedButton = UIButton(type: .roundedRect)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -73,6 +87,8 @@ class LibraryViewController: MangaCollectionViewController {
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
+
+        view.backgroundColor = .systemBackground
 
         Task {
             await updateNavbarButtons()
@@ -95,14 +111,16 @@ class LibraryViewController: MangaCollectionViewController {
             withReuseIdentifier: "MangaListSelectionHeader"
         )
 
+        // Library Empty text
         emptyTextStackView.isHidden = true
         emptyTextStackView.axis = .vertical
         emptyTextStackView.distribution = .equalSpacing
         emptyTextStackView.spacing = 5
         emptyTextStackView.alignment = .center
 
-        let emptyTitleLabel = UILabel()
-        emptyTitleLabel.text = NSLocalizedString("LIBRARY_EMPTY", comment: "")
+        emptyTitleLabel.text = currentCategory == nil
+            ? NSLocalizedString("LIBRARY_EMPTY", comment: "")
+            : NSLocalizedString("CATEGORY_EMPTY", comment: "")
         emptyTitleLabel.font = .systemFont(ofSize: 25, weight: .semibold)
         emptyTitleLabel.textColor = .secondaryLabel
         emptyTextStackView.addArrangedSubview(emptyTitleLabel)
@@ -119,9 +137,46 @@ class LibraryViewController: MangaCollectionViewController {
         emptyTextStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         emptyTextStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
 
-        fetchLibrary()
+        // locked category text
+        lockedView.distribution = .fill
+        lockedView.spacing = 12
+        lockedView.alignment = .center
+        lockedView.axis = .vertical
+        lockedView.translatesAutoresizingMaskIntoConstraints = false
+        lockedView.isHidden = true
+        view.addSubview(lockedView)
+
+        lockedImageView.image = UIImage(systemName: "lock.fill")
+        lockedImageView.contentMode = .scaleAspectFit
+        lockedImageView.tintColor = .secondaryLabel
+        lockedImageView.translatesAutoresizingMaskIntoConstraints = false
+        lockedView.addArrangedSubview(lockedImageView)
+
+        lockedText.text = currentCategory == nil
+            ? NSLocalizedString("LIBRARY_LOCKED", comment: "")
+            : NSLocalizedString("CATEGORY_LOCKED", comment: "")
+        lockedText.font = .systemFont(ofSize: 16, weight: .medium)
+        lockedView.addArrangedSubview(lockedText)
+        lockedView.setCustomSpacing(2, after: lockedText)
+
+        lockedButton.setTitle(NSLocalizedString("VIEW_LIBRARY", comment: ""), for: .normal)
+        lockedButton.addTarget(self, action: #selector(unlock), for: .touchUpInside)
+        lockedView.addArrangedSubview(lockedButton)
+
+        lockedImageView.heightAnchor.constraint(equalToConstant: 66).isActive = true
+        lockedImageView.widthAnchor.constraint(equalToConstant: 66).isActive = true
+        lockedView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        lockedView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+
+        let unlockTap = UITapGestureRecognizer(target: self, action: #selector(unlock))
+        lockedView.addGestureRecognizer(unlockTap)
+
         categories = DataManager.shared.getCategories()
 
+        updateLockState(reload: false)
+        fetchLibrary()
+
+        // notification listeners
         let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
             self?.fetchLibrary()
         }
@@ -158,6 +213,13 @@ class LibraryViewController: MangaCollectionViewController {
             self?.refreshManga()
         })
         observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateLibraryLock"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateLockState()
+            self.fetchLibrary()
+        })
+        observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateCategories"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
@@ -165,10 +227,8 @@ class LibraryViewController: MangaCollectionViewController {
             if self.currentCategory != nil && !self.categories.contains(self.currentCategory!) {
                 self.currentCategory = nil
             }
+            self.updateLockState()
             self.fetchLibrary()
-            Task {
-                await self.updateNavbarButtons()
-            }
         })
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadsQueued"), object: nil, queue: nil, using: updateNavbarBlock
@@ -205,7 +265,9 @@ class LibraryViewController: MangaCollectionViewController {
 
         navigationItem.hidesSearchBarWhenScrolling = true
     }
+}
 
+extension LibraryViewController {
     @MainActor
     func updateNavbarButtons() async {
         var buttons: [UIBarButtonItem] = []
@@ -220,6 +282,7 @@ class LibraryViewController: MangaCollectionViewController {
             filterButton = UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
         }
         if categories.isEmpty {
+            filterButton?.isEnabled = true
             buttons.append(filterButton!)
         }
 
@@ -231,6 +294,29 @@ class LibraryViewController: MangaCollectionViewController {
                 action: #selector(openDownloadQueue)
             )
             buttons.append(downloadQueueButton)
+        }
+
+        if UserDefaults.standard.bool(forKey: "Library.lockLibrary")
+            && (currentCategory == nil
+                || (UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []).contains(currentCategory!)) {
+            let lockButton: UIBarButtonItem
+            if locked {
+                lockButton = UIBarButtonItem(
+                    image: UIImage(systemName: "lock"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(unlock)
+                )
+                filterButton?.isEnabled = false
+            } else {
+                lockButton = UIBarButtonItem(
+                    image: UIImage(systemName: "lock.open"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(lock)
+                )
+            }
+            buttons.append(lockButton)
         }
 
         navigationItem.rightBarButtonItems = buttons
@@ -497,6 +583,62 @@ class LibraryViewController: MangaCollectionViewController {
         return chapters[mangaId]?.last
     }
 
+    func updateLockState(recheck: Bool = true, reload: Bool = true) {
+        if recheck {
+            if !UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
+                locked = false
+            } else {
+                locked = currentCategory == nil
+                    || (UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []).contains(currentCategory!)
+            }
+        }
+        if locked {
+            lockedView.isHidden = false
+            lockedView.alpha = 1
+            emptyTextStackView.alpha = 0
+            collectionView.reloadData()
+        } else {
+            UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+                self.lockedView.alpha = 0
+                self.emptyTextStackView.alpha = 1
+            } completion: { _ in
+                self.lockedView.isHidden = true
+                if reload {
+                    self.collectionView.reloadSections(IndexSet(integer: 0))
+                }
+            }
+        }
+        Task {
+            await updateNavbarButtons()
+        }
+    }
+
+    @objc func unlock() {
+        let context = LAContext()
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+            let reason = NSLocalizedString("AUTH_FOR_LIBRARY", comment: "")
+
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, _ in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    if success {
+                        self.locked = false
+                        self.updateLockState(recheck: false)
+                    }
+                }
+            }
+        } else { // biometrics not supported
+            locked = false
+            updateLockState(recheck: false)
+        }
+    }
+
+    @objc func lock() {
+        locked = true
+        updateLockState(recheck: false)
+    }
+
     @objc func openDownloadQueue() {
         present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
     }
@@ -505,9 +647,15 @@ class LibraryViewController: MangaCollectionViewController {
 // MARK: - Collection View Delegate
 extension LibraryViewController: UICollectionViewDelegateFlowLayout {
 
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        locked ? 0 : super.collectionView(collectionView, numberOfItemsInSection: section)
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        referenceSizeForHeaderInSection section: Int
+    ) -> CGSize {
         if section == 0 {
             return CGSize(width: collectionView.bounds.width, height: !categories.isEmpty ? 40 : 0)
         } else {
@@ -515,9 +663,11 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
         }
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        viewForSupplementaryElementOfKind kind: String,
-                        at indexPath: IndexPath) -> UICollectionReusableView {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
             var header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: kind,
@@ -527,14 +677,24 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
             if header == nil {
                 header = MangaListSelectionHeader(frame: .zero)
             }
-            header?.delegate = nil
-            header?.options = ["All"] + categories
-            header?.selectedOption = currentCategory == nil ? 0 : (categories.firstIndex(of: currentCategory!) ?? -1) + 1
-            header?.delegate = self
-            header?.filterButton.alpha = 1
-            header?.filterButton.menu = filterButton?.menu
-            header?.filterButton.showsMenuAsPrimaryAction = true
-            return header ?? UICollectionReusableView()
+            guard let header = header else { return UICollectionReusableView() }
+            header.delegate = nil
+            header.options = ["All"] + categories
+            header.selectedOption = currentCategory == nil ? 0 : (categories.firstIndex(of: currentCategory!) ?? -1) + 1
+            if UserDefaults.standard.bool(forKey: "Library.lockLibrary"),
+               let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") {
+                header.lockedOptions = [0] + lockedCategories.compactMap { category -> Int? in
+                    guard let index = categories.firstIndex(of: category) else { return nil }
+                    return index + 1
+                }
+            } else {
+                header.lockedOptions = []
+            }
+            header.delegate = self
+            header.filterButton.alpha = 1
+            header.filterButton.menu = filterButton?.menu
+            header.filterButton.showsMenuAsPrimaryAction = true
+            return header
         }
         return UICollectionReusableView()
     }
@@ -616,6 +776,7 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
         } else {
             currentCategory = categories[index - 1]
         }
+        updateLockState()
         fetchLibrary()
     }
 }

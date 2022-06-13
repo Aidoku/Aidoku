@@ -109,6 +109,14 @@ class SettingsViewController: SettingsTableViewController {
                         NSLocalizedString("PIN_MANGA_UPDATED", comment: "")
                     ],
                    requires: "Library.pinManga"
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Library.lockLibrary",
+                    title: NSLocalizedString("LOCK_LIBRARY", comment: ""),
+                    notification: "updateLibraryLock",
+                    authToEnable: true,
+                    authToDisable: true
                 )
             ]),
             // MARK: Categories
@@ -122,6 +130,15 @@ class SettingsViewController: SettingsTableViewController {
                     titles: [
                         NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
                     ] + DataManager.shared.getCategories()
+                ),
+                SettingItem(
+                    type: "multi-select",
+                    key: "Library.lockedCategories",
+                    title: NSLocalizedString("LOCKED_CATEGORIES", comment: ""),
+                    values: DataManager.shared.getCategories(),
+                    notification: "updateLibraryLock",
+                    requires: "Library.lockLibrary",
+                    authToOpen: true
                 )
             ]),
             // MARK: Library updating
@@ -250,6 +267,7 @@ class SettingsViewController: SettingsTableViewController {
             guard let self = self else { return }
             if let categoryPrefsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("CATEGORIES", comment: "") }),
                let categoryIndex = self.items[categoryPrefsIndex].items?.firstIndex(where: { $0.key == "Library.defaultCategory" }),
+               let lockedCategoriesIndex = self.items[categoryPrefsIndex].items?.firstIndex(where: { $0.key == "Library.lockedCategories" }),
                let updatePrefsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("LIBRARY_UPDATING", comment: "") }),
                let excludedCategoriesIndex = self.items[updatePrefsIndex].items?.firstIndex(where: { $0.key == "Library.excludedUpdateCategories" }) {
                 let categories = DataManager.shared.getCategories()
@@ -257,6 +275,7 @@ class SettingsViewController: SettingsTableViewController {
                 self.items[categoryPrefsIndex].items?[categoryIndex].titles = [
                     NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
                 ] + categories
+                self.items[categoryPrefsIndex].items?[lockedCategoriesIndex].values = categories
                 self.items[updatePrefsIndex].items?[excludedCategoriesIndex].values = categories
                 // if a deleted category was selected, reset to always ask
                 if let selected = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,

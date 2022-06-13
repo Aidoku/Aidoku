@@ -28,6 +28,7 @@ struct SettingItem: Codable {
 
     var authToEnable: Bool?
     var authToDisable: Bool?
+    var authToOpen: Bool?
 
     // stepper
     var minimumValue: Double?
