@@ -26,11 +26,13 @@ class WasmHtml {
 
         try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
         try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.first)
-        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
+        try? globalStore.vm.addImportHandler(named: "next", namespace: namespace, block: self.next)
+        try? globalStore.vm.addImportHandler(named: "previous", namespace: namespace, block: self.previous)
 
         try? globalStore.vm.addImportHandler(named: "base_uri", namespace: namespace, block: self.baseUri)
         try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
+        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
         try? globalStore.vm.addImportHandler(named: "outer_html", namespace: namespace, block: self.outerHtml)
 
@@ -80,6 +82,20 @@ extension WasmHtml {
         }
     }
 
+    var attr: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, selector, selectorLength in
+            guard descriptor >= 0, selectorLength > 0 else { return -1 }
+            if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
+                if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.attr(selectorString) {
+                    return self.globalStore.storeStdValue(object, from: descriptor)
+                } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
+                    return self.globalStore.storeStdValue(object, from: descriptor)
+                 }
+            }
+            return -1
+        }
+    }
+
     var first: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
@@ -94,6 +110,26 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.last() {
+                return self.globalStore.storeStdValue(element, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var next: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let element = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.nextElementSibling() {
+                return self.globalStore.storeStdValue(element, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var previous: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let element = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.previousElementSibling() {
                 return self.globalStore.storeStdValue(element, from: descriptor)
             }
             return -1
@@ -139,20 +175,6 @@ extension WasmHtml {
             guard descriptor >= 0 else { return -1 }
             if let array = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.array() {
                 return self.globalStore.storeStdValue(array, from: descriptor)
-            }
-            return -1
-        }
-    }
-
-    var attr: (Int32, Int32, Int32) -> Int32 {
-        { descriptor, selector, selectorLength in
-            guard descriptor >= 0, selectorLength > 0 else { return -1 }
-            if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
-                if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.attr(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
-                } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
-                 }
             }
             return -1
         }
