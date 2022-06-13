@@ -142,12 +142,16 @@ class HistoryViewController: UIViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateHistory"), object: nil, queue: nil
         ) { [weak self] _ in
-//            self?.reloadHistory()
             self?.queueRefresh = true
         })
-
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("History.lockHistoryTab"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
+        })
+        // lock when app moves to background
+        observers.append(NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification, object: nil, queue: nil
         ) { [weak self] _ in
             self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         })
