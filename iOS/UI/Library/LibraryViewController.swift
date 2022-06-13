@@ -178,11 +178,17 @@ class LibraryViewController: MangaCollectionViewController {
         categories = DataManager.shared.getCategories()
 
         updateLockState(reload: false)
-        fetchLibrary()
+        Task { @MainActor in
+            await fetchLibrary()
+            collectionView.reloadData()
+        }
 
         // notification listeners
         let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
-            self?.fetchLibrary()
+            guard let self = self else { return }
+            Task {
+                await self.fetchLibrary()
+            }
         }
         let queueFetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
             self?.queueFetchLibrary = true
@@ -221,7 +227,9 @@ class LibraryViewController: MangaCollectionViewController {
         ) { [weak self] _ in
             guard let self = self else { return }
             self.updateLockState(reload: false)
-            self.fetchLibrary()
+            Task {
+                await self.fetchLibrary()
+            }
         })
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateCategories"), object: nil, queue: nil
@@ -232,7 +240,9 @@ class LibraryViewController: MangaCollectionViewController {
                 self.currentCategory = nil
             }
             self.updateLockState(reload: false)
-            self.fetchLibrary()
+            Task {
+                await self.fetchLibrary()
+            }
         })
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("downloadsQueued"), object: nil, queue: nil, using: updateNavbarBlock
@@ -262,7 +272,9 @@ class LibraryViewController: MangaCollectionViewController {
 
         if queueFetchLibrary {
             queueFetchLibrary = false
-            fetchLibrary()
+            Task {
+                await fetchLibrary()
+            }
         }
     }
 
@@ -514,15 +526,9 @@ extension LibraryViewController {
         }
     }
 
-    func fetchLibrary() {
-        Task {
-            await loadChaptersAndHistory()
-            if locked {
-                collectionView.reloadData()
-            } else {
-                reloadData()
-            }
-        }
+    func fetchLibrary() async {
+        await loadChaptersAndHistory()
+        reloadData()
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {
@@ -796,7 +802,9 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
             currentCategory = categories[index - 1]
         }
         updateLockState(reload: false)
-        fetchLibrary()
+        Task {
+            await fetchLibrary()
+        }
     }
 }
 

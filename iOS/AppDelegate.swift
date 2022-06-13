@@ -51,6 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.refreshMetadata": false,
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
+                "Browse.updateCount": 0,
                 "Browse.showNsfwSources": false,
                 "Browse.labelNsfwSources": true,
 
