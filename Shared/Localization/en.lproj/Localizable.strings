@@ -136,7 +136,7 @@
 
 // History
 "HISTORY" = "History";
-"%@_AGO" = "%@ ago\"; // x days ago\"PAGE_X_OF_X\" = \"Page %i of %i";
+"%@_AGO" = "%@ ago";
 "PAGE_X" = "Page %i";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "This will remove history for this chapter. Are you sure you want to continue?";
 "REMOVE_ALL_MANGA_HISTORY" = "Remove All Manga History";
@@ -238,3 +238,12 @@
 "CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
 "RESET_SETTINGS" = "Reset Settings";
 "RESET_SETTINGS_TEXT" = "This action is irreversible. All app and source settings will be reset.";
+"PAGE_X_OF_X" = "Page %i of %i";
+"LIBRARY_LOCKED" = "Library Locked";
+"CATEGORY_LOCKED" = "Category Locked";
+"VIEW_LIBRARY" = "View Library";
+"CATEGORY_EMPTY" = "Category Empty";
+"AUTH_TO_OPEN" = "Authenticate to open.";
+"LOCKED_CATEGORIES" = "Locked Categories";
+"AUTH_FOR_LIBRARY" = "Authenticate to view library.";
+"LOCK_LIBRARY" = "Lock Library";
