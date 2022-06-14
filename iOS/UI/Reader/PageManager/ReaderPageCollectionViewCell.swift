@@ -62,7 +62,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         KingfisherManager.shared.cache.retrieveImage(forKey: cacheKey) { result in
             switch result {
             case .success(let value):
-                self.pageView?.imageView.image = value.image
+                self.pageView?.imageViews.first?.image = value.image
             default:
                 break
             }
