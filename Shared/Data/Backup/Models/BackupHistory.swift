@@ -12,15 +12,17 @@ struct BackupHistory: Codable {
     var sourceId: String
     var chapterId: String
     var mangaId: String
-    var progress: Int
+    var progress: Int?
+    var total: Int?
     var completed: Bool
 
     init(historyObject: HistoryObject) {
-        dateRead = historyObject.dateRead
+        dateRead = historyObject.dateRead ?? Date.distantPast
         sourceId = historyObject.sourceId
         chapterId = historyObject.chapterId
         mangaId = historyObject.mangaId
         progress = Int(historyObject.progress)
+        total = Int(historyObject.total)
         completed = historyObject.completed
     }
 
@@ -35,7 +37,8 @@ struct BackupHistory: Codable {
         obj.sourceId = sourceId
         obj.chapterId = chapterId
         obj.mangaId = mangaId
-        obj.progress = Int16(progress)
+        obj.progress = Int16(progress ?? -1)
+        obj.total = Int16(total ?? 0)
         obj.completed = completed
         return obj
     }

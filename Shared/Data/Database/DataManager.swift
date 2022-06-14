@@ -80,14 +80,13 @@ class DataManager {
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
 
-        backgroundContext = container.newBackgroundContext()
-        backgroundContext.automaticallyMergesChangesFromParent = true
-        backgroundContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
-
         container.loadPersistentStores { desciption, error in
             if let error = error {
                 LogManager.logger.error("CoreData Error: \(error)")
             } else if desciption.configuration == "Cloud" {
+                self.backgroundContext = self.container.newBackgroundContext()
+                self.backgroundContext.automaticallyMergesChangesFromParent = true
+                self.backgroundContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
                 self.loadLibrary()
             }
         }
@@ -227,7 +226,7 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("reloadLibrary"), object: nil)
     }
 
-    func loadLibrary() {
+    func loadLibrary(checkUpdate: Bool = true) {
         guard let libraryObjects = try? getLibraryObjects() else { return }
         let newLibrary = libraryObjects.compactMap { libraryObject -> Manga? in
             if let oldManga = libraryManga.first(where: {
@@ -257,6 +256,8 @@ extension DataManager {
             save()
         }
         libraryManga = finalLibrary
+
+        guard checkUpdate else { return }
 
         Task.detached {
             let lastUpdated = UserDefaults.standard.double(forKey: "Library.lastUpdated")
@@ -319,51 +320,58 @@ extension DataManager {
         }
     }
 
-    func updateLibrary() async {
+    func updateLibrary(forceAll: Bool = false, context: NSManagedObjectContext? = nil) async {
+        let context = context ?? backgroundContext ?? container.viewContext
+
         if UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi") && Reachability.getConnectionType() != .wifi {
             return
         }
 
-        if UserDefaults.standard.bool(forKey: "Library.refreshMetadata") {
+        if forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata") {
             await getLatestMangaDetails()
         }
 
         let skipOptions = UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
         let excludedCategories = UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
 
-        for manga in libraryManga {
-            if (skipOptions.contains("completed") && manga.status == .completed)
-                || (skipOptions.contains("notStarted") && !hasHistory(for: manga, context: backgroundContext))
-                || (skipOptions.contains("hasUnread") && hasUnread(manga: manga, context: backgroundContext)) {
-                continue
-            }
-            let mangaCategories = getCategories(for: manga)
-            if excludedCategories.contains(where: mangaCategories.contains) {
-                continue
-            }
-            let chapters = await getChapters(for: manga, fromSource: true)
-            backgroundContext.perform {
-                if let mangaObject = self.getMangaObject(for: manga, context: self.backgroundContext) {
+        let newChapters: [[Chapter]] = await (try? libraryManga.concurrentMap { await self.getChapters(for: $0, fromSource: true) }) ?? []
+
+        context.perform {
+            for (i, manga) in self.libraryManga.enumerated() {
+                if !forceAll {
+                    if (skipOptions.contains("completed") && manga.status == .completed)
+                        || (skipOptions.contains("notStarted") && !self.hasHistory(for: manga, context: context))
+                        || (skipOptions.contains("hasUnread") && self.hasUnread(manga: manga, context: context)) {
+                        continue
+                    }
+                    let mangaCategories = self.getCategories(for: manga)
+                    if excludedCategories.contains(where: mangaCategories.contains) {
+                        continue
+                    }
+                }
+                if let mangaObject = self.getMangaObject(for: manga, createIfMissing: false, context: context) {
                     mangaObject.load(from: manga)
+                    guard i < newChapters.count else { continue }
+                    let chapters = newChapters[i]
                     if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                        self.set(chapters: chapters, for: manga, context: self.backgroundContext)
+                        self.set(chapters: chapters, for: manga, context: context)
                         mangaObject.libraryObject?.lastUpdated = Date()
                     }
                 }
             }
+
+            self.save(context: context)
+
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
         }
-
-        save(context: backgroundContext)
-
-        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
     }
 
-    func clearLibrary(context: NSManagedObjectContext? = nil) {
-        guard let items = try? getLibraryObjects(context: context) else { return }
+    func clearLibrary() {
+        guard let items = try? getLibraryObjects() else { return }
         for item in items {
             container.viewContext.delete(item)
         }
-        guard save(context: context) else { return }
+        guard save() else { return }
         libraryManga = []
     }
 
@@ -405,7 +413,10 @@ extension DataManager {
 extension DataManager {
 
     func add(manga: Manga, context: NSManagedObjectContext? = nil) -> MangaObject? {
-        if libraryContains(manga: manga) { return getMangaObject(for: manga, createIfMissing: false, context: context) }
+        if libraryContains(manga: manga),
+           let mangaObject = getMangaObject(for: manga, createIfMissing: false, context: context) {
+            return mangaObject
+        }
 
         let mangaObject = MangaObject(context: context ?? container.viewContext)
         mangaObject.load(from: manga)
@@ -440,38 +451,36 @@ extension DataManager {
         }
     }
 
-    func clearManga(context: NSManagedObjectContext? = nil) {
-        let context = context ?? container.viewContext
-        context.perform {
-            if let items = try? self.getMangaObjects(context: context) {
-                for item in items {
-                    context.delete(item)
-                }
-                self.save(context: context)
-            }
+    func clearManga() {
+        guard let items = try? getMangaObjects() else { return }
+        for item in items {
+            container.viewContext.delete(item)
         }
+        save()
     }
 
     // Clear stored manga not in library
     func purgeManga(context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
-        guard let allManga = try? getMangaObjects(context: context) else { return }
-        for manga in allManga {
-            guard manga.libraryObject == nil else { continue }
-            context.delete(manga)
+        context.perform {
+            guard let allManga = try? self.getMangaObjects(context: context) else { return }
+            for manga in allManga {
+                guard manga.libraryObject == nil else { continue }
+                context.delete(manga)
+            }
+            self.save(context: context)
         }
-        _ = save(context: context)
     }
 
     func getMangaObject(withId id: String, sourceId: String, context: NSManagedObjectContext? = nil) -> MangaObject? {
-        try? getMangaObjects(
+        (try? getMangaObjects(
             predicate: NSPredicate(
                 format: "sourceId = %@ AND id = %@",
                 sourceId, id
             ),
             limit: 1,
             context: context
-        ).first
+        ))?.first
     }
 
     func getMangaObject(for manga: Manga, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> MangaObject? {
@@ -773,6 +782,8 @@ extension DataManager {
     func getReadHistory(manga: Manga) -> [String: (Int, Int)] {
         var readHistory: [HistoryObject]?
 
+        var updatedReadHistory = false
+
         container.viewContext.performAndWait {
             readHistory = try? getReadHistory(
                 predicate: NSPredicate(format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id)
@@ -781,6 +792,7 @@ extension DataManager {
             // previously, aidoku would only add read history when marking as read rather than marking as completed
             // this can probably be removed in the future since it only exists to aid migration
             for history in readHistory ?? [] where history.progress < 1 {
+                updatedReadHistory = true
                 history.completed = true
             }
         }
@@ -791,15 +803,19 @@ extension DataManager {
         for history in readHistory {
             // remove duplicate read history objects for the same chapter
             if readHistoryDict[history.chapterId] != nil {
+                updatedReadHistory = true
                 container.viewContext.delete(history)
                 continue
             }
-            readHistoryDict[history.chapterId] = (history.completed || history.progress < 1
-                                          ? -1
-                                          : Int(history.progress), Int(history.dateRead.timeIntervalSince1970))
+            readHistoryDict[history.chapterId] = (
+                history.completed || history.progress < 1 ? -1 : Int(history.progress),
+                Int((history.dateRead ?? Date.distantPast).timeIntervalSince1970)
+            )
         }
 
-        save()
+        if updatedReadHistory {
+            save()
+        }
 
         return readHistoryDict
     }

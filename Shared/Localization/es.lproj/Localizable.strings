@@ -18,7 +18,6 @@
 "ADD_TO_LIBRARY" = "Agregar a la Biblioteca";
 "REMOVE_FROM_LIBRARY" = "Eliminar de la Biblioteca";
 "MANGA_INFO" = "Información del manga";
-
 "SORT_BY" = "Ordenar Por";
 "TITLE" = "Título";
 "LAST_OPENED" = "Última vez abierto";
@@ -29,12 +28,11 @@
 // Browse
 "BROWSE" = "Explorar";
 "BROWSE_NO_SOURCES" = "No hay fuentes";
-"BROWSE_NO_SOURCES_TEXT" = "Configura tu lista de fuentes o abre una \nfuente en Aidoku para comenzar ";
+"BROWSE_NO_SOURCES_TEXT" = "Configura tu lista de fuentes o abre una \nfuente en Aidoku para comenzar";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Guía para agregar fuentes";
 "UPDATES" = "Actualizaciones";
 "INSTALLED" = "Instalado";
 "EXTERNAL" = "Externo";
-
 "BUTTON_UPDATE" = "ACTUALIZAR";
 "BUTTON_GET" = "OBTENER";
 "BUTTON_ERROR" = "ERROR";
@@ -52,14 +50,12 @@
 // Manga
 "UNTITLED" = "Sin título";
 "ONGOING" = "En curso";
-"CANCLLED" = "Cancelado";
 "COMPLETED" = "Completado";
 "HIATUS" = "Hiatus";
 "SUGGESTIVE" = "Insinuante";
 "NSFW" = "NSFW";
 "MORE" = "más";
 "SOURCE_ORDER" = "Orden de fuentes";
-
 "MISSING_SOURCE" = "Fuente faltante";
 "MISSING_SOURCE_TEXT" = "Parece que falta la fuente original para este manga. Vuelve a descargarla o elimina este manga de tu biblioteca.";
 
@@ -75,7 +71,6 @@
 "MARK_PREVIOUS" = "Marcar anterior";
 "MARK_READ" = "Marcar como leído";
 "MARK_UNREAD" = "Marcar como no leído";
-
 "READER_SETTINGS" = "Configuración del lector";
 "READING_MODE" = "Modo de lectura";
 "DEFAULT" = "Por Defecto";
@@ -84,8 +79,7 @@
 "VERTICAL" = "Vertical";
 "VERTICAL_SCROLL" = "Desplazamiento Vertical";
 "EXPERIMENTAL" = "Experimental";
-"INFINITE_VERTICAL_SCROLL" = " Desplazamiento Vertical Infinito";
-
+"INFINITE_VERTICAL_SCROLL" = "Desplazamiento Vertical Infinito";
 "SAVE_TO_PHOTOS" = "Guardar en Fotos";
 
 // Search
@@ -94,38 +88,31 @@
 
 // Settings
 "SETTINGS" = "Configuración";
-
 "ABOUT" = "Acerca";
 "GITHUB_REPO" = "Repositorio de GitHub";
 "DISCORD_SERVER" = "Servidor de Discord";
 "SUPPPORT_DEVELOPMENT" = "Apoya el Desarrollo";
-
 "GENERAL" = "General";
 "ICLOUD_SYNC" = "Sincronización con iCloud";
 "APPEARANCE" = "Apariencia";
 "APPEARANCE_LIGHT" = "Claro";
 "APPEARANCE_DARK" = "Oscuro";
 "USE_SYSTEM_APPEARANCE" = "Usar apariencia del sistema";
-
 "MANGA_PER_ROW" = "Manga por fila";
 "PORTRAIT" = "Vertical";
 "LANDSCAPE" = "Horizontal";
-
 "OPEN_READER_VIEW" = "Abrir vista del lector";
 "UNREAD_CHAPTER_BADGES" = "Insignias de capítulos sin leer";
 "PIN_MANGA" = "Anclar Manga";
 "PIN_MANGA_TYPE" = "Anclar por Tipo";
 "PIN_MANGA_UNREAD" = "No leído";
 "PIN_MANGA_UPDATED" = "Actualizado";
-
 "SOURCE_LISTS" = "Lista de fuentes";
 "SOURCE_LIST_ADDED" = "Lista de fuentes agregadas";
-"SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración";
+"SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración.";
 "SHOW_NSFW_SOURCES" = "Mostrar fuentes NSFW";
-
 "READER" = "Lector";
 "DOWNSAMPLE_IMAGES" = "Reducir resolución de imágenes";
-
 "BACKUPS" = "Copias de seguridad";
 "BACKUP_NAME" = "Nombre de la copia de seguridad";
 "RENAME_BACKUP" = "Renombrar copia de seguridad";
@@ -133,8 +120,6 @@
 "CORRUPTED_BACKUP" = "Copia de seguridad corrupta";
 "CORRUPTED_BACKUP_TEXT" = "Esta copia de seguridad parece tener datos mal configurados. No es posible cambiar el nombre.";
 "BACKUP_INFO" = "Mantén presionada una copia de seguridad para exportarla o desliza hacia la izquierda para eliminarla.";
-"BACKUP_MISSING_SOURCES" = "Fuentes Faltantes";
-"BACKUP_MISSING_SOURCES_TEXT" = "La copia de seguridad restaurada puede contener datos de las siguientes fuentes, que no están instaladas actualmente:";
 "RESTORE_BACKUP" = "Restaurar a esta copia de seguridad?";
 "RESTORE_BACKUP_TEXT" = "Todos los datos actuales serán eliminados y reemplazados por los datos de esta copia de seguridad.";
 "BACKUP_IMPORT_SUCCESS" = "Copia de seguridad importada";
@@ -143,9 +128,7 @@
 "BACKUP_IMPORT_FAIL_TEXT" = "No se pudo guardar la copia de seguridad. Revisa que la copia de seguridad esté en el formato adecuado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";
-
 "ADVANCED" = "Avanzado";
-"RESET" = "Reiniciar";
 "RESET_TEXT" = "Esta acción es irreversible. Todos los datos, configuraciones y cachés se borrarán y restablecerán.";
 "CLEAR_CHAPTER_CACHE" = "Borrar caché de capítulos";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Esta acción es irreversible. Los capítulos almacenados en el caché se borrarán y se volverán a descargar.";
@@ -155,3 +138,69 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "Esta acción es irreversible. Las solicitudes de red y las imágenes almacenadas en caché se borrarán.";
 "CLEAR_READ_HISTORY" = "Borrar historial de lectura";
 "CLEAR_READ_HISTORY_TEXT" = "Esta acción es irreversible. Se eliminará todo el historial de lectura.";
+"REMOVE" = "Remover";
+"CLEAR" = "Limpiar";
+"SHARE" = "Compartir";
+"CANCEL_DOWNLOAD" = "Cancelar descarga";
+"REMOVE_DOWNLOAD" = "Eliminar descarga";
+"REMOVE_ALL_DOWNLOADS" = "Eliminar todas las descargas";
+"REMOVE_DOWNLOADS" = "Eliminar descargas";
+
+// Downloads
+"DOWNLOAD" = "Descargar";
+"DOWNLOADED" = "Descargado";
+"DOWNLOAD_QUEUE" = "Cola de descargas";
+"CATEGORY_ADD_TEXT" = "Escribe el título de la nueva categoría a crear.";
+"DEFAULT_CATEGORY" = "Categoría por defecto";
+"ALWAYS_ASK" = "Siempre preguntar";
+"DESELECT_ALL" = "Deseleccionar";
+"VOLUME_X" = "Volumen %g";
+"VOL_X" = "Vol.%g";
+"CH_X" = "Cap.%g";
+"VOL_SPACE_X" = "Vol. %g";
+"MARK" = "Marcar";
+"PREVIOUS_COLON" = "Anterior:";
+"NEXT_COLON" = "Siguiente:";
+"CURRENT_COLON" = "Actual:";
+"NO_NEXT_CHAPTER" = "No hay próximo capítulo";
+"NO_PREVIOUS_CHAPTER" = "No hay capítulo anterior";
+
+// History
+"HISTORY" = "Historial";
+"PAGE_X" = "Página %i";
+"VIEW_HISTORY" = "Ver historial";
+"INCOGNITO_MODE" = "Modo Incógnito";
+"INCOGNITO_MODE_TEXT" = "Pausa el historial de lectura cuando está habilitado";
+"LIBRARY_UPDATING" = "Actualizando biblioteca";
+"UPDATE_INTERVAL" = "Intervalo de actualización";
+"ONLY_UPDATE_ON_WIFI" = "Solo actualizar con Wi-Fi";
+"REFRESH_METADATA" = "Refrescar Metadata";
+"EVERY_12_HOURS" = "Cada 12 horas";
+"EVERY_2_DAYS" = "Cada 2 días";
+"WEEKLY" = "Semanalmente";
+"SOURCE_LIST_ADD_FAIL" = "Fallo al agregar la lista de fuentes";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "El enlace de la lista de fuentes es inválido o ya ha sido agregado.";
+"SAVE_IMAGE_OPTION" = "Opción de guardar imagen";
+"LOADING_ELLIPSIS" = "Cargando…";
+"LANGUAGES" = "Idiomas";
+"SELECT_CHAPTERS" = "Seleccionar capítulos";
+"REMOVE_DOWNLOADS_CONFIRM" = "Estás seguro de eliminar todas las descargas seleccionadas?";
+"CATEGORY_ADD" = "Agregar categoría";
+"CATEGORY_TITLE" = "Título de categoría";
+"FILTER_BY" = "Filtrar Por";
+"CANCELLED" = "Cancelado";
+"SELECT_ALL" = "Seleccionar todos";
+"SKIP_TITLES" = "Saltar títulos";
+"DAILY" = "Diariamente";
+"CATEGORIES" = "Categorías";
+"EDIT_CATEGORIES" = "Editar categorías";
+"CHAPTERS" = "Capítulos";
+"CHAPTER_X" = "Capítulo %g";
+"FINISHED_COLON" = "Terminado:";
+"EXCLUDED_CATEGORIES" = "Excluir categorías";
+"SOURCE_LIST_URL" = "Enlace de lista de fuentes";
+"NEVER" = "Nunca";
+"MISSING_SOURCES_TEXT" = "La copia de seguridad restaurada puede contener datos de las siguientes fuentes, que no están instaladas actualmente:";
+"SOURCE_LIST_ADD" = "Agregar lista de fuentes";
+"MISSING_SOURCES" = "Fuentes Faltantes";
+"CH_SPACE_X" = "Cap. %g";

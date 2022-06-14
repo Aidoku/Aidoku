@@ -15,7 +15,7 @@ class MangaCollectionViewController: UIViewController {
         case downloaded
     }
 
-    var collectionView: UICollectionView?
+    var collectionView: UICollectionView!
     var manga: [Manga] = []
     var pinnedManga: [Manga] = []
 

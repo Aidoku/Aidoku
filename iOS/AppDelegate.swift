@@ -39,14 +39,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.unreadChapterBadges": true,
                 "Library.pinManga": false,
                 "Library.pinMangaType": 0,
+                "Library.lockLibrary": false,
+
+                "Library.defaultCategory": [""],
+                "Library.lockedCategories": [],
+
                 "Library.updateInterval": "daily",
                 "Library.skipTitles": ["hasUnread", "completed", "notStarted"],
                 "Library.excludedUpdateCategories": [],
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
-                "Library.defaultCategory": [""],
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
+                "Browse.updateCount": 0,
                 "Browse.showNsfwSources": false,
                 "Browse.labelNsfwSources": true,
 
@@ -55,7 +60,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.readingMode": "default",
                 "Reader.downsampleImages": true,
                 "Reader.saveImageOption": true,
-                "Reader.verticalInfiniteScroll": false
+                "Reader.verticalInfiniteScroll": false,
+                "Reader.pagesToPreload": 2,
+                "Reader.pagedPageLayout": "auto"
             ]
         )
 

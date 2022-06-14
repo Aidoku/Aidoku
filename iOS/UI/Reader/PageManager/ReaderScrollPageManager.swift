@@ -8,15 +8,6 @@
 import UIKit
 import Kingfisher
 
-extension UIImage {
-    func sizeToFit(_ pageSize: CGSize) -> CGSize {
-        guard size.height * size.width * pageSize.width * pageSize.height > 0 else { return .zero }
-
-        let scaledHeight = size.height * (pageSize.width / size.width)
-        return CGSize(width: pageSize.width, height: scaledHeight)
-    }
-}
-
 class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     weak var delegate: ReaderPageManagerDelegate?
@@ -44,7 +35,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var collectionView: UICollectionView!
 
     var sizeCache: [String: CGSize] = [:]
-    var dataCache: [String: Data] = [:] // in order to avoid re-parsing base64 data
+    var dataCache: [String: Bool] = [:]
     var lastSize: CGSize?
 
     var chapterList: [Chapter] = []
@@ -56,6 +47,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var hasNextChapter = false
     var hasPreviousChapter = false
 
+    var pagesToPreload: Int = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+
     var targetPage: Int?
     var shouldMoveToTargetPage = true
     var transitioningChapter = false
@@ -63,6 +56,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var previousPageIndex = 0
 
     var currentIndex: Int {
+        guard collectionView != nil else { return 0 }
         let offset = CGPoint(x: 0, y: collectionView.contentOffset.y + 100)
         if let path = collectionView.indexPathForItem(at: offset) {
             if path.section == 1 {
@@ -118,6 +112,28 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         }
     }
 
+    override init() {
+        super.init()
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+            if !self.infiniteScroll {
+                self.previousPages = []
+                self.previousChapter = nil
+                self.nextPages = []
+                self.nextChapter = nil
+            }
+            Task { @MainActor in
+                self.collectionView?.reloadData()
+            }
+        })
+        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagesToPreload"), object: nil, queue: nil) { _ in
+            self.pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+        })
+    }
+
     func attach(toParent parent: UIViewController) {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
@@ -143,22 +159,6 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.bottomAnchor.constraint(equalTo: parent.view.bottomAnchor).isActive = true
 
         infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
-
-        observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
-            if !self.infiniteScroll {
-                self.previousPages = []
-                self.previousChapter = nil
-                self.nextPages = []
-                self.nextChapter = nil
-            }
-            Task { @MainActor in
-                self.collectionView?.reloadData()
-            }
-        })
     }
 
     func remove() {
@@ -321,7 +321,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 continue
             }
             let path = IndexPath(item: i + 1, section: 1)
-            if dataCache[pages[i].key] != nil {
+            if !(dataCache[pages[i].key] ?? false) {
                 // fetching the cell will automatically trigger it to fetch the image
                 _ = collectionView(collectionView, cellForItemAt: path)
             }
@@ -330,6 +330,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     @MainActor
     func append(chapter: Chapter, toFront: Bool = false) async {
+        guard collectionView != nil else { return }
+
         if toFront {
             guard previousChapter != chapter else { return }
 
@@ -346,10 +348,10 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             let bottomOffset = collectionView.contentSize.height - collectionView.contentOffset.y
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([0])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([0])
             } completion: { _ in
-                self.collectionView.setContentOffset(
+                self.collectionView?.setContentOffset(
                     CGPoint(x: 0, y: self.collectionView.contentSize.height - bottomOffset),
                     animated: false
                 )
@@ -368,8 +370,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 nextPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
             }
 
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([2])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([2])
             }
         }
     }
@@ -387,8 +389,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         nextChapter = nil
         nextPages = []
 
-        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
-        collectionView.reloadData()
+        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
+        collectionView?.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true
@@ -404,8 +406,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         previousChapter = nil
         previousPages = []
 
-        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
-        collectionView.reloadData()
+        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
+        collectionView?.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true
@@ -525,15 +527,20 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
             } else if indexPath.item >= pages.count + 1 {
                 if let chapter = chapter {
                     cell.infoView?.currentChapter = chapter
+
+                    // mark chapter read if next chapter info page is displayed
+                    if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                        DataManager.shared.setCompleted(chapter: chapter, context: DataManager.shared.backgroundContext)
+                    }
                 }
                 cell.infoView?.nextChapter = targetNextChapter
                 cell.infoView?.previousChapter = nil
             } else {
-                setImages(for: (indexPath.item)..<(indexPath.item + 2)) // preload next two pages
+                setImages(for: (indexPath.item)..<(indexPath.item + pagesToPreload)) // preload next set pages amount
             }
             if let page = page {
-                if let data = dataCache[page.key] {
-                    cell.setPageData(data: data)
+                if dataCache[page.key] ?? false {
+                    cell.setPage(cacheKey: page.key)
                 } else {
                     cell.setPage(page: page)
                 }
@@ -591,8 +598,8 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                     cell.convertToPage()
                     cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                     cell.pageView?.delegate = self
-                    if let data = dataCache[pages[indexPath.item - 1].key] {
-                        cell.setPageData(data: data)
+                    if dataCache[pages[indexPath.item - 1].key] ?? false {
+                        cell.setPage(cacheKey: pages[indexPath.item - 1].key)
                     } else {
                         cell.setPage(page: pages[indexPath.item - 1])
                     }
@@ -623,10 +630,9 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
             sizeCache[key] = image.sizeToFit(collectionView.frame.size)
             collectionView.collectionViewLayout.invalidateLayout()
             Task.detached {
-                // convert image to data in background
-                let imageData = image.pngData()
+                KingfisherManager.shared.cache.store(image, forKey: key)
                 Task { @MainActor in
-                    self.dataCache[key] = imageData
+                    self.dataCache[key] = true
                     if let targetPage = self.targetPage, self.shouldMoveToTargetPage, self.sizeCache.count >= targetPage {
                         self.shouldMoveToTargetPage = false
                         self.move(toPage: targetPage)
@@ -660,8 +666,7 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
                 image: UIImage(systemName: "square.and.arrow.up")
             ) { _ in
                 if let pageView = interaction.view as? UIImageView, let image = pageView.image {
-                    let items = [image]
-                    let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                    let activityController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
                     self.collectionView.parentViewController?.present(activityController, animated: true)
                 }
             }

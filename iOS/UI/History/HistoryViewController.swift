@@ -38,6 +38,7 @@ class HistoryViewController: UIViewController {
             tableView.tableFooterView?.isHidden = !loadingMore
         }
     }
+    var loadingTask: Task<(), Never>?
     var reachedEnd = false
     var queueRefresh = false
 
@@ -144,12 +145,16 @@ class HistoryViewController: UIViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateHistory"), object: nil, queue: nil
         ) { [weak self] _ in
-//            self?.reloadHistory()
             self?.queueRefresh = true
         })
-
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("History.lockHistoryTab"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
+        })
+        // lock when app moves to background
+        observers.append(NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification, object: nil, queue: nil
         ) { [weak self] _ in
             self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         })
@@ -222,6 +227,11 @@ class HistoryViewController: UIViewController {
     }
 
     func reloadHistory() {
+        if loadingMore {
+            loadingTask?.cancel()
+            loadingTask = nil
+            loadingMore = false
+        }
         entries = []
         filteredSearchEntries = []
         shownMangaKeys = []
@@ -238,7 +248,7 @@ class HistoryViewController: UIViewController {
         loadingMore = true
         let entries = entries
         let offset = offset
-        Task.detached {
+        loadingTask = Task.detached {
             var historyDict: [Int: [HistoryEntry]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
             let historyObj = (try? DataManager.shared.getReadHistory(limit: 15, offset: offset)) ?? []
             // all history is displayed
@@ -251,7 +261,11 @@ class HistoryViewController: UIViewController {
             }
             var mangaKeys: [String] = await self.shownMangaKeys
             for obj in historyObj {
-                let days = Calendar.autoupdatingCurrent.dateComponents(Set([Calendar.Component.day]), from: obj.dateRead, to: Date()).day ?? 0
+                let days = Calendar.autoupdatingCurrent.dateComponents(
+                    Set([Calendar.Component.day]),
+                    from: obj.dateRead ?? Date.distantPast,
+                    to: Date()
+                ).day ?? 0
                 var arr = historyDict[days] ?? []
 
                 let key = "\(obj.sourceId).\(obj.mangaId)"
@@ -267,7 +281,7 @@ class HistoryViewController: UIViewController {
                 let new = HistoryEntry(
                     manga: manga,
                     chapter: chapter,
-                    date: obj.dateRead,
+                    date: obj.dateRead ?? Date.distantPast,
                     currentPage: obj.completed ? -1 : Int(obj.progress),
                     totalPages: Int(obj.total)
                 )
@@ -280,7 +294,7 @@ class HistoryViewController: UIViewController {
                 self.shownMangaKeys = finalMangaKeys
                 self.entries = finalHistoryDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
                 self.offset += 15
-                if entries.isEmpty || self.entries.count < entries.count {
+                if entries.isEmpty || self.entries.count < entries.count || self.tableView.numberOfSections == 0 {
                     self.tableView.reloadData()
                 } else {
                     self.tableView.performBatchUpdates {
@@ -338,8 +352,10 @@ class HistoryViewController: UIViewController {
         )
 
         let action = UIAlertAction(title: NSLocalizedString("CLEAR", comment: ""), style: .destructive) { _ in
-            DataManager.shared.clearHistory()
-            self.reloadHistory()
+            Task { @MainActor in
+                DataManager.shared.clearHistory()
+                self.reloadHistory()
+            }
         }
         alertView.addAction(action)
 
@@ -401,6 +417,7 @@ extension HistoryViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard section < filteredSearchEntries.count else { return nil }
         let days = filteredSearchEntries[section].0
         let now = Date()
         let date = now.addingTimeInterval(-86400 * Double(days))
@@ -433,6 +450,10 @@ extension HistoryViewController: UITableViewDataSource {
             cell = HistoryTableViewCell(reuseIdentifier: "HistoryTableViewCell")
         }
         guard let cell = cell else { return UITableViewCell() }
+        guard indexPath.section < filteredSearchEntries.count,
+              indexPath.row < filteredSearchEntries[indexPath.section].1.count else {
+            return cell
+        }
         cell.entry = filteredSearchEntries[indexPath.section].1[indexPath.row]
         return cell
     }

@@ -6,12 +6,13 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ReaderPageCollectionViewCell: UICollectionViewCell {
 
     var sourceId: String?
 
-    var pageView: ReaderPageView?
+    var pageView: ReaderScrollPageView?
     var infoView: ReaderInfoPageView?
 
     func convertToPage() {
@@ -20,8 +21,7 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         infoView?.removeFromSuperview()
         infoView = nil
 
-        pageView = ReaderPageView(sourceId: sourceId ?? "")
-        pageView?.zoomEnabled = false
+        pageView = ReaderScrollPageView(sourceId: sourceId ?? "")
         pageView?.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageView!)
 
@@ -57,13 +57,24 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
         }
     }
 
+    func setPage(cacheKey: String) {
+        KingfisherManager.shared.cache.retrieveImage(forKey: cacheKey) { result in
+            switch result {
+            case .success(let value):
+                self.pageView?.imageView.image = value.image
+            default:
+                break
+            }
+        }
+    }
+
     func setPageImage(url: String, key: String) {
         guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
         pageView?.setPageImage(url: url, key: key)
     }
 
     func setPageImage(base64: String, key: String) {
-        self.pageView?.setPageImage(base64: base64, key: key)
+        pageView?.setPageImage(base64: base64, key: key)
     }
 
     func setPageData(data: Data, key: String? = nil) {

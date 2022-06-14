@@ -26,6 +26,10 @@ class Reachability {
 
         guard flags.contains(.reachable) else { return .none }
 
-        return flags.contains(.isWWAN) ? .cellular : .wifi
+        #if os(OSX)
+            return .wifi
+        #else
+            return flags.contains(.isWWAN) ? .cellular : .wifi
+        #endif
     }
 }
