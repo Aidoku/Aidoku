@@ -132,13 +132,7 @@
 "VERTICAL_SCROLL" = "Vertical Scroll";
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = "Infinite Vertical Scrolling";
-
-"PAGES_PER_VIEW" = "Pages Per View";
-"PAGES_TO_PRELOAD" = "Pages to Preload";
-
 "SAVE_TO_PHOTOS" = "Save to Photos";
-"SET_AS_WIDE_PAGE" = "Set as Wide Page";
-"SET_AS_NORMAL_PAGE" = "Set as Normal Page";
 
 // History
 "HISTORY" = "History";
