@@ -943,7 +943,6 @@
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
 				FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */,
-				37514B362855701200FD4BF4 /* Collection.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
@@ -1053,7 +1052,6 @@
 				FB72501A27CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
 				FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */,
 				FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
-				37514B372855701300FD4BF4 /* Collection.swift in Sources */,
 				FB4EEBBD27A2F103005081A3 /* LibraryMangaObject.swift in Sources */,
 				FB1B486B277CE76B0056D02C /* Page.swift in Sources */,
 				FBE7812D282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
@@ -1259,7 +1257,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.4.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jimphieffer.Aidoku;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1298,7 +1296,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.4.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jimphieffer.Aidoku;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;

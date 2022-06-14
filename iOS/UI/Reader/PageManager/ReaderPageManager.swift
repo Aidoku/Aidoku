@@ -19,6 +19,9 @@ protocol ReaderPageManager {
     func setChapter(chapter: Chapter, startPage: Int)
     func move(toPage: Int, animated: Bool, reversed: Bool)
 
+    func nextPage()
+    func previousPage()
+
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator)
 }
 

@@ -545,69 +545,100 @@ extension ReaderViewController {
     }
 
     override var keyCommands: [UIKeyCommand]? {
-        var nextPageKey: String
-        var previousPageKey: String
+        let nextPageKey: String
+        let previousPageKey: String
+        var nextPageKey2 = UIKeyCommand.inputDownArrow
+        var previousPageKey2 = UIKeyCommand.inputUpArrow
+
         if readingMode == .rtl {
             nextPageKey = UIKeyCommand.inputLeftArrow
             previousPageKey = UIKeyCommand.inputRightArrow
-        } else if readingMode == .scroll || readingMode == .vertical {
-            nextPageKey = UIKeyCommand.inputDownArrow
-            previousPageKey = UIKeyCommand.inputUpArrow
+            nextPageKey2 = UIKeyCommand.inputUpArrow
+            previousPageKey2 = UIKeyCommand.inputDownArrow
         } else {
             nextPageKey = UIKeyCommand.inputRightArrow
             previousPageKey = UIKeyCommand.inputLeftArrow
         }
         return [
-            UIKeyCommand(title: "Next Page",
-                         action: #selector(nextPage),
-                         input: nextPageKey,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Previous Page",
-                         action: #selector(previousPage),
-                         input: previousPageKey,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Next Chapter",
-                         action: #selector(nextChapter),
-                         input: nextPageKey,
-                         modifierFlags: [.command],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Previous Chapter",
-                         action: #selector(previousChapter),
-                         input: previousPageKey,
-                         modifierFlags: [.command],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Close Reader",
-                         action: #selector(close),
-                         input: UIKeyCommand.inputEscape,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Open Chapter List Popover",
-                         action: #selector(openChapterSelectionPopoverWrapper),
-                         input: "\t",
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off)
+            UIKeyCommand(
+                title: "Next Page",
+                action: #selector(nextPage),
+                input: nextPageKey,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Next Page",
+                action: #selector(nextPage),
+                input: nextPageKey2,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Previous Page",
+                action: #selector(previousPage),
+                input: previousPageKey,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Previous Page",
+                action: #selector(previousPage),
+                input: previousPageKey2,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Next Chapter",
+                action: #selector(nextChapter),
+                input: nextPageKey,
+                modifierFlags: [.command],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Previous Chapter",
+                action: #selector(previousChapter),
+                input: previousPageKey,
+                modifierFlags: [.command],
+                alternates: [],
+                attributes: [],
+                state: .off),
+            UIKeyCommand(
+                title: "Close Reader",
+                action: #selector(close),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Open Chapter List Popover",
+                action: #selector(openChapterSelectionPopoverWrapper),
+                input: "\t",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
         ]
     }
 
     @objc func nextPage() {
-        pageManager.move(toPage: currentPageIndex + 1, animated: true, reversed: false)
+        pageManager.nextPage()
     }
     @objc func previousPage() {
-        pageManager.move(toPage: currentPageIndex - 1, animated: true, reversed: true)
+        pageManager.previousPage()
     }
     @objc func nextChapter() {
         chapter = chapterList[chapterIndex + 1]

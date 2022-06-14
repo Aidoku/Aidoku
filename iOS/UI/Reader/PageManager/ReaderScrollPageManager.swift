@@ -229,6 +229,34 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         delegate?.didMove(toPage: page)
     }
 
+    func nextPage() {
+        guard collectionView != nil else { return }
+        let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
+        var offset = collectionView.contentOffset.y + (UIScreen.main.bounds.height - insets)
+        if offset > collectionView.contentSize.height - collectionView.bounds.height {
+            offset = collectionView.contentSize.height - collectionView.bounds.height
+        }
+        collectionView.setContentOffset(
+            CGPoint(x: collectionView.contentOffset.x, y: offset),
+            animated: true
+        )
+        scrollViewDidEndDragging(collectionView, willDecelerate: false)
+    }
+
+    func previousPage() {
+        guard collectionView != nil else { return }
+        let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
+        var offset = collectionView.contentOffset.y - (UIScreen.main.bounds.height - insets)
+        if offset < 0 {
+            offset = 0
+        }
+        collectionView.setContentOffset(
+            CGPoint(x: collectionView.contentOffset.x, y: offset),
+            animated: true
+        )
+        scrollViewDidEndDragging(collectionView, willDecelerate: false)
+    }
+
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animate(alongsideTransition: nil) { _ in
             for (key, value) in self.sizeCache {
