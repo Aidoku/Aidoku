@@ -12,26 +12,47 @@ class ReaderSettingsViewController: SettingsTableViewController {
     init() {
         super.init(items: [
             SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
-                SettingItem(type: "select", key: "Reader.readingMode", title: NSLocalizedString("READING_MODE", comment: ""),
-                            values: ["default", "rtl", "ltr", "vertical", "scroll"],
-                            titles: [
-                                NSLocalizedString("DEFAULT", comment: ""),
-                                NSLocalizedString("RTL", comment: ""),
-                                NSLocalizedString("LTR", comment: ""),
-                                NSLocalizedString("VERTICAL", comment: ""),
-                                NSLocalizedString("VERTICAL_SCROLL", comment: "")
-                            ]),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.readingMode",
+                    title: NSLocalizedString("READING_MODE", comment: ""),
+                    values: ["default", "rtl", "ltr", "vertical", "scroll"],
+                    titles: [
+                        NSLocalizedString("DEFAULT", comment: ""),
+                        NSLocalizedString("RTL", comment: ""),
+                        NSLocalizedString("LTR", comment: ""),
+                        NSLocalizedString("VERTICAL", comment: ""),
+                        NSLocalizedString("VERTICAL_SCROLL", comment: "")
+                    ]
+                ),
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
                 SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
-                SettingItem(type: "stepper",
-                            key: "Reader.pagesPerView", title: NSLocalizedString("PAGES_PER_VIEW", comment: ""),
-                            defaultValue: JsonAnyValue(type: JsonAnyType.int, boolValue: false, intValue: 1), minimumValue: 1, maximumValue: 10),
-                SettingItem(type: "stepper",
-                            key: "Reader.pagesToPreload", title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
-                            defaultValue: JsonAnyValue(type: JsonAnyType.int, boolValue: false, intValue: 2), minimumValue: 1, maximumValue: 10)
+                SettingItem(
+                    type: "stepper",
+                    key: "Reader.pagesToPreload", title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
+                    minimumValue: 1,
+                    maximumValue: 10
+                )
+            ]),
+            SettingItem(type: "group", title: NSLocalizedString("PAGED", comment: ""), items: [
+                SettingItem(
+                    type: "select",
+                    key: "Reader.pagedPageLayout",
+                    title: NSLocalizedString("PAGE_LAYOUT", comment: ""),
+                    values: ["single", "double", "auto"],
+                    titles: [
+                        NSLocalizedString("SINGLE_PAGE", comment: ""),
+                        NSLocalizedString("DOUBLE_PAGE", comment: ""),
+                        NSLocalizedString("AUTOMATIC", comment: "")
+                    ]
+                )
             ]),
             SettingItem(type: "group", title: NSLocalizedString("EXPERIMENTAL", comment: ""), items: [
-                SettingItem(type: "switch", key: "Reader.verticalInfiniteScroll", title: NSLocalizedString("INFINITE_VERTICAL_SCROLL", comment: ""))
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.verticalInfiniteScroll",
+                    title: NSLocalizedString("INFINITE_VERTICAL_SCROLL", comment: "")
+                )
             ])
         ])
     }

@@ -61,8 +61,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.downsampleImages": true,
                 "Reader.saveImageOption": true,
                 "Reader.verticalInfiniteScroll": false,
-                "Reader.pagesPerView": 1,
-                "Reader.pagesToPreload": 2
+                "Reader.pagesToPreload": 2,
+                "Reader.pagedPageLayout": "auto"
             ]
         )
 

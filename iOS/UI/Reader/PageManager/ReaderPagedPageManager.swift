@@ -32,8 +32,9 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     }
     var pages: [Page] = []
 
-    var pagesPerView: Int = UserDefaults.standard.integer(forKey: "Reader.pagesPerView")
+    var pagesPerView: Int = 1 // initial value set in createPageViewController()
     var pagesToPreload: Int = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+    var usesAutoPageLayout = false
 
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
@@ -67,8 +68,19 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
 
     override init() {
         super.init()
-        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagesPerView"), object: nil, queue: nil) { _ in
-            self.pagesPerView = UserDefaults.standard.integer(forKey: "Reader.pagesPerView")
+        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagedPageLayout"), object: nil, queue: nil) { _ in
+            self.pagesPerView = {
+                self.usesAutoPageLayout = false
+                switch UserDefaults.standard.string(forKey: "Reader.pagedPageLayout") {
+                case "single": return 1
+                case "double": return 2
+                case "auto":
+                    guard self.parentViewController != nil else { return 1 }
+                    self.usesAutoPageLayout = true
+                    return self.parentViewController.view.bounds.width > self.parentViewController.view.bounds.height ? 2 : 1
+                default: return 1
+                }
+            }()
             if let chapter = self.chapter {
                 self.setChapter(chapter: chapter, startPage: self.items[self.currentIndex].pageIndex + 1)
             }
@@ -80,6 +92,18 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
 
     func createPageViewController() {
         guard parentViewController != nil else { return }
+
+        pagesPerView = {
+            switch UserDefaults.standard.string(forKey: "Reader.pagedPageLayout") {
+            case "single": return 1
+            case "double": return 2
+            case "auto":
+                usesAutoPageLayout = true
+                return parentViewController.view.bounds.width > parentViewController.view.bounds.height ? 2 : 1
+            default: return 1
+            }
+        }()
+
         pageViewController = UIPageViewController(
             transitionStyle: .scroll,
             navigationOrientation: readingMode == .vertical ? .vertical : .horizontal,
@@ -139,6 +163,12 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     }
 
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        if usesAutoPageLayout {
+            pagesPerView = size.width > size.height ? 2 : 1
+            if let chapter = chapter {
+                setChapter(chapter: chapter, startPage: items[currentIndex].pageIndex + 1)
+            }
+        }
         coordinator.animate(alongsideTransition: nil) { _ in
             for info in self.items {
                 info.vc.view.frame = self.pageViewController.view.bounds
@@ -331,11 +361,12 @@ extension ReaderPagedPageManager {
         ImagePrefetcher(urls: urls).start()
     }
 
-    func setImages(for range: Range<Int>) async { // now works to set images per vc range
+    func setImages(for range: Range<Int>) async {
         for i in range {
             guard i < items.count - (hasNextChapter ? 2 : 1) else { break }
             if i < (hasPreviousChapter ? 2 : 1) { continue }
             for j in 0..<items[i].numPages {
+                guard items[i].pageIndex + j < pages.count else { continue }
                 await (items[i].vc.view as? ReaderPageView)?.setPage(page: pages[items[i].pageIndex + j], index: j)
             }
         }
