@@ -47,6 +47,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var hasNextChapter = false
     var hasPreviousChapter = false
 
+    var pagesToPreload: Int = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+
     var targetPage: Int?
     var shouldMoveToTargetPage = true
     var transitioningChapter = false
@@ -110,6 +112,28 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         }
     }
 
+    override init() {
+        super.init()
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+            if !self.infiniteScroll {
+                self.previousPages = []
+                self.previousChapter = nil
+                self.nextPages = []
+                self.nextChapter = nil
+            }
+            Task { @MainActor in
+                self.collectionView?.reloadData()
+            }
+        })
+        observers.append(NotificationCenter.default.addObserver(forName: Notification.Name("Reader.pagesToPreload"), object: nil, queue: nil) { _ in
+            self.pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+        })
+    }
+
     func attach(toParent parent: UIViewController) {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
@@ -135,22 +159,6 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         collectionView.bottomAnchor.constraint(equalTo: parent.view.bottomAnchor).isActive = true
 
         infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
-
-        observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("Reader.verticalInfiniteScroll"), object: nil, queue: nil
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            self.infiniteScroll = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
-            if !self.infiniteScroll {
-                self.previousPages = []
-                self.previousChapter = nil
-                self.nextPages = []
-                self.nextChapter = nil
-            }
-            Task { @MainActor in
-                self.collectionView?.reloadData()
-            }
-        })
     }
 
     func remove() {
@@ -317,10 +325,10 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             let bottomOffset = collectionView.contentSize.height - collectionView.contentOffset.y
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([0])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([0])
             } completion: { _ in
-                self.collectionView.setContentOffset(
+                self.collectionView?.setContentOffset(
                     CGPoint(x: 0, y: self.collectionView.contentSize.height - bottomOffset),
                     animated: false
                 )
@@ -339,8 +347,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 nextPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
             }
 
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([2])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([2])
             }
         }
     }
@@ -505,7 +513,7 @@ extension ReaderScrollPageManager: UICollectionViewDelegateFlowLayout {
                 cell.infoView?.nextChapter = targetNextChapter
                 cell.infoView?.previousChapter = nil
             } else {
-                setImages(for: (indexPath.item)..<(indexPath.item + 2)) // preload next two pages
+                setImages(for: (indexPath.item)..<(indexPath.item + pagesToPreload)) // preload next set pages amount
             }
             if let page = page {
                 if dataCache[page.key] ?? false {
