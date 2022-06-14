@@ -209,6 +209,24 @@ class SettingsViewController: SettingsTableViewController {
                     type: "switch",
                     key: "Reader.downsampleImages",
                     title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")
+                ),
+                SettingItem(
+                    type: "stepper",
+                    key: "Reader.pagesToPreload",
+                    title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
+                    minimumValue: 1,
+                    maximumValue: 10
+                ),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.pagedPageLayout",
+                    title: NSLocalizedString("PAGE_LAYOUT", comment: ""),
+                    values: ["single", "double", "auto"],
+                    titles: [
+                        NSLocalizedString("SINGLE_PAGE", comment: ""),
+                        NSLocalizedString("DOUBLE_PAGE", comment: ""),
+                        NSLocalizedString("AUTOMATIC", comment: "")
+                    ]
                 )
             ]),
             // MARK: Backups

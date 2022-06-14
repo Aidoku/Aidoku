@@ -12,7 +12,7 @@ import UIKit
 
 class ZoomableScrollView: UIScrollView {
 
-    var zoomView: UIImageView! {
+    var zoomView: UIView! {
         didSet {
             configure()
         }
