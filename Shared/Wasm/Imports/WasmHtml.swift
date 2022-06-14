@@ -20,6 +20,8 @@ class WasmHtml {
     func export(into namespace: String = "html") {
         try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
         try? globalStore.vm.addImportHandler(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
+        try? globalStore.vm.addImportHandler(named: "parse_with_uri", namespace: namespace, block: self.parseWithUri)
+        try? globalStore.vm.addImportHandler(named: "parse_fragment_with_uri", namespace: namespace, block: self.parseFragmentWithUri)
 
         try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
@@ -48,7 +50,7 @@ extension WasmHtml {
 
     var parse: (Int32, Int32) -> Int32 {
         { data, size in
-            guard data > 0, size > 0 else { return -1 }
+            guard size > 0 else { return -1 }
             if let content = self.globalStore.readString(offset: data, length: size),
                let obj = try? SwiftSoup.parse(content) {
                 return self.globalStore.storeStdValue(obj)
@@ -59,10 +61,42 @@ extension WasmHtml {
 
     var parseFragment: (Int32, Int32) -> Int32 {
         { data, size in
-            guard data > 0, size > 0 else { return -1 }
+            guard size > 0 else { return -1 }
             if let content = self.globalStore.readString(offset: data, length: size),
                let obj = try? SwiftSoup.parseBodyFragment(content) {
                 return self.globalStore.storeStdValue(obj)
+            }
+            return -1
+        }
+    }
+
+    var parseWithUri: (Int32, Int32, Int32, Int32) -> Int32 {
+        { data, size, uri, uriLength in
+            guard size > 0 else { return -1 }
+            if let content = self.globalStore.readString(offset: data, length: size) {
+                if uriLength > 0,
+                   let baseUri = self.globalStore.readString(offset: uri, length: uriLength),
+                   let obj = try? SwiftSoup.parse(content, baseUri) {
+                    return self.globalStore.storeStdValue(obj)
+                } else if let obj = try? SwiftSoup.parse(content) {
+                    return self.globalStore.storeStdValue(obj)
+                }
+            }
+            return -1
+        }
+    }
+
+    var parseFragmentWithUri: (Int32, Int32, Int32, Int32) -> Int32 {
+        { data, size, uri, uriLength in
+            guard size > 0 else { return -1 }
+            if let content = self.globalStore.readString(offset: data, length: size) {
+                if uriLength > 0,
+                   let baseUri = self.globalStore.readString(offset: uri, length: uriLength),
+                   let obj = try? SwiftSoup.parseBodyFragment(content, baseUri) {
+                    return self.globalStore.storeStdValue(obj)
+                } else if let obj = try? SwiftSoup.parseBodyFragment(content) {
+                    return self.globalStore.storeStdValue(obj)
+                }
             }
             return -1
         }
