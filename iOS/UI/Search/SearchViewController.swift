@@ -328,47 +328,66 @@ extension SearchViewController {
 
     override var keyCommands: [UIKeyCommand]? {
         [
-            UIKeyCommand(title: "Select Item to the Left",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputLeftArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Select Item to the Right",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputRightArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Select Item Above",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputUpArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Select Item Below",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputDownArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Open Selected Item",
-                         action: #selector(enterKeyPressed),
-                         input: "\r",
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off)
+            UIKeyCommand(
+                title: "Select Item to the Left",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputLeftArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item to the Right",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputRightArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item Above",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item Below",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Open Selected Item",
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Clear Selection",
+                action: #selector(escKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
         ]
     }
 
     @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
-        guard let collectionView = collectionView, collectionView.numberOfSections > 0, collectionView.numberOfSections > 0 else { return }
-        if !hovering {
+        guard let collectionView = collectionView, collectionView.numberOfSections > 0 else { return }
+        if !hovering || hoveredCell == nil {
             hovering = true
             if hoveredCell == nil {
                 hoveredCell = collectionView.cellForItem(at: IndexPath(row: 0, section: 0)) as? MangaCoverCell
@@ -402,9 +421,17 @@ extension SearchViewController {
         collectionView.accessibilityScroll(.down)
         self.hoveredCell = (collectionView.cellForItem(at: newHoveredIndexPath) as? MangaCoverCell)
     }
+
     @objc func enterKeyPressed() {
         guard let collectionView = collectionView, let hoveredCell = hoveredCell,
               let hoveredIndexPath = collectionView.indexPath(for: hoveredCell) else { return }
         self.collectionView(collectionView, didSelectItemAt: hoveredIndexPath)
+    }
+
+    @objc func escKeyPressed() {
+        guard let hoveredCell = hoveredCell else { return }
+        hoveredCell.unhighlight()
+        hovering = false
+        self.hoveredCell = nil
     }
 }

@@ -440,27 +440,42 @@ extension BrowseViewController {
 
     override var keyCommands: [UIKeyCommand]? {
         [
-            UIKeyCommand(title: "Select Previous Item in List",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputUpArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Select Next Item in List",
-                         action: #selector(arrowKeyPressed(_:)),
-                         input: UIKeyCommand.inputDownArrow,
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off),
-            UIKeyCommand(title: "Confirm Selection",
-                         action: #selector(enterKeyPressed),
-                         input: "\r",
-                         modifierFlags: [],
-                         alternates: [],
-                         attributes: [],
-                         state: .off)
+            UIKeyCommand(
+                title: "Select Previous Item in List",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Next Item in List",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Confirm Selection",
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Clear Selection",
+                action: #selector(escKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
         ]
     }
 
@@ -468,7 +483,7 @@ extension BrowseViewController {
         if !hovering {
             hovering = true
             if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
-            tableView.cellForRow(at: hoveredIndexPath!)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+            tableView.cellForRow(at: hoveredIndexPath!)?.setHighlighted(true, animated: true)
             return
         }
         guard let hoveredIndexPath = hoveredIndexPath else { return }
@@ -489,20 +504,21 @@ extension BrowseViewController {
             position = 0
         }
         let newHoveredIndexPath = IndexPath(row: position, section: section)
-        tableView.cellForRow(at: hoveredIndexPath)?.backgroundColor = .clear
-        tableView.cellForRow(at: newHoveredIndexPath)?.backgroundColor = UIColor(white: 0, alpha: 0.2)
+        tableView.cellForRow(at: hoveredIndexPath)?.setHighlighted(false, animated: true)
+        tableView.cellForRow(at: newHoveredIndexPath)?.setHighlighted(true, animated: true)
         tableView.scrollToRow(at: newHoveredIndexPath, at: .middle, animated: true)
         self.hoveredIndexPath = newHoveredIndexPath
     }
+
     @objc func enterKeyPressed() {
         guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
-        if let cell = tableView.cellForRow(at: hoveredIndexPath) as? ExternalSourceTableViewCell {
-            cell.getButton.button.sendActions(for: .touchUpInside)
-            cell.backgroundColor = .clear
-            hovering = false
-            self.hoveredIndexPath = nil
-        } else {
-            tableView(tableView, didSelectRowAt: hoveredIndexPath)
-        }
+        tableView(tableView, didSelectRowAt: hoveredIndexPath)
+    }
+
+    @objc func escKeyPressed() {
+        guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        tableView.cellForRow(at: hoveredIndexPath)?.setHighlighted(false, animated: true)
+        hovering = false
+        self.hoveredIndexPath = nil
     }
 }

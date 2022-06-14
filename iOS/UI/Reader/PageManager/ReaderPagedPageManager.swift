@@ -270,7 +270,7 @@ extension ReaderPagedPageManager {
         guard pageViewController != nil, let chapter = chapter else { return }
 
         var pages = pages
-        var startPage = startPage
+        var startPage = startPage <= 0 ? 1 : startPage
 
         var storedPage: PageInfo?
 
