@@ -54,6 +54,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var previousPageIndex = 0
 
     var currentIndex: Int {
+        guard collectionView != nil else { return 0 }
         let offset = CGPoint(x: 0, y: collectionView.contentOffset.y + 100)
         if let path = collectionView.indexPathForItem(at: offset) {
             if path.section == 1 {
@@ -298,6 +299,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     @MainActor
     func append(chapter: Chapter, toFront: Bool = false) async {
+        guard collectionView != nil else { return }
+
         if toFront {
             guard previousChapter != chapter else { return }
 
@@ -355,8 +358,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         nextChapter = nil
         nextPages = []
 
-        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
-        collectionView.reloadData()
+        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
+        collectionView?.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true
@@ -372,8 +375,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         previousChapter = nil
         previousPages = []
 
-        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
-        collectionView.reloadData()
+        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
+        collectionView?.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true

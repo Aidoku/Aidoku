@@ -411,6 +411,7 @@ extension HistoryViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard section < filteredSearchEntries.count else { return nil }
         let days = filteredSearchEntries[section].0
         let now = Date()
         let date = now.addingTimeInterval(-86400 * Double(days))
@@ -443,6 +444,10 @@ extension HistoryViewController: UITableViewDataSource {
             cell = HistoryTableViewCell(reuseIdentifier: "HistoryTableViewCell")
         }
         guard let cell = cell else { return UITableViewCell() }
+        guard indexPath.section < filteredSearchEntries.count,
+              indexPath.row < filteredSearchEntries[indexPath.section].1.count else {
+            return cell
+        }
         cell.entry = filteredSearchEntries[indexPath.section].1[indexPath.row]
         return cell
     }
