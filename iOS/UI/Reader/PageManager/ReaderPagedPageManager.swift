@@ -146,20 +146,50 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
         }
     }
 
-    func move(toPage page: Int) {
+    func move(toPage page: Int, animated: Bool = false, reversed: Bool = false) {
         guard pageViewController != nil else { return }
 
-        let targetIndex = getViewControllerIndex(for: page)
+        let targetIndex: Int?
+        if page == -1 { // first
+            targetIndex = nil
+        } else if page == -2 { // last
+            targetIndex = nil
+        } else {
+            targetIndex = items.firstIndex(where: { $0.pageIndex <= page && $0.pageIndex + $0.numPages > page })
+        }
+        guard let targetIndex = targetIndex else { return }
 
         Task {
             await setImages(for: (targetIndex - pagesToPreload)..<(targetIndex + pagesToPreload + 1))
         }
 
         if targetIndex >= 0 && targetIndex < items.count {
-            pageViewController.setViewControllers([items[targetIndex].vc], direction: .forward, animated: false, completion: nil)
-            currentIndex = targetIndex
-            delegate?.didMove(toPage: page)
+            pageViewController.setViewControllers(
+                [items[targetIndex].vc],
+                direction: (reversed == (readingMode == .rtl)) ? .forward : .reverse,
+                animated: animated
+            ) { completed in
+                self.pageViewController(
+                    self.pageViewController,
+                    didFinishAnimating: true,
+                    previousViewControllers: [],
+                    transitionCompleted: completed
+                )
+                self.currentIndex = targetIndex
+                self.delegate?.didMove(toPage: page)
+            }
         }
+    }
+
+    func nextPage() {
+        // TODO: support transition between chapters
+        let next = getPageIndex(for: currentIndex + 1)
+        move(toPage: next, animated: true, reversed: false)
+    }
+
+    func previousPage() {
+        let prev = currentIndex <= 1 ? -1 : getPageIndex(for: currentIndex - 1)
+        move(toPage: prev, animated: true, reversed: true)
     }
 
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -240,7 +270,7 @@ extension ReaderPagedPageManager {
         guard pageViewController != nil, let chapter = chapter else { return }
 
         var pages = pages
-        var startPage = startPage
+        var startPage = startPage <= 0 ? 1 : startPage
 
         var storedPage: PageInfo?
 
@@ -326,17 +356,7 @@ extension ReaderPagedPageManager {
             insertPage(at: 0, pageIndex: -1, numPages: 1)
         }
 
-        let targetIndex = getViewControllerIndex(for: startPage - 1)
-
-        Task {
-            await setImages(for: (targetIndex - pagesToPreload)..<(targetIndex + pagesToPreload + 1))
-        }
-
-        if targetIndex >= 0 && targetIndex < items.count {
-            pageViewController.setViewControllers([items[targetIndex].vc], direction: .forward, animated: false, completion: nil)
-            currentIndex = targetIndex
-            delegate?.didMove(toPage: items[targetIndex].pageIndex)
-        }
+        move(toPage: startPage - 1)
     }
 
     func preload(chapter: Chapter) async {
@@ -372,8 +392,9 @@ extension ReaderPagedPageManager {
         }
     }
 
-    func getViewControllerIndex(for pageIndex: Int) -> Int {
-        items.firstIndex(where: { $0.pageIndex <= pageIndex && $0.pageIndex + $0.numPages > pageIndex }) ?? (hasPreviousChapter ? 2 : 1)
+    func getPageIndex(for vcIndex: Int) -> Int {
+        guard vcIndex > 0, vcIndex < items.count else { return -1 }
+        return items[vcIndex].pageIndex
     }
 }
 

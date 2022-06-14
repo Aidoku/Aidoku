@@ -199,11 +199,62 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         }
     }
 
-    func move(toPage page: Int) {
+    func move(toPage page: Int, animated: Bool = false, reversed: Bool = false) {
+        var page = page
+        if page > pages.count  && hasNextChapter && !nextPages.isEmpty { // move to next chapter
+            switchToNextChapter()
+            page = 0
+        } else if page >= pages.count { // append next chapter
+            if nextChapter != targetNextChapter, let nextChapter = targetNextChapter {
+                Task {
+                    await append(chapter: nextChapter)
+                }
+            }
+        }
+
+        if page < 0 && hasPreviousChapter && !previousPages.isEmpty { // move to previous chaptrer
+            switchToPreviousChapter()
+            page = pages.count
+        } else if page <= 0 && hasPreviousChapter { // append previous chapter
+            let previousChapter = chapterList[chapterIndex + 1]
+            if self.previousChapter != previousChapter {
+                Task {
+                    await append(chapter: previousChapter, toFront: true)
+                }
+            }
+        }
         collectionView.reloadData()
         guard collectionView.numberOfSections > 1 && collectionView.numberOfItems(inSection: 1) >= page + 1 else { return }
-        collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 1), at: .top, animated: false)
+        collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 1), at: .top, animated: animated)
         delegate?.didMove(toPage: page)
+    }
+
+    func nextPage() {
+        guard collectionView != nil else { return }
+        let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
+        var offset = collectionView.contentOffset.y + (UIScreen.main.bounds.height - insets)
+        if offset > collectionView.contentSize.height - collectionView.bounds.height {
+            offset = collectionView.contentSize.height - collectionView.bounds.height
+        }
+        collectionView.setContentOffset(
+            CGPoint(x: collectionView.contentOffset.x, y: offset),
+            animated: true
+        )
+        scrollViewDidEndDragging(collectionView, willDecelerate: false)
+    }
+
+    func previousPage() {
+        guard collectionView != nil else { return }
+        let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
+        var offset = collectionView.contentOffset.y - (UIScreen.main.bounds.height - insets)
+        if offset < 0 {
+            offset = 0
+        }
+        collectionView.setContentOffset(
+            CGPoint(x: collectionView.contentOffset.x, y: offset),
+            animated: true
+        )
+        scrollViewDidEndDragging(collectionView, willDecelerate: false)
     }
 
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

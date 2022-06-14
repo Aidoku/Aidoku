@@ -22,6 +22,9 @@ class MangaCollectionViewController: UIViewController {
     var chapters: [String: [Chapter]] = [:]
     var badges: [String: Int] = [:]
 
+    var hoveredCell: MangaCoverCell?
+    var hovering = false
+
     var cellsPerRow: Int {
         UserDefaults.standard.integer(
             forKey: view.bounds.width > view.bounds.height ? "General.landscapeRows" : "General.portraitRows"
@@ -92,6 +95,9 @@ class MangaCollectionViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
+
         navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
         navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
@@ -246,5 +252,134 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
             }
             return UIMenu(title: "", children: actions)
         }
+    }
+}
+
+// MARK: - Key Handler
+extension MangaCollectionViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        hoveredCell?.unhighlight()
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                title: "Select Item to the Left",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputLeftArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item to the Right",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputRightArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item Above",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Item Below",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Open Selected Item",
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Clear Selection",
+                action: #selector(escKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
+        ]
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard let collectionView = collectionView, collectionView.numberOfSections > 0 else { return }
+        if !hovering || hoveredCell == nil {
+            hovering = true
+            if hoveredCell == nil {
+                hoveredCell = collectionView.cellForItem(at: IndexPath(row: 0, section: 0)) as? MangaCoverCell
+            }
+            hoveredCell?.highlight()
+            return
+        }
+        guard let hoveredCell = hoveredCell, let hoveredIndexPath = collectionView.indexPath(for: hoveredCell) else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        switch sender.input {
+        case UIKeyCommand.inputLeftArrow: position -= 1
+        case UIKeyCommand.inputRightArrow: position += 1
+        case UIKeyCommand.inputUpArrow: position -= cellsPerRow
+        case UIKeyCommand.inputDownArrow: position += cellsPerRow
+        default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            position += collectionView.numberOfItems(inSection: section) / cellsPerRow * cellsPerRow
+            if position < collectionView.numberOfItems(inSection: section) - cellsPerRow {
+                position += cellsPerRow
+            }
+        } else if position >= collectionView.numberOfItems(inSection: section) {
+            guard section < collectionView.numberOfSections - 1 else { return }
+            section += 1
+            position -= collectionView.numberOfItems(inSection: section - 1) / cellsPerRow * cellsPerRow
+            if position >= cellsPerRow {
+               position -= cellsPerRow
+            }
+        }
+        position = min(position, collectionView.numberOfItems(inSection: section) - 1)
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        guard collectionView.indexPathsForVisibleItems.contains(newHoveredIndexPath) else { return }
+        hoveredCell.unhighlight()
+        (collectionView.cellForItem(at: newHoveredIndexPath) as? MangaCoverCell)?.highlight()
+        collectionView.scrollToItem(at: newHoveredIndexPath, at: .centeredVertically, animated: true)
+        self.hoveredCell = (collectionView.cellForItem(at: newHoveredIndexPath) as? MangaCoverCell)
+    }
+
+    @objc func enterKeyPressed() {
+        guard let collectionView = collectionView, let hoveredCell = hoveredCell,
+              let hoveredIndexPath = collectionView.indexPath(for: hoveredCell) else { return }
+        self.collectionView(collectionView, didSelectItemAt: hoveredIndexPath)
+    }
+
+    @objc func escKeyPressed() {
+        guard let hoveredCell = hoveredCell else { return }
+        hoveredCell.unhighlight()
+        hovering = false
+        self.hoveredCell = nil
     }
 }

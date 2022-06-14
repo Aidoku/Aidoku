@@ -64,6 +64,9 @@ class MangaViewController: UIViewController {
     }
 
     let tableView = UITableView(frame: .zero, style: .grouped)
+    var hoveredIndexPath: IndexPath?
+    var hovering = false
+
     let refreshControl = UIRefreshControl()
 
     var loadingAlert: UIAlertController?
@@ -180,6 +183,8 @@ class MangaViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        becomeFirstResponder()
 
         updateNavbarButtons()
         updateReadHistory()
@@ -746,5 +751,100 @@ extension MangaViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
         true
+    }
+}
+
+// MARK: - Key Handler
+extension MangaViewController {
+    override var canBecomeFirstResponder: Bool { true }
+    override var canResignFirstResponder: Bool { true }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        resignFirstResponder()
+    }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                title: "Select Previous Item in List",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Select Next Item in List",
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Confirm Selection",
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: "Clear Selection",
+                action: #selector(escKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
+        ]
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        if !hovering {
+            hovering = true
+            if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
+            tableView.cellForRow(at: hoveredIndexPath!)?.setHighlighted(true, animated: true)
+            return
+        }
+        guard let hoveredIndexPath = hoveredIndexPath else { return }
+        var position = hoveredIndexPath.row
+        var section = hoveredIndexPath.section
+        switch sender.input {
+        case UIKeyCommand.inputUpArrow: position -= 1
+        case UIKeyCommand.inputDownArrow: position += 1
+        default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            position = tableView.numberOfRows(inSection: section) - 1
+        } else if position >= tableView.numberOfRows(inSection: section) {
+            guard section < tableView.numberOfSections - 1 else { return }
+            section += 1
+            position = 0
+        }
+        let newHoveredIndexPath = IndexPath(row: position, section: section)
+        tableView.cellForRow(at: hoveredIndexPath)?.setHighlighted(false, animated: true)
+        tableView.cellForRow(at: newHoveredIndexPath)?.setHighlighted(true, animated: true)
+        tableView.scrollToRow(at: newHoveredIndexPath, at: .middle, animated: true)
+        self.hoveredIndexPath = newHoveredIndexPath
+    }
+
+    @objc func enterKeyPressed() {
+        guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        tableView(tableView, didSelectRowAt: hoveredIndexPath)
+    }
+
+    @objc func escKeyPressed() {
+        guard !tableView.isEditing, hovering, let hoveredIndexPath = hoveredIndexPath else { return }
+        tableView.cellForRow(at: hoveredIndexPath)?.setHighlighted(false, animated: true)
+        hovering = false
+        self.hoveredIndexPath = nil
     }
 }
