@@ -22,18 +22,39 @@ class ReaderPageView: UIView {
     var sourceId: String
 
     var zoomableView = ZoomableScrollView(frame: UIScreen.main.bounds)
-    let multiView = UIView()
-
+    var multiView = UIStackView()
+    var imageViews: [UIImageView] = []
     var progressViews: [CircularProgressView] = []
     var reloadButtons: [UIButton] = []
 
+    var multiViewWidthConstraint: NSLayoutConstraint?
     var multiViewHeightConstraint: NSLayoutConstraint?
 
     var currentUrls: [Int: String?] = [:]
     var cacheKeys: [Int: String?] = [:]
+    var imageSizes: [Int: CGSize] = [:]
 
     var numPages: Int {
-        multiView.subviews.count
+        didSet {
+            imageViews.forEach({ $0.removeFromSuperview() })
+            imageViews = []
+            progressViews.forEach({ $0.removeFromSuperview() })
+            progressViews = []
+            reloadButtons.forEach({ $0.removeFromSuperview() })
+            reloadButtons = []
+            currentUrls = [:]
+            cacheKeys = [:]
+            imageSizes = [:]
+            multiView = UIStackView()
+            for _ in 0..<numPages {
+                let imageView = UIImageView()
+                imageViews.append(imageView)
+                multiView.addArrangedSubview(imageView)
+                progressViews.append(CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40)))
+                reloadButtons.append(UIButton(type: .roundedRect))
+            }
+            configureViews()
+        }
     }
     var currentTask: Kingfisher.DownloadTask?
     var requestModifier: AnyModifier?
@@ -57,9 +78,12 @@ class ReaderPageView: UIView {
     init(sourceId: String, pages: Int = 1, mode: MangaViewer) {
         self.sourceId = sourceId
         self.readingMode = mode
+        self.numPages = max(1, pages)
         super.init(frame: UIScreen.main.bounds)
-        for _ in 0..<max(1, pages) {
-            multiView.addSubview(UIImageView())
+        for _ in 0..<numPages {
+            let imageView = UIImageView()
+            imageViews.append(imageView)
+            multiView.addArrangedSubview(imageView)
             progressViews.append(CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40)))
             reloadButtons.append(UIButton(type: .roundedRect))
         }
@@ -82,9 +106,9 @@ class ReaderPageView: UIView {
         addSubview(zoomableView)
 
         multiView.frame = UIScreen.main.bounds
-        multiView.subviews.enumerated().forEach { index, view in
+        imageViews.enumerated().forEach { index, view in
             view.frame = multiView.frame.splitWidth(into: numPages, index: index)
-            (view as? UIImageView)?.contentMode = .scaleAspectFit
+            view.contentMode = .scaleAspectFit
             view.translatesAutoresizingMaskIntoConstraints = false
             view.isUserInteractionEnabled = true
         }
@@ -103,6 +127,7 @@ class ReaderPageView: UIView {
         }
 
         activateConstraints()
+        multiView.layoutSubviews()
     }
 
     func activateConstraints() {
@@ -111,57 +136,43 @@ class ReaderPageView: UIView {
         zoomableView.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
         zoomableView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
 
-        multiView.widthAnchor.constraint(equalTo: zoomableView.widthAnchor).isActive = true
+        multiViewWidthConstraint = multiView.widthAnchor.constraint(equalToConstant: bounds.width)
+        multiViewWidthConstraint?.isActive = true
         multiViewHeightConstraint = multiView.heightAnchor.constraint(equalToConstant: 0)
         multiViewHeightConstraint?.isActive = true
         multiView.centerXAnchor.constraint(equalTo: zoomableView.centerXAnchor).isActive = true
         multiView.centerYAnchor.constraint(equalTo: zoomableView.centerYAnchor).isActive = true
-
-        multiView.subviews.forEach { view in
-            view.widthAnchor.constraint(equalTo: multiView.widthAnchor, multiplier: 1/CGFloat(numPages)).isActive = true
-            view.heightAnchor.constraint(equalTo: multiView.heightAnchor).isActive = true
-            view.centerYAnchor.constraint(equalTo: multiView.centerYAnchor).isActive = true
-        }
-        if numPages % 2 == 0 {
-            multiView.subviews[numPages / 2 - 1].trailingAnchor.constraint(equalTo: multiView.centerXAnchor).isActive = true
-            multiView.subviews[numPages / 2].leadingAnchor.constraint(equalTo: multiView.centerXAnchor).isActive = true
-        } else {
-            multiView.subviews[numPages / 2].centerXAnchor.constraint(equalTo: multiView.centerXAnchor).isActive = true
-        }
-        if numPages >= 3 {
-            for i in (0..<(numPages / 2)).reversed() {
-                multiView.subviews[i].trailingAnchor.constraint(equalTo: multiView.subviews[i + 1].leadingAnchor).isActive = true
-                multiView.subviews[numPages-i-1].leadingAnchor.constraint(equalTo: multiView.subviews[numPages-i-2].trailingAnchor).isActive = true
-            }
-        }
+        multiView.distribution = .fillProportionally
 
         for (i, reloadButton) in reloadButtons.enumerated() {
-            reloadButton.centerXAnchor.constraint(equalTo: multiView.subviews[i].centerXAnchor).isActive = true
-            reloadButton.centerYAnchor.constraint(equalTo: multiView.subviews[i].centerYAnchor).isActive = true
+            let offset = bounds.width / CGFloat(numPages) * (CGFloat(i) + 0.5) - bounds.width / 2
+            reloadButton.centerXAnchor.constraint(equalTo: multiView.centerXAnchor, constant: offset).isActive = true
+            reloadButton.centerYAnchor.constraint(equalTo: imageViews[i].centerYAnchor).isActive = true
         }
 
         for (i, progressView) in progressViews.enumerated() {
+            let offset = bounds.width / CGFloat(numPages) * (CGFloat(i) + 0.5) - bounds.width / 2
             progressView.widthAnchor.constraint(equalToConstant: 40).isActive = true
             progressView.heightAnchor.constraint(equalToConstant: 40).isActive = true
-            progressView.centerXAnchor.constraint(equalTo: multiView.subviews[i].centerXAnchor).isActive = true
-            progressView.centerYAnchor.constraint(equalTo: multiView.subviews[i].centerYAnchor).isActive = true
+            progressView.centerXAnchor.constraint(equalTo: multiView.centerXAnchor, constant: offset).isActive = true
+            progressView.centerYAnchor.constraint(equalTo: imageViews[i].centerYAnchor).isActive = true
         }
     }
 
     func updateZoomBounds() {
-        if zoomEnabled {
-            var height = multiView.subviews.map({ view -> CGFloat in
-                let imageView = view as? UIImageView
-                return (imageView?.image?.size.height ?? 0) / (imageView?.image?.size.width ?? 1) * (imageView?.bounds.width ?? 1)
-            }).max() ?? zoomableView.bounds.height
-            if height > zoomableView.bounds.height {
-                height = zoomableView.bounds.height
-            }
-            multiViewHeightConstraint?.constant = height
-        } else {
-            multiViewHeightConstraint?.constant = 0
-        }
+        multiViewHeightConstraint?.constant = zoomEnabled ? zoomableView.bounds.height : 0
         zoomableView.contentSize = multiView.bounds.size
+        let totalWidth = imageSizes.reduce(CGFloat(0), { $0 + $1.value.width / $1.value.height * bounds.height })
+        multiViewWidthConstraint?.constant = min(totalWidth, bounds.width)
+        multiView.layoutSubviews()
+    }
+
+    func updateImageSize(page: Int) {
+        guard let image = imageViews[page].image else { return }
+        imageSizes[page] = image.size
+        let totalWidth = imageSizes.reduce(CGFloat(0), { $0 + $1.value.width / $1.value.height * bounds.height })
+        multiViewWidthConstraint?.constant = min(totalWidth, bounds.width)
+        multiView.layoutSubviews()
     }
 
     @objc func reload(sender: UIButton) {
@@ -200,7 +211,7 @@ class ReaderPageView: UIView {
         let page = backward ? numPages - page - 1 : page
         currentUrls[page] = nil
         let image = UIImage(data: data)
-        (multiView.subviews[safe: page] as? UIImageView)?.image = image
+        imageViews[safe: page]?.image = image
         if progressViews[page].progress != 1 {
             progressViews[page].setProgress(value: 1, withAnimation: true)
         }
@@ -208,6 +219,7 @@ class ReaderPageView: UIView {
         reloadButtons[page].alpha = 0
         updateZoomBounds()
         if let key = key, let image = image {
+            updateImageSize(page: page)
             delegate?.imageLoaded(key: key, image: image)
         }
     }
@@ -215,7 +227,7 @@ class ReaderPageView: UIView {
     // swiftlint:disable:next cyclomatic_complexity
     func setPageImage(url: String, key: String? = nil, page: Int) {
         let page = backward ? numPages - page - 1 : page
-        if currentUrls[page] == url && (multiView.subviews[safe: page] as? UIImageView)?.image != nil { return }
+        if currentUrls[page] == url && imageViews[safe: page]?.image != nil { return }
         currentUrls[page] = url
 
         if currentTask != nil {
@@ -274,6 +286,7 @@ class ReaderPageView: UIView {
                         }
                         self.progressViews[page].isHidden = true
                         self.reloadButtons[page].alpha = 0
+                        self.updateImageSize(page: page)
                         self.updateZoomBounds()
                         if let key = key {
                             self.delegate?.imageLoaded(key: key, image: imageResult.image)
