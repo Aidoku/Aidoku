@@ -177,19 +177,43 @@ extension SettingsTableViewController {
         return cell
     }
 
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath,
-                   settingItem item: SettingItem) -> UITableViewCell {
+    // swiftlint:disable:next cyclomatic_complexity
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath,
+        settingItem item: SettingItem
+    ) -> UITableViewCell {
         let cell: UITableViewCell
         switch item.type {
         case "select":
             cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
             cell.textLabel?.textColor = .label
+            cell.accessoryType = .disclosureIndicator
+
             if let value = UserDefaults.standard.string(forKey: item.key ?? ""),
                let index = item.values?.firstIndex(of: value) {
                 cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
             }
-            cell.accessoryType = .disclosureIndicator
+
+            if let requires = item.requires {
+                cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                    cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                })
+                requireObservers.append(item)
+            } else if let requires = item.requiresFalse {
+                cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                    cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                })
+                requireObservers.append(item)
+            } else {
+                cell.selectionStyle = .default
+            }
 
         case "multi-select", "multi-single-select", "page":
             cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
@@ -200,6 +224,26 @@ extension SettingsTableViewController {
                let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
                let index = item.values?.firstIndex(of: value) {
                 cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+            }
+
+            if let requires = item.requires {
+                cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                    cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                })
+                requireObservers.append(item)
+            } else if let requires = item.requiresFalse {
+                cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                    cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                    cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                })
+                requireObservers.append(item)
+            } else {
+                cell.selectionStyle = .default
             }
 
         case "switch":
@@ -245,7 +289,29 @@ extension SettingsTableViewController {
 
     func performAction(for item: SettingItem) {
         if item.type == "select" || item.type == "multi-select" || item.type == "multi-single-select" {
-            navigationController?.pushViewController(SettingSelectViewController(item: item, style: tableView.style), animated: true)
+            if let requires = item.requires, !UserDefaults.standard.bool(forKey: requires) { return }
+            if let requiresFalse = item.requiresFalse, UserDefaults.standard.bool(forKey: requiresFalse) { return }
+
+            if item.authToOpen ?? false {
+                let context = LAContext()
+                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                    context.evaluatePolicy(
+                        .deviceOwnerAuthenticationWithBiometrics,
+                        localizedReason: NSLocalizedString("AUTH_TO_OPEN", comment: "")
+                    ) { success, _ in
+                        if success {
+                            Task { @MainActor in
+                                self.navigationController?.pushViewController(
+                                    SettingSelectViewController(item: item, style: self.tableView.style),
+                                    animated: true
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                navigationController?.pushViewController(SettingSelectViewController(item: item, style: tableView.style), animated: true)
+            }
         } else if item.type == "link" {
             if let url = URL(string: item.key ?? "") {
                 if let external = item.external, external {

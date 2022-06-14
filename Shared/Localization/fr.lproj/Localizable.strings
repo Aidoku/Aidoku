@@ -1,0 +1,234 @@
+
+
+"CATEGORY_ADD" = "Ajouter une catégorie";
+"DEFAULT_CATEGORY" = "Catégorie par défaut";
+// General
+"CONTINUE" = "Continuer";
+"CANCEL" = "Annuler";
+"UNKNOWN" = "Inconnu";
+"RESET" = "Réinitialiser";
+"DELETE" = "Supprimer";
+"REMOVE" = "Retirer";
+"RENAME" = "Renommer";
+"CLEAR" = "Effacer";
+"DOWNLOADED" = "Téléchargé";
+"REMOVE_ALL_DOWNLOADS" = "Retirer tous les téléchargements";
+"REMOVE_DOWNLOADS" = "Retirer les téléchargements";
+"REMOVE_DOWNLOADS_CONFIRM" = "Êtes-vous sûr·e de vouloir supprimer tous les téléchargements sélectionnés ?";
+"LIBRARY_ADD_FROM_BROWSE" = "Ajouter un manga à partir de l'onglet Parcourir";
+"ADD_TO_LIBRARY" = "Ajouter à la bibliothèque";
+"MANGA_INFO" = "Infos sur le manga";
+"SORT_BY" = "Trier par";
+"FILTER_BY" = "Filtrer par";
+"TITLE" = "Titre";
+"LAST_OPENED" = "Dernier accès";
+"LATEST_CHAPTER" = "Dernier chapitre";
+"ALWAYS_ASK" = "Toujours demander";
+
+// Browse
+"BROWSE" = "Parcourir";
+"BROWSE_NO_SOURCES" = "Aucune source";
+"BROWSE_NO_SOURCES_TEXT" = "Configurez votre liste de sources ou ouvrez une\nsource dans Aidoku pour commencer";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Guide d'ajout de sources";
+"UPDATES" = "Mises à jour";
+"INSTALLED" = "Installé";
+"EXTERNAL" = "Externe";
+"BUTTON_UPDATE" = "METTRE À JOUR";
+"BUTTON_GET" = "OBTENIR";
+"BUTTON_ERROR" = "ERREUR";
+"LANGUAGE" = "Langue";
+"BUTTON_FILTER" = "Filtrer";
+"LIST_HEADER" = "Liste";
+
+// Manga
+"UNTITLED" = "Sans titre";
+"CANCELLED" = "Annulé";
+"COMPLETED" = "Terminé";
+"HIATUS" = "Hiatus";
+"SUGGESTIVE" = "Osé";
+"NSFW" = "Érotique";
+"MORE" = "plus";
+"SOURCE_ORDER" = "Ordre des sources";
+"MISSING_SOURCE_TEXT" = "La source originale semble être manquante pour ce manga. Veuillez le retélécharger ou supprimer ce titre de votre bibliothèque.";
+"SELECT_ALL" = "Tout sélectionner";
+
+// Reader
+"CHAPTER" = "Chapitre";
+"VOLUME_X" = "Tome %g";
+"CHAPTER_X" = "Chapitre %g";
+"VOL_X" = "Tome %g";
+"CH_X" = "Ch.%g";
+"VOL_SPACE_X" = "Tome %g";
+"CH_SPACE_X" = "Ch. %g";
+"NO_CHAPTERS" = "Aucun chapitre";
+"NO_CHAPTERS_AVAILABLE" = "Aucun chapitre disponible";
+"START_READING" = "Commencer à lire";
+"CONTINUE_READING" = "Continuer la lecture";
+"READ" = "Lu";
+"UNREAD" = "Non lu";
+"MARK_PREVIOUS" = "Marquer le précédent";
+"MARK_READ" = "Marquer comme lu";
+"MARK_UNREAD" = "Marquer comme non lu";
+"PREVIOUS_COLON" = "Précédent :";
+"NEXT_COLON" = "Suivant :";
+"FINISHED_COLON" = "Fini :";
+"CURRENT_COLON" = "Actuel :";
+"NO_NEXT_CHAPTER" = "Il n'y a pas de chapitre suivant";
+"NO_PREVIOUS_CHAPTER" = "Il n'y a pas de chapitre précédent";
+"READER_SETTINGS" = "Paramètres du lecteur";
+"DEFAULT" = "Par défaut";
+"LTR" = "De gauche à droite";
+"EXPERIMENTAL" = "Expérimental";
+"INFINITE_VERTICAL_SCROLL" = "Défilement vertical infini";
+"SAVE_TO_PHOTOS" = "Enregistrer dans les photos";
+
+// History
+"HISTORY" = "Historique";
+"%@_AGO" = "il y a %@ ago\"; // x days \"PAGE_X_OF_X\" = \"Page %i sur %i";
+"PAGE_X" = "Page %i";
+"REMOVE_ALL_MANGA_HISTORY" = "Supprimer l'historique de tous les mangas";
+"HISTORY_LOCKED" = "L'historique est verrouillé.";
+"VIEW_HISTORY" = "Voir l'historique";
+"AUTH_FOR_HISTORY" = "S'authentifier pour voir l'historique des lectures.";
+
+// Search
+"SEARCH" = "Recherche";
+"VIEW_MORE" = "Voir plus";
+
+// Settings
+"SETTINGS" = "Paramètres";
+"USE_SYSTEM_APPEARANCE" = "Utiliser l'apparence du système";
+"MANGA_PAGE" = "Page du manga";
+"SHOW_SOURCE_LABEL" = "Afficher l'étiquette de la source";
+"USE_MANGA_TINT" = "Utiliser la teinte du manga";
+"MANGA_PER_ROW" = "Manga par rangée";
+"PIN_MANGA" = "Épingler le manga";
+"SKIP_TITLES" = "Ignorer les titres";
+"ONLY_UPDATE_ON_WIFI" = "Mettre à jour uniquement en Wi-Fi";
+"EVERY_12_HOURS" = "Toutes les 12 heures";
+"DAILY" = "Tous les jours";
+"EVERY_2_DAYS" = "Tous les deux jours";
+"WEEKLY" = "Toutes les semaines";
+"WITH_UNREAD_CHAPTERS" = "Avec les chapitres non lus";
+"WITH_COMPLETED_STATUS" = "Avec le statut « terminé »";
+"THAT_HAVENT_BEEN_READ" = "Qui n'ont pas été lus";
+"SOURCE_LISTS" = "Listes de sources";
+"SHOW_NSFW_SOURCES" = "Afficher les sources pour adultes";
+"SOURCE_LIST_URL" = "URL de la liste des sources";
+"SOURCE_LIST_ADD" = "Ajouter une liste de sources";
+"LOCK_HISTORY_TAB" = "Verrouiller l'onglet historique";
+"DOWNSAMPLE_IMAGES" = "Réduire l'échantillonnage des images";
+"CORRUPTED_BACKUP_TEXT" = "Cette sauvegarde semble avoir des données mal configurées. Le renommage n'est pas possible.";
+"RESTORE_BACKUP_TEXT" = "Toutes les données actuelles seront supprimées et remplacées par les données de cette sauvegarde.";
+"BACKUP_IMPORT_SUCCESS" = "Sauvegarde importée";
+"BACKUP_IMPORT_FAIL" = "Échec de l'importation";
+"EXPORT" = "Exporter";
+"RESTORE" = "Restaurer";
+"LOGS" = "Journaux";
+"LOGGING" = "Journalisation";
+"CANCEL_DOWNLOAD" = "Annuler le téléchargement";
+"OK" = "OK";
+"LOADING_ELLIPSIS" = "Chargement…";
+"REMOVE_DOWNLOAD" = "Retirer le téléchargement";
+
+// Library
+"LIBRARY" = "Bibliothèque";
+"LIBRARY_EMPTY" = "Bibliothèque vide";
+"LAST_READ" = "Dernière lecture";
+"DATE_ADDED" = "Date d'ajout";
+"NONE" = "Aucun";
+"UNAVAILABLE" = "Indisponible";
+"DOWNLOAD_QUEUE" = "File d'attente de téléchargement";
+"LIBRARY_SEARCH" = "Trouver dans la bibliothèque";
+
+// Categories
+"ALL" = "Tout";
+"UNINSTALL" = "Désinstaller";
+
+// Source
+"SOURCE_INFO" = "Infos sur la source";
+"LANGUAGES" = "Langues";
+"ONGOING" = "En cours";
+"AUTH_TO_DISABLE" = "S'authentifier pour désactiver.";
+"SHARE" = "Partager";
+
+// Downloads
+"DOWNLOAD" = "Télécharger";
+"REMOVE_FROM_LIBRARY" = "Retirer de la bibliothèque";
+"CATEGORIES" = "Catégories";
+"EDIT_CATEGORIES" = "Modifier les catégories";
+"CATEGORY_ADD_TEXT" = "Saisissez le titre de la nouvelle catégorie à créer.";
+"INFO" = "Infos";
+"BUILD" = "Version";
+"LIST_ALL" = "Tout";
+"MISSING_SOURCE" = "Source manquante";
+"DESELECT_ALL" = "Tout désélectionner";
+"CHAPTERS" = "Chapitres";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Ceci supprimera l'historique de ce chapitre. Êtes-vous sûr·e de vouloir continuer ?";
+"AUTH_TO_ENABLE" = "S'authentifier pour activer.";
+"GITHUB_REPO" = "Dépôt GitHub";
+"GENERAL" = "Général";
+"RESET_SETTINGS_TEXT" = "Cette action est irréversible. Tous les paramètres des applications et des sources seront réinitialisés.";
+"CATEGORY_TITLE" = "Titre de la catégorie";
+"VERSION" = "Version";
+"RTL" = "De droite à gauche";
+"VERTICAL" = "Vertical";
+"ABOUT" = "À propos";
+"SELECT_CHAPTERS" = "Sélectionner les chapitres";
+"MARK" = "Marquer";
+"READING_MODE" = "Mode de lecture";
+"VERTICAL_SCROLL" = "Défilement vertical";
+"DISCORD_SERVER" = "Serveur Discord";
+"SUPPPORT_DEVELOPMENT" = "Soutenez le développement";
+"INCOGNITO_MODE_TEXT" = "Met en pause la lecture de l'historique lorsqu'il est activé";
+"APPEARANCE_DARK" = "Sombre";
+"RESTORE_BACKUP" = "Restaurer avec cette sauvegarde ?";
+"MARK_ALL" = "Tout marquer";
+"ICLOUD_SYNC" = "Synchronisation iCloud";
+"INCOGNITO_MODE" = "Mode Incognito";
+"APPEARANCE" = "Apparence";
+"APPEARANCE_LIGHT" = "Clair";
+"LANDSCAPE" = "Paysage";
+"ADVANCED" = "Avancé";
+"CLEAR_CHAPTER_CACHE_TEXT" = "Cette action est irréversible. Les chapitres mis en cache seront effacés et retéléchargés.";
+"USE_MANGA_TINT_INFO" = "Teinter les pages des mangas en fonction de la couleur de l'image de couverture";
+"PORTRAIT" = "Portrait";
+"READER" = "Lecteur";
+"NEVER" = "Jamais";
+"SOURCE_LIST_ADDED" = "Ajout de la liste des sources";
+"EXPORT_LOGS" = "Exporter les journaux";
+"CLEAR_CHAPTER_CACHE" = "Effacer le cache du chapitre";
+"CLEAR_MANGA_CACHE_TEXT" = "Cette action est irréversible. Les mangas en cache qui ne sont pas dans votre bibliothèque seront supprimés.";
+"PIN_MANGA_UNREAD" = "Non lu";
+"LIBRARY_UPDATING" = "Mise à jour de la bibliothèque";
+"OPEN_READER_VIEW" = "Ouvrir la vue du lecteur";
+"PIN_MANGA_TYPE" = "Épingler le type";
+"UNREAD_CHAPTER_BADGES" = "Badges de chapitre non lus";
+"PIN_MANGA_UPDATED" = "Mis à jour";
+"UPDATE_INTERVAL" = "Intervalle de mise à jour";
+"REFRESH_METADATA" = "Actualiser les métadonnées";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "L'URL de la liste des sources fournie n'est pas valide ou a déjà été ajoutée.";
+"RENAME_BACKUP" = "Renommer la sauvegarde";
+"EXCLUDED_CATEGORIES" = "Catégories exclues";
+"SOURCE_LIST_ADDED_TEXT" = "Vous pouvez maintenant parcourir les sources externes dans l'onglet Parcourir.";
+"SOURCE_LIST_ADD_TEXT" = "Entrez l'URL de la liste de sources";
+"SOURCE_LIST_ADD_FAIL" = "Échec de l'ajout de la liste des sources";
+"SAVE_IMAGE_OPTION" = "Option de sauvegarde des images";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Pour restaurer cette sauvegarde, retrouvez-la dans la page des sauvegardes dans les paramètres.";
+"BACKUP_IMPORT_FAIL_TEXT" = "Échec de l'enregistrement de la sauvegarde. Veuillez vous assurer que votre sauvegarde est dans le bon format.";
+"CLEAR_NETWORK_CACHE_TEXT" = "Cette action est irréversible. Les requêtes réseau et les images mises en cache seront effacées.";
+"BACKUPS" = "Sauvegardes";
+"BACKUP_NAME" = "Nom de la sauvegarde";
+"RENAME_BACKUP_TEXT" = "Entrez un nouveau nom pour votre sauvegarde";
+"MISSING_SOURCES" = "Sources manquantes";
+"RESET_SETTINGS" = "Réinitialiser les paramètres";
+"CORRUPTED_BACKUP" = "Sauvegarde endommagée";
+"BACKUP_INFO" = "Appuyez longuement sur une sauvegarde pour l'exporter, ou faites glisser vers la gauche pour la supprimer.";
+"MISSING_SOURCES_TEXT" = "La sauvegarde restaurée peut contenir des données provenant des sources suivantes, qui ne sont pas actuellement installées :";
+"LOG_SERVER" = "Serveur de journalisation";
+"DISPLAY_LOGS" = "Afficher les journaux";
+"RESET_TEXT" = "Cette action est irréversible. Toutes les données, les paramètres et les caches seront effacés et réinitialisés.";
+"CLEAR_MANGA_CACHE" = "Effacer le cache des mangas";
+"CLEAR_NETWORK_CACHE" = "Effacer le cache du réseau";
+"CLEAR_READ_HISTORY" = "Effacer l'historique de lecture";
+"CLEAR_READ_HISTORY_TEXT" = "Cette action est irréversible. Tout l'historique de lecture sera supprimé.";

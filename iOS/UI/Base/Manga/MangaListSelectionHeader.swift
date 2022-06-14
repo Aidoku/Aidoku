@@ -36,6 +36,11 @@ class MangaListSelectionHeader: UICollectionReusableView {
             delegate?.optionSelected(selectedOption)
         }
     }
+    var lockedOptions: [Int] = [] {
+        didSet {
+            updateMenu()
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -96,7 +101,11 @@ class MangaListSelectionHeader: UICollectionReusableView {
         var children: [UIAction] = []
         for (i, option) in options.enumerated() {
             children.append(
-                UIAction(title: option, image: nil, state: selectedOption == i ? .on : .off) { _ in
+                UIAction(
+                    title: option,
+                    image: lockedOptions.contains(i) ? UIImage(systemName: "lock.fill") : nil,
+                    state: selectedOption == i ? .on : .off
+                ) { _ in
                     self.selectedOption = i
                 }
             )

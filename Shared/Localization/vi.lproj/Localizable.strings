@@ -12,7 +12,7 @@
 "RENAME" = "Đổi tên";
 "CLEAR" = "Huỷ tất cả";
 "LOADING_ELLIPSIS" = "Đang tải…";
-"SHARE" = "Share";
+"SHARE" = "Chia sẻ";
 
 // Downloads
 "DOWNLOAD" = "Tải về";
@@ -22,7 +22,7 @@
 "REMOVE_DOWNLOAD" = "Xoá bản tải về";
 "REMOVE_ALL_DOWNLOADS" = "Xoá tất cả bản tải về";
 "REMOVE_DOWNLOADS" = "Xoá bản tải về";
-"REMOVE_DOWNLOADS_CONFIRM" = "Bạn có chắc bạn muốn xoá tất cả bản tải về?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Bạn có chắc bạn muốn xoá bản tải về của các chương đã chọn?";
 
 // Library
 "LIBRARY" = "Thư viện";
@@ -46,7 +46,7 @@
 "CATEGORIES" = "Danh mục";
 "EDIT_CATEGORIES" = "Tuỳ chỉnh danh mục";
 "CATEGORY_ADD" = "Thêm danh mục";
-"CATEGORY_ADD_TEXT" = "Nhập tiêu đề của danh mục mới";
+"CATEGORY_ADD_TEXT" = "Nhập tiêu đề của danh mục mới.";
 "CATEGORY_TITLE" = "Tiêu đề danh mục";
 "DEFAULT_CATEGORY" = "Danh mục mặc định";
 "ALWAYS_ASK" = "Luôn hỏi";
@@ -94,11 +94,11 @@
 // Reader
 "CHAPTER" = "Chương";
 "CHAPTERS" = "Chương";
-"VOLUME_X" = "Volume %g";
+"VOLUME_X" = "Tập %g";
 "CHAPTER_X" = "Chương %g";
-"VOL_X" = "Vol.%g";
+"VOL_X" = "Tập %g";
 "CH_X" = "Ch.%g";
-"VOL_SPACE_X" = "Vol. %g";
+"VOL_SPACE_X" = "Tập %g";
 "CH_SPACE_X" = "Ch. %g";
 "NO_CHAPTERS" = "Không có chương";
 "NO_CHAPTERS_AVAILABLE" = "Không có chương nào";
@@ -130,7 +130,7 @@
 
 // History
 "HISTORY" = "Lịch sử";
-"%@_AGO" = "%@ trước\"; // x days ago\"PAGE_X_OF_X\" = \"Trang %i/%i";
+"%@_AGO" = "%@ trước";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Lịch sử cho chương này sẽ bị xoá. Bạn có chắc muốn tiếp tục không?";
 "REMOVE_ALL_MANGA_HISTORY" = "Xoá toàn bộ lịch sử đọc";
 "HISTORY_LOCKED" = "Lịch sử bị khoá.";
@@ -152,7 +152,7 @@
 "GENERAL" = "Chung";
 "ICLOUD_SYNC" = "Đồng bộ hoá với iCloud";
 "INCOGNITO_MODE" = "Chế độ ẩn danh";
-"INCOGNITO_MODE_TEXT" = "Lịch sử đọc sẽ không bị ghi lại khi bật chế độ ẩn danh.";
+"INCOGNITO_MODE_TEXT" = "Lịch sử đọc sẽ không bị ghi lại khi bật";
 "APPEARANCE" = "Giao diện";
 "APPEARANCE_LIGHT" = "Sáng";
 "APPEARANCE_DARK" = "Tối";
@@ -160,7 +160,7 @@
 "MANGA_PAGE" = "Thông tin truyện";
 "SHOW_SOURCE_LABEL" = "Hiển thị nguồn";
 "USE_MANGA_TINT" = "Dùng tông màu của truyện";
-"USE_MANGA_TINT_INFO" = "Thay đổi tông màu của mục thông tin truyện tuỳ vào màu của ảnh bìa truyện.";
+"USE_MANGA_TINT_INFO" = "Thay đổi tông màu của mục thông tin truyện tuỳ vào màu của ảnh bìa truyện";
 "MANGA_PER_ROW" = "Số truyện mỗi dòng";
 "PORTRAIT" = "Dọc";
 "LANDSCAPE" = "Ngang";
@@ -193,7 +193,7 @@
 "SOURCE_LIST_ADD" = "Thêm danh sách nguồn";
 "SOURCE_LIST_ADD_TEXT" = "Nhập URL của danh sách nguồn";
 "SOURCE_LIST_ADD_FAIL" = "Không thể thêm danh sách nguồn";
-"SOURCE_LIST_ADD_FAIL_TEXT" = "Danh sách nguồn không hợp lệ hoặc đã được thêm trước đó";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "Danh sách nguồn không hợp lệ hoặc đã được thêm trước đó.";
 "LOCK_HISTORY_TAB" = "Khoá Lịch sử đọc";
 "DOWNSAMPLE_IMAGES" = "Giảm chất lượng ảnh";
 "SAVE_IMAGE_OPTION" = "Hiển thị lựa chọn lưu ảnh";
@@ -204,8 +204,6 @@
 "CORRUPTED_BACKUP" = "Bản sao lưu bị hỏng";
 "CORRUPTED_BACKUP_TEXT" = "Không thể đổi tên bản sao lưu này vì dữ liệu đã bị hỏng.";
 "BACKUP_INFO" = "Nhấn giữ một bản sao lưu để xuất nó, hoặc kéo từ phải qua để xoá.";
-"BACKUP_MISSING_SOURCES" = "Nguồn bị thiếu";
-"BACKUP_MISSING_SOURCES_TEXT" = "Bản sao lưu được phục hồi có dữ liệu từ các nguồn chưa được cài đặt sau:";
 "RESTORE_BACKUP" = "Quay về bản sao lưu này?";
 "RESTORE_BACKUP_TEXT" = "Mọi dữ liệu hiện có sẽ bị ghi đè lên bởi bản sao lưu này.";
 "BACKUP_IMPORT_SUCCESS" = "Đã thêm bản sao lưu";
@@ -232,3 +230,6 @@
 "RESET_SETTINGS" = "Đặt lại tất cả cài đặt";
 "RESET_SETTINGS_TEXT" = "Hành động này không thể phục hồi. Các cài đặt nguồn và cài đặt ứng dụng sẽ quay lại mặc định.";
 "PAGE_X" = "Trang %i";
+"MISSING_SOURCES" = "Không có Nguồn";
+"MISSING_SOURCES_TEXT" = "Bản sao lưu này có dữ liệu từ các nguồn chưa cài đặt sau:";
+"PAGE_X_OF_X" = "Trang %i/%i";

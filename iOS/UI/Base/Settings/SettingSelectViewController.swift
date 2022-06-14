@@ -140,6 +140,7 @@ extension SettingSelectViewController {
         }
         if let notification = item.notification {
             source?.performAction(key: notification)
+            NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
         }
         if let key = item.key {
             NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)

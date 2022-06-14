@@ -17,7 +17,7 @@ struct BackupHistory: Codable {
     var completed: Bool
 
     init(historyObject: HistoryObject) {
-        dateRead = historyObject.dateRead
+        dateRead = historyObject.dateRead ?? Date.distantPast
         sourceId = historyObject.sourceId
         chapterId = historyObject.chapterId
         mangaId = historyObject.mangaId
