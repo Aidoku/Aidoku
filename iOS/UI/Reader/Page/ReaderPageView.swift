@@ -34,13 +34,16 @@ class ReaderPageView: UIView {
     var cacheKeys: [Int: String?] = [:]
     var imageSizes: [Int: CGSize] = [:]
 
+    var requestModifier: AnyModifier?
+    var shouldCheckForRequestModifer = true
+
     var numPages: Int {
         didSet {
             imageViews.forEach({ $0.removeFromSuperview() })
-            imageViews = []
             progressViews.forEach({ $0.removeFromSuperview() })
-            progressViews = []
             reloadButtons.forEach({ $0.removeFromSuperview() })
+            imageViews = []
+            progressViews = []
             reloadButtons = []
             currentUrls = [:]
             cacheKeys = [:]
@@ -56,9 +59,6 @@ class ReaderPageView: UIView {
             configureViews()
         }
     }
-    var currentTask: Kingfisher.DownloadTask?
-    var requestModifier: AnyModifier?
-    var shouldCheckForRequestModifer = true
 
     var zoomEnabled = true {
         didSet {
@@ -230,11 +230,6 @@ class ReaderPageView: UIView {
         if currentUrls[page] == url && imageViews[safe: page]?.image != nil { return }
         currentUrls[page] = url
 
-        if currentTask != nil {
-            currentTask?.cancel()
-            currentTask = nil
-        }
-
         Task { @MainActor in
             if shouldCheckForRequestModifer {
                 if let source = SourceManager.shared.source(for: sourceId),
@@ -271,14 +266,13 @@ class ReaderPageView: UIView {
                 kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
             }
 
-            currentTask = (self.multiView.subviews[safe: page] as? UIImageView)?.kf.setImage(
+            (self.multiView.subviews[safe: page] as? UIImageView)?.kf.setImage(
                 with: URL(string: url),
                 options: kfOptions,
                 progressBlock: { receivedSize, totalSize in
                     self.progressViews[page].setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
                 },
                 completionHandler: { result in
-                    self.currentTask = nil
                     switch result {
                     case .success(let imageResult):
                         if self.progressViews[page].progress != 1 {

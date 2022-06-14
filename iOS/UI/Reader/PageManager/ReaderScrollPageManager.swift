@@ -325,10 +325,10 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             let bottomOffset = collectionView.contentSize.height - collectionView.contentOffset.y
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([0])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([0])
             } completion: { _ in
-                self.collectionView.setContentOffset(
+                self.collectionView?.setContentOffset(
                     CGPoint(x: 0, y: self.collectionView.contentSize.height - bottomOffset),
                     animated: false
                 )
@@ -347,8 +347,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 nextPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
             }
 
-            collectionView.performBatchUpdates {
-                collectionView.reloadSections([2])
+            collectionView?.performBatchUpdates {
+                collectionView?.reloadSections([2])
             }
         }
     }
@@ -556,7 +556,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
 
             if indexPath.section == 0 || indexPath.section == 2 {
                 cell.convertToPage()
-                cell.pageView?.multiView.subviews[0].addInteraction(UIContextMenuInteraction(delegate: self))
+                cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                 cell.pageView?.delegate = self
             } else {
                 if indexPath.item == 0 {
@@ -573,7 +573,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
                     }
                 } else {
                     cell.convertToPage()
-                    cell.pageView?.multiView.subviews[0].addInteraction(UIContextMenuInteraction(delegate: self))
+                    cell.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
                     cell.pageView?.delegate = self
                     if dataCache[pages[indexPath.item - 1].key] ?? false {
                         cell.setPage(cacheKey: pages[indexPath.item - 1].key)

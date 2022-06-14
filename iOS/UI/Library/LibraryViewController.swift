@@ -226,8 +226,8 @@ class LibraryViewController: MangaCollectionViewController {
             forName: Notification.Name("updateLibraryLock"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
-            self.updateLockState(reload: false)
-            Task {
+            Task { @MainActor in
+                self.updateLockState(reload: false)
                 await self.fetchLibrary()
             }
         })
@@ -602,7 +602,6 @@ extension LibraryViewController {
         return chapters[mangaId]?.last
     }
 
-    @MainActor
     func updateLockState(recheck: Bool = true, reload: Bool = true) {
         if recheck {
             if !UserDefaults.standard.bool(forKey: "Library.lockLibrary") {

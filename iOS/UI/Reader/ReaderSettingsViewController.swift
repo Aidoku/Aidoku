@@ -29,7 +29,8 @@ class ReaderSettingsViewController: SettingsTableViewController {
                 SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
                 SettingItem(
                     type: "stepper",
-                    key: "Reader.pagesToPreload", title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
+                    key: "Reader.pagesToPreload",
+                    title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
                     minimumValue: 1,
                     maximumValue: 10
                 )
