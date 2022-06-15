@@ -35,6 +35,7 @@ class WasmHtml {
         try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
         try? globalStore.vm.addImportHandler(named: "own_text", namespace: namespace, block: self.ownText)
+        try? globalStore.vm.addImportHandler(named: "data", namespace: namespace, block: self.data)
         try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
         try? globalStore.vm.addImportHandler(named: "outer_html", namespace: namespace, block: self.outerHtml)
@@ -209,6 +210,18 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.ownText() {
+                return self.globalStore.storeStdValue(string, from: descriptor)
+            } else if let string = self.globalStore.readStdValue(descriptor) as? String {
+                return self.globalStore.storeStdValue(string, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var data: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.data() {
                 return self.globalStore.storeStdValue(string, from: descriptor)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
                 return self.globalStore.storeStdValue(string, from: descriptor)
