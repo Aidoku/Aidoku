@@ -48,6 +48,9 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
+    var requestModifier: AnyModifier?
+    var checkForRequestModifier = true
+
     var imageView = UIImageView()
     var titleLabel = UILabel()
     var gradient = CAGradientLayer()
@@ -210,9 +213,8 @@ class MangaCoverCell: UICollectionViewCell {
         imageView.image = nil
 
         Task {
-            let requestModifier: AnyModifier?
-
-            if let sourceId = manga?.sourceId,
+            if checkForRequestModifier,
+               let sourceId = manga?.sourceId,
                let source = SourceManager.shared.source(for: sourceId),
                source.handlesImageRequests,
                let request = try? await source.getImageRequest(url: url) {
@@ -224,8 +226,7 @@ class MangaCoverCell: UICollectionViewCell {
                     if let body = request.body { r.httpBody = body }
                     return r
                 }
-            } else {
-                requestModifier = nil
+                checkForRequestModifier = false
             }
 
             // Run the image loading code immediately on the main actor
