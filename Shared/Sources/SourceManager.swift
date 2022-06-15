@@ -17,6 +17,10 @@ class SourceManager {
     var sources: [Source] = []
     var sourceLists: [URL] = []
 
+    var languageCodes = [
+        "multi", "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
+    ]
+
     private var sourceListsStrings: [String] {
         sourceLists.map { $0.absoluteString }
     }
@@ -24,6 +28,7 @@ class SourceManager {
     init() {
         sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
         sources.sort { $0.manifest.info.name < $1.manifest.info.name }
+        sources.sort { languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0 < languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0 }
         sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
 
         Task {

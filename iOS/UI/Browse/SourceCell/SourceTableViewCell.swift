@@ -114,7 +114,8 @@ class SourceTableViewCell: UITableViewCell {
         titleLabel.text = source?.manifest.info.name
         versionLabel.text = "v\(source?.manifest.info.version ?? 1)"
         badgeView.isHidden = source?.manifest.info.nsfw ?? 0 <= 1
-        subtitleLabel.text = source?.id
+        subtitleLabel.text = source?.manifest.info.lang == "multi" ? NSLocalizedString("MULTI_LANGUAGE", comment: "")
+            : (Locale.current as NSLocale).displayName(forKey: .identifier, value: source?.manifest.info.lang ?? "")
         iconView.kf.setImage(
             with: source?.url.appendingPathComponent("Icon.png"),
             placeholder: UIImage(named: "MangaPlaceholder"),
