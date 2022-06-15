@@ -103,17 +103,27 @@ class BrowseViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         title = NSLocalizedString("BROWSE", comment: "")
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "globe.americas.fill"),
-            style: .plain,
-            target: self,
-            action: #selector(openLanguageSelectPage)
-        )
+        if #available(iOS 15.0, *) {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                image: UIImage(systemName: "globe.americas.fill"),
+                style: .plain,
+                target: self,
+                action: #selector(openLanguageSelectPage)
+            )
+        } else {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                image: UIImage(systemName: "globe"),
+                style: .plain,
+                target: self,
+                action: #selector(openLanguageSelectPage)
+            )
+        }
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
@@ -282,6 +292,9 @@ class BrowseViewController: UIViewController {
         }
 
         externalSources.sort { $0.name < $1.name }
+        externalSources.sort {
+            SourceManager.shared.languageCodes.firstIndex(of: $0.lang) ?? 0 < SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
+        }
         fetchUpdates()
     }
 

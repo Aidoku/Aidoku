@@ -9,10 +9,7 @@ import UIKit
 
 class LanguageSelectViewController: SettingSelectViewController {
 
-    // probably gonna need to change this later
-    var languageCodes = [
-        "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
-    ]
+    var languageCodes = Array(SourceManager.shared.languageCodes.dropFirst()) // remove "multi"
 
     init() {
         // sort alphabetically
@@ -31,7 +28,7 @@ class LanguageSelectViewController: SettingSelectViewController {
         var titles = languageCodes.map { (Locale.current as NSLocale).displayName(forKey: .identifier, value: $0) ?? "" }
 
         languageCodes.insert("multi", at: 0)
-        titles.insert("Multi-Language", at: 0)
+        titles.insert(NSLocalizedString("MULTI_LANGUAGE", comment: ""), at: 0)
 
         super.init(item: SettingItem(
             type: "multi-select",

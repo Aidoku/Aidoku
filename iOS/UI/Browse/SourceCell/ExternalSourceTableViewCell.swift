@@ -126,7 +126,8 @@ class ExternalSourceTableViewCell: UITableViewCell {
         titleLabel.text = source?.name
         versionLabel.text = "v\(source?.version ?? 1)"
         badgeView.isHidden = source?.nsfw ?? 0 <= 1
-        subtitleLabel.text = source?.id
+        subtitleLabel.text = source?.lang == "multi" ? NSLocalizedString("MULTI_LANGUAGE", comment: "")
+            : (Locale.current as NSLocale).displayName(forKey: .identifier, value: source?.lang ?? "")
         iconView.kf.setImage(
             with: source?.sourceUrl?.appendingPathComponent("icons", isDirectory: true).appendingPathComponent(source?.icon ??  ""),
             placeholder: UIImage(named: "MangaPlaceholder"),
