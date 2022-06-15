@@ -209,7 +209,7 @@ extension WasmHtml {
     var ownText: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.ownText() {
+            if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.ownText() {
                 return self.globalStore.storeStdValue(string, from: descriptor)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
                 return self.globalStore.storeStdValue(string, from: descriptor)
@@ -221,7 +221,7 @@ extension WasmHtml {
     var data: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.data() {
+            if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.data() {
                 return self.globalStore.storeStdValue(string, from: descriptor)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
                 return self.globalStore.storeStdValue(string, from: descriptor)

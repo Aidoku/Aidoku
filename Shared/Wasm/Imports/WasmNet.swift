@@ -273,9 +273,9 @@ extension WasmNet {
 
     var set_header: (Int32, Int32, Int32, Int32, Int32) -> Void {
         { descriptor, key, keyLen, value, valueLen in
-            guard descriptor >= 0, keyLen > 0, valueLen > 0 else { return }
+            guard descriptor >= 0, keyLen > 0 else { return }
             if let headerKey = self.globalStore.readString(offset: key, length: keyLen) {
-                let headerValue = self.globalStore.readString(offset: value, length: valueLen)
+                let headerValue = valueLen <= 0 ? nil : self.globalStore.readString(offset: value, length: valueLen)
                 self.globalStore.requests[descriptor]?.headers[headerKey] = headerValue
             }
         }

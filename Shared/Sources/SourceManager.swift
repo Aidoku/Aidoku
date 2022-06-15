@@ -84,6 +84,7 @@ extension SourceManager {
                 await DataManager.shared.add(source: source, context: DataManager.shared.backgroundContext)
                 sources.append(source)
                 sources.sort { $0.manifest.info.name < $1.manifest.info.name }
+                sources.sort { languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0 < languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0 }
 
                 NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
 
