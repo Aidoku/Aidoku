@@ -84,7 +84,7 @@
 
 // History
 "HISTORY" = "Historique";
-"%@_AGO" = "il y a %@ ago\"; // x days \"PAGE_X_OF_X\" = \"Page %i sur %i";
+"%@_AGO" = "il y a %@";
 "PAGE_X" = "Page %i";
 "REMOVE_ALL_MANGA_HISTORY" = "Supprimer l'historique de tous les mangas";
 "HISTORY_LOCKED" = "L'historique est verrouillé.";
@@ -101,7 +101,7 @@
 "MANGA_PAGE" = "Page du manga";
 "SHOW_SOURCE_LABEL" = "Afficher l'étiquette de la source";
 "USE_MANGA_TINT" = "Utiliser la teinte du manga";
-"MANGA_PER_ROW" = "Manga par rangée";
+"MANGA_PER_ROW" = "Mangas par rangée";
 "PIN_MANGA" = "Épingler le manga";
 "SKIP_TITLES" = "Ignorer les titres";
 "ONLY_UPDATE_ON_WIFI" = "Mettre à jour uniquement en Wi-Fi";
@@ -232,3 +232,21 @@
 "CLEAR_NETWORK_CACHE" = "Effacer le cache du réseau";
 "CLEAR_READ_HISTORY" = "Effacer l'historique de lecture";
 "CLEAR_READ_HISTORY_TEXT" = "Cette action est irréversible. Tout l'historique de lecture sera supprimé.";
+"VIEW_LIBRARY" = "Voir la bibliothèque";
+"CATEGORY_EMPTY" = "Catégorie vide";
+"AUTH_TO_OPEN" = "S'authentifier pour ouvrir.";
+"LOCK_LIBRARY" = "Verrouiller la bibliothèque";
+"PAGE_X_OF_X" = "Page %i sur %i";
+"LOCKED_CATEGORIES" = "Catégories verrouillées";
+"AUTH_FOR_LIBRARY" = "S'authentifier pour voir la bibliothèque.";
+"LIBRARY_LOCKED" = "La bibliothèque est verrouillée.";
+"CATEGORY_LOCKED" = "La catégorie est verrouillée.";
+"SET_AS_WIDE_PAGE" = "Définir comme page large";
+"AUTOMATIC" = "Automatique";
+"SET_AS_NORMAL_PAGE" = "Définir comme page normale";
+"PAGES_TO_PRELOAD" = "Pages à précharger";
+"SINGLE_PAGE" = "Page simple";
+"PAGED" = "Paginé";
+"PAGE_LAYOUT" = "Mise en page";
+"DOUBLE_PAGE" = "Double page";
+"MULTI_LANGUAGE" = "Multi-langue";

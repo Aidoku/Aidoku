@@ -1,0 +1,151 @@
+
+
+"LIST_ALL" = "Ĉio";
+"CATEGORY_EMPTY" = "Kategorio malplena";
+"REMOVE_ALL_DOWNLOADS" = "Forigi ĉiujn elŝutojn";
+"APPEARANCE" = "Aspekto";
+"VIEW_LIBRARY" = "Vidi bibliotekon";
+"LOADING_ELLIPSIS" = "Ŝargante…";
+"SORT_BY" = "Ordigi laŭ";
+"FILTER_BY" = "Filtri laŭ";
+// General
+"CONTINUE" = "Daŭrigi";
+"CANCEL" = "Nuligi";
+"OK" = "Bone";
+"UNKNOWN" = "Nekonata";
+"UNAVAILABLE" = "Nehavebla";
+"DELETE" = "Forviŝi";
+"REMOVE" = "Forigi";
+"CANCEL_DOWNLOAD" = "Nuligi elŝuton";
+"REMOVE_DOWNLOAD" = "Forigi elŝuton";
+"REMOVE_DOWNLOADS" = "Forigi elŝutojn";
+
+// Library
+"LIBRARY" = "Biblioteko";
+"LIBRARY_SEARCH" = "Serĉi bibliotekon";
+"LIBRARY_EMPTY" = "Biblioteko malplenas";
+"ADD_TO_LIBRARY" = "Enmeti en bibliotekon";
+"MANGA_INFO" = "Informoj pri komikso";
+"CATEGORIES" = "Kategorioj";
+
+// Browse
+"BROWSE" = "Foliumi";
+"UNINSTALL" = "Malinstali";
+"LANGUAGE" = "Lingvo";
+"INFO" = "Informo";
+"BUTTON_FILTER" = "Filtri";
+"CATEGORY_TITLE" = "Titolo de kategorio";
+"DEFAULT_CATEGORY" = "Implicita kategorio";
+"ALWAYS_ASK" = "Ĉiam demandi";
+"UPDATES" = "Ĝisdatigoj";
+"INSTALLED" = "Instalita";
+"EXTERNAL" = "Ekstera";
+"BUTTON_UPDATE" = "ĜISDATIGI";
+"BUTTON_GET" = "AKIRI";
+"BUTTON_ERROR" = "ERARO";
+
+// Source
+"SOURCE_INFO" = "Informoj pri fonto";
+"CANCELLED" = "Nuligita";
+"COMPLETED" = "Kompleta";
+"MORE" = "pli";
+
+// Reader
+"CHAPTER" = "Ĉapitro";
+"CHAPTERS" = "Ĉapitroj";
+"VOLUME_X" = "Volumo %g";
+"CHAPTER_X" = "Ĉapitro %g";
+"SELECT_ALL" = "Elekti ĉion";
+"SOURCE_ORDER" = "Fonta ordo";
+"MISSING_SOURCE" = "Mankanta fonto";
+"VOL_X" = "Vol.%g";
+"CH_X" = "Ĉ.%g";
+"READ" = "Legi";
+"VOL_SPACE_X" = "Vol. %g";
+"CH_SPACE_X" = "Ĉ. %g";
+"UNREAD" = "Mallegi";
+"MARK" = "Marki";
+"NO_CHAPTERS" = "Neniu ĉapitro";
+"START_READING" = "Eklegi";
+"CONTINUE_READING" = "Daŭre legi";
+"MARK_ALL" = "Marki ĉion";
+"READING_MODE" = "Legreĝimo";
+"DEFAULT" = "Implicita";
+"PAGE_X" = "Paĝo %i";
+"VERTICAL_SCROLL" = "Vertikala rulumado";
+"VERTICAL" = "Vertikala";
+"INFINITE_VERTICAL_SCROLL" = "Senfina vertikala rulumado";
+
+// Search
+"SEARCH" = "Serĉi";
+"VIEW_HISTORY" = "Vidi historion";
+"HISTORY_LOCKED" = "Historio estas ŝlosita.";
+
+// Settings
+"SETTINGS" = "Agordoj";
+"ABOUT" = "Pri";
+"VIEW_MORE" = "Vidi plu";
+"GITHUB_REPO" = "GitHub-deponejo";
+"DISCORD_SERVER" = "Discord-servilo";
+"INCOGNITO_MODE" = "Privata reĝimo";
+"MANGA_PAGE" = "Komiksa paĝo";
+"SHOW_SOURCE_LABEL" = "Montri fontan etikedon";
+"LANDSCAPE" = "Horizontala formato";
+"PORTRAIT" = "Vertikala formato";
+"READER" = "Legilo";
+"OPEN_READER_VIEW" = "Malfermi legilan vidon";
+"USE_SYSTEM_APPEARANCE" = "Uzi sisteman etoson";
+"EVERY_12_HOURS" = "Ĉiuduontage";
+"EVERY_2_DAYS" = "Ĉiudutage";
+"PIN_MANGA_UPDATED" = "Ĝisdatigita";
+"SOURCE_LISTS" = "Fontolistoj";
+"LOG_SERVER" = "Protokolservilo";
+"EXPORT_LOGS" = "Elporti protokolojn";
+"DISPLAY_LOGS" = "Montri protokolojn";
+"CLEAR_CHAPTER_CACHE" = "Forviŝi kaŝmemoron de ĉapitroj";
+"BACKUP_IMPORT_FAIL" = "Enporto malsukcesis";
+"RENAME" = "Ŝanĝi nomon";
+"TITLE" = "Titolo";
+"LIBRARY_LOCKED" = "Biblioteko ŝlosita";
+"CATEGORY_LOCKED" = "Kategorio ŝlosita";
+"LOCK_LIBRARY" = "Ŝlosi bibliotekon";
+
+// Downloads
+"DOWNLOAD" = "Elŝuti";
+"DOWNLOADED" = "Elŝutita";
+"REMOVE_FROM_LIBRARY" = "Forigi el biblioteko";
+"LIST_HEADER" = "Listo";
+
+// Manga
+"UNTITLED" = "Sentitola";
+"LANGUAGES" = "Lingvoj";
+"APPEARANCE_LIGHT" = "Hela";
+"DAILY" = "Ĉiutage";
+"CATEGORY_ADD_TEXT" = "Tajpu nomon de kreota kategorio.";
+"BROWSE_NO_SOURCES" = "Neniu fonto";
+"VERSION" = "Versio";
+"APPEARANCE_DARK" = "Malhela";
+"GENERAL" = "Ĝenerala";
+"PAGE_X_OF_X" = "Paĝo %i el %i";
+"EXPERIMENTAL" = "Eksperimenta";
+
+// History
+"HISTORY" = "Historio";
+"LTR" = "Demaldekstre dekstren";
+"RTL" = "Dedekstre maldekstren";
+"DESELECT_ALL" = "Malelekti ĉion";
+"CATEGORY_ADD" = "Krei novan kategorion";
+"NEVER" = "Neniam";
+"WEEKLY" = "Ĉiusemajne";
+"BACKUPS" = "Savkopioj";
+"EXPORT" = "Elporti";
+"LOGS" = "Protokoloj";
+"LOGGING" = "Protokolado";
+
+// Categories
+"ALL" = "Ĉio";
+"NONE" = "Nenio";
+"EDIT_CATEGORIES" = "Modifi kategoriojn";
+"PIN_MANGA_UNREAD" = "Nelegita";
+"LOCKED_CATEGORIES" = "Ŝlositaj kategorioj";
+"ADVANCED" = "Altnivela";

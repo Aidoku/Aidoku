@@ -43,12 +43,12 @@
 // Categories
 "ALL" = "全部";
 "NONE" = "无";
-"CATEGORIES" = "类别";
-"EDIT_CATEGORIES" = "编辑类别";
-"CATEGORY_ADD" = "添加类别";
-"CATEGORY_ADD_TEXT" = "输入要创建的新类别标题.";
+"CATEGORIES" = "分类";
+"EDIT_CATEGORIES" = "编辑分类";
+"CATEGORY_ADD" = "添加分类";
+"CATEGORY_ADD_TEXT" = "输入要创建的新分类标题.";
 "CATEGORY_TITLE" = "分类标题";
-"DEFAULT_CATEGORY" = "默认类别";
+"DEFAULT_CATEGORY" = "默认分类";
 "ALWAYS_ASK" = "始终询问";
 
 // Browse
@@ -84,7 +84,7 @@
 "SUGGESTIVE" = "建议";
 "NSFW" = "NSFW";
 "MORE" = "更多";
-"SOURCE_ORDER" = "图源顺序";
+"SOURCE_ORDER" = "图源排序";
 "MISSING_SOURCE" = "缺少图源";
 "MISSING_SOURCE_TEXT" = "此漫画图源不可用. 请重新下载或从您的书架中删除.";
 "SELECT_CHAPTERS" = "选择章节";
@@ -92,7 +92,7 @@
 "DESELECT_ALL" = "取消全选";
 
 // Reader
-"CHAPTER" = "章";
+"CHAPTER" = "章节";
 "CHAPTERS" = "章节";
 "VOLUME_X" = "第 %g 卷";
 "CHAPTER_X" = "第 %g 章";
@@ -102,7 +102,7 @@
 "NO_CHAPTERS_AVAILABLE" = "暂无章节";
 "START_READING" = "开始阅读";
 "CONTINUE_READING" = "继续阅读";
-"READ" = "阅读";
+"READ" = "已读";
 "UNREAD" = "未读";
 "MARK" = "标记";
 "MARK_ALL" = "标记全部";
@@ -147,20 +147,20 @@
 "GENERAL" = "通用";
 "ICLOUD_SYNC" = "iCloud 同步";
 "INCOGNITO_MODE" = "无痕模式";
-"INCOGNITO_MODE_TEXT" = "启用时暂停阅读历史记录";
+"INCOGNITO_MODE_TEXT" = "暂停记录阅读历史";
 "APPEARANCE" = "外观";
 "APPEARANCE_LIGHT" = "浅色";
 "APPEARANCE_DARK" = "深色";
 "USE_SYSTEM_APPEARANCE" = "使用系统外观";
-"MANGA_PAGE" = "漫画页";
+"MANGA_PAGE" = "漫画页面";
 "SHOW_SOURCE_LABEL" = "显示图源标签";
 "USE_MANGA_TINT" = "使用漫画色调";
-"USE_MANGA_TINT_INFO" = "根据封面图片颜色为漫画页面着色";
+"USE_MANGA_TINT_INFO" = "基于封面图片颜色为漫画页面着色";
 "MANGA_PER_ROW" = "每行漫画";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
 "READER" = "阅读";
-"OPEN_READER_VIEW" = "打开阅读器查看";
+"OPEN_READER_VIEW" = "打开阅读界面";
 "UNREAD_CHAPTER_BADGES" = "未读章节标记";
 "PIN_MANGA" = "标记漫画";
 "PIN_MANGA_TYPE" = "标记类型";
@@ -232,4 +232,21 @@
 "VOL_SPACE_X" = "Vol. %g";
 "CH_SPACE_X" = "Ch. %g";
 "AUTH_TO_DISABLE" = "验证以禁用.";
-"PAGE_X_OF_X" = "%i / %i 页";
+"PAGE_X_OF_X" = "%i/%i 页";
+"LIBRARY_LOCKED" = "书架已锁定.";
+"CATEGORY_LOCKED" = "分类已锁定.";
+"VIEW_LIBRARY" = "查看书架";
+"CATEGORY_EMPTY" = "分类为空";
+"AUTH_TO_OPEN" = "解锁打开.";
+"LOCKED_CATEGORIES" = "锁定分类";
+"AUTH_FOR_LIBRARY" = "解锁查看书架.";
+"LOCK_LIBRARY" = "锁定书架";
+"PAGES_TO_PRELOAD" = "预加载页面";
+"PAGE_LAYOUT" = "页面布局";
+"SET_AS_WIDE_PAGE" = "设置为宽页面";
+"AUTOMATIC" = "自动";
+"SET_AS_NORMAL_PAGE" = "设置为标准页面";
+"SINGLE_PAGE" = "单页";
+"PAGED" = "分页";
+"DOUBLE_PAGE" = "双页";
+"MULTI_LANGUAGE" = "多国语言";

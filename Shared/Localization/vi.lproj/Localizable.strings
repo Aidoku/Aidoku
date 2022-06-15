@@ -233,3 +233,13 @@
 "MISSING_SOURCES" = "Không có Nguồn";
 "MISSING_SOURCES_TEXT" = "Bản sao lưu này có dữ liệu từ các nguồn chưa cài đặt sau:";
 "PAGE_X_OF_X" = "Trang %i/%i";
+"VIEW_LIBRARY" = "Xem Thư viện";
+"CATEGORY_EMPTY" = "Danh mục Trống";
+"AUTH_TO_OPEN" = "Xác thực để mở khoá.";
+"LOCKED_CATEGORIES" = "Các danh mục bị khoá";
+"AUTH_FOR_LIBRARY" = "Xác thực để mở thư viện.";
+"LOCK_LIBRARY" = "Khoá Thư viện";
+"LIBRARY_LOCKED" = "Thư viện bị khoá.";
+"CATEGORY_LOCKED" = "Danh mục bị khoá.";
+"PAGES_TO_PRELOAD" = "Số trang tải trước";
+"AUTOMATIC" = "Tự động";
