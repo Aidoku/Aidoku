@@ -190,9 +190,17 @@ extension SettingsTableViewController {
             cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
 
-            if let value = UserDefaults.standard.string(forKey: item.key ?? ""),
-               let index = item.values?.firstIndex(of: value) {
-                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+            if let key = item.key {
+                if let value = UserDefaults.standard.string(forKey: key),
+                   let index = item.values?.firstIndex(of: value) {
+                    cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                }
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(key), object: nil, queue: nil) { _ in
+                    if let value = UserDefaults.standard.string(forKey: key),
+                       let index = item.values?.firstIndex(of: value) {
+                        cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                    }
+                })
             }
 
             if let requires = item.requires {
@@ -220,10 +228,17 @@ extension SettingsTableViewController {
             cell.textLabel?.textColor = .label
             cell.accessoryType = .disclosureIndicator
 
-            if item.type == "multi-single-select",
-               let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
-               let index = item.values?.firstIndex(of: value) {
-                cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+            if item.type == "multi-single-select", let key = item.key {
+                if let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
+                   let index = item.values?.firstIndex(of: value) {
+                    cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                }
+                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(key), object: nil, queue: nil) { _ in
+                    if let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
+                       let index = item.values?.firstIndex(of: value) {
+                        cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                    }
+                })
             }
 
             if let requires = item.requires {
