@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftSoup
 
 class WasmStd: WasmImports {
 
@@ -20,6 +21,8 @@ class WasmStd: WasmImports {
         case array = 5
         case object = 6
         case date = 7
+        case node = 8
+        case unknown = 9
     }
 
     init(globalStore: WasmGlobalStore) {
@@ -145,7 +148,9 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return Int32(ObjectType.null.rawValue) }
             let value = self.globalStore.readStdValue(descriptor)
-            if value is Int {
+            if value == nil {
+                return Int32(ObjectType.null.rawValue)
+            } else if value is Int {
                 return Int32(ObjectType.int.rawValue)
             } else if value is Float {
                 return Int32(ObjectType.float.rawValue)
@@ -161,8 +166,10 @@ extension WasmStd {
                 return Int32(ObjectType.object.rawValue)
             } else if value is Date {
                 return Int32(ObjectType.date.rawValue)
+            } else if value is SwiftSoup.Element || value is SwiftSoup.Elements {
+                return Int32(ObjectType.node.rawValue)
             }
-            return Int32(ObjectType.null.rawValue)
+            return Int32(ObjectType.unknown.rawValue)
         }
     }
 
