@@ -1,1 +1,243 @@
 
+
+// General
+"CONTINUE" = "Continua";
+"CANCEL" = "Annulla";
+"UNAVAILABLE" = "Non disponibile";
+
+// Downloads
+"DOWNLOAD" = "Scarica";
+"DOWNLOADED" = "Scaricato";
+"DOWNLOAD_QUEUE" = "Coda degli scaricamenti";
+"REMOVE_DOWNLOADS_CONFIRM" = "Sei sicuro/a di voler rimuovere tutti gli scaricamenti selezionati?";
+
+// Library
+"LIBRARY" = "Raccolta";
+"LIBRARY_SEARCH" = "Trova nella Raccolta";
+"LIBRARY_EMPTY" = "Raccolta vuota";
+"SORT_BY" = "Ordina per";
+"RENAME" = "Rinomina";
+"RESET" = "Ripristina";
+"DELETE" = "Elimina";
+"CLEAR" = "Cancella";
+"REMOVE" = "Rimuovi";
+"LOADING_ELLIPSIS" = "Caricamento in corso…";
+"SHARE" = "Condividi";
+"CANCEL_DOWNLOAD" = "Annulla lo scaricamento";
+"REMOVE_DOWNLOAD" = "Rimuovi lo scaricamento";
+"REMOVE_DOWNLOADS" = "Rimuovi gli scaricamenti";
+"REMOVE_ALL_DOWNLOADS" = "Rimuovi tutti gli scaricamenti";
+"LIBRARY_ADD_FROM_BROWSE" = "Aggiungi manga dalla scheda Sfoglia";
+"REMOVE_FROM_LIBRARY" = "Rimuovi dalla raccolta";
+"ADD_TO_LIBRARY" = "Aggiungi alla raccolta";
+"MANGA_INFO" = "Informazioni sul manga";
+"OK" = "OK";
+"UNKNOWN" = "Sconosciuto";
+"FILTER_BY" = "Filtra per";
+"TITLE" = "Titolo";
+"EDIT_CATEGORIES" = "Modifica le categorie";
+"CATEGORY_ADD" = "Aggiungi una categoria";
+"CATEGORY_ADD_TEXT" = "Inserisci il titolo della nuova categoria da creare.";
+"CATEGORY_TITLE" = "Titolo della categoria";
+"DEFAULT_CATEGORY" = "Categoria predefinita";
+"SOURCE_ORDER" = "Ordine delle fonti";
+"MARK_READ" = "Contrassegna come letto";
+"MARK_UNREAD" = "Contrassegna come non letto";
+"PREVIOUS_COLON" = "Precedente:";
+"NEXT_COLON" = "Successivo:";
+"LTR" = "Da sinistra a destra";
+
+// History
+"HISTORY" = "Cronologia";
+"DISCORD_SERVER" = "Server Discord";
+"%@_AGO" = "%@ fa";
+"SELECT_CHAPTERS" = "Seleziona i capitoli";
+"NO_CHAPTERS" = "Nessun capitolo";
+"NO_NEXT_CHAPTER" = "Non c'è un capitolo successivo";
+"DEFAULT" = "Predefinito";
+"EXPERIMENTAL" = "Sperimentale";
+
+// Search
+"SEARCH" = "Ricerca";
+"BROWSE_NO_SOURCES" = "Nessuna fonte";
+"EXTERNAL" = "Esterno";
+"BUTTON_ERROR" = "ERRORE";
+"MISSING_SOURCE" = "Fonte mancante";
+
+// Reader
+"CHAPTER" = "Capitolo";
+"START_READING" = "Inizia a leggere";
+"READ" = "Letto";
+"VIEW_MORE" = "Vedi di più";
+"NONE" = "Nessuno";
+"CATEGORIES" = "Categorie";
+"ALWAYS_ASK" = "Chiedi sempre";
+"BROWSE_NO_SOURCES_TEXT" = "Configura l'elenco delle fonti o apri una fonte\nin Aidoku per iniziare";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Guida all'aggiunta di fonti";
+"UPDATES" = "Aggiornamenti";
+"BUTTON_UPDATE" = "AGGIORNA";
+"BUTTON_GET" = "OTTIENI";
+"LIST_ALL" = "Tutto";
+
+// Manga
+"UNTITLED" = "Senza titolo";
+"ONGOING" = "In corso";
+"NSFW" = "Erotico";
+"MISSING_SOURCE_TEXT" = "La fonte originale sembra essere mancante per questo manga. Per favore riscaricalo o rimuovi questo titolo dalla tua raccolta.";
+"SELECT_ALL" = "Seleziona tutto";
+"NO_CHAPTERS_AVAILABLE" = "Nessun capitolo disponibile";
+"UNREAD" = "Non letto";
+"MARK" = "Contrassegna";
+"CURRENT_COLON" = "Attuale:";
+"LAST_OPENED" = "Ultima apertura";
+"LAST_READ" = "Ultima lettura";
+"LATEST_CHAPTER" = "Ultimo capitolo";
+"VERTICAL_SCROLL" = "Scorrimento verticale";
+"DATE_ADDED" = "Data di aggiunta";
+
+// Categories
+"ALL" = "Tutto";
+
+// Browse
+"BROWSE" = "Sfoglia";
+"UNINSTALL" = "Disinstalla";
+"LANGUAGES" = "Lingue";
+"INFO" = "Info";
+"VERSION" = "Versione";
+"BUTTON_FILTER" = "Filtra";
+"LIST_HEADER" = "Lista";
+"CANCELLED" = "Annullato";
+"COMPLETED" = "Completato";
+"HIATUS" = "Iato";
+"MORE" = "più";
+"INSTALLED" = "Installato";
+
+// Source
+"SOURCE_INFO" = "Info sulla fonte";
+"LANGUAGE" = "Lingua";
+"DESELECT_ALL" = "Deseleziona tutto";
+"PAGE_X" = "Pagina %i";
+"CHAPTERS" = "Capitoli";
+"CH_SPACE_X" = "Ca. %g";
+"CONTINUE_READING" = "Continua a leggere";
+"MARK_ALL" = "Contrassegna tutto";
+"FINISHED_COLON" = "Finito:";
+"VERTICAL" = "Verticale";
+"INFINITE_VERTICAL_SCROLL" = "Scorrimento verticale infinito";
+"MARK_PREVIOUS" = "Contrassegna il precedente";
+"NO_PREVIOUS_CHAPTER" = "Non esiste un capitolo precedente";
+"READER_SETTINGS" = "Impostazioni del lettore";
+"READING_MODE" = "Modalità di lettura";
+"RTL" = "Da destra a sinistra";
+"SAVE_TO_PHOTOS" = "Salva in foto";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "In questo modo si rimuove la cronologia di questo capitolo. Sei sicuro/a di voler continuare?";
+
+// Settings
+"SETTINGS" = "Impostazioni";
+"GITHUB_REPO" = "Repository GitHub";
+"ABOUT" = "Informazioni";
+"REMOVE_ALL_MANGA_HISTORY" = "Rimuovi tutta la cronologia dei manga";
+"HISTORY_LOCKED" = "La cronologia è bloccata.";
+"AUTH_TO_ENABLE" = "Autenticati per abilitare.";
+"AUTH_TO_DISABLE" = "Autenticati per disabilitare.";
+"SUPPPORT_DEVELOPMENT" = "Sostieni lo sviluppo";
+"GENERAL" = "Generale";
+"ICLOUD_SYNC" = "Sincronizzazione iCloud";
+"INCOGNITO_MODE" = "Modalità Incognito";
+"INCOGNITO_MODE_TEXT" = "Mette in pausa la lettura della cronologia quando è abilitata";
+"APPEARANCE" = "Aspetto";
+"APPEARANCE_LIGHT" = "Chiaro";
+"APPEARANCE_DARK" = "Scuro";
+"USE_SYSTEM_APPEARANCE" = "Usa l'aspetto del sistema";
+"MANGA_PAGE" = "Pagina del manga";
+"SHOW_SOURCE_LABEL" = "Mostra etichetta fonte";
+"USE_MANGA_TINT" = "Usa la tinta del manga";
+"USE_MANGA_TINT_INFO" = "Colora le pagine del manga in base al colore dell'immagine di copertina";
+"READER" = "Lettore";
+"OPEN_READER_VIEW" = "Apri la vista del lettore";
+"UNREAD_CHAPTER_BADGES" = "Distintivi di capitolo non letti";
+"PIN_MANGA_UPDATED" = "Aggiornato";
+"ONLY_UPDATE_ON_WIFI" = "Aggiornamento solo su Wi-Fi";
+"EXCLUDED_CATEGORIES" = "Categorie escluse";
+"SOURCE_LISTS" = "Elenchi di fonti";
+"SOURCE_LIST_ADDED" = "Elenco fonti aggiunto";
+"SOURCE_LIST_ADDED_TEXT" = "È ora possibile sfogliare le fonti esterne nella scheda Sfoglia.";
+"SHOW_NSFW_SOURCES" = "Mostra fonti per adulti";
+"SOURCE_LIST_URL" = "URL dell'elenco delle fonti";
+"SOURCE_LIST_ADD" = "Aggiungi elenco fonti";
+"SOURCE_LIST_ADD_TEXT" = "Immetti l'URL dell'elenco di origine";
+"LOCK_HISTORY_TAB" = "Scheda Cronologia dei blocchi";
+"DOWNSAMPLE_IMAGES" = "Campionamento delle immagini";
+"BACKUP_NAME" = "Nom del backup";
+"RENAME_BACKUP" = "Rinomina il backup";
+"RENAME_BACKUP_TEXT" = "Inserisci un nuovo nome per il backup";
+"CORRUPTED_BACKUP" = "Backup danneggiato";
+"CORRUPTED_BACKUP_TEXT" = "Questo backup sembra avere dati non configurati correttamente. La ridenominazione non è possibile.";
+"MISSING_SOURCES" = "Fonti mancanti";
+"RESTORE_BACKUP" = "Ripristinare il backup?";
+"BACKUP_IMPORT_SUCCESS" = "Backup importato";
+"CLEAR_NETWORK_CACHE" = "Cancella la cache di rete";
+"CLEAR_NETWORK_CACHE_TEXT" = "Questa azione è irreversibile. Le richieste di rete e le immagini memorizzate nella cache verranno cancellate.";
+"CLEAR_READ_HISTORY" = "Cancella la cronologia di lettura";
+"RESET_SETTINGS" = "Ripristina le impostazioni";
+"PAGE_X_OF_X" = "Pagina %i di %i";
+"VIEW_LIBRARY" = "Visualizza la raccolta";
+"CATEGORY_EMPTY" = "Categoria vuota";
+"AUTH_TO_OPEN" = "Autenticati per aprire.";
+"LOCKED_CATEGORIES" = "Categorie bloccate";
+"AUTH_FOR_LIBRARY" = "Autenticati per visualizzare la raccolta.";
+"LOCK_LIBRARY" = "Blocca la raccolta";
+"LIBRARY_LOCKED" = "La raccolta è chiusa.";
+"CATEGORY_LOCKED" = "La categoria è bloccata.";
+"SET_AS_WIDE_PAGE" = "Imposta come pagina ampia";
+"AUTOMATIC" = "Automatico";
+"SET_AS_NORMAL_PAGE" = "Imposta come pagina normale";
+"PAGES_TO_PRELOAD" = "Pagine da precaricare";
+"SINGLE_PAGE" = "Pagina singola";
+"PAGED" = "Impaginato";
+"PAGE_LAYOUT" = "Disposizione delle pagine";
+"DOUBLE_PAGE" = "Doppia pagina";
+"MULTI_LANGUAGE" = "Multilingue";
+"MANGA_PER_ROW" = "Manga per riga";
+"CH_X" = "Ca.%g";
+"RESTORE_BACKUP_TEXT" = "Tutti i dati attuali verranno rimossi e sostituiti dai dati di questo backup.";
+"CHAPTER_X" = "Capitolo %g";
+"AUTH_FOR_HISTORY" = "Autenticati per visualizzare la cronologia di lettura.";
+"LIBRARY_UPDATING" = "Aggiornamento della raccolta";
+"VIEW_HISTORY" = "Visualizza la cronologia";
+"UPDATE_INTERVAL" = "Intervallo di aggiornamento";
+"SKIP_TITLES" = "Salta i titoli";
+"PIN_MANGA_UNREAD" = "Non letto";
+"REFRESH_METADATA" = "Aggiorna i metadati";
+"EVERY_12_HOURS" = "Ogni 12 ore";
+"WEEKLY" = "Settimanale";
+"THAT_HAVENT_BEEN_READ" = "Che non sono stati letti";
+"SOURCE_LIST_ADD_FAIL" = "Impossibile aggiungere l'elenco delle fonti";
+"MISSING_SOURCES_TEXT" = "Il backup ripristinato può contenere dati provenienti dalle seguenti fonti, che non sono attualmente installate:";
+"NEVER" = "Mai";
+"DAILY" = "Giornaliero";
+"EVERY_2_DAYS" = "Ogni 2 giorni";
+"WITH_UNREAD_CHAPTERS" = "Con i capitoli non letti";
+"WITH_COMPLETED_STATUS" = "Con stato completato";
+"SAVE_IMAGE_OPTION" = "Opzione Salva immagine";
+"BACKUPS" = "Backup";
+"BACKUP_IMPORT_FAIL" = "Importazione fallita";
+"BACKUP_IMPORT_FAIL_TEXT" = "Impossibile salvare il backup. Assicurati che il backup sia nel formato corretto.";
+"LOGS" = "Registri";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "L'URL dell'elenco di origine fornito non è valido o è già stato aggiunto.";
+"EXPORT_LOGS" = "Esporta dei registri";
+"CLEAR_MANGA_CACHE_TEXT" = "Questa azione è irreversibile. I manga non presenti nella libreria verranno rimossi.";
+"BACKUP_INFO" = "Premi a lungo su un backup per esportarlo o scorrere verso sinistra per eliminarlo.";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Per ripristinare questo backup, trovarlo nella pagina dei backup delle impostazioni.";
+"EXPORT" = "Esporta";
+"RESTORE" = "Ripristina";
+"LOGGING" = "Registrazione";
+"LOG_SERVER" = "Server di registro";
+"DISPLAY_LOGS" = "Visualizza i registri";
+"ADVANCED" = "Avanzato";
+"RESET_TEXT" = "Questa azione è irreversibile. Tutti i dati, le impostazioni e le cache verranno cancellati e ripristinati.";
+"RESET_SETTINGS_TEXT" = "Questa azione è irreversibile. Tutte le impostazioni dell'applicazione e delle fonti verranno ripristinate.";
+"CLEAR_CHAPTER_CACHE" = "Cancella la cache del capitolo";
+"CLEAR_CHAPTER_CACHE_TEXT" = "Questa azione è irreversibile. I capitoli memorizzati nella cache verranno cancellati e scaricati nuovamente.";
+"CLEAR_MANGA_CACHE" = "Cancella la cache dei manga";
+"CLEAR_READ_HISTORY_TEXT" = "Questa azione è irreversibile. Tutta la cronologia di lettura verrà rimossa.";

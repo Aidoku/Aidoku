@@ -11,7 +11,7 @@
 "RENAME" = "Renomear";
 
 // Library
-"LIBRARY" = "Bibliteca";
+"LIBRARY" = "Biblioteca";
 "LIBRARY_SEARCH" = "Encontrar na Biblioteca";
 "LIBRARY_EMPTY" = "Biblioteca Vazia";
 "LIBRARY_ADD_FROM_BROWSE" = "Adicionar Mangás da Aba Explorar";
@@ -138,3 +138,60 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "Essa ação é irreversível. Pedidos de Rede e imagens em cache serão limpos.";
 "CLEAR_READ_HISTORY" = "Limpar Histórico de Leitura";
 "CLEAR_READ_HISTORY_TEXT" = "Essa ação é irreversível. Todo o histórico de leitura será removido.";
+"REMOVE" = "Remover";
+"CLEAR" = "Limpar";
+"DOWNLOADED" = "Baixado(s)";
+"DOWNLOAD_QUEUE" = "Fila de Downloads";
+"CANCEL_DOWNLOAD" = "Cancelar Download";
+"REMOVE_DOWNLOAD" = "Remover Download";
+"REMOVE_ALL_DOWNLOADS" = "Remover Todos os Downloads";
+"REMOVE_DOWNLOADS" = "Remover Downloads";
+"REMOVE_DOWNLOADS_CONFIRM" = "Tem certeza que deseja remover todos os downloads selecionados?";
+"FILTER_BY" = "Filtrar Por";
+"CATEGORIES" = "Categorias";
+"DEFAULT_CATEGORY" = "Categoria Padrão";
+"ALWAYS_ASK" = "Sempre Perguntar";
+"SELECT_CHAPTERS" = "Selecionar Capítulos";
+"VOLUME_X" = "Volume %g";
+"CHAPTER_X" = "Capítulo %g";
+"VOL_X" = "Vol. %g";
+"CURRENT_COLON" = "Atual(is):";
+
+// History
+"HISTORY" = "Histórico";
+"%@_AGO" = "%@ ago";
+"REMOVE_ALL_MANGA_HISTORY" = "Remover Histórico de Todos os Mangás";
+"VIEW_HISTORY" = "Visualizar Histórico";
+"LOADING_ELLIPSIS" = "Carregando…";
+"NONE" = "Nenhum";
+"SHARE" = "Compartilhar";
+
+// Downloads
+"DOWNLOAD" = "Baixar";
+"CATEGORY_ADD_TEXT" = "Insira o Título da nova categoria a ser criada.";
+
+// Categories
+"ALL" = "Todos";
+"EDIT_CATEGORIES" = "Editar Categorias";
+"CATEGORY_TITLE" = "Título da categoria";
+"CATEGORY_ADD" = "Adicionar Categoria";
+"LANGUAGES" = "Línguas";
+"CANCELLED" = "Cancelado";
+"HISTORY_LOCKED" = "Histórico está travado.";
+"SELECT_ALL" = "Selecionar Tudo";
+"CHAPTERS" = "Capítulos";
+"BUILD" = "Versão";
+"DESELECT_ALL" = "Deselecionar Tudo";
+"CH_X" = "Cap. %g";
+"VOL_SPACE_X" = "Vol. %g";
+"CH_SPACE_X" = "Cap. %g";
+"MARK" = "Marcar";
+"PREVIOUS_COLON" = "Anterior(es):";
+"NO_NEXT_CHAPTER" = "Não há um próximo capítulo";
+"NEXT_COLON" = "Próximo(s):";
+"FINISHED_COLON" = "Finalizado(s):";
+"NO_PREVIOUS_CHAPTER" = "Não há um capítulo anterior";
+"PAGE_X" = "Página %i";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Isso irá remover o histórico para esse capítulo. Tem certeza que deseja continuar?";
+"AUTH_FOR_HISTORY" = "Autentique para visualizar histórico de leitura.";
+"AUTH_TO_ENABLE" = "Autentique para habilitar.";
