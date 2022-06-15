@@ -204,7 +204,7 @@ extension WasmHtml {
             return -1
         }
     }
-    
+
     var ownText: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
