@@ -123,13 +123,8 @@ class ReaderViewController: UIViewController {
     let currentPageLabel = UILabel()
     let pagesLeftLabel = UILabel()
     let progressView = UIActivityIndicatorView(style: .medium)
-    let chapterSelectionPopoverButton = UIBarButtonItem(
-        image: UIImage(systemName: "list.bullet"),
-        style: .plain,
-        target: ReaderViewController.self,
-        action: #selector(openChapterSelectionPopover(_:))
-    )
 
+    var chapterSelectionPopoverButton: UIBarButtonItem!
     var toolbarSliderWidthConstraint: NSLayoutConstraint?
 
     var currentPageIndex = 0
@@ -162,6 +157,12 @@ class ReaderViewController: UIViewController {
         self.chapter = chapter
         self.chapterList = chapterList
         super.init(nibName: nil, bundle: nil)
+        self.chapterSelectionPopoverButton = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .plain,
+            target: self,
+            action: #selector(openChapterSelectionPopover(_:))
+        )
     }
 
     required init?(coder: NSCoder) {
@@ -637,9 +638,11 @@ extension ReaderViewController {
     @objc func nextPage() {
         pageManager.nextPage()
     }
+
     @objc func previousPage() {
         pageManager.previousPage()
     }
+
     @objc func nextChapter() {
         chapter = chapterList[chapterIndex + 1]
         pageManager.setChapter(chapter: chapter, startPage: DataManager.shared.currentPage(for: chapter))
@@ -647,6 +650,7 @@ extension ReaderViewController {
             await loadChapter()
         }
     }
+
     @objc func previousChapter() {
         chapter = chapterList[chapterIndex - 1]
         pageManager.setChapter(chapter: chapter, startPage: DataManager.shared.currentPage(for: chapter))
@@ -654,6 +658,7 @@ extension ReaderViewController {
             await loadChapter()
         }
     }
+
     @objc func openChapterSelectionPopoverWrapper() {
         openChapterSelectionPopover(chapterSelectionPopoverButton)
     }
