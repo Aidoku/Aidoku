@@ -11,12 +11,14 @@ import Foundation
 struct TrackItem {
     /// A unique identifier the tracker can use to identify an item.
     let id: String
-    /// The tracker identifier for the title.
+    /// The tracker identifier for the item.
     let trackerId: String
-    /// The source identifier for the title.
+    /// The source identifier for the item.
     let sourceId: String
-    /// The identifier for the title.
+    /// The identifier for the item.
     let mangaId: String
-    /// The paired tracking state of the title.
+    /// The tracker's title for the item.
+    var title: String?
+    /// The paired tracking state of the item.
     var state: TrackState
 }

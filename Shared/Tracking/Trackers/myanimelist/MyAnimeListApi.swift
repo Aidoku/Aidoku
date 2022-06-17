@@ -18,8 +18,8 @@ class MyAnimeListApi {
     var codeVerifier = ""
 
     lazy var authenticationUrl: String? = {
-        guard let baseUrl = URL(string: "\(baseOAuthUrl)/authorize") else { return nil }
-        var components = URLComponents(url: baseUrl, resolvingAgainstBaseURL: true)
+        guard let url = URL(string: "\(baseOAuthUrl)/authorize") else { return nil }
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         components?.queryItems = [
             URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "code_challenge", value: generatePkceChallenge()),
@@ -27,6 +27,19 @@ class MyAnimeListApi {
         ]
         return components?.url?.absoluteString
     }()
+
+    func getAccessToken(authCode: String) async -> MyAnimeListOAuth? {
+        guard let url = URL(string: "\(baseOAuthUrl)/token") else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = [
+            "client_id": clientId,
+            "grant_type": "authorization_code",
+            "code": authCode,
+            "code_verifier": codeVerifier
+        ].percentEncoded()
+        return try? await URLSession.shared.object(from: request)
+    }
 }
 
 // MARK: - PKCE Utilities
@@ -43,17 +56,19 @@ extension MyAnimeListApi {
     }
 
     func generatePkceVerifier() -> String {
-        var octets = [UInt8](repeating: 0, count: 40)
+        var octets = [UInt8](repeating: 0, count: 32)
         _ = SecRandomCopyBytes(kSecRandomDefault, octets.count, &octets)
         codeVerifier = base64(octets)
         return codeVerifier
     }
 
     func generatePkceChallenge() -> String {
-        let challenge = generatePkceVerifier()
-            .data(using: .ascii)
-            .map { SHA256.hash(data: $0) }
-            .map { base64($0) }
-        return challenge ?? ""
+        // This would be correct for another oauth provider, but MAL only supports the "plain" option.
+//        generatePkceVerifier()
+//            .data(using: .ascii)
+//            .map { SHA256.hash(data: $0) }
+//            .map { base64($0) } ?? ""
+        // So instead, the verifier is used as the challenge string.
+        generatePkceVerifier()
     }
 }

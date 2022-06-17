@@ -233,6 +233,10 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
                 SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
             ]),
+            // MARK: Trackers
+            SettingItem(type: "group", title: NSLocalizedString("TRACKERS", comment: ""), items: [
+                SettingItem(type: "page", key: "Trackers.trackers", title: NSLocalizedString("TRACKERS", comment: ""))
+            ]),
             // MARK: Logging
             SettingItem(type: "group", title: NSLocalizedString("LOGGING", comment: ""), items: [
                 SettingItem(
@@ -353,6 +357,9 @@ extension SettingsViewController {
 
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
+
+            case "Trackers.trackers":
+                navigationController?.pushViewController(TrackersViewController(), animated: true)
 
             case "Logs.export":
                 let url = LogManager.export()

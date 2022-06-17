@@ -15,7 +15,7 @@ import AuthenticationServices
 #endif
 
 /// Aidoku tracker for MyAnimeList.
-class MyAnimeListTracker: NSObject, OAuthTracker {
+class MyAnimeListTracker: OAuthTracker {
 
     let id = "myanimelist"
     let name = "MyAnimeList"
@@ -44,8 +44,18 @@ class MyAnimeListTracker: NSObject, OAuthTracker {
     }
 
     func handleAuthenticationCallback(url: URL) {
-        if let code = url.queryParameters?["code"] {
-            // TODO: get and save access token
+        if let authCode = url.queryParameters?["code"] {
+            Task {
+                guard let oauth = await api.getAccessToken(authCode: authCode) else { return }
+                token = oauth.accessToken
+                UserDefaults.standard.set(try? JSONEncoder().encode(oauth), forKey: "Token.\(id).oauth")
+            }
         }
+    }
+
+    func logout() {
+        token = nil
+        UserDefaults.standard.removeObject(forKey: "Token.\(id).token")
+        UserDefaults.standard.removeObject(forKey: "Token.\(id).oauth")
     }
 }

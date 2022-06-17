@@ -14,7 +14,7 @@ import Foundation
 #endif
 
 /// A protocol for the implementation of a Tracker.
-protocol Tracker {
+protocol Tracker: AnyObject {
     /// A unique identification string.
     var id: String { get }
     /// The title of the tracker.
@@ -27,6 +27,9 @@ protocol Tracker {
     var scoreType: TrackScoreType { get }
     /// An array of options paired with scores to use if score type is an option list.
     var scoreOptions: [(String, Int)] { get }
+
+    /// A boolean indicating if the tracker is currently logged in.
+    var isLoggedIn: Bool { get }
 
     /// Register a new tracked title.
     ///
@@ -65,11 +68,9 @@ protocol Tracker {
     ///
     /// - Parameter trackId: The identifier for a tracker item.
     func getState(trackId: String) -> TrackState
-}
 
-// Default values for optional properties
-extension Tracker {
-    var scoreOptions: [(String, Int)] { [] }
+    /// Log out from the tracker.
+    func logout()
 }
 
 /// A protocol for trackers that utilize OAuth authentication.
@@ -78,7 +79,33 @@ protocol OAuthTracker: Tracker {
     var callbackHost: String { get }
     /// The URL used to authenticate with the tracker service provider.
     var authenticationUrl: String { get }
+    /// The OAuth access token for the tracker.
+    var token: String? { get set }
 
     /// A callback function called after authenticating.
     func handleAuthenticationCallback(url: URL)
+}
+
+// Default values for optional properties
+extension Tracker {
+    var scoreOptions: [(String, Int)] { [] }
+}
+
+extension OAuthTracker {
+    var token: String? {
+        get {
+            UserDefaults.standard.string(forKey: "Tracker.\(id).token")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "Tracker.\(id).token")
+        }
+    }
+
+    var isLoggedIn: Bool {
+        token != nil
+    }
+
+    func logout() {
+        UserDefaults.standard.removeObject(forKey: "Tracker.\(id).token")
+    }
 }
