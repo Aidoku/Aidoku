@@ -14,7 +14,7 @@ import Foundation
     import UIKit
 #endif
 
-enum MangaStatus: Int, Codable {
+enum PublishingStatus: Int, Codable {
     case unknown = 0
     case ongoing = 1
     case completed = 2
@@ -34,6 +34,16 @@ enum MangaViewer: Int, Codable {
     case ltr = 2
     case vertical = 3
     case scroll = 4
+}
+
+enum PublishingType: Int, Codable {
+    case manga = 0
+    case manhwa = 1
+    case manhua = 2
+    case lightNovel = 3
+    case comic = 4
+    case book = 5
+    case unknown = 6
 }
 
 struct CodableColor {
@@ -82,7 +92,7 @@ class Manga: KVCObject, Codable {
     var cover: String?
     var url: String?
 
-    var status: MangaStatus
+    var status: PublishingStatus
     var nsfw: MangaContentRating
     var viewer: MangaViewer
 
@@ -103,7 +113,7 @@ class Manga: KVCObject, Codable {
         tags: [String]? = nil,
         cover: String? = nil,
         url: String? = nil,
-        status: MangaStatus = .unknown,
+        status: PublishingStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
         tintColor: UIColor? = nil,
