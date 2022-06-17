@@ -71,3 +71,14 @@ protocol Tracker {
 extension Tracker {
     var scoreOptions: [(String, Int)] { [] }
 }
+
+/// A protocol for trackers that utilize OAuth authentication.
+protocol OAuthTracker: Tracker {
+    /// The host in the oauth callback url, e.g. `host` in `aidoku://host`.
+    var callbackHost: String { get }
+    /// The URL used to authenticate with the tracker service provider.
+    var authenticationUrl: String { get }
+
+    /// A callback function called after authenticating.
+    func handleAuthenticationCallback(url: URL)
+}

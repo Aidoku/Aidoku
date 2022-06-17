@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AuthenticationServices
 
 #if os(OSX)
     import AppKit
@@ -14,7 +15,7 @@ import Foundation
 #endif
 
 /// Aidoku tracker for MyAnimeList.
-class MyAnimeListTracker: Tracker {
+class MyAnimeListTracker: NSObject, OAuthTracker {
 
     let id = "myanimelist"
     let name = "MyAnimeList"
@@ -22,6 +23,11 @@ class MyAnimeListTracker: Tracker {
 
     let supportedStatuses = TrackStatus.defaultStatuses
     let scoreType: TrackScoreType = .tenPoint
+
+    let api = MyAnimeListApi()
+
+    let callbackHost = "myanimelist-auth"
+    lazy var authenticationUrl = api.authenticationUrl ?? ""
 
     func register(trackId: String) {
     }
@@ -35,5 +41,11 @@ class MyAnimeListTracker: Tracker {
 
     func getState(trackId: String) -> TrackState {
         TrackState()
+    }
+
+    func handleAuthenticationCallback(url: URL) {
+        if let code = url.queryParameters?["code"] {
+            // TODO: get and save access token
+        }
     }
 }
