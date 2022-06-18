@@ -37,10 +37,28 @@ class TrackersViewController: UITableViewController {
             tableView.sectionHeaderTopPadding = 0
         }
 
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
+
         Task { @MainActor in
             trackers = TrackerManager.shared.trackers
             tableView.reloadSections(IndexSet(integer: 0), with: .fade)
         }
+    }
+
+    func logout(at indexPath: IndexPath) {
+        guard indexPath.row < self.trackers.count else { return }
+        let alert = UIAlertController(
+            title: String(format: NSLocalizedString("LOGOUT_FROM_%@", comment: ""), self.trackers[indexPath.row].name),
+            message: nil,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: NSLocalizedString("LOGOUT", comment: ""), style: .default) { _ in
+            guard indexPath.row < self.trackers.count else { return }
+            self.trackers[indexPath.row].logout()
+            self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
+        })
+        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+        present(alert, animated: true)
     }
 }
 
@@ -52,16 +70,30 @@ extension TrackersViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var cell: UITableViewCell? = tableView.dequeueReusableCell(withIdentifier: "UITableViewCellSubtitle")
-        if cell == nil {
-            cell = UITableViewCell(style: .subtitle, reuseIdentifier: "UITableViewCellSubtitle")
-        }
-        guard let cell = cell else { return UITableViewCell() }
+        let cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
 
         let tracker = trackers[indexPath.row]
         cell.textLabel?.text = tracker.name
-        cell.detailTextLabel?.text = nil
         cell.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+        cell.imageView?.image = tracker.icon
+
+        cell.imageView?.clipsToBounds = true
+        cell.imageView?.layer.cornerRadius = 42 * 0.225
+        cell.imageView?.layer.cornerCurve = .continuous
+        cell.imageView?.layer.borderColor = UIColor.quaternarySystemFill.cgColor
+        cell.imageView?.layer.borderWidth = 1
+        cell.imageView?.translatesAutoresizingMaskIntoConstraints = false
+        cell.textLabel?.translatesAutoresizingMaskIntoConstraints = false
+
+        cell.contentView.heightAnchor.constraint(equalToConstant: 58).isActive = true
+        cell.imageView?.widthAnchor.constraint(equalToConstant: 42).isActive = true
+        cell.imageView?.heightAnchor.constraint(equalToConstant: 42).isActive = true
+        cell.imageView?.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor).isActive = true
+        cell.imageView?.leadingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.leadingAnchor).isActive = true
+        cell.textLabel?.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor).isActive = true
+        if cell.imageView != nil {
+            cell.textLabel?.leadingAnchor.constraint(equalTo: cell.imageView!.trailingAnchor, constant: 12).isActive = true
+        }
 
         return cell
     }
@@ -72,8 +104,7 @@ extension TrackersViewController {
         let tracker = trackers[indexPath.row]
 
         guard !tracker.isLoggedIn else {
-            tracker.logout()
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            logout(at: indexPath)
             return
         }
 
@@ -85,7 +116,11 @@ extension TrackersViewController {
                 }
                 if let callbackURL = callbackURL {
                     Task { @MainActor in
+                        let loadingIndicator = UIActivityIndicatorView(style: .medium)
+                        loadingIndicator.startAnimating()
+                        tableView.cellForRow(at: indexPath)?.accessoryView = loadingIndicator
                         await tracker.handleAuthenticationCallback(url: callbackURL)
+                        tableView.cellForRow(at: indexPath)?.accessoryView = nil
                         tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
                     }
                 }
