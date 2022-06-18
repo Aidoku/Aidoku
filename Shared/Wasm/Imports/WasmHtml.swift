@@ -26,6 +26,11 @@ class WasmHtml {
         try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
 
+        try? globalStore.vm.addImportHandler(named: "set_text", namespace: namespace, block: self.setText)
+        try? globalStore.vm.addImportHandler(named: "set_html", namespace: namespace, block: self.setHtml)
+        try? globalStore.vm.addImportHandler(named: "prepend", namespace: namespace, block: self.prepend)
+        try? globalStore.vm.addImportHandler(named: "append", namespace: namespace, block: self.append)
+
         try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
         try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.first)
         try? globalStore.vm.addImportHandler(named: "next", namespace: namespace, block: self.next)
@@ -127,6 +132,50 @@ extension WasmHtml {
                 } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
                     return self.globalStore.storeStdValue(object, from: descriptor)
                  }
+            }
+            return -1
+        }
+    }
+
+    var setText: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, text, textLength in
+            guard descriptor >= 0 else { return -1 }
+            if let string = self.globalStore.readString(offset: text, length: textLength),
+               (try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text(string)) != nil {
+                return 0
+            }
+            return -1
+        }
+    }
+
+    var setHtml: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, text, textLength in
+            guard descriptor >= 0 else { return -1 }
+            if let string = self.globalStore.readString(offset: text, length: textLength),
+               (try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.html(string)) != nil {
+                return 0
+            }
+            return -1
+        }
+    }
+
+    var prepend: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, text, textLength in
+            guard descriptor >= 0 else { return -1 }
+            if let string = self.globalStore.readString(offset: text, length: textLength),
+               (try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.prepend(string)) != nil {
+                return 0
+            }
+            return -1
+        }
+    }
+
+    var append: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, text, textLength in
+            guard descriptor >= 0 else { return -1 }
+            if let string = self.globalStore.readString(offset: text, length: textLength),
+               (try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.append(string)) != nil {
+                return 0
             }
             return -1
         }
