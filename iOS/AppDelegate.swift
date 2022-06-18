@@ -115,7 +115,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 if let tracker = TrackerManager.shared.trackers.first(where: {
                     ($0 as? OAuthTracker)?.callbackHost == url.host
                 }) as? OAuthTracker {
-                    tracker.handleAuthenticationCallback(url: url)
+                    Task {
+                        await tracker.handleAuthenticationCallback(url: url)
+                    }
                 } else {
                     // deep link
                     handleDeepLink(url: url)

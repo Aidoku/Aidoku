@@ -20,5 +20,5 @@ struct TrackSearchItem {
     /// The publishing status of the tracker item.
     var status: PublishingStatus?
     /// The type or format of the tracker item.
-    var type: PublishingType?
+    var type: MediaType?
 }

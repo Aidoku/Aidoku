@@ -84,9 +84,10 @@ extension TrackersViewController {
                     LogManager.logger.error("Tracker authentication error: \(error.localizedDescription)")
                 }
                 if let callbackURL = callbackURL {
-                    tracker.handleAuthenticationCallback(url: callbackURL)
-                    // Assume that the login request succeeds
-                    tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+                    Task { @MainActor in
+                        await tracker.handleAuthenticationCallback(url: callbackURL)
+                        tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+                    }
                 }
             }
             session.presentationContextProvider = self

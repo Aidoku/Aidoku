@@ -20,6 +20,19 @@ enum PublishingStatus: Int, Codable {
     case completed = 2
     case cancelled = 3
     case hiatus = 4
+    case notPublished = 5
+}
+
+enum MediaType: Int, Codable {
+    case unknown = 0
+    case manga = 1
+    case manhwa = 2
+    case manhua = 3
+    case novel = 4
+    case oneShot = 5
+    case oel = 6
+    case comic = 7
+    case book = 8
 }
 
 enum MangaContentRating: Int, Codable {
@@ -34,16 +47,6 @@ enum MangaViewer: Int, Codable {
     case ltr = 2
     case vertical = 3
     case scroll = 4
-}
-
-enum PublishingType: Int, Codable {
-    case manga = 0
-    case manhwa = 1
-    case manhua = 2
-    case lightNovel = 3
-    case comic = 4
-    case book = 5
-    case unknown = 6
 }
 
 struct CodableColor {

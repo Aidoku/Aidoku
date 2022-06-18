@@ -37,7 +37,7 @@ protocol Tracker: AnyObject {
     /// user's database on the tracker
     ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func register(trackId: String)
+    func register(trackId: String) async
 
     /// Update the state of a tracked title.
     ///
@@ -47,17 +47,7 @@ protocol Tracker: AnyObject {
     /// - Parameters:
     ///   - trackId: The identifier for a tracker item.
     ///   - state: The updated state for the tracker item.
-    func update(trackId: String, state: TrackState)
-
-    /// Get search results for possible tracker matches for a Manga.
-    ///
-    /// The corresponding Tracker's API can be searched using the title of the Manga object (or
-    /// any other relevant info it contains) to collect a list of tracking items for the user to choose from.
-    ///
-    /// - Returns: An array of titles the user can select to register for the manga.
-    ///
-    /// - Parameter manga: The Manga object to find matches for.
-    func search(for manga: Manga) -> [TrackSearchItem]
+    func update(trackId: String, state: TrackState) async
 
     /// Get the current state of a tracked title from the tracker.
     ///
@@ -67,7 +57,17 @@ protocol Tracker: AnyObject {
     /// - Returns: The current state of the tracker item.
     ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func getState(trackId: String) -> TrackState
+    func getState(trackId: String) async -> TrackState
+
+    /// Get search results for possible tracker matches for a Manga.
+    ///
+    /// The corresponding Tracker's API can be searched using the title of the Manga object (or
+    /// any other relevant info it contains) to collect a list of tracking items for the user to choose from.
+    ///
+    /// - Returns: An array of titles the user can select to register for the manga.
+    ///
+    /// - Parameter manga: The Manga object to find matches for.
+    func search(for manga: Manga) async -> [TrackSearchItem]
 
     /// Log out from the tracker.
     func logout()
@@ -83,7 +83,7 @@ protocol OAuthTracker: Tracker {
     var token: String? { get set }
 
     /// A callback function called after authenticating.
-    func handleAuthenticationCallback(url: URL)
+    func handleAuthenticationCallback(url: URL) async
 }
 
 // Default values for optional properties

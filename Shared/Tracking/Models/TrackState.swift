@@ -22,7 +22,7 @@ struct TrackState {
     /// The total amount of volumes, if available.
     var totalVolumes: Int?
     /// The date that reading began.
-    var startReadTime: Date?
+    var startReadDate: Date?
     /// The date that reading completed.
-    var endReadTime: Date?
+    var finishReadDate: Date?
 }

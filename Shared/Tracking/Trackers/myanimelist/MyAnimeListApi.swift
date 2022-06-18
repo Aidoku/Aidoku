@@ -17,6 +17,8 @@ class MyAnimeListApi {
 
     var codeVerifier = ""
 
+    var oauthTokens: MyAnimeListOAuth?
+
     lazy var authenticationUrl: String? = {
         guard let url = URL(string: "\(baseOAuthUrl)/authorize") else { return nil }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
@@ -27,7 +29,10 @@ class MyAnimeListApi {
         ]
         return components?.url?.absoluteString
     }()
+}
 
+// MARK: - Tokens
+extension MyAnimeListApi {
     func getAccessToken(authCode: String) async -> MyAnimeListOAuth? {
         guard let url = URL(string: "\(baseOAuthUrl)/token") else { return nil }
         var request = URLRequest(url: url)
@@ -38,7 +43,84 @@ class MyAnimeListApi {
             "code": authCode,
             "code_verifier": codeVerifier
         ].percentEncoded()
-        return try? await URLSession.shared.object(from: request)
+        oauthTokens = try? await URLSession.shared.object(from: request)
+        return oauthTokens
+    }
+
+    func refreshAccessToken(refreshToken: String) async -> MyAnimeListOAuth? {
+        guard let url = URL(string: "\(baseOAuthUrl)/token") else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = [
+            "grant_type": "refresh_token",
+            "refresh_token": refreshToken
+        ].percentEncoded()
+        oauthTokens = try? await URLSession.shared.object(from: request)
+        return oauthTokens
+    }
+
+    func loadOAuthTokens() {
+        guard let data = UserDefaults.standard.data(forKey: "Token.myanimelist.oauth") else { return }
+        oauthTokens = try? JSONDecoder().decode(MyAnimeListOAuth.self, from: data)
+    }
+
+    func authorizedRequest(for url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.addValue(
+            "\(oauthTokens?.tokenType ?? "Bearer") \(oauthTokens?.accessToken ?? "")",
+            forHTTPHeaderField: "Authorization"
+        )
+        return request
+    }
+}
+
+// MARK: - Data
+extension MyAnimeListApi {
+
+    func search(query: String) async -> MyAnimeListSearchResponse? {
+        if oauthTokens == nil { loadOAuthTokens() }
+        guard var url = URL(string: "\(baseApiUrl)/manga") else { return nil }
+        url.queryParameters = [
+            "q": query.take(first: 64), // Search query can't be greater than 64 characters
+            "nsfw": "true"
+        ]
+        return try? await URLSession.shared.object(from: authorizedRequest(for: url))
+    }
+
+    func getMangaDetails(id: Int) async -> MyAnimeListManga? {
+        if oauthTokens == nil { loadOAuthTokens() }
+        guard var url = URL(string: "\(baseApiUrl)/manga/\(id)") else { return nil }
+        url.queryParameters = [
+            "fields": "id,title,synopsis,num_chapters,main_picture,status,media_type,start_date"
+        ]
+        return try? await URLSession.shared.object(from: authorizedRequest(for: url))
+    }
+
+    func getMangaWithStatus(id: Int) async -> MyAnimeListManga? {
+        if oauthTokens == nil { loadOAuthTokens() }
+        guard var url = URL(string: "\(baseApiUrl)/manga/\(id)") else { return nil }
+        url.queryParameters = [
+            "fields": "num_volumes,num_chapters,my_list_status"
+        ]
+        return try? await URLSession.shared.object(from: authorizedRequest(for: url))
+    }
+
+    func getMangaStatus(id: Int) async -> MyAnimeListMangaStatus? {
+        if oauthTokens == nil { loadOAuthTokens() }
+        guard var url = URL(string: "\(baseApiUrl)/manga/\(id)") else { return nil }
+        url.queryParameters = [
+            "fields": "my_list_status"
+        ]
+        return (try? await URLSession.shared.object(from: authorizedRequest(for: url)) as MyAnimeListManga)?.myListStatus
+    }
+
+    func updateMangaStatus(id: Int, status: MyAnimeListMangaStatus) async {
+        if oauthTokens == nil { loadOAuthTokens() }
+        guard let url = URL(string: "\(baseApiUrl)/manga/\(id)/my_list_status") else { return }
+        var request = authorizedRequest(for: url)
+        request.httpMethod = "PUT"
+        request.httpBody = status.percentEncoded()
+        _ = try? await URLSession.shared.data(for: request)
     }
 }
 
