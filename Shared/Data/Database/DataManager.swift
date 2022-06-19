@@ -1078,5 +1078,70 @@ extension DataManager {
             context: context
         )
     }
+}
+
+// MARK: - Tracking
+extension DataManager {
+
+    func addTrackItem(item: TrackItem, context: NSManagedObjectContext? = nil) {
+        guard getTrackObject(id: item.id, trackerId: item.trackerId, createIfMissing: false) == nil else { return }
+        let object = TrackObject(context: context ?? container.viewContext)
+        object.id = item.id
+        object.trackerId = item.trackerId
+        object.mangaId = item.mangaId
+        object.sourceId = item.sourceId
+        object.title = item.title
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    func getTrackItems(for manga: Manga) -> [TrackItem] {
+        getTrackObjects(for: manga).map {
+            TrackItem(id: $0.id ?? "", trackerId: $0.trackerId ?? "", sourceId: $0.sourceId ?? "", mangaId: $0.mangaId ?? "", title: $0.title)
+        }
+    }
+
+    func getTrackObjects(for manga: Manga, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+        (try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id
+            ),
+            context: context
+        )) ?? []
+    }
+
+    func getTrackObject(id: String, trackerId: String, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> TrackObject? {
+        if let object = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "id = %@ AND trackerId = %@", id, trackerId
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            return object
+        } else if createIfMissing {
+            let object = TrackObject(context: context ?? container.viewContext)
+            object.id = id
+            object.trackerId = trackerId
+            return object
+        } else {
+            return nil
+        }
+    }
+
+    func getTrackObjects(
+        predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor]? = [],
+        limit: Int? = nil,
+        context: NSManagedObjectContext? = nil
+    ) throws -> [TrackObject] {
+        try fetch(
+            request: TrackObject.fetchRequest(),
+            predicate: predicate,
+            sortDescriptors: sortDescriptors,
+            limit: limit,
+            context: context
+        )
+    }
     // swiftlint:disable:next file_length
 }

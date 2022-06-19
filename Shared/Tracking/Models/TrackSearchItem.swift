@@ -11,6 +11,8 @@ import Foundation
 struct TrackSearchItem {
     /// A unique identifier of the tracker item.
     let id: String
+    /// The identifier for the item's tracker.
+    let trackerId: String
     /// The title of the tracker item.
     var title: String?
     /// The URL for the cover image of the tracker item.
@@ -21,4 +23,15 @@ struct TrackSearchItem {
     var status: PublishingStatus?
     /// The type or format of the tracker item.
     var type: MediaType?
+
+    /// Converts the search item to a TrackItem for the given manga.
+    func toItem(for manga: Manga) -> TrackItem {
+        TrackItem(
+            id: id,
+            trackerId: trackerId,
+            sourceId: manga.sourceId,
+            mangaId: manga.id,
+            title: title
+        )
+    }
 }

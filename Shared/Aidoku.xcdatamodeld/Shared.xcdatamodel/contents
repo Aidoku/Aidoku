@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="CategoryObject" syncable="YES" codeGenerationType="class">
         <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
@@ -60,6 +60,13 @@
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="version" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="Track" representedClassName="TrackObject" syncable="YES" codeGenerationType="class">
+        <attribute name="id" attributeType="String" defaultValueString=""/>
+        <attribute name="mangaId" attributeType="String" defaultValueString=""/>
+        <attribute name="sourceId" attributeType="String" defaultValueString=""/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="trackerId" attributeType="String" defaultValueString=""/>
+    </entity>
     <configuration name="Cloud" usedWithCloudKit="YES">
         <memberEntity name="Category"/>
         <memberEntity name="Chapter"/>
@@ -77,5 +84,6 @@
         <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>
         <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="239"/>
         <element name="Source" positionX="-126" positionY="18" width="128" height="134"/>
+        <element name="Track" positionX="-126" positionY="18" width="128" height="104"/>
     </elements>
 </model>

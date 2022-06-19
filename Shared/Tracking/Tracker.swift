@@ -106,6 +106,7 @@ extension OAuthTracker {
     }
 
     func logout() {
+        token = nil
         UserDefaults.standard.removeObject(forKey: "Tracker.\(id).token")
     }
 }

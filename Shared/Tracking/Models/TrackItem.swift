@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// A structure that pairs a state with a tracked title.
+/// A structure representing a tracked title and its state.
 struct TrackItem {
     /// A unique identifier the tracker can use to identify an item.
     let id: String
@@ -20,5 +20,5 @@ struct TrackItem {
     /// The tracker's title for the item.
     var title: String?
     /// The paired tracking state of the item.
-    var state: TrackState
+    var state: TrackState?
 }

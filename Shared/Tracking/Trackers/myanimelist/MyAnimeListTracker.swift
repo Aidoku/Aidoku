@@ -69,6 +69,7 @@ class MyAnimeListTracker: OAuthTracker {
             let details = await self.api.getMangaDetails(id: node.node.id)
             return TrackSearchItem(
                 id: String(node.node.id),
+                trackerId: self.id,
                 title: details?.title,
                 coverUrl: details?.mainPicture?.large,
                 description: details?.synopsis,
