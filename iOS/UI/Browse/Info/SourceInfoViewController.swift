@@ -12,7 +12,7 @@ class SourceInfoViewController: SettingsTableViewController {
 
     var source: Source
 
-    init(source: Source) {
+    init(source: Source, subPage: Bool = false) {
         self.source = source
         super.init(items: source.settingItems)
     }
@@ -159,21 +159,8 @@ extension SourceInfoViewController {
         } else if source.settingItems.isEmpty || indexPath.section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
             // info
         } else if let item = source.settingItems[indexPath.section + (source.languages.isEmpty ? 0 : -1)].items?[indexPath.row] {
-            switch item.type {
-            case "select", "multi-select", "multi-single-select":
-                navigationController?.pushViewController(
-                    SettingSelectViewController(source: source, item: item, style: tableView.style),
-                    animated: true
-                )
-            case "button":
-                if let key = item.action {
-                    source.performAction(key: key)
-                }
-            default:
-                performAction(for: item)
-            }
+            performAction(for: item, at: indexPath, source: source)
         }
-
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

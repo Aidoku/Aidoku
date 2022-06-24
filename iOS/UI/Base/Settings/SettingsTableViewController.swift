@@ -8,6 +8,7 @@
 import UIKit
 import SafariServices
 import LocalAuthentication
+import AuthenticationServices
 
 class SettingsTableViewController: UITableViewController {
 
@@ -276,6 +277,11 @@ extension SettingsTableViewController {
             }
             cell.accessoryType = .none
 
+        case "login":
+            cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
+            cell.textLabel?.textColor = view.tintColor
+            cell.accessoryType = UserDefaults.standard.string(forKey: item.key ?? "") != nil ? .checkmark : .none
+
         case "text":
             cell = TextInputTableViewCell(reuseIdentifier: "TextInputTableViewCell")
             (cell as? TextInputTableViewCell)?.item = item
@@ -302,8 +308,10 @@ extension SettingsTableViewController {
         }
     }
 
-    func performAction(for item: SettingItem) {
-        if item.type == "select" || item.type == "multi-select" || item.type == "multi-single-select" {
+    // swiftlint:disable:next cyclomatic_complexity
+    func performAction(for item: SettingItem, at indexPath: IndexPath, source: Source? = nil) {
+        switch item.type {
+        case "select", "multi-select", "multi-single-select":
             if let requires = item.requires, !UserDefaults.standard.bool(forKey: requires) { return }
             if let requiresFalse = item.requiresFalse, UserDefaults.standard.bool(forKey: requiresFalse) { return }
 
@@ -317,7 +325,7 @@ extension SettingsTableViewController {
                         if success {
                             Task { @MainActor in
                                 self.navigationController?.pushViewController(
-                                    SettingSelectViewController(item: item, style: self.tableView.style),
+                                    SettingSelectViewController(source: source, item: item, style: self.tableView.style),
                                     animated: true
                                 )
                             }
@@ -325,28 +333,80 @@ extension SettingsTableViewController {
                     }
                 }
             } else {
-                navigationController?.pushViewController(SettingSelectViewController(item: item, style: tableView.style), animated: true)
+                navigationController?.pushViewController(
+                    SettingSelectViewController(source: source, item: item, style: tableView.style),
+                    animated: true
+                )
             }
-        } else if item.type == "link" {
-            if let url = URL(string: item.key ?? "") {
-                if let external = item.external, external {
-                    UIApplication.shared.open(url)
-                } else {
-                    let safariViewController = SFSafariViewController(url: url)
-                    present(safariViewController, animated: true)
+        case "link":
+            guard let url = URL(string: item.url ?? item.key ?? "") else { return }
+            if let external = item.external, external {
+                UIApplication.shared.open(url)
+            } else {
+                let safariViewController = SFSafariViewController(url: url)
+                present(safariViewController, animated: true)
+            }
+        case "button":
+            guard let action = item.action else { return }
+            source?.performAction(key: action)
+            NotificationCenter.default.post(name: NSNotification.Name(action), object: nil)
+        case "login":
+            guard item.method == "oauth", let key = item.key else { return } // TODO: support more than OAuth
+            let url: URL?
+            if item.urlKey != nil, let urlString = UserDefaults.standard.string(forKey: item.urlKey ?? "") {
+                url = URL(string: urlString)
+            } else {
+                url = URL(string: item.url ?? "")
+            }
+            guard let url = url else { return }
+            if UserDefaults.standard.string(forKey: key) != nil { // log out
+                UserDefaults.standard.set(nil, forKey: key)
+                if let notification = item.notification {
+                    source?.performAction(key: notification)
+                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                 }
+                self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            } else { // log in
+                let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
+                    if let error = error {
+                        let sourceInfoString = source != nil ? " for \(source?.manifest.info.name ?? "source")" : ""
+                        LogManager.logger.error("Log-in authentication error\(sourceInfoString): \(error.localizedDescription)")
+                    }
+                    if let callbackURL = callbackURL {
+                        UserDefaults.standard.set(callbackURL.absoluteString, forKey: key)
+                        Task { @MainActor in
+                            if let notification = item.notification {
+                                source?.performAction(key: notification)
+                                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                            }
+                            self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+                        }
+                    }
+                }
+                session.presentationContextProvider = self
+                session.start()
             }
-        } else if item.type == "page", let items = item.items {
+        case "page":
+            guard let items = item.items else { return }
             let subPage = SettingsTableViewController(items: items, style: tableView.style)
             subPage.title = item.title
             present(subPage, animated: true)
+        default:
+            break
         }
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
-            performAction(for: item)
+            performAction(for: item, at: indexPath)
         }
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+// MARK: - Auth Presentation Provider
+extension SettingsTableViewController: ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        view.window!
     }
 }
