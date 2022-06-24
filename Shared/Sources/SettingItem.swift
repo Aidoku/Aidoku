@@ -63,6 +63,7 @@ struct SettingItem: Codable {
         case requiresFalse
         case authToEnable
         case authToDisable
+        case authToOpen
         case minimumValue
         case maximumValue
         case destructive
@@ -74,104 +75,5 @@ struct SettingItem: Codable {
         case spellCheckingType
         case keyboardType
         case returnKeyType
-    }
-}
-
-enum JsonAnyType: Int {
-    case null = 0
-    case int = 1
-    case string = 3
-    case bool = 4
-    case array = 5
-    case object = 6
-}
-
-struct JsonAnyValue: Codable {
-    let type: JsonAnyType
-
-    let boolValue: Bool
-    let intValue: Int?
-    let stringValue: String?
-    let stringArrayValue: [String]?
-    let objectValue: [String: JsonAnyValue]?
-
-    init(
-        type: JsonAnyType,
-        boolValue: Bool,
-        intValue: Int? = nil,
-        stringValue: String? = nil,
-        stringArrayValue: [String]? = nil,
-        objectValue: [String: JsonAnyValue]? = nil
-    ) {
-        self.type = type
-        self.boolValue = boolValue
-        self.intValue = intValue
-        self.stringValue = stringValue
-        self.stringArrayValue = stringArrayValue
-        self.objectValue = objectValue
-    }
-
-    init(from decoder: Decoder) throws {
-        let container =  try decoder.singleValueContainer()
-
-        if let bool = try? container.decode(Bool.self) {
-            type = .bool
-            boolValue = bool
-            intValue = bool ? 1 : 0
-            stringValue = nil
-            stringArrayValue = nil
-            objectValue = nil
-        } else if let int = try? container.decode(Int.self) {
-            type = .int
-            boolValue = int > 0
-            intValue = int
-            stringValue = nil
-            stringArrayValue = nil
-            objectValue = nil
-        } else if let string = try? container.decode(String.self) {
-            type = .string
-            boolValue = false
-            intValue = nil
-            stringValue = string
-            stringArrayValue = nil
-            objectValue = nil
-        } else if let strings = try? container.decode([String].self) {
-            type = .array
-            boolValue = false
-            intValue = nil
-            stringValue = nil
-            stringArrayValue = strings
-            objectValue = nil
-        } else if let object = try? container.decode([String: JsonAnyValue].self) {
-            type = .object
-            boolValue = false
-            intValue = nil
-            stringValue = nil
-            stringArrayValue = nil
-            objectValue = object
-        } else {
-            type = .null
-            boolValue = false
-            intValue = nil
-            stringValue = nil
-            stringArrayValue = nil
-            objectValue = nil
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try boolValue ? container.encode(boolValue) : container.encode(false)
-    }
-
-    func toRaw() -> Any? {
-        switch type {
-        case .null: return nil
-        case .int: return intValue
-        case .string: return stringValue
-        case .bool: return boolValue
-        case .array: return stringArrayValue
-        case .object: return objectValue
-        }
     }
 }
