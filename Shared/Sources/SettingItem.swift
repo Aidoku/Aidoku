@@ -7,7 +7,7 @@
 
 import Foundation
 
-// types: group, select, multi-select, switch, stepper, segment, text, page, button, link
+// types: group, select, multi-select, switch, stepper, segment, text, page, button, link, login
 // TODO: slider
 struct SettingItem: Codable {
     var type: String
@@ -34,6 +34,7 @@ struct SettingItem: Codable {
     var minimumValue: Double?
     var maximumValue: Double?
 
+    var url: String?
     var destructive: Bool? // button
     var external: Bool? // link
 
@@ -45,6 +46,10 @@ struct SettingItem: Codable {
     var spellCheckingType: Int?
     var keyboardType: Int?
     var returnKeyType: Int?
+
+    // login
+    var urlKey: String?
+    var method: String? // "oauth"
 
     enum CodingKeys: String, CodingKey {
         case type
