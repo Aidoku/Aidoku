@@ -48,6 +48,7 @@ struct SettingItem: Codable {
     var returnKeyType: Int?
 
     // login
+    var logoutTitle: String?
     var urlKey: String?
     var method: String? // "oauth"
 

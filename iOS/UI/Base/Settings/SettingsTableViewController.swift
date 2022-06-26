@@ -25,7 +25,7 @@ class SettingsTableViewController: UITableViewController {
         }
     }
 
-    init(items: [SettingItem] = [], style: UITableView.Style = .insetGrouped) {
+    init(items: [SettingItem] = [], source: Source? = nil, style: UITableView.Style = .insetGrouped) {
         self.items = items
         super.init(style: style)
     }
@@ -284,6 +284,8 @@ extension SettingsTableViewController {
             cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
             cell.textLabel?.textColor = view.tintColor
             cell.accessoryType = UserDefaults.standard.string(forKey: item.key ?? "") != nil ? .checkmark : .none
+            cell.textLabel?.text = UserDefaults.standard.string(forKey: item.key ?? "") != nil ? (item.logoutTitle ?? item.title) : item.title
+            return cell
 
         case "text":
             cell = TextInputTableViewCell(reuseIdentifier: "TextInputTableViewCell")
@@ -373,6 +375,7 @@ extension SettingsTableViewController {
                     NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                 }
                 self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
+                self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.title
             } else { // log in
                 let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
                     if let error = error {
@@ -387,6 +390,7 @@ extension SettingsTableViewController {
                                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                             }
                             self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+                            self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.logoutTitle ?? item.title
                         }
                     }
                 }
@@ -395,7 +399,7 @@ extension SettingsTableViewController {
             }
         case "page":
             guard let items = item.items else { return }
-            let subPage = SettingsTableViewController(items: items, style: tableView.style)
+            let subPage = SettingsTableViewController(items: items, source: source, style: tableView.style)
             subPage.title = item.title
             present(subPage, animated: true)
         default:
