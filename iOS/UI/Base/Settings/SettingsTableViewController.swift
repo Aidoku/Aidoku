@@ -13,6 +13,7 @@ import AuthenticationServices
 class SettingsTableViewController: UITableViewController {
 
     var items: [SettingItem]
+    var source: Source?
 
     var requireObservers: [SettingItem] = []
 
@@ -113,6 +114,7 @@ extension SettingsTableViewController {
                 }
             }
             if let notification = item.notification {
+                self.source?.performAction(key: notification)
                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
             }
         }
@@ -154,6 +156,7 @@ extension SettingsTableViewController {
         stepperView.handleChange { _ in
             cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
             if let notification = item.notification {
+                self.source?.performAction(key: notification)
                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
             }
         }
@@ -309,7 +312,7 @@ extension SettingsTableViewController {
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    func performAction(for item: SettingItem, at indexPath: IndexPath, source: Source? = nil) {
+    func performAction(for item: SettingItem, at indexPath: IndexPath) {
         switch item.type {
         case "select", "multi-select", "multi-single-select":
             if let requires = item.requires, !UserDefaults.standard.bool(forKey: requires) { return }
@@ -325,7 +328,7 @@ extension SettingsTableViewController {
                         if success {
                             Task { @MainActor in
                                 self.navigationController?.pushViewController(
-                                    SettingSelectViewController(source: source, item: item, style: self.tableView.style),
+                                    SettingSelectViewController(source: self.source, item: item, style: self.tableView.style),
                                     animated: true
                                 )
                             }
@@ -340,6 +343,10 @@ extension SettingsTableViewController {
             }
         case "link":
             guard let url = URL(string: item.url ?? item.key ?? "") else { return }
+            if let notification = item.notification {
+                self.source?.performAction(key: notification)
+                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+            }
             if let external = item.external, external {
                 UIApplication.shared.open(url)
             } else {
@@ -369,14 +376,14 @@ extension SettingsTableViewController {
             } else { // log in
                 let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
                     if let error = error {
-                        let sourceInfoString = source != nil ? " for \(source?.manifest.info.name ?? "source")" : ""
+                        let sourceInfoString = self.source != nil ? " for \(self.source?.manifest.info.name ?? "source")" : ""
                         LogManager.logger.error("Log-in authentication error\(sourceInfoString): \(error.localizedDescription)")
                     }
                     if let callbackURL = callbackURL {
                         UserDefaults.standard.set(callbackURL.absoluteString, forKey: key)
                         Task { @MainActor in
                             if let notification = item.notification {
-                                source?.performAction(key: notification)
+                                self.source?.performAction(key: notification)
                                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                             }
                             self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
