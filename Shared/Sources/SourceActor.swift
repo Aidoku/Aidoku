@@ -96,6 +96,8 @@ actor SourceActor {
         var request = WasmRequestObject(id: source.globalStore.requestsPointer)
         guard !url.isEmpty else { return request }
 
+        request.URL = url
+
         // add cloudflare headers
         request.headers["User-Agent"] = WasmNet.defaultUserAgent
         if let url = URL(string: url),
