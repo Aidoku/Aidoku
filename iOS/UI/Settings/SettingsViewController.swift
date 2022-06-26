@@ -239,6 +239,7 @@ class SettingsViewController: SettingsTableViewController {
                     type: "text",
                     key: "Logs.logServer",
                     placeholder: NSLocalizedString("LOG_SERVER", comment: ""),
+                    notification: "Logs.logServer",
                     autocapitalizationType: 0,
                     autocorrectionType: 1,
                     spellCheckingType: 1,
@@ -265,6 +266,8 @@ class SettingsViewController: SettingsTableViewController {
                 } else {
                     self?.view.window?.overrideUserInterfaceStyle = .dark
                 }
+            } else {
+                self?.view.window?.overrideUserInterfaceStyle = .unspecified
             }
         }
 

@@ -104,10 +104,10 @@ extension TextInputTableViewCell: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if let key = item?.key {
             UserDefaults.standard.set(textField.text, forKey: key)
-            if let source = source, let notification = item?.notification {
-                source.performAction(key: notification)
+            if let notification = item?.notification {
+                source?.performAction(key: notification)
+                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
             }
-            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
         }
     }
 
