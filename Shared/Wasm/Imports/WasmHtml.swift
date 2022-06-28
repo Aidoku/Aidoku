@@ -39,7 +39,7 @@ class WasmHtml {
         try? globalStore.vm.addImportHandler(named: "base_uri", namespace: namespace, block: self.baseUri)
         try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
         try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
-        try? globalStore.vm.addImportHandler(named: "trimmed_text", namespace: namespace, block: self.trimmedText)
+        try? globalStore.vm.addImportHandler(named: "untrimmed_text", namespace: namespace, block: self.untrimmedText)
         try? globalStore.vm.addImportHandler(named: "own_text", namespace: namespace, block: self.ownText)
         try? globalStore.vm.addImportHandler(named: "data", namespace: namespace, block: self.data)
         try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
@@ -248,20 +248,6 @@ extension WasmHtml {
     var text: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
-            } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
-            } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue(string, from: descriptor)
-            }
-            return -1
-        }
-    }
-
-    var trimmedText: (Int32) -> Int32 {
-        { descriptor in
-            guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text(trimAndNormaliseWhitespace: true) {
                 return self.globalStore.storeStdValue(string, from: descriptor)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text(trimAndNormaliseWhitespace: true) {
@@ -274,6 +260,20 @@ extension WasmHtml {
                         return self.globalStore.storeStdValue(string.trimmingCharacters(in: .whitespacesAndNewlines), from: descriptor)
                     }
                 }
+                return self.globalStore.storeStdValue(string, from: descriptor)
+            }
+            return -1
+        }
+    }
+
+    var untrimmedText: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return -1 }
+            if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text(trimAndNormaliseWhitespace: false) {
+                return self.globalStore.storeStdValue(string, from: descriptor)
+            } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text(trimAndNormaliseWhitespace: false) {
+                return self.globalStore.storeStdValue(string, from: descriptor)
+            } else if let string = self.globalStore.readStdValue(descriptor) as? String {
                 return self.globalStore.storeStdValue(string, from: descriptor)
             }
             return -1
