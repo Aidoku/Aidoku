@@ -54,6 +54,7 @@ struct SettingItem: Codable {
 
     enum CodingKeys: String, CodingKey {
         case type
+        
         case key
         case action
         case title
@@ -67,13 +68,18 @@ struct SettingItem: Codable {
 
         case requires
         case requiresFalse
+        
         case authToEnable
         case authToDisable
         case authToOpen
+        
         case minimumValue
         case maximumValue
+        
+        case url
         case destructive
         case external
+        
         case items
 
         case autocapitalizationType
@@ -81,5 +87,9 @@ struct SettingItem: Codable {
         case spellCheckingType
         case keyboardType
         case returnKeyType
+        
+        case logoutTitle
+        case urlKey
+        case method
     }
 }
