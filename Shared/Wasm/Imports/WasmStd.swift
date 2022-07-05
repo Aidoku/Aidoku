@@ -148,7 +148,7 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return Int32(ObjectType.null.rawValue) }
             let value = self.globalStore.readStdValue(descriptor)
-            if value == nil {
+            if value == nil || value is NSNull {
                 return Int32(ObjectType.null.rawValue)
             } else if value is Int {
                 return Int32(ObjectType.int.rawValue)
