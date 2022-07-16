@@ -238,12 +238,12 @@ extension WasmNet {
 
     func isRateLimited() -> Bool {
         self.rateLimit > 0
-            && self.lastRequestTime?.timeIntervalSinceNow ?? self.period < self.period
+            && -(self.lastRequestTime?.timeIntervalSinceNow ?? self.period) < self.period
             && self.passedRequests >= self.rateLimit
     }
 
     func incrementRequest() {
-        if self.lastRequestTime?.timeIntervalSinceNow ?? 60 < self.period {
+        if -(self.lastRequestTime?.timeIntervalSinceNow ?? self.period) < self.period {
             self.passedRequests += 1
         } else {
             self.lastRequestTime = Date()
