@@ -363,7 +363,7 @@ extension WasmNet {
             }
         }
     }
-    
+
     var get_header: (Int32, Int32, Int32) -> Int32 {
         { descriptor, field, length in
             guard descriptor >= 0, length > 0 else { return }
@@ -375,7 +375,7 @@ extension WasmNet {
             return -1
         }
     }
-    
+
     var get_status_code: (Int32) -> Int32 {
         { descriptor in
             guard descriptor >= 0 else { return }
