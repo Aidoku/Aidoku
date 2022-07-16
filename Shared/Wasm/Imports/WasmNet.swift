@@ -366,7 +366,7 @@ extension WasmNet {
 
     var get_header: (Int32, Int32, Int32) -> Int32 {
         { descriptor, field, length in
-            guard descriptor >= 0, length > 0 else { return }
+            guard descriptor >= 0, length > 0 else { return -1 }
             if let response = self.globalStore.requests[descriptor]?.response?.response as? HTTPURLResponse,
                let field = self.globalStore.readString(offset: field, length: length),
                let value = response.value(forHTTPHeaderField: field) {
@@ -378,9 +378,9 @@ extension WasmNet {
 
     var get_status_code: (Int32) -> Int32 {
         { descriptor in
-            guard descriptor >= 0 else { return }
-            if let response = self.globalStore.requests[descriptor]?.response {
-                return response.statusCode
+            guard descriptor >= 0 else { return -1 }
+            if let statusCode = self.globalStore.requests[descriptor]?.response?.statusCode {
+                return statusCode
             }
             return -1
         }
