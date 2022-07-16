@@ -368,7 +368,7 @@ extension WasmNet {
         { descriptor, field, length in
             guard descriptor >= 0, length > 0 else { return }
             if let response = self.globalStore.requests[descriptor]?.response?.response as? HTTPURLResponse,
-               let field = self.globalStore.readString(offset: field, length: length)
+               let field = self.globalStore.readString(offset: field, length: length),
                let value = response.value(forHTTPHeaderField: field) {
                 return self.globalStore.storeStdValue(value)
             }
