@@ -23,20 +23,22 @@ class WasmResponseObject: KVCObject {
     var response: URLResponse?
     var error: Error?
     var statusCode: Int?
+    var headers: [AnyHashable: Any]?
 
     var bytesRead: Int = 0
 
-    init(data: Data? = nil, response: URLResponse? = nil, error: Error? = nil, statusCode: Int? = nil) {
+    init(data: Data? = nil, response: URLResponse? = nil, error: Error? = nil, statusCode: Int? = nil, headers: [AnyHashable: Any]? = nil) {
         self.data = data
         self.response = response
         self.error = error
         self.statusCode = statusCode ?? (response as? HTTPURLResponse)?.statusCode
+        self.headers = headers ?? (response as? HTTPURLResponse)?.allHeaderFields
     }
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "data": return data != nil ? [UInt8](data!) : []
-        case "headers": return (response as? HTTPURLResponse)?.allHeaderFields
+        case "headers": return headers != nil ? headers : (response as? HTTPURLResponse)?.allHeaderFields
         case "status_code": return statusCode != nil ? statusCode : (response as? HTTPURLResponse)?.statusCode
         default: return nil
         }
@@ -165,6 +167,8 @@ class WasmNet: WasmImports {
         try? globalStore.vm.addImportHandler(named: "get_url", namespace: namespace, block: self.get_url)
         try? globalStore.vm.addImportHandler(named: "get_data_size", namespace: namespace, block: self.get_data_size)
         try? globalStore.vm.addImportHandler(named: "get_data", namespace: namespace, block: self.get_data)
+        try? globalStore.vm.addImportHandler(named: "get_header", namespace: namespace, block: self.get_header)
+        try? globalStore.vm.addImportHandler(named: "get_status_code", namespace: namespace, block: self.get_status_code)
 
         try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
         try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
@@ -357,6 +361,28 @@ extension WasmNet {
                 self.globalStore.write(bytes: result, offset: buffer)
                 self.globalStore.requests[descriptor]?.response?.bytesRead += Int(size)
             }
+        }
+    }
+    
+    var get_header: (Int32, Int32, Int32) -> Int32 {
+        { descriptor, field, length in
+            guard descriptor >= 0, length > 0 else { return }
+            if let response = self.globalStore.requests[descriptor]?.response?.response as? HTTPURLResponse,
+               let field = self.globalStore.readString(offset: field, length: length)
+               let value = response.value(forHTTPHeaderField: field) {
+                return self.globalStore.storeStdValue(value)
+            }
+            return -1
+        }
+    }
+    
+    var get_status_code: (Int32) -> Int32 {
+        { descriptor in
+            guard descriptor >= 0 else { return }
+            if let response = self.globalStore.requests[descriptor]?.response {
+                return response.statusCode
+            }
+            return -1
         }
     }
 
