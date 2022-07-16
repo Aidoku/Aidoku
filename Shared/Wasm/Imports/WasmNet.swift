@@ -380,7 +380,7 @@ extension WasmNet {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let statusCode = self.globalStore.requests[descriptor]?.response?.statusCode {
-                return statusCode
+                return Int32(statusCode)
             }
             return -1
         }
