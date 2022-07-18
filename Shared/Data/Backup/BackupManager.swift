@@ -23,16 +23,16 @@ class BackupManager {
 
     func save(backup: Backup, url: URL? = nil) {
         Self.directory.createDirectory()
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        if let json = try? encoder.encode(backup) {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        if let plist = try? encoder.encode(backup) {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
             if let url = url {
-                try? json.write(to: url)
+                try? plist.write(to: url)
             } else {
-                let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: backup.date)).json")
-                try? json.write(to: path)
+                let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: backup.date)).aib")
+                try? plist.write(to: path)
             }
             NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
         }

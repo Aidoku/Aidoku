@@ -16,6 +16,16 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
+			<string>Aidoku Backup</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>xyz.skitty.Aidoku.aib</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
 			<string>JSON</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
