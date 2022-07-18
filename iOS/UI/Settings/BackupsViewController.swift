@@ -140,7 +140,22 @@ extension BackupsViewController {
         restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("RESTORE", comment: ""), style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
                 Task {
+                    let alert = UIAlertController(
+                        title: nil,
+                        message: NSLocalizedString("RESTORING_BACKUP_ELLIPSIS", comment: ""),
+                        preferredStyle: .alert
+                    )
+
+                    let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+                    loadingIndicator.hidesWhenStopped = true
+                    loadingIndicator.style = UIActivityIndicatorView.Style.gray
+                    loadingIndicator.startAnimating();
+                    alert.view.addSubview(loadingIndicator)
+
+                    present(alert, animated: true, completion: nil)
                     await BackupManager.shared.restore(from: backup)
+                    alert.dismiss(animated: false, completion: nil)
+
                     let missingSources = (backup.sources ?? []).filter {
                         !DataManager.shared.hasSource(id: $0)
                     }
