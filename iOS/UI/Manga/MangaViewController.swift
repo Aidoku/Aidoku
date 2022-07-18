@@ -127,7 +127,7 @@ class MangaViewController: UIViewController {
 
         source = SourceManager.shared.source(for: manga.sourceId)
         guard let source = source else {
-            showMissingSourceWarning()
+            showMissingSourceWarning(for: manga.sourceId)
             return
         }
 
@@ -604,10 +604,10 @@ extension MangaViewController {
         present(navigationController, animated: true)
     }
 
-    func showMissingSourceWarning() {
+    func showMissingSourceWarning(for id: String) {
         let alert = UIAlertController(
             title: NSLocalizedString("MISSING_SOURCE", comment: ""),
-            message: NSLocalizedString("MISSING_SOURCE_TEXT", comment: ""),
+            message: "\(id)\n\(NSLocalizedString("MISSING_SOURCE_TEXT", comment: ""))",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
