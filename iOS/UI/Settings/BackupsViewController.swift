@@ -150,7 +150,7 @@ extension BackupsViewController {
                 loadingIndicator.startAnimating();
                 alert.view.addSubview(loadingIndicator)
 
-                present(alert, animated: true)
+                self.present(alert, animated: true)
                 Task {
                     await BackupManager.shared.restore(from: backup)
                     await MainActor.run {
