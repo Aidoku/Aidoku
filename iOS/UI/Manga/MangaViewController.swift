@@ -607,7 +607,7 @@ extension MangaViewController {
     func showMissingSourceWarning(for id: String) {
         let alert = UIAlertController(
             title: NSLocalizedString("MISSING_SOURCE", comment: ""),
-            message: "\(id)\n\(NSLocalizedString("MISSING_SOURCE_TEXT", comment: ""))",
+            message: "\(id)\n\n\(NSLocalizedString("MISSING_SOURCE_TEXT", comment: ""))",
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in }))
