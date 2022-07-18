@@ -139,37 +139,37 @@ extension BackupsViewController {
 
         restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("RESTORE", comment: ""), style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
-                let alert = UIAlertController(
-                    title: nil,
-                    message: NSLocalizedString("RESTORING_BACKUP_ELLIPSIS", comment: ""),
-                    preferredStyle: .alert
-                )
-
-                let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
-                loadingIndicator.hidesWhenStopped = true
-                loadingIndicator.style = .medium
-                loadingIndicator.startAnimating();
-                alert.view.addSubview(loadingIndicator)
-
-                self.present(alert, animated: true, completion: nil)
                 Task {
-                    await BackupManager.shared.restore(from: backup)
-                }
-                self.dismiss(animated: true, completion: nil)
-
-                let missingSources = (backup.sources ?? []).filter {
-                    !DataManager.shared.hasSource(id: $0)
-                }
-                if !missingSources.isEmpty {
-                    var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
-                    message += missingSources.map { "\n- \($0)" }.joined()
-                    let missingAlert = UIAlertController(
-                        title: NSLocalizedString("MISSING_SOURCES", comment: ""),
-                        message: message,
+                    let alert = UIAlertController(
+                        title: nil,
+                        message: NSLocalizedString("RESTORING_BACKUP_ELLIPSIS", comment: ""),
                         preferredStyle: .alert
                     )
-                    missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-                    self.present(missingAlert, animated: true)
+
+                    let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+                    loadingIndicator.hidesWhenStopped = true
+                    loadingIndicator.style = .medium
+                    loadingIndicator.startAnimating();
+                    alert.view.addSubview(loadingIndicator)
+
+                    self.present(alert, animated: true, completion: nil)
+                    await BackupManager.shared.restore(from: backup)
+                    self.dismiss(animated: true, completion: nil)
+
+                    let missingSources = (backup.sources ?? []).filter {
+                        !DataManager.shared.hasSource(id: $0)
+                    }
+                    if !missingSources.isEmpty {
+                        var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
+                        message += missingSources.map { "\n- \($0)" }.joined()
+                        let missingAlert = UIAlertController(
+                            title: NSLocalizedString("MISSING_SOURCES", comment: ""),
+                            message: message,
+                            preferredStyle: .alert
+                        )
+                        missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                        self.present(missingAlert, animated: true)
+                    }
                 }
             }
         })
