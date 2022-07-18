@@ -148,11 +148,11 @@ extension BackupsViewController {
 
                     let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
                     loadingIndicator.hidesWhenStopped = true
-                    loadingIndicator.style = UIActivityIndicatorView.Style.gray
+                    loadingIndicator.style = .medium
                     loadingIndicator.startAnimating();
                     alert.view.addSubview(loadingIndicator)
 
-                    present(alert, animated: true, completion: nil)
+                    self.present(alert, animated: true, completion: nil)
                     await BackupManager.shared.restore(from: backup)
                     alert.dismiss(animated: false, completion: nil)
 
