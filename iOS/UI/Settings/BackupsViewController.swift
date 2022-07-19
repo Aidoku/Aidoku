@@ -147,13 +147,14 @@ extension BackupsViewController {
                 let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
                 loadingIndicator.hidesWhenStopped = true
                 loadingIndicator.style = .medium
-                loadingIndicator.startAnimating();
+                loadingIndicator.startAnimating()
                 alert.view.addSubview(loadingIndicator)
 
-                self.present(alert, animated: true)
+                self.addSubview(alert)
                 Task { @MainActor in
                     await BackupManager.shared.restore(from: backup)
-                    self.dismiss(animated: false, completion: nil)
+                    loadingIndicator.stopAnimating()
+                    alert.removeFromSuperview()
 
                     let missingSources = (backup.sources ?? []).filter {
                         !DataManager.shared.hasSource(id: $0)
