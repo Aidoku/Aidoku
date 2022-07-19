@@ -68,6 +68,7 @@ extension MyAnimeListApi {
         }
         var request = oauth.authorizedRequest(for: url)
         request.httpMethod = "PUT"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = status.percentEncoded()
         _ = try? await URLSession.shared.data(for: request)
     }

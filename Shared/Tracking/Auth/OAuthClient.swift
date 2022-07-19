@@ -5,17 +5,17 @@
 import Foundation
 
 class OAuthClient {
-    let id: String;
-    let clientId: String;
-    let base: String;
-    
+    let id: String
+    let clientId: String
+    let base: String
+
     var codeVerifier = ""
-    var tokens: OAuthResponse?;
+    var tokens: OAuthResponse?
 
     init(id: String, clientId: String, base: String) {
-        self.id = id;
-        self.clientId = clientId;
-        self.base = base;
+        self.id = id
+        self.clientId = clientId
+        self.base = base
     }
 
     lazy var authenticationUrl: String? = {
@@ -73,7 +73,7 @@ class OAuthClient {
         if tokens == nil {
             loadTokens()
         }
-        
+
         var request = URLRequest(url: url)
         request.addValue(
                 "\(tokens?.tokenType ?? "Bearer") \(tokens?.accessToken ?? "")",
@@ -100,7 +100,7 @@ class OAuthClient {
         // So instead, the verifier is used as the challenge string.
         generatePkceVerifier()
     }
-    
+
     // MARK: - Utils
     private func base64<S>(_ octets: S) -> String where S: Sequence, UInt8 == S.Element {
         let data = Data(octets)

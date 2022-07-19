@@ -50,9 +50,8 @@ struct MyAnimeListMangaStatus: Codable {
         if isRereading != nil { params.append("is_rereading=\(isRereading!)") }
         if numVolumesRead != nil { params.append("num_volumes_read=\(numVolumesRead!)") }
         if numChaptersRead != nil { params.append("num_chapters_read=\(numChaptersRead!)") }
-        if startDate != nil { params.append("start_date=\(startDate!)") }
-        if finishDate != nil { params.append("finish_date=\(finishDate!)") }
         if score != nil { params.append("score=\(score!)") }
+        if status != nil { params.append("status=\(status!)") }
         return params
             .joined(separator: "&")
             .data(using: .utf8)
