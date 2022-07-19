@@ -27,7 +27,7 @@ class MyAnimeListTracker: OAuthTracker {
     let api = MyAnimeListApi()
 
     let callbackHost = "myanimelist-auth"
-    lazy var authenticationUrl = api.oauth.authenticationUrl ?? ""
+    lazy var authenticationUrl = api.oauth.getAuthenticationUrl() ?? ""
 
     func register(trackId: String) async {
         guard let id = Int(trackId) else { return }

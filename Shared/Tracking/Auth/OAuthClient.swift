@@ -7,18 +7,20 @@ import Foundation
 class OAuthClient {
     let id: String
     let clientId: String
+    let clientSecret: String?
     let base: String
 
     var codeVerifier = ""
     var tokens: OAuthResponse?
 
-    init(id: String, clientId: String, base: String) {
+    init(id: String, clientId: String, base: String, clientSecret: String? = nil) {
         self.id = id
         self.clientId = clientId
         self.base = base
+        self.clientSecret = clientSecret
     }
 
-    lazy var authenticationUrl: String? = {
+    func getAuthenticationUrl(response: String = "code") -> String? {
         guard let url = URL(string: "\(base)/authorize") else {
             return nil
         }
@@ -27,15 +29,16 @@ class OAuthClient {
         components?.queryItems = [
             URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "code_challenge", value: generatePkceChallenge()),
-            URLQueryItem(name: "response_type", value: "code")
+            URLQueryItem(name: "response_type", value: response)
         ]
         return components?.url?.absoluteString
-    }()
+    }
 
     func getAccessToken(authCode: String) async -> OAuthResponse? {
         guard let url = URL(string: "\(base)/token") else {
             return nil
         }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = [
@@ -44,6 +47,7 @@ class OAuthClient {
             "code": authCode,
             "code_verifier": codeVerifier
         ].percentEncoded()
+
         tokens = try? await URLSession.shared.object(from: request)
         return tokens
     }
@@ -75,17 +79,21 @@ class OAuthClient {
         }
 
         var request = URLRequest(url: url)
-        request.addValue(
-                "\(tokens?.tokenType ?? "Bearer") \(tokens?.accessToken ?? "")",
-                forHTTPHeaderField: "Authorization"
-        )
+        if let tokenType = tokens?.tokenType, let accessToken = tokens?.accessToken {
+            request.addValue("\(tokenType) \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
         return request
     }
 
     // MARK: - PKCE
     func generatePkceVerifier() -> String {
         var octets = [UInt8](repeating: 0, count: 32)
-        _ = SecRandomCopyBytes(kSecRandomDefault, octets.count, &octets)
+        let result = SecRandomCopyBytes(kSecRandomDefault, octets.count, &octets)
+        if result != errSecSuccess {
+            // Fallback to blank
+            return ""
+        }
+        
         codeVerifier = base64(octets)
         return codeVerifier
     }

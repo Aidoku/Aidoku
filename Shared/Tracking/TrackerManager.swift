@@ -15,8 +15,11 @@ class TrackerManager {
     /// An instance of the MyAnimeList tracker.
     let myanimelist = MyAnimeListTracker()
 
+    /// An instance of the AniList tracker.
+    let anilist = AniListTracker()
+
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [myanimelist]
+    lazy var trackers: [Tracker] = [myanimelist, anilist]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {
@@ -51,21 +54,23 @@ class TrackerManager {
                 if status == .planning {
                     await tracker.register(trackId: id)
                 }
+                
+                let chapterNum = chapter.chapterNum ?? 0
+                let volumeNum = Int(chapter.volumeNum ?? 0)
 
-                if state.lastReadChapter ?? 0 < chapter.chapterNum ?? 0 ||
-                    state.lastReadVolume ?? 0 < Int(chapter.volumeNum ?? 0) {
-                    state.lastReadChapter = chapter.chapterNum ?? 0
-                    state.lastReadVolume = Int(chapter.volumeNum ?? 0)
+                if state.lastReadChapter ?? 0 < chapterNum ||
+                    state.lastReadVolume ?? 0 < volumeNum {
+                    state.lastReadChapter = chapterNum
+                    state.lastReadVolume = volumeNum
                 }
 
-                if Int(chapter.chapterNum ?? 0) >= state.totalChapters ?? 0 &&
-                    Int(chapter.volumeNum ?? 0) >= state.totalVolumes ?? 0 &&
+                if Int(chapterNum) >= state.totalChapters ?? 0 &&
+                    volumeNum >= state.totalVolumes ?? 0 &&
                     (state.status == nil || status == .reading || status == .rereading) {
                     state.status = .completed
                     state.finishReadDate = Date()
                 }
 
-                print(state)
                 await tracker.update(trackId: id, state: state)
             }
         }
