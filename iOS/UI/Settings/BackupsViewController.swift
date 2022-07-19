@@ -154,7 +154,6 @@ extension BackupsViewController {
                 Task { @MainActor in
                     await BackupManager.shared.restore(from: backup)
                     loadingIndicator.stopAnimating()
-                    loadingIndicator = nil
                     alert.dismiss(animated: true)                    
 
                     let missingSources = (backup.sources ?? []).filter {
