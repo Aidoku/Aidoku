@@ -151,11 +151,9 @@ extension BackupsViewController {
                 alert.view.addSubview(loadingIndicator)
 
                 self.present(alert, animated: true)
-                Task {
+                Task { @MainActor in
                     await BackupManager.shared.restore(from: backup)
-                    await MainActor.run {
-                        alert.dismiss(animated: false, completion: nil)
-                    }
+                    self.dismiss(animated: false, completion: nil)
 
                     let missingSources = (backup.sources ?? []).filter {
                         !DataManager.shared.hasSource(id: $0)
