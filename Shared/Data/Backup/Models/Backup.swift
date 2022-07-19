@@ -28,5 +28,7 @@ struct Backup: Codable {
             decoder.dateDecodingStrategy = .secondsSince1970
             return try? decoder.decode(Backup.self, from: data)
         }
+
+        return nil
     }
 }
