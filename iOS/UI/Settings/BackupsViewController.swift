@@ -151,25 +151,25 @@ extension BackupsViewController {
                 alert.view.addSubview(loadingIndicator)
 
                 self.present(alert, animated: true)
-                Task { @MainActor in
+                Task {
                     await BackupManager.shared.restore(from: backup)
-                    loadingIndicator.stopAnimating()
-                    alert.dismiss(animated: true)                    
+                }
+                loadingIndicator.stopAnimating()
+                alert.dismiss(animated: true)
 
-                    let missingSources = (backup.sources ?? []).filter {
-                        !DataManager.shared.hasSource(id: $0)
-                    }
-                    if !missingSources.isEmpty {
-                        var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
-                        message += missingSources.map { "\n- \($0)" }.joined()
-                        let missingAlert = UIAlertController(
-                            title: NSLocalizedString("MISSING_SOURCES", comment: ""),
-                            message: message,
-                            preferredStyle: .alert
-                        )
-                        missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-                        self.present(missingAlert, animated: true)
-                    }
+                let missingSources = (backup.sources ?? []).filter {
+                    !DataManager.shared.hasSource(id: $0)
+                }
+                if !missingSources.isEmpty {
+                    var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")
+                    message += missingSources.map { "\n- \($0)" }.joined()
+                    let missingAlert = UIAlertController(
+                        title: NSLocalizedString("MISSING_SOURCES", comment: ""),
+                        message: message,
+                        preferredStyle: .alert
+                    )
+                    missingAlert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                    self.present(missingAlert, animated: true)
                 }
             }
         })

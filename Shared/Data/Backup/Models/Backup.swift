@@ -21,13 +21,12 @@ struct Backup: Codable {
     static func load(from url: URL) -> Backup? {
         guard let data = try? Data(contentsOf: url) else { return nil }
 
-        let jsonDecoder = JSONDecoder()
-        jsonDecoder.dateDecodingStrategy = .secondsSince1970
-
-        if let backup = try? PropertyListDecoder().decode(Backup.self, from: data) {
-            return backup
-        } else {
-            return try? jsonDecoder.decode(Backup.self, from: data)
+        if url.pathExtension == "aib" {
+            return try? PropertyListDecoder().decode(Backup.self, from: data)
+        } else if url.pathExtension == "json" {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            return try? decoder.decode(Backup.self, from: data)
         }
     }
 }
