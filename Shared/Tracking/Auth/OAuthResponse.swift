@@ -1,5 +1,5 @@
 //
-//  MyAnimeListOAuth.swift
+//  OAuthResponse.swift
 //  Aidoku
 //
 //  Created by Skitty on 6/17/22.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MyAnimeListOAuth: Codable {
+struct OAuthResponse: Codable {
     var tokenType: String?
     var refreshToken: String?
     var accessToken: String?
