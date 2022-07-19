@@ -64,6 +64,8 @@ class BrowseViewController: UIViewController {
     }
     var filteredInstallableSources: [ExternalSourceInfo] {
         let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+        let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
+            .components(separatedBy: ".")
         return installableSources.filter {
             if !showNsfw && $0.nsfw ?? 0 > 1 {
                 return false
@@ -73,19 +75,18 @@ class BrowseViewController: UIViewController {
                 if !languages.contains($0.lang) {
                     return false
                 } else {
-                    let appVersion = Int(
-                        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
-                            .replacingOccurrences(of: ".", with: "")
-                    ) ?? 0 // 0.4.0 -> 40
-                    if let maxVersion = $0.maxAppVersion?.replacingOccurrences(of: ".", with: ""),
-                       var maxInt = Int(maxVersion) {
-                        if $0.maxAppVersion?.count ?? 0 < 5 { maxInt *= 10 } // only has major and minor versions (0.4)
-                        guard maxInt >= appVersion else { return false }
+                    if var maxVersion = $0.maxAppVersion?.components(separatedBy: ".") {
+                        if maxVersion.count < 3 {
+                            // Assume the source is fine with any version if the component is missing.
+                            maxVersion += [String](repeating: "\(UInt.max)", count: 3 - maxVersion.count)
+                        }
+                        guard zip(appVersion, maxVersion).allSatisfy({ part, maxPart in UInt(part) ?? 0 <= UInt(maxPart) ?? 0 }) else { return false }
                     }
-                    if let minVersion = $0.minAppVersion?.replacingOccurrences(of: ".", with: ""),
-                       var minInt = Int(minVersion) {
-                        if $0.minAppVersion?.count ?? 0 < 5 { minInt *= 10 }
-                        guard minInt <= appVersion else { return false }
+                    if var minVersion = $0.minAppVersion?.components(separatedBy: ".") {
+                        if minVersion.count < 3 {
+                            minVersion += [String](repeating: "0", count: 3 - minVersion.count)
+                        }
+                        guard zip(appVersion, minVersion).allSatisfy({ part, minPart in UInt(part) ?? 0 >= UInt(minPart) ?? 0 }) else { return false }
                     }
                     return true
                 }
@@ -438,7 +439,7 @@ extension BrowseViewController: UITableViewDataSource {
 extension BrowseViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
-            let vc = SourceViewController(source: sources[indexPath.row])
+            let vc = SourceViewController(source: filteredSources[indexPath.row])
             navigationController?.pushViewController(vc, animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
