@@ -5,6 +5,7 @@
 //  Created by Skitty on 2/3/22.
 //
 
+import Foundation
 import UIKit
 
 class MangaCarouselHeader: UICollectionReusableView {
@@ -59,10 +60,25 @@ class SearchViewController: UIViewController {
 
     var observers: [NSObjectProtocol] = []
 
+    var resultsLock: UnsafeMutablePointer<os_unfair_lock> = {
+        let pointer = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
+        pointer.initialize(to: os_unfair_lock())
+        return pointer
+    }()
+
     deinit {
         for observer in observers {
             NotificationCenter.default.removeObserver(observer)
         }
+        resultsLock.deinitialize(count: 1)
+        resultsLock.deallocate()
+    }
+
+    func updateResults(for id: String, atIndex i: Int, result: MangaPageResult?) {
+        os_unfair_lock_lock(resultsLock)
+        results[id] = result
+        collectionView?.reloadSections(IndexSet(integer: i))
+        os_unfair_lock_unlock(resultsLock)
     }
 
     override func viewDidLoad() {
@@ -171,14 +187,14 @@ class SearchViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
 
-    @MainActor
     func fetchData() async {
         guard let query = query, !query.isEmpty else { return }
-        // TODO: Make this run in parallel
-        for (i, source) in sources.enumerated() {
+
+        await sources.enumerated().concurrentForEach { i, source in
             let search = try? await source.fetchSearchManga(query: query, page: 1)
-            results[source.id] = search
-            self.collectionView?.reloadSections(IndexSet(integer: i))
+            await MainActor.run {
+                self.updateResults(for: source.id, atIndex: i, result: search)
+            }
         }
     }
 }
