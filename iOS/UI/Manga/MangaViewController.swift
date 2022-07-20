@@ -14,6 +14,7 @@ class MangaViewController: UIViewController {
         didSet {
             (tableView.tableHeaderView as? MangaViewHeaderView)?.manga = manga
             view.setNeedsLayout()
+            updateNavbarButtons()
         }
     }
 
