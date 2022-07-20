@@ -69,6 +69,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
         KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
 
+        KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
+
         return true
     }
 
