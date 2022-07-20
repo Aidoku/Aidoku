@@ -370,7 +370,10 @@ extension MangaViewHeaderView {
                 }
             }
         }
-        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+
+        let title = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+        titleLabel.text = title
+
         authorLabel.text = manga?.author
         authorLabel.isHidden = manga?.author == nil
 
@@ -441,6 +444,21 @@ extension MangaViewHeaderView {
 
         if superview != nil {
             layoutIfNeeded()
+        }
+
+        let size: CGSize = (title as NSString).boundingRect(
+            with: CGSize(width: titleLabel.frame.size.width, height: .greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: [.font: titleLabel.font ?? .systemFont(ofSize: 22, weight: .semibold)],
+            context: nil
+        ).size
+
+        // Text is truncated
+        if size.height > titleLabel.bounds.size.height {
+            titleLabel.numberOfLines = Int((size.height / titleLabel.bounds.size.height * 3).rounded(.up))
+            titleLabel.font = .systemFont(ofSize: 22 * titleLabel.bounds.size.height / size.height, weight: .semibold)
+            titleLabel.adjustsFontSizeToFitWidth = true
+            setNeedsLayout()
         }
     }
 
