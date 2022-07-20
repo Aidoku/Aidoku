@@ -381,9 +381,19 @@ extension SettingsViewController {
                     DataManager.shared.purgeManga()
                 }
             case "Advanced.clearNetworkCache":
-                confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
-                              message: NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")) {
-                    self.clearNetworkCache()
+                KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
+                    let totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
+                    let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")
+                        + "\n\n"
+                        + String(
+                            format: NSLocalizedString("CACHE_SIZE_%@", comment: ""),
+                            ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
+                        )
+
+                    self.confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
+                                       message: message) {
+                        self.clearNetworkCache()
+                    }
                 }
             case "Advanced.clearReadHistory":
                 confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),

@@ -234,6 +234,7 @@
 "CLEAR_MANGA_CACHE_TEXT" = "This action is irreversible. Cached Manga not in your library will be removed.";
 "CLEAR_NETWORK_CACHE" = "Clear Network Cache";
 "CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
+"CACHE_SIZE_%@" = "Cache size: %@";
 "CLEAR_READ_HISTORY" = "Clear Read History";
 "CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
 "RESET_SETTINGS" = "Reset Settings";
