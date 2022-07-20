@@ -785,9 +785,8 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
             }
 
             if let url = URL(string: targetManga.url ?? "") {
-                actions.append(
-                    UIAction(title: NSLocalizedString("SHARE", comment: ""), 
-                             image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                actions.append(UIAction(title: NSLocalizedString("SHARE", comment: ""),
+                                        image: UIImage(systemName: "square.and.arrow.up")) { _ in
                     let activityViewController = UIActivityViewController(
                         activityItems: [url],
                         applicationActivities: nil

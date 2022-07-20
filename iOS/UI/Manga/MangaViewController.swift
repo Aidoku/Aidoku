@@ -503,10 +503,10 @@ class MangaViewController: UIViewController {
 
     @objc func openShareSheet() {
         guard let url = URL(string: manga.url ?? "") else { return }
-        
+
         let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
         activityViewController.popoverPresentationController?.sourceView = self.view
-        
+
         present(activityViewController, animated: true, completion: nil)
     }
 
