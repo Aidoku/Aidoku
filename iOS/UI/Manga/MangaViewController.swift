@@ -315,14 +315,13 @@ class MangaViewController: UIViewController {
 
             subMenus.append(UIMenu(title: "", options: .displayInline, children: subActions))
 
-            if URL(string: manga.url ?? "") != nil {
+            if let url = URL(string: manga.url ?? "") {
                 subMenus.append(UIMenu(title: "", options: .displayInline, children: [
                     UIAction(
                         title: NSLocalizedString("SHARE", comment: ""),
                         image: UIImage(systemName: "square.and.arrow.up")
                     ) { [weak self] _ in
                         guard let self = self else { return }
-                        guard let url = URL(string: self.manga.url ?? "") else { return }
 
                         let activityViewController = UIActivityViewController(
                             activityItems: [url],
@@ -343,9 +342,9 @@ class MangaViewController: UIViewController {
                         attributes: .destructive
                     ) { [weak self] _ in
                         guard let self = self else { return }
-                        confirmAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
-                                      message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
-                                      continueActionName: NSLocalizedString("REMOVE", comment: "")) { [weak self] in
+                        self.confirmAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                                           message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
+                                           continueActionName: NSLocalizedString("REMOVE", comment: "")) { [weak self] in
                             guard let self = self else { return }
                             DownloadManager.shared.deleteChapters(for: self.manga)
                         }
@@ -777,11 +776,10 @@ extension MangaViewController: UITableViewDataSource {
             }
 
             // sharing action
-            if URL(string: self.sortedChapters[indexPath.row].url ?? "") != nil {
+            if let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") {
                 actions.append(UIMenu(title: "", options: .displayInline, children: [
                     UIAction(title: NSLocalizedString("SHARE", comment: ""), image: nil) { [weak self] _ in
                         guard let self = self else { return }
-                        guard let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") else { return }
 
                         let activityViewController = UIActivityViewController(
                             activityItems: [url],

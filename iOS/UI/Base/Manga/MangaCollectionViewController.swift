@@ -250,6 +250,23 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                     (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                 })
             }
+
+            if let url = URL(string: targetManga.url ?? "") {
+                actions.append(UIAction(
+                    title: NSLocalizedString("SHARE", comment: ""),
+                    image: UIImage(systemName: "square.and.arrow.up")
+                ) { [weak self] _ in
+                    guard let self = self else { return }
+
+                    let activityViewController = UIActivityViewController(
+                        activityItems: [url],
+                        applicationActivities: nil
+                    )
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+
+                    self.present(activityViewController, animated: true)
+                })
+            }
             return UIMenu(title: "", children: actions)
         }
     }
