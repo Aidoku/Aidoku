@@ -27,6 +27,7 @@
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all selected downloads?";
 
