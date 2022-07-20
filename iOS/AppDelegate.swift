@@ -118,7 +118,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             Task {
                 _ = await SourceManager.shared.importSource(from: url)
             }
-        } else if url.pathExtension == "json" {
+        } else if url.pathExtension == "json" || url.pathExtension == "aib" {
             if BackupManager.shared.importBackup(from: url) {
                 sendAlert(title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
                           message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: ""))
