@@ -26,7 +26,7 @@ struct Backup: Codable {
         } else {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .secondsSince1970
-            return try? decoder.decode(Backup.self, from: json)   
+            return try? decoder.decode(Backup.self, from: json)
         }
     }
 }

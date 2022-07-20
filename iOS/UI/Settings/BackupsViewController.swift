@@ -47,16 +47,6 @@ class BackupsViewController: UITableViewController {
         }
 
         observers.append(NotificationCenter.default.addObserver(
-            forName: Notification.Name("backupRestored"), object: nil, queue: nil
-        ) { [weak self] _ in
-            guard let self = self else { return }
-            Task { @MainActor in
-                self.loadingAlert?.dismiss(animated: true)
-            }
-
-        })
-
-        observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateBackupList"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
@@ -160,7 +150,7 @@ extension BackupsViewController {
                 self.showLoadingIndicator()
                 Task { @MainActor in
                     await BackupManager.shared.restore(from: backup)
-                    NotificationCenter.default.post(name: NSNotification.Name("backupRestored"), object: nil)
+                    self.loadingAlert?.dismiss(animated: true)
 
                     let missingSources = (backup.sources ?? []).filter {
                         !DataManager.shared.hasSource(id: $0)
