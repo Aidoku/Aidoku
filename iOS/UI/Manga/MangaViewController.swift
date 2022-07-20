@@ -316,25 +316,6 @@ class MangaViewController: UIViewController {
 
             subMenus.append(UIMenu(title: "", options: .displayInline, children: subActions))
 
-            if let url = URL(string: manga.url ?? "") {
-                subMenus.append(UIMenu(title: "", options: .displayInline, children: [
-                    UIAction(
-                        title: NSLocalizedString("SHARE", comment: ""),
-                        image: UIImage(systemName: "square.and.arrow.up")
-                    ) { [weak self] _ in
-                        guard let self = self else { return }
-
-                        let activityViewController = UIActivityViewController(
-                            activityItems: [url],
-                            applicationActivities: nil
-                        )
-                        activityViewController.popoverPresentationController?.sourceView = self.view
-
-                        self.present(activityViewController, animated: true)
-                    }
-                ]))
-            }
-
             if DownloadManager.shared.hasDownloadedChapter(for: manga) {
                 subMenus.append(UIMenu(title: "", options: .displayInline, children: [
                     UIAction(
@@ -358,7 +339,15 @@ class MangaViewController: UIViewController {
             Task { @MainActor in
                 let moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
                 moreButton.menu = menu
-                navigationItem.rightBarButtonItem = moreButton
+                navigationItem.rightBarButtonItems = [moreButton]
+
+                if URL(string: self.manga.url ?? "") != nil {
+                    navigationItem.rightBarButtonItems?.append(
+                        UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"),
+                                        style: .plain,
+                                        target: self,
+                                        action: #selector(openShareSheet)))
+                }
             }
         }
     }
@@ -510,6 +499,15 @@ class MangaViewController: UIViewController {
             DownloadManager.shared.delete(chapters: selected.map { self.sortedChapters[$0.row] })
             self.setEditing(false, animated: true)
         }
+    }
+
+    @objc func openShareSheet() {
+        guard let url = URL(string: manga.url ?? "") else { return }
+        
+        let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view
+        
+        present(activityViewController, animated: true, completion: nil)
     }
 
     func confirmAction(
