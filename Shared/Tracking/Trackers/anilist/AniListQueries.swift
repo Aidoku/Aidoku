@@ -81,6 +81,53 @@ struct AniListMediaStatusVars: Codable {
     var id: Int
 }
 
+// MARK: - Update media
+let updateMediaQuery = """
+mutation (
+ $id: Int,
+ $status: MediaListStatus,
+ $progress: Int,
+ $volumes: Int,
+ $score: Float,
+ $startedAt: FuzzyDateInput,
+ $completedAt: FuzzyDateInput
+) {
+ SaveMediaListEntry(
+   mediaId: $id,
+   status: $status,
+   progress: $progress,
+   progressVolumes: $volumes,
+   score: $score,
+   startedAt: $startedAt,
+   completedAt: $completedAt
+ ) {
+   id
+ }
+}
+"""
+
+struct AniListUpdateMediaVars: Codable {
+    var id: Int
+    var status: String?
+    var progress: Int?
+    var volumes: Int?
+    var score: Float?
+    var startedAt: AniListDate?
+    var completedAt: AniListDate?
+}
+
+struct AniListUpdateResponse: Codable {
+    var entry: SaveMediaListEntry
+
+    enum CodingKeys: String, CodingKey {
+        case entry = "SaveMediaListEntry"
+    }
+}
+
+struct SaveMediaListEntry: Codable {
+    var id: Int
+}
+
 // MARK: - Media Results
 struct Media: Codable {
     var id: Int?

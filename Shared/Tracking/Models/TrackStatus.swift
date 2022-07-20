@@ -8,7 +8,7 @@
 import Foundation
 
 /// A class wrapping integer values that indicate a title's tracking status.
-class TrackStatus {
+class TrackStatus: Equatable {
     static func == (lhs: TrackStatus, rhs: TrackStatus) -> Bool {
         lhs.rawValue == rhs.rawValue
     }

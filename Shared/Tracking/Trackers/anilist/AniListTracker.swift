@@ -28,11 +28,11 @@ class AniListTracker: OAuthTracker {
     lazy var authenticationUrl = api.oauth.getAuthenticationUrl(response: "token") ?? ""
 
     func register(trackId: String) async {
-
+        // Unneeded for AniList
     }
 
     func update(trackId: String, state: TrackState) async {
-
+        _ = await api.update(media: Int(trackId) ?? 0, state: state)
     }
 
     func getState(trackId: String) async -> TrackState {
@@ -86,13 +86,13 @@ class AniListTracker: OAuthTracker {
 
     private func decodeStatus(_ value: String) -> TrackStatus {
         switch value {
-            case "CURRENT": return .reading
-            case "PLANNING": return .planning
-            case "COMPLETED": return .completed
-            case "DROPPED": return .dropped
-            case "PAUSED": return .paused
-            case "REPEATING": return .reading
-            default: return .planning
+        case "CURRENT": return .reading
+        case "PLANNING": return .planning
+        case "COMPLETED": return .completed
+        case "DROPPED": return .dropped
+        case "PAUSED": return .paused
+        case "REPEATING": return .reading
+        default: return .planning
         }
     }
 

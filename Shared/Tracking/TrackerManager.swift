@@ -51,7 +51,9 @@ class TrackerManager {
                 var state = await tracker.getState(trackId: id)
                 let status = state.status ?? .planning
 
-                if status == .planning {
+                if status != .reading && status != .rereading {
+                    state.startReadDate = Date()
+                    state.status = .reading
                     await tracker.register(trackId: id)
                 }
 
