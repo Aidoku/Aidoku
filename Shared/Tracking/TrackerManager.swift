@@ -54,7 +54,7 @@ class TrackerManager {
                 if status == .planning {
                     await tracker.register(trackId: id)
                 }
-                
+
                 let chapterNum = chapter.chapterNum ?? 0
                 let volumeNum = Int(chapter.volumeNum ?? 0)
 

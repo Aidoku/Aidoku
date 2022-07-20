@@ -93,7 +93,7 @@ class OAuthClient {
             // Fallback to blank
             return ""
         }
-        
+
         codeVerifier = base64(octets)
         return codeVerifier
     }

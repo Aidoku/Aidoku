@@ -9,7 +9,7 @@ import Foundation
 
 class AniListApi {
     private let encoder = JSONEncoder()
-    
+
     let oauth = OAuthClient(
         id: "anilist",
         clientId: "8912",
@@ -23,6 +23,12 @@ extension AniListApi {
     func search(query: String) async -> GraphQLResponse<AniListSearchResponse>? {
         let query = GraphQLQuery(query: searchQuery, variables: AniListSearchVars(search: query))
         return await request(query)
+    }
+
+    func getState(media: Int) async -> Media? {
+        let query = GraphQLQuery(query: mediaStatusQuery, variables: AniListMediaStatusVars(id: media))
+        let res: GraphQLResponse<AniListSearchResponse>? = await request(query)
+        return res?.data.media
     }
 
     private func request<T: Codable>(_ data: Encodable) async -> T? {

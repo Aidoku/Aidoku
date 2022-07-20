@@ -48,12 +48,50 @@ struct AniListSearchResponse: Codable {
     }
 }
 
+// MARK: - Media status
+let mediaStatusQuery = """
+query ($id: Int) {
+  Media(id: $id) {
+    chapters
+    volumes
+
+    mediaListEntry {
+      status
+      score
+      progress
+      progressVolumes
+
+      startedAt {
+        year
+        month
+        day
+      }
+
+      completedAt {
+        year
+        month
+        day
+      }
+    }
+  }
+}
+"""
+
+struct AniListMediaStatusVars: Codable {
+    var id: Int
+}
+
+// MARK: - Media Results
 struct Media: Codable {
     var id: Int?
     var title: MediaTitle?
     var description: String?
     var status: String?
-    var coverImage: MediaImage
+    var coverImage: MediaImage?
+
+    var mediaListEntry: MediaListEntry?
+    var chapters: Int?
+    var volumes: Int?
 }
 
 struct MediaTitle: Codable {
@@ -63,4 +101,19 @@ struct MediaTitle: Codable {
 
 struct MediaImage: Codable {
     var large: String?
+}
+
+struct MediaListEntry: Codable {
+    var status: String?
+    var score: Int?
+    var progress: Int?
+    var progressVolumes: Int?
+    var startedAt: AniListDate?
+    var completedAt: AniListDate?
+}
+
+struct AniListDate: Codable {
+    var year: Int?
+    var month: Int?
+    var day: Int?
 }
