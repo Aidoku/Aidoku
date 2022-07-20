@@ -157,7 +157,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     let link = try? await targetSource.handleUrl(url: finalUrl)
                     if let manga = link?.manga {
                         navigationController?.pushViewController(
-                            MangaViewController(manga: manga, chapters: []), animated: true
+                            MangaViewController(manga: manga, chapters: [], scrollTo: link?.chapter), animated: true
                         )
                     }
                 }

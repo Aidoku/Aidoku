@@ -232,6 +232,7 @@ class ReaderViewController: UIViewController {
         sliderView.addTarget(self, action: #selector(sliderMoved(_:)), for: .valueChanged)
         sliderView.addTarget(self, action: #selector(sliderDone(_:)), for: .editingDidEnd)
         sliderView.translatesAutoresizingMaskIntoConstraints = false
+        // Fixes Aidoku/Aidoku#71
         sliderView.semanticContentAttribute = .playback
         toolbarView.addSubview(sliderView)
 

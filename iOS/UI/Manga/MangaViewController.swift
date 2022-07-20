@@ -27,6 +27,9 @@ class MangaViewController: UIViewController {
             updateReadButton()
         }
     }
+
+    var scrollToChapter: Chapter?
+
     var sortedChapters: [Chapter] {
         switch sortOption {
         case 0:
@@ -73,9 +76,10 @@ class MangaViewController: UIViewController {
 
     var observers: [NSObjectProtocol] = []
 
-    init(manga: Manga, chapters: [Chapter] = []) {
+    init(manga: Manga, chapters: [Chapter] = [], scrollTo: Chapter? = nil) {
         self.manga = manga
         self.chapters = chapters
+        self.scrollToChapter = scrollTo
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -176,6 +180,10 @@ class MangaViewController: UIViewController {
                         fromSource: !DataManager.shared.libraryContains(manga: manga)
                     )
                     tableView.reloadSections(IndexSet(integer: 0), with: .fade)
+                }
+                if let chapter = scrollToChapter,
+                   let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
+                    tableView.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
                 }
             }
         }
