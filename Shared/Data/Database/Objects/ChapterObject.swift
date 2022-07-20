@@ -17,6 +17,7 @@ public class ChapterObject: NSManagedObject {
         id = chapter.id
         title = chapter.title
         scanlator = chapter.scanlator
+        url = chapter.url
         lang = chapter.lang
         self.chapter = chapter.chapterNum != nil ? NSNumber(value: chapter.chapterNum ?? -1) : nil
         volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
@@ -31,6 +32,7 @@ public class ChapterObject: NSManagedObject {
             mangaId: mangaId,
             title: title,
             scanlator: scanlator,
+            url: url,
             lang: lang,
             chapterNum: chapter?.floatValue,
             volumeNum: volume?.floatValue,
@@ -51,6 +53,7 @@ extension ChapterObject {
     @NSManaged public var id: String
     @NSManaged public var title: String?
     @NSManaged public var scanlator: String?
+    @NSManaged public var url: String?
     @NSManaged public var lang: String
     @NSManaged public var chapter: NSNumber?
     @NSManaged public var volume: NSNumber?
