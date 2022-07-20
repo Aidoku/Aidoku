@@ -486,8 +486,9 @@ extension ReaderViewController: ReaderPageManagerDelegate {
         } else if index >= pageCount {
             index = pageCount - 1
         }
-        if index == 0 && !DataManager.shared.hasHistory(for: chapter) {
+        if index == 0 && pageCount != 1 && !DataManager.shared.hasHistory(for: chapter) {
             // if a chapter is opened and no pages are turned, no need to save history
+            // however, it is saved if the chapter only has one page
         } else if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             DataManager.shared.setCurrentPage(index + 1, for: chapter, context: DataManager.shared.backgroundContext)
             if index == pageCount - 1 {
