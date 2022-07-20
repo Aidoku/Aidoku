@@ -232,6 +232,7 @@ class ReaderViewController: UIViewController {
         sliderView.addTarget(self, action: #selector(sliderMoved(_:)), for: .valueChanged)
         sliderView.addTarget(self, action: #selector(sliderDone(_:)), for: .editingDidEnd)
         sliderView.translatesAutoresizingMaskIntoConstraints = false
+        sliderView.semanticContentAttribute = .playback
         toolbarView.addSubview(sliderView)
 
         toolbarView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 24)
