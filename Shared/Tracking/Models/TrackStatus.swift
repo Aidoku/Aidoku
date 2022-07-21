@@ -27,4 +27,22 @@ class TrackStatus {
     init(_ rawValue: Int) {
         self.rawValue = rawValue
     }
+
+    func toString() -> String {
+        switch rawValue {
+        case 1: return NSLocalizedString("READING", comment: "")
+        case 2: return NSLocalizedString("PLANNING", comment: "")
+        case 3: return NSLocalizedString("COMPLETED", comment: "")
+        case 4: return NSLocalizedString("PAUSED", comment: "")
+        case 5: return NSLocalizedString("DROPPED", comment: "")
+        case 6: return NSLocalizedString("REREADING", comment: "")
+        default: return NSLocalizedString("UNKNOWN", comment: "")
+        }
+    }
+}
+
+extension TrackStatus: Equatable {
+    static func == (lhs: TrackStatus, rhs: TrackStatus) -> Bool {
+        lhs.rawValue == rhs.rawValue
+    }
 }

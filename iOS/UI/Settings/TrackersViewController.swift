@@ -56,6 +56,7 @@ class TrackersViewController: UITableViewController {
             guard indexPath.row < self.trackers.count else { return }
             self.trackers[indexPath.row].logout()
             self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
+            NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alert, animated: true)
@@ -122,6 +123,7 @@ extension TrackersViewController {
                         await tracker.handleAuthenticationCallback(url: callbackURL)
                         tableView.cellForRow(at: indexPath)?.accessoryView = nil
                         tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
                     }
                 }
             }

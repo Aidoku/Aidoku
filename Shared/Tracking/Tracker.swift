@@ -91,6 +91,13 @@ extension Tracker {
     var scoreOptions: [(String, Int)] { [] }
 }
 
+extension Tracker {
+    /// Check if tracker is currently tracking a manga object.
+    func isTracking(manga: Manga) -> Bool {
+        DataManager.shared.getTrackObject(trackerId: id, sourceId: manga.sourceId, mangaId: manga.id) != nil
+    }
+}
+
 extension OAuthTracker {
     var token: String? {
         get {

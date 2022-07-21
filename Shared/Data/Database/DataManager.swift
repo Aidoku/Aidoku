@@ -51,16 +51,19 @@ class DataManager {
     func setupContainer(cloudSync: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let mainStoreUrl = storeDirectory.appendingPathComponent("Aidoku.sqlite")
 
-        let cloudDescription = NSPersistentStoreDescription(url: mainStoreUrl)
+        let cloudDescription = NSPersistentStoreDescription(url: storeDirectory.appendingPathComponent("Aidoku.sqlite"))
         cloudDescription.configuration = "Cloud"
+        cloudDescription.shouldMigrateStoreAutomatically = true
+        cloudDescription.shouldInferMappingModelAutomatically = true
 
         cloudDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         cloudDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
         let localDescription = NSPersistentStoreDescription(url: storeDirectory.appendingPathComponent("Local.sqlite"))
         localDescription.configuration = "Local"
+        localDescription.shouldMigrateStoreAutomatically = true
+        localDescription.shouldInferMappingModelAutomatically = true
 
         if inMemory {
             localDescription.url = URL(fileURLWithPath: "/dev/null")
@@ -1084,21 +1087,25 @@ extension DataManager {
 extension DataManager {
 
     func addTrackItem(item: TrackItem, context: NSManagedObjectContext? = nil) {
-        guard getTrackObject(id: item.id, trackerId: item.trackerId, createIfMissing: false) == nil else { return }
+        guard getTrackObject(id: item.id, trackerId: item.trackerId, createIfMissing: false, context: context) == nil else { return }
         let object = TrackObject(context: context ?? container.viewContext)
         object.id = item.id
         object.trackerId = item.trackerId
         object.mangaId = item.mangaId
         object.sourceId = item.sourceId
         object.title = item.title
-        save()
+        save(context: context)
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
     func getTrackItems(for manga: Manga) -> [TrackItem] {
         getTrackObjects(for: manga).map {
-            TrackItem(id: $0.id ?? "", trackerId: $0.trackerId ?? "", sourceId: $0.sourceId ?? "", mangaId: $0.mangaId ?? "", title: $0.title)
+            $0.toItem()
         }
+    }
+
+    func getTrackItem(trackerId: String, manga: Manga) -> TrackItem? {
+        getTrackObject(trackerId: trackerId, sourceId: manga.sourceId, mangaId: manga.id)?.toItem()
     }
 
     func getTrackObjects(for manga: Manga, context: NSManagedObjectContext? = nil) -> [TrackObject] {
@@ -1127,6 +1134,41 @@ extension DataManager {
         } else {
             return nil
         }
+    }
+
+    func getTrackObject(trackerId: String, sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> TrackObject? {
+        try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "trackerId = %@ AND sourceId = %@ AND mangaId = %@", trackerId, sourceId, mangaId
+            ),
+            limit: 1,
+            context: context
+        ).first
+    }
+
+    func removeTrackObject(id: String, trackerId: String, context: NSManagedObjectContext? = nil) {
+        if let object = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "id = %@ AND trackerId = %@", id, trackerId
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            let context = context ?? container.viewContext
+            context.delete(object)
+            save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+        }
+    }
+
+    func isTracking(manga: Manga, context: NSManagedObjectContext? = nil) -> Bool {
+        !((try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id
+            ),
+            limit: 1,
+            context: context
+        )) ?? []).isEmpty
     }
 
     func getTrackObjects(

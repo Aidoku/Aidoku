@@ -37,7 +37,7 @@ class MyAnimeListTracker: OAuthTracker {
     func update(trackId: String, state: TrackState) async {
         guard let id = Int(trackId) else { return }
         let status = MyAnimeListMangaStatus(
-            isRereading: state.status?.rawValue == 6,
+            isRereading: state.status?.rawValue == TrackStatus.rereading.rawValue,
             numVolumesRead: state.lastReadVolume,
             numChaptersRead: state.lastReadChapter != nil ? Int(floor(state.lastReadChapter!)) : nil,
             startDate: state.startReadDate?.ISO8601Format(),

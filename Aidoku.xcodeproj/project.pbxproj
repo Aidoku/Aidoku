@@ -35,6 +35,9 @@
 		FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */; };
 		FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
+		FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */; };
+		FB2E02522868A67500786F21 /* TrackerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E02512868A67500786F21 /* TrackerView.swift */; };
+		FB2E02542868B3D900786F21 /* TrackerSettingOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */; };
 		FB31AD0127AC2C3000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
 		FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0227AC39F500D50410 /* UIColor.swift */; };
 		FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
@@ -162,6 +165,14 @@
 		FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
+		FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */; };
+		FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */; };
+		FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
+		FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
+		FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B262888ACA4007149C5 /* HostingController.swift */; };
+		FBCA1B282888ACA4007149C5 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B262888ACA4007149C5 /* HostingController.swift */; };
+		FBCA1B2A2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
+		FBCA1B2B2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
 		FBD6A3FB2850D586007116C9 /* SourceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */; };
 		FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */; };
 		FBD6A4052857AF2C007116C9 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A4042857AF2C007116C9 /* UIImage.swift */; };
@@ -186,6 +197,7 @@
 		FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE781332830A34B0038C0E3 /* DownloadTask.swift */; };
 		FBE7813728333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */; };
 		FBE7813A283406EB0038C0E3 /* DownloadQueueViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE78139283406EB0038C0E3 /* DownloadQueueViewController.swift */; };
+		FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE88BEF2886FC5800A61122 /* TrackerListView.swift */; };
 		FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231227B816D50095D0C0 /* SettingsViewController.swift */; };
 		FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */; };
 		FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231627B83B670095D0C0 /* UISwitch.swift */; };
@@ -236,6 +248,9 @@
 		FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderNavigationController.swift; sourceTree = "<group>"; };
 		FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomableScrollView.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
+		FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerModalViewController.swift; sourceTree = "<group>"; };
+		FB2E02512868A67500786F21 /* TrackerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerView.swift; sourceTree = "<group>"; };
+		FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionView.swift; sourceTree = "<group>"; };
 		FB31AD0027AC2C3000D50410 /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		FB31AD0227AC39F500D50410 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
@@ -320,6 +335,12 @@
 		FB7B7EE4278D0735001E6EAF /* SourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceTableViewCell.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
+		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
+		FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerAddView.swift; sourceTree = "<group>"; };
+		FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.5.xcdatamodel; sourceTree = "<group>"; };
+		FBCA1B232888A910007149C5 /* TrackObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackObject.swift; sourceTree = "<group>"; };
+		FBCA1B262888ACA4007149C5 /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
+		FBCA1B292889864E007149C5 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSectionHeaderView.swift; sourceTree = "<group>"; };
 		FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageCollectionViewCell.swift; sourceTree = "<group>"; };
 		FBD6A40228525CAB007116C9 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -337,6 +358,7 @@
 		FBE781332830A34B0038C0E3 /* DownloadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTask.swift; sourceTree = "<group>"; };
 		FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaChapterTableViewCell.swift; sourceTree = "<group>"; };
 		FBE78139283406EB0038C0E3 /* DownloadQueueViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueViewController.swift; sourceTree = "<group>"; };
+		FBE88BEF2886FC5800A61122 /* TrackerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListView.swift; sourceTree = "<group>"; };
 		FBED14542819FCFC004B8050 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBED1455281A2B9D004B8050 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FBED231227B816D50095D0C0 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
@@ -495,6 +517,7 @@
 		FB1B48A6277CF6240056D02C /* Manga */ = {
 			isa = PBXGroup;
 			children = (
+				FB2E0255286B38EF00786F21 /* Tracking */,
 				FB4CB19227A70B9A00A05445 /* MangaViewController.swift */,
 				FBED233927C439C20095D0C0 /* MangaViewHeaderView.swift */,
 				FBE7813628333A250038C0E3 /* MangaChapterTableViewCell.swift */,
@@ -562,8 +585,23 @@
 				FB31AD0027AC2C3000D50410 /* UIImageColors.swift */,
 				FB7864852848215500125DC0 /* Reachability.swift */,
 				37F3E66C2850F62100A944E0 /* Collection.swift */,
+				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
+				FBCA1B292889864E007149C5 /* View.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		FB2E0255286B38EF00786F21 /* Tracking */ = {
+			isa = PBXGroup;
+			children = (
+				FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */,
+				FBE88BEF2886FC5800A61122 /* TrackerListView.swift */,
+				FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */,
+				FB2E02512868A67500786F21 /* TrackerView.swift */,
+				FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */,
+				FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */,
+			);
+			path = Tracking;
 			sourceTree = "<group>";
 		};
 		FB31AD0527AC3A1900D50410 /* Extensions */ = {
@@ -830,6 +868,7 @@
 				FB4EEBC127A34ED4005081A3 /* ChapterObject.swift */,
 				FB4EEBC727A35171005081A3 /* HistoryObject.swift */,
 				FBED232227BB461D0095D0C0 /* SourceObject.swift */,
+				FBCA1B232888A910007149C5 /* TrackObject.swift */,
 			);
 			path = Objects;
 			sourceTree = "<group>";
@@ -1040,6 +1079,8 @@
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
+				FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */,
+				FB2E02542868B3D900786F21 /* TrackerSettingOptionView.swift in Sources */,
 				FBED232B27BEAC980095D0C0 /* SettingItem.swift in Sources */,
 				FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */,
 				FB78648A2848F98400125DC0 /* HistoryViewController.swift in Sources */,
@@ -1053,6 +1094,7 @@
 				FB78648C2849008700125DC0 /* HistoryTableViewCell.swift in Sources */,
 				FB1B486A277CE76B0056D02C /* Page.swift in Sources */,
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
+				FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */,
 				FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */,
 				FB4B0AEB285D0AC00066A13B /* MyAnimeListOAuth.swift in Sources */,
 				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
@@ -1074,12 +1116,14 @@
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
+				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB72502A27CC6A9B0037F1C9 /* ReaderSettingsViewController.swift in Sources */,
+				FB2E02522868A67500786F21 /* TrackerView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
@@ -1106,11 +1150,14 @@
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
 				FB6E34CA279DF9D800BFE54B /* MangaCollectionViewController.swift in Sources */,
+				FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */,
 				FB4B0AE6285CDD3F0066A13B /* TrackersViewController.swift in Sources */,
+				FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */,
 				FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */,
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
+				FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */,
 				FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */,
 				FB67EE5E27ECC6D200C468EA /* ToolbarContainerView.swift in Sources */,
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
@@ -1124,6 +1171,7 @@
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */,
 				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
+				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */,
 				FB1B48B7277CF8280056D02C /* ReaderViewController.swift in Sources */,
@@ -1143,6 +1191,7 @@
 				FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
+				FBCA1B2B2889864E007149C5 /* View.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
 				FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */,
@@ -1171,6 +1220,7 @@
 				FB1B486B277CE76B0056D02C /* Page.swift in Sources */,
 				FBE7812D282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */,
+				FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */,
 				FB7864872848215500125DC0 /* Reachability.swift in Sources */,
 				FB4B0ADE285C2C570066A13B /* TrackSearchItem.swift in Sources */,
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
@@ -1187,6 +1237,7 @@
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
+				FBCA1B282888ACA4007149C5 /* HostingController.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
@@ -1597,9 +1648,10 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */;
+			currentVersion = FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

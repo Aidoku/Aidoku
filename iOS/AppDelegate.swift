@@ -11,8 +11,15 @@ import Kingfisher
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    private var navigationController: UINavigationController? {
-        (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?.selectedViewController as? UINavigationController
+    var navigationController: UINavigationController? {
+        (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
+            .selectedViewController as? UINavigationController
+    }
+
+    var visibleViewController: UIViewController? {
+        ((UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
+            .selectedViewController as? UINavigationController)?
+            .visibleViewController
     }
 
     func application(
