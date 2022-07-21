@@ -103,11 +103,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         }
                     }
                 }
-            } else if let source = SourceManager.shared.sources.first(where: { $0.id == url.host }) { // sourceId/mangaId
+            } else if let host = url.host,
+                      let source = SourceManager.shared.source(for: host) {
                 Task { @MainActor in
-                    if let manga = try? await source.getMangaDetails(manga: Manga(sourceId: source.id, id: url.lastPathComponent)) {
+                    if url.pathComponents.count > 1 { // /sourceId/mangaId
+                        if let manga = try? await source.getMangaDetails(manga: Manga(sourceId: source.id, id: url.pathComponents[1])) {
+                            let vc = MangaViewController(manga: manga, chapters: [])
+                            if let chapterId = url.pathComponents[safe: 2] {
+                                vc.scrollToChapter = Chapter(sourceId: source.id,
+                                                             id: chapterId,
+                                                             mangaId: manga.id,
+                                                             title: nil,
+                                                             sourceOrder: 0)
+                            }
+
+                            navigationController?.pushViewController(vc, animated: true)
+                        }
+                    } else { // /sourceId
                         navigationController?.pushViewController(
-                            MangaViewController(manga: manga, chapters: []), animated: true
+                            SourceViewController(source: source),
+                            animated: true
                         )
                     }
                 }
