@@ -10,6 +10,7 @@
 		0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */; };
 		37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66A2850F53200A944E0 /* CGRect.swift */; };
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
+		74F199676F32BDD13AA5D8E2 /* UILabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1C030E05FD2DE1FC5F693F /* UILabel.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
@@ -190,6 +191,7 @@
 		0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		37F3E66A2850F53200A944E0 /* CGRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
+		BB1C030E05FD2DE1FC5F693F /* UILabel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UILabel.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 				FB716E0A283FF85400F1BB5D /* UIView.swift */,
 				37F3E66A2850F53200A944E0 /* CGRect.swift */,
 				FBD6A4042857AF2C007116C9 /* UIImage.swift */,
+				BB1C030E05FD2DE1FC5F693F /* UILabel.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -865,10 +868,10 @@
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
-				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
-				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher.git" */,
+				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */,
+				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple.git" */,
+				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup.git" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -1039,6 +1042,7 @@
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
+				74F199676F32BDD13AA5D8E2 /* UILabel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1419,7 +1423,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+		FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
@@ -1427,7 +1431,7 @@
 				minimumVersion = 7.0.0;
 			};
 		};
-		FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+		FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
 			requirement = {
@@ -1435,7 +1439,7 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
+		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
 			requirement = {
@@ -1443,7 +1447,7 @@
 				kind = branch;
 			};
 		};
-		FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+		FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
 			requirement = {
@@ -1456,37 +1460,37 @@
 /* Begin XCSwiftPackageProductDependency section */
 		FB1B4873277CE7E60056D02C /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher.git" */;
 			productName = Kingfisher;
 		};
 		FB31AD0E27AE18DA00D50410 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup.git" */;
 			productName = SwiftSoup;
 		};
 		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
+			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple.git" */;
 			productName = WasmInterpreter;
 		};
 		FB6340C6279246CF0072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */;
+			package = FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple.git" */;
 			productName = WasmInterpreter;
 		};
 		FB6340C8279246D50072A2A2 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */;
 			productName = ZIPFoundation;
 		};
 		FB7B7ED7278CE949001E6EAF /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation.git" */;
 			productName = ZIPFoundation;
 		};
 		FBED233227C091D70095D0C0 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup.git" */;
 			productName = SwiftSoup;
 		};
 /* End XCSwiftPackageProductDependency section */
