@@ -411,6 +411,7 @@ extension SettingsViewController {
                     DataManager.shared.clearManga()
                     DataManager.shared.clearChapters()
                     DataManager.shared.clearCategories()
+                    DataManager.shared.clearTrackItems()
                     SourceManager.shared.clearSources()
                     SourceManager.shared.clearSourceLists()
                     self.resetSettings()
