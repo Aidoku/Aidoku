@@ -15,6 +15,7 @@ class TrackerModalViewController: MiniModalViewController {
     init(manga: Manga) {
         self.manga = manga
         swiftuiViewController = HostingController(rootView: TrackerListView(manga: manga))
+        swiftuiViewController.view.backgroundColor = .clear
         super.init(nibName: nil, bundle: nil)
     }
 

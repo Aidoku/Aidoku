@@ -41,6 +41,19 @@ struct TrackerSettingOptionView: View {
 
     let coordinator: TrackerSettingOptionViewCoordinator
 
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var backgroundColor: Color {
+        switch colorScheme {
+        case .light:
+            return Color(.secondarySystemBackground)
+        case .dark:
+            return Color(.tertiarySystemBackground)
+        @unknown default:
+            return Color(.secondarySystemBackground)
+        }
+    }
+
     init(
         _ title: String,
         type: TrackerSettingOptionType = .counter,
@@ -73,7 +86,7 @@ struct TrackerSettingOptionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
-                .foregroundColor(Color(red: 0.52, green: 0.52, blue: 0.55))
+                .foregroundColor(Color(.secondaryLabel))
                 .font(.system(size: 14))
             HStack {
                 if type == .counter {
@@ -86,7 +99,7 @@ struct TrackerSettingOptionView: View {
                             "\(total == nil ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", total!))"
                         )
                             .font(.system(size: 14))
-                            .foregroundColor(.black)
+                            .foregroundColor(Color(.label))
                     }
                 }
                 if type == .date {
@@ -116,7 +129,7 @@ struct TrackerSettingOptionView: View {
                         }
                         .padding([.leading, .trailing], 8)
                         .frame(width: 104, height: 38)
-                        .background(Color(red: 0.93, green: 0.93, blue: 0.94))
+                        .background(backgroundColor)
                         .userInteractionDisabled() // hack for custom DatePicker label
                     }
                 }
@@ -137,18 +150,18 @@ struct TrackerSettingOptionView: View {
                         Text(options[selectedOption ?? 0])
                             .font(.system(size: 14))
                             .lineLimit(1)
-                            .foregroundColor(.black)
+                            .foregroundColor(Color(.label))
                             .minimumScaleFactor(0.5)
                         Spacer()
                         Image(systemName: "chevron.down")
                             .scaleEffect(0.8)
-                            .foregroundColor(.black)
+                            .foregroundColor(Color(.label))
                     }
                 }
             }
             .padding([.leading, .trailing], 8)
             .frame(width: 104, height: 38)
-            .background(Color(red: 0.93, green: 0.93, blue: 0.94))
+            .background(backgroundColor)
             .cornerRadius(8)
         }
     }

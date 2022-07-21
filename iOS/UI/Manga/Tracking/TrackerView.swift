@@ -32,7 +32,9 @@ struct TrackerView: View {
                     .resizable()
                     .frame(width: 44, height: 44, alignment: .leading)
                     .cornerRadius(10)
+                    .padding(.trailing, 2)
                 Text(item.title ?? "")
+                    .lineLimit(1)
                 Spacer()
                 Menu {
                     Button {
