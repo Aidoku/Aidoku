@@ -172,9 +172,7 @@
 		FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
 		FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
 		FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B262888ACA4007149C5 /* HostingController.swift */; };
-		FBCA1B282888ACA4007149C5 /* HostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B262888ACA4007149C5 /* HostingController.swift */; };
 		FBCA1B2A2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
-		FBCA1B2B2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
 		FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
 		FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
 		FBD6A3FB2850D586007116C9 /* SourceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */; };
@@ -596,8 +594,6 @@
 				FB31AD0027AC2C3000D50410 /* UIImageColors.swift */,
 				FB7864852848215500125DC0 /* Reachability.swift */,
 				37F3E66C2850F62100A944E0 /* Collection.swift */,
-				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
-				FBCA1B292889864E007149C5 /* View.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -625,6 +621,8 @@
 				FB716E0A283FF85400F1BB5D /* UIView.swift */,
 				37F3E66A2850F53200A944E0 /* CGRect.swift */,
 				FBD6A4042857AF2C007116C9 /* UIImage.swift */,
+				FBCA1B292889864E007149C5 /* View.swift */,
+				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1209,7 +1207,6 @@
 				FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
-				FBCA1B2B2889864E007149C5 /* View.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
 				FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */,
@@ -1257,7 +1254,6 @@
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
-				FBCA1B282888ACA4007149C5 /* HostingController.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
