@@ -446,13 +446,21 @@ extension MangaViewHeaderView {
             layoutIfNeeded()
         }
 
-        // Text is truncated
-        if titleLabel.isTruncated {
-            titleLabel.numberOfLines = 0
-            let size = titleLabel.fontSizeThatFits(text: titleLabel.text ?? "", maxFontSize: 22, minFontScale: 0.73)
-            titleLabel.font = .systemFont(ofSize: size, weight: .semibold)
+        let size: CGSize = (title as NSString).boundingRect(
+            with: CGSize(width: titleLabel.frame.size.width, height: .greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: [.font: titleLabel.font ?? .systemFont(ofSize: 22, weight: .semibold)],
+            context: nil
+        ).size
 
-            authorLabel.font = .systemFont(ofSize: (authorLabel.font?.pointSize ?? 16) * size / 22, weight: .regular)
+        // Text is truncated
+        if size.height > titleLabel.bounds.size.height {
+            let scaleFactor = titleLabel.bounds.size.height / size.height
+
+            titleLabel.numberOfLines = Int((3 / scaleFactor).rounded(.up))
+            titleLabel.font = .systemFont(ofSize: (titleLabel.font?.pointSize ?? 22) * scaleFactor, weight: .semibold)
+
+            authorLabel.font = .systemFont(ofSize: (authorLabel.font?.pointSize ?? 16) * scaleFactor, weight: .regular)
 
             setNeedsLayout()
         }
