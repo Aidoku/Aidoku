@@ -12,6 +12,7 @@
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
+		FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */; };
 		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB11EDF02784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
@@ -175,6 +176,7 @@
 		FBCA1B2A2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
 		FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
 		FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
+		FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */; };
 		FBD6A3FB2850D586007116C9 /* SourceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */; };
 		FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */; };
 		FBD6A4052857AF2C007116C9 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A4042857AF2C007116C9 /* UIImage.swift */; };
@@ -232,6 +234,7 @@
 		37F3E66A2850F53200A944E0 /* CGRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
+		FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchTableViewCell.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
@@ -349,6 +352,7 @@
 		FBCA1B262888ACA4007149C5 /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
 		FBCA1B292889864E007149C5 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupTrackItem.swift; sourceTree = "<group>"; };
+		FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchViewController.swift; sourceTree = "<group>"; };
 		FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSectionHeaderView.swift; sourceTree = "<group>"; };
 		FBD6A3FF28523A89007116C9 /* ReaderPageCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageCollectionViewCell.swift; sourceTree = "<group>"; };
 		FBD6A40228525CAB007116C9 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -607,6 +611,8 @@
 				FB2E02512868A67500786F21 /* TrackerView.swift */,
 				FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */,
 				FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */,
+				FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */,
+				FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */,
 			);
 			path = Tracking;
 			sourceTree = "<group>";
@@ -1102,6 +1108,7 @@
 				FB78648A2848F98400125DC0 /* HistoryViewController.swift in Sources */,
 				FBED233A27C439C20095D0C0 /* MangaViewHeaderView.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
+				FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB72501327CAAC9F0037F1C9 /* Backup.swift in Sources */,
@@ -1187,6 +1194,7 @@
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */,
 				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
+				FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */,
 				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */,

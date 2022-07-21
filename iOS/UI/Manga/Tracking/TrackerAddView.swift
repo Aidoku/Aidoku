@@ -14,6 +14,7 @@ struct TrackerAddView: View {
     @Binding var refresh: Bool
 
     @State var isLoading = false
+    @State var showSearchController = false
 
     var body: some View {
         HStack {
@@ -30,29 +31,14 @@ struct TrackerAddView: View {
                         .progressViewStyle(CircularProgressViewStyle())
                 } else {
                     Button(NSLocalizedString("START_TRACKING", comment: "")) {
-                        isLoading = true
-                        Task {
-                            let results = await tracker.search(for: manga)
-                            if let result = results.first {
-                                await tracker.register(trackId: result.id)
-                                DataManager.shared.addTrackItem(
-                                    item: TrackItem(
-                                        id: result.id,
-                                        trackerId: tracker.id,
-                                        sourceId: manga.sourceId,
-                                        mangaId: manga.id,
-                                        title: result.title
-                                    )
-                                )
-                                withAnimation {
-                                    refresh.toggle()
-                                }
-                            }
-                        }
+                        showSearchController.toggle()
                     }
                 }
             }
         }
         .padding([.top, .horizontal])
+        .sheet(isPresented: $showSearchController, content: {
+            TrackerSearchNavigationController(tracker: tracker, manga: manga)
+        })
     }
 }

@@ -69,6 +69,15 @@ protocol Tracker: AnyObject {
     /// - Parameter manga: The Manga object to find matches for.
     func search(for manga: Manga) async -> [TrackSearchItem]
 
+    /// Get search results for possible tracker matches for a title string.
+    ///
+    /// The user can specify a title to search the tracker in order to get a tracking item to choose.
+    ///
+    /// - Returns: An array of titles the user can select to register for the manga.
+    ///
+    /// - Parameter title: The title string to search with.
+    func search(title: String) async -> [TrackSearchItem]
+
     /// Log out from the tracker.
     func logout()
 }

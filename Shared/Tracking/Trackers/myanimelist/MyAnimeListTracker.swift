@@ -65,7 +65,11 @@ class MyAnimeListTracker: OAuthTracker {
     }
 
     func search(for manga: Manga) async -> [TrackSearchItem] {
-        (try? await api.search(query: manga.title ?? "")?.data.concurrentMap { node -> TrackSearchItem in
+        await search(title: manga.title ?? "")
+    }
+
+    func search(title: String) async -> [TrackSearchItem] {
+        (try? await api.search(query: title)?.data.concurrentMap { node -> TrackSearchItem in
             let details = await self.api.getMangaDetails(id: node.node.id)
             return TrackSearchItem(
                 id: String(node.node.id),

@@ -12,6 +12,7 @@ struct TrackerListView: View {
     let manga: Manga
 
     @State var refresh = false
+    let refreshPublisher = NotificationCenter.default.publisher(for: Notification.Name("updateTrackers"))
 
     var body: some View {
         VStack {
@@ -29,5 +30,10 @@ struct TrackerListView: View {
         }
         .padding([.bottom])
         .onChange(of: refresh) { _ in } // in order to trigger a refresh
+        .onReceive(refreshPublisher) { _ in
+            withAnimation {
+                refresh.toggle()
+            }
+        }
     }
 }
