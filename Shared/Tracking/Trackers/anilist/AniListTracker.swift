@@ -70,7 +70,7 @@ class AniListTracker: OAuthTracker {
     }
 
     func handleAuthenticationCallback(url: URL) async {
-        guard let params = URL(string: "\(url.formatted())?\(url.fragment ?? "")") else { return }
+        guard let params = URL(string: "http://dummy/?\(url.fragment ?? "")") else { return }
         if let accessToken = params.queryParameters?["access_token"] {
             let oauth = OAuthResponse(
                 tokenType: params.queryParameters?["token_type"],
