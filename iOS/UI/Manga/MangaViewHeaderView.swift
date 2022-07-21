@@ -457,14 +457,12 @@ extension MangaViewHeaderView {
 
         // Text is truncated
         if size.height > titleLabel.bounds.size.height {
-            titleLabel.numberOfLines = Int((size.height / titleLabel.bounds.size.height * 3).rounded(.up))
+            let scaleFactor = titleLabel.bounds.size.height / size.height
 
-            let fontSize = titleLabel.fontSizeThatFits(text: title,
-                                                       maxFontSize: 22, 
-                                                       rectSize: CGSize(width: titleLabel.frame.size.width, height: 70))
-            titleLabel.font = .systemFont(ofSize: fontSize, weight: .semibold)
+            titleLabel.numberOfLines = Int((3 / scaleFactor).rounded(.up))
+            titleLabel.font = .systemFont(ofSize: (titleLabel.font?.pointSize ?? 22) * scaleFactor, weight: .semibold)
 
-            authorLabel.font = .systemFont(ofSize: (authorLabel.font?.pointSize ?? 16) * fontSize / 22, weight: .regular)
+            authorLabel.font = .systemFont(ofSize: (authorLabel.font?.pointSize ?? 16) * scaleFactor, weight: .regular)
 
             setNeedsLayout()
         }
