@@ -456,8 +456,8 @@ extension MangaViewHeaderView {
         // Text is truncated
         if size.height > titleLabel.bounds.size.height {
             titleLabel.numberOfLines = Int((size.height / titleLabel.bounds.size.height * 3).rounded(.up))
-            titleLabel.font = .systemFont(ofSize: 22 * titleLabel.bounds.size.height / size.height, weight: .semibold)
             titleLabel.adjustsFontSizeToFitWidth = true
+            titleLabel.minimumScaleFactor = 0.5
             setNeedsLayout()
         }
     }
