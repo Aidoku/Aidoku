@@ -44,15 +44,22 @@ class BrowseViewController: UIViewController {
     }
     var filteredUpdates: [ExternalSourceInfo] {
         updates.filter {
-            if let appVersion = Float(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0") {
-                if let maxVersion = $0.maxAppVersion {
-                    guard Float(maxVersion) ?? 0 >= appVersion else { return false }
-                }
-                if let minVersion = $0.minAppVersion {
-                    guard Float(minVersion) ?? 0 <= appVersion else { return false }
-                }
+            guard searchText.isEmpty || !$0.name.lowercased().contains(searchText.lowercased()) else { return false }
+            let appVersion = Int(
+                (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
+                    .replacingOccurrences(of: ".", with: "")
+            ) ?? 0 // 0.4.0 -> 40
+            if let maxVersion = $0.maxAppVersion?.replacingOccurrences(of: ".", with: ""),
+               var maxInt = Int(maxVersion) {
+                if $0.maxAppVersion?.count ?? 0 < 5 { maxInt *= 10 } // only has major and minor versions (0.4)
+                guard maxInt >= appVersion else { return false }
             }
-            return searchText.isEmpty ? true : $0.name.lowercased().contains(searchText.lowercased())
+            if let minVersion = $0.minAppVersion?.replacingOccurrences(of: ".", with: ""),
+               var minInt = Int(minVersion) {
+                if $0.minAppVersion?.count ?? 0 < 5 { minInt *= 10 }
+                guard minInt <= appVersion else { return false }
+            }
+            return true
         }
     }
     var filteredInstallableSources: [ExternalSourceInfo] {
@@ -61,20 +68,25 @@ class BrowseViewController: UIViewController {
             if !showNsfw && $0.nsfw ?? 0 > 1 {
                 return false
             } else {
-                if let appVersion = Float(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0") {
-                    if let maxVersion = $0.maxAppVersion {
-                        guard Float(maxVersion) ?? 0 >= appVersion else { return false }
-                    }
-                    if let minVersion = $0.minAppVersion {
-                        guard Float(minVersion) ?? 0 <= appVersion else { return false }
-                    }
-                }
+                guard searchText.isEmpty || !$0.name.lowercased().contains(searchText.lowercased()) else { return false }
                 let languages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
                 if !languages.contains($0.lang) {
                     return false
-                } else if !searchText.isEmpty {
-                    return $0.name.lowercased().contains(searchText.lowercased())
                 } else {
+                    let appVersion = Int(
+                        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
+                            .replacingOccurrences(of: ".", with: "")
+                    ) ?? 0 // 0.4.0 -> 40
+                    if let maxVersion = $0.maxAppVersion?.replacingOccurrences(of: ".", with: ""),
+                       var maxInt = Int(maxVersion) {
+                        if $0.maxAppVersion?.count ?? 0 < 5 { maxInt *= 10 } // only has major and minor versions (0.4)
+                        guard maxInt >= appVersion else { return false }
+                    }
+                    if let minVersion = $0.minAppVersion?.replacingOccurrences(of: ".", with: ""),
+                       var minInt = Int(minVersion) {
+                        if $0.minAppVersion?.count ?? 0 < 5 { minInt *= 10 }
+                        guard minInt <= appVersion else { return false }
+                    }
                     return true
                 }
             }

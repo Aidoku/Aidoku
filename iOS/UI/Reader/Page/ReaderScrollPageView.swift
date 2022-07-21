@@ -135,6 +135,7 @@ class ReaderScrollPageView: UIView {
                    let request = try? await source.getImageRequest(url: url) {
                     requestModifier = AnyModifier { urlRequest in
                         var r = urlRequest
+                        r.url = URL(string: request.URL ?? "")
                         for (key, value) in request.headers {
                             r.setValue(value, forHTTPHeaderField: key)
                         }

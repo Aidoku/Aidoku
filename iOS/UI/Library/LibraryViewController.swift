@@ -239,9 +239,9 @@ class LibraryViewController: MangaCollectionViewController {
             if self.currentCategory != nil && !self.categories.contains(self.currentCategory!) {
                 self.currentCategory = nil
             }
-            self.updateLockState(reload: false)
             Task {
-                await self.fetchLibrary()
+                self.updateLockState(reload: false)
+                await self.fetchLibrary(hardReload: true)
             }
         })
         observers.append(NotificationCenter.default.addObserver(
@@ -526,9 +526,13 @@ extension LibraryViewController {
         }
     }
 
-    func fetchLibrary() async {
+    func fetchLibrary(hardReload: Bool = false) async {
         await loadChaptersAndHistory()
-        reloadData()
+        if hardReload {
+            collectionView.reloadData()
+        } else {
+            reloadData()
+        }
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {

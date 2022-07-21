@@ -10,11 +10,9 @@ import SafariServices
 
 class SourceInfoViewController: SettingsTableViewController {
 
-    var source: Source
-
-    init(source: Source) {
-        self.source = source
+    init(source: Source, subPage: Bool = false) {
         super.init(items: source.settingItems)
+        self.source = source
     }
 
     required init?(coder: NSCoder) {
@@ -39,6 +37,7 @@ class SourceInfoViewController: SettingsTableViewController {
         tableView.delaysContentTouches = false
         tableView.keyboardDismissMode = .onDrag
 
+        guard let source = source else { return }
         let headerView = SourceInfoHeaderView(source: source)
         headerView.frame.size.height = 48 + 32 + 20
         tableView.tableHeaderView = headerView
@@ -54,7 +53,7 @@ class SourceInfoViewController: SettingsTableViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        source.needsFilterRefresh = true
+        source?.needsFilterRefresh = true
     }
 
     @objc func close() {
@@ -66,10 +65,11 @@ class SourceInfoViewController: SettingsTableViewController {
 extension SourceInfoViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        1 + source.settingItems.count + (source.languages.isEmpty ? 0 : 1)
+        1 + (source?.settingItems.count ?? 0) + (source?.languages.isEmpty ?? true ? 0 : 1)
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let source = source else { return 0 }
         if !source.languages.isEmpty && section == 0 {
             return 1
         } else if source.settingItems.isEmpty || section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
@@ -79,6 +79,7 @@ extension SourceInfoViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let source = source else { return nil }
         if !source.languages.isEmpty && section == 0 {
             return NSLocalizedString("LANGUAGE", comment: "")
         } else if source.settingItems.isEmpty || section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
@@ -88,6 +89,7 @@ extension SourceInfoViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        guard let source = source else { return nil }
         if !source.languages.isEmpty && section == 0 {
             return nil
         } else if source.settingItems.isEmpty || section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
@@ -97,6 +99,7 @@ extension SourceInfoViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let source = source else { return UITableViewCell() }
         if !source.languages.isEmpty && indexPath.section == 0 { // Language selection
             var cell: UITableViewCell? = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell.Value1")
             if cell == nil {
@@ -146,6 +149,7 @@ extension SourceInfoViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let source = source else { return }
         if !source.languages.isEmpty && indexPath.section == 0 {
             let item = SettingItem(
                 type: source.manifest.languageSelectType == "single" ? "multi-single-select" : "multi-select",
@@ -159,21 +163,8 @@ extension SourceInfoViewController {
         } else if source.settingItems.isEmpty || indexPath.section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
             // info
         } else if let item = source.settingItems[indexPath.section + (source.languages.isEmpty ? 0 : -1)].items?[indexPath.row] {
-            switch item.type {
-            case "select", "multi-select", "multi-single-select":
-                navigationController?.pushViewController(
-                    SettingSelectViewController(source: source, item: item, style: tableView.style),
-                    animated: true
-                )
-            case "button":
-                if let key = item.action {
-                    source.performAction(key: key)
-                }
-            default:
-                performAction(for: item)
-            }
+            performAction(for: item, at: indexPath)
         }
-
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

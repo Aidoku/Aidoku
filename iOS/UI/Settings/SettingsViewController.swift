@@ -18,8 +18,8 @@ class SettingsViewController: SettingsTableViewController {
             // MARK: About
             SettingItem(type: "group", title: NSLocalizedString("ABOUT", comment: ""), items: [
                 SettingItem(type: "page", key: "About.about", title: NSLocalizedString("ABOUT", comment: "")),
-                SettingItem(type: "link", key: "https://github.com/Aidoku/Aidoku", title: NSLocalizedString("GITHUB_REPO", comment: "")),
-                SettingItem(type: "link", key: "https://discord.gg/9U8cC5Zk3s", title: NSLocalizedString("DISCORD_SERVER", comment: ""), external: true)
+                SettingItem(type: "link", title: NSLocalizedString("GITHUB_REPO", comment: ""), url: "https://github.com/Aidoku/Aidoku"),
+                SettingItem(type: "link", title: NSLocalizedString("DISCORD_SERVER", comment: ""), url: "https://discord.gg/9U8cC5Zk3s", external: true)
             ]),
             // MARK: General
             SettingItem(
@@ -243,6 +243,7 @@ class SettingsViewController: SettingsTableViewController {
                     type: "text",
                     key: "Logs.logServer",
                     placeholder: NSLocalizedString("LOG_SERVER", comment: ""),
+                    notification: "Logs.logServer",
                     autocapitalizationType: 0,
                     autocorrectionType: 1,
                     spellCheckingType: 1,
@@ -269,6 +270,8 @@ class SettingsViewController: SettingsTableViewController {
                 } else {
                     self?.view.window?.overrideUserInterfaceStyle = .dark
                 }
+            } else {
+                self?.view.window?.overrideUserInterfaceStyle = .unspecified
             }
         }
 

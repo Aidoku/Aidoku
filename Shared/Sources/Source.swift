@@ -205,6 +205,8 @@ extension Source {
                             defaults[key] = subItem.defaultValue?.stringValue
                         case "multi-select", "multi-single-select":
                             defaults[key] = subItem.defaultValue?.stringArrayValue
+                        case "stepper":
+                            defaults[key] = subItem.defaultValue?.doubleValue
                         default:
                             defaults[key] = subItem.defaultValue?.stringValue
                         }
