@@ -8,11 +8,7 @@
 import Foundation
 
 /// A class wrapping integer values that indicate a title's tracking status.
-class TrackStatus: Equatable {
-    static func == (lhs: TrackStatus, rhs: TrackStatus) -> Bool {
-        lhs.rawValue == rhs.rawValue
-    }
-
+class TrackStatus {
     static let reading = TrackStatus(1)
     static let planning = TrackStatus(2)
     static let completed = TrackStatus(3)

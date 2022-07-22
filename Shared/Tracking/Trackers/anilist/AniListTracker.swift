@@ -53,8 +53,8 @@ class AniListTracker: OAuthTracker {
         )
     }
 
-    func search(for manga: Manga) async -> [TrackSearchItem] {
-        let result = await api.search(query: manga.title ?? "")?.data.media
+    func search(title: String) async -> [TrackSearchItem] {
+        let result = await api.search(query: title)?.data.media
         if result == nil {
             return []
         }
@@ -67,6 +67,10 @@ class AniListTracker: OAuthTracker {
             status: .unknown,
             type: .manga
         )]
+    }
+
+    func search(for manga: Manga) async -> [TrackSearchItem] {
+        await search(title: manga.title ?? "")
     }
 
     func handleAuthenticationCallback(url: URL) async {

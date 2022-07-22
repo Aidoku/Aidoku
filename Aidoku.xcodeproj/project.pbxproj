@@ -10,6 +10,16 @@
 		0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */; };
 		37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66A2850F53200A944E0 /* CGRect.swift */; };
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
+		BCE1C0AA6CD3A84FBB6AF5F9 /* AniListQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C3C74B920AAF443CFC1A /* AniListQueries.swift */; };
+		BCE1C83F2147B06AFDB1EB3F /* OAuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1CACB38C93DF3284740FB /* OAuthResponse.swift */; };
+		BCE1C967DC56A1E21E7F284C /* AniListTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1CC41CEA6AF7B393B2361 /* AniListTracker.swift */; };
+		BCE1C9723566905443827D43 /* AniListApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C1BA0BCEEF91CAB7D093 /* AniListApi.swift */; };
+		BCE1CB15E321B7D148F19B59 /* AniListTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1CC41CEA6AF7B393B2361 /* AniListTracker.swift */; };
+		BCE1CE365B5E8C491A564F0D /* OAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C615B13C6F2B45C0CB46 /* OAuthClient.swift */; };
+		BCE1CEBFEA1E6CAF58053600 /* AniListQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C3C74B920AAF443CFC1A /* AniListQueries.swift */; };
+		BCE1CEC76D5796840A8A0E3F /* OAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C615B13C6F2B45C0CB46 /* OAuthClient.swift */; };
+		BCE1CF1B638B200676529763 /* OAuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1CACB38C93DF3284740FB /* OAuthResponse.swift */; };
+		BCE1CF74A0BE384C49606126 /* AniListApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE1C1BA0BCEEF91CAB7D093 /* AniListApi.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */; };
@@ -68,8 +78,6 @@
 		FB4B0AE6285CDD3F0066A13B /* TrackersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AE5285CDD3F0066A13B /* TrackersViewController.swift */; };
 		FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AE7285D0A0E0066A13B /* Dictionary.swift */; };
 		FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AE7285D0A0E0066A13B /* Dictionary.swift */; };
-		FB4B0AEB285D0AC00066A13B /* MyAnimeListOAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AEA285D0AC00066A13B /* MyAnimeListOAuth.swift */; };
-		FB4B0AEC285D0AC00066A13B /* MyAnimeListOAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AEA285D0AC00066A13B /* MyAnimeListOAuth.swift */; };
 		FB4B0AEE285D2EE30066A13B /* MyAnimeListModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AED285D2EE30066A13B /* MyAnimeListModels.swift */; };
 		FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AED285D2EE30066A13B /* MyAnimeListModels.swift */; };
 		FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AF0285D46BF0066A13B /* Date.swift */; };
@@ -233,6 +241,11 @@
 		0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		37F3E66A2850F53200A944E0 /* CGRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
+		BCE1C1BA0BCEEF91CAB7D093 /* AniListApi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListApi.swift; sourceTree = "<group>"; };
+		BCE1C3C74B920AAF443CFC1A /* AniListQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListQueries.swift; sourceTree = "<group>"; };
+		BCE1C615B13C6F2B45C0CB46 /* OAuthClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthClient.swift; sourceTree = "<group>"; };
+		BCE1CACB38C93DF3284740FB /* OAuthResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthResponse.swift; sourceTree = "<group>"; };
+		BCE1CC41CEA6AF7B393B2361 /* AniListTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AniListTracker.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchTableViewCell.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
@@ -278,7 +291,6 @@
 		FB4B0AE2285CCC8E0066A13B /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
 		FB4B0AE5285CDD3F0066A13B /* TrackersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersViewController.swift; sourceTree = "<group>"; };
 		FB4B0AE7285D0A0E0066A13B /* Dictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dictionary.swift; sourceTree = "<group>"; };
-		FB4B0AEA285D0AC00066A13B /* MyAnimeListOAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAnimeListOAuth.swift; sourceTree = "<group>"; };
 		FB4B0AED285D2EE30066A13B /* MyAnimeListModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAnimeListModels.swift; sourceTree = "<group>"; };
 		FB4B0AF0285D46BF0066A13B /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		FB4B0AF3285D7EB00066A13B /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -421,6 +433,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BCE1C186A3B9764A786F2639 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				BCE1C615B13C6F2B45C0CB46 /* OAuthClient.swift */,
+				BCE1CACB38C93DF3284740FB /* OAuthResponse.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		BCE1CA8ADA9A9A46436A2EB2 /* anilist */ = {
+			isa = PBXGroup;
+			children = (
+				BCE1C1BA0BCEEF91CAB7D093 /* AniListApi.swift */,
+				BCE1C3C74B920AAF443CFC1A /* AniListQueries.swift */,
+				BCE1CC41CEA6AF7B393B2361 /* AniListTracker.swift */,
+			);
+			path = anilist;
+			sourceTree = "<group>";
+		};
 		FB1B4825277CE18D0056D02C = {
 			isa = PBXGroup;
 			children = (
@@ -777,6 +808,7 @@
 		FBD6A4062858D33A007116C9 /* Tracking */ = {
 			isa = PBXGroup;
 			children = (
+				BCE1C186A3B9764A786F2639 /* Auth */,
 				FBD6A413285B7CAF007116C9 /* Trackers */,
 				FBD6A40F285B7776007116C9 /* Models */,
 				FBD6A4072858D365007116C9 /* TrackerManager.swift */,
@@ -801,6 +833,7 @@
 			isa = PBXGroup;
 			children = (
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
+				BCE1CA8ADA9A9A46436A2EB2 /* anilist */,
 			);
 			path = Trackers;
 			sourceTree = "<group>";
@@ -811,7 +844,6 @@
 				FBD6A415285B7CC3007116C9 /* MyAnimeListTracker.swift */,
 				FB4B0ADF285CC7D90066A13B /* MyAnimeListApi.swift */,
 				FB4B0AED285D2EE30066A13B /* MyAnimeListModels.swift */,
-				FB4B0AEA285D0AC00066A13B /* MyAnimeListOAuth.swift */,
 			);
 			path = myanimelist;
 			sourceTree = "<group>";
@@ -1119,7 +1151,6 @@
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
 				FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */,
 				FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */,
-				FB4B0AEB285D0AC00066A13B /* MyAnimeListOAuth.swift in Sources */,
 				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */,
 				FBD6A40E285916F2007116C9 /* ReaderScrollPageView.swift in Sources */,
@@ -1204,6 +1235,11 @@
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
 				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
+				BCE1C9723566905443827D43 /* AniListApi.swift in Sources */,
+				BCE1C0AA6CD3A84FBB6AF5F9 /* AniListQueries.swift in Sources */,
+				BCE1C967DC56A1E21E7F284C /* AniListTracker.swift in Sources */,
+				BCE1CE365B5E8C491A564F0D /* OAuthClient.swift in Sources */,
+				BCE1C83F2147B06AFDB1EB3F /* OAuthResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1218,7 +1254,6 @@
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
 				FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */,
-				FB4B0AEC285D0AC00066A13B /* MyAnimeListOAuth.swift in Sources */,
 				FB72501D27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */,
@@ -1279,6 +1314,11 @@
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
+				BCE1CF74A0BE384C49606126 /* AniListApi.swift in Sources */,
+				BCE1CEBFEA1E6CAF58053600 /* AniListQueries.swift in Sources */,
+				BCE1CB15E321B7D148F19B59 /* AniListTracker.swift in Sources */,
+				BCE1CEC76D5796840A8A0E3F /* OAuthClient.swift in Sources */,
+				BCE1CF1B638B200676529763 /* OAuthResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
