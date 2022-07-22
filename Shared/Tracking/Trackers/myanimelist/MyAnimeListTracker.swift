@@ -27,11 +27,11 @@ class MyAnimeListTracker: OAuthTracker {
     let api = MyAnimeListApi()
 
     let callbackHost = "myanimelist-auth"
-    lazy var authenticationUrl = api.authenticationUrl ?? ""
+    lazy var authenticationUrl = api.oauth.getAuthenticationUrl() ?? ""
 
     func register(trackId: String) async {
         guard let id = Int(trackId) else { return }
-        await api.updateMangaStatus(id: id, status: MyAnimeListMangaStatus(status: "reading"))
+        await api.updateMangaStatus(id: id, status: MyAnimeListMangaStatus(startDate: Date().ISO8601Format(), status: "reading"))
     }
 
     func update(trackId: String, state: TrackState) async {
@@ -85,7 +85,7 @@ class MyAnimeListTracker: OAuthTracker {
 
     func handleAuthenticationCallback(url: URL) async {
         if let authCode = url.queryParameters?["code"] {
-            guard let oauth = await api.getAccessToken(authCode: authCode) else { return }
+            guard let oauth = await api.oauth.getAccessToken(authCode: authCode) else { return }
             token = oauth.accessToken
             UserDefaults.standard.set(try? JSONEncoder().encode(oauth), forKey: "Token.\(id).oauth")
         }

@@ -492,6 +492,9 @@ extension ReaderViewController: ReaderPageManagerDelegate {
             DataManager.shared.setCurrentPage(index + 1, for: chapter, context: DataManager.shared.backgroundContext)
             if index == pageCount - 1 {
                 DataManager.shared.setCompleted(chapter: chapter, context: DataManager.shared.backgroundContext)
+                Task {
+                    await TrackerManager.shared.setCompleted(chapter: self.chapter)
+                }
             }
         }
     }

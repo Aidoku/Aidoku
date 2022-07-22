@@ -256,3 +256,8 @@
 "PAGE_LAYOUT" = "Page Layout";
 "DOUBLE_PAGE" = "Double Page";
 "MULTI_LANGUAGE" = "Multi-Language";
+"TRACKERS" = "Trackers";
+
+// Trackers
+"LOGOUT_FROM_%@" = "Logout from %@?";
+"LOGOUT" = "Logout";
