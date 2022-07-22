@@ -1,0 +1,50 @@
+
+
+"UNKNOWN" = "Nieznany";
+// General
+"CONTINUE" = "Kontynuuj";
+"CANCEL" = "Anuluj";
+"OK" = "OK";
+"DELETE" = "Usuń";
+"REMOVE" = "Usuń";
+"RENAME" = "Zmień nazwę";
+"LOADING_ELLIPSIS" = "Ładowanie…";
+"SHARE" = "Udostępnij";
+
+// Downloads
+"DOWNLOAD" = "Pobierz";
+"CLEAR" = "Wyczyść";
+"DOWNLOAD_QUEUE" = "Kolejka Pobierania";
+"LIBRARY_SEARCH" = "Znajdź w Bibliotece";
+"REMOVE_FROM_LIBRARY" = "Usuń z Biblioteki";
+"LAST_READ" = "Ostatnio Czytane";
+"LATEST_CHAPTER" = "Ostatni Rozdział";
+"DEFAULT_CATEGORY" = "Domyślna Kategoria";
+"ALWAYS_ASK" = "Zawsze Pytaj";
+
+// Browse
+"BROWSE" = "Przeglądaj";
+"UPDATES" = "Aktualizacje";
+"BUTTON_UPDATE" = "Aktualizuj";
+"BUTTON_ERROR" = "Błąd";
+"LANGUAGE" = "Język";
+"LIST_HEADER" = "Lista";
+"ONGOING" = "Nieukończone";
+"CANCELLED" = "Anulowane";
+"COMPLETED" = "Ukończone";
+"DOWNLOADED" = "Pobrane";
+"RESET" = "Reset";
+"CANCEL_DOWNLOAD" = "Anuluj Pobieranie";
+
+// Library
+"LIBRARY" = "Biblioteka";
+"TITLE" = "Tytuł";
+"LAST_OPENED" = "Ostatnio Otwarte";
+"EDIT_CATEGORIES" = "Edytuj Kategorie";
+"CATEGORY_ADD" = "Dodaj Kategorię";
+"ADD_TO_LIBRARY" = "Dodaj do Biblioteki";
+"INSTALLED" = "Zainstalowano";
+"CATEGORIES" = "Kategorie";
+"UNINSTALL" = "Odinstaluj";
+"LANGUAGES" = "Języki";
+"VERSION" = "Wersja";

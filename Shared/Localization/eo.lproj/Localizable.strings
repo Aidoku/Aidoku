@@ -106,8 +106,8 @@
 "BACKUP_IMPORT_FAIL" = "Enporto malsukcesis";
 "RENAME" = "Ŝanĝi nomon";
 "TITLE" = "Titolo";
-"LIBRARY_LOCKED" = "Biblioteko ŝlosita";
-"CATEGORY_LOCKED" = "Kategorio ŝlosita";
+"LIBRARY_LOCKED" = "Biblioteko estas ŝlosita.";
+"CATEGORY_LOCKED" = "Kategorio estas ŝlosita.";
 "LOCK_LIBRARY" = "Ŝlosi bibliotekon";
 
 // Downloads
@@ -149,3 +149,10 @@
 "PIN_MANGA_UNREAD" = "Nelegita";
 "LOCKED_CATEGORIES" = "Ŝlositaj kategorioj";
 "ADVANCED" = "Altnivela";
+"SELECT_CHAPTERS" = "Elekti ĉapitrojn";
+"NO_CHAPTERS_AVAILABLE" = "Neniu ĉapitro disponebla";
+"MARK_READ" = "Marki kiel legitan";
+"MARK_UNREAD" = "Marki kiel nelegitan";
+"RENAME_BACKUP" = "Ŝanĝi nomon de savkopio";
+"BACKUP_NAME" = "Nomo de savkopio";
+"RENAME_BACKUP_TEXT" = "Tajpu novan nomon por via savkopio";

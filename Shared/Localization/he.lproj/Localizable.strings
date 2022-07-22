@@ -1,0 +1,163 @@
+
+
+"INFO" = "מידע";
+"INSTALLED" = "מותקן";
+"EXTERNAL" = "חיצוני";
+"BUTTON_UPDATE" = "עדכן";
+"DOWNLOADED" = "מורד";
+"DOWNLOAD_QUEUE" = "תור הורדה";
+"LANGUAGE" = "שפה";
+"NSFW" = "תוכן בוטה";
+"DESELECT_ALL" = "הסר סימון מהכל";
+// General
+"CONTINUE" = "המשך";
+"CANCEL" = "ביטול";
+"REMOVE_ALL_DOWNLOADS" = "מחק את כל ההורדות";
+"LOADING_ELLIPSIS" = "טוען…";
+"OK" = "בסדר";
+"UNKNOWN" = "לא ידוע";
+"UNAVAILABLE" = "לא זמין";
+"RESET" = "אתחל";
+"DELETE" = "מחק";
+"REMOVE" = "הסר";
+"RENAME" = "שנה שם";
+"CLEAR" = "נקה";
+"LIBRARY_EMPTY" = "ספרייה ריקה";
+"ADD_TO_LIBRARY" = "הוסף לספרייה";
+"REMOVE_FROM_LIBRARY" = "הסר מהספרייה";
+"MANGA_INFO" = "מידע על המנגה";
+"LIBRARY_ADD_FROM_BROWSE" = "הוסף מנגה מלשונית החיפוש";
+"SORT_BY" = "סדר לפי";
+"FILTER_BY" = "סנן לפי";
+"TITLE" = "כותרת";
+"LAST_OPENED" = "נפתח לאחרונה";
+"LAST_READ" = "נקרא לאחרונה";
+"LATEST_CHAPTER" = "הפרק האחרון";
+"DATE_ADDED" = "תאריך הוספה";
+
+// Categories
+"ALL" = "הכל";
+"NONE" = "כלום";
+"CATEGORIES" = "קטגוריות";
+"EDIT_CATEGORIES" = "ערוך קטגוריות";
+"CATEGORY_ADD" = "הוסף קטגוריה";
+"CATEGORY_ADD_TEXT" = "נא להכניס את הכותרת של הקטגוריה החדשה.";
+"CATEGORY_TITLE" = "כותרת הקטגוריה";
+"DEFAULT_CATEGORY" = "קטגוריית ברירת-מחדל";
+"ALWAYS_ASK" = "תמיד תשאל";
+"BROWSE_NO_SOURCES" = "אין מקורות";
+"BROWSE_NO_SOURCES_TEXT" = "הגדר את רשימת המקורות או פתח\nמקור ב- Aidoku על מנת להתחיל";
+"ADDING_SOURCES_GUIDE_BUTTON" = "מדריך הוספת מקורות";
+"UPDATES" = "עדכונים";
+"LIST_HEADER" = "רשימה";
+"LIST_ALL" = "הכל";
+
+// Manga
+"UNTITLED" = "ללא כותרת";
+"HIATUS" = "הפסקה";
+"SUGGESTIVE" = "מרמז";
+"MISSING_SOURCE" = "מקור חסר";
+"MISSING_SOURCE_TEXT" = "המקור המקורי של המנגה הזו לא נמצא. אנא הורד אותה מחדש או מחק אותה מהספרייה.";
+"SELECT_CHAPTERS" = "בחר פרקים";
+"CHAPTER_X" = "פרק %g";
+"VOL_X" = "כרך %g";
+"NO_CHAPTERS_AVAILABLE" = "אין פרקים זמינים";
+"START_READING" = "התחל לקרוא";
+"CONTINUE_READING" = "המשך לקרוא";
+"UNREAD" = "לא נקרא";
+"MARK" = "סמן";
+"MARK_ALL" = "סמן הכל";
+"MARK_READ" = "סמן כנקרא";
+"NEXT_COLON" = "הבא:";
+"FINISHED_COLON" = "גמור:";
+"CURRENT_COLON" = "נוכחים:";
+"NO_NEXT_CHAPTER" = "אין פרק הבא";
+"NO_PREVIOUS_CHAPTER" = "אין פרק קודם";
+"READER_SETTINGS" = "הגדרות קורא";
+"READING_MODE" = "מצב קריאה";
+"DEFAULT" = "ברירת מחדל";
+"LTR" = "שמאל לימין";
+"RTL" = "ימין לשמאל";
+"VERTICAL" = "אנכי";
+"VERTICAL_SCROLL" = "גלילה אנכית";
+"EXPERIMENTAL" = "נסיוני";
+"INFINITE_VERTICAL_SCROLL" = "גלילה אנכית אינסופית";
+"SAVE_TO_PHOTOS" = "שמור לתמונות";
+
+// History
+"HISTORY" = "היסטוריה";
+"%@_AGO" = "מלפני %@";
+"PAGE_X" = "עמוד %i";
+"REMOVE_ALL_MANGA_HISTORY" = "מחק את כל היסטוריית המנגות";
+"VIEW_HISTORY" = "ראה היסטוריה";
+"HISTORY_LOCKED" = "ההיסטוריה נעולה.";
+"AUTH_FOR_HISTORY" = "הזדהה על מנת לראות את היסטוריית הקריאה.";
+
+// Search
+"SEARCH" = "חיפש";
+"VIEW_MORE" = "ראה עוד";
+
+// Settings
+"SETTINGS" = "הגדרות";
+"AUTH_TO_ENABLE" = "הזדהה על מנת לאפשר.";
+"SUPPPORT_DEVELOPMENT" = "תמיכה בפיתוח";
+"GENERAL" = "כללי";
+"ICLOUD_SYNC" = "סנכרון iCloud";
+"INCOGNITO_MODE" = "קריאה בסתר";
+"INCOGNITO_MODE_TEXT" = "עוצר את היסטוריית הקריאה כאשר מופעל";
+"APPEARANCE" = "מראה";
+"APPEARANCE_LIGHT" = "בהיר";
+"APPEARANCE_DARK" = "כהה";
+"USE_SYSTEM_APPEARANCE" = "השתמש במראה המערכת";
+"MANGA_PAGE" = "עמוד מנגה";
+"SHOW_SOURCE_LABEL" = "הצג תווית מקור";
+"USE_MANGA_TINT" = "השתמש בצבע המנגה";
+"USE_MANGA_TINT_INFO" = "צבע דפי מנגה על בסיס הצבע של תמונת הכריכה";
+"MANGA_PER_ROW" = "מספר מנגות בשורה";
+"PORTRAIT" = "אנכי";
+"READER" = "קורא";
+"SHARE" = "שתף";
+
+// Downloads
+"DOWNLOAD" = "הורד";
+"CANCEL_DOWNLOAD" = "בטל הורדה";
+"REMOVE_DOWNLOAD" = "מחק הורדה";
+"REMOVE_DOWNLOADS" = "מחק הורדות";
+"LIBRARY_SEARCH" = "מצא בספרייה";
+
+// Library
+"LIBRARY" = "ספרייה";
+"REMOVE_DOWNLOADS_CONFIRM" = "האם למחוק את כל ההורדות המסומנות?";
+"BUTTON_ERROR" = "תקלה";
+"UNINSTALL" = "הסר התקנה";
+
+// Source
+"SOURCE_INFO" = "מידע על המקור";
+"LANGUAGES" = "שפות";
+"VERSION" = "גרסה";
+"BUILD" = "Build";
+"BUTTON_FILTER" = "סנן";
+"ONGOING" = "מתמשך";
+"CANCELLED" = "מבוטל";
+"COMPLETED" = "הושלם";
+"MORE" = "עוד";
+"NO_CHAPTERS" = "אין פרקים";
+"READ" = "נקרא";
+"SELECT_ALL" = "בחר הכל";
+
+// Reader
+"CHAPTER" = "פרק";
+"CHAPTERS" = "פרקים";
+"VOLUME_X" = "כרך %g";
+"CH_X" = "פרק %g";
+"VOL_SPACE_X" = "כרך %g";
+"CH_SPACE_X" = "פרק %g";
+"MARK_PREVIOUS" = "סמן קודם";
+"MARK_UNREAD" = "סמן כלא נקרא";
+"PREVIOUS_COLON" = "קודם:";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "זה ימחק את ההיסטוריה עבור פרק זה. האם אתה בטוח שאתה רוצה להמשיך?";
+"ABOUT" = "אודות";
+"DISCORD_SERVER" = "שרת Discord";
+"AUTH_TO_DISABLE" = "הזדהה על מנת להשבית.";
+"GITHUB_REPO" = "מאגר GitHub";
+"LANDSCAPE" = "אופקי";

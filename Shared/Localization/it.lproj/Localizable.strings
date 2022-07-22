@@ -9,7 +9,7 @@
 "DOWNLOAD" = "Scarica";
 "DOWNLOADED" = "Scaricato";
 "DOWNLOAD_QUEUE" = "Coda degli scaricamenti";
-"REMOVE_DOWNLOADS_CONFIRM" = "Sei sicuro/a di voler rimuovere tutti gli scaricamenti selezionati?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Rimuovere tutti gli scaricamenti selezionati?";
 
 // Library
 "LIBRARY" = "Raccolta";
@@ -241,3 +241,15 @@
 "CLEAR_CHAPTER_CACHE_TEXT" = "Questa azione è irreversibile. I capitoli memorizzati nella cache verranno cancellati e scaricati nuovamente.";
 "CLEAR_MANGA_CACHE" = "Cancella la cache dei manga";
 "CLEAR_READ_HISTORY_TEXT" = "Questa azione è irreversibile. Tutta la cronologia di lettura verrà rimossa.";
+"BUILD" = "Build";
+"SUGGESTIVE" = "Allusivo";
+"TRACKERS" = "Inseguitori";
+"LOGOUT" = "Esci";
+"LOGOUT_FROM_%@" = "Uscire da %@?";
+"VOLUME_X" = "Volume %g";
+"VOL_X" = "Vol.%g";
+"VOL_SPACE_X" = "Vol. %g";
+"PORTRAIT" = "Ritratto";
+"LANDSCAPE" = "Paesaggio";
+"PIN_MANGA" = "Fissare Mangas";
+"PIN_MANGA_TYPE" = "Fissare Tipo";
