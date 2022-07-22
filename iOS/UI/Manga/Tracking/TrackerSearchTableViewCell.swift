@@ -98,10 +98,10 @@ class TrackerSearchTableViewCell: UITableViewCell {
             ]
         )
         titleLabel.text = item?.title ?? ""
-        if let type = item?.type?.toString() {
+        if item?.type != .unknown, let type = item?.type?.toString() {
             typeLabel.text = String(format: NSLocalizedString("TYPE_COLON_%@", comment: ""), type)
         }
-        if let status = item?.status?.toString() {
+        if item?.status != .unknown, let status = item?.status?.toString() {
             statusLabel.text = String(format: NSLocalizedString("STATUS_COLON_%@", comment: ""), status)
         }
     }
