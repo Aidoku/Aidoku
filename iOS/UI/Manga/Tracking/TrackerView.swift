@@ -83,7 +83,7 @@ struct TrackerView: View {
         .padding([.top, .horizontal])
         // handle state updates
         .onChange(of: score) { newValue in
-            let new = newValue != nil ? tracker.scoreType == .tenPointDecimal ? Int(newValue! * 100) : Int(newValue!) : nil
+            let new = newValue != nil ? tracker.scoreType == .tenPointDecimal ? Int(newValue! * 10) : Int(newValue!) : nil
             guard state?.score != new else { return }
             state?.score = new
             stateUpdated = true
@@ -128,9 +128,10 @@ struct TrackerView: View {
                 guard let state = state else { return }
 
                 withAnimation {
-                    score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 100 : Float(state.score!) : nil
+                    score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
                     if tracker.scoreType == .optionList {
-                        scoreOption = tracker.scoreOptions.enumerated().first { $0.element.1 == state.score }?.offset
+                        let option = tracker.option(for: Int(state.score ?? 0))
+                        scoreOption = tracker.scoreOptions.enumerated().first { $0.element.0 == option }?.offset
                     }
                     statusOption = tracker.supportedStatuses.enumerated().first { $0.1.rawValue == state.status?.rawValue }?.0 ?? 0
                     lastReadChapter = state.lastReadChapter != nil ? Float(state.lastReadChapter!) : nil

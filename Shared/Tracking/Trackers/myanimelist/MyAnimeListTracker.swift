@@ -14,7 +14,7 @@ import AuthenticationServices
     import UIKit
 #endif
 
-/// Aidoku tracker for MyAnimeList.
+/// MyAnimeList tracker for Aidoku.
 class MyAnimeListTracker: OAuthTracker {
 
     let id = "myanimelist"
@@ -27,7 +27,7 @@ class MyAnimeListTracker: OAuthTracker {
     let api = MyAnimeListApi()
 
     let callbackHost = "myanimelist-auth"
-    lazy var authenticationUrl = api.authenticationUrl ?? ""
+    lazy var authenticationUrl = api.oauth.getAuthenticationUrl() ?? ""
 
     func register(trackId: String) async {
         guard let id = Int(trackId) else { return }
@@ -85,20 +85,14 @@ class MyAnimeListTracker: OAuthTracker {
 
     func handleAuthenticationCallback(url: URL) async {
         if let authCode = url.queryParameters?["code"] {
-            guard let oauth = await api.getAccessToken(authCode: authCode) else { return }
+            guard let oauth = await api.oauth.getAccessToken(authCode: authCode) else { return }
             token = oauth.accessToken
             UserDefaults.standard.set(try? JSONEncoder().encode(oauth), forKey: "Token.\(id).oauth")
         }
     }
-
-    func logout() {
-        token = nil
-        UserDefaults.standard.removeObject(forKey: "Token.\(id).token")
-        UserDefaults.standard.removeObject(forKey: "Token.\(id).oauth")
-    }
 }
 
-extension MyAnimeListTracker {
+private extension MyAnimeListTracker {
 
     func getStatus(statusString: String) -> TrackStatus? {
         switch statusString {
@@ -131,7 +125,7 @@ extension MyAnimeListTracker {
         }
     }
 
-    func getMediaType(typeString: String) -> MediaType? {
+    func getMediaType(typeString: String) -> MediaType {
         switch typeString {
         case "unknown": return .unknown
         case "manga": return .manga

@@ -47,12 +47,12 @@ struct MyAnimeListMangaStatus: Codable {
 
     func percentEncoded() -> Data? {
         var params: [String] = []
-        if isRereading != nil { params.append("is_rereading=\(isRereading!)") }
-        if numVolumesRead != nil { params.append("num_volumes_read=\(numVolumesRead!)") }
-        if numChaptersRead != nil { params.append("num_chapters_read=\(numChaptersRead!)") }
-        if startDate != nil { params.append("start_date=\(startDate!)") }
-        if finishDate != nil { params.append("finish_date=\(finishDate!)") }
-        if score != nil { params.append("score=\(score!)") }
+        if let isRereading = isRereading { params.append("is_rereading=\(isRereading)") }
+        if let numVolumesRead = numVolumesRead { params.append("num_volumes_read=\(numVolumesRead)") }
+        if let numChaptersRead = numChaptersRead { params.append("num_chapters_read=\(numChaptersRead)") }
+        if let startDate = startDate { params.append("start_date=\(startDate)") }
+        if let finishDate = finishDate { params.append("finish_date=\(finishDate)") }
+        if let score = finishDate { params.append("score=\(score)") }
         return params
             .joined(separator: "&")
             .data(using: .utf8)

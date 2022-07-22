@@ -12,11 +12,13 @@ class TrackerManager {
     /// The shared tracker mangaer instance.
     static let shared = TrackerManager()
 
+    /// An instance of the AniList tracker.
+    let anilist = AniListTracker()
     /// An instance of the MyAnimeList tracker.
     let myanimelist = MyAnimeListTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [myanimelist]
+    lazy var trackers: [Tracker] = [anilist, myanimelist]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {

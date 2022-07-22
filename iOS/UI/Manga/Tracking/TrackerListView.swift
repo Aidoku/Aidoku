@@ -20,7 +20,7 @@ struct TrackerListView: View {
                 if tracker.isLoggedIn {
                     if let item = DataManager.shared.getTrackItem(trackerId: tracker.id, manga: manga) {
                         TrackerView(tracker: tracker, item: item, refresh: $refresh)
-                            .transition(.asymmetric(insertion: .opacity, removal: .move(edge: .bottom)))
+                            .transition(.opacity)
                     } else {
                         TrackerAddView(tracker: tracker, manga: manga, refresh: $refresh)
                             .transition(.opacity)

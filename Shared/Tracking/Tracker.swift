@@ -80,11 +80,22 @@ protocol Tracker: AnyObject {
 
     /// Log out from the tracker.
     func logout()
+
+    /// Get the scoreOptions option string for a specified score.
+    ///
+    /// - Returns: The option in scoreOptions for the specified score.
+    ///
+    /// - Parameter score: The score to match to a corresponding value in scoreOptions.
+    func option(for score: Int) -> String?
 }
 
 // Default values for optional properties
 extension Tracker {
     var scoreOptions: [(String, Int)] { [] }
+
+    func option(for score: Int) -> String? {
+        scoreOptions.first { $0.1 == score }?.0
+    }
 }
 
 extension Tracker {
