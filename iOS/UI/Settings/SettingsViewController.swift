@@ -259,10 +259,6 @@ class SettingsViewController: SettingsTableViewController {
             ])
         ])
 
-        Task {
-            self.calculateNetworkCacheSize()
-        }
-
         let updateAppearanceBlock: (Notification) -> Void = { [weak self] _ in
             if !UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
                 if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
@@ -340,54 +336,10 @@ class SettingsViewController: SettingsTableViewController {
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
     }
-
-    var cacheSizeString: String?;
-
-    @MainActor
-    func calculateNetworkCacheSize(updateCell: UITableViewCell? = nil, at indexPath: IndexPath? = nil) {
-        KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
-            let totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
-            self.cacheSizeString = ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
-
-            updateCell?.accessoryView = nil
-            updateCell?.detailTextLabel?.text = self.cacheSizeString
-
-            if let indexPath = indexPath {
-                self.tableView.reloadRows(at: [indexPath], with: .none)
-            }
-        }
-    }
 }
 
 // MARK: - Table View Data Source
 extension SettingsViewController {
-
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if let item = items[indexPath.section].items?[indexPath.row] {
-            let cell = self.tableView(tableView, cellForRowAt: indexPath, settingItem: item)
-            guard item.key == "Advanced.clearNetworkCache" else { return cell }
-
-            cell.detailTextLabel?.textColor = .secondaryLabel
-
-            if let cacheSizeString = cacheSizeString {
-                cell.detailTextLabel?.text = cacheSizeString
-            } else {
-                let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
-                loadingIndicator.hidesWhenStopped = true
-                loadingIndicator.style = .medium
-                loadingIndicator.startAnimating()
-
-                cell.accessoryView = loadingIndicator
-                Task { @MainActor in
-                    self.calculateNetworkCacheSize(updateCell: cell, at: indexPath)
-                }
-            }
-
-            return cell
-        } else {
-            return tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
-        }
-    }
 
     // swiftlint:disable:next cyclomatic_complexity
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -429,9 +381,19 @@ extension SettingsViewController {
                     DataManager.shared.purgeManga()
                 }
             case "Advanced.clearNetworkCache":
-                confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
-                              message: NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")) {
-                    self.clearNetworkCache()
+                KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
+                    let totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
+                    let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")
+                        + "\n\n"
+                        + String(
+                            format: NSLocalizedString("CACHE_SIZE_%@", comment: ""),
+                            ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
+                        )
+
+                    self.confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
+                                       message: message) {
+                        self.clearNetworkCache()
+                    }
                 }
             case "Advanced.clearReadHistory":
                 confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
@@ -481,7 +443,6 @@ extension SettingsViewController {
           }
         }
         KingfisherManager.shared.cache.clearMemoryCache()
-        KingfisherManager.shared.cache.cleanExpiredMemoryCache()
         KingfisherManager.shared.cache.clearDiskCache()
         KingfisherManager.shared.cache.cleanExpiredDiskCache()
     }
