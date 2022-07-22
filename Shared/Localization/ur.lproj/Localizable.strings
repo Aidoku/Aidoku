@@ -1,0 +1,31 @@
+
+
+"CANCEL" = "منسوخ";
+"OK" = "ٹھیک ہے";
+"UNKNOWN" = "معلوم نہیں";
+"UNAVAILABLE" = "دستیاب نہیں";
+"REMOVE" = "ہٹا دیں";
+"RENAME" = "دوبارہ نام دیں";
+"CLEAR" = "ختم کردیں";
+"LOADING_ELLIPSIS" = "لوڈنگ۔۔۔";
+"DELETE" = "مٹا دیں";
+"SHARE" = "شیر کریں";
+
+// Downloads
+"DOWNLOAD" = "ڈاؤنلوڈ";
+"DOWNLOADED" = "ڈاؤنلوڈڈ";
+"DOWNLOAD_QUEUE" = "ڈاؤنلوڈز کی قطار";
+"CANCEL_DOWNLOAD" = "ڈاؤنلوڈ کرنا ختم کردیں";
+"REMOVE_DOWNLOAD" = "ڈاؤنلوڈ مٹا دیں";
+"REMOVE_ALL_DOWNLOADS" = "سارے ڈاؤنلوڈ مٹا دیں";
+"REMOVE_DOWNLOADS" = "ڈاؤنلوڈز ہٹا دیں";
+"REMOVE_DOWNLOADS_CONFIRM" = "تمام منتخب کردہ ڈاؤنلوڈز ہٹا دیں؟";
+
+// Library
+"LIBRARY" = "لائبریری";
+"LIBRARY_EMPTY" = "لائبریری خالی ہے";
+// General
+"CONTINUE" = "آگے";
+"RESET" = "دوبارہ ترتیب دیں";
+"LIBRARY_SEARCH" = "”لائبریری میں تلاش کریں";
+"LIBRARY_ADD_FROM_BROWSE" = "براوز ٹیب میں سے Manga شامل کریں";
