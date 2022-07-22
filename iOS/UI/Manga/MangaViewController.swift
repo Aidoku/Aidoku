@@ -14,6 +14,7 @@ class MangaViewController: UIViewController {
         didSet {
             (tableView.tableHeaderView as? MangaViewHeaderView)?.manga = manga
             view.setNeedsLayout()
+            updateNavbarButtons()
         }
     }
 
@@ -27,6 +28,9 @@ class MangaViewController: UIViewController {
             updateReadButton()
         }
     }
+
+    var scrollToChapter: Chapter?
+
     var sortedChapters: [Chapter] {
         switch sortOption {
         case 0:
@@ -73,9 +77,10 @@ class MangaViewController: UIViewController {
 
     var observers: [NSObjectProtocol] = []
 
-    init(manga: Manga, chapters: [Chapter] = []) {
+    init(manga: Manga, chapters: [Chapter] = [], scrollTo: Chapter? = nil) {
         self.manga = manga
         self.chapters = chapters
+        self.scrollToChapter = scrollTo
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -176,6 +181,10 @@ class MangaViewController: UIViewController {
                         fromSource: !DataManager.shared.libraryContains(manga: manga)
                     )
                     tableView.reloadSections(IndexSet(integer: 0), with: .fade)
+                }
+                if let chapter = scrollToChapter,
+                   let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
+                    tableView.scrollToRow(at: IndexPath(row: index, section: 0), at: .top, animated: true)
                 }
             }
         }
@@ -305,25 +314,40 @@ class MangaViewController: UIViewController {
                 })
             }
 
-            if DownloadManager.shared.hasDownloadedChapter(for: manga) {
-                subActions.append(UIAction(
-                    title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
-                    image: UIImage(systemName: "trash"),
-                    attributes: .destructive
-                ) { [weak self] _ in
-                    guard let self = self else { return }
-                    DownloadManager.shared.deleteChapters(for: self.manga)
-                })
-            }
-
             subMenus.append(UIMenu(title: "", options: .displayInline, children: subActions))
+
+            if DownloadManager.shared.hasDownloadedChapter(for: manga) {
+                subMenus.append(UIMenu(title: "", options: .displayInline, children: [
+                    UIAction(
+                        title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                        image: UIImage(systemName: "trash"),
+                        attributes: .destructive
+                    ) { [weak self] _ in
+                        guard let self = self else { return }
+                        self.confirmAction(title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                                           message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
+                                           continueActionName: NSLocalizedString("REMOVE", comment: "")) { [weak self] in
+                            guard let self = self else { return }
+                            DownloadManager.shared.deleteChapters(for: self.manga)
+                        }
+                    }
+                ]))
+            }
 
             let menu = UIMenu(title: "", children: subMenus)
 
             Task { @MainActor in
                 let moreButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: nil)
                 moreButton.menu = menu
-                navigationItem.rightBarButtonItem = moreButton
+                navigationItem.rightBarButtonItems = [moreButton]
+
+                if URL(string: self.manga.url ?? "") != nil {
+                    navigationItem.rightBarButtonItems?.append(
+                        UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"),
+                                        style: .plain,
+                                        target: self,
+                                        action: #selector(openShareSheet)))
+                }
             }
         }
     }
@@ -469,18 +493,41 @@ class MangaViewController: UIViewController {
     @objc func deleteSelectedChapters() {
         guard let selected = tableView.indexPathsForSelectedRows else { return }
 
-        let alertView = UIAlertController(
-            title: NSLocalizedString("REMOVE_DOWNLOADS", comment: ""),
-            message: NSLocalizedString("REMOVE_DOWNLOADS_CONFIRM", comment: ""),
-            preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
-        )
-        alertView.addAction(UIAlertAction(title: NSLocalizedString("REMOVE", comment: ""), style: .destructive) { _ in
+        confirmAction(title: NSLocalizedString("REMOVE_DOWNLOADS", comment: ""),
+                      message: NSLocalizedString("REMOVE_DOWNLOADS_CONFIRM", comment: ""),
+                      continueActionName: NSLocalizedString("REMOVE", comment: "")) {
             DownloadManager.shared.delete(chapters: selected.map { self.sortedChapters[$0.row] })
             self.setEditing(false, animated: true)
-        })
+        }
+    }
+
+    @objc func openShareSheet() {
+        guard let url = URL(string: manga.url ?? "") else { return }
+
+        let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view
+
+        present(activityViewController, animated: true, completion: nil)
+    }
+
+    func confirmAction(
+        title: String,
+        message: String,
+        continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
+        destructive: Bool = true,
+        proceed: @escaping () -> Void
+    ) {
+        let alertView = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
+        )
+
+        let action = UIAlertAction(title: continueActionName, style: destructive ? .destructive : .default) { _ in proceed() }
+        alertView.addAction(action)
+
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
-
     }
 }
 
@@ -657,6 +704,7 @@ extension MangaViewController: UITableViewDataSource {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
             guard let self = self else { return nil }
             var actions: [UIMenuElement] = []
+
             // download action
             let downloadAction: UIMenuElement
             let downloadStatus = DownloadManager.shared.getDownloadStatus(for: self.sortedChapters[indexPath.row])
@@ -683,6 +731,7 @@ extension MangaViewController: UITableViewDataSource {
                 }
             }
             actions.append(UIMenu(title: "", options: .displayInline, children: [downloadAction]))
+
             // marking actions
             let history = self.readHistory[self.sortedChapters[indexPath.row].id] ?? (0, 0)
             if history.1 <= 0 || history.0 > 0 {
@@ -723,6 +772,23 @@ extension MangaViewController: UITableViewDataSource {
                     }
                 ])
                 actions.append(previousSubmenu)
+            }
+
+            // sharing action
+            if let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") {
+                actions.append(UIMenu(title: "", options: .displayInline, children: [
+                    UIAction(title: NSLocalizedString("SHARE", comment: ""), image: nil) { [weak self] _ in
+                        guard let self = self else { return }
+
+                        let activityViewController = UIActivityViewController(
+                            activityItems: [url],
+                            applicationActivities: nil
+                        )
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+
+                        self.present(activityViewController, animated: true)
+                    }
+                ]))
             }
             return UIMenu(title: "", children: actions)
         }

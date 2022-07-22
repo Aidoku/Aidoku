@@ -14,6 +14,8 @@ class BackupsViewController: UITableViewController {
 
     var observers: [NSObjectProtocol] = []
 
+    var loadingAlert: UIAlertController?
+
     deinit {
         for observer in observers {
             NotificationCenter.default.removeObserver(observer)
@@ -74,6 +76,18 @@ class BackupsViewController: UITableViewController {
         })
     }
 
+    func showLoadingIndicator() {
+        if loadingAlert == nil {
+            loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
+            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.style = .medium
+            loadingIndicator.startAnimating()
+            loadingAlert?.view.addSubview(loadingIndicator)
+        }
+        present(loadingAlert!, animated: true, completion: nil)
+    }
+
     @objc func createBackup() {
         BackupManager.shared.saveNewBackup()
     }
@@ -109,14 +123,8 @@ extension BackupsViewController {
 
         let label = UILabel()
         if let attributes = try? FileManager.default.attributesOfItem(atPath: backups[indexPath.row].path),
-           let size = attributes[FileAttributeKey.size] as? NSNumber {
-            if (size.floatValue / 1000) < 1 {
-                label.text = "\(size.intValue) bytes"
-            } else if (size.floatValue / 1000000) < 1 {
-                label.text = "\(Int(round(size.floatValue / 1000))) KB"
-            } else {
-                label.text = "\(round(size.floatValue / 1000000 * 10) / 10) MB"
-            }
+           let size = attributes[FileAttributeKey.size] as? Int64 {
+            label.text = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
         } else {
             label.text = nil
         }
@@ -139,8 +147,11 @@ extension BackupsViewController {
 
         restoreAlert.addAction(UIAlertAction(title: NSLocalizedString("RESTORE", comment: ""), style: .destructive) { _ in
             if let backup = Backup.load(from: self.backups[indexPath.row]) {
-                Task {
+                self.showLoadingIndicator()
+                Task { @MainActor in
                     await BackupManager.shared.restore(from: backup)
+                    self.loadingAlert?.dismiss(animated: true)
+
                     let missingSources = (backup.sources ?? []).filter {
                         !DataManager.shared.hasSource(id: $0)
                     }

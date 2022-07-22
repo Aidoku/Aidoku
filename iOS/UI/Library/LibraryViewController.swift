@@ -783,6 +783,20 @@ extension LibraryViewController: UICollectionViewDelegateFlowLayout {
                     self.present(UINavigationController(rootViewController: CategorySelectViewController(manga: targetManga)), animated: true)
                 })
             }
+
+            if let url = URL(string: targetManga.url ?? "") {
+                actions.append(UIAction(title: NSLocalizedString("SHARE", comment: ""),
+                                        image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                    let activityViewController = UIActivityViewController(
+                        activityItems: [url],
+                        applicationActivities: nil
+                    )
+                    activityViewController.popoverPresentationController?.sourceView = self.view
+
+                    self.present(activityViewController, animated: true)
+                })
+            }
+
             actions.append(UIAction(
                 title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
                 image: UIImage(systemName: "trash"),
