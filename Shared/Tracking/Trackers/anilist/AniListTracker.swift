@@ -28,7 +28,7 @@ class AniListTracker: OAuthTracker {
     lazy var authenticationUrl = api.oauth.getAuthenticationUrl(response: "token") ?? ""
 
     func register(trackId: String) async {
-        // Unneeded for AniList
+        _ = await api.update(media: Int(trackId) ?? 0, state: TrackState(status: .reading, startReadDate: Date()))
     }
 
     func update(trackId: String, state: TrackState) async {
@@ -43,7 +43,7 @@ class AniListTracker: OAuthTracker {
 
         return TrackState(
             score: result?.mediaListEntry?.score,
-            status: decodeStatus(result?.status ?? ""),
+            status: decodeStatus(result?.mediaListEntry?.status ?? ""),
             lastReadChapter: Float(result?.mediaListEntry?.progress ?? 0),
             lastReadVolume: result?.mediaListEntry?.progressVolumes,
             totalChapters: result?.chapters,
