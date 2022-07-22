@@ -31,7 +31,7 @@
 "REMOVE_DOWNLOAD" = "Download entfernen";
 "REMOVE_ALL_DOWNLOADS" = "Alle Downloads entfernen";
 "REMOVE_DOWNLOADS" = "Downloads entfernen";
-"REMOVE_DOWNLOADS_CONFIRM" = "Bist du sicher, dass du alle ausgewählten Downloads entfernen willst?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Alle ausgewählten Downloads entfernen?";
 "SORT_BY" = "Sortieren nach";
 "FILTER_BY" = "Filtern nach";
 "TITLE" = "Titel";
@@ -247,3 +247,9 @@
 "PAGES_TO_PRELOAD" = "Seiten zum Vorladen";
 "SINGLE_PAGE" = "Einzelne Seite";
 "MULTI_LANGUAGE" = "Mehrsprachig";
+"BUILD" = "Build";
+"DOWNSAMPLE_IMAGES" = "Bilder herrunterrechnen";
+"SAVE_IMAGE_OPTION" = "Option Bild speichern";
+"TRACKERS" = "Tracker";
+"LOGOUT" = "Abmelden";
+"LOGOUT_FROM_%@" = "Von %@ abmelden?";
