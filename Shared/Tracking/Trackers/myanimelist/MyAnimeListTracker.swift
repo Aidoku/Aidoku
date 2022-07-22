@@ -34,16 +34,16 @@ class MyAnimeListTracker: OAuthTracker {
         await api.updateMangaStatus(id: id, status: MyAnimeListMangaStatus(status: "reading"))
     }
 
-    func update(trackId: String, state: TrackState) async {
+    func update(trackId: String, update: TrackUpdate) async {
         guard let id = Int(trackId) else { return }
         let status = MyAnimeListMangaStatus(
-            isRereading: state.status?.rawValue == TrackStatus.rereading.rawValue,
-            numVolumesRead: state.lastReadVolume,
-            numChaptersRead: state.lastReadChapter != nil ? Int(floor(state.lastReadChapter!)) : nil,
-            startDate: state.startReadDate?.ISO8601Format(),
-            finishDate: state.finishReadDate?.ISO8601Format(),
-            status: state.status != nil ? getStatusString(status: state.status!) : nil,
-            score: state.score
+            isRereading: update.status != nil ? update.status?.rawValue == TrackStatus.rereading.rawValue : nil,
+            numVolumesRead: update.lastReadVolume,
+            numChaptersRead: update.lastReadChapter != nil ? Int(floor(update.lastReadChapter!)) : nil,
+            startDate: update.startReadDate?.ISO8601Format(),
+            finishDate: update.finishReadDate?.ISO8601Format(),
+            status: update.status != nil ? getStatusString(status: update.status!) : nil,
+            score: update.score
         )
         await api.updateMangaStatus(id: id, status: status)
     }

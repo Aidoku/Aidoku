@@ -41,13 +41,13 @@ protocol Tracker: AnyObject {
 
     /// Update the state of a tracked title.
     ///
-    /// Used to send the edited state of the tracked item to the tracker. Called after manually editing
+    /// Used to send state updates of the tracked item to the tracker. Called after manually editing
     /// details as well as with automatic changes such as a more recent chapter being read.
     ///
     /// - Parameters:
     ///   - trackId: The identifier for a tracker item.
-    ///   - state: The updated state for the tracker item.
-    func update(trackId: String, state: TrackState) async
+    ///   - update: The update object with new state values for the tracker item.
+    func update(trackId: String, update: TrackUpdate) async
 
     /// Get the current state of a tracked title from the tracker.
     ///
@@ -82,19 +82,6 @@ protocol Tracker: AnyObject {
     func logout()
 }
 
-/// A protocol for trackers that utilize OAuth authentication.
-protocol OAuthTracker: Tracker {
-    /// The host in the oauth callback url, e.g. `host` in `aidoku://host`.
-    var callbackHost: String { get }
-    /// The URL used to authenticate with the tracker service provider.
-    var authenticationUrl: String { get }
-    /// The OAuth access token for the tracker.
-    var token: String? { get set }
-
-    /// A callback function called after authenticating.
-    func handleAuthenticationCallback(url: URL) async
-}
-
 // Default values for optional properties
 extension Tracker {
     var scoreOptions: [(String, Int)] { [] }
@@ -104,25 +91,5 @@ extension Tracker {
     /// Check if tracker is currently tracking a manga object.
     func isTracking(manga: Manga) -> Bool {
         DataManager.shared.getTrackObject(trackerId: id, sourceId: manga.sourceId, mangaId: manga.id) != nil
-    }
-}
-
-extension OAuthTracker {
-    var token: String? {
-        get {
-            UserDefaults.standard.string(forKey: "Tracker.\(id).token")
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "Tracker.\(id).token")
-        }
-    }
-
-    var isLoggedIn: Bool {
-        token != nil
-    }
-
-    func logout() {
-        token = nil
-        UserDefaults.standard.removeObject(forKey: "Tracker.\(id).token")
     }
 }

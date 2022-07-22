@@ -106,7 +106,7 @@ struct TrackerView: View {
             stateUpdated = true
         }
         .onChange(of: lastReadVolume) { newValue in
-            let new = newValue != nil ? Int(ceil(newValue!)) : nil
+            let new = newValue != nil ? Int(floor(newValue!)) : nil
             guard state?.lastReadVolume != new else { return }
             state?.lastReadVolume = new
             stateUpdated = true
@@ -144,7 +144,7 @@ struct TrackerView: View {
         .onDisappear {
             if stateUpdated, let state = state {
                 Task {
-                    await tracker.update(trackId: item.id, state: state)
+                    await tracker.update(trackId: item.id, update: state.toUpdate())
                 }
             }
         }

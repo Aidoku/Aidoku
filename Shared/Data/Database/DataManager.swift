@@ -681,19 +681,37 @@ extension DataManager {
             self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
+        backgroundContext.perform {
+            Task.detached {
+                await TrackerManager.shared.setCompleted(chapter: chapter)
+            }
+        }
     }
 
     func setCompleted(chapters: [Chapter], date: Date = Date(), context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
         context.perform {
+            var highestChapter: Chapter?
             for chapter in chapters {
                 if let historyObject = self.getHistoryObject(for: chapter, context: context), !historyObject.completed {
                     historyObject.dateRead = date
                     historyObject.completed = true
                 }
+                if chapter.chapterNum ?? 0 > highestChapter?.chapterNum ?? 0 {
+                    highestChapter = chapter
+                }
             }
             self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+
+            // send chapter with highest chapter number to tracker
+            if let highestChapter = highestChapter {
+                self.backgroundContext.perform {
+                    Task.detached {
+                        await TrackerManager.shared.setCompleted(chapter: highestChapter)
+                    }
+                }
+            }
         }
     }
 
@@ -1098,8 +1116,8 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
-    func getTrackItems(for manga: Manga) -> [TrackItem] {
-        getTrackObjects(for: manga).map {
+    func getTrackItems(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackItem] {
+        getTrackObjects(sourceId: sourceId, mangaId: mangaId, context: context).map {
             $0.toItem()
         }
     }
@@ -1117,10 +1135,10 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
-    func getTrackObjects(for manga: Manga, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+    func getTrackObjects(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
         (try? getTrackObjects(
             predicate: NSPredicate(
-                format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id
+                format: "sourceId = %@ AND mangaId = %@", sourceId, mangaId
             ),
             context: context
         )) ?? []

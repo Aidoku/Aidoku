@@ -118,8 +118,9 @@ extension MyAnimeListApi {
         if oauthTokens == nil { loadOAuthTokens() }
         guard let url = URL(string: "\(baseApiUrl)/manga/\(id)/my_list_status") else { return }
         var request = authorizedRequest(for: url)
-        request.httpMethod = "PUT"
+        request.httpMethod = "PATCH"
         request.httpBody = status.percentEncoded()
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         _ = try? await URLSession.shared.data(for: request)
     }
 }
