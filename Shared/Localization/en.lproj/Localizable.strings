@@ -278,3 +278,5 @@
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Light Novel";
 "TRACK" = "Track";
+"STATUS_COLON_%@" = "Status: %@";
+"TYPE_COLON_%@" = "Type: %@";
