@@ -272,7 +272,7 @@ extension SettingsTableViewController {
             cell = stepperCell(for: item)
 
         case "button", "link":
-            cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
+            cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
             if item.destructive ?? false {
                 cell.textLabel?.textColor = .systemRed
             } else {
