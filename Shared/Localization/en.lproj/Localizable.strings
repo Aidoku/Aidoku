@@ -28,7 +28,7 @@
 "REMOVE_DOWNLOAD" = "Remove Download";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
-"REMOVE_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all selected downloads?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
 
 // Library
 "LIBRARY" = "Library";
@@ -256,3 +256,25 @@
 "PAGE_LAYOUT" = "Page Layout";
 "DOUBLE_PAGE" = "Double Page";
 "MULTI_LANGUAGE" = "Multi-Language";
+"TRACKERS" = "Trackers";
+"LOGOUT" = "Log out";
+"LOGOUT_FROM_%@" = "Log out from %@?";
+"STATUS" = "Status";
+"VOLUMES" = "Volumes";
+"STARTED" = "Started";
+"REREADING" = "Rereading";
+"START_TRACKING" = "Start tracking";
+"SCORE" = "Score";
+"PAUSED" = "Paused";
+"FINISHED" = "Finished";
+"READING" = "Reading";
+"PLANNING" = "Planning";
+"DROPPED" = "Dropped";
+"STOP_TRACKING" = "Stop tracking";
+"ONESHOT" = "One-shot";
+"NOT_PUBLISHED" = "Not Published";
+"MANGA" = "Manga";
+"MANHWA" = "Manhwa";
+"MANHUA" = "Manhua";
+"LIGHT_NOVEL" = "Light Novel";
+"TRACK" = "Track";

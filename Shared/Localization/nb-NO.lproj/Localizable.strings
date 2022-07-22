@@ -1,0 +1,172 @@
+
+
+// General
+"CONTINUE" = "Fortsett";
+"CANCEL" = "Avbryt";
+"OK" = "OK";
+"UNKNOWN" = "Ukjent";
+"UNAVAILABLE" = "Utilgjengelig";
+"RESET" = "Tilbakestill";
+"DELETE" = "Slett";
+"REMOVE" = "Fjern";
+"RENAME" = "Gi nytt navn";
+"CLEAR" = "Tøm";
+"LOADING_ELLIPSIS" = "Laster inn …";
+"SHARE" = "Del";
+
+// Downloads
+"DOWNLOAD" = "Last ned";
+"DOWNLOADED" = "Nedlastet";
+"DOWNLOAD_QUEUE" = "Nedlastingskø";
+"CANCEL_DOWNLOAD" = "Avbryt nedlasting";
+"REMOVE_DOWNLOAD" = "Fjern nedlastning";
+"REMOVE_ALL_DOWNLOADS" = "Fjern alle nedlastninger";
+"REMOVE_DOWNLOADS" = "Fjern nedlastninger";
+
+// Library
+"LIBRARY" = "Bibliotek";
+"LIBRARY_SEARCH" = "Finn i bibliotek";
+"LIBRARY_EMPTY" = "Tomt bibliotek";
+"LIBRARY_ADD_FROM_BROWSE" = "Legg til manga fra utforskningsfanen";
+"REMOVE_DOWNLOADS_CONFIRM" = "Fjern alle valgte nedlastninger?";
+"ADD_TO_LIBRARY" = "Legg til i bibliotek";
+"REMOVE_FROM_LIBRARY" = "Fjern fra bibliotek";
+"MANGA_INFO" = "Manga-info";
+"SORT_BY" = "Sorter etter";
+"FILTER_BY" = "Filtrer etter";
+"LAST_OPENED" = "Sist åpnet";
+"LAST_READ" = "Sist lest";
+
+// Categories
+"ALL" = "Alle";
+"NONE" = "Ingen";
+"CATEGORIES" = "Kategorier";
+"EDIT_CATEGORIES" = "Rediger kategorier";
+"CATEGORY_ADD" = "Legg til kategori";
+"CATEGORY_TITLE" = "Kategorinavn";
+"DEFAULT_CATEGORY" = "Forvalgt kategori";
+"ALWAYS_ASK" = "Alltid spør";
+
+// Browse
+"BROWSE" = "Utforsk";
+"BROWSE_NO_SOURCES" = "Ingen kilder";
+"BUTTON_FILTER" = "Filter";
+"LIST_HEADER" = "Liste";
+"LIST_ALL" = "Alle";
+
+// Manga
+"UNTITLED" = "Uten navn";
+"CANCELLED" = "Avbrutt";
+"COMPLETED" = "Fullført";
+"MORE" = "mer";
+"SOURCE_ORDER" = "Kilde-rekkefølge";
+"MISSING_SOURCE" = "Manglende kilde";
+"SELECT_CHAPTERS" = "Velg kapitler";
+"SELECT_ALL" = "Velg alle";
+"DESELECT_ALL" = "Fravelg alle";
+
+// Reader
+"CHAPTER" = "Kapittel";
+"CHAPTERS" = "Kapitler";
+"CHAPTER_X" = "Kapittel %g";
+"NO_CHAPTERS" = "Ingen kapitler";
+"NO_CHAPTERS_AVAILABLE" = "Ingen kapitler tilgjengelig";
+"START_READING" = "Begynn å lese";
+"CONTINUE_READING" = "Fortsett å lese";
+"READ" = "Les";
+"UNREAD" = "Opphev lest status";
+"MARK" = "Marker";
+"MARK_ALL" = "Marker alle";
+"MARK_READ" = "Marker som lest";
+"MARK_UNREAD" = "Marker som ulest";
+"PREVIOUS_COLON" = "Forrige:";
+"NEXT_COLON" = "Neste:";
+"CURRENT_COLON" = "Nåværende:";
+"NO_NEXT_CHAPTER" = "Det er ikke flere kapitler";
+"NO_PREVIOUS_CHAPTER" = "Det er ikke noe tidligere kapittel";
+"READER_SETTINGS" = "Leser-innstillinger";
+"READING_MODE" = "Lesemodus";
+"DEFAULT" = "Forvalg";
+"LTR" = "Venstre til høyre →";
+"RTL" = "Høyre til venstre ←";
+"VERTICAL" = "Loddrett";
+"VERTICAL_SCROLL" = "Loddrett rulling";
+"EXPERIMENTAL" = "Eksperimentell";
+"INFINITE_VERTICAL_SCROLL" = "Uendelig loddrett rulling";
+"SAVE_TO_PHOTOS" = "Lagre i bilder";
+
+// History
+"HISTORY" = "Historikk";
+"PAGE_X" = "Side %i";
+"REMOVE_ALL_MANGA_HISTORY" = "Fjern all manga-historikk";
+"VIEW_HISTORY" = "Vis historikk";
+
+// Search
+"SEARCH" = "Søk";
+"VIEW_MORE" = "Vis mer";
+
+// Settings
+"SETTINGS" = "Innstillinger";
+"ABOUT" = "Om";
+"GITHUB_REPO" = "GitHub-kodelager";
+"DISCORD_SERVER" = "Discord-tjener";
+"SUPPPORT_DEVELOPMENT" = "Støtt utviklingen";
+"GENERAL" = "Generelt";
+"ICLOUD_SYNC" = "iCloud-synkronisering";
+"INCOGNITO_MODE" = "Incognito-modus";
+"APPEARANCE" = "Utseende";
+"APPEARANCE_LIGHT" = "Lyst";
+"APPEARANCE_DARK" = "Mørk";
+"USE_SYSTEM_APPEARANCE" = "Bruk systemutseende";
+"MANGA_PAGE" = "Manga-side";
+"MANGA_PER_ROW" = "Manga per rad";
+"PORTRAIT" = "Stående";
+"LANDSCAPE" = "Liggende";
+"READER" = "Leser";
+"OPEN_READER_VIEW" = "Åpne leservisning";
+"PIN_MANGA" = "Fest manga";
+"PIN_MANGA_UNREAD" = "Ulest";
+"DAILY" = "Daglig";
+"EVERY_2_DAYS" = "Annenhver dag";
+"WEEKLY" = "Ukentlig";
+"WITH_UNREAD_CHAPTERS" = "Med uleste kapitler";
+"SOURCE_LISTS" = "Kildelister";
+"SOURCE_LIST_ADD" = "Legg til kildeliste";
+"BACKUPS" = "Sikkerhetskopier";
+"BACKUP_NAME" = "Sikkerhetskopinavn";
+"MISSING_SOURCES" = "Manglende kilder";
+"RESTORE_BACKUP" = "Gjenopprett til denne sikkerhetskopien?";
+"EXPORT_LOGS" = "Eksporter logger";
+"DISPLAY_LOGS" = "Vis logger";
+"ADVANCED" = "Avansert";
+"RESET_SETTINGS" = "Tilbakestill innstillinger";
+"VIEW_LIBRARY" = "Vis bibliotek";
+"CATEGORY_EMPTY" = "Tom kategori";
+"LOCKED_CATEGORIES" = "Låste kategorier";
+"LOCK_LIBRARY" = "Lås bibliotek";
+"AUTOMATIC" = "Automatisk";
+"SET_AS_NORMAL_PAGE" = "Sett som normal side";
+"UNINSTALL" = "Avinstaller";
+"INSTALLED" = "Installert";
+"LANGUAGES" = "Språk";
+"VERSION" = "Versjon";
+"BUILD" = "Bygg";
+"EXTERNAL" = "Ekstern";
+
+// Source
+"SOURCE_INFO" = "Kildeinfo";
+"LANGUAGE" = "Språk";
+"INFO" = "Info";
+"MARK_PREVIOUS" = "Marker forrige";
+"FINISHED_COLON" = "Fullført:";
+"WITH_COMPLETED_STATUS" = "Med fullført status";
+"PAGE_X_OF_X" = "Side %i av %i";
+"CATEGORY_LOCKED" = "Kategorien er låst.";
+"EXCLUDED_CATEGORIES" = "Utelatte kategorier";
+"NEVER" = "Aldri";
+"LOGGING" = "Loggføring";
+"RESTORE" = "Gjenopprett";
+"LOGS" = "Logger";
+"BACKUP_IMPORT_SUCCESS" = "Sikkerhetskopi importert";
+"LIBRARY_LOCKED" = "Biblioteket er låst.";
+"TITLE" = "Navn";

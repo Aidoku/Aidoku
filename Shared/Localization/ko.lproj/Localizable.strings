@@ -1,0 +1,51 @@
+
+
+"OK" = "OK";
+// General
+"CONTINUE" = "다음";
+"CANCEL" = "취소";
+"RESET" = "초기화";
+"DELETE" = "삭제";
+"RENAME" = "수정";
+"CLEAR" = "제거";
+"SHARE" = "공유";
+"REMOVE_DOWNLOAD" = "다운로드 제거";
+"REMOVE_DOWNLOADS_CONFIRM" = "선택된 모든 다운로드를 제거할까요?";
+
+// Library
+"LIBRARY" = "라이브러리";
+"LIBRARY_SEARCH" = "라이브러리에서 찾기";
+"LIBRARY_EMPTY" = "빈 라이브러리";
+"LIBRARY_ADD_FROM_BROWSE" = "탐색 탭에서 만화를 추가하세요";
+"ADD_TO_LIBRARY" = "라이브러리에 추가";
+"MANGA_INFO" = "만화 정보";
+"LAST_OPENED" = "최근 확인순";
+"LAST_READ" = "최근 열람순";
+"TITLE" = "제목순";
+"DATE_ADDED" = "추가 날짜순";
+
+// Categories
+"ALL" = "모두";
+"NONE" = "없음";
+"DEFAULT_CATEGORY" = "기본 카테고리";
+"UNKNOWN" = "알 수 없음";
+"UNAVAILABLE" = "지원되지 않음";
+"REMOVE" = "제거";
+"LOADING_ELLIPSIS" = "로드중…";
+
+// Downloads
+"DOWNLOAD" = "다운로드";
+"DOWNLOADED" = "다운로드 됨";
+"REMOVE_ALL_DOWNLOADS" = "모든 다운로드 제거";
+"DOWNLOAD_QUEUE" = "다운로드 대기열";
+"REMOVE_DOWNLOADS" = "다운로드 제거";
+"CANCEL_DOWNLOAD" = "다운로드 취소";
+"FILTER_BY" = "필터";
+"SORT_BY" = "정렬";
+"REMOVE_FROM_LIBRARY" = "라이브러리에서 제거";
+"LATEST_CHAPTER" = "최신 챕터순";
+"CATEGORY_TITLE" = "카테고리 제목";
+"CATEGORY_ADD" = "카테고리 추가";
+"CATEGORY_ADD_TEXT" = "새로운 카테고리의 제목을 적어주세요.";
+"CATEGORIES" = "카테고리";
+"EDIT_CATEGORIES" = "카테고리 수정";

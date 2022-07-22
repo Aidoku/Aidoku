@@ -22,7 +22,7 @@
 "REMOVE_DOWNLOAD" = "删除下载";
 "REMOVE_ALL_DOWNLOADS" = "删除所有下载";
 "REMOVE_DOWNLOADS" = "删除下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "你确定要删除所有选定的下载吗?";
+"REMOVE_DOWNLOADS_CONFIRM" = "删除所有选定的下载?";
 
 // Library
 "LIBRARY" = "书架";
@@ -111,8 +111,8 @@
 "MARK_UNREAD" = "标记为未读";
 "PREVIOUS_COLON" = "上一页:";
 "NEXT_COLON" = "下一页:";
-"FINISHED_COLON" = "完成:";
-"CURRENT_COLON" = "当前:";
+"FINISHED_COLON" = "已读完:";
+"CURRENT_COLON" = "本章:";
 "NO_NEXT_CHAPTER" = "没有下一章";
 "NO_PREVIOUS_CHAPTER" = "没有上一章";
 "READER_SETTINGS" = "阅读设置";
@@ -128,7 +128,7 @@
 
 // History
 "HISTORY" = "历史";
-"%@_AGO" = "%@天前";
+"%@_AGO" = "%@前";
 "REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
 "HISTORY_LOCKED" = "历史记录已锁定.";
 "VIEW_HISTORY" = "查看历史记录";
@@ -141,7 +141,7 @@
 // Settings
 "SETTINGS" = "设置";
 "ABOUT" = "关于";
-"GITHUB_REPO" = "GitHub 存储库";
+"GITHUB_REPO" = "GitHub 仓库";
 "DISCORD_SERVER" = "Discord 服务器";
 "SUPPPORT_DEVELOPMENT" = "支持开发";
 "GENERAL" = "通用";
@@ -162,8 +162,8 @@
 "READER" = "阅读";
 "OPEN_READER_VIEW" = "打开阅读界面";
 "UNREAD_CHAPTER_BADGES" = "未读章节标记";
-"PIN_MANGA" = "标记漫画";
-"PIN_MANGA_TYPE" = "标记类型";
+"PIN_MANGA" = "置顶漫画";
+"PIN_MANGA_TYPE" = "置顶类型";
 "PIN_MANGA_UNREAD" = "未读";
 "PIN_MANGA_UPDATED" = "更新";
 "LIBRARY_UPDATING" = "书架更新";
@@ -183,12 +183,12 @@
 "SOURCE_LISTS" = "图源列表";
 "SOURCE_LIST_ADDED" = "添加图源列表";
 "SOURCE_LIST_ADDED_TEXT" = "您可以在浏览标签添加外部图源.";
-"SHOW_NSFW_SOURCES" = "显示18+源";
-"SOURCE_LIST_URL" = "图源列表链接";
+"SHOW_NSFW_SOURCES" = "显示18+图源";
+"SOURCE_LIST_URL" = "图源列表 URL";
 "SOURCE_LIST_ADD" = "添加图源列表";
-"SOURCE_LIST_ADD_TEXT" = "输入图源列表链接";
+"SOURCE_LIST_ADD_TEXT" = "输入图源列表 URL";
 "SOURCE_LIST_ADD_FAIL" = "添加图源列表失败";
-"SOURCE_LIST_ADD_FAIL_TEXT" = "添加图源列表链接无效或已添加.";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "提供的图源列表 URL 无效或已添加.";
 "LOCK_HISTORY_TAB" = "锁定历史标签";
 "DOWNSAMPLE_IMAGES" = "降低图片质量";
 "SAVE_IMAGE_OPTION" = "保存图片选项";
@@ -250,3 +250,6 @@
 "PAGED" = "分页";
 "DOUBLE_PAGE" = "双页";
 "MULTI_LANGUAGE" = "多国语言";
+"TRACKERS" = "追踪器";
+"LOGOUT" = "注销";
+"LOGOUT_FROM_%@" = "从 %@注销?";
