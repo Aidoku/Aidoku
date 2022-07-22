@@ -37,7 +37,7 @@ public class MangaObject: NSManagedObject {
             tags: tags ?? [],
             cover: cover,
             url: url,
-            status: MangaStatus(rawValue: Int(status)) ?? .unknown,
+            status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,
             lastUpdated: libraryObject?.lastUpdated,

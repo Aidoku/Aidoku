@@ -79,6 +79,9 @@ class BackupManager {
         let chapters = (try? DataManager.shared.getChapterObjects())?.map {
             BackupChapter(chapterObject: $0)
         } ?? []
+        let trackItems = (try? DataManager.shared.getTrackObjects())?.compactMap {
+            BackupTrackItem(trackObject: $0)
+        } ?? []
         let categories = DataManager.shared.getCategories()
         let sources = (try? DataManager.shared.getSourceObjects())?.compactMap {
             $0.id
@@ -89,6 +92,7 @@ class BackupManager {
             history: history,
             manga: manga,
             chapters: chapters,
+            trackItems: trackItems,
             categories: categories,
             sources: sources,
             date: Date(),
@@ -152,11 +156,19 @@ class BackupManager {
             }
         }
 
+        if backup.trackItems != nil {
+            DataManager.shared.clearTrackItems()
+            backup.trackItems?.forEach {
+                _ = $0.toObject(context: DataManager.shared.container.viewContext)
+            }
+        }
+
         DataManager.shared.save()
 
         DataManager.shared.loadLibrary(checkUpdate: false)
 
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+        NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
 
         await DataManager.shared.updateLibrary(forceAll: true)
     }

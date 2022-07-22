@@ -55,7 +55,7 @@ extension WasmAidoku {
                     tags: tagList,
                     cover: coverUrlLen > 0 ? self.globalStore.readString(offset: coverUrl, length: coverUrlLen) : nil,
                     url: urlLen > 0 ? self.globalStore.readString(offset: url, length: urlLen) : nil,
-                    status: MangaStatus(rawValue: Int(status)) ?? .unknown,
+                    status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
                     viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer
                 )

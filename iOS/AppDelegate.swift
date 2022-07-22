@@ -11,8 +11,15 @@ import Kingfisher
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    private var navigationController: UINavigationController? {
-        (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?.selectedViewController as? UINavigationController
+    var navigationController: UINavigationController? {
+        (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
+            .selectedViewController as? UINavigationController
+    }
+
+    var visibleViewController: UIViewController? {
+        ((UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
+            .selectedViewController as? UINavigationController)?
+            .visibleViewController
     }
 
     func application(
@@ -109,8 +116,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         )
                     }
                 }
-            } else { // deep links
-                handleDeepLink(url: url)
+            } else {
+                // check for tracker auth callback
+                // this shouldn't really be called since authentication should be performed within the app
+                if let tracker = TrackerManager.shared.trackers.first(where: {
+                    ($0 as? OAuthTracker)?.callbackHost == url.host
+                }) as? OAuthTracker {
+                    Task {
+                        await tracker.handleAuthenticationCallback(url: url)
+                    }
+                } else {
+                    // deep link
+                    handleDeepLink(url: url)
+                }
             }
         } else if url.pathExtension == "aix" {
             Task {
