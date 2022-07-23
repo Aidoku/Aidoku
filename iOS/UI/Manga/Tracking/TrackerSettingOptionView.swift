@@ -94,9 +94,9 @@ struct TrackerSettingOptionView: View {
                         showPicker()
                     } label: {
                         Text(
-                            "\(count == nil ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", count!))" +
+                            "\(count == nil || 0 == count ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", count!))" +
                             " / " +
-                            "\(total == nil ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", total!))"
+                            "\(total == nil || total == 0 ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", total!))"
                         )
                             .font(.system(size: 14))
                             .foregroundColor(Color(.label))

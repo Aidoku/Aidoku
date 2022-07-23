@@ -14,6 +14,7 @@ struct TrackerView: View {
     @Binding var refresh: Bool
 
     @State var state: TrackState?
+    @State var update = TrackUpdate()
 
     @State var score: Float?
     @State var scoreOption: Int?
@@ -58,8 +59,18 @@ struct TrackerView: View {
                     options: tracker.supportedStatuses.map { $0.toString() },
                     selectedOption: $statusOption
                 )
-                TrackerSettingOptionView(NSLocalizedString("CHAPTERS", comment: ""), type: .counter, count: $lastReadChapter)
-                TrackerSettingOptionView(NSLocalizedString("VOLUMES", comment: ""), type: .counter, count: $lastReadVolume)
+                TrackerSettingOptionView(
+                    NSLocalizedString("CHAPTERS", comment: ""),
+                    type: .counter,
+                    count: $lastReadChapter,
+                    total: Binding.constant(state?.totalChapters != nil ? Float(state!.totalChapters!) : nil)
+                )
+                TrackerSettingOptionView(
+                    NSLocalizedString("VOLUMES", comment: ""),
+                    type: .counter,
+                    count: $lastReadVolume,
+                    total: Binding.constant(state?.totalVolumes != nil ? Float(state!.totalVolumes!) : nil)
+                )
                 TrackerSettingOptionView(NSLocalizedString("STARTED", comment: ""), type: .date, date: $startReadDate)
                 TrackerSettingOptionView(NSLocalizedString("FINISHED", comment: ""), type: .date, date: $finishReadDate)
 
@@ -86,39 +97,46 @@ struct TrackerView: View {
             let new = newValue != nil ? tracker.scoreType == .tenPointDecimal ? Int(newValue! * 10) : Int(newValue!) : nil
             guard state?.score != new else { return }
             state?.score = new
+            update.score = new
             stateUpdated = true
         }
         .onChange(of: scoreOption) { newValue in
             let new = tracker.scoreOptions.enumerated().first { $0.offset == newValue }?.element.1
             guard state?.score != new else { return }
             state?.score = new
+            update.score = new
             stateUpdated = true
         }
         .onChange(of: statusOption) { newValue in
             let new = tracker.supportedStatuses.count > newValue ?? 100 ? tracker.supportedStatuses[newValue!] : nil
             guard state?.status != new else { return }
             state?.status = new
+            update.status = new
             stateUpdated = true
         }
         .onChange(of: lastReadChapter) { newValue in
             guard state?.lastReadChapter != newValue else { return }
             state?.lastReadChapter = newValue
+            update.lastReadChapter = newValue
             stateUpdated = true
         }
         .onChange(of: lastReadVolume) { newValue in
             let new = newValue != nil ? Int(floor(newValue!)) : nil
             guard state?.lastReadVolume != new else { return }
             state?.lastReadVolume = new
+            update.lastReadVolume = new
             stateUpdated = true
         }
         .onChange(of: startReadDate) { newValue in
             guard state?.startReadDate != newValue else { return }
             state?.startReadDate = newValue
+            update.startReadDate = newValue
             stateUpdated = true
         }
         .onChange(of: finishReadDate) { newValue in
             guard state?.finishReadDate != newValue else { return }
             state?.finishReadDate = newValue
+            update.finishReadDate = newValue
             stateUpdated = true
         }
         // fetch latest tracker state
@@ -143,9 +161,9 @@ struct TrackerView: View {
         }
         // send tracker updated state
         .onDisappear {
-            if stateUpdated, let state = state {
+            if stateUpdated {
                 Task {
-                    await tracker.update(trackId: item.id, update: state.toUpdate())
+                    await tracker.update(trackId: item.id, update: update)
                 }
             }
         }
