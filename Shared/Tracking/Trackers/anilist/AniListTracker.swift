@@ -117,6 +117,10 @@ class AniListTracker: OAuthTracker {
         )
     }
 
+    func getUrl(trackId: String) -> URL? {
+        URL(string: "https://anilist.co/manga/\(trackId)")
+    }
+
     func search(for manga: Manga) async -> [TrackSearchItem] {
         await search(title: manga.title ?? "", nsfw: manga.nsfw != .safe)
     }

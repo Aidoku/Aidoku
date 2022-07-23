@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SafariServices
 
 struct TrackerView: View {
 
@@ -25,6 +26,9 @@ struct TrackerView: View {
     @State var finishReadDate: Date?
 
     @State var stateUpdated = false
+
+    @State var safariUrl: URL?
+    @State var showSafari = false
 
     var body: some View {
         VStack {
@@ -46,6 +50,15 @@ struct TrackerView: View {
                         }
                     } label: {
                         Text(NSLocalizedString("STOP_TRACKING", comment: ""))
+                    }
+                    Button {
+                        Task {
+                            safariUrl = await tracker.getUrl(trackId: item.id)
+                            guard safariUrl != nil else { return }
+                            showSafari = true
+                        }
+                    } label: {
+                        Text(NSLocalizedString("VIEW_ON_WEBSITE", comment: ""))
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -167,5 +180,16 @@ struct TrackerView: View {
                 }
             }
         }
+        .sheet(isPresented: $showSafari) {
+            SafariView(url: $safariUrl)
+        }
     }
+}
+
+struct SafariView: UIViewControllerRepresentable {
+    @Binding var url: URL?
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+        SFSafariViewController(url: url ?? URL(string: "about:blank")!)
+    }
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {}
 }

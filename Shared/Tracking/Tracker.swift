@@ -59,6 +59,13 @@ protocol Tracker: AnyObject {
     /// - Parameter trackId: The identifier for a tracker item.
     func getState(trackId: String) async -> TrackState
 
+    /// Get the tracker web URL for a title.
+    ///
+    /// - Returns: The URL for the title on the tracker website.
+    ///
+    /// - Parameter trackId: The identifier for a tracker item.
+    func getUrl(trackId: String) async -> URL?
+
     /// Get search results for possible tracker matches for a Manga.
     ///
     /// The corresponding Tracker's API can be searched using the title of the Manga object (or

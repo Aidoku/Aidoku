@@ -64,6 +64,10 @@ class MyAnimeListTracker: OAuthTracker {
         )
     }
 
+    func getUrl(trackId: String) -> URL? {
+        URL(string: "https://myanimelist.net/manga/\(trackId)")
+    }
+
     func search(for manga: Manga) async -> [TrackSearchItem] {
         await search(title: manga.title ?? "")
     }
