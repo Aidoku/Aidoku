@@ -193,6 +193,9 @@ extension Source {
                     if let itemKey = subItem.key {
                         let key = "\(id).\(itemKey)"
                         settingItems[i].items?[j].key = key
+                        if let urlKey = settingItems[i].items?[j].urlKey {
+                            settingItems[i].items?[j].urlKey = "\(id).\(urlKey)"
+                        }
                         if let requires = subItem.requires {
                             settingItems[i].items?[j].requires = "\(id).\(requires)"
                         } else if let requires = subItem.requiresFalse {
