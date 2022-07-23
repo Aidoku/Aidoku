@@ -40,8 +40,8 @@ class MyAnimeListTracker: OAuthTracker {
             isRereading: update.status != nil ? update.status?.rawValue == TrackStatus.rereading.rawValue : nil,
             numVolumesRead: update.lastReadVolume,
             numChaptersRead: update.lastReadChapter != nil ? Int(floor(update.lastReadChapter!)) : nil,
-            startDate: update.startReadDate?.ISO8601Format(),
-            finishDate: update.finishReadDate?.ISO8601Format(),
+            startDate: update.startReadDate?.dateString(format: "yyyy-MM-dd"),
+            finishDate: update.finishReadDate?.dateString(format: "yyyy-MM-dd"),
             status: update.status != nil ? getStatusString(status: update.status!) : nil,
             score: update.score
         )
@@ -59,8 +59,8 @@ class MyAnimeListTracker: OAuthTracker {
             lastReadVolume: status.numVolumesRead,
             totalChapters: manga.numChapters,
             totalVolumes: manga.numVolumes,
-            startReadDate: status.startDate?.isoDate(),
-            finishReadDate: status.finishDate?.isoDate()
+            startReadDate: status.startDate?.date(format: "yyyy-MM-dd"),
+            finishReadDate: status.finishDate?.date(format: "yyyy-MM-dd")
         )
     }
 

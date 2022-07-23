@@ -28,4 +28,10 @@ extension String {
     func isoDate() -> Date? {
         ISO8601DateFormatter().date(from: self)
     }
+
+    func date(format: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.date(from: self)
+    }
 }
