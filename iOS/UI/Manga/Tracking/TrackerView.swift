@@ -143,13 +143,13 @@ struct TrackerView: View {
         .onChange(of: startReadDate) { newValue in
             guard state?.startReadDate != newValue else { return }
             state?.startReadDate = newValue
-            update.startReadDate = newValue
+            update.startReadDate = newValue == nil ? Date(timeIntervalSince1970: 0) : newValue
             stateUpdated = true
         }
         .onChange(of: finishReadDate) { newValue in
             guard state?.finishReadDate != newValue else { return }
             state?.finishReadDate = newValue
-            update.finishReadDate = newValue
+            update.finishReadDate = newValue == nil ? Date(timeIntervalSince1970: 0) : newValue
             stateUpdated = true
         }
         // fetch latest tracker state

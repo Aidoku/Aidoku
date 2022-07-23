@@ -80,6 +80,9 @@ private extension AniListApi {
 
     func encodeDate(_ value: Date?) -> AniListDate? {
         if let date = value {
+            if date == Date(timeIntervalSince1970: 0) {
+                return AniListDate(year: 0, month: 0, day: 0)
+            }
             let components = Calendar.current.dateComponents([.day, .month, .year], from: date)
             return AniListDate(year: components.year, month: components.month, day: components.day)
         }
@@ -93,6 +96,7 @@ private extension AniListApi {
         case .completed: return "COMPLETED"
         case .dropped: return "DROPPED"
         case .paused: return "PAUSED"
+        case .rereading: return "REPEATING"
         default: return nil
         }
     }

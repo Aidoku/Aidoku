@@ -61,7 +61,7 @@ class AniListTracker: OAuthTracker {
             if score == 0 {
                 return scoreOptions[0].0
             } else {
-                let index = max(1, min(score + 10 / 20, 5))
+                let index = Int(max(1, min((Float(score) + 10) / 20, 5)).rounded())
                 return scoreOptions[index].0
             }
         case "POINT_3":
@@ -86,6 +86,10 @@ class AniListTracker: OAuthTracker {
 
     func update(trackId: String, update: TrackUpdate) async {
         guard let id = Int(trackId) else { return }
+        var update = update
+        if scoreType == .tenPoint && update.score != nil {
+            update.score = update.score! * 10
+        }
         await api.update(media: id, update: update)
     }
 
@@ -97,10 +101,7 @@ class AniListTracker: OAuthTracker {
 
         let score: Int?
         if let scoreRaw = result.mediaListEntry?.score {
-            switch scoreType {
-            case .tenPoint: score = Int(scoreRaw / 10)
-            default: score = Int(scoreRaw)
-            }
+            score = scoreType == .tenPoint ? Int(scoreRaw / 10) : Int(scoreRaw)
         } else {
             score = nil
         }
@@ -177,7 +178,7 @@ private extension AniListTracker {
         case "COMPLETED": return .completed
         case "DROPPED": return .dropped
         case "PAUSED": return .paused
-        case "REPEATING": return .reading
+        case "REPEATING": return .rereading
         default: return .planning
         }
     }

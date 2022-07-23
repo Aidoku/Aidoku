@@ -50,8 +50,20 @@ struct MyAnimeListMangaStatus: Codable {
         if let isRereading = isRereading { params.append("is_rereading=\(isRereading)") }
         if let numVolumesRead = numVolumesRead { params.append("num_volumes_read=\(numVolumesRead)") }
         if let numChaptersRead = numChaptersRead { params.append("num_chapters_read=\(numChaptersRead)") }
-        if let startDate = startDate { params.append("start_date=\(startDate)") }
-        if let finishDate = finishDate { params.append("finish_date=\(finishDate)") }
+        if let startDate = startDate {
+            if startDate == Date(timeIntervalSince1970: 0).ISO8601Format() {
+                params.append("start_date=null")
+            } else {
+                params.append("start_date=\(startDate)")
+            }
+        }
+        if let finishDate = finishDate {
+            if finishDate == Date(timeIntervalSince1970: 0).ISO8601Format() {
+                params.append("finish_date=null")
+            } else {
+                params.append("finish_date=\(finishDate)")
+            }
+        }
         if let score = finishDate { params.append("score=\(score)") }
         return params
             .joined(separator: "&")

@@ -180,8 +180,7 @@ struct TrackerSettingOptionView: View {
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
             let pickerValue = coordinator.pickerView.selectedRow(inComponent: 0)
-            let result = numberType == .int ? Float(pickerValue) : Float(pickerValue) / 10
-            count = result == 0 ? nil : result
+            count = numberType == .int ? Float(pickerValue) : Float(pickerValue) / 10
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: nil))
         (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
