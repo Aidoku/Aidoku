@@ -12,6 +12,8 @@ class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
+    let refreshControl = UIRefreshControl()
+
     var hoveredIndexPath: IndexPath?
     var hovering = false
 
@@ -259,6 +261,9 @@ class BrowseViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationItem.hidesSearchBarWhenScrolling = true
+
+        refreshControl.addTarget(self, action: #selector(refreshSourceLists), for: .valueChanged)
+        tableView.refreshControl = refreshControl
     }
 
     func reloadData() {
@@ -311,6 +316,15 @@ class BrowseViewController: UIViewController {
             SourceManager.shared.languageCodes.firstIndex(of: $0.lang) ?? 0 < SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
         }
         fetchUpdates()
+    }
+
+    @objc func refreshSourceLists(refreshControl: UIRefreshControl) {
+        Task { @MainActor in
+            await self.updateSourceLists()
+            self.reloadData()
+            self.checkUpdateCount()
+            refreshControl.endRefreshing()
+        }
     }
 
     @objc func openGuidePage() {
