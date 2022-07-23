@@ -56,7 +56,7 @@ class TrackersViewController: UITableViewController {
             guard indexPath.row < self.trackers.count else { return }
             self.trackers[indexPath.row].logout()
             self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
-            NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+            DataManager.shared.removeTrackObjects(trackerId: self.trackers[indexPath.row].id)
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alert, animated: true)

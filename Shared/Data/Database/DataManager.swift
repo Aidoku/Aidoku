@@ -1126,15 +1126,6 @@ extension DataManager {
         getTrackObject(trackerId: trackerId, sourceId: manga.sourceId, mangaId: manga.id)?.toItem()
     }
 
-    func clearTrackItems() {
-        let objects = (try? getTrackObjects()) ?? []
-        for item in objects {
-            container.viewContext.delete(item)
-        }
-        save()
-        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
-    }
-
     func getTrackObjects(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
         (try? getTrackObjects(
             predicate: NSPredicate(
@@ -1186,6 +1177,30 @@ extension DataManager {
             save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
         }
+    }
+
+    func removeTrackObjects(trackerId: String, context: NSManagedObjectContext? = nil) {
+        guard let objects = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "trackerId = %@", trackerId
+            ),
+            context: context
+        ) else { return }
+        let context = context ?? container.viewContext
+        for object in objects {
+            context.delete(object)
+        }
+        save(context: context)
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    func clearTrackItems() {
+        let objects = (try? getTrackObjects()) ?? []
+        for item in objects {
+            container.viewContext.delete(item)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
     func isTracking(manga: Manga, context: NSManagedObjectContext? = nil) -> Bool {
