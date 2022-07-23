@@ -78,7 +78,8 @@ struct TrackerSettingOptionView: View {
         dateFormatter.timeStyle = .none
 
         coordinator = TrackerSettingOptionViewCoordinator(
-            total: Int(total.wrappedValue ?? 2000), // FIXME: probably not gonna need more than 2k chapters, right?
+            // FIXME: probably not gonna need more than 2k chapters, right?
+            total: Int(total.wrappedValue == 0 || total.wrappedValue == nil ? 2000 : total.wrappedValue!),
             numberType: numberType
         )
     }
