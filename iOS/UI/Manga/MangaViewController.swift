@@ -320,6 +320,8 @@ class MangaViewController: UIViewController {
                     title: NSLocalizedString("SHARE", comment: ""),
                     image: UIImage(systemName: "square.and.arrow.up")
                 ) { [weak self] _ in
+                    guard let self = self else { return }
+
                     let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                     activityViewController.popoverPresentationController?.sourceView = self.view
 
@@ -779,7 +781,7 @@ extension MangaViewController: UITableViewDataSource {
             if let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") {
                 actions.append(UIMenu(title: "", options: .displayInline, children: [
                     UIAction(title: NSLocalizedString("SHARE", comment: ""),
-                             image: UIImage(systemImage: "square.and.arrow.up")
+                             image: UIImage(systemName: "square.and.arrow.up")
                     ) { [weak self] _ in
                         guard let self = self else { return }
 
