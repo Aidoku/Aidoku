@@ -10,18 +10,28 @@ import Foundation
 extension String {
 
     func take(first: Int) -> String {
-        String(self[self.startIndex..<self.index(self.startIndex, offsetBy: first)])
+        first < count ? String(self[self.startIndex..<self.index(self.startIndex, offsetBy: first)]) : self
     }
 
     func take(last: Int) -> String {
-        String(self[self.index(self.endIndex, offsetBy: -last)..<self.endIndex])
+        last < count ? String(self[self.index(self.endIndex, offsetBy: -last)..<self.endIndex]) : self
     }
 
     func drop(first: Int) -> String {
-        String(self[self.index(self.startIndex, offsetBy: first)..<self.endIndex])
+        first < count ? String(self[self.index(self.startIndex, offsetBy: first)..<self.endIndex]) : ""
     }
 
     func drop(last: Int) -> String {
-        String(self[self.startIndex..<self.index(self.endIndex, offsetBy: -last)])
+        last < count ? String(self[self.startIndex..<self.index(self.endIndex, offsetBy: -last)]) : ""
+    }
+
+    func isoDate() -> Date? {
+        ISO8601DateFormatter().date(from: self)
+    }
+
+    func date(format: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.date(from: self)
     }
 }

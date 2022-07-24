@@ -51,16 +51,19 @@ class DataManager {
     func setupContainer(cloudSync: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Aidoku")
         let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let mainStoreUrl = storeDirectory.appendingPathComponent("Aidoku.sqlite")
 
-        let cloudDescription = NSPersistentStoreDescription(url: mainStoreUrl)
+        let cloudDescription = NSPersistentStoreDescription(url: storeDirectory.appendingPathComponent("Aidoku.sqlite"))
         cloudDescription.configuration = "Cloud"
+        cloudDescription.shouldMigrateStoreAutomatically = true
+        cloudDescription.shouldInferMappingModelAutomatically = true
 
         cloudDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         cloudDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
 
         let localDescription = NSPersistentStoreDescription(url: storeDirectory.appendingPathComponent("Local.sqlite"))
         localDescription.configuration = "Local"
+        localDescription.shouldMigrateStoreAutomatically = true
+        localDescription.shouldInferMappingModelAutomatically = true
 
         if inMemory {
             localDescription.url = URL(fileURLWithPath: "/dev/null")
@@ -678,19 +681,37 @@ extension DataManager {
             self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
+        backgroundContext.perform {
+            Task.detached {
+                await TrackerManager.shared.setCompleted(chapter: chapter)
+            }
+        }
     }
 
     func setCompleted(chapters: [Chapter], date: Date = Date(), context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
         context.perform {
+            var highestChapter: Chapter?
             for chapter in chapters {
                 if let historyObject = self.getHistoryObject(for: chapter, context: context), !historyObject.completed {
                     historyObject.dateRead = date
                     historyObject.completed = true
                 }
+                if chapter.chapterNum ?? 0 > highestChapter?.chapterNum ?? 0 {
+                    highestChapter = chapter
+                }
             }
             self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+
+            // send chapter with highest chapter number to tracker
+            if let highestChapter = highestChapter {
+                self.backgroundContext.perform {
+                    Task.detached {
+                        await TrackerManager.shared.setCompleted(chapter: highestChapter)
+                    }
+                }
+            }
         }
     }
 
@@ -1072,6 +1093,134 @@ extension DataManager {
     ) throws -> [CategoryObject] {
         try fetch(
             request: CategoryObject.fetchRequest(),
+            predicate: predicate,
+            sortDescriptors: sortDescriptors,
+            limit: limit,
+            context: context
+        )
+    }
+}
+
+// MARK: - Tracking
+extension DataManager {
+
+    func addTrackItem(item: TrackItem, context: NSManagedObjectContext? = nil) {
+        guard getTrackObject(id: item.id, trackerId: item.trackerId, createIfMissing: false, context: context) == nil else { return }
+        let object = TrackObject(context: context ?? container.viewContext)
+        object.id = item.id
+        object.trackerId = item.trackerId
+        object.mangaId = item.mangaId
+        object.sourceId = item.sourceId
+        object.title = item.title
+        save(context: context)
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    func getTrackItems(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackItem] {
+        getTrackObjects(sourceId: sourceId, mangaId: mangaId, context: context).map {
+            $0.toItem()
+        }
+    }
+
+    func getTrackItem(trackerId: String, manga: Manga) -> TrackItem? {
+        getTrackObject(trackerId: trackerId, sourceId: manga.sourceId, mangaId: manga.id)?.toItem()
+    }
+
+    func getTrackObjects(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+        (try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND mangaId = %@", sourceId, mangaId
+            ),
+            context: context
+        )) ?? []
+    }
+
+    func getTrackObject(id: String, trackerId: String, createIfMissing: Bool = true, context: NSManagedObjectContext? = nil) -> TrackObject? {
+        if let object = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "id = %@ AND trackerId = %@", id, trackerId
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            return object
+        } else if createIfMissing {
+            let object = TrackObject(context: context ?? container.viewContext)
+            object.id = id
+            object.trackerId = trackerId
+            return object
+        } else {
+            return nil
+        }
+    }
+
+    func getTrackObject(trackerId: String, sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> TrackObject? {
+        try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "trackerId = %@ AND sourceId = %@ AND mangaId = %@", trackerId, sourceId, mangaId
+            ),
+            limit: 1,
+            context: context
+        ).first
+    }
+
+    func removeTrackObject(id: String, trackerId: String, context: NSManagedObjectContext? = nil) {
+        if let object = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "id = %@ AND trackerId = %@", id, trackerId
+            ),
+            limit: 1,
+            context: context
+        ).first {
+            let context = context ?? container.viewContext
+            context.delete(object)
+            save(context: context)
+            NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+        }
+    }
+
+    func removeTrackObjects(trackerId: String, context: NSManagedObjectContext? = nil) {
+        guard let objects = try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "trackerId = %@", trackerId
+            ),
+            context: context
+        ) else { return }
+        let context = context ?? container.viewContext
+        for object in objects {
+            context.delete(object)
+        }
+        save(context: context)
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    func clearTrackItems() {
+        let objects = (try? getTrackObjects()) ?? []
+        for item in objects {
+            container.viewContext.delete(item)
+        }
+        save()
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    func isTracking(manga: Manga, context: NSManagedObjectContext? = nil) -> Bool {
+        !((try? getTrackObjects(
+            predicate: NSPredicate(
+                format: "sourceId = %@ AND mangaId = %@", manga.sourceId, manga.id
+            ),
+            limit: 1,
+            context: context
+        )) ?? []).isEmpty
+    }
+
+    func getTrackObjects(
+        predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor]? = [],
+        limit: Int? = nil,
+        context: NSManagedObjectContext? = nil
+    ) throws -> [TrackObject] {
+        try fetch(
+            request: TrackObject.fetchRequest(),
             predicate: predicate,
             sortDescriptors: sortDescriptors,
             limit: limit,
