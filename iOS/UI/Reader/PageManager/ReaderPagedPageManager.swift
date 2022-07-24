@@ -25,7 +25,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
                 remove()
                 createPageViewController()
             }
-            if let chapter = chapter {
+            if let chapter = chapter, currentIndex < items.count {
                 setChapter(chapter: chapter, startPage: items[currentIndex].pageIndex + 1)
             }
         }
@@ -195,7 +195,7 @@ class ReaderPagedPageManager: NSObject, ReaderPageManager {
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         if usesAutoPageLayout {
             pagesPerView = size.width > size.height ? 2 : 1
-            if let chapter = chapter {
+            if let chapter = chapter, currentIndex < items.count {
                 setChapter(chapter: chapter, startPage: items[currentIndex].pageIndex + 1)
             }
         }
@@ -386,8 +386,9 @@ extension ReaderPagedPageManager {
             guard i < items.count - (hasNextChapter ? 2 : 1) else { break }
             if i < (hasPreviousChapter ? 2 : 1) { continue }
             for j in 0..<items[i].numPages {
-                guard items[i].pageIndex + j < pages.count else { continue }
-                await (items[i].vc.view as? ReaderPageView)?.setPage(page: pages[items[i].pageIndex + j], index: j)
+                let index = items[i].pageIndex + j
+                guard index < pages.count, i < items.count else { continue }
+                await (items[i].vc.view as? ReaderPageView)?.setPage(page: pages[index], index: j)
             }
         }
     }

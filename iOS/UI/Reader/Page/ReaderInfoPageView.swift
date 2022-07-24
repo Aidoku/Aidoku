@@ -107,24 +107,24 @@ class ReaderInfoPageView: UIView {
             topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
             if let previousTitle = previousChapter.title {
                 topChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(previousTitle)",
+                    format: NSLocalizedString("CH_X", comment: ""),
                     previousChapter.chapterNum ?? 0
-                )
+                ) + " - " + previousTitle
             } else {
                 topChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    format: NSLocalizedString("CHAPTER_X", comment: ""),
                     previousChapter.chapterNum ?? 0
                 )
             }
             bottomChapterLabel.text = NSLocalizedString("CURRENT_COLON", comment: "")
             if let currentTitle = currentChapter.title {
                 bottomChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentTitle)",
+                    format: NSLocalizedString("CH_X", comment: ""),
                     currentChapter.chapterNum ?? 0
-                )
+                ) + " - " + currentTitle
             } else {
                 bottomChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    format: NSLocalizedString("CHAPTER_X", comment: ""),
                     currentChapter.chapterNum ?? 0
                 )
             }
@@ -134,24 +134,24 @@ class ReaderInfoPageView: UIView {
             topChapterLabel.text = NSLocalizedString("FINISHED_COLON", comment: "")
             if let currentTitle = currentChapter.title {
                 topChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(currentTitle)",
+                    format: NSLocalizedString("CH_X", comment: ""),
                     currentChapter.chapterNum ?? 0
-                )
+                ) + " - " + currentTitle
             } else {
                 topChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    format: NSLocalizedString("CHAPTER_X", comment: ""),
                     currentChapter.chapterNum ?? 0
                 )
             }
             bottomChapterLabel.text = NSLocalizedString("NEXT_COLON", comment: "")
             if let nextTitle = nextChapter.title {
                 bottomChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CH_X", comment: "")) - \(nextTitle)",
+                    format: NSLocalizedString("CH_X", comment: ""),
                     nextChapter.chapterNum ?? 0
-                )
+                ) + " - " + nextTitle
             } else {
                 bottomChapterTitleLabel.text = String(
-                    format: "\(NSLocalizedString("CHAPTER_X", comment: ""))",
+                    format: NSLocalizedString("CHAPTER_X", comment: ""),
                     nextChapter.chapterNum ?? 0
                 )
             }

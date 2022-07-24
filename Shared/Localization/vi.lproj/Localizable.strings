@@ -22,7 +22,7 @@
 "REMOVE_DOWNLOAD" = "Xoá bản tải về";
 "REMOVE_ALL_DOWNLOADS" = "Xoá tất cả bản tải về";
 "REMOVE_DOWNLOADS" = "Xoá bản tải về";
-"REMOVE_DOWNLOADS_CONFIRM" = "Bạn có chắc bạn muốn xoá bản tải về của các chương đã chọn?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Xoá tất cả bản tải về đã chọn?";
 
 // Library
 "LIBRARY" = "Thư viện";
@@ -243,3 +243,13 @@
 "CATEGORY_LOCKED" = "Danh mục bị khoá.";
 "PAGES_TO_PRELOAD" = "Số trang tải trước";
 "AUTOMATIC" = "Tự động";
+"SET_AS_NORMAL_PAGE" = "Đặt thành trang bình thường";
+"SINGLE_PAGE" = "Trang đơn";
+"PAGED" = "Trang đọc";
+"PAGE_LAYOUT" = "Sắp xếp Trang";
+"DOUBLE_PAGE" = "Trang đôi";
+"SET_AS_WIDE_PAGE" = "Đặt thành trang rộng";
+"MULTI_LANGUAGE" = "Đa ngôn ngữ";
+"TRACKERS" = "Theo dõi";
+"LOGOUT" = "Đăng xuất";
+"LOGOUT_FROM_%@" = "Đăng xuất khỏi %@?";

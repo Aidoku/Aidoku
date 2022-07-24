@@ -39,7 +39,7 @@
 "UNINSTALL" = "Desinstalar";
 
 // Source
-"SOURCE_INFO" = "Información de la fuente";
+"SOURCE_INFO" = "Fuente";
 "LANGUAGE" = "Idioma";
 "INFO" = "Información";
 "VERSION" = "Versión";
@@ -71,7 +71,7 @@
 "MARK_PREVIOUS" = "Marcar anterior";
 "MARK_READ" = "Marcar como leído";
 "MARK_UNREAD" = "Marcar como no leído";
-"READER_SETTINGS" = "Configuración del lector";
+"READER_SETTINGS" = "Lector";
 "READING_MODE" = "Modo de lectura";
 "DEFAULT" = "Por Defecto";
 "LTR" = "Izquierda a Derecha";
@@ -139,7 +139,7 @@
 "CLEAR_READ_HISTORY" = "Borrar historial de lectura";
 "CLEAR_READ_HISTORY_TEXT" = "Esta acción es irreversible. Se eliminará todo el historial de lectura.";
 "REMOVE" = "Remover";
-"CLEAR" = "Limpiar";
+"CLEAR" = "Borrar";
 "SHARE" = "Compartir";
 "CANCEL_DOWNLOAD" = "Cancelar descarga";
 "REMOVE_DOWNLOAD" = "Eliminar descarga";
@@ -171,7 +171,7 @@
 "VIEW_HISTORY" = "Ver historial";
 "INCOGNITO_MODE" = "Modo Incógnito";
 "INCOGNITO_MODE_TEXT" = "Pausa el historial de lectura cuando está habilitado";
-"LIBRARY_UPDATING" = "Actualizando biblioteca";
+"LIBRARY_UPDATING" = "Actualización de biblioteca";
 "UPDATE_INTERVAL" = "Intervalo de actualización";
 "ONLY_UPDATE_ON_WIFI" = "Solo actualizar con Wi-Fi";
 "REFRESH_METADATA" = "Refrescar Metadata";
@@ -184,7 +184,7 @@
 "LOADING_ELLIPSIS" = "Cargando…";
 "LANGUAGES" = "Idiomas";
 "SELECT_CHAPTERS" = "Seleccionar capítulos";
-"REMOVE_DOWNLOADS_CONFIRM" = "Estás seguro de eliminar todas las descargas seleccionadas?";
+"REMOVE_DOWNLOADS_CONFIRM" = "¿Eliminar todas las descargas seleccionadas?";
 "CATEGORY_ADD" = "Agregar categoría";
 "CATEGORY_TITLE" = "Título de categoría";
 "FILTER_BY" = "Filtrar Por";
@@ -249,3 +249,7 @@
 "PAGED" = "Paginado";
 "PAGE_LAYOUT" = "Diseño de página";
 "DOUBLE_PAGE" = "Doble página";
+"MULTI_LANGUAGE" = "Multi-lenguaje";
+"LOGOUT" = "Cerrar la sesión";
+"LOGOUT_FROM_%@" = "¿Cerrar la sesión de %@?";
+"TRACKERS" = "Seguimiento";

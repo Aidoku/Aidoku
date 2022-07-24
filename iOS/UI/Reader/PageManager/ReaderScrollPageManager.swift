@@ -32,7 +32,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
-    var collectionView: UICollectionView!
+    var collectionView: UICollectionView?
 
     var sizeCache: [String: CGSize] = [:]
     var dataCache: [String: Bool] = [:]
@@ -56,7 +56,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     var previousPageIndex = 0
 
     var currentIndex: Int {
-        guard collectionView != nil else { return 0 }
+        guard let collectionView = collectionView else { return 0 }
         let offset = CGPoint(x: 0, y: collectionView.contentOffset.y + 100)
         if let path = collectionView.indexPathForItem(at: offset) {
             if path.section == 1 {
@@ -70,6 +70,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     var topCellIndex: Int {
+        guard let collectionView = collectionView else { return 0 }
         if collectionView.contentOffset.y < 100 {
             return 0
         } else if collectionView.contentOffset.y + collectionView.bounds.height > collectionView.contentSize.height - 100 {
@@ -86,6 +87,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     var bottomCellIndex: Int {
+        guard let collectionView = collectionView else { return 0 }
         if collectionView.contentOffset.y < 100 {
             return 1
         } else if collectionView.contentOffset.y + collectionView.bounds.height > collectionView.contentSize.height - 100 {
@@ -143,8 +145,9 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         layout.scrollDirection = .vertical
 
         collectionView = UICollectionView(frame: parent.view.bounds, collectionViewLayout: layout)
+        guard let collectionView = collectionView else { return }
         collectionView.backgroundColor = .clear
-        collectionView?.register(ReaderPageCollectionViewCell.self, forCellWithReuseIdentifier: "ReaderPageCollectionViewCell")
+        collectionView.register(ReaderPageCollectionViewCell.self, forCellWithReuseIdentifier: "ReaderPageCollectionViewCell")
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.prefetchDataSource = self
@@ -162,11 +165,10 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func remove() {
-        guard collectionView != nil else { return }
         pages.removeAll()
         sizeCache.removeAll()
         dataCache.removeAll()
-        collectionView.removeFromSuperview()
+        collectionView?.removeFromSuperview()
         collectionView = nil
     }
 
@@ -188,7 +190,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         Task { @MainActor in
             await loadPages()
             setImages(for: 0..<startPage)
-            if collectionView != nil {
+            if let collectionView = collectionView {
                 collectionView.reloadData()
                 // Move to the first page immediately
                 if targetPage == 0 && shouldMoveToTargetPage {
@@ -200,29 +202,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func move(toPage page: Int, animated: Bool = false, reversed: Bool = false) {
-        var page = page
-        if page > pages.count  && hasNextChapter && !nextPages.isEmpty { // move to next chapter
-            switchToNextChapter()
-            page = 0
-        } else if page >= pages.count { // append next chapter
-            if nextChapter != targetNextChapter, let nextChapter = targetNextChapter {
-                Task {
-                    await append(chapter: nextChapter)
-                }
-            }
-        }
-
-        if page < 0 && hasPreviousChapter && !previousPages.isEmpty { // move to previous chaptrer
-            switchToPreviousChapter()
-            page = pages.count
-        } else if page <= 0 && hasPreviousChapter { // append previous chapter
-            let previousChapter = chapterList[chapterIndex + 1]
-            if self.previousChapter != previousChapter {
-                Task {
-                    await append(chapter: previousChapter, toFront: true)
-                }
-            }
-        }
+        guard let collectionView = collectionView else { return }
         collectionView.reloadData()
         guard collectionView.numberOfSections > 1 && collectionView.numberOfItems(inSection: 1) >= page + 1 else { return }
         collectionView.scrollToItem(at: IndexPath(item: page + 1, section: 1), at: .top, animated: animated)
@@ -230,7 +210,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func nextPage() {
-        guard collectionView != nil else { return }
+        guard let collectionView = collectionView else { return }
         let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
         var offset = collectionView.contentOffset.y + (UIScreen.main.bounds.height - insets)
         if offset > collectionView.contentSize.height - collectionView.bounds.height {
@@ -244,7 +224,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func previousPage() {
-        guard collectionView != nil else { return }
+        guard let collectionView = collectionView else { return }
         let insets = collectionView.safeAreaInsets.top + collectionView.safeAreaInsets.bottom + 50
         var offset = collectionView.contentOffset.y - (UIScreen.main.bounds.height - insets)
         if offset < 0 {
@@ -259,10 +239,11 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
     func willTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animate(alongsideTransition: nil) { _ in
+            guard let collectionView = self.collectionView else { return }
             for (key, value) in self.sizeCache {
                 let newValue = CGSize(
-                    width: self.collectionView.bounds.size.width,
-                    height: value.height * (self.collectionView.bounds.size.width / value.width)
+                    width: collectionView.bounds.size.width,
+                    height: value.height * (collectionView.bounds.size.width / value.width)
                 )
                 self.sizeCache[key] = newValue
             }
@@ -342,7 +323,7 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func setImages(for range: Range<Int>) {
-        guard collectionView != nil else { return }
+        guard let collectionView = collectionView else { return }
         for i in range {
             guard i < pages.count else { break }
             if i < 0 {
@@ -351,14 +332,14 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             let path = IndexPath(item: i + 1, section: 1)
             if !(dataCache[pages[i].key] ?? false) {
                 // fetching the cell will automatically trigger it to fetch the image
-                _ = collectionView(collectionView, cellForItemAt: path)
+                _ = self.collectionView(collectionView, cellForItemAt: path)
             }
         }
     }
 
     @MainActor
     func append(chapter: Chapter, toFront: Bool = false) async {
-        guard collectionView != nil else { return }
+        guard let collectionView = collectionView else { return }
 
         if toFront {
             guard previousChapter != chapter else { return }
@@ -376,11 +357,11 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
             let bottomOffset = collectionView.contentSize.height - collectionView.contentOffset.y
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            collectionView?.performBatchUpdates {
-                collectionView?.reloadSections([0])
+            collectionView.performBatchUpdates {
+                collectionView.reloadSections([0])
             } completion: { _ in
-                self.collectionView?.setContentOffset(
-                    CGPoint(x: 0, y: self.collectionView.contentSize.height - bottomOffset),
+                collectionView.setContentOffset(
+                    CGPoint(x: 0, y: collectionView.contentSize.height - bottomOffset),
                     animated: false
                 )
                 CATransaction.commit()
@@ -398,13 +379,15 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
                 nextPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
             }
 
-            collectionView?.performBatchUpdates {
-                collectionView?.reloadSections([2])
+            collectionView.performBatchUpdates {
+                collectionView.reloadSections([2])
             }
         }
     }
 
     func switchToNextChapter() {
+        guard let collectionView = collectionView else { return }
+
         var extraHeight: CGFloat = 0
         if previousChapter != nil {
             extraHeight = previousPages.map { sizeCache[$0.key]?.height ?? 100 }.reduce(0, +)
@@ -417,8 +400,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         nextChapter = nil
         nextPages = []
 
-        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
-        collectionView?.reloadData()
+        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y - 300 - extraHeight), animated: false)
+        collectionView.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true
@@ -427,6 +410,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
     }
 
     func switchToPreviousChapter() {
+        guard let collectionView = collectionView else { return }
+
         nextChapter = chapter
         nextPages = pages
         chapter = previousChapter
@@ -434,8 +419,8 @@ class ReaderScrollPageManager: NSObject, ReaderPageManager {
         previousChapter = nil
         previousPages = []
 
-        collectionView?.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
-        collectionView?.reloadData()
+        collectionView.setContentOffset(CGPoint(x: 0, y: collectionView.contentOffset.y + 300), animated: false)
+        collectionView.reloadData()
 
         if let chapter = chapter, delegate?.chapter != chapter {
             transitioningChapter = true
@@ -653,7 +638,7 @@ extension ReaderScrollPageManager: UICollectionViewDataSourcePrefetching {
 // MARK: - Reader Page Delegate
 extension ReaderScrollPageManager: ReaderPageViewDelegate {
     func imageLoaded(key: String, image: UIImage) {
-        guard collectionView != nil else { return }
+        guard let collectionView = collectionView else { return }
         if sizeCache[key] == nil {
             sizeCache[key] = image.sizeToFit(collectionView.frame.size)
             collectionView.collectionViewLayout.invalidateLayout()
@@ -695,7 +680,7 @@ extension ReaderScrollPageManager: UIContextMenuInteractionDelegate {
             ) { _ in
                 if let pageView = interaction.view as? UIImageView, let image = pageView.image {
                     let activityController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-                    self.collectionView.parentViewController?.present(activityController, animated: true)
+                    self.collectionView?.parentViewController?.present(activityController, animated: true)
                 }
             }
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
