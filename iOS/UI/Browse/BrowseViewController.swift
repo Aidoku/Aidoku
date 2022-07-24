@@ -51,7 +51,7 @@ class BrowseViewController: UIViewController {
             .map { UInt($0) ?? 0 }
         let searchTextLowercased = searchText.lowercased()
         return updates.filter {
-            guard searchText.isEmpty || !$0.name.lowercased().contains(searchTextLowercased) else { return false }
+            guard searchText.isEmpty || $0.name.lowercased().contains(searchTextLowercased) else { return false }
             if var maxVersion = $0.maxAppVersion?.components(separatedBy: ".") {
                 if maxVersion.count < 3 {
                     // Assume the source is fine with any version if the component is missing.
@@ -77,7 +77,7 @@ class BrowseViewController: UIViewController {
         let languages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         let searchTextLowercased = searchText.lowercased()
         return installableSources.filter {
-            guard searchText.isEmpty || !$0.name.lowercased().contains(searchTextLowercased) else { return false }
+            guard searchText.isEmpty || $0.name.lowercased().contains(searchTextLowercased) else { return false }
             guard languages.contains($0.lang) else { return false }
             guard showNsfw || $0.nsfw ?? 0 < 2 else { return false }
             if var maxVersion = $0.maxAppVersion?.components(separatedBy: ".") {
