@@ -81,9 +81,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    func application(_ application: UIApplication,
-                     configurationForConnecting connectingSceneSession: UISceneSession,
-                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
         UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
@@ -92,6 +94,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func handleUrl(url: URL) {
         if url.scheme == "aidoku" { // aidoku://
             if url.host == "addSourceList" { // addSourceList?url=
@@ -102,28 +105,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     Task {
                         let success = await SourceManager.shared.addSourceList(url: listUrl)
                         if success {
-                            sendAlert(title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
-                                      message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: ""))
+                            sendAlert(
+                                title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
+                                message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: "")
+                            )
                         } else {
-                            sendAlert(title: NSLocalizedString("SOURCE_LIST_ADD_FAIL", comment: ""),
-                                      message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT", comment: ""))
+                            sendAlert(
+                                title: NSLocalizedString("SOURCE_LIST_ADD_FAIL", comment: ""),
+                                message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT", comment: "")
+                            )
                         }
                     }
                 }
-            } else if let host = url.host,
-                      let source = SourceManager.shared.source(for: host) {
+            } else if let host = url.host, let source = SourceManager.shared.source(for: host) {
                 Task { @MainActor in
                     if url.pathComponents.count > 1 { // /sourceId/mangaId
                         if let manga = try? await source.getMangaDetails(manga: Manga(sourceId: source.id, id: url.pathComponents[1])) {
                             let vc = MangaViewController(manga: manga, chapters: [])
                             if let chapterId = url.pathComponents[safe: 2] {
-                                vc.scrollToChapter = Chapter(sourceId: source.id,
-                                                             id: chapterId,
-                                                             mangaId: manga.id,
-                                                             title: nil,
-                                                             sourceOrder: 0)
+                                vc.scrollToChapter = Chapter(
+                                    sourceId: source.id,
+                                    id: chapterId,
+                                    mangaId: manga.id,
+                                    title: nil,
+                                    sourceOrder: 0
+                                )
                             }
-
                             navigationController?.pushViewController(vc, animated: true)
                         }
                     } else { // /sourceId
@@ -153,11 +160,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         } else if url.pathExtension == "json" || url.pathExtension == "aib" {
             if BackupManager.shared.importBackup(from: url) {
-                sendAlert(title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
-                          message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: ""))
+                sendAlert(
+                    title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
+                    message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: "")
+                )
             } else {
-                sendAlert(title: NSLocalizedString("BACKUP_IMPORT_FAIL", comment: ""),
-                          message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: ""))
+                sendAlert(
+                    title: NSLocalizedString("BACKUP_IMPORT_FAIL", comment: ""),
+                    message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: "")
+                )
             }
         } else {
             handleDeepLink(url: url)
