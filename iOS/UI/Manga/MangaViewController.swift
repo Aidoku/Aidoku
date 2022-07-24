@@ -707,7 +707,8 @@ extension MangaViewController: UITableViewDataSource {
             if downloadStatus == .finished {
                 downloadAction = UIAction(
                     title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""),
-                    image: nil, attributes: .destructive
+                    image: UIImage(systemName: "trash"), 
+                    attributes: .destructive
                 ) { [weak self] _ in
                     guard let self = self else { return }
                     DownloadManager.shared.delete(chapters: [self.sortedChapters[indexPath.row]])
@@ -715,13 +716,17 @@ extension MangaViewController: UITableViewDataSource {
             } else if downloadStatus == .downloading {
                 downloadAction = UIAction(
                     title: NSLocalizedString("CANCEL_DOWNLOAD", comment: ""),
-                    image: nil, attributes: .destructive
+                    image: UIImage(systemName: "xmark"),
+                    attributes: .destructive
                 ) { [weak self] _ in
                     guard let self = self else { return }
                     DownloadManager.shared.cancelDownload(for: self.sortedChapters[indexPath.row])
                 }
             } else {
-                downloadAction = UIAction(title: NSLocalizedString("DOWNLOAD", comment: ""), image: nil) { [weak self] _ in
+                downloadAction = UIAction(
+                    title: NSLocalizedString("DOWNLOAD", comment: ""),
+                    image: UIImage(systemName: "arrow.down.circle")
+                ) { [weak self] _ in
                     guard let self = self else { return }
                     DownloadManager.shared.download(chapters: [self.sortedChapters[indexPath.row]], manga: self.manga)
                 }
@@ -773,7 +778,9 @@ extension MangaViewController: UITableViewDataSource {
             // sharing action
             if let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") {
                 actions.append(UIMenu(title: "", options: .displayInline, children: [
-                    UIAction(title: NSLocalizedString("SHARE", comment: ""), image: nil) { [weak self] _ in
+                    UIAction(title: NSLocalizedString("SHARE", comment: ""), 
+                             image: UIImage(systemImage: "square.and.arrow.up")
+                    ) { [weak self] _ in
                         guard let self = self else { return }
 
                         let activityViewController = UIActivityViewController(
