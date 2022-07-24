@@ -314,7 +314,7 @@ class MangaViewController: UIViewController {
                 })
             }
 
-            if let url = manga.url, 
+            if let url = manga.url,
                let url = URL(string: url) {
                 subActions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
@@ -707,7 +707,7 @@ extension MangaViewController: UITableViewDataSource {
             if downloadStatus == .finished {
                 downloadAction = UIAction(
                     title: NSLocalizedString("REMOVE_DOWNLOAD", comment: ""),
-                    image: UIImage(systemName: "trash"), 
+                    image: UIImage(systemName: "trash"),
                     attributes: .destructive
                 ) { [weak self] _ in
                     guard let self = self else { return }
@@ -778,7 +778,7 @@ extension MangaViewController: UITableViewDataSource {
             // sharing action
             if let url = URL(string: self.sortedChapters[indexPath.row].url ?? "") {
                 actions.append(UIMenu(title: "", options: .displayInline, children: [
-                    UIAction(title: NSLocalizedString("SHARE", comment: ""), 
+                    UIAction(title: NSLocalizedString("SHARE", comment: ""),
                              image: UIImage(systemImage: "square.and.arrow.up")
                     ) { [weak self] _ in
                         guard let self = self else { return }
