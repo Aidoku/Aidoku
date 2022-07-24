@@ -12,6 +12,8 @@ class BrowseViewController: UIViewController {
 
     let tableView = UITableView(frame: .zero, style: .grouped)
 
+    let refreshControl = UIRefreshControl()
+
     var hoveredIndexPath: IndexPath?
     var hovering = false
 
@@ -40,56 +42,59 @@ class BrowseViewController: UIViewController {
     var searchText: String = ""
 
     var filteredSources: [Source] {
-        sources.filter { searchText.isEmpty ? true : $0.manifest.info.name.lowercased().contains(searchText.lowercased()) }
+        let searchTextLowercased = searchText.lowercased()
+        return sources.filter { searchText.isEmpty ? true : $0.manifest.info.name.lowercased().contains(searchTextLowercased) }
     }
     var filteredUpdates: [ExternalSourceInfo] {
-        updates.filter {
-            guard searchText.isEmpty || !$0.name.lowercased().contains(searchText.lowercased()) else { return false }
-            let appVersion = Int(
-                (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
-                    .replacingOccurrences(of: ".", with: "")
-            ) ?? 0 // 0.4.0 -> 40
-            if let maxVersion = $0.maxAppVersion?.replacingOccurrences(of: ".", with: ""),
-               var maxInt = Int(maxVersion) {
-                if $0.maxAppVersion?.count ?? 0 < 5 { maxInt *= 10 } // only has major and minor versions (0.4)
-                guard maxInt >= appVersion else { return false }
+        let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
+            .components(separatedBy: ".")
+            .map { UInt($0) ?? 0 }
+        let searchTextLowercased = searchText.lowercased()
+        return updates.filter {
+            guard searchText.isEmpty || $0.name.lowercased().contains(searchTextLowercased) else { return false }
+            if var maxVersion = $0.maxAppVersion?.components(separatedBy: ".") {
+                if maxVersion.count < 3 {
+                    // Assume the source is fine with any version if the component is missing.
+                    // 18446744073709551615 is UInt.max
+                    maxVersion += [String](repeating: "18446744073709551615", count: 3 - maxVersion.count)
+                }
+                guard zip(appVersion, maxVersion).allSatisfy({ part, maxPart in part <= UInt(maxPart) ?? UInt.max }) else { return false }
             }
-            if let minVersion = $0.minAppVersion?.replacingOccurrences(of: ".", with: ""),
-               var minInt = Int(minVersion) {
-                if $0.minAppVersion?.count ?? 0 < 5 { minInt *= 10 }
-                guard minInt <= appVersion else { return false }
+            if var minVersion = $0.minAppVersion?.components(separatedBy: ".") {
+                if minVersion.count < 3 {
+                    minVersion += [String](repeating: "0", count: 3 - minVersion.count)
+                }
+                guard zip(appVersion, minVersion).allSatisfy({ part, minPart in part >= UInt(minPart) ?? 0 }) else { return false }
             }
             return true
         }
     }
     var filteredInstallableSources: [ExternalSourceInfo] {
         let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+        let appVersion = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
+            .components(separatedBy: ".")
+            .map { UInt($0) ?? 0 }
+        let languages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
+        let searchTextLowercased = searchText.lowercased()
         return installableSources.filter {
-            if !showNsfw && $0.nsfw ?? 0 > 1 {
-                return false
-            } else {
-                guard searchText.isEmpty || !$0.name.lowercased().contains(searchText.lowercased()) else { return false }
-                let languages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-                if !languages.contains($0.lang) {
-                    return false
-                } else {
-                    let appVersion = Int(
-                        (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
-                            .replacingOccurrences(of: ".", with: "")
-                    ) ?? 0 // 0.4.0 -> 40
-                    if let maxVersion = $0.maxAppVersion?.replacingOccurrences(of: ".", with: ""),
-                       var maxInt = Int(maxVersion) {
-                        if $0.maxAppVersion?.count ?? 0 < 5 { maxInt *= 10 } // only has major and minor versions (0.4)
-                        guard maxInt >= appVersion else { return false }
-                    }
-                    if let minVersion = $0.minAppVersion?.replacingOccurrences(of: ".", with: ""),
-                       var minInt = Int(minVersion) {
-                        if $0.minAppVersion?.count ?? 0 < 5 { minInt *= 10 }
-                        guard minInt <= appVersion else { return false }
-                    }
-                    return true
+            guard searchText.isEmpty || $0.name.lowercased().contains(searchTextLowercased) else { return false }
+            guard languages.contains($0.lang) else { return false }
+            guard showNsfw || $0.nsfw ?? 0 < 2 else { return false }
+            if var maxVersion = $0.maxAppVersion?.components(separatedBy: ".") {
+                if maxVersion.count < 3 {
+                    // Assume the source is fine with any version if the component is missing.
+                    // 18446744073709551615 is UInt.max
+                    maxVersion += [String](repeating: "18446744073709551615", count: 3 - maxVersion.count)
                 }
+                guard zip(appVersion, maxVersion).allSatisfy({ part, maxPart in part <= UInt(maxPart) ?? UInt.max }) else { return false }
             }
+            if var minVersion = $0.minAppVersion?.components(separatedBy: ".") {
+                if minVersion.count < 3 {
+                    minVersion += [String](repeating: "0", count: 3 - minVersion.count)
+                }
+                guard zip(appVersion, minVersion).allSatisfy({ part, minPart in part >= UInt(minPart) ?? 0 }) else { return false }
+            }
+            return true
         }
     }
 
@@ -256,6 +261,9 @@ class BrowseViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         navigationItem.hidesSearchBarWhenScrolling = true
+
+        refreshControl.addTarget(self, action: #selector(refreshSourceLists), for: .valueChanged)
+        tableView.refreshControl = refreshControl
     }
 
     func reloadData() {
@@ -308,6 +316,15 @@ class BrowseViewController: UIViewController {
             SourceManager.shared.languageCodes.firstIndex(of: $0.lang) ?? 0 < SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
         }
         fetchUpdates()
+    }
+
+    @objc func refreshSourceLists(refreshControl: UIRefreshControl) {
+        Task { @MainActor in
+            await self.updateSourceLists()
+            self.reloadData()
+            self.checkUpdateCount()
+            refreshControl.endRefreshing()
+        }
     }
 
     @objc func openGuidePage() {
@@ -438,7 +455,7 @@ extension BrowseViewController: UITableViewDataSource {
 extension BrowseViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if (indexPath.section == 0 && hasSources && !hasUpdates) || (indexPath.section == 1 && hasSources && hasUpdates) {
-            let vc = SourceViewController(source: sources[indexPath.row])
+            let vc = SourceViewController(source: filteredSources[indexPath.row])
             navigationController?.pushViewController(vc, animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)

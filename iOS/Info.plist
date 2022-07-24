@@ -16,6 +16,16 @@
 		</dict>
 		<dict>
 			<key>CFBundleTypeName</key>
+			<string>Aidoku Backup</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>xyz.skitty.Aidoku.aib</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
 			<string>JSON</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
@@ -83,6 +93,25 @@
 				<array>
 					<string>aix</string>
 					<string>zip</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.property-list</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Aidoku Backup</string>
+			<key>UTTypeIconFiles</key>
+			<array/>
+			<key>UTTypeIdentifier</key>
+			<string>xyz.skitty.Aidoku.aib</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>aib</string>
 				</array>
 			</dict>
 		</dict>
