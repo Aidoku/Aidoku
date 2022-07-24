@@ -19,7 +19,8 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: NSLocalizedString("ABOUT", comment: ""), items: [
                 SettingItem(type: "page", key: "About.about", title: NSLocalizedString("ABOUT", comment: "")),
                 SettingItem(type: "link", title: NSLocalizedString("GITHUB_REPO", comment: ""), url: "https://github.com/Aidoku/Aidoku"),
-                SettingItem(type: "link", title: NSLocalizedString("DISCORD_SERVER", comment: ""), url: "https://discord.gg/9U8cC5Zk3s", external: true)
+                SettingItem(type: "link", title: NSLocalizedString("DISCORD_SERVER", comment: ""), url: "https://discord.gg/9U8cC5Zk3s", external: true),
+                SettingItem(type: "link", title: NSLocalizedString("SUPPORT_VIA_KOFI", comment: ""), url: "https://ko-fi.com/skittyblock", external: true)
             ]),
             // MARK: General
             SettingItem(
