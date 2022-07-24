@@ -233,6 +233,10 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
                 SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
             ]),
+            // MARK: Trackers
+            SettingItem(type: "group", title: NSLocalizedString("TRACKERS", comment: ""), items: [
+                SettingItem(type: "page", key: "Trackers.trackers", title: NSLocalizedString("TRACKERS", comment: ""))
+            ]),
             // MARK: Logging
             SettingItem(type: "group", title: NSLocalizedString("LOGGING", comment: ""), items: [
                 SettingItem(
@@ -251,7 +255,7 @@ class SettingsViewController: SettingsTableViewController {
             // MARK: Advanced
             SettingItem(type: "group", title: NSLocalizedString("ADVANCED", comment: ""), items: [
                 SettingItem(type: "button", key: "Advanced.clearChapterCache", title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: "")),
-                SettingItem(type: "button", key: "Advanced.clearMangaCache", title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearTrackedManga", title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
                 SettingItem(type: "button", key: "Advanced.resetSettings", title: NSLocalizedString("RESET_SETTINGS", comment: "")),
@@ -357,6 +361,9 @@ extension SettingsViewController {
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
 
+            case "Trackers.trackers":
+                navigationController?.pushViewController(TrackersViewController(), animated: true)
+
             case "Logs.export":
                 let url = LogManager.export()
                 let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
@@ -375,10 +382,12 @@ extension SettingsViewController {
                         await DataManager.shared.updateLibrary()
                     }
                 }
-            case "Advanced.clearMangaCache":
-                confirmAction(title: NSLocalizedString("CLEAR_MANGA_CACHE", comment: ""),
-                              message: NSLocalizedString("CLEAR_MANGA_CACHE_TEXT", comment: "")) {
-                    DataManager.shared.purgeManga()
+            case "Advanced.clearTrackedManga":
+                confirmAction(
+                    title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: ""),
+                    message: NSLocalizedString("CLEAR_TRACKED_MANGA_TEXT", comment: "")
+                ) {
+                    DataManager.shared.clearTrackItems()
                 }
             case "Advanced.clearNetworkCache":
                 KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
@@ -414,6 +423,7 @@ extension SettingsViewController {
                     DataManager.shared.clearManga()
                     DataManager.shared.clearChapters()
                     DataManager.shared.clearCategories()
+                    DataManager.shared.clearTrackItems()
                     SourceManager.shared.clearSources()
                     SourceManager.shared.clearSourceLists()
                     self.resetSettings()

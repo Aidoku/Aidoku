@@ -28,6 +28,11 @@ class MangaViewHeaderView: UIView {
         return DataManager.shared.libraryContains(manga: manga)
     }
 
+    var isTracking: Bool {
+        guard let manga = manga else { return false }
+        return DataManager.shared.isTracking(manga: manga)
+    }
+
     var showSourceLabel: Bool = false
     var shouldAskCategory: Bool = false
 
@@ -49,6 +54,7 @@ class MangaViewHeaderView: UIView {
     let sourceLabel = UILabel()
     let buttonStackView = UIStackView()
     let bookmarkButton = UIButton(type: .roundedRect)
+    let trackerButton = UIButton(type: .roundedRect)
     let safariButton = UIButton(type: .roundedRect)
     let descriptionLabel = ExpandableTextView()
     let tagScrollView = UIScrollView()
@@ -94,6 +100,12 @@ class MangaViewHeaderView: UIView {
             bookmarkButton.backgroundColor = tintColor
         } else {
             bookmarkButton.tintColor = tintColor
+            safariButton.tintColor = tintColor
+        }
+        if isTracking {
+            trackerButton.backgroundColor = tintColor
+        } else {
+            trackerButton.tintColor = tintColor
         }
     }
 
@@ -102,6 +114,7 @@ class MangaViewHeaderView: UIView {
         loadTags()
     }
 
+    // swiftlint:disable:next function_body_length
     func configureContents() {
         showSourceLabel = UserDefaults.standard.bool(forKey: "General.showSourceLabel") && inLibrary
         let categories = DataManager.shared.getCategories()
@@ -216,6 +229,19 @@ class MangaViewHeaderView: UIView {
         bookmarkButton.translatesAutoresizingMaskIntoConstraints = false
         buttonStackView.addArrangedSubview(bookmarkButton)
 
+        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
+        trackerButton.setImage(
+            UIImage(
+                systemName: "clock.arrow.2.circlepath",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+            ),
+            for: .normal
+        )
+        trackerButton.layer.cornerRadius = 6
+        trackerButton.layer.cornerCurve = .continuous
+        trackerButton.translatesAutoresizingMaskIntoConstraints = false
+        buttonStackView.addArrangedSubview(trackerButton)
+
         // Webview button
         if manga?.url == nil {
             safariButton.alpha = 0
@@ -293,6 +319,22 @@ class MangaViewHeaderView: UIView {
         })
 
         observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("updateTrackers"), object: nil, queue: nil
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
+                if self.isTracking {
+                    self.trackerButton.tintColor = .white
+                    self.trackerButton.backgroundColor = self.tintColor
+                } else {
+                    self.trackerButton.tintColor = self.tintColor
+                    self.trackerButton.backgroundColor = .secondarySystemFill
+                }
+            }
+        })
+
+        observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("Library.defaultCategory"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
@@ -316,6 +358,8 @@ class MangaViewHeaderView: UIView {
 
             bookmarkButton.widthAnchor.constraint(equalToConstant: 40),
             bookmarkButton.heightAnchor.constraint(equalToConstant: 32),
+            trackerButton.widthAnchor.constraint(equalToConstant: 40),
+            trackerButton.heightAnchor.constraint(equalToConstant: 32),
             safariButton.widthAnchor.constraint(equalToConstant: 40),
             safariButton.heightAnchor.constraint(equalToConstant: 32),
 
@@ -421,6 +465,14 @@ extension MangaViewHeaderView {
         } else {
             bookmarkButton.tintColor = tintColor
             bookmarkButton.backgroundColor = .secondarySystemFill
+        }
+
+        if isTracking {
+            trackerButton.tintColor = .white
+            trackerButton.backgroundColor = tintColor
+        } else {
+            trackerButton.tintColor = tintColor
+            trackerButton.backgroundColor = .secondarySystemFill
         }
 
         descriptionLabel.text = manga?.description

@@ -122,6 +122,7 @@ class MangaViewController: UIViewController {
         }
         headerView.safariButton.addTarget(self, action: #selector(openWebView), for: .touchUpInside)
         headerView.readButton.addTarget(self, action: #selector(readButtonPressed), for: .touchUpInside)
+        headerView.trackerButton.addTarget(self, action: #selector(trackerButtonPressed), for: .touchUpInside)
         headerView.translatesAutoresizingMaskIntoConstraints = false
         tableView.tableHeaderView = headerView
 
@@ -667,6 +668,13 @@ extension MangaViewController {
         if let chapter = getNextChapter(), SourceManager.shared.source(for: manga.sourceId) != nil {
             openReaderView(for: chapter)
         }
+    }
+
+    @objc func trackerButtonPressed() {
+        let vc = TrackerModalViewController(manga: manga)
+        vc.view.tintColor = view.tintColor
+        vc.modalPresentationStyle = .overFullScreen
+        present(vc, animated: false)
     }
 
     @objc func openWebView() {

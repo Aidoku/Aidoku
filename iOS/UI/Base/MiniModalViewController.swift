@@ -15,22 +15,11 @@ class MiniModalViewController: UIViewController {
 
     weak var delegate: MiniModalDelegate?
 
-    lazy var containerView: UIView = {
+    var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .secondarySystemGroupedBackground
         view.layer.cornerRadius = 16
-//        view.clipsToBounds = true
-
-        // TODO: probably use a mask instead
-        let hideCornersView = UIView()
-        hideCornersView.backgroundColor = .secondarySystemGroupedBackground
-        hideCornersView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(hideCornersView)
-
-        hideCornersView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        hideCornersView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        hideCornersView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         return view
     }()
 

@@ -14,12 +14,50 @@ import Foundation
     import UIKit
 #endif
 
-enum MangaStatus: Int, Codable {
+enum PublishingStatus: Int, Codable {
     case unknown = 0
     case ongoing = 1
     case completed = 2
     case cancelled = 3
     case hiatus = 4
+    case notPublished = 5
+
+    func toString() -> String {
+        switch self {
+        case .unknown: return NSLocalizedString("UNKNOWN", comment: "")
+        case .ongoing: return NSLocalizedString("ONGOING", comment: "")
+        case .completed: return NSLocalizedString("COMPLETED", comment: "")
+        case .cancelled: return NSLocalizedString("CANCELLED", comment: "")
+        case .hiatus: return NSLocalizedString("HIATUS", comment: "")
+        case .notPublished: return NSLocalizedString("NOT_PUBLISHED", comment: "")
+        }
+    }
+}
+
+enum MediaType: Int, Codable {
+    case unknown = 0
+    case manga = 1
+    case manhwa = 2
+    case manhua = 3
+    case novel = 4
+    case oneShot = 5
+    case oel = 6
+    case comic = 7
+    case book = 8
+
+    func toString() -> String {
+        switch self {
+        case .unknown: return NSLocalizedString("UNKNOWN", comment: "")
+        case .manga: return NSLocalizedString("MANGA", comment: "")
+        case .manhwa: return NSLocalizedString("MANHWA", comment: "")
+        case .manhua: return NSLocalizedString("MANHUA", comment: "")
+        case .novel: return NSLocalizedString("LIGHT_NOVEL", comment: "")
+        case .oneShot: return NSLocalizedString("ONESHOT", comment: "")
+        case .oel: return NSLocalizedString("OEL", comment: "")
+        case .comic: return NSLocalizedString("COMIC", comment: "")
+        case .book: return NSLocalizedString("BOOK", comment: "") // not really handled yet
+        }
+    }
 }
 
 enum MangaContentRating: Int, Codable {
@@ -82,7 +120,7 @@ class Manga: KVCObject, Codable {
     var cover: String?
     var url: String?
 
-    var status: MangaStatus
+    var status: PublishingStatus
     var nsfw: MangaContentRating
     var viewer: MangaViewer
 
@@ -103,7 +141,7 @@ class Manga: KVCObject, Codable {
         tags: [String]? = nil,
         cover: String? = nil,
         url: String? = nil,
-        status: MangaStatus = .unknown,
+        status: PublishingStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
         tintColor: UIColor? = nil,
