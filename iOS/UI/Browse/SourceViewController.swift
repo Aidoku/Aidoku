@@ -12,6 +12,8 @@ class SourceViewController: MangaCollectionViewController {
 
     let source: Source
 
+    let refreshControl = UIRefreshControl()
+
     var restrictToSearch = false {
         didSet {
             navigationItem.hidesSearchBarWhenScrolling = restrictToSearch
@@ -104,6 +106,9 @@ class SourceViewController: MangaCollectionViewController {
         if !restrictToSearch {
             navigationItem.hidesSearchBarWhenScrolling = true
         }
+
+        refreshControl.addTarget(self, action: #selector(refreshMangaList), for: .valueChanged)
+        collectionView?.refreshControl = refreshControl
     }
 
     func updateNavbarItems() {
@@ -229,6 +234,15 @@ class SourceViewController: MangaCollectionViewController {
         } else if let urlString = source.manifest.info.urls?.first, let url = URL(string: urlString) {
             let safariViewController = SFSafariViewController(url: url)
             present(safariViewController, animated: true)
+        }
+    }
+
+    @objc func refreshMangaList(refreshControl: UIRefreshControl) {
+        Task {
+            page = nil
+            await fetchData()
+            reloadData()
+            refreshControl.endRefreshing()
         }
     }
 }

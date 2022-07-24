@@ -5,6 +5,7 @@
 //  Created by Skitty on 2/3/22.
 //
 
+import Foundation
 import UIKit
 
 class MangaCarouselHeader: UICollectionReusableView {
@@ -171,15 +172,20 @@ class SearchViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
 
-    @MainActor
     func fetchData() async {
         guard let query = query, !query.isEmpty else { return }
-        // TODO: Make this run in parallel
+
         for (i, source) in sources.enumerated() {
-            let search = try? await source.fetchSearchManga(query: query, page: 1)
-            results[source.id] = search
-            self.collectionView?.reloadSections(IndexSet(integer: i))
+            Task {
+                let search = try? await source.fetchSearchManga(query: query, page: 1)
+                self.updateResults(for: source.id, atIndex: i, result: search)
+            }
         }
+    }
+
+    func updateResults(for id: String, atIndex i: Int, result: MangaPageResult?) {
+        results[id] = result
+        collectionView?.reloadSections(IndexSet(integer: i))
     }
 }
 

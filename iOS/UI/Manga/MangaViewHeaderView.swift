@@ -161,6 +161,8 @@ class MangaViewHeaderView: UIView {
         authorLabel.numberOfLines = 1
         authorLabel.font = .systemFont(ofSize: 16)
         authorLabel.textColor = .secondaryLabel
+        authorLabel.adjustsFontSizeToFitWidth = true
+        authorLabel.minimumScaleFactor = 0.6
         innerTitleStackView.addArrangedSubview(authorLabel)
         innerTitleStackView.setCustomSpacing(7, after: authorLabel)
 
@@ -414,7 +416,10 @@ extension MangaViewHeaderView {
                 }
             }
         }
-        titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+
+        let title = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
+        titleLabel.text = title
+
         authorLabel.text = manga?.author
         authorLabel.isHidden = manga?.author == nil
 
@@ -493,6 +498,25 @@ extension MangaViewHeaderView {
 
         if superview != nil {
             layoutIfNeeded()
+        }
+
+        let size: CGSize = (title as NSString).boundingRect(
+            with: CGSize(width: titleLabel.frame.size.width, height: .greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: [.font: titleLabel.font ?? .systemFont(ofSize: 22, weight: .semibold)],
+            context: nil
+        ).size
+
+        // Text is truncated
+        if size.height > titleLabel.bounds.size.height {
+            let scaleFactor = max(titleLabel.bounds.size.height / size.height, 0.75)
+
+            titleLabel.numberOfLines = Int((3 / scaleFactor).rounded(.up))
+            titleLabel.font = .systemFont(ofSize: 22 * scaleFactor, weight: .semibold)
+
+            authorLabel.font = .systemFont(ofSize: 16 * scaleFactor, weight: .regular)
+
+            setNeedsLayout()
         }
     }
 

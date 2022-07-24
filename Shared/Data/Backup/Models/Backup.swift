@@ -21,8 +21,13 @@ struct Backup: Codable {
 
     static func load(from url: URL) -> Backup? {
         guard let json = try? Data(contentsOf: url) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
-        return try? decoder.decode(Backup.self, from: json)
+
+        if let backup = try? PropertyListDecoder().decode(Backup.self, from: json) {
+            return backup
+        } else {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .secondsSince1970
+            return try? decoder.decode(Backup.self, from: json)
+        }
     }
 }
