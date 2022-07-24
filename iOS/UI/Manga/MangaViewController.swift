@@ -389,7 +389,10 @@ class MangaViewController: UIViewController {
                 markButton.menu = UIMenu(
                     title: "\(selectedRows.count) \(chapters)",
                     children: [
-                        UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { [weak self] _ in
+                        UIAction(
+                            title: NSLocalizedString("UNREAD", comment: ""),
+                            image: UIImage(systemName: "eye.slash")
+                        ) { [weak self] _ in
                             guard let self = self else { return }
                             self.showLoadingIndicator()
                             DataManager.shared.removeHistory(
@@ -398,7 +401,10 @@ class MangaViewController: UIViewController {
                             )
                             self.setEditing(false, animated: true)
                         },
-                        UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { [weak self] _ in
+                        UIAction(
+                            title: NSLocalizedString("READ", comment: ""),
+                            image: UIImage(systemName: "eye")
+                        ) { [weak self] _ in
                             guard let self = self else { return }
                             self.showLoadingIndicator()
                             let chapters = self.tableView.indexPathsForSelectedRows?.map { self.sortedChapters[$0.row] } ?? []
@@ -750,7 +756,10 @@ extension MangaViewController: UITableViewDataSource {
             // marking actions
             let history = self.readHistory[self.sortedChapters[indexPath.row].id] ?? (0, 0)
             if history.1 <= 0 || history.0 > 0 {
-                actions.append(UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: nil) { [weak self] _ in
+                actions.append(UIAction(
+                    title: NSLocalizedString("MARK_READ", comment: ""),
+                    image: UIImage(systemName: "eye")
+                ) { [weak self] _ in
                     guard let self = self else { return }
                     DataManager.shared.setRead(manga: self.manga)
                     DataManager.shared.setCompleted(chapter: self.sortedChapters[indexPath.row])
@@ -759,7 +768,10 @@ extension MangaViewController: UITableViewDataSource {
                 })
             }
             if history.1 > 0 {
-                actions.append(UIAction(title: NSLocalizedString("MARK_UNREAD", comment: ""), image: nil) { [weak self] _ in
+                actions.append(UIAction(
+                    title: NSLocalizedString("MARK_UNREAD", comment: ""),
+                    image: UIImage(systemName: "eye.slash")
+                ) { [weak self] _ in
                     guard let self = self else { return }
                     DataManager.shared.removeHistory(for: self.sortedChapters[indexPath.row])
                     self.updateReadHistory()
@@ -767,25 +779,34 @@ extension MangaViewController: UITableViewDataSource {
                 })
             }
             if indexPath.row != self.chapters.count - 1 {
-                let previousSubmenu = UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
-                    UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { [weak self] _ in
-                        guard let self = self else { return }
-                        DataManager.shared.setRead(manga: self.manga)
-                        DataManager.shared.setCompleted(
-                            chapters: [Chapter](self.sortedChapters[indexPath.row + 1 ..< self.sortedChapters.count]),
-                            date: Date().addingTimeInterval(-1)
-                        )
-                        DataManager.shared.setCompleted(chapter: self.sortedChapters[indexPath.row])
-                        self.updateReadHistory()
-                        tableView.reloadData()
-                    },
-                    UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { [weak self] _ in
-                        guard let self = self else { return }
-                        DataManager.shared.removeHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
-                        self.updateReadHistory()
-                        tableView.reloadData()
-                    }
-                ])
+                let previousSubmenu = UIMenu(
+                    title: NSLocalizedString("MARK_PREVIOUS", comment: ""),
+                    children: [
+                        UIAction(
+                            title: NSLocalizedString("READ", comment: ""),
+                            image: UIImage(systemName: "eye")
+                        ) { [weak self] _ in
+                            guard let self = self else { return }
+                            DataManager.shared.setRead(manga: self.manga)
+                            DataManager.shared.setCompleted(
+                                chapters: [Chapter](self.sortedChapters[indexPath.row + 1 ..< self.sortedChapters.count]),
+                                date: Date().addingTimeInterval(-1)
+                            )
+                            DataManager.shared.setCompleted(chapter: self.sortedChapters[indexPath.row])
+                            self.updateReadHistory()
+                            tableView.reloadData()
+                        },
+                        UIAction(
+                            title: NSLocalizedString("UNREAD", comment: ""),
+                            image: UIImage(systemName: "eye.slash")
+                        ) { [weak self] _ in
+                            guard let self = self else { return }
+                            DataManager.shared.removeHistory(for: [Chapter](self.sortedChapters[indexPath.row ..< self.sortedChapters.count]))
+                            self.updateReadHistory()
+                            tableView.reloadData()
+                        }
+                    ]
+                )
                 actions.append(previousSubmenu)
             }
 
