@@ -184,7 +184,9 @@ class MangaViewController: UIViewController {
                 }
                 if let chapter = scrollToChapter,
                    let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
-                    tableView.selectRow(at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .middle)
+                    let indexPath = IndexPath(row: index, section: 0)
+                    tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
+                    tableView.deselectRow(at: indexPath, animated: true)
                 }
             }
         }
