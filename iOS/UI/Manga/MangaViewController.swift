@@ -186,7 +186,9 @@ class MangaViewController: UIViewController {
                    let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
                     let indexPath = IndexPath(row: index, section: 0)
                     tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
-                    tableView.deselectRow(at: indexPath, animated: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.tableView.deselectRow(at: indexPath, animated: true)
+                    }
                 }
             }
         }
@@ -804,6 +806,7 @@ extension MangaViewController: UITableViewDataSource {
 
 // MARK: - Table View Delegate
 extension MangaViewController: UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if !tableView.isEditing { // open reader view
             tableView.deselectRow(at: indexPath, animated: true)
