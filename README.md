@@ -7,8 +7,8 @@ A free and open source manga reading application for iOS and iPadOS.
 - [x] Online reading through external sources
 - [x] iCloud sync support
 - [x] Downloads
+- [x] Tracker support
 - [ ] Update notifications
-- [ ] Tracker support
 
 ## Installation
 The latest ipa will always be available from the [releases page](https://github.com/Aidoku/Aidoku/releases).
