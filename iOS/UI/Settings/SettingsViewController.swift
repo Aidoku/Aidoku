@@ -8,6 +8,7 @@
 import UIKit
 import SafariServices
 import Kingfisher
+import Nuke
 import WebKit
 
 class SettingsViewController: SettingsTableViewController {
@@ -400,8 +401,10 @@ extension SettingsViewController {
                             ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
                         )
 
-                    self.confirmAction(title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
-                                       message: message) {
+                    self.confirmAction(
+                        title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
+                        message: message
+                    ) {
                         self.clearNetworkCache()
                     }
                 }
@@ -456,6 +459,10 @@ extension SettingsViewController {
         KingfisherManager.shared.cache.clearMemoryCache()
         KingfisherManager.shared.cache.clearDiskCache()
         KingfisherManager.shared.cache.cleanExpiredDiskCache()
+
+        if let dataCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
+            dataCache.removeAll()
+        }
     }
 
     func resetSettings() {

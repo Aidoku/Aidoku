@@ -7,6 +7,7 @@
 
 import UIKit
 import Kingfisher
+import Nuke
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -75,8 +76,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
         KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
-
         KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
+
+        DataLoader.sharedUrlCache.diskCapacity = 0
+
+        let pipeline = ImagePipeline {
+            let dataCache = try? DataCache(name: "xyz.skitty.Aidoku.datacache")
+            dataCache?.sizeLimit = 300 * 1024 * 1024
+            $0.dataCache = dataCache
+        }
+
+        ImagePipeline.shared = pipeline
 
         return true
     }
