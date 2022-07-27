@@ -6,7 +6,8 @@
 //
 
 import UIKit
-import Kingfisher
+import Nuke
+import NukeExtensions
 
 class MangaCoverCell: UICollectionViewCell {
 
@@ -48,7 +49,6 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
-    var requestModifier: AnyModifier?
     var checkForRequestModifier = true
 
     var imageView = UIImageView()
@@ -147,12 +147,18 @@ class MangaCoverCell: UICollectionViewCell {
 
         activateConstraints()
 
-        loadImage()
+        if manga != nil {
+            Task {
+                await loadImage()
+            }
+        }
     }
 
     func reloadData() {
         titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
-        loadImage()
+        Task {
+            await loadImage()
+        }
     }
 
     func activateConstraints() {
@@ -184,6 +190,11 @@ class MangaCoverCell: UICollectionViewCell {
         highlightView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        checkForRequestModifier = true
+    }
+
     func highlight() {
         highlightView.alpha = 1
     }
@@ -207,59 +218,43 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
-    func loadImage() {
-        let url = manga?.cover ?? ""
-
-        imageView.image = nil
-
-        Task {
-            if checkForRequestModifier,
-               let sourceId = manga?.sourceId,
-               let source = SourceManager.shared.source(for: sourceId),
-               source.handlesImageRequests,
-               let request = try? await source.getImageRequest(url: url) {
-                requestModifier = AnyModifier { urlRequest in
-                    var r = urlRequest
-                    r.url = URL(string: request.URL ?? "")
-                    for (key, value) in request.headers {
-                        r.setValue(value, forHTTPHeaderField: key)
-                    }
-                    if let body = request.body { r.httpBody = body }
-                    return r
-                }
-                checkForRequestModifier = false
-            }
-
-            // Run the image loading code immediately on the main actor
-            await MainActor.run {
-                let processor = DownsamplingImageProcessor(size: bounds.size) // |> RoundCornerImageProcessor(cornerRadius: 5)
-                let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.5))
-                var kfOptions: [KingfisherOptionsInfoItem] = [
-                    .processor(processor),
-                    .scaleFactor(UIScreen.main.scale),
-                    .transition(.fade(0.3)),
-                    .retryStrategy(retry),
-                    .cacheOriginalImage
-                ]
-                if let requestModifier = requestModifier {
-                    kfOptions.append(.requestModifier(requestModifier))
-                }
-
-                imageView.kf.setImage(
-                    with: URL(string: url),
-                    placeholder: UIImage(named: "MangaPlaceholder"),
-                    options: kfOptions
-                ) { result in
-                    switch result {
-                    case .success(let value):
-                        if UserDefaults.standard.bool(forKey: "General.useMangaTint") && self.manga?.tintColor == nil {
-                            self.getTintColor(from: value.image)
-                        }
-                    default:
-                        break
-                    }
-                }
-            }
+    func loadImage() async {
+        guard
+            let urlString = manga?.cover,
+            let url = URL(string: urlString)
+        else {
+            imageView.image = nil
+            return
         }
+
+        var urlRequest = URLRequest(url: url)
+
+        if checkForRequestModifier,
+           let sourceId = manga?.sourceId,
+           let source = SourceManager.shared.source(for: sourceId),
+           source.handlesImageRequests,
+           let request = try? await source.getImageRequest(url: urlString) {
+
+            urlRequest.url = URL(string: request.URL ?? "")
+            for (key, value) in request.headers {
+                urlRequest.setValue(value, forHTTPHeaderField: key)
+            }
+            if let body = request.body { urlRequest.httpBody = body }
+            checkForRequestModifier = false
+        }
+
+        let request = ImageRequest(
+            urlRequest: urlRequest,
+            processors: [.resize(width: bounds.width)]
+        )
+
+        NukeExtensions.loadImage(
+            with: request,
+            options: ImageLoadingOptions(
+                placeholder: UIImage(named: "MangaPlaceholder"),
+                transition: .fadeIn(duration: 0.3)
+            ),
+            into: imageView
+        )
     }
 }

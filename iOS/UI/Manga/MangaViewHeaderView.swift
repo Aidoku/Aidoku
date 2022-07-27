@@ -6,7 +6,8 @@
 //
 
 import UIKit
-import Kingfisher
+import Nuke
+import NukeExtensions
 
 class MangaViewHeaderView: UIView {
 
@@ -404,12 +405,8 @@ extension MangaViewHeaderView {
     // swiftlint:disable:next cyclomatic_complexity
     func updateViews() {
         if let url = manga?.cover {
-            if KingfisherManager.shared.cache.isCached(forKey: url) {
-                coverImageView.kf.setImage(
-                    with: URL(string: url),
-                    placeholder: UIImage(named: "MangaPlaceholder"),
-                    options: []
-                )
+            if let image = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: URL(string: url))) {
+                coverImageView.image = image.image
             } else {
                 Task {
                     await setCover()
@@ -521,45 +518,44 @@ extension MangaViewHeaderView {
     }
 
     func setCover() async {
-        let url = manga?.cover ?? ""
+        guard
+            let urlString = manga?.cover,
+            let url = URL(string: urlString)
+        else {
+            coverImageView.image = nil
+            return
+        }
 
-        let requestModifier: AnyModifier?
+        let isCached = ImagePipeline.shared.cache.containsCachedImage(for: ImageRequest(url: url))
 
-        if !url.isEmpty,
+        var urlRequest = URLRequest(url: url)
+
+        if !isCached,
            let sourceId = manga?.sourceId,
            let source = SourceManager.shared.source(for: sourceId),
            source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: url) {
-            requestModifier = AnyModifier { urlRequest in
-                var r = urlRequest
-                r.url = URL(string: request.URL ?? "")
-                for (key, value) in request.headers {
-                    r.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { r.httpBody = body }
-                return r
+           let request = try? await source.getImageRequest(url: urlString) {
+
+            urlRequest.url = URL(string: request.URL ?? "")
+            for (key, value) in request.headers {
+                urlRequest.setValue(value, forHTTPHeaderField: key)
             }
-        } else {
-            requestModifier = nil
+            if let body = request.body { urlRequest.httpBody = body }
         }
 
-        await MainActor.run {
-            let retry = DelayRetryStrategy(maxRetryCount: 5, retryInterval: .seconds(0.1))
-            var kfOptions: [KingfisherOptionsInfoItem] = [
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .cacheOriginalImage
-            ]
-            if let requestModifier = requestModifier {
-                kfOptions.append(.requestModifier(requestModifier))
-            }
-            coverImageView.kf.setImage(
-                with: URL(string: url),
+        let request = ImageRequest(
+            urlRequest: urlRequest,
+            processors: [.resize(width: bounds.width)]
+        )
+
+        NukeExtensions.loadImage(
+            with: request,
+            options: ImageLoadingOptions(
                 placeholder: UIImage(named: "MangaPlaceholder"),
-                options: kfOptions
-            )
-        }
+                transition: .fadeIn(duration: 0.3)
+            ),
+            into: coverImageView
+        )
     }
 
     func loadTags() {
