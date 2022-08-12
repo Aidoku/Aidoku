@@ -35,9 +35,8 @@ extension UIStepper {
     }
 
     @objc func toggleDefaultsSetting() {
-        if let key = defaultsKey {
-            UserDefaults.standard.set(value, forKey: key)
-        }
+        guard let key = defaultsKey else { return }
+        UserDefaults.standard.set(value, forKey: key)
     }
 
     @objc func notifyHandler() {
