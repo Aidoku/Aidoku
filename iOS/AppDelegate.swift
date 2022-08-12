@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.portraitRows": UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2,
                 "General.landscapeRows": UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4,
 
-                "Library.sortOption": 1,
+                "Library.sortOption": 2, // lastOpened
                 "Library.sortAscending": false,
 
                 "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,

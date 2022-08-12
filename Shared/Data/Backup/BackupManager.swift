@@ -153,6 +153,9 @@ class BackupManager {
             backup.chapters?.forEach {
                 let chapter = $0.toObject(context: DataManager.shared.container.viewContext)
                 chapter.manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId)
+                chapter.history = DataManager.shared.getHistoryObject(
+                    for: chapter.toChapter()
+                )
             }
         }
 
