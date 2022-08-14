@@ -35,6 +35,7 @@ extension HistoryObject {
     @NSManaged public var total: Int16
     @NSManaged public var completed: Bool
 
+    @NSManaged public var chapter: ChapterObject?
 }
 
 extension HistoryObject: Identifiable {

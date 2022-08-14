@@ -191,6 +191,24 @@ class Manga: KVCObject, Codable {
         )
     }
 
+    func load(from manga: Manga) {
+        title = manga.title ?? title
+        author = manga.author ?? author
+        artist = manga.artist ?? artist
+        description = manga.description ?? description
+        tags = manga.tags ?? tags
+        cover = manga.cover ?? cover
+        url = manga.url ?? url
+        status = manga.status
+        nsfw = manga.nsfw
+        viewer = manga.viewer
+        tintColor = manga.tintColor ?? tintColor
+        lastUpdated = manga.lastUpdated ?? lastUpdated
+        lastOpened = manga.lastOpened ?? lastOpened
+        lastRead = manga.lastRead ?? lastRead
+        dateAdded = manga.dateAdded ?? dateAdded
+    }
+
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id

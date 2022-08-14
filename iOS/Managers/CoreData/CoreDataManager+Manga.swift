@@ -9,6 +9,14 @@ import CoreData
 
 extension CoreDataManager {
 
+    func getManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> MangaObject? {
+        let context = context ?? self.context
+        let request = MangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", sourceId, mangaId)
+        request.fetchLimit = 1
+        return (try? context.fetch(request))?.first
+    }
+
     /// Remove a MangaObject in the background.
     func removeManga(sourceId: String, id: String) {
         container.performBackgroundTask { context in

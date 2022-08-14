@@ -88,17 +88,6 @@ class LibraryViewController2: BookCollectionViewController {
             guard let self = self else { return }
             header.delegate = self
             header.options = [NSLocalizedString("ALL", comment: "")] + self.viewModel.categories
-            if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
-                let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
-                header.lockedOptions = [0] + lockedCategories.compactMap { category -> Int? in
-                    if let index = self.viewModel.categories.firstIndex(of: category) {
-                        return index + 1
-                    }
-                    return nil
-                }
-            } else {
-                header.lockedOptions = []
-            }
             header.filterButton.alpha = 1
             header.filterButton.menu = self.filterBarButton.menu
             header.filterButton.showsMenuAsPrimaryAction = true
@@ -137,6 +126,7 @@ class LibraryViewController2: BookCollectionViewController {
         viewModel.loadLibrary()
         updateSortMenu()
         updateLockState()
+        updateHeaderLockIcons()
         updateDataSource()
     }
 
@@ -205,6 +195,24 @@ class LibraryViewController2: BookCollectionViewController {
             }
         }
 
+        addObserver(forName: "updateLibrary") { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.viewModel.loadLibrary()
+                self.updateDataSource()
+            }
+        }
+
+        // TODO: change this notification (elsewhere)
+        // it should come with the book info or chapter or whatever that was read
+        addObserver(forName: "updateHistory") { [weak self] _ in
+            guard let self = self else { return }
+            Task { @MainActor in
+                self.viewModel.fetchUnreads()
+                self.updateDataSource()
+            }
+        }
+
         // lock library when moving to background
         addObserver(forName: UIApplication.willResignActiveNotification.rawValue) { [weak self] _ in
             guard let self = self else { return }
@@ -251,9 +259,12 @@ class LibraryViewController2: BookCollectionViewController {
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {
-        viewModel.loadLibrary()
-        updateDataSource()
-        refreshControl.endRefreshing()
+        Task { @MainActor in
+            await viewModel.refreshLibrary()
+            viewModel.loadLibrary()
+            updateDataSource()
+            refreshControl.endRefreshing()
+        }
     }
 
     @objc func openDownloadQueue() {
@@ -288,7 +299,7 @@ extension LibraryViewController2 {
         // handle empty library or category
         emptyStackView.isHidden = !viewModel.books.isEmpty || !viewModel.pinnedBooks.isEmpty
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
-        collectionView.refreshControl = emptyStackView.isHidden ? nil : refreshControl
+        collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil
     }
 }
 
@@ -475,7 +486,7 @@ extension LibraryViewController2 {
             let info = dataSource.itemIdentifier(for: indexPath)
         else { return }
         Task {
-            await CoreDataManager.shared.setOpened(sourceId: info.sourceId, id: info.bookId)
+            await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.bookId)
             self.viewModel.bookOpened(sourceId: info.sourceId, bookId: info.bookId)
             self.updateDataSource()
         }
