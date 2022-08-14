@@ -23,6 +23,15 @@
 		FB0CAA5628A6BF8A0024561A /* NSPersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5528A6BF8A0024561A /* NSPersistentContainer.swift */; };
 		FB0CAA5828A83F020024561A /* CoreDataManager+Chapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5728A83F020024561A /* CoreDataManager+Chapter.swift */; };
 		FB0CAA5A28A93DD50024561A /* CoreDataManager+History.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */; };
+		FB0CAA5B28A998630024561A /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */; };
+		FB0CAA5C28A998650024561A /* CoreDataManager+Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4F28A55BB80024561A /* CoreDataManager+Category.swift */; };
+		FB0CAA5D28A998670024561A /* CoreDataManager+Chapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5728A83F020024561A /* CoreDataManager+Chapter.swift */; };
+		FB0CAA5E28A998690024561A /* CoreDataManager+History.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */; };
+		FB0CAA5F28A9986A0024561A /* CoreDataManager+LibraryManga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */; };
+		FB0CAA6028A9986D0024561A /* CoreDataManager+Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */; };
+		FB0CAA6128A998880024561A /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Book.swift */; };
+		FB0CAA6228A9988A0024561A /* BookInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CD28A032FC000C37E6 /* BookInfo.swift */; };
+		FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5528A6BF8A0024561A /* NSPersistentContainer.swift */; };
 		FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */; };
 		FB0E1CC7288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
 		FB0E1CC8288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
@@ -571,8 +580,10 @@
 		FB1B482A277CE18D0056D02C /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				FBE578FE2899840E00F9F1B5 /* Managers */,
+				FB02E1F5288D7C6700B9E2DE /* Models */,
 				FB1B48B2277CF7DC0056D02C /* Extensions */,
-				FB1B4862277CE7370056D02C /* Models */,
+				FB1B4862277CE7370056D02C /* Old Models */,
 				FB72500C27CAAC2E0037F1C9 /* Data */,
 				FB1B4891277CECF60056D02C /* Sources */,
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
@@ -609,8 +620,6 @@
 			children = (
 				FB1B4852277CE4510056D02C /* AppDelegate.swift */,
 				FB1B4855277CE5560056D02C /* SceneDelegate.swift */,
-				FBE578FE2899840E00F9F1B5 /* Managers */,
-				FB02E1F5288D7C6700B9E2DE /* Models */,
 				FB02E1EE288D7B9D00B9E2DE /* Scenes */,
 				FB31AD0527AC3A1900D50410 /* Extensions */,
 				FB1B48B0277CF7880056D02C /* UI */,
@@ -620,7 +629,7 @@
 			path = iOS;
 			sourceTree = "<group>";
 		};
-		FB1B4862277CE7370056D02C /* Models */ = {
+		FB1B4862277CE7370056D02C /* Old Models */ = {
 			isa = PBXGroup;
 			children = (
 				FB6340B52791DA130072A2A2 /* KVCObject.swift */,
@@ -632,7 +641,7 @@
 				FB6340BA2792202B0072A2A2 /* Listing.swift */,
 				FB0C088B280E4D1C00A7332B /* DeepLink.swift */,
 			);
-			path = Models;
+			path = "Old Models";
 			sourceTree = "<group>";
 		};
 		FB1B4875277CE7FE0056D02C /* Frameworks */ = {
@@ -737,6 +746,7 @@
 				FB31AD0027AC2C3000D50410 /* UIImageColors.swift */,
 				FB7864852848215500125DC0 /* Reachability.swift */,
 				37F3E66C2850F62100A944E0 /* Collection.swift */,
+				FB0CAA5528A6BF8A0024561A /* NSPersistentContainer.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -769,7 +779,6 @@
 				FBCA1B292889864E007149C5 /* View.swift */,
 				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
 				FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */,
-				FB0CAA5528A6BF8A0024561A /* NSPersistentContainer.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1404,6 +1413,7 @@
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
+				FB0CAA5E28A998690024561A /* CoreDataManager+History.swift in Sources */,
 				FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB72501D27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
@@ -1415,6 +1425,7 @@
 				FBE7813028308DC60038C0E3 /* Download.swift in Sources */,
 				FB4B0AE4285CCC8E0066A13B /* URL.swift in Sources */,
 				FB72501727CAACAB0037F1C9 /* BackupManga.swift in Sources */,
+				FB0CAA5B28A998630024561A /* CoreDataManager.swift in Sources */,
 				FB4EEBCB27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB0E1CCB288AE50700B67BA9 /* OAuthTracker.swift in Sources */,
@@ -1435,6 +1446,7 @@
 				FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */,
 				FB7864872848215500125DC0 /* Reachability.swift in Sources */,
 				FB4B0ADE285C2C570066A13B /* TrackSearchItem.swift in Sources */,
+				FB0CAA6228A9988A0024561A /* BookInfo.swift in Sources */,
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
 				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
@@ -1445,6 +1457,7 @@
 				FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */,
 				FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB7B7EDB278CEA6A001E6EAF /* FileManager.swift in Sources */,
+				FB0CAA6128A998880024561A /* Book.swift in Sources */,
 				FB72501427CAAC9F0037F1C9 /* Backup.swift in Sources */,
 				FB4EEBC527A34ED4005081A3 /* ChapterObject.swift in Sources */,
 				FB67EE6127F3708500C468EA /* WasmImports.swift in Sources */,
@@ -1452,6 +1465,7 @@
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
+				FB0CAA5C28A998650024561A /* CoreDataManager+Category.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
 				FB6340B4278F89930072A2A2 /* Filter.swift in Sources */,
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
@@ -1461,11 +1475,15 @@
 				FB716E05283E7D4D00F1BB5D /* String.swift in Sources */,
 				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
 				FBE7812A282F481A0038C0E3 /* DownloadCache.swift in Sources */,
+				FB0CAA6028A9986D0024561A /* CoreDataManager+Manga.swift in Sources */,
 				FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */,
 				FB4B0AE1285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
 				FB4B0ADB285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */,
+				FB0CAA5F28A9986A0024561A /* CoreDataManager+LibraryManga.swift in Sources */,
 				FB0E1CC8288A5A2300B67BA9 /* TrackUpdate.swift in Sources */,
+				FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */,
+				FB0CAA5D28A998670024561A /* CoreDataManager+Chapter.swift in Sources */,
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
@@ -1656,7 +1674,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.6;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku2;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -1695,7 +1713,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.6;
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku2;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
