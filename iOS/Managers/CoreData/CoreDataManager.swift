@@ -76,9 +76,11 @@ final class CoreDataManager {
         container.viewContext
     }
 
-    func save() {
+    func saveIfNeeded() {
         do {
-            try context.save()
+            if context.hasChanges {
+                try context.save()
+            }
         } catch {
             LogManager.logger.error("CoreData save error \(error)")
         }
@@ -92,17 +94,26 @@ final class CoreDataManager {
     }
 
     // TODO: clean this up
-    func migrateUnlinkedChapters() {
-        let chapterObjects = (try? DataManager.shared.getChapterObjects()) ?? []
-        for chapterObject in chapterObjects {
-            guard let historyObject = DataManager.shared.getHistoryObject(
-                for: chapterObject.toChapter()
-            ) else {
-                chapterObject.history = nil
-                continue
-            }
-            chapterObject.history = historyObject
+    func migrateChapterHistory() {
+        LogManager.logger.info("Beginning chapter history migration for 0.6")
+        var count = 0
+
+        let request = HistoryObject.fetchRequest()
+        let historyObjects = (try? context.fetch(request)) ?? []
+        for historyObject in historyObjects {
+            guard
+                historyObject.chapter == nil,
+                let chapterObject = getChapter(
+                    sourceId: historyObject.sourceId,
+                    mangaId: historyObject.mangaId,
+                    id: historyObject.chapterId
+                )
+            else { continue }
+            historyObject.chapter = chapterObject
+            count += 1
         }
-        DataManager.shared.save()
+        saveIfNeeded()
+
+        LogManager.logger.info("Migrated \(count)/\(historyObjects.count) history objects")
     }
 }

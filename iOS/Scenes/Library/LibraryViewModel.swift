@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 class LibraryViewModel {
 
@@ -91,12 +92,10 @@ class LibraryViewModel {
         for object in libraryObjects {
             let manga = object.manga!
 
-            let request = ChapterObject.fetchRequest()
-            request.predicate = NSPredicate(
-                format: "sourceId == %@ AND mangaId == %@ AND (history == nil OR history.completed == false)",
-                manga.sourceId, manga.id
+            let unreadCount = CoreDataManager.shared.unreadCount(
+                sourceId: manga.sourceId,
+                mangaId: manga.id
             )
-            let unreadCount = try? DataManager.shared.container.viewContext.count(for: request)
 
             let info = BookInfo(
                 bookId: manga.id,
@@ -105,7 +104,7 @@ class LibraryViewModel {
                 title: manga.title,
                 author: manga.author,
                 url: manga.url != nil ? URL(string: manga.url!) : nil,
-                unread: unreadCount ?? 0
+                unread: unreadCount
             )
 
             switch pinType {
@@ -134,6 +133,21 @@ class LibraryViewModel {
                 pinnedBooks.sort(by: { $0.unread > $1.unread })
                 books.sort(by: { $0.unread > $1.unread })
             }
+        }
+    }
+
+    func fetchUnreads() {
+        for (i, book) in books.enumerated() {
+            books[i].unread = CoreDataManager.shared.unreadCount(
+                sourceId: book.sourceId,
+                mangaId: book.bookId
+            )
+        }
+        for (i, book) in pinnedBooks.enumerated() {
+            pinnedBooks[i].unread = CoreDataManager.shared.unreadCount(
+                sourceId: book.sourceId,
+                mangaId: book.bookId
+            )
         }
     }
 
@@ -201,13 +215,6 @@ class LibraryViewModel {
         books = storedBooks.filter { $0.title?.lowercased().contains(query) ?? false }
     }
 
-    func removeFromLibrary(book: BookInfo) {
-        pinnedBooks.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
-        books.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
-
-        CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
-    }
-
     func bookOpened(sourceId: String, bookId: String) {
         guard sortMethod == .lastOpened || pinType == .updated else { return }
 
@@ -221,6 +228,150 @@ class LibraryViewModel {
                 let book = self.books.remove(at: index)
                 self.books.insert(book, at: 0)
             }
+        }
+    }
+
+    func removeFromLibrary(book: BookInfo) {
+        pinnedBooks.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
+        books.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
+
+        CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
+    }
+}
+
+// MARK: - Library Updating
+extension LibraryViewModel {
+
+    /// Check if a manga should skip updating based on skip options.
+    private func shouldSkip(manga: Manga, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
+        // manga completed
+        if options.contains("completed") && manga.status == .completed {
+            return true
+        }
+        // manga has unread chapters
+        if options.contains("hasUnread") && CoreDataManager.shared.unreadCount(
+            sourceId: manga.sourceId,
+            mangaId: manga.id,
+            context: context
+        ) > 0 {
+            return true
+        }
+        // manga has no read chapters
+        if options.contains("notStarted") && CoreDataManager.shared.readCount(
+            sourceId: manga.sourceId,
+            mangaId: manga.id,
+            context: context
+        ) == 0 {
+            return true
+        }
+
+        return false
+    }
+
+    /// Get the latest chapters for all manga in the array, indexed by manga.key.
+    private func getLatestChapters(manga: [Manga], skipOptions: [String] = []) async -> [String: [Chapter]] {
+        await withTaskGroup(
+            of: (String, [Chapter]).self,
+            returning: [String: [Chapter]].self,
+            body: { taskGroup in
+                let backgroundContext = CoreDataManager.shared.container.newBackgroundContext()
+                for manga in manga {
+                    if shouldSkip(manga: manga, options: skipOptions, context: backgroundContext) {
+                        continue
+                    }
+                    taskGroup.addTask {
+                        let chapters = try? await SourceManager.shared.source(for: manga.sourceId)?.getChapterList(manga: manga)
+                        return (manga.key, chapters ?? [])
+                    }
+                }
+
+                var results: [String: [Chapter]] = [:]
+                for await result in taskGroup {
+                    results[result.0] = result.1
+                }
+                return results
+            }
+        )
+    }
+
+    /// Update properties on manga from latest source info.
+    func updateMangaDetails(manga: [Manga]) async {
+        for manga in manga {
+            guard let newInfo = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) else {
+                continue
+            }
+            manga.load(from: newInfo)
+        }
+    }
+
+    /// Refresh manga objects in library.
+    func refreshLibrary() async {
+        let allManga = CoreDataManager.shared.getLibraryManga()
+            .compactMap { $0.manga?.toManga() }
+
+        // check if connected to wi-fi
+        if UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi") && Reachability.getConnectionType() != .wifi {
+            return
+        }
+
+        // fetch new manga details
+        if UserDefaults.standard.bool(forKey: "Library.refreshMetadata") {
+            await updateMangaDetails(manga: allManga)
+        }
+
+        let skipOptions = UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
+        let excludedCategories = UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
+
+        // fetch new chapters
+        let newChapters = await getLatestChapters(manga: allManga, skipOptions: skipOptions)
+
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            for manga in allManga {
+                guard let chapters = newChapters[manga.key] else { continue }
+
+                guard let libraryObject = CoreDataManager.shared.getLibraryManga(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
+                    context: context
+                ) else {
+                    continue
+                }
+
+                // check if excluded via category
+                let categories = CoreDataManager.shared.getCategories(
+                    libraryManga: libraryObject
+                ).compactMap { $0.title }
+
+                if !categories.isEmpty {
+                    if excludedCategories.contains(where: categories.contains) {
+                        continue
+                    }
+                }
+
+                // update manga
+                if let mangaObject = libraryObject.manga {
+                    // update details
+                    mangaObject.load(from: manga)
+
+                    // update chapter list
+                    if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
+                        CoreDataManager.shared.setChapters(
+                            chapters,
+                            sourceId: manga.sourceId,
+                            mangaId: manga.id,
+                            context: context
+                        )
+                        libraryObject.lastUpdated = Date()
+                    }
+                }
+            }
+
+            // save changes (runs on main thread)
+            if context.hasChanges {
+                try? context.save()
+            }
+
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
         }
     }
 }

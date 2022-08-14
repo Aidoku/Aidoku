@@ -88,6 +88,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         ImagePipeline.shared = pipeline
 
+        // migrate to 0.6
+        if !UserDefaults.standard.bool(forKey: "migrated0.6") {
+            CoreDataManager.shared.migrateChapterHistory()
+            UserDefaults.standard.set(true, forKey: "migrated0.6")
+        }
+
         return true
     }
 
