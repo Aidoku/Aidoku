@@ -126,13 +126,7 @@ class LibraryViewModel {
         }
 
         if sortMethod == .unreadChapters {
-            if sortAscending {
-                pinnedBooks.sort(by: { $0.unread < $1.unread })
-                books.sort(by: { $0.unread < $1.unread })
-            } else {
-                pinnedBooks.sort(by: { $0.unread > $1.unread })
-                books.sort(by: { $0.unread > $1.unread })
-            }
+            sortLibrary()
         }
     }
 
@@ -148,6 +142,9 @@ class LibraryViewModel {
                 sourceId: book.sourceId,
                 mangaId: book.bookId
             )
+        }
+        if sortMethod == .unreadChapters {
+            sortLibrary()
         }
     }
 
@@ -218,15 +215,19 @@ class LibraryViewModel {
     func bookOpened(sourceId: String, bookId: String) {
         guard sortMethod == .lastOpened || pinType == .updated else { return }
 
-        let pinnedIndex = self.pinnedBooks.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
+        let pinnedIndex = pinnedBooks.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
         if let pinnedIndex = pinnedIndex {
-            let book = self.pinnedBooks.remove(at: pinnedIndex)
-            self.books.insert(book, at: 0)
-        } else {
-            let index = self.books.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
+            if sortMethod == .lastOpened {
+                let book = pinnedBooks.remove(at: pinnedIndex)
+                books.insert(book, at: 0)
+            } else {
+                loadLibrary() // don't know where to put in books array, just refresh
+            }
+        } else if sortMethod == .lastOpened {
+            let index = books.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
             if let index = index {
-                let book = self.books.remove(at: index)
-                self.books.insert(book, at: 0)
+                let book = books.remove(at: index)
+                books.insert(book, at: 0)
             }
         }
     }
@@ -236,5 +237,21 @@ class LibraryViewModel {
         books.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
 
         CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
+    }
+
+    func shouldUpdateLibrary() -> Bool {
+        let lastUpdated = UserDefaults.standard.double(forKey: "Library.lastUpdated")
+        let interval: Double = [
+            "never": Double(-1),
+            "12hours": 43200,
+            "daily": 86400,
+            "2days": 172800,
+            "weekly": 604800
+        ][UserDefaults.standard.string(forKey: "Library.updateInterval")] ?? Double(0)
+        guard interval > 0 else { return false }
+        if Date().timeIntervalSince1970 - lastUpdated > interval {
+            return true
+        }
+        return false
     }
 }

@@ -50,6 +50,10 @@ class LibraryViewController2: BookCollectionViewController {
         if !navigationItem.hidesSearchBarWhenScrolling {
             navigationItem.hidesSearchBarWhenScrolling = true
         }
+
+        if viewModel.shouldUpdateLibrary() {
+            updateLibraryRefresh()
+        }
     }
 
     override func configure() {
@@ -258,12 +262,12 @@ class LibraryViewController2: BookCollectionViewController {
         }
     }
 
-    @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {
+    @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
         Task { @MainActor in
             await BookManager.shared.refreshLibrary()
             viewModel.loadLibrary()
             updateDataSource()
-            refreshControl.endRefreshing()
+            refreshControl?.endRefreshing()
         }
     }
 

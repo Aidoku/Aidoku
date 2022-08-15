@@ -9,6 +9,12 @@ import CoreData
 
 extension CoreDataManager {
 
+    /// Remove all history objects.
+    func clearManga(context: NSManagedObjectContext? = nil) {
+        clear(request: MangaObject.fetchRequest(), context: context)
+    }
+
+    /// Get a particular manga object.
     func getManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> MangaObject? {
         let context = context ?? self.context
         let request = MangaObject.fetchRequest()

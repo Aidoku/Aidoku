@@ -9,6 +9,11 @@ import CoreData
 
 extension CoreDataManager {
 
+    /// Remove all library manga objects.
+    func clearLibrary(context: NSManagedObjectContext? = nil) {
+        clear(request: LibraryMangaObject.fetchRequest(), context: context)
+    }
+
     /// Get a particular library object.
     func getLibraryManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
         let context = context ?? self.context

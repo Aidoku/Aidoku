@@ -76,13 +76,17 @@ final class CoreDataManager {
         container.viewContext
     }
 
-    func saveIfNeeded() {
+    func save() {
         do {
-            if context.hasChanges {
-                try context.save()
-            }
+            try context.save()
         } catch {
-            LogManager.logger.error("CoreData save error \(error)")
+            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
+        }
+    }
+
+    func saveIfNeeded() {
+        if context.hasChanges {
+            save()
         }
     }
 
@@ -90,6 +94,17 @@ final class CoreDataManager {
         container.performBackgroundTask { context in
             let object = context.object(with: object.objectID)
             context.delete(object)
+        }
+    }
+
+    /// Clear all objects from fetch request.
+    func clear<T: NSManagedObject>(request: NSFetchRequest<T>, context: NSManagedObjectContext? = nil) {
+        let context = context ?? self.context
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: (request as? NSFetchRequest<NSFetchRequestResult>)!)
+        do {
+            _ = try context.execute(deleteRequest)
+        } catch {
+            LogManager.logger.error("CoreDataManager.clear: \(error.localizedDescription)")
         }
     }
 
