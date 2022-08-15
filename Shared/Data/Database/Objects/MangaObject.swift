@@ -14,7 +14,7 @@ public class MangaObject: NSManagedObject {
     func load(from manga: Manga) {
         id = manga.id
         sourceId = manga.sourceId
-        title = manga.title ?? "No title"
+        title = manga.title ?? ""
         author = manga.author
         artist = manga.artist
         desc = manga.description
@@ -24,6 +24,21 @@ public class MangaObject: NSManagedObject {
         status = Int16(manga.status.rawValue)
         nsfw = Int16(manga.nsfw.rawValue)
         viewer = Int16(manga.viewer.rawValue)
+    }
+
+    func load(from book: Book) {
+        id = book.id
+        sourceId = book.sourceId
+        title = book.title ?? ""
+        author = book.author
+        artist = book.artist
+        desc = book.description
+        tags = book.tags ?? []
+        cover = book.coverUrl?.absoluteString
+        url = book.url?.absoluteString
+        status = Int16(book.status.rawValue)
+        nsfw = Int16(book.nsfw.rawValue)
+        viewer = Int16(book.viewer.rawValue)
     }
 
     func toManga() -> Manga {
@@ -37,6 +52,27 @@ public class MangaObject: NSManagedObject {
             tags: tags ?? [],
             cover: cover,
             url: url,
+            status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
+            nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
+            viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,
+            lastUpdated: libraryObject?.lastUpdated,
+            lastOpened: libraryObject?.lastOpened,
+            lastRead: libraryObject?.lastRead,
+            dateAdded: libraryObject?.dateAdded
+        )
+    }
+
+    func toBook() -> Book {
+        Book(
+            sourceId: sourceId,
+            id: id,
+            title: title,
+            author: author,
+            artist: artist,
+            description: desc,
+            tags: tags ?? [],
+            coverUrl: cover != nil ? URL(string: cover!) : nil,
+            url: url != nil ? URL(string: url!) : nil,
             status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,

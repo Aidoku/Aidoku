@@ -173,6 +173,8 @@ class BackupManager {
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
         NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
 
-        await DataManager.shared.updateLibrary(forceAll: true)
+        await BookManager.shared.refreshLibrary(forceAll: true)
+
+        NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
     }
 }
