@@ -260,7 +260,7 @@ class LibraryViewController2: BookCollectionViewController {
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl) {
         Task { @MainActor in
-            await viewModel.refreshLibrary()
+            await BookManager.shared.refreshLibrary()
             viewModel.loadLibrary()
             updateDataSource()
             refreshControl.endRefreshing()

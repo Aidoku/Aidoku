@@ -32,8 +32,8 @@ class Book: KVCObject, Codable, Hashable {
     var description: String?
     var tags: [String]?
 
-    var coverUrl: String?
-    var url: String?
+    var coverUrl: URL?
+    var url: URL?
 
     var status: PublishingStatus
     var nsfw: MangaContentRating
@@ -54,8 +54,8 @@ class Book: KVCObject, Codable, Hashable {
         artist: String? = nil,
         description: String? = nil,
         tags: [String]? = nil,
-        coverUrl: String? = nil,
-        url: String? = nil,
+        coverUrl: URL? = nil,
+        url: URL? = nil,
         status: PublishingStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
@@ -93,8 +93,8 @@ class Book: KVCObject, Codable, Hashable {
             artist: artist,
             description: description,
             tags: tags,
-            cover: coverUrl,
-            url: url,
+            cover: coverUrl?.absoluteString,
+            url: url?.absoluteString,
             status: status,
             nsfw: nsfw,
             viewer: viewer,
@@ -115,8 +115,8 @@ class Book: KVCObject, Codable, Hashable {
             artist: manga.artist,
             description: manga.description,
             tags: manga.tags,
-            coverUrl: manga.cover,
-            url: manga.url,
+            coverUrl: manga.cover != nil ? URL(string: manga.cover!) : nil,
+            url: manga.url != nil ? URL(string: manga.url!) : nil,
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer,
@@ -128,8 +128,26 @@ class Book: KVCObject, Codable, Hashable {
         )
     }
 
+    func load(from manga: Manga) {
+        title = manga.title ?? title
+        author = manga.author ?? author
+        artist = manga.artist ?? artist
+        description = manga.description ?? description
+        tags = manga.tags ?? tags
+        coverUrl = manga.cover != nil ? URL(string: manga.cover!) : coverUrl
+        url = manga.url != nil ? URL(string: manga.url!) : url
+        status = manga.status
+        nsfw = manga.nsfw
+        viewer = manga.viewer
+//        tintColor = manga.tintColor ?? tintColor
+        lastUpdated = manga.lastUpdated ?? lastUpdated
+        lastOpened = manga.lastOpened ?? lastOpened
+        lastRead = manga.lastRead ?? lastRead
+        dateAdded = manga.dateAdded ?? dateAdded
+    }
+
     func toInfo() -> BookInfo {
-        BookInfo(bookId: id, sourceId: sourceId, coverUrl: URL(string: coverUrl ?? ""), title: title, author: author)
+        BookInfo(bookId: id, sourceId: sourceId, coverUrl: coverUrl, title: title, author: author)
     }
 
     func valueByPropertyName(name: String) -> Any? {
