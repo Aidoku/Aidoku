@@ -109,6 +109,8 @@
 		FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AF0285D46BF0066A13B /* Date.swift */; };
 		FB4B0AF2285D46BF0066A13B /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AF0285D46BF0066A13B /* Date.swift */; };
 		FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4CB19227A70B9A00A05445 /* MangaViewController.swift */; };
+		FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
+		FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
 		FB4EEBBD27A2F103005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -346,6 +348,7 @@
 		FB4B0AF5285D7ED50066A13B /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4B0AF6285D7F160066A13B /* eo */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = eo; path = eo.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4CB19227A70B9A00A05445 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
+		FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Track.swift"; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBC127A34ED4005081A3 /* ChapterObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterObject.swift; sourceTree = "<group>"; };
@@ -546,6 +549,7 @@
 				FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */,
 				FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */,
 				FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */,
+				FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -1345,6 +1349,7 @@
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
 				FB02E1EB288CC1DA00B9E2DE /* LibraryViewController2.swift in Sources */,
+				FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
@@ -1492,6 +1497,7 @@
 				FB0CAA6028A9986D0024561A /* CoreDataManager+Manga.swift in Sources */,
 				FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */,
 				FB4B0AE1285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
+				FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
 				FB4B0ADB285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */,
 				FB0CAA5F28A9986A0024561A /* CoreDataManager+LibraryManga.swift in Sources */,

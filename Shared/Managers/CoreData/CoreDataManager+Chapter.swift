@@ -9,6 +9,11 @@ import CoreData
 
 extension CoreDataManager {
 
+    /// Remove all chapter objects.
+    func clearChapters(context: NSManagedObjectContext? = nil) {
+        clear(request: ChapterObject.fetchRequest(), context: context)
+    }
+
     /// Get a particular chapter object.
     func getChapter(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> ChapterObject? {
         let context = context ?? self.context

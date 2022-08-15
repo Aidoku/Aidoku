@@ -115,63 +115,68 @@ class BackupManager {
         // this should probably do some more checks before running, idk
 
         if backup.history != nil {
-            DataManager.shared.clearHistory()
+            CoreDataManager.shared.clearHistory()
             backup.history?.forEach {
-                _ = $0.toObject(context: DataManager.shared.container.viewContext)
+                _ = $0.toObject(context: CoreDataManager.shared.context)
             }
         }
 
         if backup.manga != nil {
-            DataManager.shared.clearManga()
+            CoreDataManager.shared.clearManga()
             backup.manga?.forEach {
-                _ = $0.toObject(context: DataManager.shared.container.viewContext)
+                _ = $0.toObject(context: CoreDataManager.shared.context)
             }
         }
 
         if backup.categories != nil {
-            DataManager.shared.clearCategories()
+            CoreDataManager.shared.clearCategories()
             backup.categories?.forEach {
-                DataManager.shared.addCategory(title: $0)
+                CoreDataManager.shared.createCategory(title: $0)
             }
         }
 
         if backup.library != nil {
-            DataManager.shared.clearLibrary()
+            CoreDataManager.shared.clearLibrary()
             backup.library?.forEach {
-                let libraryObject = $0.toObject(context: DataManager.shared.container.viewContext)
-                if let manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId) {
+                let libraryObject = $0.toObject(context: CoreDataManager.shared.context)
+                if let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId) {
                     libraryObject.manga = manga
                     if !$0.categories.isEmpty {
-                        DataManager.shared.addMangaToCategories(manga: Manga(sourceId: $0.sourceId, id: $0.mangaId), categories: $0.categories)
+                        CoreDataManager.shared.addCategoriesToManga(
+                            sourceId: $0.sourceId,
+                            mangaId: $0.mangaId,
+                            categories: $0.categories
+                        )
                     }
                 }
             }
         }
 
         if backup.chapters != nil {
-            DataManager.shared.clearChapters()
+            CoreDataManager.shared.clearChapters()
             backup.chapters?.forEach {
-                let chapter = $0.toObject(context: DataManager.shared.container.viewContext)
-                chapter.manga = DataManager.shared.getMangaObject(withId: $0.mangaId, sourceId: $0.sourceId)
-                chapter.history = DataManager.shared.getHistoryObject(
-                    for: chapter.toChapter()
+                let chapter = $0.toObject(context: CoreDataManager.shared.context)
+                chapter.manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId)
+                chapter.history = CoreDataManager.shared.getHistory(
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId,
+                    chapterId: chapter.id
                 )
             }
         }
 
         if backup.trackItems != nil {
-            DataManager.shared.clearTrackItems()
+            CoreDataManager.shared.clearTracks()
             backup.trackItems?.forEach {
-                _ = $0.toObject(context: DataManager.shared.container.viewContext)
+                _ = $0.toObject(context: CoreDataManager.shared.context)
             }
         }
 
-        DataManager.shared.save()
-
-        DataManager.shared.loadLibrary(checkUpdate: false)
+        CoreDataManager.shared.save()
 
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
         NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
+        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
 
         await BookManager.shared.refreshLibrary(forceAll: true)
 
