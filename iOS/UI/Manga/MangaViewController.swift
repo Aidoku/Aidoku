@@ -654,7 +654,8 @@ extension MangaViewController {
     }
 
     func openReaderView(for chapter: Chapter) {
-        let readerController = ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters)
+//        let readerController = ReaderViewController(manga: manga, chapter: chapter, chapterList: chapters)
+        let readerController = ReaderViewController2(chapter: chapter, chapterList: chapters)
         let navigationController = ReaderNavigationController(rootViewController: readerController)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true)

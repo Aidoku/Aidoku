@@ -7,21 +7,14 @@
 
 import UIKit
 
-class BookCollectionViewController: ObservingViewController {
+class BookCollectionViewController: BaseObservingViewController {
 
     lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
     lazy var dataSource = makeDataSource()
 
     var itemSpacing: CGFloat = 12
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        configure()
-        constrain()
-        observe()
-    }
-
-    func configure() {
+    override func configure() {
         collectionView.dataSource = dataSource
         collectionView.delegate = self
         collectionView.delaysContentTouches = false
@@ -37,7 +30,7 @@ class BookCollectionViewController: ObservingViewController {
         view.addSubview(collectionView)
     }
 
-    func constrain() {
+    override func constrain() {
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -46,7 +39,7 @@ class BookCollectionViewController: ObservingViewController {
         ])
     }
 
-    func observe() {
+    override func observe() {
         addObserver(forName: "General.portraitRows") { [weak self] _ in
             self?.collectionView.collectionViewLayout.invalidateLayout()
         }
