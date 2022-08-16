@@ -15,7 +15,7 @@ enum ReaderInfoPageType {
 class ReaderInfoPageView: UIView {
     var type: ReaderInfoPageType
 
-    var currentChapter: Chapter {
+    var currentChapter: Chapter? {
         didSet {
             updateLabelText()
         }
@@ -39,7 +39,7 @@ class ReaderInfoPageView: UIView {
     let bottomChapterLabel = UILabel()
     let bottomChapterTitleLabel = UILabel()
 
-    init(type: ReaderInfoPageType, currentChapter: Chapter) {
+    init(type: ReaderInfoPageType, currentChapter: Chapter? = nil) {
         self.type = type
         self.currentChapter = currentChapter
 
@@ -103,6 +103,7 @@ class ReaderInfoPageView: UIView {
     }
 
     func updateLabelText() {
+        guard let currentChapter = currentChapter else { return }
         if let previousChapter = previousChapter {
             topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
             if let previousTitle = previousChapter.title {

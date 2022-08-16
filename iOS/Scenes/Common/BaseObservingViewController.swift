@@ -1,5 +1,5 @@
 //
-//  ObservingViewController.swift
+//  BaseObservingViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/2/22.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ObservingViewController: UIViewController {
+class BaseObservingViewController: BaseViewController {
 
     private var observers: [NSObjectProtocol] = []
 
@@ -22,4 +22,11 @@ class ObservingViewController: UIViewController {
             forName: NSNotification.Name(name), object: object, queue: nil, using: block
         ))
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        observe()
+    }
+
+    func observe() {}
 }

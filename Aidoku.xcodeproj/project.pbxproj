@@ -34,6 +34,7 @@
 		FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA5528A6BF8A0024561A /* NSPersistentContainer.swift */; };
 		FB0CAA6528A9B5440024561A /* BookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6428A9B5440024561A /* BookManager.swift */; };
 		FB0CAA6628A9B5540024561A /* BookManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6428A9B5440024561A /* BookManager.swift */; };
+		FB0CAA6A28A9BB9C0024561A /* ReaderViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6928A9BB9C0024561A /* ReaderViewController2.swift */; };
 		FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */; };
 		FB0E1CC7288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
 		FB0E1CC8288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
@@ -122,6 +123,14 @@
 		FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB4EEBDF27A4F5C1005081A3 /* CloudKit.framework */; };
 		FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBE127A5AB4E005081A3 /* MangaListSelectionHeader.swift */; };
 		FB4EEBE527A5F6B7005081A3 /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBE427A5F6B7005081A3 /* LibraryViewController.swift */; };
+		FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */; };
+		FB55AFA028AAAD9E0083EFC3 /* UIToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AF9F28AAAD9E0083EFC3 /* UIToolbar.swift */; };
+		FB55AFA328AAAEDF0083EFC3 /* ReaderPagedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA228AAAEDF0083EFC3 /* ReaderPagedViewController.swift */; };
+		FB55AFA528AAAEF70083EFC3 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA428AAAEF70083EFC3 /* BaseViewController.swift */; };
+		FB55AFA728AAAFE10083EFC3 /* UINavigationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA628AAAFE10083EFC3 /* UINavigationItem.swift */; };
+		FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA828AAB1440083EFC3 /* UIViewController.swift */; };
+		FB55AFAC28AABD980083EFC3 /* ReaderPageView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAB28AABD980083EFC3 /* ReaderPageView2.swift */; };
+		FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAE28AAD40B0083EFC3 /* ReaderPageViewController.swift */; };
 		FB5FB5F62794EBD60059632B /* ChapterListPopoverContentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */; };
 		FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */; };
 		FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340B0278E61600072A2A2 /* WasmInterpreter */; };
@@ -207,6 +216,9 @@
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */; };
+		FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */; };
+		FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */; };
+		FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */; };
 		FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */; };
 		FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
 		FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
@@ -234,7 +246,7 @@
 		FBE578F528919C6A00F9F1B5 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = FBE578F428919C6A00F9F1B5 /* NukeExtensions */; };
 		FBE578F728983C3C00F9F1B5 /* BookCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F628983C3C00F9F1B5 /* BookCollectionViewController.swift */; };
 		FBE578F928983F5700F9F1B5 /* UICollectionView+CellRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */; };
-		FBE578FD289951F700F9F1B5 /* ObservingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578FC289951F700F9F1B5 /* ObservingViewController.swift */; };
+		FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */; };
 		FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE78128282F481A0038C0E3 /* DownloadCache.swift */; };
 		FBE7812A282F481A0038C0E3 /* DownloadCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE78128282F481A0038C0E3 /* DownloadCache.swift */; };
 		FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */; };
@@ -290,6 +302,7 @@
 		FB0CAA5728A83F020024561A /* CoreDataManager+Chapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Chapter.swift"; sourceTree = "<group>"; };
 		FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+History.swift"; sourceTree = "<group>"; };
 		FB0CAA6428A9B5440024561A /* BookManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookManager.swift; sourceTree = "<group>"; };
+		FB0CAA6928A9BB9C0024561A /* ReaderViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewController2.swift; sourceTree = "<group>"; };
 		FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchTableViewCell.swift; sourceTree = "<group>"; };
 		FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackUpdate.swift; sourceTree = "<group>"; };
 		FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthTracker.swift; sourceTree = "<group>"; };
@@ -357,6 +370,14 @@
 		FB4EEBDF27A4F5C1005081A3 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk/System/Library/Frameworks/CloudKit.framework; sourceTree = DEVELOPER_DIR; };
 		FB4EEBE127A5AB4E005081A3 /* MangaListSelectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaListSelectionHeader.swift; sourceTree = "<group>"; };
 		FB4EEBE427A5F6B7005081A3 /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
+		FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderToolbarView.swift; sourceTree = "<group>"; };
+		FB55AF9F28AAAD9E0083EFC3 /* UIToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIToolbar.swift; sourceTree = "<group>"; };
+		FB55AFA228AAAEDF0083EFC3 /* ReaderPagedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedViewController.swift; sourceTree = "<group>"; };
+		FB55AFA428AAAEF70083EFC3 /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
+		FB55AFA628AAAFE10083EFC3 /* UINavigationItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationItem.swift; sourceTree = "<group>"; };
+		FB55AFA828AAB1440083EFC3 /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
+		FB55AFAB28AABD980083EFC3 /* ReaderPageView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageView2.swift; sourceTree = "<group>"; };
+		FB55AFAE28AAD40B0083EFC3 /* ReaderPageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageViewController.swift; sourceTree = "<group>"; };
 		FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterListPopoverContentController.swift; sourceTree = "<group>"; };
 		FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSourceTableViewCell.swift; sourceTree = "<group>"; };
 		FB6340B2278F898E0072A2A2 /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
@@ -411,6 +432,9 @@
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
+		FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedViewModel.swift; sourceTree = "<group>"; };
+		FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderHoldingDelegate.swift; sourceTree = "<group>"; };
+		FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderReaderDelegate.swift; sourceTree = "<group>"; };
 		FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerAddView.swift; sourceTree = "<group>"; };
 		FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.5.xcdatamodel; sourceTree = "<group>"; };
 		FBCA1B232888A910007149C5 /* TrackObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackObject.swift; sourceTree = "<group>"; };
@@ -441,7 +465,7 @@
 		FBE578F0289021BD00F9F1B5 /* 0.6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.xcdatamodel; sourceTree = "<group>"; };
 		FBE578F628983C3C00F9F1B5 /* BookCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCollectionViewController.swift; sourceTree = "<group>"; };
 		FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionView+CellRegistration.swift"; sourceTree = "<group>"; };
-		FBE578FC289951F700F9F1B5 /* ObservingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservingViewController.swift; sourceTree = "<group>"; };
+		FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseObservingViewController.swift; sourceTree = "<group>"; };
 		FBE78128282F481A0038C0E3 /* DownloadCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadCache.swift; sourceTree = "<group>"; };
 		FBE7812B282F533C0038C0E3 /* DownloadQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueue.swift; sourceTree = "<group>"; };
 		FBE7812E28308DC60038C0E3 /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
@@ -506,6 +530,7 @@
 			children = (
 				FB02E1EF288D7BA700B9E2DE /* Common */,
 				FB02E1F0288D7BAF00B9E2DE /* Library */,
+				FB0CAA6828A9BB900024561A /* Reader */,
 			);
 			path = Scenes;
 			sourceTree = "<group>";
@@ -513,7 +538,8 @@
 		FB02E1EF288D7BA700B9E2DE /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				FBE578FC289951F700F9F1B5 /* ObservingViewController.swift */,
+				FB55AFA428AAAEF70083EFC3 /* BaseViewController.swift */,
+				FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */,
 				FBE578F628983C3C00F9F1B5 /* BookCollectionViewController.swift */,
 				FB02E1F1288D7BE900B9E2DE /* BookGridCell.swift */,
 				FB0CAA5128A68FD70024561A /* EmptyPageStackView.swift */,
@@ -560,6 +586,19 @@
 				FB0CAA6428A9B5440024561A /* BookManager.swift */,
 			);
 			path = Books;
+			sourceTree = "<group>";
+		};
+		FB0CAA6828A9BB900024561A /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				FB55AFAA28AABD8D0083EFC3 /* Page */,
+				FB55AFA128AAAEBD0083EFC3 /* Readers */,
+				FB0CAA6928A9BB9C0024561A /* ReaderViewController2.swift */,
+				FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */,
+				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
+				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
+			);
+			path = Reader;
 			sourceTree = "<group>";
 		};
 		FB0E1CCC288AE8AD00B67BA9 /* anilist */ = {
@@ -786,11 +825,14 @@
 			children = (
 				FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */,
 				FB31AD0227AC39F500D50410 /* UIColor.swift */,
+				FBD6A4042857AF2C007116C9 /* UIImage.swift */,
 				FBED231627B83B670095D0C0 /* UISwitch.swift */,
 				FB4ADC74281206AD00F6D7FB /* UIStepper.swift */,
+				FB55AF9F28AAAD9E0083EFC3 /* UIToolbar.swift */,
+				FB55AFA628AAAFE10083EFC3 /* UINavigationItem.swift */,
 				FB716E0A283FF85400F1BB5D /* UIView.swift */,
+				FB55AFA828AAB1440083EFC3 /* UIViewController.swift */,
 				37F3E66A2850F53200A944E0 /* CGRect.swift */,
-				FBD6A4042857AF2C007116C9 /* UIImage.swift */,
 				FBCA1B292889864E007149C5 /* View.swift */,
 				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
 				FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */,
@@ -805,6 +847,33 @@
 				FB1B485C277CE6600056D02C /* DataManager.swift */,
 			);
 			path = Database;
+			sourceTree = "<group>";
+		};
+		FB55AFA128AAAEBD0083EFC3 /* Readers */ = {
+			isa = PBXGroup;
+			children = (
+				FB55AFAD28AAD3F50083EFC3 /* Paged */,
+				FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */,
+			);
+			path = Readers;
+			sourceTree = "<group>";
+		};
+		FB55AFAA28AABD8D0083EFC3 /* Page */ = {
+			isa = PBXGroup;
+			children = (
+				FB55AFAB28AABD980083EFC3 /* ReaderPageView2.swift */,
+			);
+			path = Page;
+			sourceTree = "<group>";
+		};
+		FB55AFAD28AAD3F50083EFC3 /* Paged */ = {
+			isa = PBXGroup;
+			children = (
+				FB55AFA228AAAEDF0083EFC3 /* ReaderPagedViewController.swift */,
+				FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */,
+				FB55AFAE28AAD40B0083EFC3 /* ReaderPageViewController.swift */,
+			);
+			path = Paged;
 			sourceTree = "<group>";
 		};
 		FB716DE8283D5F2000F1BB5D /* Logging */ = {
@@ -923,7 +992,6 @@
 				FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */,
 				FB1B48B3277CF8280056D02C /* ReaderViewController.swift */,
 				FB67EE5D27ECC6D200C468EA /* ToolbarContainerView.swift */,
-				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
 				FB72502927CC6A9A0037F1C9 /* ReaderSettingsViewController.swift */,
 				FB5FB5F52794EBD60059632B /* ChapterListPopoverContentController.swift */,
 			);
@@ -1253,6 +1321,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB4B0AEE285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
+				FB55AFA328AAAEDF0083EFC3 /* ReaderPagedViewController.swift in Sources */,
 				FB4EEBCA27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB6E34C8279DF76300BFE54B /* MangaGridFlowLayout.swift in Sources */,
 				FB72501C27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
@@ -1287,6 +1356,7 @@
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
+				FB0CAA6A28A9BB9C0024561A /* ReaderViewController2.swift in Sources */,
 				FB0E1CCE288AE9B000B67BA9 /* AniListTracker.swift in Sources */,
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
@@ -1302,10 +1372,13 @@
 				FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */,
 				FB78648A2848F98400125DC0 /* HistoryViewController.swift in Sources */,
 				FBED233A27C439C20095D0C0 /* MangaViewHeaderView.swift in Sources */,
+				FB55AFA028AAAD9E0083EFC3 /* UIToolbar.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */,
 				FB0CAA5428A68FDF0024561A /* LockedPageStackView.swift in Sources */,
+				FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */,
 				FB0CAA5628A6BF8A0024561A /* NSPersistentContainer.swift in Sources */,
+				FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB90F6CC2899867D000C37E6 /* CoreDataManager.swift in Sources */,
@@ -1323,6 +1396,7 @@
 				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */,
 				FBD6A40E285916F2007116C9 /* ReaderScrollPageView.swift in Sources */,
+				FB55AFA528AAAEF70083EFC3 /* BaseViewController.swift in Sources */,
 				FB716E04283E7D4D00F1BB5D /* String.swift in Sources */,
 				FB02E1F4288D7C0C00B9E2DE /* Book.swift in Sources */,
 				FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */,
@@ -1330,7 +1404,7 @@
 				FB0E1CCA288AE50700B67BA9 /* OAuthTracker.swift in Sources */,
 				FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */,
 				FBE578F728983C3C00F9F1B5 /* BookCollectionViewController.swift in Sources */,
-				FBE578FD289951F700F9F1B5 /* ObservingViewController.swift in Sources */,
+				FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */,
 				FB1B485D277CE6600056D02C /* DataManager.swift in Sources */,
 				FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
@@ -1345,6 +1419,7 @@
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
+				FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
@@ -1357,7 +1432,9 @@
 				FB72502A27CC6A9B0037F1C9 /* ReaderSettingsViewController.swift in Sources */,
 				FB2E02522868A67500786F21 /* TrackerView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
+				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
+				FB55AFA728AAAFE10083EFC3 /* UINavigationItem.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FBED231927B8BA7C0095D0C0 /* MiniModalViewController.swift in Sources */,
 				FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */,
@@ -1383,6 +1460,7 @@
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
 				FB6E34CA279DF9D800BFE54B /* MangaCollectionViewController.swift in Sources */,
 				FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */,
+				FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */,
 				FB4B0AE6285CDD3F0066A13B /* TrackersViewController.swift in Sources */,
 				FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */,
 				FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */,
@@ -1402,9 +1480,11 @@
 				FB72500B27CA8DED0037F1C9 /* BackupsViewController.swift in Sources */,
 				FBE7813728333A250038C0E3 /* MangaChapterTableViewCell.swift in Sources */,
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
+				FB55AFAC28AABD980083EFC3 /* ReaderPageView2.swift in Sources */,
 				37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */,
 				FB0CAA5228A68FD70024561A /* EmptyPageStackView.swift in Sources */,
 				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
+				FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */,
 				FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */,
 				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
 				FB0CAA6528A9B5440024561A /* BookManager.swift in Sources */,

@@ -33,7 +33,7 @@ class CategorySelectViewController: UITableViewController {
         title = NSLocalizedString("CATEGORIES", comment: "")
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(close))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(add))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(addCategory))
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
@@ -47,7 +47,7 @@ class CategorySelectViewController: UITableViewController {
         dismiss(animated: true)
     }
 
-    @objc func add() {
+    @objc func addCategory() {
         close()
         Task.detached {
             if await self.inLibrary {

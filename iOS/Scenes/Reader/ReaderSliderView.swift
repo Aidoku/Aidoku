@@ -38,10 +38,10 @@ class ReaderSliderView: UIControl {
         }
     }
 
-    let trackView = UIView()
-    let progressedTrackView = UIView()
-    let thumbView = UIView()
-    let grabberView = UIView()
+    private let trackView = UIView()
+    private let progressedTrackView = UIView()
+    private let thumbView = UIView()
+    private let grabberView = UIView()
 
     private var trackWidthConstraint: NSLayoutConstraint?
     private var trackPositionConstraint: NSLayoutConstraint?
@@ -57,7 +57,19 @@ class ReaderSliderView: UIControl {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        configure()
+        constrain()
+    }
 
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        updateLayerFrames()
+    }
+
+    func configure() {
         trackView.backgroundColor = .secondarySystemFill
         trackView.layer.cornerRadius = 1.5
         trackView.isUserInteractionEnabled = false
@@ -83,37 +95,34 @@ class ReaderSliderView: UIControl {
         grabberView.layer.cornerRadius = 5
         grabberView.translatesAutoresizingMaskIntoConstraints = false
         thumbView.addSubview(grabberView)
+    }
 
-        trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
-        trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
-        trackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        trackView.heightAnchor.constraint(equalToConstant: 3).isActive = true
-
+    func constrain() {
         trackWidthConstraint = progressedTrackView.widthAnchor.constraint(equalToConstant: 5)
         trackWidthConstraint?.isActive = true
         trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
         trackPositionConstraint?.isActive = true
-        progressedTrackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        progressedTrackView.heightAnchor.constraint(equalToConstant: 3).isActive = true
-
         thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
         thumbPositionConstraint?.isActive = true
-        thumbView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        thumbView.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        thumbView.widthAnchor.constraint(equalToConstant: 30).isActive = true
 
-        grabberView.centerXAnchor.constraint(equalTo: thumbView.centerXAnchor).isActive = true
-        grabberView.centerYAnchor.constraint(equalTo: thumbView.centerYAnchor).isActive = true
-        grabberView.heightAnchor.constraint(equalToConstant: 10).isActive = true
-        grabberView.widthAnchor.constraint(equalToConstant: 10).isActive = true
-    }
+        NSLayoutConstraint.activate([
+            trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
+            trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5),
+            trackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            trackView.heightAnchor.constraint(equalToConstant: 3),
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+            progressedTrackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            progressedTrackView.heightAnchor.constraint(equalToConstant: 3),
 
-    override func layoutSubviews() {
-        updateLayerFrames()
+            thumbView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            thumbView.heightAnchor.constraint(equalToConstant: 30),
+            thumbView.widthAnchor.constraint(equalToConstant: 30),
+
+            grabberView.centerXAnchor.constraint(equalTo: thumbView.centerXAnchor),
+            grabberView.centerYAnchor.constraint(equalTo: thumbView.centerYAnchor),
+            grabberView.heightAnchor.constraint(equalToConstant: 10),
+            grabberView.widthAnchor.constraint(equalToConstant: 10)
+        ])
     }
 
     private func updateLayerFrames() {
