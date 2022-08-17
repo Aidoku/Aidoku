@@ -37,15 +37,19 @@ extension CoreDataManager {
         return Int(historyObject?.progress ?? -1)
     }
 
-    /// Set page progress for a chapter.
+    /// Set page progress for a chapter and creates a history object if it doesn't already exist.
     func setProgress(_ progress: Int, sourceId: String, mangaId: String, chapterId: String) async {
         await container.performBackgroundTask { context in
-            guard let historyObject = self.getHistory(
+            var historyObject = self.getHistory(
                 sourceId: sourceId,
                 mangaId: mangaId,
                 chapterId: chapterId,
                 context: context
-            ) else { return } // TODO: create if doesn't exist?
+            )
+            if historyObject == nil {
+                historyObject = HistoryObject(context: context)
+            }
+            guard let historyObject = historyObject else { return }
             historyObject.progress = Int16(progress)
             historyObject.dateRead = Date()
             do {

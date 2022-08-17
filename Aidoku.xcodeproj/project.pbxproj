@@ -219,6 +219,7 @@
 		FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */; };
 		FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */; };
 		FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */; };
+		FBC1272128AD2D9400B68FFC /* DownsampleProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1272028AD2D9400B68FFC /* DownsampleProcessor.swift */; };
 		FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */; };
 		FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
 		FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
@@ -435,6 +436,7 @@
 		FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedViewModel.swift; sourceTree = "<group>"; };
 		FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderHoldingDelegate.swift; sourceTree = "<group>"; };
 		FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderReaderDelegate.swift; sourceTree = "<group>"; };
+		FBC1272028AD2D9400B68FFC /* DownsampleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownsampleProcessor.swift; sourceTree = "<group>"; };
 		FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerAddView.swift; sourceTree = "<group>"; };
 		FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.5.xcdatamodel; sourceTree = "<group>"; };
 		FBCA1B232888A910007149C5 /* TrackObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackObject.swift; sourceTree = "<group>"; };
@@ -862,6 +864,7 @@
 			isa = PBXGroup;
 			children = (
 				FB55AFAB28AABD980083EFC3 /* ReaderPageView2.swift */,
+				FBC1272028AD2D9400B68FFC /* DownsampleProcessor.swift */,
 			);
 			path = Page;
 			sourceTree = "<group>";
@@ -1472,6 +1475,7 @@
 				FBD6A40028523A89007116C9 /* ReaderPageCollectionViewCell.swift in Sources */,
 				FB67EE5E27ECC6D200C468EA /* ToolbarContainerView.swift in Sources */,
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
+				FBC1272128AD2D9400B68FFC /* DownsampleProcessor.swift in Sources */,
 				FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB4CB19327A70B9A00A05445 /* MangaViewController.swift in Sources */,
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,
