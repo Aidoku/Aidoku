@@ -167,14 +167,16 @@ class ReaderViewController2: BaseViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        Task {
-            await CoreDataManager.shared.setProgress(
-                currentPage,
-                sourceId: chapter.sourceId,
-                mangaId: chapter.mangaId,
-                chapterId: chapter.id
-            )
-            NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            Task {
+                await CoreDataManager.shared.setProgress(
+                    currentPage,
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId,
+                    chapterId: chapter.id
+                )
+                NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+            }
         }
     }
 

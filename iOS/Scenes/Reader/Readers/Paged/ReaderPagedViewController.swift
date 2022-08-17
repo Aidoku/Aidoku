@@ -13,6 +13,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     weak var delegate: ReaderHoldingDelegate?
 
+    var chapter: Chapter?
     var pageViewControllers: [ReaderPageViewController] = []
 
     var pagesPerView = 1
@@ -81,7 +82,7 @@ extension ReaderPagedViewController {
         }
 
         let targetViewController = pageViewControllers[page]
-        targetViewController.setPage(viewModel.pages[page - 1])
+        targetViewController.setPage(viewModel.pages[page - 1], sourceId: chapter?.sourceId ?? "")
 
         pageViewController.setViewControllers(
             [targetViewController],
@@ -101,7 +102,7 @@ extension ReaderPagedViewController {
         for i in range {
             guard i > 0 else { continue }
             guard i <= viewModel.pages.count else { break }
-            pageViewControllers[i].setPage(viewModel.pages[i - 1])
+            pageViewControllers[i].setPage(viewModel.pages[i - 1], sourceId: chapter?.sourceId ?? "")
         }
     }
 }
@@ -122,6 +123,7 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
     }
 
     func setChapter(_ chapter: Chapter, startPage: Int) {
+        self.chapter = chapter
         Task {
             await viewModel.loadPages(chapter: chapter)
             delegate?.setTotalPages(viewModel.pages.count)
