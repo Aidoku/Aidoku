@@ -150,10 +150,6 @@ class ReaderViewController2: BaseViewController {
             currentPage = startPage
             reader?.setChapter(chapter, startPage: startPage)
         }
-
-//        activityIndicator.stopAnimating()
-//        toolbarView.totalPages = 12
-//        toolbarView.currentPage = 1
     }
 
     override func constrain() {
@@ -212,21 +208,21 @@ extension ReaderViewController2: ReaderHoldingDelegate {
     func getNextChapter() -> Chapter? {
         guard
             let index = chapterList.firstIndex(of: chapter),
-            index + 1 < chapterList.count
-        else {
-            return nil
-        }
-        return chapterList[index + 1]
-    }
-
-    func getPreviousChapter() -> Chapter? {
-        guard
-            let index = chapterList.firstIndex(of: chapter),
             index - 1 >= 0
         else {
             return nil
         }
         return chapterList[index - 1]
+    }
+
+    func getPreviousChapter() -> Chapter? {
+        guard
+            let index = chapterList.firstIndex(of: chapter),
+            index + 1 < chapterList.count
+        else {
+            return nil
+        }
+        return chapterList[index + 1]
     }
 
     func setChapter(_ chapter: Chapter) {
