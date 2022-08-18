@@ -62,6 +62,6 @@ struct DownsampleProcessor: ImageProcessing {
             return image
         }
 
-        return PlatformImage(cgImage: output)
+        return PlatformImage(cgImage: output, scale: image.scale, orientation: image.imageOrientation)
     }
 }

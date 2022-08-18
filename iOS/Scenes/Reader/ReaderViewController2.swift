@@ -244,6 +244,19 @@ extension ReaderViewController2: ReaderHoldingDelegate {
     func displayPage(_ page: Int) {
         toolbarView.displayPage(page)
     }
+
+    func setCompleted(_ completed: Bool = true, page: Int? = nil) {
+        Task {
+            await CoreDataManager.shared.setCompleted(
+                completed,
+                progress: page,
+                sourceId: chapter.sourceId,
+                mangaId: chapter.mangaId,
+                chapterId: chapter.id
+            )
+            await TrackerManager.shared.setCompleted(chapter: chapter)
+        }
+    }
 }
 
 // MARK: - Bar Visibility
