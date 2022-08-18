@@ -79,7 +79,7 @@ class ReaderPageView2: UIView {
 
         let processors: [ImageProcessing]
         if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && UIScreen.main.bounds.width > 0 {
-            processors = [DownsampleProcessor(width: UIScreen.main.bounds.width)]
+            processors = [DownsampleProcessor(width: UIScreen.main.bounds.width * 2)]
         } else {
             processors = []
         }

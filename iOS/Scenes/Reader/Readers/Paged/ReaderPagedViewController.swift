@@ -77,25 +77,22 @@ extension ReaderPagedViewController {
 
         pageViewControllers = []
 
-        // previous chapter pages
-        if let previousChapter = delegate?.getPreviousChapter() {
-            self.previousChapter = previousChapter
+        previousChapter = delegate?.getPreviousChapter()
 
-            // last page of previous chapter
+        // last page of previous chapter
+        if previousChapter != nil {
             if let previousChapterPreviewController = previousChapterPreviewController {
                 pageViewControllers.append(previousChapterPreviewController)
             } else {
                 pageViewControllers.append(ReaderPageViewController(type: .page))
             }
-
-            // previous chapter transition page
-            let previousInfoController = ReaderPageViewController(type: .info(.previous))
-            previousInfoController.currentChapter = chapter
-            previousInfoController.previousChapter = previousChapter
-            pageViewControllers.append(previousInfoController)
-        } else {
-            previousChapter = nil
         }
+
+        // previous chapter transition page
+        let previousInfoController = ReaderPageViewController(type: .info(.previous))
+        previousInfoController.currentChapter = chapter
+        previousInfoController.previousChapter = previousChapter
+        pageViewControllers.append(previousInfoController)
 
         // chapter pages
         let startPos = firstPageController != nil ? 1 : 0
@@ -113,24 +110,21 @@ extension ReaderPagedViewController {
             pageViewControllers.append(lastPageController)
         }
 
-        // next chapter pages
-        if let nextChapter = delegate?.getNextChapter() {
-            self.nextChapter = nextChapter
+        nextChapter = delegate?.getNextChapter()
 
-            // next chapter transition page
-            let nextInfoController = ReaderPageViewController(type: .info(.next))
-            nextInfoController.currentChapter = chapter
-            nextInfoController.nextChapter = nextChapter
-            pageViewControllers.append(nextInfoController)
+        // next chapter transition page
+        let nextInfoController = ReaderPageViewController(type: .info(.next))
+        nextInfoController.currentChapter = chapter
+        nextInfoController.nextChapter = nextChapter
+        pageViewControllers.append(nextInfoController)
 
-            // first page of next chapter
+        // first page of next chapter
+        if nextChapter != nil {
             if let nextChapterPreviewController = nextChapterPreviewController {
                 pageViewControllers.append(nextChapterPreviewController)
             } else {
                 pageViewControllers.append(ReaderPageViewController(type: .page))
             }
-        } else {
-            nextChapter = nil
         }
     }
 
@@ -267,6 +261,9 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
 
         default:
             delegate?.setCurrentPage(page)
+            if page >= viewModel.pages.count {
+                delegate?.setCompleted(true, page: page)
+            }
             loadPages(in: page - 1...page + pagesToPreload) // preload 1 before and pagesToPreload ahead
         }
     }
