@@ -39,4 +39,13 @@ extension CoreDataManager {
             }
         }
     }
+
+    func getMangaSourceReadingMode(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Int {
+        let context = context ?? self.context
+        let request = MangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", sourceId, mangaId)
+        request.fetchLimit = 1
+        request.propertiesToFetch = ["viewer"]
+        return Int((try? context.fetch(request))?.first?.viewer ?? -1)
+    }
 }

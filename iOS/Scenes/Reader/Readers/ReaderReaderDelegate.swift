@@ -5,9 +5,13 @@
 //  Created by Skitty on 8/16/22.
 //
 
-import CoreGraphics
+import UIKit
 
-protocol ReaderReaderDelegate: AnyObject {
+// swiftlint:disable:next class_delegate_protocol
+protocol ReaderReaderDelegate: UIViewController {
+
+    var readingMode: ReadingMode { get set }
+    var delegate: ReaderHoldingDelegate? { get set }
 
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)

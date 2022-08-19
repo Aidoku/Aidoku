@@ -14,7 +14,21 @@ class ReaderPagedViewController: BaseObservingViewController {
     weak var delegate: ReaderHoldingDelegate?
 
     var chapter: Chapter?
+    var readingMode: ReadingMode = .rtl {
+        didSet(oldValue) {
+            guard readingMode != oldValue else { return }
+            if readingMode == .vertical || oldValue == .vertical {
+                pageViewController.remove()
+                pageViewController = makePageViewController()
+                configure()
+            }
+            Task {
+                await loadChapter(startPage: currentPage)
+            }
+        }
+    }
     var pageViewControllers: [ReaderPageViewController] = []
+    var currentPage = 0
 
     var pagesPerView = 1
     var usesAutoPageLayout = false
@@ -23,11 +37,15 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var previousChapter: Chapter?
     private var nextChapter: Chapter?
 
-    private let pageViewController = UIPageViewController(
-        transitionStyle: .scroll,
-        navigationOrientation: .horizontal,
-        options: nil
-    )
+    private lazy var pageViewController = makePageViewController()
+
+    func makePageViewController() -> UIPageViewController {
+        UIPageViewController(
+            transitionStyle: .scroll,
+            navigationOrientation: readingMode == .vertical ? .vertical : .horizontal,
+            options: nil
+        )
+    }
 
     override func configure() {
         pageViewController.delegate = self
@@ -260,6 +278,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             loadNextChapter()
 
         default:
+            currentPage = page
             delegate?.setCurrentPage(page)
             if page >= viewModel.pages.count {
                 delegate?.setCompleted(true, page: page)
@@ -273,6 +292,28 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
 extension ReaderPagedViewController: UIPageViewControllerDataSource {
 
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        switch readingMode {
+        case .rtl:
+            return getPageController(before: viewController)
+        case .ltr, .vertical:
+            return getPageController(after: viewController)
+        default:
+            return nil
+        }
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        switch readingMode {
+        case .rtl:
+            return getPageController(after: viewController)
+        case .ltr, .vertical:
+            return getPageController(before: viewController)
+        default:
+            return nil
+        }
+    }
+
+    func getPageController(after viewController: UIViewController) -> ReaderPageViewController? {
         guard
             let viewController = viewController as? ReaderPageViewController,
             let currentIndex = pageViewControllers.firstIndex(of: viewController)
@@ -288,7 +329,7 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
         return nil
     }
 
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+    func getPageController(before viewController: UIViewController) -> ReaderPageViewController? {
         guard
             let viewController = viewController as? ReaderPageViewController,
             let currentIndex = pageViewControllers.firstIndex(of: viewController)
