@@ -34,6 +34,7 @@ class ReaderPageView2: UIView {
         addSubview(progressView)
 
         imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
     }

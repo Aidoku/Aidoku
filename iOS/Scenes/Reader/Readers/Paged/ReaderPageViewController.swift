@@ -23,7 +23,7 @@ class ReaderPageViewController: BaseViewController {
 
     private var infoView: ReaderInfoPageView?
     private var zoomView: ZoomableScrollView?
-    private var pageView: ReaderPageView2?
+    var pageView: ReaderPageView2?
     private var reloadButton: UIButton?
 
     var currentChapter: Chapter? {
