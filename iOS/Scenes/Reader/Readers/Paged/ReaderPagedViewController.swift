@@ -102,7 +102,9 @@ extension ReaderPagedViewController {
             if let previousChapterPreviewController = previousChapterPreviewController {
                 pageViewControllers.append(previousChapterPreviewController)
             } else {
-                pageViewControllers.append(ReaderPageViewController(type: .page))
+                let page = ReaderPageViewController(type: .page)
+                page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                pageViewControllers.append(page)
             }
         }
 
@@ -121,7 +123,9 @@ extension ReaderPagedViewController {
         }
 
         for _ in startPos..<endPos {
-            pageViewControllers.append(ReaderPageViewController(type: .page))
+            let page = ReaderPageViewController(type: .page)
+            page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+            pageViewControllers.append(page)
         }
 
         if let lastPageController = lastPageController {
@@ -141,7 +145,9 @@ extension ReaderPagedViewController {
             if let nextChapterPreviewController = nextChapterPreviewController {
                 pageViewControllers.append(nextChapterPreviewController)
             } else {
-                pageViewControllers.append(ReaderPageViewController(type: .page))
+                let page = ReaderPageViewController(type: .page)
+                page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                pageViewControllers.append(page)
             }
         }
     }
@@ -340,5 +346,44 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
             return pageViewControllers[currentIndex - 1]
         }
         return nil
+    }
+}
+
+// MARK: - Context Menu Delegate
+extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
+
+    func contextMenuInteraction(
+        _ interaction: UIContextMenuInteraction,
+        configurationForMenuAtLocation location: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard
+            UserDefaults.standard.bool(forKey: "Reader.saveImageOption"),
+            let pageView = interaction.view as? UIImageView
+        else {
+            return nil
+        }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(
+                title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
+                image: UIImage(systemName: "photo")
+            ) { _ in
+                if let image = pageView.image {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+            }
+
+            let shareAction = UIAction(
+                title: NSLocalizedString("SHARE", comment: ""),
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                if let image = pageView.image {
+                    let items = [image]
+                    let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                    self.present(activityController, animated: true)
+                }
+            }
+
+            return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
+        })
     }
 }
