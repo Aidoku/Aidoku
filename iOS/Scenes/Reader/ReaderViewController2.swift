@@ -7,9 +7,15 @@
 
 import UIKit
 
-class ReaderViewController2: BaseViewController {
+class ReaderViewController2: BaseObservingViewController {
+
+    enum Reader {
+        case paged
+        case scroll
+    }
 
     var chapter: Chapter
+    var readingMode: ReadingMode = .rtl
 
     var chapterList: [Chapter] = []
     var currentPage = 1
@@ -20,7 +26,7 @@ class ReaderViewController2: BaseViewController {
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
 
-    private lazy var tapGesture: UITapGestureRecognizer = {
+    private lazy var barToggleTapGesture: UITapGestureRecognizer = {
         let tap = UITapGestureRecognizer(target: self, action: #selector(toggleBarVisibility))
         tap.numberOfTapsRequired = 1
 
@@ -123,7 +129,10 @@ class ReaderViewController2: BaseViewController {
         view.addSubview(activityIndicator)
 
         // bar toggle tap gesture
-        view.addGestureRecognizer(tapGesture)
+        view.addGestureRecognizer(barToggleTapGesture)
+
+        // set reader
+        setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
 
         // load chapter list
         Task {
@@ -131,16 +140,10 @@ class ReaderViewController2: BaseViewController {
                 await loadChapterList()
             }
 
-            // TODO: change
             navigationItem.setTitle(
                 upper: chapter.volumeNum ?? 0 != 0 ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum!) : nil,
                 lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
             )
-
-            let pageController = ReaderPagedViewController()
-            pageController.delegate = self
-            reader = pageController
-            add(child: pageController)
 
             let startPage = CoreDataManager.shared.getProgress(
                 sourceId: chapter.sourceId,
@@ -159,6 +162,12 @@ class ReaderViewController2: BaseViewController {
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+
+    override func observe() {
+        addObserver(forName: "Reader.readingMode") { [weak self] _ in
+            self?.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -195,6 +204,66 @@ class ReaderViewController2: BaseViewController {
     }
     @objc func sliderStopped(_ sender: ReaderSliderView) {
         reader?.sliderStopped(value: sender.currentValue)
+    }
+}
+
+// MARK: - Reading Mode
+extension ReaderViewController2 {
+
+    func setReadingMode(_ mode: String?) {
+        switch mode {
+        case "rtl": readingMode = .rtl
+        case "ltr": readingMode = .ltr
+        case "vertical": readingMode = .vertical
+        case "scroll", "webtoon": readingMode = .webtoon
+        case "continuous": readingMode = .continuous
+        default:
+            // use source's given reading mode
+            let sourceMode = CoreDataManager.shared.getMangaSourceReadingMode(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
+            if let mode = ReadingMode(rawValue: sourceMode) {
+                readingMode = mode
+            } else {
+                readingMode = .rtl
+            }
+        }
+
+        if readingMode == .rtl {
+            toolbarView.sliderView.direction = .backward
+        } else {
+            toolbarView.sliderView.direction = .forward
+        }
+
+        switch readingMode {
+        case .ltr, .rtl, .vertical:
+            setReader(.paged)
+        case .webtoon, .continuous:
+            setReader(.scroll)
+        }
+    }
+
+    func setReader(_ type: Reader) {
+        let pageController: ReaderReaderDelegate?
+        switch type {
+        case .paged:
+            if !(reader is ReaderPagedViewController) {
+                pageController = ReaderPagedViewController()
+            } else {
+                pageController = nil
+            }
+        case .scroll:
+//            if !(reader is ReaderScrollViewController) {
+//                pageController = ReaderScrollViewController()
+//            } else {
+                pageController = nil
+//            }
+        }
+        if let pageController = pageController {
+            reader?.remove()
+            pageController.delegate = self
+            reader = pageController
+            add(child: pageController)
+        }
+        reader?.readingMode = readingMode
     }
 }
 

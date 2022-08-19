@@ -6,8 +6,13 @@
 //
 
 import Foundation
-import CoreGraphics
 import Nuke
+
+#if os(iOS) || os(tvOS)
+import UIKit
+#else
+import CoreGraphics
+#endif
 
 struct DownsampleProcessor: ImageProcessing {
 
@@ -25,7 +30,11 @@ struct DownsampleProcessor: ImageProcessing {
     }
 
     func process(_ image: PlatformImage) -> PlatformImage? {
-        let targetSize = size
+        #if os(macOS)
+            let targetSize = size
+        #else
+            let targetSize = CGSize(width: size.width * UIScreen.main.scale, height: size.height * UIScreen.main.scale)
+        #endif
 
         guard let cgImage = image.cgImage else {
             return nil
