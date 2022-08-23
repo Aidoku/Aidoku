@@ -8,10 +8,6 @@
 import UIKit
 import Kingfisher
 
-protocol ReaderPageViewDelegate: AnyObject {
-    func imageLoaded(key: String, image: UIImage)
-}
-
 class ReaderPageView: UIView {
 
     weak var delegate: ReaderPageViewDelegate?

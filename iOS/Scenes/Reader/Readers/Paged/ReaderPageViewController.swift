@@ -39,8 +39,8 @@ class ReaderPageViewController: BaseViewController {
         set { infoView?.nextChapter = newValue }
     }
 
-    var pageSet = false
-    var page: Page?
+    private var pageSet = false
+    private var page: Page?
 
     init(type: PageType) {
         self.type = type

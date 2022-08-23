@@ -109,6 +109,8 @@ class ReaderViewController2: BaseObservingViewController {
             navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
         }
 
+        loadNavbarTitle()
+
         // toolbar view
         toolbarView.sliderView.addTarget(self, action: #selector(sliderMoved(_:)), for: .valueChanged)
         toolbarView.sliderView.addTarget(self, action: #selector(sliderStopped(_:)), for: .editingDidEnd)
@@ -139,11 +141,6 @@ class ReaderViewController2: BaseObservingViewController {
             if chapterList.isEmpty {
                 await loadChapterList()
             }
-
-            navigationItem.setTitle(
-                upper: chapter.volumeNum ?? 0 != 0 ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum!) : nil,
-                lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
-            )
 
             let startPage = CoreDataManager.shared.getProgress(
                 sourceId: chapter.sourceId,
@@ -188,6 +185,13 @@ class ReaderViewController2: BaseObservingViewController {
     func loadChapterList() async {
         chapterList = (try? await SourceManager.shared.source(for: chapter.sourceId)?
             .getChapterList(manga: Manga(sourceId: chapter.sourceId, id: chapter.mangaId))) ?? []
+    }
+
+    func loadNavbarTitle() {
+        navigationItem.setTitle(
+            upper: chapter.volumeNum ?? 0 != 0 ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum!) : nil,
+            lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
+        )
     }
 
     @objc func openReaderSettings() {
@@ -296,6 +300,7 @@ extension ReaderViewController2: ReaderHoldingDelegate {
 
     func setChapter(_ chapter: Chapter) {
         self.chapter = chapter
+        loadNavbarTitle()
     }
 
     func setCurrentPage(_ page: Int) {

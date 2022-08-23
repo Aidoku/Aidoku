@@ -30,7 +30,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     var pageViewControllers: [ReaderPageViewController] = []
     var currentPage = 0
 
-    var pagesPerView = 1
+    var usesDoublePages = false
     var usesAutoPageLayout = false
     lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
@@ -51,26 +51,42 @@ class ReaderPagedViewController: BaseObservingViewController {
         pageViewController.delegate = self
         pageViewController.dataSource = self
         add(child: pageViewController)
+
+        updatePageLayout()
     }
 
     override func observe() {
         addObserver(forName: "Reader.pagedPageLayout") { [weak self] _ in
             guard let self = self else { return }
-            self.pagesPerView = {
-                self.usesAutoPageLayout = false
-                switch UserDefaults.standard.string(forKey: "Reader.pagedPageLayout") {
-                case "single": return 1
-                case "double": return 2
-                case "auto":
-                    self.usesAutoPageLayout = true
-                    return self.view.bounds.width > self.view.bounds.height ? 2 : 1
-                default: return 1
-                }
-            }()
+            self.updatePageLayout()
+            self.move(toPage: self.currentPage, animated: false)
         }
         addObserver(forName: "Reader.pagesToPreload") { [weak self] notification in
             self?.pagesToPreload = notification.object as? Int
                 ?? UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+        }
+    }
+
+    func updatePageLayout() {
+        usesDoublePages = {
+            self.usesAutoPageLayout = false
+            switch UserDefaults.standard.string(forKey: "Reader.pagedPageLayout") {
+            case "single": return false
+            case "double": return true
+            case "auto":
+                self.usesAutoPageLayout = true
+                return self.view.bounds.width > self.view.bounds.height
+            default: return false
+            }
+        }()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        if usesAutoPageLayout {
+            usesDoublePages = size.width > size.height
+            move(toPage: currentPage, animated: false)
         }
     }
 }
@@ -157,8 +173,26 @@ extension ReaderPagedViewController {
             return
         }
 
-        let targetViewController = pageViewControllers[page + (previousChapter != nil ? 1 : -1)]
-        targetViewController.setPage(viewModel.pages[page - 1], sourceId: chapter?.sourceId ?? "")
+        let vcIndex = page + (previousChapter != nil ? 1 : -1)
+        var targetViewController: UIViewController?
+
+        if usesDoublePages && vcIndex + 1 < pageViewControllers.count {
+            let firstPage = pageViewControllers[vcIndex]
+            let secondPage = pageViewControllers[vcIndex + 1]
+            if case .page = firstPage.type, case .page = secondPage.type {
+                targetViewController = ReaderDoublePageViewController(
+                    firstPage: firstPage.pageView!,
+                    secondPage: secondPage.pageView!,
+                    direction: readingMode == .rtl ? .rtl : .ltr
+                )
+            }
+        } else {
+            targetViewController = pageViewControllers[vcIndex]
+        }
+
+        guard let targetViewController = targetViewController else {
+            return
+        }
 
         pageViewController.setViewControllers(
             [targetViewController],
@@ -174,6 +208,12 @@ extension ReaderPagedViewController {
         }
     }
 
+    func loadPage(at index: Int) {
+        guard index > 0, index <= viewModel.pages.count else { return }
+        let vcIndex = index + (previousChapter != nil ? 1 : -1)
+        pageViewControllers[vcIndex].setPage(viewModel.pages[index - 1], sourceId: chapter?.sourceId ?? "")
+    }
+
     func loadPages(in range: ClosedRange<Int>) {
         for i in range {
             guard i > 0 else { continue }
@@ -182,12 +222,33 @@ extension ReaderPagedViewController {
             pageViewControllers[vcIndex].setPage(viewModel.pages[i - 1], sourceId: chapter?.sourceId ?? "")
         }
     }
+
+    enum PagePosition {
+        case first
+        case second
+    }
+
+    func getIndex(of viewController: UIViewController, pos: PagePosition = .first) -> Int? {
+        var currentIndex: Int?
+        if let viewController = viewController as? ReaderPageViewController {
+            currentIndex = pageViewControllers.firstIndex(of: viewController)
+        } else if let viewController = viewController as? ReaderDoublePageViewController {
+            currentIndex = pageViewControllers.firstIndex(
+                where: pos == .first
+                    ? { $0.pageView == viewController.firstPageView }
+                    : { $0.pageView == viewController.secondPageView }
+            )
+        }
+        return currentIndex
+    }
+
+    func pageIndex(from index: Int) -> Int {
+        index + (previousChapter == nil ? 1 : -1)
+    }
 }
 
 // MARK: - Reader Delegate
 extension ReaderPagedViewController: ReaderReaderDelegate {
-
-    // TODO: settings
 
     func sliderMoved(value: CGFloat) {
         let page = Int(round(value * CGFloat(viewModel.pages.count - 1))) + 1
@@ -237,6 +298,7 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
 
 // MARK: - Page Controller Delegate
 extension ReaderPagedViewController: UIPageViewControllerDelegate {
+
     func pageViewController(
         _ pageViewController: UIPageViewController,
         didFinishAnimating finished: Bool,
@@ -245,8 +307,8 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
     ) {
         guard
             completed,
-            let viewController = pageViewController.viewControllers?.first as? ReaderPageViewController,
-            let currentIndex = pageViewControllers.firstIndex(of: viewController),
+            let viewController = pageViewController.viewControllers?.first,
+            let currentIndex = getIndex(of: viewController, pos: .first),
             pagesToPreload > 0
         else {
             return
@@ -289,7 +351,28 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             if page >= viewModel.pages.count {
                 delegate?.setCompleted(true, page: page)
             }
-            loadPages(in: page - 1...page + pagesToPreload) // preload 1 before and pagesToPreload ahead
+            // preload 1 before and pagesToPreload ahead
+            loadPages(in: page - 1 - (usesDoublePages ? 1 : 0)...page + pagesToPreload + (usesDoublePages ? 1 : 0))
+        }
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
+        for controller in pendingViewControllers {
+            if let controller = controller as? ReaderDoublePageViewController {
+                if let first = getIndex(of: controller, pos: .first) {
+                    let index = pageIndex(from: first) - 1
+                    guard index >= 0, index < viewModel.pages.count else { break }
+                    controller.setPage(viewModel.pages[index], for: .first)
+                }
+                if let second = getIndex(of: controller, pos: .second) {
+                    let index = pageIndex(from: second) - 1
+                    guard index >= 0, index < viewModel.pages.count else { break }
+                    controller.setPage(viewModel.pages[index], for: .second)
+                }
+            } else {
+                guard let index = getIndex(of: controller) else { continue }
+                loadPage(at: index)
+            }
         }
     }
 }
@@ -319,30 +402,47 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
         }
     }
 
-    func getPageController(after viewController: UIViewController) -> ReaderPageViewController? {
-        guard
-            let viewController = viewController as? ReaderPageViewController,
-            let currentIndex = pageViewControllers.firstIndex(of: viewController)
-        else {
+    func getPageController(after viewController: UIViewController) -> UIViewController? {
+        guard let currentIndex = getIndex(of: viewController, pos: .second) else {
             return nil
         }
         if currentIndex + 1 < pageViewControllers.count {
-            if pagesPerView > 1 && currentIndex + pagesPerView < pageViewControllers.count {
-                // TODO: use double layout, ReaderDoublePageViewController
+            // check for double page layout
+            if usesDoublePages && currentIndex + 2 < pageViewControllers.count {
+                let firstPage = pageViewControllers[currentIndex + 1]
+                let secondPage = pageViewControllers[currentIndex + 2]
+                // make sure both pages are not info pages
+                if case .page = firstPage.type, case .page = secondPage.type {
+                    return ReaderDoublePageViewController(
+                        firstPage: firstPage.pageView!,
+                        secondPage: secondPage.pageView!,
+                        direction: readingMode == .rtl ? .rtl : .ltr
+                    )
+                }
             }
             return pageViewControllers[currentIndex + 1]
         }
         return nil
     }
 
-    func getPageController(before viewController: UIViewController) -> ReaderPageViewController? {
-        guard
-            let viewController = viewController as? ReaderPageViewController,
-            let currentIndex = pageViewControllers.firstIndex(of: viewController)
-        else {
+    func getPageController(before viewController: UIViewController) -> UIViewController? {
+        guard let currentIndex = getIndex(of: viewController, pos: .first) else {
             return nil
         }
         if currentIndex - 1 >= 0 {
+            // check for double page layout
+            if usesDoublePages && currentIndex - 2 >= 0 {
+                let firstPage = pageViewControllers[currentIndex - 2]
+                let secondPage = pageViewControllers[currentIndex - 1]
+                // make sure both pages are not info pages
+                if case .page = firstPage.type, case .page = secondPage.type {
+                    return ReaderDoublePageViewController(
+                        firstPage: firstPage.pageView!,
+                        secondPage: secondPage.pageView!,
+                        direction: readingMode == .rtl ? .rtl : .ltr
+                    )
+                }
+            }
             return pageViewControllers[currentIndex - 1]
         }
         return nil
