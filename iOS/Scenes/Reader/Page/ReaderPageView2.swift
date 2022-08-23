@@ -11,8 +11,11 @@ import NukeExtensions
 
 class ReaderPageView2: UIView {
 
+    weak var delegate: ReaderPageViewDelegate?
+
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+    var imageWidthConstraint: NSLayoutConstraint?
 
     private var sourceId: String?
     var checkForRequestModifier = true
@@ -37,6 +40,9 @@ class ReaderPageView2: UIView {
         imageView.isUserInteractionEnabled = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
+
+        imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
+        imageWidthConstraint?.isActive = true
     }
 
     func constrain() {
@@ -46,10 +52,10 @@ class ReaderPageView2: UIView {
             progressView.centerXAnchor.constraint(equalTo: centerXAnchor),
             progressView.centerYAnchor.constraint(equalTo: centerYAnchor),
 
-            imageView.topAnchor.constraint(equalTo: topAnchor),
-            imageView.leftAnchor.constraint(equalTo: leftAnchor),
-            imageView.rightAnchor.constraint(equalTo: rightAnchor),
-            imageView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            imageView.heightAnchor.constraint(lessThanOrEqualTo: heightAnchor),
+            imageView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor),
+            imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
 
@@ -101,7 +107,17 @@ class ReaderPageView2: UIView {
                     self.progressView.isHidden = true
                     switch result {
                     case .success:
+                        // size image width properly
+                        let multiplier = (self.imageView.image?.size.width ?? 0) / (self.imageView.image?.size.height ?? 1)
+                        self.imageWidthConstraint?.isActive = false
+                        self.imageWidthConstraint = self.imageView.widthAnchor.constraint(
+                            equalTo: self.imageView.heightAnchor,
+                            multiplier: multiplier
+                        )
+                        self.imageWidthConstraint?.isActive = true
+
                         continuation.resume(returning: true)
+
                     case .failure:
                         continuation.resume(returning: false)
                     }
