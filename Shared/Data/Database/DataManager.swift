@@ -303,6 +303,7 @@ extension DataManager {
         }
     }
 
+    @MainActor
     func getChapters(for manga: Manga, fromSource: Bool = false) async -> [Chapter] {
         if fromSource {
             return (try? await SourceManager.shared.source(for: manga.sourceId)?.getChapterList(manga: manga)) ?? []

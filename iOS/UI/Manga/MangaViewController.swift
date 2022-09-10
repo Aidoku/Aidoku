@@ -173,7 +173,7 @@ class MangaViewController: UIViewController {
             forName: Notification.Name("updateLibrary"), object: nil, queue: nil, using: navbarUpdateBlock
         ))
 
-        Task {
+        Task { @MainActor in
             if let newManga = try? await source.getMangaDetails(manga: manga) {
                 manga = manga.copy(from: newManga)
                 if chapters.isEmpty {
