@@ -24,7 +24,7 @@ class ReaderPageViewController: BaseViewController {
     private var infoView: ReaderInfoPageView?
     private var zoomView: ZoomableScrollView?
     var pageView: ReaderPageView2?
-    private var reloadButton: UIButton?
+    lazy var reloadButton = UIButton(type: .roundedRect)
 
     var currentChapter: Chapter? {
         get { infoView?.currentChapter }
@@ -79,7 +79,6 @@ class ReaderPageViewController: BaseViewController {
             zoomView.addSubview(pageView)
             zoomView.zoomView = pageView
 
-            let reloadButton = UIButton(type: .roundedRect)
             reloadButton.isHidden = true
             reloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
             reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
@@ -101,7 +100,7 @@ class ReaderPageViewController: BaseViewController {
                 infoView.rightAnchor.constraint(equalTo: view.rightAnchor),
                 infoView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
-        } else if let zoomView = zoomView, let pageView = pageView, let reloadButton = reloadButton {
+        } else if let zoomView = zoomView, let pageView = pageView {
             NSLayoutConstraint.activate([
                 zoomView.topAnchor.constraint(equalTo: view.topAnchor),
                 zoomView.leftAnchor.constraint(equalTo: view.leftAnchor),
@@ -127,15 +126,15 @@ class ReaderPageViewController: BaseViewController {
             let result = await pageView.setPage(page, sourceId: sourceId)
             if !result {
                 pageSet = false
-                reloadButton?.isHidden = false
+                reloadButton.isHidden = false
             } else {
-                reloadButton?.isHidden = true
+                reloadButton.isHidden = true
             }
         }
     }
 
     @objc func reload() {
-        reloadButton?.isHidden = true
+        reloadButton.isHidden = true
         pageView?.progressView.setProgress(value: 0, withAnimation: false)
         pageView?.progressView.isHidden = false
         if let page = page {

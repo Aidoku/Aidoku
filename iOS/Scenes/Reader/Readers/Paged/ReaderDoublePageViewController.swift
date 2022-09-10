@@ -15,9 +15,9 @@ class ReaderDoublePageViewController: BaseViewController {
     }
 
     lazy var zoomView = ZoomableScrollView(frame: view.bounds)
-    let pageStack = UIStackView()
-    let firstPageView: ReaderPageView2
-    let secondPageView: ReaderPageView2
+    private let pageStack = UIStackView()
+    let firstPageController: ReaderPageViewController
+    let secondPageController: ReaderPageViewController
 
     private lazy var firstReloadButton = UIButton(type: .roundedRect)
     private lazy var secondReloadButton = UIButton(type: .roundedRect)
@@ -35,9 +35,9 @@ class ReaderDoublePageViewController: BaseViewController {
     private var firstPage: Page?
     private var secondPage: Page?
 
-    init(firstPage: ReaderPageView2, secondPage: ReaderPageView2, direction: Direction) {
-        self.firstPageView = firstPage
-        self.secondPageView = secondPage
+    init(firstPage: ReaderPageViewController, secondPage: ReaderPageViewController, direction: Direction) {
+        self.firstPageController = firstPage
+        self.secondPageController = secondPage
         self.direction = direction
         super.init()
     }
@@ -56,6 +56,13 @@ class ReaderDoublePageViewController: BaseViewController {
         pageStack.translatesAutoresizingMaskIntoConstraints = false
         zoomView.addSubview(pageStack)
         zoomView.zoomView = pageStack
+
+        guard
+            let firstPageView = firstPageController.pageView,
+            let secondPageView = secondPageController.pageView
+        else {
+            return
+        }
 
         firstPageView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -95,8 +102,17 @@ class ReaderDoublePageViewController: BaseViewController {
             pageStack.widthAnchor.constraint(lessThanOrEqualTo: zoomView.widthAnchor),
             pageStack.heightAnchor.constraint(equalTo: zoomView.heightAnchor),
             pageStack.centerXAnchor.constraint(equalTo: zoomView.centerXAnchor),
-            pageStack.centerYAnchor.constraint(equalTo: zoomView.centerYAnchor),
+            pageStack.centerYAnchor.constraint(equalTo: zoomView.centerYAnchor)
+        ])
 
+        guard
+            let firstPageView = firstPageController.pageView,
+            let secondPageView = secondPageController.pageView
+        else {
+            return
+        }
+
+        NSLayoutConstraint.activate([
             firstPageView.widthAnchor.constraint(equalTo: firstPageView.imageView.widthAnchor),
             secondPageView.widthAnchor.constraint(equalTo: secondPageView.imageView.widthAnchor),
 
@@ -108,20 +124,24 @@ class ReaderDoublePageViewController: BaseViewController {
         ])
     }
 
+    // TODO: fix `SWIFT TASK CONTINUATION MISUSE: setPageImage(url:sourceId:) leaked its continuation!`
     func setPage(_ page: Page, sourceId: String? = nil, for pos: ReaderPagedViewController.PagePosition) {
-        let pageView: ReaderPageView2
+        let pageView: ReaderPageView2?
         let reloadButton: UIButton
         switch pos {
         case .first:
             firstPageSet = true
             firstPage = page
-            pageView = firstPageView
+            pageView = firstPageController.pageView
             reloadButton = firstReloadButton
         case .second:
             secondPageSet = true
             secondPage = page
-            pageView = secondPageView
+            pageView = secondPageController.pageView
             reloadButton = secondReloadButton
+        }
+        guard let pageView = pageView else {
+            return
         }
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
@@ -140,6 +160,7 @@ class ReaderDoublePageViewController: BaseViewController {
 
     @objc func reload(_ sender: UIButton) {
         if sender == firstReloadButton {
+            guard let firstPageView = firstPageController.pageView else { return }
             firstReloadButton.isHidden = true
             firstPageView.progressView.setProgress(value: 0, withAnimation: false)
             firstPageView.progressView.isHidden = false
@@ -147,6 +168,7 @@ class ReaderDoublePageViewController: BaseViewController {
                 setPage(firstPage, for: .first)
             }
         } else {
+            guard let secondPageView = secondPageController.pageView else { return }
             secondReloadButton.isHidden = true
             secondPageView.progressView.setProgress(value: 0, withAnimation: false)
             secondPageView.progressView.isHidden = false

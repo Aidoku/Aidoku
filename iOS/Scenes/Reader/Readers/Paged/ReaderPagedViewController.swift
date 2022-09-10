@@ -86,7 +86,10 @@ class ReaderPagedViewController: BaseObservingViewController {
 
         if usesAutoPageLayout {
             usesDoublePages = size.width > size.height
-            move(toPage: currentPage, animated: false)
+            // refresh all pages (TODO: can this be improved?)
+            Task {
+                await loadChapter(startPage: currentPage)
+            }
         }
     }
 }
@@ -181,8 +184,8 @@ extension ReaderPagedViewController {
             let secondPage = pageViewControllers[vcIndex + 1]
             if case .page = firstPage.type, case .page = secondPage.type {
                 targetViewController = ReaderDoublePageViewController(
-                    firstPage: firstPage.pageView!,
-                    secondPage: secondPage.pageView!,
+                    firstPage: firstPage,
+                    secondPage: secondPage,
                     direction: readingMode == .rtl ? .rtl : .ltr
                 )
             }
@@ -234,9 +237,9 @@ extension ReaderPagedViewController {
             currentIndex = pageViewControllers.firstIndex(of: viewController)
         } else if let viewController = viewController as? ReaderDoublePageViewController {
             currentIndex = pageViewControllers.firstIndex(
-                where: pos == .first
-                    ? { $0.pageView == viewController.firstPageView }
-                    : { $0.pageView == viewController.secondPageView }
+                of: pos == .first
+                    ? viewController.firstPageController
+                    : viewController.secondPageController
             )
         }
         return currentIndex
@@ -414,8 +417,8 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 // make sure both pages are not info pages
                 if case .page = firstPage.type, case .page = secondPage.type {
                     return ReaderDoublePageViewController(
-                        firstPage: firstPage.pageView!,
-                        secondPage: secondPage.pageView!,
+                        firstPage: firstPage,
+                        secondPage: secondPage,
                         direction: readingMode == .rtl ? .rtl : .ltr
                     )
                 }
@@ -437,8 +440,8 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 // make sure both pages are not info pages
                 if case .page = firstPage.type, case .page = secondPage.type {
                     return ReaderDoublePageViewController(
-                        firstPage: firstPage.pageView!,
-                        secondPage: secondPage.pageView!,
+                        firstPage: firstPage,
+                        secondPage: secondPage,
                         direction: readingMode == .rtl ? .rtl : .ltr
                     )
                 }

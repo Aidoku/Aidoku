@@ -182,6 +182,14 @@ class ReaderViewController2: BaseObservingViewController {
         }
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        coordinator.animate(alongsideTransition: nil) { _ in
+            self.toolbarViewWidthConstraint?.constant = size.width
+        }
+    }
+
     func loadChapterList() async {
         chapterList = (try? await SourceManager.shared.source(for: chapter.sourceId)?
             .getChapterList(manga: Manga(sourceId: chapter.sourceId, id: chapter.mangaId))) ?? []
