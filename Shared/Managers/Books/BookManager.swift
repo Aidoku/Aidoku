@@ -16,6 +16,7 @@ class BookManager {
 extension BookManager {
 
     /// Check if a book should skip updating based on skip options.
+    @MainActor
     private func shouldSkip(book: Book, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
         // completed
         if options.contains("completed") && book.status == .completed {
@@ -47,9 +48,8 @@ extension BookManager {
             of: (String, [Chapter]).self,
             returning: [String: [Chapter]].self,
             body: { taskGroup in
-                let backgroundContext = CoreDataManager.shared.container.newBackgroundContext()
                 for book in books {
-                    if shouldSkip(book: book, options: skipOptions, context: backgroundContext) {
+                    if await shouldSkip(book: book, options: skipOptions) {
                         continue
                     }
                     taskGroup.addTask {
@@ -79,6 +79,7 @@ extension BookManager {
     }
 
     /// Refresh manga objects in library.
+    @MainActor
     func refreshLibrary(forceAll: Bool = false) async {
         let allBooks = CoreDataManager.shared.getLibraryManga()
             .compactMap { $0.manga?.toBook() }
