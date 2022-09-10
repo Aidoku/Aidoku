@@ -46,9 +46,10 @@ struct DownsampleProcessor: ImageProcessing {
         let scaleVert = targetSize.height / imageSize.height
         let scale = min(scaleHor, scaleVert)
 
-        guard scale < 1 else {
-            return image // image doesn't require scaling
-        }
+        // if we want to prevent upscaling
+//        guard scale < 1 else {
+//            return image // image doesn't require scaling
+//        }
 
         let size = CGSize(width: CGFloat(round(imageSize.width * scale)), height: CGFloat(round(imageSize.height * scale)))
 
