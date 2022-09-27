@@ -176,7 +176,7 @@ extension ReaderPagedViewController {
             return
         }
 
-        let vcIndex = page + (previousChapter != nil ? 1 : -1)
+        let vcIndex = page + (previousChapter != nil ? 1 : 0)
         var targetViewController: UIViewController?
 
         if usesDoublePages && vcIndex + 1 < pageViewControllers.count {
@@ -213,7 +213,7 @@ extension ReaderPagedViewController {
 
     func loadPage(at index: Int) {
         guard index > 0, index <= viewModel.pages.count else { return }
-        let vcIndex = index + (previousChapter != nil ? 1 : -1)
+        let vcIndex = index + (previousChapter != nil ? 1 : 0)
         pageViewControllers[vcIndex].setPage(viewModel.pages[index - 1], sourceId: chapter?.sourceId ?? "")
     }
 
@@ -221,7 +221,7 @@ extension ReaderPagedViewController {
         for i in range {
             guard i > 0 else { continue }
             guard i <= viewModel.pages.count else { break }
-            let vcIndex = i + (previousChapter != nil ? 1 : -1)
+            let vcIndex = i + (previousChapter != nil ? 1 : 0)
             pageViewControllers[vcIndex].setPage(viewModel.pages[i - 1], sourceId: chapter?.sourceId ?? "")
         }
     }
@@ -246,7 +246,7 @@ extension ReaderPagedViewController {
     }
 
     func pageIndex(from index: Int) -> Int {
-        index + (previousChapter == nil ? 1 : -1)
+        index + (previousChapter != nil ? -1 : 0)
     }
 }
 
@@ -316,7 +316,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         else {
             return
         }
-        let page = currentIndex + (previousChapter == nil ? 1 : -1)
+        let page = currentIndex + (previousChapter != nil ? -1 : 0)
         switch page {
         case -1: // previous chapter last page
             // move previous
