@@ -29,6 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         UserDefaults.standard.register(
             defaults: [
+//                "currentVersion": "0.6", // uncomment next update
+
                 "General.incognitoMode": false,
                 "General.icloudSync": false,
                 "General.appearance": 0,
@@ -88,10 +90,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         ImagePipeline.shared = pipeline
 
-        // migrate to 0.6
-        if !UserDefaults.standard.bool(forKey: "migrated0.6") {
+        // migrate history to 0.6 format
+        if UserDefaults.standard.string(forKey: "currentVersion") != "0.6" {
             CoreDataManager.shared.migrateChapterHistory()
-            UserDefaults.standard.set(true, forKey: "migrated0.6")
+            UserDefaults.standard.set("0.6", forKey: "currentVersion")
         }
 
         return true
