@@ -71,6 +71,7 @@
 		FB1B48B7277CF8280056D02C /* ReaderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B3277CF8280056D02C /* ReaderViewController.swift */; };
 		FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */; };
 		FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */; };
+		FB1B51A828E3405D00D3CE0E /* ReaderSettingsViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController2.swift */; };
 		FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */; };
 		FB1F553428AFE78600CFE182 /* ReaderDoublePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */; };
 		FB1F553628B0069600CFE182 /* ReaderPageViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */; };
@@ -332,6 +333,7 @@
 		FB1B48B3277CF8280056D02C /* ReaderViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderViewController.swift; sourceTree = "<group>"; };
 		FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReaderNavigationController.swift; sourceTree = "<group>"; };
 		FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomableScrollView.swift; sourceTree = "<group>"; };
+		FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSettingsViewController2.swift; sourceTree = "<group>"; };
 		FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMode.swift; sourceTree = "<group>"; };
 		FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDoublePageViewController.swift; sourceTree = "<group>"; };
 		FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageViewDelegate.swift; sourceTree = "<group>"; };
@@ -602,6 +604,7 @@
 				FB55AFAA28AABD8D0083EFC3 /* Page */,
 				FB55AFA128AAAEBD0083EFC3 /* Readers */,
 				FB0CAA6928A9BB9C0024561A /* ReaderViewController2.swift */,
+				FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController2.swift */,
 				FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */,
 				FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */,
 				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
@@ -1407,6 +1410,7 @@
 				FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */,
 				FB31AD1127B1792600D50410 /* ReaderPageView.swift in Sources */,
 				FB0E1CD8288AEAF700B67BA9 /* OAuthClient.swift in Sources */,
+				FB1B51A828E3405D00D3CE0E /* ReaderSettingsViewController2.swift in Sources */,
 				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */,
 				FBD6A40E285916F2007116C9 /* ReaderScrollPageView.swift in Sources */,
