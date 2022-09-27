@@ -203,7 +203,7 @@ class ReaderViewController2: BaseObservingViewController {
     }
 
     @objc func openReaderSettings() {
-        let vc = UINavigationController(rootViewController: ReaderSettingsViewController())
+        let vc = UINavigationController(rootViewController: ReaderSettingsViewController2())
         present(vc, animated: true)
     }
 

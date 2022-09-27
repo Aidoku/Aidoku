@@ -15,6 +15,20 @@ class ReaderPagedViewModel {
     var preloadedChapter: Chapter?
     var preloadedPages: [Page] = []
 
+    static let settings = SettingItem(type: "group", title: NSLocalizedString("PAGED", comment: ""), items: [
+        SettingItem(
+            type: "select",
+            key: "Reader.pagedPageLayout",
+            title: NSLocalizedString("PAGE_LAYOUT", comment: ""),
+            values: ["single", "double", "auto"],
+            titles: [
+                NSLocalizedString("SINGLE_PAGE", comment: ""),
+                NSLocalizedString("DOUBLE_PAGE", comment: ""),
+                NSLocalizedString("AUTOMATIC", comment: "")
+            ]
+        )
+    ])
+
     func loadPages(chapter: Chapter) async {
         if preloadedChapter == chapter {
             pages = preloadedPages
