@@ -7,36 +7,21 @@
 
 import UIKit
 
-class BookCollectionViewController: BaseObservingViewController {
+class BookCollectionViewController: BaseCollectionViewController {
 
-    lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
     lazy var dataSource = makeDataSource()
 
     var itemSpacing: CGFloat = 12
 
     override func configure() {
+        super.configure()
         collectionView.dataSource = dataSource
-        collectionView.delegate = self
-        collectionView.delaysContentTouches = false
-        collectionView.alwaysBounceVertical = true
         collectionView.contentInset = UIEdgeInsets(
             top: 0,
             left: 0,
             bottom: 10,
             right: 0
         )
-        collectionView.showsHorizontalScrollIndicator = false
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(collectionView)
-    }
-
-    override func constrain() {
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor)
-        ])
     }
 
     override func observe() {
@@ -63,7 +48,7 @@ class BookCollectionViewController: BaseObservingViewController {
     }
 
     // MARK: - Collection View Layout
-    func makeCollectionViewLayout() -> UICollectionViewLayout {
+    override func makeCollectionViewLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             switch Section(rawValue: sectionIndex) {
             case .pinned, .regular:
@@ -117,7 +102,7 @@ extension BookCollectionViewController {
 }
 
 // MARK: - Collection View Delegate
-extension BookCollectionViewController: UICollectionViewDelegate {
+extension BookCollectionViewController {
 
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? BookGridCell {

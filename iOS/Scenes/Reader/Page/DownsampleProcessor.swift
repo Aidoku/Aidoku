@@ -17,12 +17,18 @@ import CoreGraphics
 struct DownsampleProcessor: ImageProcessing {
 
     private let size: CGSize
+    private let upscale: Bool
+    private let downscale: Bool
 
-    init(size: CGSize) {
+    init(size: CGSize, upscale: Bool = true, downscale: Bool = true) {
         self.size = size
+        self.upscale = upscale
+        self.downscale = downscale
     }
-    init(width: CGFloat) {
-        self.size = CGSize(width: width, height: 99999)
+    init(width: CGFloat, upscale: Bool = true, downscale: Bool = true) {
+        self.size = CGSize(width: width, height: CGFloat.infinity)
+        self.upscale = upscale
+        self.downscale = downscale
     }
 
     var identifier: String {
@@ -46,10 +52,13 @@ struct DownsampleProcessor: ImageProcessing {
         let scaleVert = targetSize.height / imageSize.height
         let scale = min(scaleHor, scaleVert)
 
-        // if we want to prevent upscaling
-//        guard scale < 1 else {
-//            return image // image doesn't require scaling
-//        }
+        if scale == 1 {
+            return image // no need to scale
+        } else if scale > 1 && !upscale {
+            return image // don't want to upscale
+        } else if scale < 1 && !downscale {
+            return image // don't want to downscale
+        }
 
         let size = CGSize(width: CGFloat(round(imageSize.width * scale)), height: CGFloat(round(imageSize.height * scale)))
 

@@ -138,17 +138,7 @@ class ReaderViewController2: BaseObservingViewController {
 
         // load chapter list
         Task {
-            if chapterList.isEmpty {
-                await loadChapterList()
-            }
-
-            let startPage = CoreDataManager.shared.getProgress(
-                sourceId: chapter.sourceId,
-                mangaId: chapter.mangaId,
-                chapterId: chapter.id
-            )
-            currentPage = startPage
-            reader?.setChapter(chapter, startPage: startPage)
+            await loadCurrentChapter()
         }
     }
 
@@ -163,7 +153,9 @@ class ReaderViewController2: BaseObservingViewController {
 
     override func observe() {
         addObserver(forName: "Reader.readingMode") { [weak self] _ in
-            self?.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+            guard let self = self else { return }
+            self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
     }
 
@@ -193,6 +185,20 @@ class ReaderViewController2: BaseObservingViewController {
     func loadChapterList() async {
         chapterList = (try? await SourceManager.shared.source(for: chapter.sourceId)?
             .getChapterList(manga: Manga(sourceId: chapter.sourceId, id: chapter.mangaId))) ?? []
+    }
+
+    func loadCurrentChapter() async {
+        if chapterList.isEmpty {
+            await loadChapterList()
+        }
+
+        let startPage = CoreDataManager.shared.getProgress(
+            sourceId: chapter.sourceId,
+            mangaId: chapter.mangaId,
+            chapterId: chapter.id
+        )
+        currentPage = startPage
+        reader?.setChapter(chapter, startPage: startPage)
     }
 
     func loadNavbarTitle() {
@@ -263,11 +269,11 @@ extension ReaderViewController2 {
                 pageController = nil
             }
         case .scroll:
-//            if !(reader is ReaderScrollViewController) {
-//                pageController = ReaderScrollViewController()
-//            } else {
+            if !(reader is ReaderWebtoonViewController) {
+                pageController = ReaderWebtoonViewController()
+            } else {
                 pageController = nil
-//            }
+            }
         }
         if let pageController = pageController {
             reader?.remove()
