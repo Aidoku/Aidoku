@@ -72,11 +72,10 @@ class ReaderSettingsViewController2: SettingsTableViewController {
         case "rtl", "ltr", "vertical": // paged
             items.append(ReaderPagedViewModel.settings)
         case "scroll", "webtoon": // scroll
-//            items.append(ReaderScrollViewModel.settings)
-            break
+            items.append(ReaderWebtoonViewModel.settings)
         default: // all settings
             items.append(ReaderPagedViewModel.settings)
-//            items.append(ReaderScrollViewModel.settings)
+            items.append(ReaderWebtoonViewModel.settings)
         }
     }
 

@@ -16,9 +16,10 @@ class ReaderPageView2: UIView {
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
     var imageWidthConstraint: NSLayoutConstraint?
+    var maxWidth = false
 
     private var sourceId: String?
-    var checkForRequestModifier = true
+    private var checkForRequestModifier = true
 
     init() {
         super.init(frame: .zero)
@@ -70,6 +71,9 @@ class ReaderPageView2: UIView {
     func setPageImage(url: URL, sourceId: String? = nil) async -> Bool {
         var urlRequest = URLRequest(url: url)
 
+        self.progressView.setProgress(value: 0, withAnimation: false)
+        self.progressView.alpha = 1
+
         if checkForRequestModifier,
            let sourceId = sourceId,
            let source = SourceManager.shared.source(for: sourceId),
@@ -84,12 +88,8 @@ class ReaderPageView2: UIView {
             checkForRequestModifier = false
         }
 
-        let processors: [ImageProcessing]
-        if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && UIScreen.main.bounds.width > 0 {
-            processors = [DownsampleProcessor(width: UIScreen.main.bounds.width)]
-        } else {
-            processors = []
-        }
+        let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+        let processors = [DownsampleProcessor(width: UIScreen.main.bounds.width, downscale: shouldDownscale)]
 
         let request = ImageRequest(
             urlRequest: urlRequest,
@@ -97,24 +97,26 @@ class ReaderPageView2: UIView {
         )
 
         return await withCheckedContinuation({ continuation in
-            NukeExtensions.loadImage(
+            _ = NukeExtensions.loadImage(
                 with: request,
                 into: imageView,
                 progress: { _, completed, total in
                     self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
                 },
                 completion: { result in
-                    self.progressView.isHidden = true
+                    self.progressView.alpha = 0
                     switch result {
                     case .success:
                         // size image width properly
-                        let multiplier = (self.imageView.image?.size.width ?? 0) / (self.imageView.image?.size.height ?? 1)
-                        self.imageWidthConstraint?.isActive = false
-                        self.imageWidthConstraint = self.imageView.widthAnchor.constraint(
-                            equalTo: self.imageView.heightAnchor,
-                            multiplier: multiplier
-                        )
-                        self.imageWidthConstraint?.isActive = true
+                        if !self.maxWidth {
+                            let multiplier = (self.imageView.image?.size.width ?? 1) / (self.imageView.image?.size.height ?? 1)
+                            self.imageWidthConstraint?.isActive = false
+                            self.imageWidthConstraint = self.imageView.widthAnchor.constraint(
+                                equalTo: self.imageView.heightAnchor,
+                                multiplier: multiplier
+                            )
+                            self.imageWidthConstraint?.isActive = true
+                        }
 
                         continuation.resume(returning: true)
 
