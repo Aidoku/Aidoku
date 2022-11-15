@@ -172,7 +172,7 @@ class BookGridCell: UICollectionViewCell {
             checkForRequestModifier = false
         }
 
-        NukeExtensions.loadImage(
+        _ = NukeExtensions.loadImage(
             with: ImageRequest(
                 urlRequest: urlRequest,
                 processors: [.resize(width: bounds.width)]
