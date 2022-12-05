@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Kingfisher
+import Nuke
 
 class ReaderScrollPageView: UIView {
 
@@ -21,8 +21,6 @@ class ReaderScrollPageView: UIView {
     var imageViewHeightConstraint: NSLayoutConstraint?
 
     var currentUrl: String?
-    var currentTask: Kingfisher.DownloadTask?
-    var requestModifier: AnyModifier?
     var shouldCheckForRequestModifer = true
 
     init(sourceId: String) {
@@ -76,13 +74,17 @@ class ReaderScrollPageView: UIView {
             reloadButton.alpha = 0
             progressView.alpha = 1
             currentUrl = nil
-            setPageImage(url: url)
+            Task {
+                await setPageImage(url: url)
+            }
         }
     }
 
     func setPage(page: Page) {
         if let url = page.imageURL {
-            setPageImage(url: url, key: page.key)
+            Task {
+                await setPageImage(url: url, key: page.key)
+            }
         } else if let base64 = page.base64 {
             setPageImage(base64: base64, key: page.key)
         } else if let text = page.text {
@@ -117,83 +119,67 @@ class ReaderScrollPageView: UIView {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
-    func setPageImage(url: String, key: String? = nil) {
-        if currentUrl == url && imageView.image != nil { return }
+    func setPageImage(image: UIImage, key: String? = nil) {
+        if self.progressView.progress != 1 {
+            self.progressView.setProgress(value: 1, withAnimation: true)
+        }
+        self.progressView.isHidden = true
+        self.reloadButton.alpha = 0
+        imageView.image = image
+        if let key = key {
+            self.delegate?.imageLoaded(key: key, image: image)
+        }
+    }
 
-        if currentTask != nil {
-            currentTask?.cancel()
-            currentTask = nil
+    func setPageImage(url: String, key: String? = nil) async {
+        guard
+            let url = URL(string: url)
+        else {
+            self.imageView.image = nil
+            return
         }
 
-        currentUrl = url
+        if let image = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: url)) {
+            imageView.image = image.image
+            return
+        }
 
-        Task { @MainActor in
-            if shouldCheckForRequestModifer {
-                if let source = SourceManager.shared.source(for: sourceId),
-                   source.handlesImageRequests,
-                   let request = try? await source.getImageRequest(url: url) {
-                    requestModifier = AnyModifier { urlRequest in
-                        var r = urlRequest
-                        r.url = URL(string: request.URL ?? "")
-                        for (key, value) in request.headers {
-                            r.setValue(value, forHTTPHeaderField: key)
-                        }
-                        if let body = request.body { r.httpBody = body }
-                        return r
-                    }
-                } else {
-                    requestModifier = nil
+        var urlRequest = URLRequest(url: url)
+
+        if shouldCheckForRequestModifer,
+           let source = SourceManager.shared.source(for: sourceId),
+           source.handlesImageRequests,
+           let request = try? await source.getImageRequest(url: url.absoluteString) {
+
+            urlRequest.url = URL(string: request.URL ?? "")
+            for (key, value) in request.headers {
+                urlRequest.setValue(value, forHTTPHeaderField: key)
+            }
+            if let body = request.body { urlRequest.httpBody = body }
+            shouldCheckForRequestModifer = false
+        }
+
+        var request = ImageRequest(urlRequest: urlRequest)
+
+        if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+            request.processors = [.resize(width: UIScreen.main.bounds.width)]
+        }
+
+        ImagePipeline.shared.loadImage(with: request) { result in
+            if let response = try? result.get() {
+                if self.progressView.progress != 1 {
+                    self.progressView.setProgress(value: 1, withAnimation: true)
                 }
-                shouldCheckForRequestModifer = false
-            }
-
-            let retry = DelayRetryStrategy(maxRetryCount: 2, retryInterval: .seconds(0.1))
-            var kfOptions: [KingfisherOptionsInfoItem] = [
-                .scaleFactor(UIScreen.main.scale),
-                .transition(.fade(0.3)),
-                .retryStrategy(retry),
-                .backgroundDecode
-            ]
-            if let requestModifier = requestModifier {
-                kfOptions.append(.requestModifier(requestModifier))
-            }
-
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                // provide larger height so the width of the image is always downsampled to screen width (for long strips)
-                let downsampleProcessor = DownsamplingImageProcessor(size: CGSize(width: UIScreen.main.bounds.width, height: 10000))
-                kfOptions += [.processor(downsampleProcessor), .cacheOriginalImage]
-            }
-
-            currentTask = self.imageView.kf.setImage(
-                with: URL(string: url),
-                options: kfOptions,
-                progressBlock: { receivedSize, totalSize in
-                    self.progressView.setProgress(value: Float(receivedSize) / Float(totalSize), withAnimation: false)
-                },
-                completionHandler: { result in
-                    self.currentTask = nil
-                    switch result {
-                    case .success(let imageResult):
-                        if self.progressView.progress != 1 {
-                            self.progressView.setProgress(value: 1, withAnimation: true)
-                        }
-                        self.progressView.isHidden = true
-                        self.reloadButton.alpha = 0
-                        if let key = key {
-                            self.delegate?.imageLoaded(key: key, image: imageResult.image)
-                        }
-                    case .failure(let error):
-                        // If the error isn't part of the current task, we don't care.
-                        if error.isNotCurrentTask || error.isTaskCancelled {
-                            return
-                        }
-
-                        self.progressView.alpha = 0
-                        self.reloadButton.alpha = 1
-                    }
+                self.progressView.isHidden = true
+                self.reloadButton.alpha = 0
+                self.imageView.image = response.image
+                if let key = key {
+                    self.delegate?.imageLoaded(key: key, image: response.image)
                 }
-            )
+            } else {
+                self.progressView.alpha = 0
+                self.reloadButton.alpha = 1
+            }
         }
     }
 }

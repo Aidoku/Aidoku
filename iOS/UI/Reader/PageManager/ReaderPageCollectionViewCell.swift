@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Kingfisher
+import Nuke
 
 class ReaderPageCollectionViewCell: UICollectionViewCell {
 
@@ -48,6 +48,15 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
     }
 
     func setPage(page: Page) {
+        // check Nuke cache first
+        let request = ImageRequest(url: URL(string: "https://" + page.key))
+        if ImagePipeline.shared.cache.containsCachedImage(for: request) {
+            if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
+                self.pageView?.setPageImage(image: image.image, key: page.key)
+                return
+            }
+        }
+
         if let url = page.imageURL {
             setPageImage(url: url, key: page.key)
         } else if let base64 = page.base64 {
@@ -58,19 +67,16 @@ class ReaderPageCollectionViewCell: UICollectionViewCell {
     }
 
     func setPage(cacheKey: String) {
-        KingfisherManager.shared.cache.retrieveImage(forKey: cacheKey) { result in
-            switch result {
-            case .success(let value):
-                self.pageView?.imageView.image = value.image
-            default:
-                break
-            }
+        if let image = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: URL(string: "https://" + cacheKey))) {
+            self.pageView?.imageView.image = image.image
         }
     }
 
     func setPageImage(url: String, key: String) {
         guard pageView?.currentUrl ?? "" != url || pageView?.imageView.image == nil else { return }
-        pageView?.setPageImage(url: url, key: key)
+        Task {
+            await pageView?.setPageImage(url: url, key: key)
+        }
     }
 
     func setPageImage(base64: String, key: String) {

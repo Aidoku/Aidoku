@@ -7,6 +7,7 @@
 
 import UIKit
 import Kingfisher
+import Nuke
 
 class ReaderScrollPageManager: NSObject, ReaderPageManager {
 
@@ -627,11 +628,11 @@ extension ReaderScrollPageManager: UICollectionViewDataSource {
 // MARK: - Collection View Prefetching
 extension ReaderScrollPageManager: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        let urls = indexPaths.compactMap { path -> URL? in
-            guard path.item > 0 && path.item < self.pages.count + 1 else { return nil }
-            return URL(string: self.pages[path.item - 1].imageURL ?? "")
-        }
-        ImagePrefetcher(urls: urls).start()
+//        let urls = indexPaths.compactMap { path -> URL? in
+//            guard path.item > 0 && path.item < self.pages.count + 1 else { return nil }
+//            return URL(string: self.pages[path.item - 1].imageURL ?? "")
+//        }
+//        ImagePrefetcher(urls: urls).start()
     }
 }
 
@@ -643,7 +644,10 @@ extension ReaderScrollPageManager: ReaderPageViewDelegate {
             sizeCache[key] = image.sizeToFit(collectionView.frame.size)
             collectionView.collectionViewLayout.invalidateLayout()
             Task.detached {
-                KingfisherManager.shared.cache.store(image, forKey: key)
+                let request = ImageRequest(url: URL(string: "https://" + key))
+                if !ImagePipeline.shared.cache.containsCachedImage(for: request) {
+                    ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+                }
                 Task { @MainActor in
                     self.dataCache[key] = true
                     if let targetPage = self.targetPage, self.shouldMoveToTargetPage, self.sizeCache.count >= targetPage {
