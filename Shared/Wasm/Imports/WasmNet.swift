@@ -399,14 +399,18 @@ extension WasmNet {
 
     var html: (Int32) -> Int32 {
         { descriptor in
-            if let request = self.globalStore.requests[descriptor],
-               let data = request.response?.data,
-               let content = String(data: data, encoding: .utf8) {
-                if let baseUri = request.response?.response?.url?.absoluteString,
-                   let obj = try? SwiftSoup.parse(content, baseUri) {
-                    return self.globalStore.storeStdValue(obj)
-                } else if let obj = try? SwiftSoup.parse(content) {
-                    return self.globalStore.storeStdValue(obj)
+            if let request = self.globalStore.requests[descriptor], let data = request.response?.data {
+                var content = String(data: data, encoding: .utf8)
+                if content == nil || content!.isEmpty {
+                    content = String(data: data, encoding: .ascii)
+                }
+                if let content = content {
+                    if let baseUri = request.response?.response?.url?.absoluteString,
+                       let obj = try? SwiftSoup.parse(content, baseUri) {
+                        return self.globalStore.storeStdValue(obj)
+                    } else if let obj = try? SwiftSoup.parse(content) {
+                        return self.globalStore.storeStdValue(obj)
+                    }
                 }
             }
             return -1
