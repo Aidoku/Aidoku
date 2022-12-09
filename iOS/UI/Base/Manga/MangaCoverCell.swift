@@ -193,6 +193,7 @@ class MangaCoverCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         checkForRequestModifier = true
+        imageView.image = nil
     }
 
     func highlight() {
