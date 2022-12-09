@@ -111,6 +111,7 @@ class BackupManager {
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
+    @MainActor
     func restore(from backup: Backup) async {
         // this should probably do some more checks before running, idk
 
