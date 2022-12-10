@@ -82,7 +82,6 @@ actor DownloadTask: Identifiable {
     }
 
     // perform download
-    // swiftlint:disable:next cyclomatic_complexity
     func download(_ downloadIndex: Int, from source: Source, to directory: URL) async {
         guard downloads.count >= downloadIndex else { return }
 
@@ -98,7 +97,6 @@ actor DownloadTask: Identifiable {
                 chapter: chapter,
                 skipDownloadedCheck: true
             )) ?? []
-            guard downloads.count >= downloadIndex else { return }
             downloads[downloadIndex].total = pages.count
         }
         while currentPage < pages.count && running {
