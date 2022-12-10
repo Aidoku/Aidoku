@@ -183,6 +183,11 @@ class LibraryViewController: MangaCollectionViewController {
             collectionView.reloadData()
         }
 
+        addListeners()
+    }
+
+    // temporary
+    func addListeners() {
         // notification listeners
         let fetchLibraryBlock: (Notification) -> Void = { [weak self] _ in
             guard let self = self else { return }
