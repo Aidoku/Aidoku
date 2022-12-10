@@ -25,7 +25,8 @@
 "LIBRARY" = "لائبریری";
 "LIBRARY_EMPTY" = "لائبریری خالی ہے";
 // General
-"CONTINUE" = "آگے";
+"CONTINUE" = "جاری رکہیں";
 "RESET" = "دوبارہ ترتیب دیں";
-"LIBRARY_SEARCH" = "”لائبریری میں تلاش کریں";
+"LIBRARY_SEARCH" = "لائبریری میں تلاش کریں";
 "LIBRARY_ADD_FROM_BROWSE" = "براوز ٹیب میں سے Manga شامل کریں";
+"REMOVE_FROM_LIBRARY" = "لائبریری سےہٹا دیں";

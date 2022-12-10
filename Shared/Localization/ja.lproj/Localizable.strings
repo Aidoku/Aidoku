@@ -10,12 +10,48 @@
 "LIBRARY_SEARCH" = "ライブラリ検索";
 "LIBRARY_EMPTY" = "ライブラリは空です";
 "LIBRARY_ADD_FROM_BROWSE" = "ブラウズからマンガを追加";
-
 "BROWSE" = "ブラウズ";
 "INSTALLED" = "インストールのソース";
-
 "VERSION" = "バージョン";
-
 "SEARCH" = "検索";
-
 "SETTINGS" = "設定";
+// General
+"CONTINUE" = "継続する";
+"CANCEL" = "続行";
+"UNKNOWN" = "わからない";
+"RESET" = "リセット";
+"DELETE" = "消去";
+"CLEAR" = "クリア";
+"OK" = "よっしゃー";
+"UNAVAILABLE" = "使用不可";
+"REMOVE" = "削除";
+"RENAME" = "リネーム";
+"LOADING_ELLIPSIS" = "読み込み中…";
+"SHARE" = "共有";
+
+// Downloads
+"DOWNLOAD" = "ダウンロード";
+"DOWNLOADED" = "ダウンロードした";
+"FILTER_BY" = "並び替え";
+"TITLE" = "タイトル";
+"LANGUAGE" = "言語";
+"LANGUAGES" = "言語";
+"BUILD" = "ビルド";
+"UNINSTALL" = "アンインストール";
+"LIST_HEADER" = "リスト";
+"COMPLETED" = "連載終了作品";
+"VOLUME_X" = "%g巻";
+"CHAPTER_X" = "第%g話";
+"VOL_X" = "%g巻";
+"CH_X" = "第%g話";
+"NEXT_COLON" = "次:";
+"PAGE_X" = "%iページ";
+"VIEW_MORE" = "もっと見る";
+"DISCORD_SERVER" = "Discordサーバー";
+"GITHUB_REPO" = "GitHubリポジトリ";
+"DAILY" = "毎日";
+"WEEKLY" = "毎週";
+"LOGOUT" = "ログアウト";
+"MANGA" = "漫画";
+"LIGHT_NOVEL" = "ライトノベル";
+"ONESHOT" = "読切シリーズ";

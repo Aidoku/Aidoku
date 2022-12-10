@@ -2,10 +2,10 @@
 // Edited by asaah18#9219
 
 // General
-"CONTINUE" = "متابعة";
-"CANCEL" = "إلغاء";
+"CONTINUE" = "مُتابعة";
+"CANCEL" = "‬إلغاء";
 "OK" = "موافق";
-"UNKNOWN" = "غير معروف";
+"UNKNOWN" = "غير معْروف";
 "UNAVAILABLE" = "غير متاح";
 "RESET" = "إعادة تعيين";
 "DELETE" = "حذف";
@@ -142,7 +142,7 @@
 "CLEAR_READ_HISTORY" = "مسح تاريخ القراءة";
 "CLEAR_READ_HISTORY_TEXT" = "هذا الإجراء لا رجعة فيه. سيتم مسح كل تاريخ القراءة.";
 "SHARE" = "مشاركة";
-"LOADING_ELLIPSIS" = "جاري التحميل …";
+"LOADING_ELLIPSIS" = "جاري التحميل…";
 "REMOVE" = "إزالة";
 
 // Downloads
@@ -255,3 +255,31 @@
 "PAGED" = "الصفحة";
 "LOGOUT" = "تسجيل الخروج";
 "LOGOUT_FROM_%@" = "تسجيل الخروج من ‭%@؟";
+"VOLUMES" = "العدد";
+"STARTED" = "بدأتْ";
+"STATUS" = "الحالة";
+"REREADING" = "إعادة القراءة";
+"SCORE" = "التقييم";
+"PAUSED" = "متوقف";
+"DROPPED" = "متروك";
+"START_TRACKING" = "بدأ التتبع";
+"STOP_TRACKING" = "إيقاف التتبع";
+"FINISHED" = "منتهي";
+"READING" = "قراءة";
+"PLANNING" = "تخطيط";
+"TRACKERS" = "المتتبعات";
+"ONESHOT" = "ون شوت / عدد فردي";
+"NOT_PUBLISHED" = "لم تنشر بعد";
+"MANGA" = "مانجا";
+"MANHWA" = "مانهوا";
+"MANHUA" = "مانها";
+"LIGHT_NOVEL" = "رواية خفيفة";
+"STATUS_COLON_%@" = "الحالة: %@";
+"TRACK" = "متتبع";
+"TYPE_COLON_%@" = "النوع: %@";
+"VIEW_ON_WEBSITE" = "عرض على الموقع";
+"CLEAR_TRACKED_MANGA" = "مسح المانجا المتتبعة";
+"CLEAR_TRACKED_MANGA_TEXT" = "هذا الإجراء لا رجعة فيه. ستتم إزالة التتبع لجميع أدوات التتبع المضافة إلى المانجا.";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "هل أنت متأكد من رغبتك في إزالة جميع التنزيلات؟";
+"CACHE_SIZE_%@" = "حجم ذاكرة التخزين المؤقت: %@";
+"SUPPORT_VIA_KOFI" = "الدعم عبر كوفاي";
