@@ -95,7 +95,8 @@ struct TrackerSettingOptionView: View {
                         showPicker()
                     } label: {
                         Text(
-                            "\(count == nil || 0 == count ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", count!))" +
+                            // swiftlint:disable:next empty_count
+                            "\(count == nil || count == 0 ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", count!))" +
                             " / " +
                             "\(total == nil || total == 0 ? "-" : String(format: numberType == .int ? "%.0f" : "%.1f", total!))"
                         )

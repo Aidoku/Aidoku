@@ -311,8 +311,8 @@ extension ReaderPagedPageManager {
         var i = 0
         while i < pages.count {
             var wideIndex = -1
-            for j in 0..<pagesPerView {
-                if widePages.contains(i + j) { wideIndex = j }
+            for j in 0..<pagesPerView where widePages.contains(i + j) {
+                wideIndex = j
             }
             if wideIndex != -1 {
                 insertPage(at: items.endIndex, pageIndex: i + offset, numPages: min(wideIndex, pages.count - i))

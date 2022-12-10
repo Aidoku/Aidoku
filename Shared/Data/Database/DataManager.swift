@@ -369,6 +369,7 @@ extension DataManager {
         }
     }
 
+    @MainActor
     func clearLibrary() {
         guard let items = try? getLibraryObjects() else { return }
         for item in items {
@@ -454,6 +455,7 @@ extension DataManager {
         }
     }
 
+    @MainActor
     func clearManga() {
         guard let items = try? getMangaObjects() else { return }
         for item in items {
@@ -572,6 +574,7 @@ extension DataManager {
         }
     }
 
+    @MainActor
     func clearChapters(context: NSManagedObjectContext? = nil) {
         let context = context ?? container.viewContext
         if let items = try? getChapterObjects(context: context) {
@@ -1012,6 +1015,7 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
     }
 
+    @MainActor
     func clearCategories() {
         let categories = (try? getCategoryObjects()) ?? []
         for category in categories {
@@ -1194,6 +1198,7 @@ extension DataManager {
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
+    @MainActor
     func clearTrackItems() {
         let objects = (try? getTrackObjects()) ?? []
         for item in objects {
