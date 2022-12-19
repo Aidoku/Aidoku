@@ -351,9 +351,6 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         default:
             currentPage = page
             delegate?.setCurrentPage(page)
-            if page >= viewModel.pages.count {
-                delegate?.setCompleted(true, page: page)
-            }
             // preload 1 before and pagesToPreload ahead
             loadPages(in: page - 1 - (usesDoublePages ? 1 : 0)...page + pagesToPreload + (usesDoublePages ? 1 : 0))
         }
