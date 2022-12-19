@@ -222,6 +222,44 @@ extension ReaderWebtoonViewController {
             refreshInfoPages()
         }
     }
+
+    // Save image force touch menu
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard
+            let path = indexPaths.first,
+            let cell = collectionView.cellForItem(at: path) as? ReaderWebtoonCollectionViewCell,
+            cell.page?.type == .imagePage,
+            UserDefaults.standard.bool(forKey: "Reader.saveImageOption")
+        else {
+            return nil
+        }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            let saveToPhotosAction = UIAction(
+                title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
+                image: UIImage(systemName: "photo")
+            ) { _ in
+                if let image = cell.pageView.imageView.image {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+            }
+            let shareAction = UIAction(
+                title: NSLocalizedString("SHARE", comment: ""),
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                if let image = cell.pageView.imageView.image {
+                    let items = [image]
+                    let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
+                    self.present(activityController, animated: true)
+                }
+            }
+
+            return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
+        })
+    }
 }
 
 // MARK: - Infinite Scroll
