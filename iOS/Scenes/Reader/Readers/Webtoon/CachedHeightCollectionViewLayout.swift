@@ -11,14 +11,15 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
 
     var cachedHeights: [IndexPath: CGFloat] = [:]
 
-    private var currentAttributes: [UICollectionViewLayoutAttributes] = []
+    private var currentAttributes: [IndexPath: UICollectionViewLayoutAttributes] = [:]
 
     private var contentSize = CGSize.zero
     override var collectionViewContentSize: CGSize {
         contentSize
     }
 
-    private let estimatedHeight: CGFloat = 300
+    private var estimatedHeight: CGFloat = 300
+    private var newHeight = 0
 
     override init() {
         super.init()
@@ -37,7 +38,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
 
         guard let collectionView = collectionView, collectionView.numberOfSections > 0 else { return }
 
-        currentAttributes = []
+        currentAttributes = [:]
 
         var origin: CGFloat = 0
         let width = collectionView.bounds.size.width
@@ -50,8 +51,11 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
 
                 let size = CGSize(width: width, height: cachedHeights[indexPath] ?? estimatedHeight)
+                if size.height > estimatedHeight {
+                    estimatedHeight = size.height
+                }
                 attributes.frame = CGRect(origin: CGPoint(x: 0, y: origin), size: size)
-                currentAttributes.append(attributes)
+                currentAttributes[indexPath] = attributes
 
                 origin += size.height
             }
@@ -60,14 +64,24 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         contentSize = CGSize(width: width, height: origin)
     }
 
+    func getHeightFor(section: Int, range: Range<Int>) -> CGFloat {
+        var height: CGFloat = 0
+        for idx in range {
+            let indexPath = IndexPath(item: idx, section: section)
+            let attributes = currentAttributes[indexPath]
+            height += attributes?.frame.height ?? 0
+        }
+        return height
+    }
+
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        currentAttributes[indexPath.row]
+        currentAttributes[indexPath]
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         var attributes: [UICollectionViewLayoutAttributes] = []
-        for item in currentAttributes where rect.intersects(item.frame) {
-            attributes.append(item)
+        for item in currentAttributes where rect.intersects(item.value.frame) {
+            attributes.append(item.value)
         }
         return attributes
     }

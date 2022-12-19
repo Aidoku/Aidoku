@@ -322,6 +322,9 @@ extension ReaderViewController2: ReaderHoldingDelegate {
         currentPage = page
         toolbarView.currentPage = page
         toolbarView.updateSliderPosition()
+        if page == toolbarView.totalPages {
+            setCompleted(true)
+        }
     }
 
     func setTotalPages(_ pages: Int) {
@@ -334,15 +337,17 @@ extension ReaderViewController2: ReaderHoldingDelegate {
     }
 
     func setCompleted(_ completed: Bool = true, page: Int? = nil) {
-        Task {
-            await CoreDataManager.shared.setCompleted(
-                completed,
-                progress: page,
-                sourceId: chapter.sourceId,
-                mangaId: chapter.mangaId,
-                chapterId: chapter.id
-            )
-            await TrackerManager.shared.setCompleted(chapter: chapter)
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            Task {
+                await CoreDataManager.shared.setCompleted(
+                    completed,
+                    progress: page,
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId,
+                    chapterId: chapter.id
+                )
+                await TrackerManager.shared.setCompleted(chapter: chapter)
+            }
         }
     }
 }
