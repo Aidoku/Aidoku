@@ -20,11 +20,7 @@ class MangaViewController: UIViewController {
 
     var chapters: [Chapter] {
         didSet {
-            if !chapters.isEmpty {
-                (tableView.tableHeaderView as? MangaViewHeaderView)?.headerTitle.text = "\(chapters.count) chapters"
-            } else {
-                (tableView.tableHeaderView as? MangaViewHeaderView)?.headerTitle.text = NSLocalizedString("NO_CHAPTERS", comment: "")
-            }
+            (tableView.tableHeaderView as? MangaViewHeaderView)?.chapterList = chapters
             updateReadButton()
         }
     }
@@ -174,23 +170,26 @@ class MangaViewController: UIViewController {
         ))
 
         Task { @MainActor in
+            if let cachedManga = CoreDataManager.shared.getManga(sourceId: manga.sourceId, mangaId: manga.id) {
+                manga = manga.copy(from: cachedManga.toManga())
+            }
+            if chapters.isEmpty {
+                chapters = await DataManager.shared.getChapters(
+                    for: manga,
+                    fromSource: !DataManager.shared.libraryContains(manga: manga)
+                )
+                tableView.reloadSections(IndexSet(integer: 0), with: .fade)
+            }
+            if let chapter = scrollToChapter,
+               let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
+                let indexPath = IndexPath(row: index, section: 0)
+                tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.tableView.deselectRow(at: indexPath, animated: true)
+                }
+            }
             if let newManga = try? await source.getMangaDetails(manga: manga) {
                 manga = manga.copy(from: newManga)
-                if chapters.isEmpty {
-                    chapters = await DataManager.shared.getChapters(
-                        for: manga,
-                        fromSource: !DataManager.shared.libraryContains(manga: manga)
-                    )
-                    tableView.reloadSections(IndexSet(integer: 0), with: .fade)
-                }
-                if let chapter = scrollToChapter,
-                   let index = chapters.enumerated().first(where: { $0.element.id == chapter.id })?.offset {
-                    let indexPath = IndexPath(row: index, section: 0)
-                    tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.tableView.deselectRow(at: indexPath, animated: true)
-                    }
-                }
             }
         }
     }
