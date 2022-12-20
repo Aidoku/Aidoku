@@ -26,7 +26,7 @@ class MangaViewHeaderView: UIView {
 
     var inLibrary: Bool {
         guard let manga = manga else { return false }
-        return DataManager.shared.libraryContains(manga: manga)
+        return CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
     }
 
     var isTracking: Bool {
@@ -118,7 +118,7 @@ class MangaViewHeaderView: UIView {
     // swiftlint:disable:next function_body_length
     func configureContents() {
         showSourceLabel = UserDefaults.standard.bool(forKey: "General.showSourceLabel") && inLibrary
-        let categories = DataManager.shared.getCategories()
+        let categories = CoreDataManager.shared.getCategoryTitles()
         shouldAskCategory = !categories.isEmpty
         if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
            defaultCategory == "none" || categories.contains(defaultCategory) {
@@ -339,7 +339,7 @@ class MangaViewHeaderView: UIView {
             forName: Notification.Name("Library.defaultCategory"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
-            let categories = DataManager.shared.getCategories()
+            let categories = CoreDataManager.shared.getCategoryTitles()
             self.shouldAskCategory = !categories.isEmpty
             if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
                defaultCategory == "none" || categories.contains(defaultCategory) {
@@ -628,8 +628,9 @@ extension MangaViewHeaderView {
         if inLibrary {
             self.bookmarkButton.tintColor = self.tintColor
             self.bookmarkButton.backgroundColor = .secondarySystemFill
-            Task.detached {
-                DataManager.shared.delete(manga: manga, context: DataManager.shared.backgroundContext)
+            Task {
+                await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, id: manga.id)
+                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
         } else {
             if shouldAskCategory {
@@ -637,15 +638,17 @@ extension MangaViewHeaderView {
             } else {
                 self.bookmarkButton.tintColor = .white
                 self.bookmarkButton.backgroundColor = self.tintColor
-                Task.detached {
-                    DataManager.shared.addToLibrary(manga: manga, context: DataManager.shared.backgroundContext) {
-                        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
-                           DataManager.shared.getCategories().contains(defaultCategory) {
-                            DataManager.shared.setMangaCategories(
-                                manga: manga, categories: [defaultCategory], context: DataManager.shared.backgroundContext
-                            )
-                        }
+                Task {
+                    let chapters = (try? await SourceManager.shared.source(for: manga.sourceId)?.getChapterList(manga: manga)) ?? []
+                    await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters)
+                    if
+                        let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                        CoreDataManager.shared.hasCategory(title: defaultCategory)
+                    {
+                        await CoreDataManager.shared.addCategoriesToManga(sourceId: manga.sourceId, mangaId: manga.id, categories: [defaultCategory])
                     }
+                    NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
+                    NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
                 }
             }
         }

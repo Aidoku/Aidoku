@@ -31,6 +31,27 @@ extension CoreDataManager {
         return (try? context.fetch(request)) ?? []
     }
 
+    /// Check if a library object exists.
+    func hasLibraryManga(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) != nil
+    }
+
+    /// Create a new library object.
+    @discardableResult
+    func createLibraryManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
+        let context = context ?? self.context
+        guard let mangaObject = getManga(sourceId: sourceId, mangaId: mangaId, context: context) else {
+            return nil
+        }
+        let object = LibraryMangaObject(context: context)
+        object.manga = mangaObject
+        return object
+    }
+
     /// Set LibraryManga opened date to current date.
     func setOpened(sourceId: String, mangaId: String) async {
         await container.performBackgroundTask { context in
@@ -61,6 +82,21 @@ extension CoreDataManager {
                 }
             } catch {
                 LogManager.logger.error("setRead: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func addToLibrary(manga: Manga, chapters: [Chapter]) async {
+        await container.performBackgroundTask { context in
+            let mangaObject = self.createManga(manga, context: context)
+            let libraryObject = LibraryMangaObject(context: context)
+            libraryObject.manga = mangaObject
+            self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
+//            DataManager.shared.libraryManga.append(manga) // temporary
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("addToLibrary: \(error.localizedDescription)")
             }
         }
     }
