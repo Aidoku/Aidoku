@@ -100,13 +100,12 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
     override func preferredLayoutAttributesFitting(
         _ layoutAttributes: UICollectionViewLayoutAttributes
     ) -> UICollectionViewLayoutAttributes {
-        // estimate height of 300
         let fallback = CGSize(width: bounds.width != 0 ? bounds.width : UIScreen.main.bounds.width, height: Self.estimatedHeight)
 
         if page?.type != .imagePage {
             layoutAttributes.size = fallback
         } else {
-            let size = pageView.sizeThatFits(CGSize(width: bounds.width, height: CGFloat.greatestFiniteMagnitude))
+            let size = pageView.imageView.sizeThatFits(CGSize(width: bounds.width, height: CGFloat.greatestFiniteMagnitude))
             if size.height > 0 {
                 layoutAttributes.size = size
             } else {

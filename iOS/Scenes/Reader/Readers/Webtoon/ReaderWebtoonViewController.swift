@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Nuke
 
 class ReaderWebtoonViewController: BaseCollectionViewController {
 
@@ -16,9 +17,8 @@ class ReaderWebtoonViewController: BaseCollectionViewController {
     var readingMode: ReadingMode = .webtoon
 
     lazy var dataSource = makeDataSource()
+    private let prefetcher = ImagePrefetcher()
 
-    // Number of pages to load ahead
-    private lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
     private var loadingPrevious = false
@@ -49,16 +49,14 @@ class ReaderWebtoonViewController: BaseCollectionViewController {
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.bounces = false // bouncing can cause issues with page appending
         collectionView.scrollsToTop = false // dont want status bar tap to work
+        collectionView.prefetchDataSource = self
+        collectionView.isPrefetchingEnabled = true
     }
 
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool
                 ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
-        }
-        addObserver(forName: "Reader.pagesToPreload") { [weak self] notification in
-            self?.pagesToPreload = notification.object as? Int
-                ?? UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
         }
     }
 
@@ -185,19 +183,10 @@ extension ReaderWebtoonViewController {
             let page = cell.page
         else { return }
 
-        let oldHeight = layout.cachedHeights[path]
-        let newHeight: CGFloat
-        if page.type == .imagePage {
-            var imageHeight = cell.pageView.imageView.sizeThatFits(
-                CGSize(width: collectionView.bounds.width, height: CGFloat.greatestFiniteMagnitude)
-            ).height
-            if imageHeight == 0 {
-                imageHeight = ReaderWebtoonCollectionViewCell.estimatedHeight
-            }
-            newHeight = imageHeight
-        } else {
-            newHeight = ReaderWebtoonCollectionViewCell.estimatedHeight
-        }
+        let oldAttr = layout.layoutAttributesForItem(at: path)
+        let newAttr = cell.preferredLayoutAttributesFitting(UICollectionViewLayoutAttributes())
+        let oldHeight = oldAttr?.size.height
+        let newHeight = newAttr.size.height
         layout.cachedHeights[path] = newHeight
 
         if oldHeight != newHeight {
@@ -244,6 +233,7 @@ extension ReaderWebtoonViewController {
             let path = indexPaths.first,
             let cell = collectionView.cellForItem(at: path) as? ReaderWebtoonCollectionViewCell,
             cell.page?.type == .imagePage,
+            cell.pageView.imageView.image != nil,
             UserDefaults.standard.bool(forKey: "Reader.saveImageOption")
         else {
             return nil
@@ -267,7 +257,6 @@ extension ReaderWebtoonViewController {
                     self.present(activityController, animated: true)
                 }
             }
-
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
         })
     }
@@ -535,8 +524,11 @@ extension ReaderWebtoonViewController {
     typealias CellRegistration = UICollectionView.CellRegistration<ReaderWebtoonCollectionViewCell, Page>
 
     private func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, _, page in
+        CellRegistration { cell, path, page in
             cell.setPage(page: page)
+            Task {
+                await self.load(cell: cell, path: path)
+            }
         }
     }
 
@@ -555,9 +547,12 @@ extension ReaderWebtoonViewController {
             let layout = self.collectionView.collectionViewLayout as? CachedHeightCollectionViewLayout
         else { return }
 
-        let oldHeight = layout.cachedHeights[path]
-        let newHeight = cell.pageView.imageView.bounds.height
+        let oldAttr = layout.layoutAttributesForItem(at: path)
+        let newAttr = cell.preferredLayoutAttributesFitting(UICollectionViewLayoutAttributes())
+        let oldHeight = oldAttr?.size.height
+        let newHeight = newAttr.size.height
         layout.cachedHeights[path] = newHeight
+
         if oldHeight != newHeight {
             if #available(iOS 15.0, *) {
                 var snapshot = self.dataSource.snapshot()
@@ -573,25 +568,25 @@ extension ReaderWebtoonViewController {
 }
 
 // MARK: - Page Preloading
-// TODO: this doesn't work since estimatedItemSize is set, so it'll need to be implemented manually
 extension ReaderWebtoonViewController: UICollectionViewDataSourcePrefetching {
+
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        Task {
-            await withTaskGroup(of: Void.self) { group in
-                for path in indexPaths {
-                    guard
-                        let cell = dataSource.collectionView(
-                            collectionView,
-                            cellForItemAt: path
-                        ) as? ReaderWebtoonCollectionViewCell
-                    else {
-                        continue
-                    }
-                    group.addTask {
-                        await cell.loadPage(sourceId: self.chapter?.sourceId)
-                    }
-                }
+        let urls = indexPaths.compactMap {
+            if let url = dataSource.itemIdentifier(for: $0)?.imageURL {
+                return URL(string: url)
             }
+            return nil
         }
+        prefetcher.startPrefetching(with: urls)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+        let urls = indexPaths.compactMap {
+            if let url = dataSource.itemIdentifier(for: $0)?.imageURL {
+                return URL(string: url)
+            }
+            return nil
+        }
+        prefetcher.stopPrefetching(with: urls)
     }
 }

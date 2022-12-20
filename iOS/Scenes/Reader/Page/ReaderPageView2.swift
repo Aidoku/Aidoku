@@ -19,7 +19,6 @@ class ReaderPageView2: UIView {
     var maxWidth = false
 
     private var sourceId: String?
-    private var checkForRequestModifier = true
 
     init() {
         super.init(frame: .zero)
@@ -80,7 +79,6 @@ class ReaderPageView2: UIView {
         self.progressView.alpha = 1
 
         if
-            checkForRequestModifier,
             let sourceId = sourceId,
             let source = SourceManager.shared.source(for: sourceId),
             source.handlesImageRequests,
@@ -91,7 +89,6 @@ class ReaderPageView2: UIView {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
             if let body = request.body { urlRequest.httpBody = body }
-            checkForRequestModifier = false
         }
 
         let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
