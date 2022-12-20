@@ -186,9 +186,20 @@ extension ReaderWebtoonViewController {
         else { return }
 
         let oldHeight = layout.cachedHeights[path]
-        let imageHeight = cell.pageView.imageView.image?.size.height ?? 0
-        let newHeight = page.type == .imagePage ? imageHeight : 300
+        let newHeight: CGFloat
+        if page.type == .imagePage {
+            var imageHeight = cell.pageView.imageView.sizeThatFits(
+                CGSize(width: collectionView.bounds.width, height: CGFloat.greatestFiniteMagnitude)
+            ).height
+            if imageHeight == 0 {
+                imageHeight = ReaderWebtoonCollectionViewCell.estimatedHeight
+            }
+            newHeight = imageHeight
+        } else {
+            newHeight = ReaderWebtoonCollectionViewCell.estimatedHeight
+        }
         layout.cachedHeights[path] = newHeight
+
         if oldHeight != newHeight {
             if #available(iOS 15.0, *) {
                 var snapshot = self.dataSource.snapshot()
@@ -319,7 +330,7 @@ extension ReaderWebtoonViewController {
         }
 
         snapshot.insertItems(
-            [Page(type: .prevInfoPage, index: pageInfoIndex)] + viewModel.preloadedPages,
+            [Page(type: .prevInfoPage, chapterId: prevChapter.id, index: pageInfoIndex)] + viewModel.preloadedPages,
             beforeItem: snapshot.itemIdentifiers.first!
         )
         pageInfoIndex -= 1
@@ -361,7 +372,7 @@ extension ReaderWebtoonViewController {
         guard let nextChapter = delegate?.getNextChapter() else { return }
         await viewModel.preload(chapter: nextChapter)
         var snapshot = dataSource.snapshot()
-        snapshot.appendItems(viewModel.preloadedPages + [Page(type: .nextInfoPage, index: pageInfoIndex)])
+        snapshot.appendItems(viewModel.preloadedPages + [Page(type: .nextInfoPage, chapterId: nextChapter.id, index: pageInfoIndex)])
         pageInfoIndex -= 1
 
         if chapters.count >= 3 {
@@ -481,11 +492,11 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             var snapshot = NSDiffableDataSourceSnapshot<Int, Page>()
             snapshot.appendSections([0])
             snapshot.appendItems([
-                Page(type: .prevInfoPage, index: pageInfoIndex)
+                Page(type: .prevInfoPage, chapterId: chapter.id, index: pageInfoIndex)
             ])
             snapshot.appendItems(viewModel.pages)
             snapshot.appendItems([
-                Page(type: .nextInfoPage, index: pageInfoIndex - 1)
+                Page(type: .nextInfoPage, chapterId: chapter.id, index: pageInfoIndex - 1)
             ])
             pageInfoIndex -= 2
             await MainActor.run {

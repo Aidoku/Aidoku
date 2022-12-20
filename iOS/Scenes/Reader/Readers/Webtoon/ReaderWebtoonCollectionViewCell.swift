@@ -13,9 +13,12 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
 
     let pageView = ReaderPageView2()
     var page: Page?
+    private var sourceId: String?
 
     var infoPageType: ReaderPageViewController.InfoPageType?
     var infoView: ReaderInfoPageView?
+
+    lazy var reloadButton = UIButton(type: .roundedRect)
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,15 +27,31 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
         pageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pageView)
 
+        reloadButton.isHidden = true
+        reloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
+        reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
+        reloadButton.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
+        reloadButton.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(reloadButton)
+
         NSLayoutConstraint.activate([
             pageView.topAnchor.constraint(equalTo: topAnchor),
             pageView.widthAnchor.constraint(equalTo: widthAnchor),
-            pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.estimatedHeight)
+            pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.estimatedHeight),
+
+            reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor),
+            reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        pageView.imageView.image = nil
+        reloadButton.isHidden = true
     }
 
     func setPage(page: Page) {
@@ -41,9 +60,12 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
 
     func loadPage(sourceId: String? = nil) async {
         guard let page = page, page.type == .imagePage else { return }
+        self.sourceId = sourceId
         infoView?.isHidden = true
         pageView.isHidden = false
-        _ = await pageView.setPage(page, sourceId: sourceId)
+        let success = await pageView.setPage(page, sourceId: sourceId)
+        pageView.progressView.isHidden = true
+        reloadButton.isHidden = success
     }
 
     func loadInfo(prevChapter: Chapter?, nextChapter: Chapter?) {
@@ -93,5 +115,14 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
         }
 
         return layoutAttributes
+    }
+
+    @objc func reload() {
+        reloadButton.isHidden = true
+        pageView.progressView.setProgress(value: 0, withAnimation: false)
+        pageView.progressView.isHidden = false
+        Task {
+            await loadPage(sourceId: sourceId)
+        }
     }
 }

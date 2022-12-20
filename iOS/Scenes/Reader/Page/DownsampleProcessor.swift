@@ -25,6 +25,7 @@ struct DownsampleProcessor: ImageProcessing {
         self.upscale = upscale
         self.downscale = downscale
     }
+
     init(width: CGFloat, upscale: Bool = true, downscale: Bool = true) {
         self.size = CGSize(width: width, height: CGFloat.infinity)
         self.upscale = upscale
@@ -81,6 +82,6 @@ struct DownsampleProcessor: ImageProcessing {
             return image
         }
 
-        return PlatformImage(cgImage: output, scale: image.scale, orientation: image.imageOrientation)
+        return PlatformImage(cgImage: output, scale: UIScreen.main.scale, orientation: image.imageOrientation)
     }
 }

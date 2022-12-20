@@ -126,6 +126,7 @@ class ReaderPageViewController: BaseViewController {
             let result = await pageView.setPage(page, sourceId: sourceId)
             if !result {
                 pageSet = false
+                pageView.progressView.isHidden = true
                 reloadButton.isHidden = false
             } else {
                 reloadButton.isHidden = true
