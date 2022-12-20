@@ -274,15 +274,25 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         guard let chapter = chapter else { return }
         await viewModel.loadPages(chapter: chapter)
         delegate?.setTotalPages(viewModel.pages.count)
-        await MainActor.run {
-            self.loadPageControllers(chapter: chapter)
-            var startPage = startPage
-            if startPage < 1 {
-                startPage = 1
-            } else if startPage > viewModel.pages.count {
-                startPage = viewModel.pages.count
+        if viewModel.pages.isEmpty {
+            let alert = UIAlertController(
+                title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
+                message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+            present(alert, animated: true)
+        } else {
+            await MainActor.run {
+                self.loadPageControllers(chapter: chapter)
+                var startPage = startPage
+                if startPage < 1 {
+                    startPage = 1
+                } else if startPage > viewModel.pages.count {
+                    startPage = viewModel.pages.count
+                }
+                self.move(toPage: startPage, animated: false)
             }
-            self.move(toPage: startPage, animated: false)
         }
     }
 

@@ -24,6 +24,16 @@ class MangaViewHeaderView: UIView {
         }
     }
 
+    var chapterList: [Chapter] = [] {
+        didSet {
+            if !chapterList.isEmpty {
+                headerTitle.text = "\(chapterList.count) chapters"
+            } else {
+                headerTitle.text = NSLocalizedString("NO_CHAPTERS", comment: "")
+            }
+        }
+    }
+
     var inLibrary: Bool {
         guard let manga = manga else { return false }
         return CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
@@ -639,8 +649,7 @@ extension MangaViewHeaderView {
                 self.bookmarkButton.tintColor = .white
                 self.bookmarkButton.backgroundColor = self.tintColor
                 Task {
-                    let chapters = (try? await SourceManager.shared.source(for: manga.sourceId)?.getChapterList(manga: manga)) ?? []
-                    await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters)
+                    await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapterList)
                     if
                         let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
                         CoreDataManager.shared.hasCategory(title: defaultCategory)

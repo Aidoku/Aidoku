@@ -82,6 +82,16 @@ class ReaderWebtoonViewController: BaseCollectionViewController {
         return collectionView.indexPathForItem(at: currentPoint)?.row
     }
 
+    func showLoadFailAlert() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
+            message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO", comment: ""),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
     // Update current page when scrolling
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // ignore if page slider is being used
@@ -310,6 +320,11 @@ extension ReaderWebtoonViewController {
         guard let prevChapter = delegate?.getPreviousChapter() else { return }
         await viewModel.preload(chapter: prevChapter)
 
+        // check if pages failed to load
+        if viewModel.preloadedPages.isEmpty {
+            return
+        }
+
         var snapshot = dataSource.snapshot()
 
         if chapters.count >= 3 {
@@ -360,6 +375,12 @@ extension ReaderWebtoonViewController {
     func appendNextChapter() async {
         guard let nextChapter = delegate?.getNextChapter() else { return }
         await viewModel.preload(chapter: nextChapter)
+
+        // check if pages failed to load
+        if viewModel.preloadedPages.isEmpty {
+            return
+        }
+
         var snapshot = dataSource.snapshot()
         snapshot.appendItems(viewModel.preloadedPages + [Page(type: .nextInfoPage, chapterId: nextChapter.id, index: pageInfoIndex)])
         pageInfoIndex -= 1
@@ -467,6 +488,15 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             await viewModel.loadPages(chapter: chapter)
             delegate?.setTotalPages(viewModel.pages.count)
             pages = [viewModel.pages]
+            if viewModel.pages.isEmpty {
+                showLoadFailAlert()
+                var snapshot = NSDiffableDataSourceSnapshot<Int, Page>()
+                snapshot.appendSections([0])
+                await MainActor.run {
+                    dataSource.apply(snapshot)
+                }
+                return
+            }
 
             var startPage = startPage
             if startPage < 1 {
