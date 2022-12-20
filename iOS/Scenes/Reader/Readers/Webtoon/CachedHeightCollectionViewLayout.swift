@@ -7,6 +7,10 @@
 
 import UIKit
 
+// it would be great if I could this this to work as intended, but the issue with it is that
+// content size adjustments for when a cell changes height causes scrolling to become stuttery.
+// this doesn't happen when I use the collection view data sources's reconfigureItems method (ios 15+).
+
 class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
 
     var cachedHeights: [IndexPath: CGFloat] = [:]
@@ -18,7 +22,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         contentSize
     }
 
-    private var estimatedHeight: CGFloat = 300
+    private var estimatedHeight: CGFloat = ReaderWebtoonCollectionViewCell.estimatedHeight
     private var newHeight = 0
 
     override init() {
@@ -26,7 +30,8 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         minimumInteritemSpacing = 0
         minimumLineSpacing = 0
         sectionInset = .zero
-        estimatedItemSize = CGSize(width: UIScreen.main.bounds.size.width, height: estimatedHeight)
+        // setting estimated item size disables cell prefetching
+//        estimatedItemSize = CGSize(width: UIScreen.main.bounds.size.width, height: estimatedHeight)
     }
 
     required init?(coder: NSCoder) {
@@ -90,10 +95,11 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
         withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes
     ) -> Bool {
-        if let height = cachedHeights[preferredAttributes.indexPath] {
-            return originalAttributes.size.height != height
-        }
-        return preferredAttributes.size.height != originalAttributes.size.height
+//        if let height = cachedHeights[preferredAttributes.indexPath] {
+//            return originalAttributes.size.height != height
+//        }
+//        return preferredAttributes.size.height != originalAttributes.size.height
+        false
     }
 
     override func invalidationContext(
@@ -105,8 +111,12 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
             withOriginalAttributes: originalAttributes
         )
 
-        let newHeight = cachedHeights[preferredAttributes.indexPath] ?? preferredAttributes.size.height
         let oldHeight = originalAttributes.size.height
+        let cachedHeight = cachedHeights[preferredAttributes.indexPath]
+        let newHeight = cachedHeight ?? preferredAttributes.size.height
+        if cachedHeight == nil {
+            cachedHeights[preferredAttributes.indexPath] = newHeight
+        }
 
         let oldAdjustment = invalidationContext.contentSizeAdjustment
 
