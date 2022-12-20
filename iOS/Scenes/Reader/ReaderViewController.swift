@@ -317,22 +317,38 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     func getNextChapter() -> Chapter? {
         guard
-            let index = chapterList.firstIndex(of: chapter),
-            index - 1 >= 0
+            var index = chapterList.firstIndex(of: chapter)
         else {
             return nil
         }
-        return chapterList[index - 1]
+        // find next non-duplicate chapter
+        index -= 1
+        while index >= 0 {
+            let new = chapterList[index]
+            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum {
+                return new
+            }
+            index -= 1
+        }
+        return nil
     }
 
     func getPreviousChapter() -> Chapter? {
         guard
-            let index = chapterList.firstIndex(of: chapter),
-            index + 1 < chapterList.count
+            var index = chapterList.firstIndex(of: chapter)
         else {
             return nil
         }
-        return chapterList[index + 1]
+        // find previous non-duplicate chapter
+        index += 1
+        while index < chapterList.count {
+            let new = chapterList[index]
+            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum {
+                return new
+            }
+            index += 1
+        }
+        return nil
     }
 
     func setChapter(_ chapter: Chapter) {
