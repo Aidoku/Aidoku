@@ -235,8 +235,9 @@ class LibraryViewModel {
     func removeFromLibrary(book: BookInfo) {
         pinnedBooks.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
         books.removeAll { $0.sourceId == book.sourceId && book.bookId == $0.bookId }
-
-        CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
+        Task {
+            await CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
+        }
     }
 
     func shouldUpdateLibrary() -> Bool {

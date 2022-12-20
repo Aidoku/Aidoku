@@ -23,9 +23,18 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
+    /// Create a manga object.
+    @discardableResult
+    func createManga(_ manga: Manga, context: NSManagedObjectContext? = nil) -> MangaObject {
+        let context = context ?? self.context
+        let object = MangaObject(context: context)
+        object.load(from: manga)
+        return object
+    }
+
     /// Remove a MangaObject in the background.
-    func removeManga(sourceId: String, id: String) {
-        container.performBackgroundTask { context in
+    func removeManga(sourceId: String, id: String) async {
+        await container.performBackgroundTask { context in
             let request = MangaObject.fetchRequest()
             request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, sourceId)
             request.fetchLimit = 1

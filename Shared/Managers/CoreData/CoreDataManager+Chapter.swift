@@ -59,6 +59,12 @@ extension CoreDataManager {
         let object = ChapterObject(context: context)
         object.load(from: chapter)
         object.manga = mangaObject
+        object.history = getHistory(
+            sourceId: chapter.sourceId,
+            mangaId: chapter.mangaId,
+            chapterId: chapter.id,
+            context: context
+        )
         return object
     }
 

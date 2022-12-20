@@ -37,9 +37,18 @@ extension CoreDataManager {
         return (libraryObject?.categories?.allObjects as? [CategoryObject]) ?? []
     }
 
+    func getCategoryTitles(context: NSManagedObjectContext? = nil) -> [String] {
+        getCategories(context: context).compactMap { $0.title }
+    }
+
     /// Get category objects for a library object.
     func getCategories(libraryManga: LibraryMangaObject) -> [CategoryObject] {
         (libraryManga.categories?.allObjects as? [CategoryObject]) ?? []
+    }
+
+    /// Check if category exists.
+    func hasCategory(title: String, context: NSManagedObjectContext? = nil) -> Bool {
+        getCategory(title: title, context: context) != nil
     }
 
     /// Create a category object.
@@ -74,6 +83,16 @@ extension CoreDataManager {
         for category in categories {
             guard let categoryObject = getCategory(title: category, context: context) else { continue }
             libraryObject?.addToCategories(categoryObject)
+        }
+    }
+
+    func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String]) async {
+        await container.performBackgroundTask { context in
+            let libraryObject = self.getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+            for category in categories {
+                guard let categoryObject = self.getCategory(title: category, context: context) else { continue }
+                libraryObject?.addToCategories(categoryObject)
+            }
         }
     }
 }
