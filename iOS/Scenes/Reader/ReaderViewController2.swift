@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class ReaderViewController2: BaseObservingViewController {
 
@@ -76,7 +77,7 @@ class ReaderViewController2: BaseObservingViewController {
                 image: UIImage(systemName: "list.bullet"),
                 style: .plain,
                 target: self,
-                action: nil
+                action: #selector(openChapterList)
             )
         ]
         navigationItem.rightBarButtonItems = [
@@ -220,6 +221,18 @@ class ReaderViewController2: BaseObservingViewController {
 
     @objc func openReaderSettings() {
         let vc = UINavigationController(rootViewController: ReaderSettingsViewController2())
+        present(vc, animated: true)
+    }
+
+    @objc func openChapterList() {
+        var view = ReaderChapterListView(chapterList: chapterList, chapter: chapter)
+        view.chapterSet = { chapter in
+            self.setChapter(chapter)
+            Task {
+                await self.loadCurrentChapter()
+            }
+        }
+        let vc = UIHostingController(rootView: view)
         present(vc, animated: true)
     }
 

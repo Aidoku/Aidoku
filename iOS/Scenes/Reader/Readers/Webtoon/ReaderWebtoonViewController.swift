@@ -472,15 +472,12 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
 
     func setChapter(_ chapter: Chapter, startPage: Int) {
         self.chapter = chapter
-        if chapters.isEmpty {
-            chapters = [chapter]
-        }
+        chapters = [chapter]
+
         Task {
             await viewModel.loadPages(chapter: chapter)
             delegate?.setTotalPages(viewModel.pages.count)
-            if pages.isEmpty {
-                pages = [viewModel.pages]
-            }
+            pages = [viewModel.pages]
 
             var startPage = startPage
             if startPage < 1 {

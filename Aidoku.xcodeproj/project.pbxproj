@@ -81,6 +81,7 @@
 		FB1F553628B0069600CFE182 /* ReaderPageViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */; };
 		FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
+		FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */; };
 		FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E024E286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */; };
@@ -347,6 +348,7 @@
 		FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDoublePageViewController.swift; sourceTree = "<group>"; };
 		FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageViewDelegate.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
+		FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderChapterListView.swift; sourceTree = "<group>"; };
 		FB2E024C286606FC00786F21 /* JsonAnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonAnyValue.swift; sourceTree = "<group>"; };
 		FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerModalViewController.swift; sourceTree = "<group>"; };
 		FB2E02512868A67500786F21 /* TrackerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerView.swift; sourceTree = "<group>"; };
@@ -616,6 +618,7 @@
 				FB55AFA128AAAEBD0083EFC3 /* Readers */,
 				FB0CAA6928A9BB9C0024561A /* ReaderViewController2.swift */,
 				FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController2.swift */,
+				FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */,
 				FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */,
 				FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */,
 				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
@@ -1402,6 +1405,7 @@
 				FBFA43AF2799DD260065A445 /* ReaderInfoPageView.swift in Sources */,
 				FB1B48BD277CF8280056D02C /* ZoomableScrollView.swift in Sources */,
 				FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */,
+				FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */,
 				FB1B48BB277CF8280056D02C /* ReaderNavigationController.swift in Sources */,
 				FB1B51B528E35BEA00D3CE0E /* BaseCollectionViewController.swift in Sources */,
 				FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
