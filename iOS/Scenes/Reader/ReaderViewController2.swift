@@ -171,12 +171,14 @@ class ReaderViewController2: BaseObservingViewController {
                     // don't add history if there is none and we're at the first page
                     return
                 }
+                await CoreDataManager.shared.setRead(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
                 await CoreDataManager.shared.setProgress(
                     currentPage,
                     sourceId: chapter.sourceId,
                     mangaId: chapter.mangaId,
                     chapterId: chapter.id
                 )
+                NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
                 NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
             }
         }
