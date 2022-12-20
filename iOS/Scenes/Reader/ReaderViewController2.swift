@@ -163,6 +163,14 @@ class ReaderViewController2: BaseObservingViewController {
         super.viewWillDisappear(animated)
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
+                if currentPage == 1 && !CoreDataManager.shared.hasHistory(
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId,
+                    chapterId: chapter.id
+                ) {
+                    // don't add history if there is none and we're at the first page
+                    return
+                }
                 await CoreDataManager.shared.setProgress(
                     currentPage,
                     sourceId: chapter.sourceId,
