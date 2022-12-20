@@ -1,5 +1,5 @@
 //
-//  ReaderPageView2.swift
+//  ReaderPageView.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/15/22.
@@ -9,7 +9,7 @@ import UIKit
 import Nuke
 import NukeExtensions
 
-class ReaderPageView2: UIView {
+class ReaderPageView: UIView {
 
     weak var delegate: ReaderPageViewDelegate?
 

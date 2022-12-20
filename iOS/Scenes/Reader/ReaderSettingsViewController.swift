@@ -2,7 +2,7 @@
 //  ReaderSettingsViewController.swift
 //  Aidoku (iOS)
 //
-//  Created by Skitty on 2/27/22.
+//  Created by Skitty on 9/27/22.
 //
 
 import UIKit
@@ -35,26 +35,6 @@ class ReaderSettingsViewController: SettingsTableViewController {
                     minimumValue: 1,
                     maximumValue: 10
                 )
-            ]),
-            SettingItem(type: "group", title: NSLocalizedString("PAGED", comment: ""), items: [
-                SettingItem(
-                    type: "select",
-                    key: "Reader.pagedPageLayout",
-                    title: NSLocalizedString("PAGE_LAYOUT", comment: ""),
-                    values: ["single", "double", "auto"],
-                    titles: [
-                        NSLocalizedString("SINGLE_PAGE", comment: ""),
-                        NSLocalizedString("DOUBLE_PAGE", comment: ""),
-                        NSLocalizedString("AUTOMATIC", comment: "")
-                    ]
-                )
-            ]),
-            SettingItem(type: "group", title: NSLocalizedString("EXPERIMENTAL", comment: ""), items: [
-                SettingItem(
-                    type: "switch",
-                    key: "Reader.verticalInfiniteScroll",
-                    title: NSLocalizedString("INFINITE_VERTICAL_SCROLL", comment: "")
-                )
             ])
         ])
     }
@@ -73,6 +53,30 @@ class ReaderSettingsViewController: SettingsTableViewController {
             target: self,
             action: #selector(close)
         )
+
+        updateReaderModeSettings()
+
+        addObserver(forName: "Reader.readingMode") { [weak self] _ in
+            self?.updateReaderModeSettings()
+            self?.tableView.reloadData()
+        }
+    }
+
+    // fetch settings for current reader mode
+    func updateReaderModeSettings() {
+        let mode = UserDefaults.standard.string(forKey: "Reader.readingMode")
+
+        items = [items[0]]
+
+        switch mode {
+        case "rtl", "ltr", "vertical": // paged
+            items.append(ReaderPagedViewModel.settings)
+        case "scroll", "webtoon": // scroll
+            items.append(ReaderWebtoonViewModel.settings)
+        default: // all settings
+            items.append(ReaderPagedViewModel.settings)
+            items.append(ReaderWebtoonViewModel.settings)
+        }
     }
 
     @objc func close() {
