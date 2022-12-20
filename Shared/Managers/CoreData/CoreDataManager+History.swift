@@ -14,6 +14,16 @@ extension CoreDataManager {
         clear(request: HistoryObject.fetchRequest(), context: context)
     }
 
+    /// Check if history exists for a chapter
+    func hasHistory(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        getHistory(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, context: context) != nil
+    }
+
     /// Get a particular history object.
     func getHistory(
         sourceId: String,
