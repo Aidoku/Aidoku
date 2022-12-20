@@ -11,7 +11,7 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
 
     static let estimatedHeight: CGFloat = 300
 
-    let pageView = ReaderPageView2()
+    let pageView = ReaderPageView()
     var page: Page?
     private var sourceId: String?
 

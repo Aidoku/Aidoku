@@ -1,5 +1,5 @@
 //
-//  ReaderViewController2.swift
+//  ReaderViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/14/22.
@@ -8,7 +8,7 @@
 import UIKit
 import SwiftUI
 
-class ReaderViewController2: BaseObservingViewController {
+class ReaderViewController: BaseObservingViewController {
 
     enum Reader {
         case paged
@@ -220,7 +220,7 @@ class ReaderViewController2: BaseObservingViewController {
     }
 
     @objc func openReaderSettings() {
-        let vc = UINavigationController(rootViewController: ReaderSettingsViewController2())
+        let vc = UINavigationController(rootViewController: ReaderSettingsViewController())
         present(vc, animated: true)
     }
 
@@ -249,7 +249,7 @@ class ReaderViewController2: BaseObservingViewController {
 }
 
 // MARK: - Reading Mode
-extension ReaderViewController2 {
+extension ReaderViewController {
 
     func setReadingMode(_ mode: String?) {
         switch mode {
@@ -309,7 +309,7 @@ extension ReaderViewController2 {
 }
 
 // MARK: - Reader Holding Delegate
-extension ReaderViewController2: ReaderHoldingDelegate {
+extension ReaderViewController: ReaderHoldingDelegate {
 
     func getChapter() -> Chapter {
         chapter
@@ -376,7 +376,7 @@ extension ReaderViewController2: ReaderHoldingDelegate {
 }
 
 // MARK: - Bar Visibility
-extension ReaderViewController2 {
+extension ReaderViewController {
 
     @objc func toggleBarVisibility() {
         guard let navigationController = navigationController else { return }

@@ -1,5 +1,5 @@
 //
-//  LibraryViewController2.swift
+//  LibraryViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 7/23/22.
@@ -8,7 +8,7 @@
 import UIKit
 import LocalAuthentication
 
-class LibraryViewController2: BookCollectionViewController {
+class LibraryViewController: BookCollectionViewController {
 
     lazy var viewModel = LibraryViewModel()
 
@@ -277,7 +277,7 @@ class LibraryViewController2: BookCollectionViewController {
 }
 
 // MARK: - Data Source Updating
-extension LibraryViewController2 {
+extension LibraryViewController {
 
     func clearDataSource() {
         let snapshot = NSDiffableDataSourceSnapshot<Section, BookInfo>()
@@ -308,7 +308,7 @@ extension LibraryViewController2 {
 }
 
 // MARK: - Locking
-extension LibraryViewController2 {
+extension LibraryViewController {
 
     @objc func unlock() {
         let context = LAContext()
@@ -393,7 +393,7 @@ extension LibraryViewController2 {
 }
 
 // MARK: - Sorting
-extension LibraryViewController2 {
+extension LibraryViewController {
 
     func toggleSort(method: LibraryViewModel.SortMethod) {
         viewModel.toggleSort(method: method)
@@ -460,7 +460,7 @@ extension LibraryViewController2 {
 }
 
 // MARK: - Listing Header Delegate
-extension LibraryViewController2: MangaListSelectionHeaderDelegate {
+extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
     func optionSelected(_ index: Int) {
         if index == 0 {
@@ -481,7 +481,7 @@ extension LibraryViewController2: MangaListSelectionHeaderDelegate {
 }
 
 // MARK: - Collection View Delegate
-extension LibraryViewController2 {
+extension LibraryViewController {
 
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         super.collectionView(collectionView, didSelectItemAt: indexPath)
@@ -534,7 +534,7 @@ extension LibraryViewController2 {
 }
 
 // MARK: - Search Results
-extension LibraryViewController2: UISearchResultsUpdating {
+extension LibraryViewController: UISearchResultsUpdating {
 
     func updateSearchResults(for searchController: UISearchController) {
         viewModel.search(query: searchController.searchBar.text ?? "")

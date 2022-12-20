@@ -126,7 +126,7 @@ class ReaderDoublePageViewController: BaseViewController {
 
     // TODO: fix `SWIFT TASK CONTINUATION MISUSE: setPageImage(url:sourceId:) leaked its continuation!`
     func setPage(_ page: Page, sourceId: String? = nil, for pos: ReaderPagedViewController.PagePosition) {
-        let pageView: ReaderPageView2?
+        let pageView: ReaderPageView?
         let reloadButton: UIButton
         switch pos {
         case .first:

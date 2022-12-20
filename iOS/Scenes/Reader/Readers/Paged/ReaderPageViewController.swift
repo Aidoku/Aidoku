@@ -23,7 +23,7 @@ class ReaderPageViewController: BaseViewController {
 
     private var infoView: ReaderInfoPageView?
     private var zoomView: ZoomableScrollView?
-    var pageView: ReaderPageView2?
+    var pageView: ReaderPageView?
     lazy var reloadButton = UIButton(type: .roundedRect)
 
     var currentChapter: Chapter? {
@@ -51,7 +51,7 @@ class ReaderPageViewController: BaseViewController {
         case .info(let infoPageType):
             infoView = ReaderInfoPageView(type: infoPageType == .previous ? .previous : .next)
         case .page:
-            pageView = ReaderPageView2()
+            pageView = ReaderPageView()
         }
     }
 
