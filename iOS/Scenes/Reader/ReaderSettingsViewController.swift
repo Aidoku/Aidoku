@@ -9,34 +9,29 @@ import UIKit
 
 class ReaderSettingsViewController: SettingsTableViewController {
 
+    static let settings = SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
+        SettingItem(
+            type: "select",
+            key: "Reader.readingMode",
+            title: NSLocalizedString("READING_MODE", comment: ""),
+            values: ["default", "rtl", "ltr", "vertical", "webtoon"],
+            titles: [
+                NSLocalizedString("DEFAULT", comment: ""),
+                NSLocalizedString("RTL", comment: ""),
+                NSLocalizedString("LTR", comment: ""),
+                NSLocalizedString("VERTICAL", comment: ""),
+                NSLocalizedString("WEBTOON", comment: "")
+            ],
+            notification: "Reader.readingMode"
+        ),
+        SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
+        SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
+    ])
+
     init() {
-        super.init(items: [
-            SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
-                SettingItem(
-                    type: "select",
-                    key: "Reader.readingMode",
-                    title: NSLocalizedString("READING_MODE", comment: ""),
-                    values: ["default", "rtl", "ltr", "vertical", "scroll"],
-                    titles: [
-                        NSLocalizedString("DEFAULT", comment: ""),
-                        NSLocalizedString("RTL", comment: ""),
-                        NSLocalizedString("LTR", comment: ""),
-                        NSLocalizedString("VERTICAL", comment: ""),
-                        NSLocalizedString("VERTICAL_SCROLL", comment: "")
-                    ],
-                    notification: "Reader.readingMode"
-                ),
-                SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
-                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
-                SettingItem(
-                    type: "stepper",
-                    key: "Reader.pagesToPreload",
-                    title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
-                    minimumValue: 1,
-                    maximumValue: 10
-                )
-            ])
-        ])
+        var settings = Self.settings
+        settings.title = NSLocalizedString("GENERAL", comment: "")
+        super.init(items: [settings])
     }
 
     required init?(coder: NSCoder) {
