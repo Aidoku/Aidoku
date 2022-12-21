@@ -1,0 +1,159 @@
+
+
+"OK" = "OK";
+"RESET" = "重置";
+"DELETE" = "刪除";
+"REMOVE" = "移除";
+"RENAME" = "重新命名";
+"CLEAR" = "清除";
+"LOADING_ELLIPSIS" = "載入中…";
+"SHARE" = "分享";
+"DOWNLOAD_QUEUE" = "下載佇列";
+"CANCEL_DOWNLOAD" = "取消下載";
+"REMOVE_DOWNLOAD" = "移除下載";
+"REMOVE_ALL_DOWNLOADS" = "移除所有下載";
+"REMOVE_DOWNLOADS" = "移除下載";
+"REMOVE_DOWNLOADS_CONFIRM" = "是否要移除選取的下載？";
+"MANGA_INFO" = "漫畫資訊";
+"TITLE" = "標題";
+"LAST_OPENED" = "最後開啟";
+"LAST_READ" = "最後閱讀";
+
+// Categories
+"ALL" = "全部";
+"NONE" = "無";
+"DEFAULT_CATEGORY" = "預設分類";
+"INSTALLED" = "已安裝";
+"BUTTON_UPDATE" = "更新";
+"CATEGORY_ADD_TEXT" = "請輸入新分類標題。";
+"CATEGORY_TITLE" = "分類標題";
+"ALWAYS_ASK" = "總是詢問";
+"UPDATES" = "更新";
+"LANGUAGES" = "語言";
+"LANGUAGE" = "語言";
+"MORE" = "更多";
+"SELECT_ALL" = "全選";
+
+// Reader
+"CHAPTER" = "章節";
+"CHAPTERS" = "章節";
+"CHAPTER_X" = "第 %g 話";
+"VOL_X" = "第 %g 卷";
+"CH_X" = "第 %g 話";
+"VOL_SPACE_X" = "第 %g 卷";
+"CH_SPACE_X" = "第 %g 話";
+"START_READING" = "開始閱讀";
+"CONTINUE_READING" = "繼續閱讀";
+"DEFAULT" = "預設";
+"READING_MODE" = "閱讀模式";
+"VERTICAL" = "垂直";
+"SAVE_TO_PHOTOS" = "儲存至相簿";
+
+// History
+"HISTORY" = "歷史記錄";
+"%@_AGO" = "%@ 之前";
+"PAGE_X" = "第 %i 頁";
+"VIEW_HISTORY" = "查看歷史記錄";
+"VIEW_MORE" = "查看更多";
+
+// Settings
+"SETTINGS" = "設定";
+"ABOUT" = "關於";
+"CANCEL" = "取消";
+
+// Downloads
+"DOWNLOAD" = "下載";
+"DOWNLOADED" = "已下載";
+// General
+"CONTINUE" = "繼續";
+"UNAVAILABLE" = "無法取得";
+"UNKNOWN" = "未知";
+"MARK_UNREAD" = "標記為未讀";
+"COMPLETED" = "已完結";
+"MARK_ALL" = "標記全部";
+"DISCORD_SERVER" = "Discord 伺服器";
+"CATEGORIES" = "分類";
+"EDIT_CATEGORIES" = "編輯分類";
+"ONGOING" = "連載中";
+"VOLUME_X" = "第 %g 卷";
+"MARK" = "標記";
+
+// Search
+"SEARCH" = "搜尋";
+"CATEGORY_ADD" = "新增分類";
+"NSFW" = "18禁";
+
+// Browse
+"BROWSE" = "瀏覽";
+"INFO" = "資訊";
+"GENERAL" = "一般";
+"VERSION" = "版本";
+"LTR" = "左到右";
+"SELECT_CHAPTERS" = "選取章節";
+"MARK_READ" = "標記為已讀";
+"RTL" = "右到左";
+"VERTICAL_SCROLL" = "垂直連續";
+"LATEST_CHAPTER" = "最新章節";
+"DATE_ADDED" = "新增日期";
+"ICLOUD_SYNC" = "iCloud 同步";
+"INCOGNITO_MODE" = "無痕模式";
+"LIBRARY_ADD_FROM_BROWSE" = "從瀏覽頁新增漫畫";
+"SORT_BY" = "排序方式";
+"FILTER_BY" = "篩選方式";
+
+// Library
+"LIBRARY" = "書櫃";
+"LIBRARY_SEARCH" = "在書櫃中尋找";
+"LIBRARY_EMPTY" = "書櫃為空";
+"ADD_TO_LIBRARY" = "新增至書櫃";
+"REMOVE_FROM_LIBRARY" = "從書櫃移除";
+"BROWSE_NO_SOURCES" = "沒有來源";
+"UNREAD" = "未讀";
+"PREVIOUS_COLON" = "前一頁：";
+"NEXT_COLON" = "下一頁：";
+"NO_NEXT_CHAPTER" = "沒有下一章";
+"NO_PREVIOUS_CHAPTER" = "沒有前一章";
+"READER_SETTINGS" = "閱讀設定";
+"EXPERIMENTAL" = "實驗性";
+"REMOVE_ALL_MANGA_HISTORY" = "清空漫畫閱讀歷史";
+"APPEARANCE" = "外觀";
+"APPEARANCE_LIGHT" = "淺色";
+"APPEARANCE_DARK" = "深色";
+"USE_SYSTEM_APPEARANCE" = "使用系統外觀";
+"MANGA_PER_ROW" = "每行漫畫";
+"PORTRAIT" = "直向";
+"PIN_MANGA" = "釘選漫畫";
+"ONLY_UPDATE_ON_WIFI" = "只在使用 Wi-Fi 時更新";
+"NEVER" = "永不";
+"LIBRARY_UPDATING" = "書櫃更新中";
+"EVERY_12_HOURS" = "每 12 小時";
+"DAILY" = "每天";
+"WEEKLY" = "每週";
+"SHOW_NSFW_SOURCES" = "顯示成人內容";
+"SOURCE_LIST_URL" = "來源清單網址";
+"SOURCE_LIST_ADDED" = "來源清單已新增";
+"SOURCE_LISTS" = "來源清單";
+"RENAME_BACKUP" = "重新命名備份";
+"RENAME_BACKUP_TEXT" = "請輸入備份名字";
+"CLEAR_READ_HISTORY" = "清除閱讀歷史";
+"ADVANCED" = "進階";
+"CLEAR_CHAPTER_CACHE" = "清除章節快取";
+"CLEAR_CHAPTER_CACHE_TEXT" = "不可逆的操作，已快取的章節會被清除並重新下載。";
+"CLEAR_MANGA_CACHE" = "清除漫畫快取";
+"CLEAR_READ_HISTORY_TEXT" = "不可逆的操作，所有閱讀歷史將被清除。";
+"RESET_SETTINGS" = "重設設定";
+"LOGOUT" = "登出";
+"MULTI_LANGUAGE" = "多語言";
+"STATUS" = "狀態";
+"READING" = "閱讀中";
+"PAUSED" = "暫停";
+"FINISHED" = "結束";
+"MANHWA" = "漫畫";
+"LIGHT_NOVEL" = "輕小說";
+"MANHUA" = "漫畫";
+"SUPPORT_VIA_KOFI" = "透過 Ko-Fi 支持作者";
+"LANDSCAPE" = "橫向";
+"UPDATE_INTERVAL" = "更新頻率";
+"SOURCE_LIST_ADDED_TEXT" = "你現在可在瀏覽頁中查看外部來源。";
+"EVERY_2_DAYS" = "每兩天";
+"CLEAR_NETWORK_CACHE" = "清除網路快取";

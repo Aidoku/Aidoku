@@ -443,7 +443,9 @@ class MangaViewController: UIViewController {
             }
         }
     }
+}
 
+extension MangaViewController {
     func showLoadingIndicator() {
         if loadingAlert == nil {
             loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)

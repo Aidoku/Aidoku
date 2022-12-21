@@ -76,6 +76,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ]
         )
 
+        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
+
         KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
         KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
         KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
