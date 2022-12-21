@@ -51,9 +51,17 @@ extension CoreDataManager {
 
     /// Create a chapter object.
     @discardableResult
-    func createChapter(_ chapter: Chapter, context: NSManagedObjectContext? = nil) -> ChapterObject? {
+    func createChapter(
+        _ chapter: Chapter,
+        mangaObject: MangaObject? = nil,
+        context: NSManagedObjectContext? = nil
+    ) -> ChapterObject? {
         let context = context ?? self.context
-        guard let mangaObject = getManga(sourceId: chapter.sourceId, mangaId: chapter.mangaId, context: context) else {
+        guard let mangaObject = mangaObject ?? getManga(
+            sourceId: chapter.sourceId,
+            mangaId: chapter.mangaId,
+            context: context
+        ) else {
             return nil
         }
         let object = ChapterObject(context: context)
@@ -73,11 +81,14 @@ extension CoreDataManager {
         let context = context ?? self.context
         var newChapters = chapters
 
+        guard let manga = self.getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
+
         // update existing chapter objects
         let chapterObjects = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
         for object in chapterObjects {
             if let newChapter = chapters.first(where: { $0.id == object.id }) {
                 object.load(from: newChapter)
+                object.manga = manga
                 newChapters.removeAll { $0.id == object.id }
             } else {
                 context.delete(object)
@@ -91,7 +102,7 @@ extension CoreDataManager {
             id: chapter.id,
             context: context
         ) {
-            createChapter(chapter, context: context)
+            createChapter(chapter, mangaObject: manga, context: context)
         }
     }
 

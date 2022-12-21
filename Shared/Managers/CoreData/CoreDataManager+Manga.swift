@@ -32,6 +32,13 @@ extension CoreDataManager {
         return object
     }
 
+    func getOrCreateManga(_ manga: Manga, context: NSManagedObjectContext? = nil) -> MangaObject {
+        if let mangaObject = getManga(sourceId: manga.sourceId, mangaId: manga.id, context: context) {
+            return mangaObject
+        }
+        return createManga(manga, context: context)
+    }
+
     /// Remove a MangaObject in the background.
     func removeManga(sourceId: String, id: String) async {
         await container.performBackgroundTask { context in

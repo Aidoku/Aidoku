@@ -88,7 +88,7 @@ extension CoreDataManager {
 
     func addToLibrary(manga: Manga, chapters: [Chapter]) async {
         await container.performBackgroundTask { context in
-            let mangaObject = self.createManga(manga, context: context)
+            let mangaObject = self.getOrCreateManga(manga, context: context)
             let libraryObject = LibraryMangaObject(context: context)
             libraryObject.manga = mangaObject
             self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
