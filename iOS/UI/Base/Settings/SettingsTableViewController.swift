@@ -25,6 +25,12 @@ class SettingsTableViewController: UITableViewController {
         }
     }
 
+    func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {
+        observers.append(NotificationCenter.default.addObserver(
+            forName: NSNotification.Name(name), object: object, queue: nil, using: block
+        ))
+    }
+
     init(items: [SettingItem] = [], source: Source? = nil, style: UITableView.Style = .insetGrouped) {
         self.items = items
         super.init(style: style)

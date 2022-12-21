@@ -29,6 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         UserDefaults.standard.register(
             defaults: [
+//                "currentVersion": "0.6", // uncomment next update
+
                 "General.incognitoMode": false,
                 "General.icloudSync": false,
                 "General.appearance": 0,
@@ -38,7 +40,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.portraitRows": UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2,
                 "General.landscapeRows": UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4,
 
-                "Library.sortOption": 1,
+                "Library.sortOption": 2, // lastOpened
                 "Library.sortAscending": false,
 
                 "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,
@@ -74,8 +76,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ]
         )
 
-        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
-
         KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
         KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
         KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
@@ -89,6 +89,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         ImagePipeline.shared = pipeline
+
+        // migrate history to 0.6 format
+        if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
+            CoreDataManager.shared.migrateChapterHistory()
+        }
+
+        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
 
         return true
     }

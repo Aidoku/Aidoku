@@ -50,16 +50,12 @@ class SourceListsViewController: UITableViewController {
                 } else {
                     self.tableView.performBatchUpdates {
                         if previousLists.count > self.sourceLists.count { // remove
-                            for (i, url) in previousLists.enumerated() {
-                                if !self.sourceLists.contains(url) {
-                                    self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
-                                }
+                            for (i, url) in previousLists.enumerated() where !self.sourceLists.contains(url) {
+                                self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
                             }
                         } else { // add
-                            for (i, url) in self.sourceLists.enumerated() {
-                                if !previousLists.contains(url) {
-                                    self.tableView.insertRows(at: [IndexPath(row: i, section: 0)], with: .automatic)
-                                }
+                            for (i, url) in self.sourceLists.enumerated() where !previousLists.contains(url) {
+                                self.tableView.insertRows(at: [IndexPath(row: i, section: 0)], with: .automatic)
                             }
                         }
                     }

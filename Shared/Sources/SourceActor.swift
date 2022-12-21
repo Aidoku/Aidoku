@@ -84,9 +84,13 @@ actor SourceActor {
 
         let pageListDescriptor: Int32 = (try? source.globalStore.vm.call("get_page_list", chapterDescriptor)) ?? -1
 
-        let pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
+        var pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
         source.globalStore.removeStdValue(pageListDescriptor)
         source.globalStore.removeStdValue(chapterDescriptor)
+
+        for i in 0..<pages.count {
+            pages[i].chapterId = chapter.id
+        }
 
         return pages
     }
