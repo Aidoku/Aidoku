@@ -286,3 +286,13 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
+"UNREAD_CHAPTERS" = "Unread Chapters";
+"RELOAD" = "Reload";
+"%i_OF_%i" = "%i of %i";
+"%i_PAGES_LEFT" = "%i pages left";
+"ONE_PAGE_LEFT" = "1 page left";
+"FAILED_CHAPTER_LOAD" = "Failed to Load Chapter";
+"LAST_UPDATED" = "Last Updated";
+"TOTAL_CHAPTERS" = "Total Chapters";
+"FAILED_CHAPTER_LOAD_INFO" = "You might be offline or the source may be having issues.";
+"WEBTOON" = "Webtoon";

@@ -280,3 +280,11 @@
 "SUPPORT_VIA_KOFI" = "通过Ko-Fi支持";
 "VOLUMES" = "卷数";
 "VIEW_ON_WEBSITE" = "在网站上查看";
+"LAST_UPDATED" = "最后更新";
+"RELOAD" = "重新加载";
+"ONE_PAGE_LEFT" = "剩下1页";
+"FAILED_CHAPTER_LOAD" = "载入章节失败";
+"TOTAL_CHAPTERS" = "章节总数";
+"UNREAD_CHAPTERS" = "未读章节";
+"FAILED_CHAPTER_LOAD_INFO" = "您可能处于离线状态或来源可能有问题.";
+"%i_PAGES_LEFT" = "还剩 %i 页";

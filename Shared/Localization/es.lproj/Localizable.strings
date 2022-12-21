@@ -102,7 +102,7 @@
 "PORTRAIT" = "Vertical";
 "LANDSCAPE" = "Horizontal";
 "OPEN_READER_VIEW" = "Abrir vista del lector";
-"UNREAD_CHAPTER_BADGES" = "Insignias de capítulos sin leer";
+"UNREAD_CHAPTER_BADGES" = "Etiqueta de capítulos sin leer";
 "PIN_MANGA" = "Anclar Manga";
 "PIN_MANGA_TYPE" = "Anclar por Tipo";
 "PIN_MANGA_UNREAD" = "No leído";
@@ -280,3 +280,13 @@
 "SUPPORT_VIA_KOFI" = "Apoya vía Ko-Fi";
 "STOP_TRACKING" = "Detener Seguimiento";
 "MANGA" = "Manga";
+"RELOAD" = "Recargar";
+"%i_OF_%i" = "%i de %i";
+"LAST_UPDATED" = "Ultima actualización";
+"TOTAL_CHAPTERS" = "Total de capítulos";
+"%i_PAGES_LEFT" = "%i páginas restantes";
+"UNREAD_CHAPTERS" = "Capítulos no leídos";
+"ONE_PAGE_LEFT" = "1 página restante";
+"FAILED_CHAPTER_LOAD" = "Error al cargar el capítulo";
+"FAILED_CHAPTER_LOAD_INFO" = "Es posible que estés sin conexión o la fuente esté teniendo problemas.";
+"WEBTOON" = "Webtoon";
