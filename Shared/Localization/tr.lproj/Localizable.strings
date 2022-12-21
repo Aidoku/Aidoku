@@ -1,0 +1,126 @@
+
+
+// General
+"CONTINUE" = "Devam et";
+"CANCEL" = "İptal et";
+"OK" = "Tamam";
+"UNKNOWN" = "Bilinmiyor";
+"UNAVAILABLE" = "Kullanılamaz";
+"RESET" = "Sıfırla";
+"DELETE" = "Sil";
+"RENAME" = "Yeniden adlandır";
+"SHARE" = "Paylaş";
+"DOWNLOADED" = "İndirildi";
+"DOWNLOAD_QUEUE" = "İndirme kuyruğu";
+"REMOVE_DOWNLOAD" = "İndirilenleri kaldır";
+"REMOVE_ALL_DOWNLOADS" = "Tüm İndirmeleri Kaldır";
+"REMOVE_DOWNLOADS_CONFIRM" = "Seçilen tüm indirmeler kaldırılsın mı?";
+"REMOVE" = "Kaldır";
+"CLEAR" = "Temizle";
+"LOADING_ELLIPSIS" = "Yükleniyor…";
+
+// Downloads
+"DOWNLOAD" = "İndir";
+"REMOVE_DOWNLOADS" = "İndirilenleri Kaldır";
+"CANCEL_DOWNLOAD" = "İndirmeyi iptal et";
+
+// Library
+"LIBRARY" = "Kütüphane";
+"LIBRARY_SEARCH" = "Kütüphanede Ara";
+"LANGUAGES" = "Diller";
+"CATEGORY_TITLE" = "Kategori Adı";
+"INFO" = "Bilgi";
+"DEFAULT_CATEGORY" = "Varsayılan Kategori";
+"FILTER_BY" = "Filtrele";
+
+// Categories
+"ALL" = "Hepsi";
+"NO_CHAPTERS_AVAILABLE" = "Bölüm bulunamadı";
+"START_READING" = "Başla";
+"READ" = "Okunmuş";
+"PREVIOUS_COLON" = "Önceki:";
+"NEXT_COLON" = "Sonraki:";
+"RTL" = "Sağdan Sola";
+
+// History
+"HISTORY" = "Geçmiş";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Bu bölüm için geçmişi temizlemek istediğinize emin misiniz?";
+"LIBRARY_EMPTY" = "Kütüphane Boş";
+"ADD_TO_LIBRARY" = "Kütüphaneye Ekle";
+"REMOVE_FROM_LIBRARY" = "Kütüphaneden Kaldır";
+"SORT_BY" = "Sırala";
+"LAST_READ" = "Son Okunan";
+"LATEST_CHAPTER" = "Son Bölüm";
+"DATE_ADDED" = "Eklenme Tarihi";
+"NONE" = "Hiçbiri";
+"CATEGORIES" = "Kategoriler";
+"EDIT_CATEGORIES" = "Kategorileri Düzenle";
+"CATEGORY_ADD" = "Kategori Ekle";
+"CATEGORY_ADD_TEXT" = "Bir kategori adı giriniz.";
+"ALWAYS_ASK" = "Her zaman sor";
+
+// Browse
+"BROWSE" = "Gözat";
+"BROWSE_NO_SOURCES" = "Kaynak bulunamadı";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Kaynak Ekleme Rehberi";
+"UPDATES" = "Güncellemeler";
+"INSTALLED" = "Yüklenenler";
+"EXTERNAL" = "Harici";
+"BUTTON_UPDATE" = "Güncelle";
+"BUTTON_ERROR" = "Hata";
+"UNINSTALL" = "Kaldır";
+
+// Source
+"SOURCE_INFO" = "Kaynak Bilgisi";
+"LANGUAGE" = "Dil";
+"VERSION" = "Versiyon";
+"BUTTON_FILTER" = "Filtrele";
+"LIST_HEADER" = "Liste";
+"LIST_ALL" = "Hepsi";
+
+// Manga
+"UNTITLED" = "Başlıksız";
+"ONGOING" = "Devam eden";
+"CANCELLED" = "İptal edilmiş";
+"COMPLETED" = "Tamamlanmış";
+"MORE" = "daha fazla";
+"SOURCE_ORDER" = "Kaynak Sırası";
+"SELECT_CHAPTERS" = "Bölüm Seç";
+"SELECT_ALL" = "Hepsini Seç";
+"DESELECT_ALL" = "Seçimleri Temizle";
+
+// Reader
+"CHAPTER" = "Bölüm";
+"CHAPTERS" = "Bölümler";
+"NO_CHAPTERS" = "Bölüm bulunamadı";
+"CONTINUE_READING" = "Devam Et";
+"UNREAD" = "Okunmamış";
+"MARK" = "İşaretle";
+"MARK_ALL" = "Hepsini İşaretle";
+"MARK_UNREAD" = "Okunmamış olarak İşaretle";
+"MARK_READ" = "Okunmuş olarak İşaretle";
+"FINISHED_COLON" = "Tamamlanmış:";
+"CURRENT_COLON" = "Güncel:";
+"READER_SETTINGS" = "Okuyucu Ayarları";
+"READING_MODE" = "Okuma Modu";
+"DEFAULT" = "Varsayılan";
+"LTR" = "Soldan Sağa";
+"VERTICAL" = "Dikey";
+"VERTICAL_SCROLL" = "Dikey Kaydırma";
+"EXPERIMENTAL" = "Deneysel";
+"INFINITE_VERTICAL_SCROLL" = "Sonsuz Dikey Kaydırma";
+"SAVE_TO_PHOTOS" = "Fotoğraflara Kaydet";
+"PAGE_X" = "Sayfa %i";
+"REMOVE_ALL_MANGA_HISTORY" = "Tüm Manga Geçmişini Temizle";
+"VIEW_HISTORY" = "Geçmişi Göster";
+
+// Search
+"SEARCH" = "Ara";
+"VIEW_MORE" = "Daha Fazla Göster";
+
+// Settings
+"SETTINGS" = "Ayarlar";
+"ABOUT" = "Hakkında";
+"GITHUB_REPO" = "GitHub Repository";
+"DISCORD_SERVER" = "Discord Kanalı";
+"SUPPPORT_DEVELOPMENT" = "Geliştirmeyi Destekle";
