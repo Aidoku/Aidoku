@@ -385,7 +385,9 @@ extension ReaderWebtoonViewController {
         snapshot.appendItems(viewModel.preloadedPages + [Page(type: .nextInfoPage, chapterId: nextChapter.id, index: pageInfoIndex)])
         pageInfoIndex -= 1
 
-        if chapters.count >= 3 {
+        var removeChapter = chapters.count >= 3
+
+        if removeChapter {
             snapshot.deleteItems(pages.first! + [snapshot.itemIdentifiers.first!])
             chapters.removeFirst()
             pages.removeFirst()
@@ -393,8 +395,29 @@ extension ReaderWebtoonViewController {
         chapters.append(nextChapter)
         pages.append(viewModel.preloadedPages)
 
+        // offset from the bottom
+        let previousOffset = collectionView.contentSize.height - collectionView.contentOffset.y - collectionView.bounds.height
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         await MainActor.run {
             dataSource.apply(snapshot, animatingDifferences: false)
+
+            if removeChapter {
+                let pageCountAbove = pages[0..<2].reduce(0, { result, pages in
+                    result + pages.count + 1
+                })
+                self.collectionView.scrollToItem(
+                    at: IndexPath(row: pageCountAbove, section: 0),
+                    at: .bottom,
+                    animated: false
+                )
+                self.collectionView.setContentOffset(
+                    CGPoint(x: 0, y: self.collectionView.contentOffset.y - previousOffset),
+                    animated: false
+                )
+            }
+            CATransaction.commit()
         }
     }
 
