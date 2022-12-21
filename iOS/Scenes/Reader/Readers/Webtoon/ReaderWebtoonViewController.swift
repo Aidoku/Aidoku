@@ -385,7 +385,7 @@ extension ReaderWebtoonViewController {
         snapshot.appendItems(viewModel.preloadedPages + [Page(type: .nextInfoPage, chapterId: nextChapter.id, index: pageInfoIndex)])
         pageInfoIndex -= 1
 
-        var removeChapter = chapters.count >= 3
+        let removeChapter = chapters.count >= 3
 
         if removeChapter {
             snapshot.deleteItems(pages.first! + [snapshot.itemIdentifiers.first!])

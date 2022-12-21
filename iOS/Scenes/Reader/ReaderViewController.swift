@@ -162,6 +162,7 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        guard currentPage >= 1 else { return }
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
                 if currentPage == 1 && !CoreDataManager.shared.hasHistory(
@@ -362,7 +363,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         toolbarView.currentPage = page
         toolbarView.updateSliderPosition()
         if page == toolbarView.totalPages {
-            setCompleted(true)
+            setCompleted(true, page: page)
         }
     }
 
