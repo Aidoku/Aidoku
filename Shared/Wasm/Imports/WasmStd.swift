@@ -154,6 +154,13 @@ extension WasmStd {
                 return Int32(ObjectType.int.rawValue)
             } else if value is Float {
                 return Int32(ObjectType.float.rawValue)
+            } else if let value = value as? NSNumber {
+                switch CFNumberGetType(value) {
+                case .floatType, .float32Type, .float64Type, .cgFloatType:
+                    return Int32(ObjectType.float.rawValue)
+                default:
+                    return Int32(ObjectType.int.rawValue)
+                }
             } else if value is String {
                 return Int32(ObjectType.string.rawValue)
             } else if value is Bool {
@@ -195,14 +202,17 @@ extension WasmStd {
     var read_int: (Int32) -> Int64 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let int = self.globalStore.readStdValue(descriptor) as? Int {
+            let value = self.globalStore.readStdValue(descriptor)
+            if let int = value as? Int {
                 return Int64(int)
-            } else if let float = self.globalStore.readStdValue(descriptor) as? Float {
+            } else if let float = value as? Float {
                 return Int64(float)
-            } else if let int = Int(self.globalStore.readStdValue(descriptor) as? String ?? "Error") {
+            } else if let int = Int(value as? String ?? "Error") {
                 return Int64(int)
-            } else if let bool = self.globalStore.readStdValue(descriptor) as? Bool {
+            } else if let bool = value as? Bool {
                 return Int64(bool ? 1 : 0)
+            } else if let number = value as? NSNumber {
+                return number.int64Value
             }
             return -1
         }
@@ -211,12 +221,15 @@ extension WasmStd {
     var read_float: (Int32) -> Float64 {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
-            if let float = self.globalStore.readStdValue(descriptor) as? Float {
+            let value = self.globalStore.readStdValue(descriptor)
+            if let float = value as? Float {
                 return Float64(float)
-            } else if let int = self.globalStore.readStdValue(descriptor) as? Int {
+            } else if let int = value as? Int {
                 return Float64(int)
-            } else if let float = Float(self.globalStore.readStdValue(descriptor) as? String ?? "Error") {
+            } else if let float = Float(value as? String ?? "Error") {
                 return Float64(float)
+            } else if let number = value as? NSNumber {
+                return number.doubleValue
             }
             return -1
         }
