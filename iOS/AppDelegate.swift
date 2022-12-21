@@ -76,8 +76,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ]
         )
 
-        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
-
         KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
         KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
         KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
@@ -93,10 +91,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ImagePipeline.shared = pipeline
 
         // migrate history to 0.6 format
-        if UserDefaults.standard.string(forKey: "currentVersion") != "0.6" {
+        if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
             CoreDataManager.shared.migrateChapterHistory()
-            UserDefaults.standard.set("0.6", forKey: "currentVersion")
         }
+
+        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
 
         return true
     }
