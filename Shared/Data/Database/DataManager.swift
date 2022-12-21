@@ -303,6 +303,7 @@ extension DataManager {
         }
     }
 
+    @MainActor
     func getChapters(for manga: Manga, fromSource: Bool = false) async -> [Chapter] {
         if fromSource {
             return (try? await SourceManager.shared.source(for: manga.sourceId)?.getChapterList(manga: manga)) ?? []
@@ -853,6 +854,7 @@ extension DataManager {
             return historyObject
         } else if createIfMissing {
             let readHistory = HistoryObject(context: context ?? container.viewContext)
+            readHistory.chapter = getChapterObject(for: chapter, context: context)
             readHistory.dateRead = Date()
             readHistory.sourceId = chapter.sourceId
             readHistory.chapterId = chapter.id
@@ -1057,8 +1059,8 @@ extension DataManager {
         }
     }
 
-    func getCategories(for manga: Manga) -> [String] {
-        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false) else { return [] }
+    func getCategories(for manga: Manga, context: NSManagedObjectContext? = nil) -> [String] {
+        guard let libraryObject = getLibraryObject(for: manga, createIfMissing: false, context: context) else { return [] }
         return ((libraryObject.categories?.allObjects as? [CategoryObject]) ?? []).compactMap { $0.title }
     }
 

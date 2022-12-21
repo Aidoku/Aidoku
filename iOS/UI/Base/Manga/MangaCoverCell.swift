@@ -249,7 +249,7 @@ class MangaCoverCell: UICollectionViewCell {
             processors: [.resize(width: bounds.width)]
         )
 
-        NukeExtensions.loadImage(
+        _ = NukeExtensions.loadImage(
             with: request,
             options: ImageLoadingOptions(
                 placeholder: UIImage(named: "MangaPlaceholder"),

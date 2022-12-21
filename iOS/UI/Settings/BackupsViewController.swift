@@ -59,16 +59,12 @@ class BackupsViewController: UITableViewController {
             } else {
                 self.tableView.performBatchUpdates {
                     if previousCount > currentCount { // remove
-                        for (i, url) in previousBackups.enumerated() {
-                            if !self.backups.contains(url) {
-                                self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
-                            }
+                        for (i, url) in previousBackups.enumerated() where !self.backups.contains(url) {
+                            self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
                         }
                     } else { // add
-                        for url in self.backups {
-                            if !previousBackups.contains(url) {
-                                self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-                            }
+                        for url in self.backups where !previousBackups.contains(url) {
+                            self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
                         }
                     }
                 }
