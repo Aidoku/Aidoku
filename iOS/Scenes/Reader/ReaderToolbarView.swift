@@ -43,8 +43,6 @@ class ReaderToolbarView: UIView {
         pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pagesLeftLabel)
 
-//        sliderView.addTarget(self, action: #selector(sliderMoved(_:)), for: .valueChanged)
-//        sliderView.addTarget(self, action: #selector(sliderDone(_:)), for: .editingDidEnd)
         sliderView.translatesAutoresizingMaskIntoConstraints = false
         sliderView.semanticContentAttribute = .playback // for rtl languages
         addSubview(sliderView)
@@ -87,7 +85,7 @@ class ReaderToolbarView: UIView {
         } else if page < 1 {
             page = 1
         }
-        currentPageLabel.text = String(format: "%i of %i", page, totalPages)
+        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), page, totalPages)
     }
 
     func updatePageLabels() {
@@ -104,11 +102,13 @@ class ReaderToolbarView: UIView {
         }
         let pagesLeft = totalPages - currentPage
 
-        currentPageLabel.text = String(format: "%i of %i", currentPage, totalPages)
+        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), currentPage, totalPages)
         if pagesLeft < 1 {
             pagesLeftLabel.text = nil
         } else {
-            pagesLeftLabel.text = pagesLeft == 1 ? "1 page left" : String(format: "%i pages left", pagesLeft)
+            pagesLeftLabel.text = pagesLeft == 1
+                ? NSLocalizedString("ONE_PAGE_LEFT", comment: "")
+                : String(format: NSLocalizedString("%i_PAGES_LEFT", comment: ""), pagesLeft)
         }
     }
 
