@@ -685,10 +685,7 @@ extension MangaViewController {
 
     @objc func openWebView() {
         if let url = URL(string: manga.url ?? "") {
-            let config = SFSafariViewController.Configuration()
-            config.entersReaderIfAvailable = true
-
-            let vc = SFSafariViewController(url: url, configuration: config)
+            let vc = SFSafariViewController(url: url)
             present(vc, animated: true)
         }
     }
