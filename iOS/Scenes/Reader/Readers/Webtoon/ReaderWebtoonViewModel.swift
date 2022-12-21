@@ -10,7 +10,7 @@ import Foundation
 class ReaderWebtoonViewModel: ReaderPagedViewModel {
 
     override class var settings: SettingItem {
-        SettingItem(type: "group", title: NSLocalizedString("EXPERIMENTAL", comment: ""), items: [
+        SettingItem(type: "group", title: NSLocalizedString("WEBTOON", comment: ""), items: [
             SettingItem(
                 type: "switch",
                 key: "Reader.verticalInfiniteScroll",

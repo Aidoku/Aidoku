@@ -18,6 +18,13 @@ class ReaderPagedViewModel {
     class var settings: SettingItem {
         SettingItem(type: "group", title: NSLocalizedString("PAGED", comment: ""), items: [
             SettingItem(
+                type: "stepper",
+                key: "Reader.pagesToPreload",
+                title: NSLocalizedString("PAGES_TO_PRELOAD", comment: ""),
+                minimumValue: 1,
+                maximumValue: 10
+            ),
+            SettingItem(
                 type: "select",
                 key: "Reader.pagedPageLayout",
                 title: NSLocalizedString("PAGE_LAYOUT", comment: ""),
