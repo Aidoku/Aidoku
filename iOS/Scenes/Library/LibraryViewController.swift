@@ -211,12 +211,25 @@ class LibraryViewController: BookCollectionViewController {
             }
         }
 
+        let updatePinType: (Notification) -> Void = { [weak self] _ in
+            guard let self = self else { return }
+            self.viewModel.pinType = self.viewModel.getPinType()
+            Task { @MainActor in
+                self.viewModel.loadLibrary()
+                self.updateDataSource()
+            }
+        }
+
+        addObserver(forName: "Library.pinManga", using: updatePinType)
+        addObserver(forName: "Library.pinMangaType", using: updatePinType)
+
         // TODO: change this notification (elsewhere)
         // it should come with the book info or chapter or whatever that was read
         addObserver(forName: "updateHistory") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
                 self.viewModel.fetchUnreads()
+                self.viewModel.loadLibrary()
                 self.updateDataSource()
             }
         }

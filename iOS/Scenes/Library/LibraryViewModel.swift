@@ -45,7 +45,7 @@ class LibraryViewModel {
         }
     }
 
-    var pinType: PinType = .updated
+    lazy var pinType: PinType = getPinType()
     lazy var sortMethod = SortMethod(rawValue: UserDefaults.standard.integer(forKey: "Library.sortOption")) ?? .lastOpened
     lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
 
@@ -61,6 +61,18 @@ class LibraryViewModel {
             return UserDefaults.standard.stringArray(forKey: "Library.lockedCategories")?.contains(currentCategory) ?? false
         }
         return true
+    }
+
+    func getPinType() -> PinType {
+        if UserDefaults.standard.bool(forKey: "Library.pinManga") {
+            switch UserDefaults.standard.integer(forKey: "Library.pinMangaType") {
+            case 0: return .unread
+            case 1: return .updated
+            default: return .none
+            }
+        } else {
+            return .none
+        }
     }
 
     func refreshCategories() {
