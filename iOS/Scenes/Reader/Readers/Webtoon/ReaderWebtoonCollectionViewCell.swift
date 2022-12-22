@@ -34,10 +34,17 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
         reloadButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(reloadButton)
 
+        let pageHeight1 = pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.estimatedHeight)
+        let pageHeight2 = pageView.heightAnchor.constraint(equalTo: pageView.imageView.heightAnchor)
+        let pageHeight3 = pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
+        pageHeight1.priority = UILayoutPriority(5)
+        pageHeight2.priority = UILayoutPriority(10)
+        pageHeight3.priority = UILayoutPriority(15)
+
         NSLayoutConstraint.activate([
             pageView.topAnchor.constraint(equalTo: topAnchor),
             pageView.widthAnchor.constraint(equalTo: widthAnchor),
-            pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.estimatedHeight),
+            pageHeight1, pageHeight2, pageHeight3,
 
             reloadButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             reloadButton.centerYAnchor.constraint(equalTo: centerYAnchor)

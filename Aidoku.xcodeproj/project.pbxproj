@@ -82,6 +82,9 @@
 		FB2BE5E329527A6E00FAD8A7 /* ReaderInfoPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */; };
 		FB2BE5E429527A7000FAD8A7 /* ReaderPageViewDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */; };
 		FB2BE5E629527A9E00FAD8A7 /* ReaderNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */; };
+		FB2BE5E82953851100FAD8A7 /* ZoomableCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */; };
+		FB2BE5EB295385B900FAD8A7 /* ZoomableLayoutProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5EA295385B900FAD8A7 /* ZoomableLayoutProtocol.swift */; };
+		FB2BE5ED2953872600FAD8A7 /* ZoomableCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5EC2953872600FAD8A7 /* ZoomableCollectionViewController.swift */; };
 		FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E024E286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */; };
@@ -337,6 +340,9 @@
 		FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageViewDelegate.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
 		FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderChapterListView.swift; sourceTree = "<group>"; };
+		FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableCollectionView.swift; sourceTree = "<group>"; };
+		FB2BE5EA295385B900FAD8A7 /* ZoomableLayoutProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableLayoutProtocol.swift; sourceTree = "<group>"; };
+		FB2BE5EC2953872600FAD8A7 /* ZoomableCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableCollectionViewController.swift; sourceTree = "<group>"; };
 		FB2E024C286606FC00786F21 /* JsonAnyValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonAnyValue.swift; sourceTree = "<group>"; };
 		FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerModalViewController.swift; sourceTree = "<group>"; };
 		FB2E02512868A67500786F21 /* TrackerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerView.swift; sourceTree = "<group>"; };
@@ -346,7 +352,6 @@
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
 		FB31AD0827ACBED700D50410 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		FB31AD0A27AE180300D50410 /* WasmHtml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmHtml.swift; sourceTree = "<group>"; };
-		FB31AD1027B1792600D50410 /* ReaderPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageView.swift; sourceTree = "<group>"; };
 		FB43BE0729453E6D004E5AE4 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB43BE0829453E9D004E5AE4 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListsViewController.swift; sourceTree = "<group>"; };
@@ -541,6 +546,7 @@
 		FB02E1EF288D7BA700B9E2DE /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				FB2BE5E92953855000FAD8A7 /* Zooming */,
 				FB55AFA428AAAEF70083EFC3 /* BaseViewController.swift */,
 				FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */,
 				FB1B51B428E35BEA00D3CE0E /* BaseCollectionViewController.swift */,
@@ -820,6 +826,16 @@
 				FBC190E128FB72D900398DF7 /* CachedHeightCollectionViewLayout.swift */,
 			);
 			path = Webtoon;
+			sourceTree = "<group>";
+		};
+		FB2BE5E92953855000FAD8A7 /* Zooming */ = {
+			isa = PBXGroup;
+			children = (
+				FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */,
+				FB2BE5EA295385B900FAD8A7 /* ZoomableLayoutProtocol.swift */,
+				FB2BE5EC2953872600FAD8A7 /* ZoomableCollectionViewController.swift */,
+			);
+			path = Zooming;
 			sourceTree = "<group>";
 		};
 		FB2E0255286B38EF00786F21 /* Tracking */ = {
@@ -1413,6 +1429,7 @@
 				FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */,
 				FB4B0ADA285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
+				FB2BE5E82953851100FAD8A7 /* ZoomableCollectionView.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
 				FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */,
@@ -1485,6 +1502,8 @@
 				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
 				FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */,
 				FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */,
+				FB2BE5EB295385B900FAD8A7 /* ZoomableLayoutProtocol.swift in Sources */,
+				FB2BE5ED2953872600FAD8A7 /* ZoomableCollectionViewController.swift in Sources */,
 				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
 				FB0CAA6528A9B5440024561A /* BookManager.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
@@ -1757,7 +1776,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1796,7 +1815,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
