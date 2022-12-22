@@ -120,7 +120,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func migrateHistory() async {
         showLoadingIndicator()
         try? await Task.sleep(nanoseconds: 500 * 1000000)
-        CoreDataManager.shared.migrateChapterHistory()
+        await CoreDataManager.shared.migrateChapterHistory()
         loadingAlert?.dismiss(animated: true)
     }
 

@@ -109,26 +109,29 @@ final class CoreDataManager {
     }
 
     // TODO: clean this up
-    func migrateChapterHistory() {
+    func migrateChapterHistory() async {
         LogManager.logger.info("Beginning chapter history migration for 0.6")
         var count = 0
 
-        let request = HistoryObject.fetchRequest()
-        let historyObjects = (try? context.fetch(request)) ?? []
-        for historyObject in historyObjects {
-            guard
-                historyObject.chapter == nil,
-                let chapterObject = getChapter(
-                    sourceId: historyObject.sourceId,
-                    mangaId: historyObject.mangaId,
-                    id: historyObject.chapterId
-                )
-            else { continue }
-            historyObject.chapter = chapterObject
-            count += 1
-        }
-        saveIfNeeded()
+        await container.performBackgroundTask { context in
+            let request = HistoryObject.fetchRequest()
+            let historyObjects = (try? context.fetch(request)) ?? []
+            for historyObject in historyObjects {
+                guard
+                    historyObject.chapter == nil,
+                    let chapterObject = self.getChapter(
+                        sourceId: historyObject.sourceId,
+                        mangaId: historyObject.mangaId,
+                        id: historyObject.chapterId,
+                        context: context
+                    )
+                else { continue }
+                historyObject.chapter = chapterObject
+                count += 1
+            }
+            try? context.save()
 
-        LogManager.logger.info("Migrated \(count)/\(historyObjects.count) history objects")
+            LogManager.logger.info("Migrated \(count)/\(historyObjects.count) history objects")
+        }
     }
 }

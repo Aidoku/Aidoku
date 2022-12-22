@@ -13,6 +13,8 @@ import WebKit
 
 class SettingsViewController: SettingsTableViewController {
 
+    var loadingAlert: UIAlertController?
+
     // swiftlint:disable:next function_body_length
     init() {
         super.init(items: [
@@ -321,6 +323,18 @@ class SettingsViewController: SettingsTableViewController {
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
     }
+
+    func showLoadingIndicator() {
+        if loadingAlert == nil {
+            loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
+            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.style = .medium
+            loadingIndicator.startAnimating()
+            loadingAlert?.view.addSubview(loadingIndicator)
+        }
+        present(loadingAlert!, animated: true, completion: nil)
+    }
 }
 
 // MARK: - Table View Data Source
@@ -398,7 +412,11 @@ extension SettingsViewController {
                     // swiftlint:disable:next line_length
                     message: "This will migrate leftover reading history from old versions that aren not currently linked with stored chapters in the local database. This should've happened automatically upon updating, but if it didn't complete, it can be re-executed this way."
                 ) {
-                    CoreDataManager.shared.migrateChapterHistory()
+                    Task {
+                        self.showLoadingIndicator()
+                        await CoreDataManager.shared.migrateChapterHistory()
+                        self.loadingAlert?.dismiss(animated: true)
+                    }
                 }
             case "Advanced.resetSettings":
                 confirmAction(title: NSLocalizedString("RESET_SETTINGS", comment: ""),
