@@ -121,6 +121,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         showLoadingIndicator()
         try? await Task.sleep(nanoseconds: 500 * 1000000)
         await CoreDataManager.shared.migrateChapterHistory()
+        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
         loadingAlert?.dismiss(animated: true)
     }
 

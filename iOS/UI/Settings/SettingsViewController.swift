@@ -415,6 +415,7 @@ extension SettingsViewController {
                     Task {
                         self.showLoadingIndicator()
                         await CoreDataManager.shared.migrateChapterHistory()
+                        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
                         self.loadingAlert?.dismiss(animated: true)
                     }
                 }
