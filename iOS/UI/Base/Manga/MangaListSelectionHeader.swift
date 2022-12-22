@@ -30,12 +30,7 @@ class MangaListSelectionHeader: UICollectionReusableView {
             updateMenu()
         }
     }
-    var selectedOption: Int = 0 {
-        didSet {
-            updateMenu()
-            delegate?.optionSelected(selectedOption)
-        }
-    }
+    var selectedOption: Int = 0
     var lockedOptions: [Int] = [] {
         didSet {
             updateMenu()
@@ -106,7 +101,7 @@ class MangaListSelectionHeader: UICollectionReusableView {
                     image: lockedOptions.contains(i) ? UIImage(systemName: "lock.fill") : nil,
                     state: selectedOption == i ? .on : .off
                 ) { _ in
-                    self.selectedOption = i
+                    self.setSelectedOption(i)
                 }
             )
         }
@@ -117,5 +112,11 @@ class MangaListSelectionHeader: UICollectionReusableView {
         } else {
             menuButton.setTitle("", for: .normal)
         }
+    }
+
+    func setSelectedOption(_ option: Int) {
+        selectedOption = option
+        updateMenu()
+        delegate?.optionSelected(selectedOption)
     }
 }
