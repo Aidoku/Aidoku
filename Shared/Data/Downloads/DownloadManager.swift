@@ -78,8 +78,8 @@ class DownloadManager {
         }
     }
 
-    func hasDownloadedChapter(for manga: Manga) -> Bool {
-        cache.hasDownloadedChapter(for: manga)
+    func hasDownloadedChapter(sourceId: String, mangaId: String) -> Bool {
+        cache.hasDownloadedChapter(sourceId: sourceId, mangaId: mangaId)
     }
 
     func hasQueuedDownloads() async -> Bool {

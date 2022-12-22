@@ -418,6 +418,12 @@ extension LibraryViewController {
         updateSortMenu()
     }
 
+    func toggleFilter(method: LibraryViewModel.FilterMethod) {
+        viewModel.toggleFilter(method: method)
+        updateDataSource()
+        updateSortMenu()
+    }
+
     func updateSortMenu() {
         let chevronIcon = UIImage(systemName: viewModel.sortAscending ? "chevron.up" : "chevron.down")
         let sortMenu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), options: .displayInline, children: [
@@ -464,12 +470,22 @@ extension LibraryViewController {
                 self.toggleSort(method: .totalChapters)
             }
         ])
-//        let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
-//            UIAction(title: NSLocalizedString("DOWNLOADED", comment: ""), image: filterImage(for: "downloaded")) { _ in
-//                self.toggleFilter("downloaded")
-//            }
-//        ])
-        filterBarButton.menu = UIMenu(title: "", children: [sortMenu])
+        func filterImage(for method: LibraryViewModel.FilterMethod) -> UIImage? {
+            if let idx = viewModel.filters.firstIndex(where: { $0.type == .downloaded }) {
+                return UIImage(systemName: viewModel.filters[idx].exclude ? "xmark" : "checkmark")
+            } else {
+                return nil
+            }
+        }
+        let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
+            UIAction(
+                title: NSLocalizedString("DOWNLOADED", comment: ""),
+                image: filterImage(for: .downloaded)
+            ) { _ in
+                self.toggleFilter(method: .downloaded)
+            }
+        ])
+        filterBarButton.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
         (collectionView.supplementaryView(
             forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
         ) as? MangaListSelectionHeader)?.filterButton.menu = filterBarButton.menu

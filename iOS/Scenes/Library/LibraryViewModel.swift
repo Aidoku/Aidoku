@@ -45,9 +45,20 @@ class LibraryViewModel {
         }
     }
 
+    struct LibraryFilter {
+        var type: FilterMethod
+        var exclude: Bool
+    }
+
+    enum FilterMethod: Int {
+        case downloaded = 0
+    }
+
     lazy var pinType: PinType = getPinType()
     lazy var sortMethod = SortMethod(rawValue: UserDefaults.standard.integer(forKey: "Library.sortOption")) ?? .lastOpened
     lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
+
+    var filters: [LibraryFilter] = []
 
     lazy var categories = CoreDataManager.shared.getCategories().map { $0.title ?? "" }
     lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
@@ -83,6 +94,7 @@ class LibraryViewModel {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() {
         pinnedBooks = []
         books = []
@@ -105,7 +117,7 @@ class LibraryViewModel {
             return
         }
 
-        for object in libraryObjects {
+        main: for object in libraryObjects {
             let manga = object.manga!
 
             let unreadCount = CoreDataManager.shared.unreadCount(
@@ -122,6 +134,18 @@ class LibraryViewModel {
                 url: manga.url != nil ? URL(string: manga.url!) : nil,
                 unread: unreadCount
             )
+
+            // process filters
+            for filter in filters {
+                switch filter.type {
+                case .downloaded:
+                    let downloaded = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.bookId)
+                    let shouldSkip = filter.exclude ? downloaded : !downloaded
+                    if shouldSkip {
+                        continue main
+                    }
+                }
+            }
 
             switch pinType {
             case .none:
@@ -201,6 +225,21 @@ class LibraryViewModel {
         UserDefaults.standard.set(sortAscending, forKey: "Library.sortAscending")
 
         sortLibrary()
+    }
+
+    func toggleFilter(method: FilterMethod) {
+        let filterIndex = filters.firstIndex(where: { $0.type == method })
+        if let filterIndex = filterIndex {
+            if filters[filterIndex].exclude {
+                filters.remove(at: filterIndex)
+            } else {
+                filters[filterIndex].exclude = true
+            }
+        } else {
+            filters.append(LibraryFilter(type: method, exclude: false))
+        }
+
+        loadLibrary()
     }
 
     func search(query: String) {

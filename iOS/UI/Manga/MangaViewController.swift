@@ -335,7 +335,7 @@ class MangaViewController: UIViewController {
 
             subMenus.append(UIMenu(title: "", options: .displayInline, children: subActions))
 
-            if DownloadManager.shared.hasDownloadedChapter(for: manga) {
+            if DownloadManager.shared.hasDownloadedChapter(sourceId: manga.sourceId, mangaId: manga.id) {
                 subMenus.append(UIMenu(title: "", options: .displayInline, children: [
                     UIAction(
                         title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
