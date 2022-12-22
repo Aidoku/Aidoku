@@ -90,10 +90,10 @@ extension DownloadCache {
         return false
     }
 
-    func hasDownloadedChapter(for manga: Manga) -> Bool {
+    func hasDownloadedChapter(sourceId: String, mangaId: String) -> Bool {
         if !loaded { load() }
-        if let sourceDirectory = rootDirectory.subdirectories[manga.sourceId.directoryName],
-           let mangaDirectory = sourceDirectory.subdirectories[manga.id.directoryName] {
+        if let sourceDirectory = rootDirectory.subdirectories[sourceId.directoryName],
+           let mangaDirectory = sourceDirectory.subdirectories[mangaId.directoryName] {
             return !mangaDirectory.subdirectories.isEmpty
         }
         return false
