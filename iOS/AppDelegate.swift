@@ -12,6 +12,8 @@ import Nuke
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    var loadingAlert: UIAlertController?
+
     var navigationController: UINavigationController? {
         (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
             .selectedViewController as? UINavigationController
@@ -92,7 +94,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // migrate history to 0.6 format
         if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
-            CoreDataManager.shared.migrateChapterHistory()
+            Task.detached {
+                await self.migrateHistory()
+            }
         }
 
         UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
@@ -111,6 +115,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
         handleUrl(url: url)
         return true
+    }
+
+    func migrateHistory() async {
+        showLoadingIndicator()
+        try? await Task.sleep(nanoseconds: 500 * 1000000)
+        CoreDataManager.shared.migrateChapterHistory()
+        loadingAlert?.dismiss(animated: true)
+    }
+
+    func showLoadingIndicator() {
+        if loadingAlert == nil {
+            loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
+            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.style = .medium
+            loadingIndicator.startAnimating()
+            loadingAlert?.view.addSubview(loadingIndicator)
+        }
+        navigationController?.present(loadingAlert!, animated: true, completion: nil)
     }
 
     // swiftlint:disable:next cyclomatic_complexity
