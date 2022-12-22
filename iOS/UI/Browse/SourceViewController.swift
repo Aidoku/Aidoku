@@ -271,7 +271,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
             options.append(NSLocalizedString("LIST_ALL", comment: ""))
             header?.title = NSLocalizedString("LIST_HEADER", comment: "")
             header?.options = options
-            header?.selectedOption = currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0
+            header?.setSelectedOption(currentListing == nil ? listings.count : listings.firstIndex(of: currentListing!) ?? 0)
 
             header?.filterButton.alpha = source.filterable ? 1 : 0
             header?.filterButton.addTarget(self, action: #selector(openFilterPopover), for: .touchUpInside)

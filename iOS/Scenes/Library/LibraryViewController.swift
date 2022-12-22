@@ -92,9 +92,13 @@ class LibraryViewController: BookCollectionViewController {
             guard let self = self else { return }
             header.delegate = self
             header.options = [NSLocalizedString("ALL", comment: "")] + self.viewModel.categories
+            header.selectedOption = self.viewModel.currentCategory != nil
+                ? (self.viewModel.categories.firstIndex(of: self.viewModel.currentCategory!) ?? -1) + 1
+                : 0
             header.filterButton.alpha = 1
             header.filterButton.menu = self.filterBarButton.menu
             header.filterButton.showsMenuAsPrimaryAction = true
+            header.updateMenu()
         }
 
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in

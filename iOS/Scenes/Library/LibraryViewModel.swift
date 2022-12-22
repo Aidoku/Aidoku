@@ -50,7 +50,11 @@ class LibraryViewModel {
     lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
 
     lazy var categories = CoreDataManager.shared.getCategories().map { $0.title ?? "" }
-    var currentCategory: String?
+    lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
+        didSet {
+            UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+        }
+    }
     var categoryLocked: Bool {
         guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
         if let currentCategory = currentCategory {
