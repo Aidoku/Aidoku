@@ -109,14 +109,18 @@ final class CoreDataManager {
     }
 
     // TODO: clean this up
-    func migrateChapterHistory() async {
+    func migrateChapterHistory(progress: ((Float) -> Void)? = nil) async {
         LogManager.logger.info("Beginning chapter history migration for 0.6")
-        var count = 0
 
         await container.performBackgroundTask { context in
             let request = HistoryObject.fetchRequest()
             let historyObjects = (try? context.fetch(request)) ?? []
+            let total = Float(historyObjects.count)
+            var i: Float = 0
+            var count = 0
             for historyObject in historyObjects {
+                progress?(i / total)
+                i += 1
                 guard
                     historyObject.chapter == nil,
                     let chapterObject = self.getChapter(
