@@ -238,6 +238,7 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "button", key: "Advanced.clearTrackedManga", title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
+                SettingItem(type: "button", key: "Advanced.migrateHistory", title: "Migrate Chapter History"),
                 SettingItem(type: "button", key: "Advanced.resetSettings", title: NSLocalizedString("RESET_SETTINGS", comment: "")),
                 SettingItem(type: "button", key: "Advanced.reset", title: NSLocalizedString("RESET", comment: ""), destructive: true)
             ])
@@ -390,6 +391,14 @@ extension SettingsViewController {
                 confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
                               message: NSLocalizedString("CLEAR_READ_HISTORY_TEXT", comment: "")) {
                     DataManager.shared.clearHistory()
+                }
+            case "Advanced.migrateHistory":
+                confirmAction(
+                    title: "Migrate Chapter History",
+                    // swiftlint:disable:next line_length
+                    message: "This will migrate leftover reading history from old versions that aren not currently linked with stored chapters in the local database. This should've happened automatically upon updating, but if it didn't complete, it can be re-executed this way."
+                ) {
+                    CoreDataManager.shared.migrateChapterHistory()
                 }
             case "Advanced.resetSettings":
                 confirmAction(title: NSLocalizedString("RESET_SETTINGS", comment: ""),
