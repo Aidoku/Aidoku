@@ -148,9 +148,8 @@ class WasmNet: WasmImports {
 
     var storedResponse: WasmResponseObject?
 
-    // ios 16.1.2 safari user agent
-    // swiftlint:disable:next line_length
-    static let defaultUserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E148 Safari/604.1"
+    // macOS 10.15 firefox user agent
+    static let defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0"
 
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
