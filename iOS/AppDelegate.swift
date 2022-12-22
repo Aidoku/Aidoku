@@ -13,6 +13,7 @@ import Nuke
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var loadingAlert: UIAlertController?
+    var progressView: UIProgressView?
 
     var navigationController: UINavigationController? {
         (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
@@ -120,7 +121,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func migrateHistory() async {
         showLoadingIndicator()
         try? await Task.sleep(nanoseconds: 500 * 1000000)
-        await CoreDataManager.shared.migrateChapterHistory()
+        await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
+            Task { @MainActor in
+                self.progressView?.progress = progress
+            }
+        })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
         loadingAlert?.dismiss(animated: true)
     }
@@ -128,11 +133,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func showLoadingIndicator() {
         if loadingAlert == nil {
             loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
-            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
-            loadingIndicator.hidesWhenStopped = true
-            loadingIndicator.style = .medium
-            loadingIndicator.startAnimating()
-            loadingAlert?.view.addSubview(loadingIndicator)
+            progressView = UIProgressView(frame: .zero)
+            progressView!.progress = 0
+            progressView!.tintColor = loadingAlert!.view.tintColor
+            progressView!.translatesAutoresizingMaskIntoConstraints = false
+            loadingAlert!.view.addSubview(self.progressView!)
+            NSLayoutConstraint.activate([
+                progressView!.centerXAnchor.constraint(equalTo: loadingAlert!.view.centerXAnchor),
+                progressView!.bottomAnchor.constraint(equalTo: loadingAlert!.view.bottomAnchor, constant: -8),
+                progressView!.widthAnchor.constraint(equalTo: loadingAlert!.view.widthAnchor, constant: -30)
+            ])
         }
         navigationController?.present(loadingAlert!, animated: true, completion: nil)
     }
