@@ -29,7 +29,6 @@ class BaseCollectionViewController: BaseObservingViewController, UICollectionVie
         ])
     }
 
-    // MARK: - Collection View Layout
     func makeCollectionViewLayout() -> UICollectionViewLayout {
         UICollectionViewCompositionalLayout { _, _ in
             nil

@@ -23,7 +23,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
     }
 
     private var estimatedHeight: CGFloat = ReaderWebtoonCollectionViewCell.estimatedHeight
-    private var newHeight = 0
+    private var scale: CGFloat = 1
 
     override init() {
         super.init()
@@ -31,7 +31,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         minimumLineSpacing = 0
         sectionInset = .zero
         // setting estimated item size disables cell prefetching
-//        estimatedItemSize = CGSize(width: UIScreen.main.bounds.size.width, height: estimatedHeight)
+        // estimatedItemSize = CGSize(width: UIScreen.main.bounds.size.width, height: estimatedHeight)
     }
 
     required init?(coder: NSCoder) {
@@ -49,9 +49,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         let width = collectionView.bounds.size.width
 
         for section in 0..<collectionView.numberOfSections {
-            let itemCount = collectionView.numberOfItems(inSection: section)
-
-            for itemIndex in 0..<itemCount {
+            for itemIndex in 0..<collectionView.numberOfItems(inSection: section) {
                 let indexPath = IndexPath(item: itemIndex, section: section)
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
 
@@ -66,7 +64,33 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
             }
         }
 
-        contentSize = CGSize(width: width, height: origin)
+        let size = CGSize(width: width, height: origin)
+
+        let transform = CGAffineTransform(scaleX: scale, y: scale)
+        contentSize = size.applying(transform)
+
+        // adjust cells for zoom
+        for section in 0..<collectionView.numberOfSections {
+            for itemIndex in 0..<collectionView.numberOfItems(inSection: section) {
+                let indexPath = IndexPath(item: itemIndex, section: section)
+                if let origFrame = currentAttributes[indexPath]?.frame {
+                    let frame = CGRect(
+                        origin: CGPoint(
+                            x: origFrame.origin.x / size.width * contentSize.width,
+                            y: origFrame.origin.y / origin * contentSize.height
+                        ),
+                        size: origFrame.size.applying(transform)
+                    )
+                    // setting frame without transform doesn't scale content,
+                    // and setting frame with transform messes up the scale
+                    currentAttributes[indexPath]?.transform = transform
+                    currentAttributes[indexPath]?.center = CGPoint(
+                        x: frame.origin.x + frame.width / 2,
+                        y: frame.origin.y + frame.height / 2
+                    )
+                }
+            }
+        }
     }
 
     func getHeightFor(section: Int, range: Range<Int>) -> CGFloat {
@@ -76,7 +100,7 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
             let attributes = currentAttributes[indexPath]
             height += attributes?.frame.height ?? 0
         }
-        return height
+        return height * scale
     }
 
     override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
@@ -126,5 +150,17 @@ class CachedHeightCollectionViewLayout: UICollectionViewFlowLayout {
         )
 
         return invalidationContext
+    }
+}
+
+// MARK: - Zoom Support
+extension CachedHeightCollectionViewLayout: ZoomableLayoutProtocol {
+
+    func getScale() -> CGFloat {
+        scale
+    }
+
+    func setScale(_ scale: CGFloat) {
+        self.scale = scale
     }
 }
