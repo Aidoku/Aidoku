@@ -58,17 +58,17 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(
                 type: "group",
                 title: NSLocalizedString("MANGA_PAGE", comment: ""),
-                footer: NSLocalizedString("USE_MANGA_TINT_INFO", comment: ""),
+//                footer: NSLocalizedString("USE_MANGA_TINT_INFO", comment: ""),
                 items: [
                     SettingItem(
                         type: "switch",
                         key: "General.showSourceLabel",
                         title: NSLocalizedString("SHOW_SOURCE_LABEL", comment: "")
-                    ),
-                    SettingItem(
-                        type: "switch",
-                        key: "General.useMangaTint",
-                        title: NSLocalizedString("USE_MANGA_TINT", comment: "")
+//                    ),
+//                    SettingItem(
+//                        type: "switch",
+//                        key: "General.useMangaTint",
+//                        title: NSLocalizedString("USE_MANGA_TINT", comment: "")
                     )
                 ]
             ),
