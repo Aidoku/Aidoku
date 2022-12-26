@@ -536,9 +536,11 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         // get slider area
         guard
             let chapter = chapter,
+            let chapterIndex = chapters.firstIndex(of: chapter),
+            pages.count > chapterIndex,
             let layout = self.collectionView.collectionViewLayout as? CachedHeightCollectionViewLayout
         else { return }
-        let chapterIndex = chapters.firstIndex(of: chapter) ?? 0
+
         let pageCountAbove = pages[0..<chapterIndex].reduce(0, { result, pages in
             result + pages.count + 1
         })
