@@ -483,8 +483,8 @@ extension LibraryViewController {
             }
         ])
         func filterImage(for method: LibraryViewModel.FilterMethod) -> UIImage? {
-            if let idx = viewModel.filters.firstIndex(where: { $0.type == .downloaded }) {
-                return UIImage(systemName: viewModel.filters[idx].exclude ? "xmark" : "checkmark")
+            if let filter = viewModel.filters.first(where: { $0.type == .downloaded }) {
+                return UIImage(systemName: filter.exclude ? "xmark" : "checkmark")
             } else {
                 return nil
             }

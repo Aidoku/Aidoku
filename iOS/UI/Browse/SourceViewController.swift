@@ -287,6 +287,7 @@ extension SourceViewController: UICollectionViewDelegateFlowLayout {
             Task {
                 let start = manga.count
                 await fetchData()
+                guard start <= manga.count else { return }
                 var indexPaths: [IndexPath] = []
                 for i in start..<manga.count {
                     indexPaths.append(IndexPath(row: i, section: 0))
