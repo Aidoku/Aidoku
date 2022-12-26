@@ -24,9 +24,12 @@ extension CoreDataManager {
     }
 
     /// Get all category objects.
-    func getCategories(context: NSManagedObjectContext? = nil) -> [CategoryObject] {
+    func getCategories(sorted: Bool = true, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
         let context = context ?? self.context
         let request = CategoryObject.fetchRequest()
+        if sorted {
+            request.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: true)]
+        }
         let objects = try? context.fetch(request)
         return objects ?? []
     }

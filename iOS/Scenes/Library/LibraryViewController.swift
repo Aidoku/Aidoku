@@ -189,6 +189,7 @@ class LibraryViewController: BookCollectionViewController {
                 } else {
                     self.navigationItem.rightBarButtonItem = nil
                 }
+                self.updateHeaderCategories()
             }
         }
 
@@ -406,6 +407,17 @@ extension LibraryViewController {
         } else {
             header.lockedOptions = []
         }
+    }
+
+    // update category options in header
+    func updateHeaderCategories() {
+        guard let header = (collectionView.supplementaryView(
+            forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
+        ) as? MangaListSelectionHeader) else { return }
+        header.options = [NSLocalizedString("ALL", comment: "")] + viewModel.categories
+        header.selectedOption = viewModel.currentCategory != nil
+            ? (viewModel.categories.firstIndex(of: viewModel.currentCategory!) ?? -1) + 1
+            : 0
     }
 }
 
