@@ -337,7 +337,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             if let previousChapter = previousChapter {
                 Task {
                     await viewModel.preload(chapter: previousChapter)
-                    if let lastPage = viewModel.preloadedPages.last {
+                    if currentIndex > 0, let lastPage = viewModel.preloadedPages.last {
                         pageViewControllers[currentIndex - 1].setPage(lastPage, sourceId: previousChapter.sourceId)
                     }
                 }
@@ -348,7 +348,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             if let nextChapter = nextChapter {
                 Task {
                     await viewModel.preload(chapter: nextChapter)
-                    if let firstPage = viewModel.preloadedPages.first {
+                    if currentIndex + 1 < pageViewControllers.count, let firstPage = viewModel.preloadedPages.first {
                         pageViewControllers[currentIndex + 1].setPage(firstPage, sourceId: nextChapter.sourceId)
                     }
                 }

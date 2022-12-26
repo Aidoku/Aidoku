@@ -512,12 +512,19 @@ extension ReaderWebtoonViewController {
     /// Refresh info page chapter info
     func refreshInfoPages() {
         var snapshot = dataSource.snapshot()
+        guard snapshot.itemIdentifiers.count >= 2 else { return }
         var items = [snapshot.itemIdentifiers.first!, snapshot.itemIdentifiers.last!]
-        if chapters.count >= 2 {
-            items += [snapshot.itemIdentifiers[pages[0].count + 1]]
+        if pages.count >= 2 {
+            let idx = pages[0].count + 1
+            if snapshot.itemIdentifiers.count > idx {
+                items += [snapshot.itemIdentifiers[idx]]
+            }
         }
-        if chapters.count >= 3 { // max of 3 chapters
-            items += [snapshot.itemIdentifiers[pages[0].count + pages[1].count + 2]]
+        if pages.count >= 3 { // max of 3 chapters
+            let idx = pages[0].count + pages[1].count + 2
+            if snapshot.itemIdentifiers.count > idx {
+                items += [snapshot.itemIdentifiers[idx]]
+            }
         }
         snapshot.reloadItems(items)
         Task { @MainActor in
