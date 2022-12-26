@@ -111,69 +111,76 @@ class BackupManager {
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
-    @MainActor
     func restore(from backup: Backup) async {
         // this should probably do some more checks before running, idk
 
-        if backup.history != nil {
-            CoreDataManager.shared.clearHistory()
-            backup.history?.forEach {
-                _ = $0.toObject(context: CoreDataManager.shared.context)
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            if backup.history != nil {
+                CoreDataManager.shared.clearHistory(context: context)
+                backup.history?.forEach {
+                    _ = $0.toObject(context: context)
+                }
             }
-        }
 
-        if backup.manga != nil {
-            CoreDataManager.shared.clearManga()
-            backup.manga?.forEach {
-                _ = $0.toObject(context: CoreDataManager.shared.context)
+            if backup.manga != nil {
+                CoreDataManager.shared.clearManga(context: context)
+                backup.manga?.forEach {
+                    _ = $0.toObject(context: context)
+                }
             }
-        }
 
-        if backup.categories != nil {
-            CoreDataManager.shared.clearCategories()
-            backup.categories?.forEach {
-                CoreDataManager.shared.createCategory(title: $0)
+            if backup.categories != nil {
+                CoreDataManager.shared.clearCategories(context: context)
+                backup.categories?.forEach {
+                    CoreDataManager.shared.createCategory(title: $0, context: context)
+                }
             }
-        }
 
-        if backup.library != nil {
-            CoreDataManager.shared.clearLibrary()
-            backup.library?.forEach {
-                let libraryObject = $0.toObject(context: CoreDataManager.shared.context)
-                if let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId) {
-                    libraryObject.manga = manga
-                    if !$0.categories.isEmpty {
-                        CoreDataManager.shared.addCategoriesToManga(
-                            sourceId: $0.sourceId,
-                            mangaId: $0.mangaId,
-                            categories: $0.categories
-                        )
+            if backup.library != nil {
+                CoreDataManager.shared.clearLibrary(context: context)
+                backup.library?.forEach {
+                    let libraryObject = $0.toObject(context: context)
+                    if let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId, context: context) {
+                        libraryObject.manga = manga
+                        if !$0.categories.isEmpty {
+                            CoreDataManager.shared.addCategoriesToManga(
+                                sourceId: $0.sourceId,
+                                mangaId: $0.mangaId,
+                                categories: $0.categories,
+                                context: context
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        if backup.chapters != nil {
-            CoreDataManager.shared.clearChapters()
-            backup.chapters?.forEach {
-                let chapter = $0.toObject(context: CoreDataManager.shared.context)
-                chapter.manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId)
-                chapter.history = CoreDataManager.shared.getHistory(
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id
-                )
+            if backup.chapters != nil {
+                CoreDataManager.shared.clearChapters(context: context)
+                backup.chapters?.forEach {
+                    let chapter = $0.toObject(context: context)
+                    chapter.manga = CoreDataManager.shared.getManga(
+                        sourceId: $0.sourceId,
+                        mangaId: $0.mangaId,
+                        context: context
+                    )
+                    chapter.history = CoreDataManager.shared.getHistory(
+                        sourceId: chapter.sourceId,
+                        mangaId: chapter.mangaId,
+                        chapterId: chapter.id,
+                        context: context
+                    )
+                }
             }
-        }
 
-        if backup.trackItems != nil {
-            CoreDataManager.shared.clearTracks()
-            backup.trackItems?.forEach {
-                _ = $0.toObject(context: CoreDataManager.shared.context)
+            if backup.trackItems != nil {
+                CoreDataManager.shared.clearTracks(context: context)
+                backup.trackItems?.forEach {
+                    _ = $0.toObject(context: context)
+                }
             }
-        }
 
-        CoreDataManager.shared.save()
+            try? context.save()
+        }
 
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
         NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
