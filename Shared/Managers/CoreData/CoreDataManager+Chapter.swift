@@ -38,7 +38,7 @@ extension CoreDataManager {
     }
 
     /// Check if a chapter exists in the data store.
-    func chapterExists(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func hasChapter(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
@@ -96,7 +96,7 @@ extension CoreDataManager {
         }
 
         // create new chapter objects
-        for chapter in newChapters where !chapterExists(
+        for chapter in newChapters where !hasChapter(
             sourceId: sourceId,
             mangaId: mangaId,
             id: chapter.id,

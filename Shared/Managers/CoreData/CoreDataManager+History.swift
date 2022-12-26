@@ -31,6 +31,23 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
+    /// Check if history exists for a chapter.
+    func hasHistory(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "sourceId == %@ AND mangaId == %@ AND chapterId == %@",
+            sourceId, mangaId, chapterId
+        )
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
+    }
+
     func getOrCreateHistory(
         sourceId: String,
         mangaId: String,
@@ -58,16 +75,6 @@ extension CoreDataManager {
             historyObject.chapter = chapterObject
         }
         return historyObject
-    }
-
-    /// Check if history exists for a chapter.
-    func hasHistory(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
-        context: NSManagedObjectContext? = nil
-    ) -> Bool {
-        getHistory(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, context: context) != nil
     }
 
     /// Get current page progress for chapter, returns -1 if not started.

@@ -37,7 +37,11 @@ extension CoreDataManager {
         mangaId: String,
         context: NSManagedObjectContext? = nil
     ) -> Bool {
-        getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) != nil
+        let context = context ?? self.context
+        let request = LibraryMangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Create a new library object.
@@ -86,6 +90,7 @@ extension CoreDataManager {
         }
     }
 
+    /// Add a manga with the specified chapters to the library.
     func addToLibrary(manga: Manga, chapters: [Chapter]) async {
         await container.performBackgroundTask { context in
             let mangaObject = self.getOrCreateManga(manga, context: context)

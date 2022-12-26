@@ -51,24 +51,21 @@ extension CoreDataManager {
 
     /// Check if category exists.
     func hasCategory(title: String, context: NSManagedObjectContext? = nil) -> Bool {
-        getCategory(title: title, context: context) != nil
+        let context = context ?? self.context
+        let request = CategoryObject.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", title)
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Create a category object.
     @discardableResult
     func createCategory(title: String, context: NSManagedObjectContext? = nil) -> CategoryObject? {
+        guard hasCategory(title: title, context: context) else { return nil }
+
         let context = context ?? self.context
 
-        // check if category exists
         let request = CategoryObject.fetchRequest()
-        request.predicate = NSPredicate(format: "title == %@", title)
-        request.fetchLimit = 1
-        guard
-            case let categoryCount = (try? context.count(for: request)) ?? 0,
-            categoryCount == 0
-        else { return nil }
-
-        request.predicate = nil
         request.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: false)]
         let lastCategoryIndex = (try? context.fetch(request))?.first?.sort ?? -1
 
