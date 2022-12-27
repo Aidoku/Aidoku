@@ -66,7 +66,8 @@ class LibraryViewModel {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
         }
     }
-    var categoryLocked: Bool {
+
+    func isCategoryLocked() -> Bool {
         guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
         if let currentCategory = currentCategory {
             return UserDefaults.standard.stringArray(forKey: "Library.lockedCategories")?.contains(currentCategory) ?? false

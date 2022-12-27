@@ -37,6 +37,13 @@ extension CoreDataManager {
         return (try? context.fetch(request)) ?? []
     }
 
+    func getChapters(sourceId: String, mangaId: String) async -> [Chapter] {
+        await container.performBackgroundTask { context in
+            let objects = self.getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+            return objects.map { $0.toChapter() }
+        }
+    }
+
     /// Check if a chapter exists in the data store.
     func hasChapter(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context

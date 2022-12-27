@@ -46,7 +46,7 @@ extension UISwitch {
             handler(isOn)
         }
         if let key = defaultsKey {
-            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name(key), object: isOn)
         }
     }
 }
