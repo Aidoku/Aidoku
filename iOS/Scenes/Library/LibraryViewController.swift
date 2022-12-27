@@ -550,6 +550,19 @@ extension LibraryViewController {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIAction] = []
 
+            if !self.viewModel.categories.isEmpty {
+                actions.append(UIAction(
+                    title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
+                    image: UIImage(systemName: "folder.badge.gearshape")
+                ) { _ in
+                    let manga = book.toBook().toManga()
+                    self.present(
+                        UINavigationController(rootViewController: CategorySelectViewController(manga: manga)),
+                        animated: true
+                    )
+                })
+            }
+
             if let url = book.url {
                 actions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
@@ -561,6 +574,17 @@ extension LibraryViewController {
                     )
                     activityViewController.popoverPresentationController?.sourceView = self.view
                     self.present(activityViewController, animated: true)
+                })
+            }
+
+            if self.viewModel.currentCategory != nil {
+                actions.append(UIAction(
+                    title: NSLocalizedString("REMOVE_FROM_CATEGORY", comment: ""),
+                    image: UIImage(systemName: "folder.badge.minus"),
+                    attributes: .destructive
+                ) { _ in
+                    self.viewModel.removeFromCurrentCategory(book: book)
+                    self.updateDataSource()
                 })
             }
 

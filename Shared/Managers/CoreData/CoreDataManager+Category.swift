@@ -77,21 +77,36 @@ extension CoreDataManager {
 
     /// Add categories to library manga.
     func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String], context: NSManagedObjectContext? = nil) {
-        let context = context ?? self.context
-
-        let libraryObject = getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+        guard let libraryObject = getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
         for category in categories {
             guard let categoryObject = getCategory(title: category, context: context) else { continue }
-            libraryObject?.addToCategories(categoryObject)
+            libraryObject.addToCategories(categoryObject)
         }
     }
 
     func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String]) async {
         await container.performBackgroundTask { context in
-            let libraryObject = self.getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+            self.addCategoriesToManga(sourceId: sourceId, mangaId: mangaId, categories: categories, context: context)
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.addCategoriesToManga: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Remove categories from library manga.
+    func removeCategoriesFromManga(sourceId: String, mangaId: String, categories: [String]) async {
+        await container.performBackgroundTask { context in
+            guard let libraryObject = self.getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
             for category in categories {
                 guard let categoryObject = self.getCategory(title: category, context: context) else { continue }
-                libraryObject?.addToCategories(categoryObject)
+                libraryObject.removeFromCategories(categoryObject)
+            }
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.removeCategoriesFromManga: \(error.localizedDescription)")
             }
         }
     }

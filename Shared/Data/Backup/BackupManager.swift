@@ -179,7 +179,11 @@ class BackupManager {
                 }
             }
 
-            try? context.save()
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("Backup failed to save: \(error.localizedDescription)")
+            }
         }
 
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)

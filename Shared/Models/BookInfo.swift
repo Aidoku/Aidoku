@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BookInfo: Hashable {
+struct BookInfo: Hashable, Equatable {
     let bookId: String
     let sourceId: String
 
@@ -21,5 +21,9 @@ struct BookInfo: Hashable {
 
     func toBook() -> Book {
         Book(sourceId: sourceId, id: bookId, title: title, author: author, coverUrl: coverUrl, url: url)
+    }
+
+    static func == (lhs: BookInfo, rhs: BookInfo) -> Bool {
+        lhs.bookId == rhs.bookId && lhs.sourceId == rhs.sourceId
     }
 }
