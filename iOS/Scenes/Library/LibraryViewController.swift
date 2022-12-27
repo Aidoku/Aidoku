@@ -41,7 +41,9 @@ class LibraryViewController: BookCollectionViewController {
     private let emptyStackView = EmptyPageStackView()
     private let lockedStackView = LockedPageStackView()
 
-    private lazy var locked = viewModel.categoryLocked
+    private lazy var locked = viewModel.isCategoryLocked()
+
+    private lazy var opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -76,7 +78,7 @@ class LibraryViewController: BookCollectionViewController {
         if viewModel.categories.isEmpty {
             items.append(filterBarButton)
         }
-        if viewModel.categoryLocked {
+        if viewModel.isCategoryLocked() {
             items.append(lockBarButton)
         }
         navigationItem.rightBarButtonItems = items
@@ -196,7 +198,7 @@ class LibraryViewController: BookCollectionViewController {
         addObserver(forName: "updateLibraryLock") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                self.locked = self.viewModel.categoryLocked
+                self.locked = self.viewModel.isCategoryLocked()
                 self.updateNavbarLock()
                 self.updateHeaderLockIcons()
                 self.updateLockState()
@@ -224,6 +226,10 @@ class LibraryViewController: BookCollectionViewController {
         addObserver(forName: "Library.pinManga", using: updatePinType)
         addObserver(forName: "Library.pinMangaType", using: updatePinType)
 
+        addObserver(forName: "Library.opensReaderView") { [weak self] notification in
+            self?.opensReaderView = notification.object as? Bool ?? false
+        }
+
         // TODO: change this notification (elsewhere)
         // it should come with the book info or chapter or whatever that was read
         addObserver(forName: "updateHistory") { [weak self] _ in
@@ -238,7 +244,7 @@ class LibraryViewController: BookCollectionViewController {
         // lock library when moving to background
         addObserver(forName: UIApplication.willResignActiveNotification.rawValue) { [weak self] _ in
             guard let self = self else { return }
-            self.locked = self.viewModel.categoryLocked
+            self.locked = self.viewModel.isCategoryLocked()
             self.updateLockState()
             self.updateDataSource()
         }
@@ -518,7 +524,7 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
             lockedStackView.text = NSLocalizedString("CATEGORY_LOCKED", comment: "")
         }
         viewModel.loadLibrary()
-        locked = viewModel.categoryLocked
+        locked = viewModel.isCategoryLocked()
         updateNavbarLock()
         updateLockState()
         updateDataSource()
@@ -528,16 +534,51 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 // MARK: - Collection View Delegate
 extension LibraryViewController {
 
+    func openInfoView(book: BookInfo) {
+        navigationController?.pushViewController(
+            MangaViewController(manga: book.toBook().toManga(), chapters: []),
+            animated: true
+        )
+    }
+
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        super.collectionView(collectionView, didSelectItemAt: indexPath)
         guard
-            !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
             let info = dataSource.itemIdentifier(for: indexPath)
         else { return }
-        Task {
-            await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.bookId)
-            self.viewModel.bookOpened(sourceId: info.sourceId, bookId: info.bookId)
-            self.updateDataSource()
+
+        if opensReaderView {
+            Task {
+                // get most recently read chapter
+                let history = await CoreDataManager.shared.getReadingHistory(
+                    sourceId: info.sourceId,
+                    mangaId: info.bookId
+                )
+                let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.bookId)
+                let targetChapter: Chapter?
+                let id = history.max { a, b in a.value.1 < b.value.1 }?.key
+                if let id = id {
+                    targetChapter = chapters.first { $0.id == id }
+                } else {
+                    targetChapter = chapters.last // fall back to first chapter
+                }
+
+                // open reader view
+                if let chapter = targetChapter {
+                    let readerController = ReaderViewController(chapter: chapter, chapterList: chapters)
+                    let navigationController = ReaderNavigationController(rootViewController: readerController)
+                    navigationController.modalPresentationStyle = .fullScreen
+                    present(navigationController, animated: true)
+                }
+            }
+        } else {
+            openInfoView(book: info)
+        }
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            Task {
+                await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.bookId)
+                self.viewModel.bookOpened(sourceId: info.sourceId, bookId: info.bookId)
+                self.updateDataSource()
+            }
         }
     }
 
@@ -546,9 +587,20 @@ extension LibraryViewController {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        let book = indexPath.section == 0 && !viewModel.pinnedBooks.isEmpty ? viewModel.pinnedBooks[indexPath.row] : viewModel.books[indexPath.row]
+        let book = indexPath.section == 0 && !viewModel.pinnedBooks.isEmpty
+            ? viewModel.pinnedBooks[indexPath.row]
+            : viewModel.books[indexPath.row]
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIAction] = []
+
+            if self.opensReaderView {
+                actions.append(UIAction(
+                    title: NSLocalizedString("MANGA_INFO", comment: ""),
+                    image: UIImage(systemName: "info.circle")
+                ) { _ in
+                    self.openInfoView(book: book)
+                })
+            }
 
             if !self.viewModel.categories.isEmpty {
                 actions.append(UIAction(
