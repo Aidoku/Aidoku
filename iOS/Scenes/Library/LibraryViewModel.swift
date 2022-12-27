@@ -289,8 +289,8 @@ class LibraryViewModel {
     }
 
     func removeFromLibrary(book: BookInfo) {
-        pinnedBooks.removeAll { $0 == book }
-        books.removeAll { $0 == book }
+        pinnedBooks.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
+        books.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
         Task {
             await CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
         }
@@ -298,8 +298,8 @@ class LibraryViewModel {
 
     func removeFromCurrentCategory(book: BookInfo) {
         guard let currentCategory = currentCategory else { return }
-        pinnedBooks.removeAll { $0 == book }
-        books.removeAll { $0 == book }
+        pinnedBooks.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
+        books.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
         Task {
             await CoreDataManager.shared.removeCategoriesFromManga(
                 sourceId: book.sourceId,
