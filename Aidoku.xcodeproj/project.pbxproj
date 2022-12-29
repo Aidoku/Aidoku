@@ -141,6 +141,7 @@
 		FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA828AAB1440083EFC3 /* UIViewController.swift */; };
 		FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAB28AABD980083EFC3 /* ReaderPageView.swift */; };
 		FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAE28AAD40B0083EFC3 /* ReaderPageViewController.swift */; };
+		FB5E7DC2295CAAC000CBF1AC /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = FB5E7DC1295CAAC000CBF1AC /* Nuke */; };
 		FB6340AD278E10190072A2A2 /* ExternalSourceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340AC278E10190072A2A2 /* ExternalSourceTableViewCell.swift */; };
 		FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340B0278E61600072A2A2 /* WasmInterpreter */; };
 		FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
@@ -246,8 +247,6 @@
 		FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A418285B8EBC007116C9 /* TrackState.swift */; };
 		FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A418285B8EBC007116C9 /* TrackState.swift */; };
 		FBE40E2F288EDDB700CCA4DC /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE40E2E288EDDB700CCA4DC /* LibraryViewModel.swift */; };
-		FBE578F328919C6A00F9F1B5 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = FBE578F228919C6A00F9F1B5 /* Nuke */; };
-		FBE578F528919C6A00F9F1B5 /* NukeExtensions in Frameworks */ = {isa = PBXBuildFile; productRef = FBE578F428919C6A00F9F1B5 /* NukeExtensions */; };
 		FBE578F728983C3C00F9F1B5 /* BookCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F628983C3C00F9F1B5 /* BookCollectionViewController.swift */; };
 		FBE578F928983F5700F9F1B5 /* UICollectionView+CellRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */; };
 		FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */; };
@@ -512,9 +511,8 @@
 			files = (
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
 				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
-				FBE578F528919C6A00F9F1B5 /* NukeExtensions in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
-				FBE578F328919C6A00F9F1B5 /* Nuke in Frameworks */,
+				FB5E7DC2295CAAC000CBF1AC /* Nuke in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
 			);
@@ -1192,8 +1190,7 @@
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
-				FBE578F228919C6A00F9F1B5 /* Nuke */,
-				FBE578F428919C6A00F9F1B5 /* NukeExtensions */,
+				FB5E7DC1295CAAC000CBF1AC /* Nuke */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -1275,7 +1272,7 @@
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
 				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
-				FBE578F128919C6A00F9F1B5 /* XCRemoteSwiftPackageReference "Nuke" */,
+				FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -1957,6 +1954,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Skittyblock/wasm-interpreter-apple.git";
@@ -1973,14 +1978,6 @@
 				minimumVersion = 0.9.9;
 			};
 		};
-		FBE578F128919C6A00F9F1B5 /* XCRemoteSwiftPackageReference "Nuke" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/Nuke";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1993,6 +1990,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
+		};
+		FB5E7DC1295CAAC000CBF1AC /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
 		};
 		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2013,16 +2015,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
-		};
-		FBE578F228919C6A00F9F1B5 /* Nuke */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FBE578F128919C6A00F9F1B5 /* XCRemoteSwiftPackageReference "Nuke" */;
-			productName = Nuke;
-		};
-		FBE578F428919C6A00F9F1B5 /* NukeExtensions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FBE578F128919C6A00F9F1B5 /* XCRemoteSwiftPackageReference "Nuke" */;
-			productName = NukeExtensions;
 		};
 		FBED233227C091D70095D0C0 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;

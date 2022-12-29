@@ -7,7 +7,6 @@
 
 import UIKit
 import Nuke
-import NukeExtensions
 
 class MangaCoverCell: UICollectionViewCell {
 
@@ -49,8 +48,6 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
-    var checkForRequestModifier = true
-
     var imageView = UIImageView()
     var titleLabel = UILabel()
     var gradient = CAGradientLayer()
@@ -59,6 +56,8 @@ class MangaCoverCell: UICollectionViewCell {
     var libraryBadgeView = UIImageView()
 
     var highlightView = UIView()
+
+    private var imageTask: ImageTask?
 
     init(manga: Manga) {
         super.init(frame: .zero)
@@ -192,8 +191,9 @@ class MangaCoverCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        checkForRequestModifier = true
-        imageView.image = nil
+        imageTask?.cancel()
+        imageTask = nil
+        imageView.image = UIImage(named: "MangaPlaceholder")
     }
 
     func highlight() {
@@ -228,20 +228,28 @@ class MangaCoverCell: UICollectionViewCell {
             return
         }
 
+        if imageTask != nil {
+            return
+        }
+
         var urlRequest = URLRequest(url: url)
 
-        if checkForRequestModifier,
-           let sourceId = manga?.sourceId,
-           let source = SourceManager.shared.source(for: sourceId),
-           source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: urlString) {
+        Task { @MainActor in
+            imageView.image = UIImage(named: "MangaPlaceholder")
+        }
+
+        if
+            let sourceId = manga?.sourceId,
+            let source = SourceManager.shared.source(for: sourceId),
+            source.handlesImageRequests,
+            let request = try? await source.getImageRequest(url: urlString)
+        {
 
             urlRequest.url = URL(string: request.URL ?? "")
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
             if let body = request.body { urlRequest.httpBody = body }
-            checkForRequestModifier = false
         }
 
         let request = ImageRequest(
@@ -249,13 +257,23 @@ class MangaCoverCell: UICollectionViewCell {
             processors: [.resize(width: bounds.width)]
         )
 
-        _ = NukeExtensions.loadImage(
-            with: request,
-            options: ImageLoadingOptions(
-                placeholder: UIImage(named: "MangaPlaceholder"),
-                transition: .fadeIn(duration: 0.3)
-            ),
-            into: imageView
-        )
+        do {
+            let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
+            Task { @MainActor in
+                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    self.imageView.image = image
+                }
+            }
+        } catch {
+            imageTask = nil
+        }
+    }
+}
+
+// MARK: - Nuke Delegate
+extension MangaCoverCell: ImageTaskDelegate {
+
+    func imageTaskCreated(_ task: ImageTask) {
+        imageTask = task
     }
 }

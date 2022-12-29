@@ -7,7 +7,6 @@
 
 import UIKit
 import Nuke
-import NukeExtensions
 
 class BookGridCell: UICollectionViewCell {
 
@@ -42,7 +41,7 @@ class BookGridCell: UICollectionViewCell {
     private let bookmarkView = UIImageView()
     private let highlightView = UIView()
 
-    private var checkForRequestModifier = true
+    private var imageTask: ImageTask?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -150,37 +149,54 @@ class BookGridCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        checkForRequestModifier = true
-        imageView.image = nil
+        imageTask?.cancel()
+        imageTask = nil
+        imageView.image = UIImage(named: "MangaPlaceholder")
     }
 
     func loadImage(url: URL?) async {
         guard let url = url else { return }
 
+        if imageTask != nil {
+            imageTask?.cancel()
+            imageTask = nil
+        }
+
+        Task { @MainActor in
+            imageView.image = UIImage(named: "MangaPlaceholder")
+        }
+
         var urlRequest = URLRequest(url: url)
 
-        if checkForRequestModifier,
-           let sourceId = sourceId,
-           let source = SourceManager.shared.source(for: sourceId),
-           source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: url.absoluteString) {
+        if
+            let sourceId = sourceId,
+            let source = SourceManager.shared.source(for: sourceId),
+            source.handlesImageRequests,
+            let request = try? await source.getImageRequest(url: url.absoluteString)
+        {
 
             urlRequest.url = URL(string: request.URL ?? "")
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
             if let body = request.body { urlRequest.httpBody = body }
-            checkForRequestModifier = false
         }
 
-        _ = NukeExtensions.loadImage(
-            with: ImageRequest(
-                urlRequest: urlRequest,
-                processors: [.resize(width: bounds.width)]
-            ),
-            options: ImageLoadingOptions(placeholder: UIImage(named: "MangaPlaceholder"), transition: .fadeIn(duration: 0.3)),
-            into: imageView
+        let request = ImageRequest(
+            urlRequest: urlRequest,
+            processors: [.resize(width: bounds.width)]
         )
+
+        do {
+            let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
+            Task { @MainActor in
+                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    self.imageView.image = image
+                }
+            }
+        } catch {
+            imageTask = nil
+        }
     }
 
     func highlight() {
@@ -191,5 +207,13 @@ class BookGridCell: UICollectionViewCell {
         UIView.animate(withDuration: animated ? 0.3 : 0) {
             self.highlightView.alpha = 0
         }
+    }
+}
+
+// MARK: - Nuke Delegate
+extension BookGridCell: ImageTaskDelegate {
+
+    func imageTaskCreated(_ task: ImageTask) {
+        imageTask = task
     }
 }

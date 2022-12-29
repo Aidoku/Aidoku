@@ -392,7 +392,10 @@ extension SettingsViewController {
                 }
             case "Advanced.clearNetworkCache":
                 KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
-                    let totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
+                    var totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
+                    if let nukeCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
+                        totalCacheSize += nukeCache.totalSize
+                    }
                     let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")
                         + "\n\n"
                         + String(
@@ -478,6 +481,9 @@ extension SettingsViewController {
 
         if let dataCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
             dataCache.removeAll()
+        }
+        if let imageCache = ImagePipeline.shared.configuration.imageCache as? Nuke.ImageCache {
+            imageCache.removeAll()
         }
     }
 

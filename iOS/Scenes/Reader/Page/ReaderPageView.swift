@@ -7,7 +7,6 @@
 
 import UIKit
 import Nuke
-import NukeExtensions
 
 class ReaderPageView: UIView {
 
@@ -15,10 +14,13 @@ class ReaderPageView: UIView {
 
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-    var imageWidthConstraint: NSLayoutConstraint?
+    private var imageWidthConstraint: NSLayoutConstraint?
     var maxWidth = false
 
+    var imageTask: ImageTask?
     private var sourceId: String?
+
+    private var completion: ((Bool) -> Void)?
 
     init() {
         super.init(frame: .zero)
@@ -59,12 +61,16 @@ class ReaderPageView: UIView {
         ])
     }
 
+    func hasOutstandingTask() -> Bool {
+        imageTask != nil && imageTask?.state == .running
+    }
+
     func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
         if sourceId != nil {
             self.sourceId = sourceId
         }
         if let urlString = page.imageURL, let url = URL(string: urlString) {
-            return await setPageImage(url: url, sourceId: sourceId ?? self.sourceId)
+            return await setPageImage(url: url, sourceId: self.sourceId)
         } else if let base64 = page.base64 {
             return await setPageImage(base64: base64, key: page.hashValue)
         } else {
@@ -73,63 +79,81 @@ class ReaderPageView: UIView {
     }
 
     func setPageImage(url: URL, sourceId: String? = nil) async -> Bool {
-        var urlRequest = URLRequest(url: url)
+        progressView.setProgress(value: 0, withAnimation: false)
+        progressView.isHidden = false
 
-        self.progressView.setProgress(value: 0, withAnimation: false)
-        self.progressView.alpha = 1
+        let request: ImageRequest
 
-        if
-            let sourceId = sourceId,
-            let source = SourceManager.shared.source(for: sourceId),
-            source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString)
-        {
-            urlRequest.url = URL(string: request.URL ?? "")
-            for (key, value) in request.headers {
-                urlRequest.setValue(value, forHTTPHeaderField: key)
+        if let imageTask = imageTask {
+            switch imageTask.state {
+            case .running:
+                return await withCheckedContinuation({ continuation in
+                    self.completion = { success in
+                        self.completion = nil
+                        continuation.resume(returning: success)
+                    }
+                })
+            case .completed:
+                if imageView.image == nil {
+                    request = imageTask.request
+                } else {
+                    return true
+                }
+            case .cancelled:
+                request = imageTask.request
             }
-            if let body = request.body { urlRequest.httpBody = body }
+        } else {
+            var urlRequest = URLRequest(url: url)
+
+            if
+                let sourceId = sourceId,
+                let source = SourceManager.shared.source(for: sourceId),
+                source.handlesImageRequests,
+                let request = try? await source.getImageRequest(url: url.absoluteString)
+            {
+                urlRequest.url = URL(string: request.URL ?? "")
+                for (key, value) in request.headers {
+                    urlRequest.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { urlRequest.httpBody = body }
+            }
+
+            let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+            let processors = [DownsampleProcessor(width: UIScreen.main.bounds.width, downscale: shouldDownscale)]
+
+            request = ImageRequest(
+                urlRequest: urlRequest,
+                processors: processors
+            )
         }
 
-        let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
-        let processors = [DownsampleProcessor(width: UIScreen.main.bounds.width, downscale: shouldDownscale)]
+        let success: Bool
 
-        let request = ImageRequest(
-            urlRequest: urlRequest,
-            processors: processors
-        )
+        do {
+            _ = try await ImagePipeline.shared.image(for: request, delegate: self).image
+            success = true
+        } catch {
+            success = false
+        }
 
-        return await withCheckedContinuation({ continuation in
-            _ = NukeExtensions.loadImage(
-                with: request,
-                into: imageView,
-                progress: { _, completed, total in
-                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
-                },
-                completion: { result in
-                    self.progressView.alpha = 0
-                    switch result {
-                    case .success:
-                        self.fixImageWidth()
-                        continuation.resume(returning: true)
-
-                    case .failure:
-                        continuation.resume(returning: false)
-                    }
-                }
-            )
-        })
+        return success
     }
 
     func setPageImage(base64: String, key: Int) async -> Bool {
         let request = ImageRequest(id: String(key), data: { Data() })
+
+        // TODO: can we show decoding progress?
+        progressView.setProgress(value: 0, withAnimation: false)
+        progressView.isHidden = false
+
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
-            progressView.alpha = 0
+            progressView.isHidden = true
             fixImageWidth()
             return true
         }
+
         if let data = Data(base64Encoded: base64) {
             if let image = UIImage(data: data) {
                 let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
@@ -138,25 +162,56 @@ class ReaderPageView: UIView {
                 if let processedImage = processedImage {
                     ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: processedImage), for: request)
                     imageView.image = processedImage
-                    progressView.alpha = 0
+                    progressView.isHidden = true
                     fixImageWidth()
                     return true
                 }
             }
         }
+
+        progressView.isHidden = true
+
         return false
     }
 
     // size image width properly
     func fixImageWidth() {
-        if !self.maxWidth {
-            let multiplier = (self.imageView.image?.size.width ?? 1) / (self.imageView.image?.size.height ?? 1)
-            self.imageWidthConstraint?.isActive = false
-            self.imageWidthConstraint = self.imageView.widthAnchor.constraint(
-                equalTo: self.imageView.heightAnchor,
+        if !maxWidth {
+            let multiplier = (imageView.image?.size.width ?? 1) / (imageView.image?.size.height ?? 1)
+            imageWidthConstraint?.isActive = false
+            imageWidthConstraint = imageView.widthAnchor.constraint(
+                equalTo: imageView.heightAnchor,
                 multiplier: multiplier
             )
-            self.imageWidthConstraint?.isActive = true
+            imageWidthConstraint?.isActive = true
         }
+    }
+}
+
+// MARK: - Nuke Delegate
+extension ReaderPageView: ImageTaskDelegate {
+
+    func imageTaskCreated(_ task: ImageTask) {
+        imageTask = task
+    }
+
+    func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {
+        switch result {
+        case .success(let response):
+            imageView.image = response.image
+            fixImageWidth()
+            completion?(true)
+        case .failure:
+            completion?(false)
+        }
+        progressView.isHidden = true
+    }
+
+    func imageTaskDidCancel(_ task: ImageTask) {
+        completion?(false)
+    }
+
+    func imageTask(_ task: ImageTask, didUpdateProgress progress: ImageTask.Progress) {
+        progressView.setProgress(value: Float(progress.completed) / Float(progress.total), withAnimation: false)
     }
 }

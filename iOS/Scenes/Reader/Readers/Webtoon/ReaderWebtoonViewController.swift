@@ -48,15 +48,18 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         collectionView.prefetchDataSource = self
         collectionView.isPrefetchingEnabled = true
 
-        collectionView.contentInset = .zero
-        collectionView.contentInsetAdjustmentBehavior = .never
-
         scrollView.contentInset = .zero
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.bounces = false // bouncing can cause issues with page appending
         scrollView.scrollsToTop = false // dont want status bar tap to work
+
+        collectionView.contentInset = .zero
+        collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.scrollsToTop = false
 
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 2
@@ -513,20 +516,20 @@ extension ReaderWebtoonViewController {
     func refreshInfoPages() {
         var snapshot = dataSource.snapshot()
         guard snapshot.itemIdentifiers.count >= 2 else { return }
-        var items = [snapshot.itemIdentifiers.first!, snapshot.itemIdentifiers.last!]
+        var items: Set = [snapshot.itemIdentifiers.first!, snapshot.itemIdentifiers.last!]
         if pages.count >= 2 {
             let idx = pages[0].count + 1
             if snapshot.itemIdentifiers.count > idx {
-                items += [snapshot.itemIdentifiers[idx]]
+                items.insert(snapshot.itemIdentifiers[idx])
             }
         }
         if pages.count >= 3 { // max of 3 chapters
             let idx = pages[0].count + pages[1].count + 2
             if snapshot.itemIdentifiers.count > idx {
-                items += [snapshot.itemIdentifiers[idx]]
+                items.insert(snapshot.itemIdentifiers[idx])
             }
         }
-        snapshot.reloadItems(items)
+        snapshot.reloadItems(Array(items))
         Task { @MainActor in
             dataSource.apply(snapshot, animatingDifferences: false)
             zoomView.adjustContentSize()
@@ -650,8 +653,11 @@ extension ReaderWebtoonViewController {
     private func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, path, page in
             cell.setPage(page: page)
-            Task {
-                await self.load(cell: cell, path: path)
+            // preload pages so they load in better without showing any black
+            if !cell.pageView.hasOutstandingTask() {
+                Task {
+                    await self.load(cell: cell, path: path)
+                }
             }
         }
     }
