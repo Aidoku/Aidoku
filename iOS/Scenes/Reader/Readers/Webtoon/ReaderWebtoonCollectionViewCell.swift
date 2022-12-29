@@ -59,6 +59,7 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
         super.prepareForReuse()
         pageView.imageView.image = nil
         reloadButton.isHidden = true
+        pageView.imageTask = nil
     }
 
     func setPage(page: Page) {
@@ -68,10 +69,10 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
     func loadPage(sourceId: String? = nil) async {
         guard let page = page, page.type == .imagePage else { return }
         self.sourceId = sourceId
+        reloadButton.isHidden = true
         infoView?.isHidden = true
         pageView.isHidden = false
         let success = await pageView.setPage(page, sourceId: sourceId)
-        pageView.progressView.isHidden = true
         reloadButton.isHidden = success
     }
 
@@ -124,9 +125,6 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
     }
 
     @objc func reload() {
-        reloadButton.isHidden = true
-        pageView.progressView.setProgress(value: 0, withAnimation: false)
-        pageView.progressView.isHidden = false
         Task {
             await loadPage(sourceId: sourceId)
         }

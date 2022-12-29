@@ -7,7 +7,6 @@
 
 import UIKit
 import Nuke
-import NukeExtensions
 
 class MangaViewHeaderView: UIView {
 
@@ -75,6 +74,8 @@ class MangaViewHeaderView: UIView {
     let sortButton = UIButton(type: .roundedRect)
 
     var observers: [NSObjectProtocol] = []
+
+    private var imageTask: ImageTask?
 
     override var intrinsicContentSize: CGSize {
         CGSize(
@@ -536,16 +537,24 @@ extension MangaViewHeaderView {
             return
         }
 
-        let isCached = ImagePipeline.shared.cache.containsCachedImage(for: ImageRequest(url: url))
+        if imageTask != nil {
+            return
+        }
+
+        Task { @MainActor in
+            if coverImageView.image == nil {
+                coverImageView.image = UIImage(named: "MangaPlaceholder")
+            }
+        }
 
         var urlRequest = URLRequest(url: url)
 
-        if !isCached,
-           let sourceId = manga?.sourceId,
-           let source = SourceManager.shared.source(for: sourceId),
-           source.handlesImageRequests,
-           let request = try? await source.getImageRequest(url: urlString) {
-
+        if
+            let sourceId = manga?.sourceId,
+            let source = SourceManager.shared.source(for: sourceId),
+            source.handlesImageRequests,
+            let request = try? await source.getImageRequest(url: urlString)
+        {
             urlRequest.url = URL(string: request.URL ?? "")
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
@@ -558,14 +567,16 @@ extension MangaViewHeaderView {
             processors: [.resize(width: bounds.width)]
         )
 
-        _ = NukeExtensions.loadImage(
-            with: request,
-            options: ImageLoadingOptions(
-                placeholder: UIImage(named: "MangaPlaceholder"),
-                transition: .fadeIn(duration: 0.3)
-            ),
-            into: coverImageView
-        )
+        do {
+            let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
+            Task { @MainActor in
+                UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    self.coverImageView.image = image
+                }
+            }
+        } catch {
+            imageTask = nil
+        }
     }
 
     func loadTags() {
@@ -676,5 +687,13 @@ extension MangaViewHeaderView {
         guard let manga = manga else { return }
         cancelBookmarkTouchUp = true
         host?.present(UINavigationController(rootViewController: CategorySelectViewController(manga: manga)), animated: true)
+    }
+}
+
+// MARK: - Nuke Delegate
+extension MangaViewHeaderView: ImageTaskDelegate {
+
+    func imageTaskCreated(_ task: ImageTask) {
+        imageTask = task
     }
 }
