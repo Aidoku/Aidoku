@@ -123,7 +123,7 @@ class ReaderPageView: UIView {
             }
 
             let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
-            let processors = [DownsampleProcessor(width: UIScreen.main.bounds.width, downscale: shouldDownscale)]
+            let processors = shouldDownscale ? [DownsampleProcessor(width: UIScreen.main.bounds.width)] : []
 
             request = ImageRequest(
                 urlRequest: urlRequest,
@@ -159,17 +159,19 @@ class ReaderPageView: UIView {
         }
 
         if let data = Data(base64Encoded: base64) {
-            if let image = UIImage(data: data) {
-                let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
-                let processor = DownsampleProcessor(width: UIScreen.main.bounds.width, downscale: shouldDownscale)
-                let processedImage = processor.process(image)
-                if let processedImage = processedImage {
-                    ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: processedImage), for: request)
-                    imageView.image = processedImage
-                    progressView.isHidden = true
-                    fixImageSize()
-                    return true
+            if var image = UIImage(data: data) {
+                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
+                    let processedImage = processor.process(image)
+                    if let processedImage = processedImage {
+                        image = processedImage
+                    }
                 }
+                ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+                imageView.image = image
+                progressView.isHidden = true
+                fixImageSize()
+                return true
             }
         }
 
