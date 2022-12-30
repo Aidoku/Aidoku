@@ -184,7 +184,7 @@ class BookGridCell: UICollectionViewCell {
 
         let request = ImageRequest(
             urlRequest: urlRequest,
-            processors: [.resize(width: bounds.width)]
+            processors: [DownsampleProcessor(width: bounds.width)]
         )
 
         do {

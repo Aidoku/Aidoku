@@ -23,11 +23,11 @@ struct DownsampleProcessor: ImageProcessing {
     var scaleFactor = 1
 #endif
 
-    init(size: CGSize, upscale: Bool = true, downscale: Bool = true) {
+    init(size: CGSize) {
         self.size = size
     }
 
-    init(width: CGFloat, upscale: Bool = true, downscale: Bool = true) {
+    init(width: CGFloat) {
         self.size = CGSize(width: width, height: CGFloat.infinity)
     }
 
