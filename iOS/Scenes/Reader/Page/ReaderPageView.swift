@@ -15,6 +15,7 @@ class ReaderPageView: UIView {
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
     private var imageWidthConstraint: NSLayoutConstraint?
+    private var imageHeightConstraint: NSLayoutConstraint?
     var maxWidth = false
 
     var imageTask: ImageTask?
@@ -87,6 +88,9 @@ class ReaderPageView: UIView {
         if let imageTask = imageTask {
             switch imageTask.state {
             case .running:
+                if completion != nil {
+                    completion!(false)
+                }
                 return await withCheckedContinuation({ continuation in
                     self.completion = { success in
                         self.completion = nil
@@ -150,7 +154,7 @@ class ReaderPageView: UIView {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
             progressView.isHidden = true
-            fixImageWidth()
+            fixImageSize()
             return true
         }
 
@@ -163,7 +167,7 @@ class ReaderPageView: UIView {
                     ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: processedImage), for: request)
                     imageView.image = processedImage
                     progressView.isHidden = true
-                    fixImageWidth()
+                    fixImageSize()
                     return true
                 }
             }
@@ -174,17 +178,29 @@ class ReaderPageView: UIView {
         return false
     }
 
-    // size image width properly
-    func fixImageWidth() {
+    // match image constraints with image size
+    func fixImageSize() {
+        guard imageView.image != nil else { return }
+
+        imageHeightConstraint?.isActive = false
+        imageWidthConstraint?.isActive = false
         if !maxWidth {
-            let multiplier = (imageView.image?.size.width ?? 1) / (imageView.image?.size.height ?? 1)
-            imageWidthConstraint?.isActive = false
+            let multiplier = imageView.image!.size.width / imageView.image!.size.height
             imageWidthConstraint = imageView.widthAnchor.constraint(
                 equalTo: imageView.heightAnchor,
                 multiplier: multiplier
             )
-            imageWidthConstraint?.isActive = true
+            imageHeightConstraint = nil
+        } else {
+            let multiplier = imageView.image!.size.height / imageView.image!.size.width
+            imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
+            imageHeightConstraint = imageView.heightAnchor.constraint(
+                equalTo: imageView.widthAnchor,
+                multiplier: multiplier
+            )
+            imageHeightConstraint?.isActive = true
         }
+        imageWidthConstraint?.isActive = true
     }
 }
 
@@ -199,7 +215,7 @@ extension ReaderPageView: ImageTaskDelegate {
         switch result {
         case .success(let response):
             imageView.image = response.image
-            fixImageWidth()
+            fixImageSize()
             completion?(true)
         case .failure:
             completion?(false)

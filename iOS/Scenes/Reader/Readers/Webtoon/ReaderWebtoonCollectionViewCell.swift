@@ -34,7 +34,7 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
         reloadButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(reloadButton)
 
-        let pageHeight1 = pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: Self.estimatedHeight)
+        let pageHeight1 = pageView.heightAnchor.constraint(equalTo: heightAnchor)
         let pageHeight2 = pageView.heightAnchor.constraint(equalTo: pageView.imageView.heightAnchor)
         let pageHeight3 = pageView.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
         pageHeight1.priority = UILayoutPriority(5)
@@ -108,14 +108,22 @@ class ReaderWebtoonCollectionViewCell: UICollectionViewCell {
     override func preferredLayoutAttributesFitting(
         _ layoutAttributes: UICollectionViewLayoutAttributes
     ) -> UICollectionViewLayoutAttributes {
-        let fallback = CGSize(width: bounds.width != 0 ? bounds.width : UIScreen.main.bounds.width, height: Self.estimatedHeight)
+        let fallback = CGSize(
+            width: bounds.width != 0 ? bounds.width : UIScreen.main.bounds.width,
+            height: Self.estimatedHeight
+        )
 
         if page?.type != .imagePage {
             layoutAttributes.size = fallback
         } else {
-            let size = pageView.imageView.sizeThatFits(CGSize(width: bounds.width, height: CGFloat.greatestFiniteMagnitude))
-            if size.height > 0 {
-                layoutAttributes.size = size
+            if let image = pageView.imageView.image, image.size.width > 0 {
+                let multiplier = image.size.height / image.size.width
+                let size = CGSize(width: bounds.width, height: bounds.width * multiplier)
+                if size.height > 0 {
+                    layoutAttributes.size = size
+                } else {
+                    layoutAttributes.size = fallback
+                }
             } else {
                 layoutAttributes.size = fallback
             }

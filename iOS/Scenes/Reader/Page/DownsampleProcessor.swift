@@ -17,19 +17,18 @@ import CoreGraphics
 struct DownsampleProcessor: ImageProcessing {
 
     private let size: CGSize
-    private let upscale: Bool
-    private let downscale: Bool
+#if os(iOS) || os(tvOS)
+    var scaleFactor = UIScreen.main.scale
+#else
+    var scaleFactor = 1
+#endif
 
     init(size: CGSize, upscale: Bool = true, downscale: Bool = true) {
         self.size = size
-        self.upscale = upscale
-        self.downscale = downscale
     }
 
     init(width: CGFloat, upscale: Bool = true, downscale: Bool = true) {
         self.size = CGSize(width: width, height: CGFloat.infinity)
-        self.upscale = upscale
-        self.downscale = downscale
     }
 
     var identifier: String {
@@ -37,51 +36,46 @@ struct DownsampleProcessor: ImageProcessing {
     }
 
     func process(_ image: PlatformImage) -> PlatformImage? {
-        #if os(macOS)
-            let targetSize = size
-        #else
-            let targetSize = CGSize(width: size.width * UIScreen.main.scale, height: size.height * UIScreen.main.scale)
-        #endif
-
-        guard let cgImage = image.cgImage else {
-            return nil
-        }
-
-        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
-
-        let scaleHor = targetSize.width / imageSize.width
-        let scaleVert = targetSize.height / imageSize.height
+        let scaleHor = size.width / image.size.width
+        let scaleVert = size.height / image.size.height
         let scale = min(scaleHor, scaleVert)
 
         if scale == 1 {
             return image // no need to scale
-        } else if scale > 1 && !upscale {
+        } else if scale > 1 {
             return image // don't want to upscale
-        } else if scale < 1 && !downscale {
-            return image // don't want to downscale
         }
 
-        let size = CGSize(width: CGFloat(round(imageSize.width * scale)), height: CGFloat(round(imageSize.height * scale)))
+        let finalSize = CGSize(
+            width: CGFloat(round(image.size.width * scale)),
+            height: CGFloat(round(image.size.height * scale))
+        )
 
-        let isOpaque = cgImage.alphaInfo == .none || cgImage.alphaInfo == .noneSkipFirst || cgImage.alphaInfo == .noneSkipLast
-        guard let ctx = CGContext(
-            data: nil,
-            width: Int(size.width),
-            height: Int(size.height),
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: (isOpaque ? CGImageAlphaInfo.noneSkipLast : CGImageAlphaInfo.premultipliedLast).rawValue
-        ) else {
-            return image
+        var data = image.pngData()
+        if data == nil {
+            data = image.jpegData(compressionQuality: 1)
+            if data == nil {
+                return nil
+            }
         }
 
-        ctx.draw(cgImage, in: CGRect(origin: .zero, size: size))
-
-        guard let output = ctx.makeImage() else {
-            return image
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let imageSource = CGImageSourceCreateWithData(data! as CFData, imageSourceOptions) else {
+            return nil
         }
 
-        return PlatformImage(cgImage: output, scale: UIScreen.main.scale, orientation: image.imageOrientation)
+        let maxDimension = round(max(finalSize.width, finalSize.height) * scaleFactor)
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ] as CFDictionary
+
+        guard let output = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options) else {
+            return nil
+        }
+
+        return PlatformImage(cgImage: output, scale: scaleFactor, orientation: image.imageOrientation)
     }
 }
