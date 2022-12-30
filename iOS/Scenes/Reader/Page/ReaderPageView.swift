@@ -186,14 +186,21 @@ class ReaderPageView: UIView {
 
         imageHeightConstraint?.isActive = false
         imageWidthConstraint?.isActive = false
-        if !maxWidth {
+
+        if
+            !maxWidth,
+            case let height = imageView.image!.size.height * (bounds.width / imageView.image!.size.width),
+            height > bounds.height
+        {
+            // max height, variable width
             let multiplier = imageView.image!.size.width / imageView.image!.size.height
             imageWidthConstraint = imageView.widthAnchor.constraint(
                 equalTo: imageView.heightAnchor,
                 multiplier: multiplier
             )
-            imageHeightConstraint = nil
+            imageHeightConstraint = imageView.heightAnchor.constraint(equalTo: heightAnchor)
         } else {
+            // max width, variable height
             let multiplier = imageView.image!.size.height / imageView.image!.size.width
             imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
             imageHeightConstraint = imageView.heightAnchor.constraint(
