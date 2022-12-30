@@ -615,6 +615,19 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
                 zoomView.adjustContentSize()
             }
 
+            // scroll to first page immediately (hide previous info page)
+            collectionView.scrollToItem(
+                at: IndexPath(row: 1, section: 0),
+                at: .top,
+                animated: false
+            )
+            zoomView.scrollView.contentOffset = collectionView.contentOffset
+
+            // already scrolled to first page
+            if startPage == 1 {
+                return
+            }
+
             shouldMoveToStartPage = true
             // load pages up to startPage
             await withTaskGroup(of: Void.self) { group in
@@ -630,7 +643,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
                     }
                 }
             }
-            // if it hasn't been canceled, move to targetPage
+            // if it hasn't been canceled, move to startPage
             if shouldMoveToStartPage {
                 shouldMoveToStartPage = false
                 collectionView.scrollToItem(
