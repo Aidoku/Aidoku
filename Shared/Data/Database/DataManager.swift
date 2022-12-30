@@ -682,6 +682,7 @@ extension DataManager {
             guard let historyObject = self.getHistoryObject(for: chapter, context: context) else { return }
             historyObject.completed = true
             historyObject.dateRead = date
+            historyObject.chapter = self.getChapterObject(for: chapter, context: context)
             self.save(context: context)
             NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
         }
@@ -700,6 +701,7 @@ extension DataManager {
                 if let historyObject = self.getHistoryObject(for: chapter, context: context), !historyObject.completed {
                     historyObject.dateRead = date
                     historyObject.completed = true
+                    historyObject.chapter = self.getChapterObject(for: chapter, context: context)
                 }
                 if chapter.chapterNum ?? 0 > highestChapter?.chapterNum ?? 0 {
                     highestChapter = chapter
@@ -725,6 +727,7 @@ extension DataManager {
         if let page = page {
             historyObject.progress = Int16(page)
         }
+        historyObject.chapter = getChapterObject(for: chapter)
         save()
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
     }
@@ -734,6 +737,7 @@ extension DataManager {
         for chapter in chapters {
             guard let historyObject = getHistoryObject(for: chapter, context: context) else { continue }
             historyObject.dateRead = date
+            historyObject.chapter = getChapterObject(for: chapter, context: context)
         }
         save(context: context)
         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
