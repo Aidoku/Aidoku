@@ -39,6 +39,19 @@ extension CoreDataManager {
         return createManga(manga, context: context)
     }
 
+    /// Check if a manga object exists.
+    func hasManga(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        let context = context ?? self.context
+        let request = MangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, sourceId)
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
+    }
+
     /// Remove a MangaObject in the background.
     func removeManga(sourceId: String, id: String) async {
         await container.performBackgroundTask { context in

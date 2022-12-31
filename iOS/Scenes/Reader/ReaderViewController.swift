@@ -17,6 +17,7 @@ class ReaderViewController: BaseObservingViewController {
 
     var chapter: Chapter
     var readingMode: ReadingMode = .rtl
+    var defaultReadingMode: ReadingMode?
 
     var chapterList: [Chapter] = []
     var currentPage = 1
@@ -52,9 +53,10 @@ class ReaderViewController: BaseObservingViewController {
         statusBarHidden
     }
 
-    init(chapter: Chapter, chapterList: [Chapter] = []) {
+    init(chapter: Chapter, chapterList: [Chapter] = [], defaultReadingMode: ReadingMode? = nil) {
         self.chapter = chapter
         self.chapterList = chapterList
+        self.defaultReadingMode = defaultReadingMode
         super.init()
     }
 
@@ -260,11 +262,22 @@ extension ReaderViewController {
         case "scroll", "webtoon": readingMode = .webtoon
         case "continuous": readingMode = .continuous
         default:
-            // use source's given reading mode
-            let sourceMode = CoreDataManager.shared.getMangaSourceReadingMode(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
-            if let mode = ReadingMode(rawValue: sourceMode) {
-                readingMode = mode
+            // use given default reading mode
+            if let defaultReadingMode = defaultReadingMode {
+                readingMode = defaultReadingMode
+            } else if CoreDataManager.shared.hasManga(sourceId: chapter.sourceId, mangaId: chapter.mangaId) {
+                // fall back to stored manga viewer
+                let sourceMode = CoreDataManager.shared.getMangaSourceReadingMode(
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId
+                )
+                if let mode = ReadingMode(rawValue: sourceMode) {
+                    readingMode = mode
+                } else {
+                    readingMode = .rtl
+                }
             } else {
+                // fall back to rtl reading mode
                 readingMode = .rtl
             }
         }
