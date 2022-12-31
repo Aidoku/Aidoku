@@ -114,7 +114,9 @@ class ReaderDoublePageViewController: BaseViewController {
 
         NSLayoutConstraint.activate([
             firstPageView.widthAnchor.constraint(equalTo: firstPageView.imageView.widthAnchor),
+            firstPageView.heightAnchor.constraint(equalTo: pageStack.heightAnchor),
             secondPageView.widthAnchor.constraint(equalTo: secondPageView.imageView.widthAnchor),
+            secondPageView.heightAnchor.constraint(equalTo: pageStack.heightAnchor),
 
             firstReloadButton.centerXAnchor.constraint(equalTo: firstPageView.centerXAnchor),
             firstReloadButton.centerYAnchor.constraint(equalTo: firstPageView.centerYAnchor),
