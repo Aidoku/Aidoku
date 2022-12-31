@@ -10,13 +10,14 @@ import CoreData
 class BookManager {
 
     static let shared = BookManager()
+
+    private var libraryRefreshTask: Task<(), Never>?
 }
 
 // MARK: - Library Updating
 extension BookManager {
 
     /// Check if a book should skip updating based on skip options.
-    @MainActor
     private func shouldSkip(book: Book, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
         // completed
         if options.contains("completed") && book.status == .completed {
@@ -49,7 +50,7 @@ extension BookManager {
             returning: [String: [Chapter]].self,
             body: { taskGroup in
                 for book in books {
-                    if await shouldSkip(book: book, options: skipOptions) {
+                    if shouldSkip(book: book, options: skipOptions) {
                         continue
                     }
                     taskGroup.addTask {
@@ -72,30 +73,46 @@ extension BookManager {
     func updateBookDetails(books: [Book]) async {
         for book in books {
             guard
-                let newInfo = try? await SourceManager.shared.source(for: book.sourceId)?.getMangaDetails(manga: book.toManga())
+                let newInfo = try? await SourceManager.shared.source(for: book.sourceId)?
+                    .getMangaDetails(manga: book.toManga())
             else { continue }
             book.load(from: newInfo)
         }
     }
 
     /// Refresh manga objects in library.
-    @MainActor
     func refreshLibrary(forceAll: Bool = false) async {
-        let allBooks = CoreDataManager.shared.getLibraryManga()
-            .compactMap { $0.manga?.toBook() }
+        if libraryRefreshTask != nil {
+            // wait for already running library refresh
+            await libraryRefreshTask?.value
+            libraryRefreshTask = nil
+        } else {
+            // spawn new library refresh
+            libraryRefreshTask = Task {
+                await doLibraryRefresh(forceAll: forceAll)
+                libraryRefreshTask = nil
+            }
+        }
+    }
+
+    private func doLibraryRefresh(forceAll: Bool) async {
+        let allBooks = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getLibraryManga(context: context).compactMap { $0.manga?.toBook() }
+        }
 
         // check if connected to wi-fi
         if UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi") && Reachability.getConnectionType() != .wifi {
             return
         }
 
-        // fetch new details
-        if forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata") {
-            await updateBookDetails(books: allBooks)
-        }
-
         let skipOptions = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
         let excludedCategories = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
+        let updateMetadata = forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata")
+
+        // fetch new details
+        if updateMetadata {
+            await updateBookDetails(books: allBooks)
+        }
 
         // fetch new chapters
         let newChapters = await getLatestChapters(books: allBooks, skipOptions: skipOptions)
@@ -113,20 +130,24 @@ extension BookManager {
                 }
 
                 // check if excluded via category
-                let categories = CoreDataManager.shared.getCategories(
-                    libraryManga: libraryObject
-                ).compactMap { $0.title }
+                if !excludedCategories.isEmpty {
+                    let categories = CoreDataManager.shared.getCategories(
+                        libraryManga: libraryObject
+                    ).compactMap { $0.title }
 
-                if !categories.isEmpty {
-                    if excludedCategories.contains(where: categories.contains) {
-                        continue
+                    if !categories.isEmpty {
+                        if excludedCategories.contains(where: categories.contains) {
+                            continue
+                        }
                     }
                 }
 
                 // update manga object
                 if let mangaObject = libraryObject.manga {
                     // update details
-                    mangaObject.load(from: book)
+                    if updateMetadata {
+                        mangaObject.load(from: book)
+                    }
 
                     // update chapter list
                     if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
