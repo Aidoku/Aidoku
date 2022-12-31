@@ -190,7 +190,7 @@ class ReaderPageView: UIView {
         if
             !maxWidth,
             case let height = imageView.image!.size.height * (bounds.width / imageView.image!.size.width),
-            height > bounds.height
+            height > bounds.height || UIScreen.main.bounds.width > UIScreen.main.bounds.height // fix for double pages
         {
             // max height, variable width
             let multiplier = imageView.image!.size.width / imageView.image!.size.height
@@ -207,9 +207,9 @@ class ReaderPageView: UIView {
                 equalTo: imageView.widthAnchor,
                 multiplier: multiplier
             )
-            imageHeightConstraint?.isActive = true
         }
         imageWidthConstraint?.isActive = true
+        imageHeightConstraint?.isActive = true
     }
 }
 
