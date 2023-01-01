@@ -207,23 +207,20 @@ class MangaCoverCell: UICollectionViewCell {
     }
 
     func getTintColor(from image: UIImage) {
-        image.getColors(quality: .low) { colors in
-            let luma = colors?.background.luminance ?? 0
-            if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
-                self.manga?.tintColor = CodableColor(color: secondary)
-            } else if let background = colors?.background {
-                self.manga?.tintColor = CodableColor(color: background)
-            } else {
-                self.manga?.tintColor = nil
-            }
-        }
+//        image.getColors(quality: .low) { colors in
+//            let luma = colors?.background.luminance ?? 0
+//            if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
+//                self.manga?.tintColor = CodableColor(color: secondary)
+//            } else if let background = colors?.background {
+//                self.manga?.tintColor = CodableColor(color: background)
+//            } else {
+//                self.manga?.tintColor = nil
+//            }
+//        }
     }
 
     func loadImage() async {
-        guard
-            let urlString = manga?.cover,
-            let url = URL(string: urlString)
-        else {
+        guard let url = manga?.coverUrl else {
             imageView.image = nil
             return
         }
@@ -242,9 +239,8 @@ class MangaCoverCell: UICollectionViewCell {
             let sourceId = manga?.sourceId,
             let source = SourceManager.shared.source(for: sourceId),
             source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: urlString)
+            let request = try? await source.getImageRequest(url: url.absoluteString)
         {
-
             urlRequest.url = URL(string: request.URL ?? "")
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)

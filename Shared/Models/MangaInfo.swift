@@ -1,5 +1,5 @@
 //
-//  BookInfo.swift
+//  MangaInfo.swift
 //  Aidoku
 //
 //  Created by Skitty on 8/7/22.
@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct BookInfo: Hashable {
-    let bookId: String
+struct MangaInfo: Hashable {
+    let mangaId: String
     let sourceId: String
 
     var coverUrl: URL?
@@ -19,7 +19,7 @@ struct BookInfo: Hashable {
 
     var unread: Int = 0
 
-    func toBook() -> Book {
-        Book(sourceId: sourceId, id: bookId, title: title, author: author, coverUrl: coverUrl, url: url)
+    func toManga() -> Manga {
+        Manga(sourceId: sourceId, id: mangaId, title: title, author: author, coverUrl: coverUrl, url: url)
     }
 }

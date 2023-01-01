@@ -10,12 +10,12 @@ import CoreData
 
 class LibraryViewModel {
 
-    var books: [BookInfo] = []
-    var pinnedBooks: [BookInfo] = []
+    var manga: [MangaInfo] = []
+    var pinnedManga: [MangaInfo] = []
 
     // temporary storage when searching
-    private var storedBooks: [BookInfo]?
-    private var storedPinnedBooks: [BookInfo]?
+    private var storedManga: [MangaInfo]?
+    private var storedPinnedManga: [MangaInfo]?
 
     enum PinType {
         case none
@@ -97,8 +97,8 @@ class LibraryViewModel {
 
     // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() {
-        pinnedBooks = []
-        books = []
+        pinnedManga = []
+        manga = []
 
         let request = LibraryMangaObject.fetchRequest()
         if let currentCategory = currentCategory {
@@ -126,8 +126,8 @@ class LibraryViewModel {
                 mangaId: manga.id
             )
 
-            let info = BookInfo(
-                bookId: manga.id,
+            let info = MangaInfo(
+                mangaId: manga.id,
                 sourceId: manga.sourceId,
                 coverUrl: manga.cover != nil ? URL(string: manga.cover!) : nil,
                 title: manga.title,
@@ -140,7 +140,7 @@ class LibraryViewModel {
             for filter in filters {
                 switch filter.type {
                 case .downloaded:
-                    let downloaded = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.bookId)
+                    let downloaded = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
                     let shouldSkip = filter.exclude ? downloaded : !downloaded
                     if shouldSkip {
                         continue main
@@ -150,18 +150,18 @@ class LibraryViewModel {
 
             switch pinType {
             case .none:
-                books.append(info)
+                self.manga.append(info)
             case .unread:
                 if info.unread > 0 {
-                    pinnedBooks.append(info)
+                    pinnedManga.append(info)
                 } else {
-                    books.append(info)
+                    self.manga.append(info)
                 }
             case .updated:
                 if object.lastUpdated > object.lastOpened {
-                    pinnedBooks.append(info)
+                    pinnedManga.append(info)
                 } else {
-                    books.append(info)
+                    self.manga.append(info)
                 }
             }
         }
@@ -172,16 +172,16 @@ class LibraryViewModel {
     }
 
     func fetchUnreads() {
-        for (i, book) in books.enumerated() {
-            books[i].unread = CoreDataManager.shared.unreadCount(
-                sourceId: book.sourceId,
-                mangaId: book.bookId
+        for (i, manga) in manga.enumerated() {
+            self.manga[i].unread = CoreDataManager.shared.unreadCount(
+                sourceId: manga.sourceId,
+                mangaId: manga.mangaId
             )
         }
-        for (i, book) in pinnedBooks.enumerated() {
-            pinnedBooks[i].unread = CoreDataManager.shared.unreadCount(
-                sourceId: book.sourceId,
-                mangaId: book.bookId
+        for (i, manga) in pinnedManga.enumerated() {
+            pinnedManga[i].unread = CoreDataManager.shared.unreadCount(
+                sourceId: manga.sourceId,
+                mangaId: manga.mangaId
             )
         }
         if sortMethod == .unreadChapters {
@@ -193,20 +193,20 @@ class LibraryViewModel {
         switch sortMethod {
         case .alphabetical:
             if sortAscending {
-                pinnedBooks.sort(by: { $0.title ?? "" > $1.title ?? "" })
-                books.sort(by: { $0.title ?? "" > $1.title ?? "" })
+                pinnedManga.sort(by: { $0.title ?? "" > $1.title ?? "" })
+                manga.sort(by: { $0.title ?? "" > $1.title ?? "" })
             } else {
-                pinnedBooks.sort(by: { $0.title ?? "" < $1.title ?? "" })
-                books.sort(by: { $0.title ?? "" < $1.title ?? "" })
+                pinnedManga.sort(by: { $0.title ?? "" < $1.title ?? "" })
+                manga.sort(by: { $0.title ?? "" < $1.title ?? "" })
             }
 
         case .unreadChapters:
             if sortAscending {
-                pinnedBooks.sort(by: { $0.unread < $1.unread })
-                books.sort(by: { $0.unread < $1.unread })
+                pinnedManga.sort(by: { $0.unread < $1.unread })
+                manga.sort(by: { $0.unread < $1.unread })
             } else {
-                pinnedBooks.sort(by: { $0.unread > $1.unread })
-                books.sort(by: { $0.unread > $1.unread })
+                pinnedManga.sort(by: { $0.unread > $1.unread })
+                manga.sort(by: { $0.unread > $1.unread })
             }
 
         default:
@@ -245,65 +245,65 @@ class LibraryViewModel {
 
     func search(query: String) {
         guard !query.isEmpty else {
-            if let storedBooks = storedBooks {
-                books = storedBooks
-                self.storedBooks = nil
+            if let storedManga = storedManga {
+                manga = storedManga
+                self.storedManga = nil
             }
-            if let storedPinnedBooks = storedPinnedBooks {
-                pinnedBooks = storedPinnedBooks
-                self.storedPinnedBooks = nil
+            if let storedPinnedManga = storedPinnedManga {
+                pinnedManga = storedPinnedManga
+                self.storedPinnedManga = nil
             }
             return
         }
-        if storedBooks == nil {
-            storedBooks = books
-            storedPinnedBooks = pinnedBooks
+        if storedManga == nil {
+            storedManga = manga
+            storedPinnedManga = pinnedManga
         }
-        guard let storedBooks = storedBooks, let storedPinnedBooks = storedPinnedBooks else {
+        guard let storedManga = storedManga, let storedPinnedManga = storedPinnedManga else {
             return
         }
 
         let query = query.lowercased()
-        pinnedBooks = storedPinnedBooks.filter { $0.title?.lowercased().contains(query) ?? false }
-        books = storedBooks.filter { $0.title?.lowercased().contains(query) ?? false }
+        pinnedManga = storedPinnedManga.filter { $0.title?.lowercased().contains(query) ?? false }
+        manga = storedManga.filter { $0.title?.lowercased().contains(query) ?? false }
     }
 
-    func bookOpened(sourceId: String, bookId: String) {
+    func mangaOpened(sourceId: String, mangaId: String) {
         guard sortMethod == .lastOpened || pinType == .updated else { return }
 
-        let pinnedIndex = pinnedBooks.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
+        let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
         if let pinnedIndex = pinnedIndex {
             if sortMethod == .lastOpened {
-                let book = pinnedBooks.remove(at: pinnedIndex)
-                books.insert(book, at: 0)
+                let manga = pinnedManga.remove(at: pinnedIndex)
+                self.manga.insert(manga, at: 0)
             } else {
-                loadLibrary() // don't know where to put in books array, just refresh
+                loadLibrary() // don't know where to put in manga array, just refresh
             }
         } else if sortMethod == .lastOpened {
-            let index = books.firstIndex(where: { $0.bookId == bookId && $0.sourceId == sourceId })
+            let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
             if let index = index {
-                let book = books.remove(at: index)
-                books.insert(book, at: 0)
+                let manga = manga.remove(at: index)
+                self.manga.insert(manga, at: 0)
             }
         }
     }
 
-    func removeFromLibrary(book: BookInfo) {
-        pinnedBooks.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
-        books.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
+    func removeFromLibrary(manga: MangaInfo) {
+        pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
+        self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         Task {
-            await CoreDataManager.shared.removeManga(sourceId: book.sourceId, id: book.bookId)
+            await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, mangaId: manga.mangaId)
         }
     }
 
-    func removeFromCurrentCategory(book: BookInfo) {
+    func removeFromCurrentCategory(manga: MangaInfo) {
         guard let currentCategory = currentCategory else { return }
-        pinnedBooks.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
-        books.removeAll { $0.bookId == book.bookId && $0.sourceId == book.sourceId }
+        pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
+        self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         Task {
             await CoreDataManager.shared.removeCategoriesFromManga(
-                sourceId: book.sourceId,
-                mangaId: book.bookId,
+                sourceId: manga.sourceId,
+                mangaId: manga.mangaId,
                 categories: [currentCategory]
             )
         }

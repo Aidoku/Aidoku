@@ -1,5 +1,5 @@
 //
-//  Book.swift
+//  Manga.swift
 //  Aidoku
 //
 //  Created by Skitty on 7/24/22.
@@ -9,17 +9,10 @@ import Foundation
 
 // TODO: refactor
 
-class Book: KVCObject, Codable, Hashable {
-    static func == (lhs: Book, rhs: Book) -> Bool {
-        lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
-    }
+class Manga: Codable, Hashable {
 
     var key: String {
         self.sourceId + "." + self.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
     }
 
     let sourceId: String
@@ -84,58 +77,14 @@ class Book: KVCObject, Codable, Hashable {
         self.dateAdded = dateAdded
     }
 
-    func toManga() -> Manga {
-        Manga(
-            sourceId: sourceId,
-            id: id,
-            title: title,
-            author: author,
-            artist: artist,
-            description: description,
-            tags: tags,
-            cover: coverUrl?.absoluteString,
-            url: url?.absoluteString,
-            status: status,
-            nsfw: nsfw,
-            viewer: viewer,
-//            tintColor: tintColor?.color,
-            lastUpdated: lastUpdated,
-            lastOpened: lastOpened,
-            lastRead: lastRead,
-            dateAdded: dateAdded
-        )
-    }
-
-    static func fromManga(_ manga: Manga) -> Book {
-        Book(
-            sourceId: manga.sourceId,
-            id: manga.id,
-            title: manga.title,
-            author: manga.author,
-            artist: manga.artist,
-            description: manga.description,
-            tags: manga.tags,
-            coverUrl: manga.cover != nil ? URL(string: manga.cover!) : nil,
-            url: manga.url != nil ? URL(string: manga.url!) : nil,
-            status: manga.status,
-            nsfw: manga.nsfw,
-            viewer: manga.viewer,
-//            tintColor: manga.tintColor?.color,
-            lastUpdated: manga.lastUpdated,
-            lastOpened: manga.lastOpened,
-            lastRead: manga.lastRead,
-            dateAdded: manga.dateAdded
-        )
-    }
-
     func load(from manga: Manga) {
         title = manga.title ?? title
         author = manga.author ?? author
         artist = manga.artist ?? artist
         description = manga.description ?? description
         tags = manga.tags ?? tags
-        coverUrl = manga.cover != nil ? URL(string: manga.cover!) : coverUrl
-        url = manga.url != nil ? URL(string: manga.url!) : url
+        coverUrl = manga.coverUrl ?? coverUrl
+        url = manga.url ?? url
         status = manga.status
         nsfw = manga.nsfw
         viewer = manga.viewer
@@ -146,10 +95,42 @@ class Book: KVCObject, Codable, Hashable {
         dateAdded = manga.dateAdded ?? dateAdded
     }
 
-    func toInfo() -> BookInfo {
-        BookInfo(bookId: id, sourceId: sourceId, coverUrl: coverUrl, title: title, author: author)
+    func copy(from manga: Manga) -> Manga {
+        Manga(
+            sourceId: manga.sourceId,
+            id: manga.id,
+            title: manga.title ?? title,
+            author: manga.author ?? author,
+            artist: manga.artist ?? artist,
+            description: manga.description ?? description,
+            tags: manga.tags ?? tags,
+            coverUrl: manga.coverUrl ?? coverUrl,
+            url: manga.url ?? url,
+            status: manga.status,
+            nsfw: manga.nsfw,
+            viewer: manga.viewer,
+            lastUpdated: manga.lastUpdated ?? lastUpdated,
+            lastOpened: manga.lastOpened ?? lastOpened,
+            lastRead: manga.lastRead ?? lastRead,
+            dateAdded: manga.dateAdded ?? dateAdded
+        )
     }
 
+    func toInfo() -> MangaInfo {
+        MangaInfo(mangaId: id, sourceId: sourceId, coverUrl: coverUrl, title: title, author: author)
+    }
+
+    static func == (lhs: Manga, rhs: Manga) -> Bool {
+        lhs.sourceId == rhs.sourceId && lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(sourceId)
+        hasher.combine(id)
+    }
+}
+
+extension Manga: KVCObject {
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id

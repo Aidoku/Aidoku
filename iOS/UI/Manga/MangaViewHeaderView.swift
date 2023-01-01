@@ -415,8 +415,8 @@ class MangaViewHeaderView: UIView {
 extension MangaViewHeaderView {
     // swiftlint:disable:next cyclomatic_complexity
     func updateViews() {
-        if let url = manga?.cover {
-            if let image = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: URL(string: url))) {
+        if let url = manga?.coverUrl {
+            if let image = ImagePipeline.shared.cache.cachedImage(for: ImageRequest(url: url)) {
                 coverImageView.image = image.image
             } else {
                 Task {
@@ -529,10 +529,7 @@ extension MangaViewHeaderView {
     }
 
     func setCover() async {
-        guard
-            let urlString = manga?.cover,
-            let url = URL(string: urlString)
-        else {
+        guard let url = manga?.coverUrl else {
             coverImageView.image = nil
             return
         }
@@ -553,7 +550,7 @@ extension MangaViewHeaderView {
             let sourceId = manga?.sourceId,
             let source = SourceManager.shared.source(for: sourceId),
             source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: urlString)
+            let request = try? await source.getImageRequest(url: url.absoluteString)
         {
             urlRequest.url = URL(string: request.URL ?? "")
             for (key, value) in request.headers {
@@ -650,7 +647,7 @@ extension MangaViewHeaderView {
             self.bookmarkButton.tintColor = self.tintColor
             self.bookmarkButton.backgroundColor = .secondarySystemFill
             Task {
-                await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, id: manga.id)
+                await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, mangaId: manga.id)
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
         } else {
