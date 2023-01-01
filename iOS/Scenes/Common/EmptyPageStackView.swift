@@ -19,9 +19,19 @@ class EmptyPageStackView: UIStackView {
         set { textLabel.text = newValue }
     }
 
+    var buttonText: String? {
+        get { button.title(for: .normal) }
+        set { button.setTitle(newValue, for: .normal) }
+    }
+
+    var showsButton: Bool {
+        get { !button.isHidden }
+        set { button.isHidden = !newValue }
+    }
+
     private let titleLabel = UILabel()
     private let textLabel = UILabel()
-    // TODO: optional button
+    private let button = UIButton(type: .roundedRect)
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -44,6 +54,15 @@ class EmptyPageStackView: UIStackView {
 
         textLabel.font = .systemFont(ofSize: 15)
         textLabel.textColor = .secondaryLabel
+        textLabel.numberOfLines = 0
+        textLabel.textAlignment = .center
         addArrangedSubview(textLabel)
+
+        button.isHidden = true
+        addArrangedSubview(button)
+    }
+
+    func addButtonTarget(_ target: Any?, action: Selector, for event: UIControl.Event = .touchUpInside) {
+        button.addTarget(target, action: action, for: event)
     }
 }

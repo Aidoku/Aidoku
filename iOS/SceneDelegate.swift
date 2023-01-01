@@ -48,7 +48,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         ]
 
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
-        tabController.tabBar.items?[1].badgeValue = updateCount > 0 ? String(updateCount) : nil
+        browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
 
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
