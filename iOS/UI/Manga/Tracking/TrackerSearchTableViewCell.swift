@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Nuke
 
 class TrackerSearchTableViewCell: UITableViewCell {
 
@@ -34,10 +35,16 @@ class TrackerSearchTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView?.image = UIImage(named: "MangaPlaceholder")
+    }
+
     func setupViews() {
         guard let imageView = imageView else { return }
         backgroundColor = .clear
 
+        imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 5
@@ -90,19 +97,32 @@ class TrackerSearchTableViewCell: UITableViewCell {
     }
 
     func updateInfo() {
-        imageView?.kf.setImage(
-            with: URL(string: item?.coverUrl ?? ""),
-            placeholder: UIImage(named: "MangaPlaceholder"),
-            options: [
-                .transition(.fade(0.2))
-            ]
-        )
         titleLabel.text = item?.title ?? ""
         if item?.type != .unknown, let type = item?.type?.toString() {
             typeLabel.text = String(format: NSLocalizedString("TYPE_COLON_%@", comment: ""), type)
         }
         if item?.status != .unknown, let status = item?.status?.toString() {
             statusLabel.text = String(format: NSLocalizedString("STATUS_COLON_%@", comment: ""), status)
+        }
+        Task {
+            await loadIcon()
+        }
+    }
+
+    func loadIcon() async {
+        guard
+            let imageView = imageView,
+            let urlString = item?.coverUrl,
+            let url = URL(string: urlString)
+        else { return }
+
+        let request = ImageRequest(url: url, processors: [DownsampleProcessor(size: bounds.size)])
+        if let image = try? await ImagePipeline.shared.image(for: request).image {
+            Task { @MainActor in
+                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    imageView.image = image
+                }
+            }
         }
     }
 }

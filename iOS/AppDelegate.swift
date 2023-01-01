@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Kingfisher
 import Nuke
 
 @UIApplicationMain
@@ -78,10 +77,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pagedPageLayout": "auto"
             ]
         )
-
-        KingfisherManager.shared.cache.memoryStorage.config.totalCostLimit = 300 * 1024 * 1024
-        KingfisherManager.shared.cache.memoryStorage.config.countLimit = 150
-        KingfisherManager.shared.cache.diskStorage.config.sizeLimit = 1000 * 1024 * 1024
 
         DataLoader.sharedUrlCache.diskCapacity = 0
 

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Nuke
 
 class HistoryTableViewCell: UITableViewCell {
 
@@ -20,22 +21,28 @@ class HistoryTableViewCell: UITableViewCell {
 
     init(reuseIdentifier: String?) {
         super.init(style: .default, reuseIdentifier: reuseIdentifier)
-        setupViews()
+        configure()
     }
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupViews()
+        configure()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setupViews() {
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView?.image = UIImage(named: "MangaPlaceholder")
+    }
+
+    func configure() {
         guard let imageView = imageView else { return }
         backgroundColor = .clear
 
+        imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 5
@@ -83,14 +90,6 @@ class HistoryTableViewCell: UITableViewCell {
     }
 
     func updateInfo() {
-        imageView?.kf.setImage(
-            with: URL(string: entry?.manga.cover ?? ""),
-            placeholder: UIImage(named: "MangaPlaceholder"),
-            options: [
-                .transition(.fade(0.2))
-            ]
-        )
-
         titleLabel.text = entry?.manga.title ?? ""
         var subtitleText = ""
         if entry?.chapter.chapterNum ?? -1 > 0 {
@@ -104,5 +103,26 @@ class HistoryTableViewCell: UITableViewCell {
         formatter.timeStyle = .short
         subtitleText += " - " + formatter.string(from: entry?.date ?? Date())
         subtitleLabel.text = subtitleText
+
+        Task {
+            await loadCoverImage()
+        }
+    }
+
+    func loadCoverImage() async {
+        guard
+            let imageView = imageView,
+            let urlString = entry?.manga.cover,
+            let url = URL(string: urlString)
+        else { return }
+
+        let request = ImageRequest(url: url, processors: [DownsampleProcessor(size: bounds.size)])
+        if let image = try? await ImagePipeline.shared.image(for: request).image {
+            Task { @MainActor in
+                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    imageView.image = image
+                }
+            }
+        }
     }
 }

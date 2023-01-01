@@ -67,7 +67,6 @@
 		FB1B4869277CE76B0056D02C /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4864277CE76A0056D02C /* Manga.swift */; };
 		FB1B486A277CE76B0056D02C /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4865277CE76A0056D02C /* Page.swift */; };
 		FB1B486B277CE76B0056D02C /* Page.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B4865277CE76A0056D02C /* Page.swift */; };
-		FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = FB1B4873277CE7E60056D02C /* Kingfisher */; };
 		FB1B51A828E3405D00D3CE0E /* ReaderSettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController.swift */; };
 		FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B51B028E35B2900D3CE0E /* ReaderWebtoonViewController.swift */; };
 		FB1B51B328E35B4700D3CE0E /* ReaderWebtoonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B51B228E35B4700D3CE0E /* ReaderWebtoonViewModel.swift */; };
@@ -520,7 +519,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
-				FB1B4874277CE7E60056D02C /* Kingfisher in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
 				FB5E7DC2295CAAC000CBF1AC /* Nuke in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
@@ -1216,7 +1214,6 @@
 			);
 			name = "Aidoku (iOS)";
 			packageProductDependencies = (
-				FB1B4873277CE7E60056D02C /* Kingfisher */,
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
@@ -2017,11 +2014,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		FB1B4873277CE7E60056D02C /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB1B4872277CE7E60056D02C /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
 		FB31AD0E27AE18DA00D50410 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;

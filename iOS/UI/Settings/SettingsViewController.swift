@@ -7,7 +7,6 @@
 
 import UIKit
 import SafariServices
-import Kingfisher
 import Nuke
 import WebKit
 
@@ -391,24 +390,22 @@ extension SettingsViewController {
                     DataManager.shared.clearTrackItems()
                 }
             case "Advanced.clearNetworkCache":
-                KingfisherManager.shared.cache.calculateDiskStorageSize { cacheSize in
-                    var totalCacheSize = Int((try? cacheSize.get()) ?? 0) + URLCache.shared.currentDiskUsage
-                    if let nukeCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
-                        totalCacheSize += nukeCache.totalSize
-                    }
-                    let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")
-                        + "\n\n"
-                        + String(
-                            format: NSLocalizedString("CACHE_SIZE_%@", comment: ""),
-                            ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
-                        )
+                var totalCacheSize = URLCache.shared.currentDiskUsage
+                if let nukeCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
+                    totalCacheSize += nukeCache.totalSize
+                }
+                let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT", comment: "")
+                    + "\n\n"
+                    + String(
+                        format: NSLocalizedString("CACHE_SIZE_%@", comment: ""),
+                        ByteCountFormatter.string(fromByteCount: Int64(totalCacheSize), countStyle: .file)
+                    )
 
-                    self.confirmAction(
-                        title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
-                        message: message
-                    ) {
-                        self.clearNetworkCache()
-                    }
+                confirmAction(
+                    title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: ""),
+                    message: message
+                ) {
+                    self.clearNetworkCache()
                 }
             case "Advanced.clearReadHistory":
                 confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
@@ -475,13 +472,11 @@ extension SettingsViewController {
               WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
           }
         }
-        KingfisherManager.shared.cache.clearMemoryCache()
-        KingfisherManager.shared.cache.clearDiskCache()
-        KingfisherManager.shared.cache.cleanExpiredDiskCache()
-
+        // clear disk cache
         if let dataCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
             dataCache.removeAll()
         }
+        // clear memory cache
         if let imageCache = ImagePipeline.shared.configuration.imageCache as? Nuke.ImageCache {
             imageCache.removeAll()
         }
