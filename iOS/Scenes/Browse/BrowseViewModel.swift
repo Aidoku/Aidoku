@@ -1,0 +1,164 @@
+//
+//  BrowseViewModel.swift
+//  Aidoku (iOS)
+//
+//  Created by Skitty on 12/30/22.
+//
+
+import Foundation
+
+class BrowseViewModel {
+
+    // TODO: source pinning
+    var updatesSources: [SourceInfo2] = []
+    var installedSources: [SourceInfo2] = []
+    var externalSources: [SourceInfo2] = []
+
+    private var unfilteredExternalSources: [ExternalSourceInfo] = []
+
+    // stored sources when searching
+    private var storedUpdatesSources: [SourceInfo2]?
+    private var storedInstalledSources: [SourceInfo2]?
+    private var storedExternalSources: [SourceInfo2]?
+
+    // load installed sources
+    func loadInstalledSources() {
+        storedInstalledSources = nil
+        installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+    }
+
+    // load external source lists
+    func loadExternalSources() async {
+        unfilteredExternalSources = []
+
+        for url in SourceManager.shared.sourceLists {
+            // load sources from list
+            guard var sources = await SourceManager.shared.loadSourceList(url: url) else { continue }
+            // set source url in external infos
+            for index in sources.indices {
+                sources[index].sourceUrl = url
+            }
+            unfilteredExternalSources += sources
+        }
+
+        filterExternalSources()
+    }
+
+    // filter external sources and updates
+    func filterExternalSources() {
+        storedUpdatesSources = nil
+        storedExternalSources = nil
+        updatesSources = []
+        externalSources = []
+
+        guard
+            let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        else { return }
+        let appVersion = SemanticVersion(appVersionString)
+        let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
+        let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+
+        externalSources.append(contentsOf: unfilteredExternalSources.compactMap { info in
+            // hide nsfw sources
+            let contentRating = SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe
+            if !showNsfw && contentRating == .nsfw {
+                return nil
+            }
+            // hide unselected languages
+            if !selectedLanguages.contains(info.lang) {
+                return nil
+            }
+            // strip installed sources from external list
+            if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
+                // check if it's an update
+                if info.version > installedSource.version {
+                    updatesSources.append(externalSourceToInfo(info: info))
+                }
+                return nil
+            }
+            // check version availability
+            if let minAppVersion = info.minAppVersion {
+                let minAppVersion = SemanticVersion(minAppVersion)
+                if minAppVersion > appVersion {
+                    return nil
+                }
+            }
+            if let maxAppVersion = info.maxAppVersion {
+                let maxAppVersion = SemanticVersion(maxAppVersion)
+                if maxAppVersion < appVersion {
+                    return nil
+                }
+            }
+            return externalSourceToInfo(info: info)
+        })
+
+        // sort first by name, then by language
+        externalSources.sort { $0.name < $1.name }
+        externalSources.sort {
+            let lhs = SourceManager.shared.languageCodes.firstIndex(of: $0.lang) ?? 0
+            let rhs = SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
+            return lhs < rhs
+        }
+    }
+
+    // convert Source to SourceInfo
+    private func sourceToInfo(source: Source) -> SourceInfo2 {
+        SourceInfo2(
+            sourceId: source.manifest.info.id,
+            iconUrl: source.url.appendingPathComponent("Icon.png"),
+            name: source.manifest.info.name,
+            lang: source.manifest.info.lang,
+            version: source.manifest.info.version,
+            contentRating: SourceInfo2.ContentRating(rawValue: source.manifest.info.nsfw ?? 0) ?? .safe
+        )
+    }
+
+    // convert ExternalSourceInfo to SourceInfo
+    private func externalSourceToInfo(info: ExternalSourceInfo) -> SourceInfo2 {
+        SourceInfo2(
+            sourceId: info.id,
+            iconUrl: info.sourceUrl?
+                .appendingPathComponent("icons")
+                .appendingPathComponent(info.icon),
+            name: info.name,
+            lang: info.lang,
+            version: info.version,
+            contentRating: SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe,
+            externalInfo: info
+        )
+    }
+
+    // filter sources by search query
+    func search(query: String?) {
+        if let query = query?.lowercased(), !query.isEmpty {
+            // store full source arrays
+            if storedUpdatesSources == nil {
+                storedUpdatesSources = updatesSources
+                storedInstalledSources = installedSources
+                storedExternalSources = externalSources
+            }
+            guard
+                let storedUpdatesSources = storedUpdatesSources,
+                let storedInstalledSources = storedInstalledSources,
+                let storedExternalSources = storedExternalSources
+            else { return }
+            updatesSources = storedUpdatesSources.filter { $0.name.lowercased().contains(query) }
+            installedSources = storedInstalledSources.filter { $0.name.lowercased().contains(query) }
+            externalSources = storedExternalSources.filter { $0.name.lowercased().contains(query) }
+        } else {
+            // reset search, restore source arrays
+            if let storedUpdatesSources = storedUpdatesSources {
+                updatesSources = storedUpdatesSources
+                self.storedUpdatesSources = nil
+            }
+            if let storedInstalledSources = storedInstalledSources {
+                installedSources = storedInstalledSources
+                self.storedInstalledSources = nil
+            }
+            if let storedExternalSources = storedExternalSources {
+                externalSources = storedExternalSources
+                self.storedExternalSources = nil
+            }
+        }
+    }
+}
