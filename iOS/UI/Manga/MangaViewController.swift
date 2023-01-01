@@ -318,8 +318,7 @@ class MangaViewController: UIViewController {
                 })
             }
 
-            if let url = manga.url,
-               let url = URL(string: url) {
+            if let url = manga.url {
                 subActions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
                     image: UIImage(systemName: "square.and.arrow.up")
@@ -557,31 +556,31 @@ extension MangaViewController {
     }
 
     func getTintColor() {
-        guard UserDefaults.standard.bool(forKey: "General.useMangaTint") else { return }
-        if let tintColor = manga.tintColor?.color {
-            // Adjust tint color for readability
-            let luma = tintColor.luminance
-            if luma >= 0.6 {
-                self.tintColor = tintColor.darker(by: luma >= 0.9 ? 40 : 30)
-            } else if luma <= 0.3 {
-                self.tintColor = tintColor.lighter(by: luma <= 0.1 ? 30 : 20)
-            } else {
-                self.tintColor = tintColor
-            }
-        } else if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
-            headerView.coverImageView.image?.getColors(quality: .low) { [weak self] colors in
-                guard let self = self else { return }
-                let luma = colors?.background.luminance ?? 0
-                if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
-                    self.manga.tintColor = CodableColor(color: secondary)
-                } else if let background = colors?.background {
-                    self.manga.tintColor = CodableColor(color: background)
-                } else {
-                    self.manga.tintColor = nil
-                }
-                self.getTintColor()
-            }
-        }
+//        guard UserDefaults.standard.bool(forKey: "General.useMangaTint") else { return }
+//        if let tintColor = manga.tintColor?.color {
+//            // Adjust tint color for readability
+//            let luma = tintColor.luminance
+//            if luma >= 0.6 {
+//                self.tintColor = tintColor.darker(by: luma >= 0.9 ? 40 : 30)
+//            } else if luma <= 0.3 {
+//                self.tintColor = tintColor.lighter(by: luma <= 0.1 ? 30 : 20)
+//            } else {
+//                self.tintColor = tintColor
+//            }
+//        } else if let headerView = tableView.tableHeaderView as? MangaViewHeaderView {
+//            headerView.coverImageView.image?.getColors(quality: .low) { [weak self] colors in
+//                guard let self = self else { return }
+//                let luma = colors?.background.luminance ?? 0
+//                if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
+//                    self.manga.tintColor = CodableColor(color: secondary)
+//                } else if let background = colors?.background {
+//                    self.manga.tintColor = CodableColor(color: background)
+//                } else {
+//                    self.manga.tintColor = nil
+//                }
+//                self.getTintColor()
+//            }
+//        }
     }
 
     func getNextChapter() -> Chapter? {
@@ -689,7 +688,7 @@ extension MangaViewController {
     }
 
     @objc func openWebView() {
-        if let url = URL(string: manga.url ?? "") {
+        if let url = manga.url {
             let vc = SFSafariViewController(url: url)
             present(vc, animated: true)
         }

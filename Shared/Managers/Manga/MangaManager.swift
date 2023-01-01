@@ -1,5 +1,5 @@
 //
-//  BookManager.swift
+//  MangaManager.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/14/22.
@@ -7,34 +7,34 @@
 
 import CoreData
 
-class BookManager {
+class MangaManager {
 
-    static let shared = BookManager()
+    static let shared = MangaManager()
 
     private var libraryRefreshTask: Task<(), Never>?
 }
 
 // MARK: - Library Updating
-extension BookManager {
+extension MangaManager {
 
-    /// Check if a book should skip updating based on skip options.
-    private func shouldSkip(book: Book, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
+    /// Check if a manga should skip updating based on skip options.
+    private func shouldSkip(manga: Manga, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
         // completed
-        if options.contains("completed") && book.status == .completed {
+        if options.contains("completed") && manga.status == .completed {
             return true
         }
         // has unread chapters
         if options.contains("hasUnread") && CoreDataManager.shared.unreadCount(
-            sourceId: book.sourceId,
-            mangaId: book.id,
+            sourceId: manga.sourceId,
+            mangaId: manga.id,
             context: context
         ) > 0 {
             return true
         }
         // has no read chapters
         if options.contains("notStarted") && CoreDataManager.shared.readCount(
-            sourceId: book.sourceId,
-            mangaId: book.id,
+            sourceId: manga.sourceId,
+            mangaId: manga.id,
             context: context
         ) == 0 {
             return true
@@ -43,20 +43,20 @@ extension BookManager {
         return false
     }
 
-    /// Get the latest chapters for all books in the array, indexed by book.key.
-    private func getLatestChapters(books: [Book], skipOptions: [String] = []) async -> [String: [Chapter]] {
+    /// Get the latest chapters for all manga in the array, indexed by manga.key.
+    private func getLatestChapters(manga: [Manga], skipOptions: [String] = []) async -> [String: [Chapter]] {
         await withTaskGroup(
             of: (String, [Chapter]).self,
             returning: [String: [Chapter]].self,
             body: { taskGroup in
-                for book in books {
-                    if shouldSkip(book: book, options: skipOptions) {
+                for mangaItem in manga {
+                    if shouldSkip(manga: mangaItem, options: skipOptions) {
                         continue
                     }
                     taskGroup.addTask {
-                        let chapters = try? await SourceManager.shared.source(for: book.sourceId)?
-                            .getChapterList(manga: book.toManga())
-                        return (book.key, chapters ?? [])
+                        let chapters = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
+                            .getChapterList(manga: mangaItem)
+                        return (mangaItem.key, chapters ?? [])
                     }
                 }
 
@@ -70,13 +70,13 @@ extension BookManager {
     }
 
     /// Update properties on manga from latest source info.
-    func updateBookDetails(books: [Book]) async {
-        for book in books {
+    func updateMangaDetails(manga: [Manga]) async {
+        for mangaItem in manga {
             guard
-                let newInfo = try? await SourceManager.shared.source(for: book.sourceId)?
-                    .getMangaDetails(manga: book.toManga())
+                let newInfo = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
+                    .getMangaDetails(manga: mangaItem)
             else { continue }
-            book.load(from: newInfo)
+            mangaItem.load(from: newInfo)
         }
     }
 
@@ -96,8 +96,8 @@ extension BookManager {
     }
 
     private func doLibraryRefresh(forceAll: Bool) async {
-        let allBooks = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getLibraryManga(context: context).compactMap { $0.manga?.toBook() }
+        let allManga = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getLibraryManga(context: context).compactMap { $0.manga?.toManga() }
         }
 
         // check if connected to wi-fi
@@ -111,19 +111,19 @@ extension BookManager {
 
         // fetch new details
         if updateMetadata {
-            await updateBookDetails(books: allBooks)
+            await updateMangaDetails(manga: allManga)
         }
 
         // fetch new chapters
-        let newChapters = await getLatestChapters(books: allBooks, skipOptions: skipOptions)
+        let newChapters = await getLatestChapters(manga: allManga, skipOptions: skipOptions)
 
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            for book in allBooks {
-                guard let chapters = newChapters[book.key] else { continue }
+            for manga in allManga {
+                guard let chapters = newChapters[manga.key] else { continue }
 
                 guard let libraryObject = CoreDataManager.shared.getLibraryManga(
-                    sourceId: book.sourceId,
-                    mangaId: book.id,
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
                     context: context
                 ) else {
                     continue
@@ -146,15 +146,15 @@ extension BookManager {
                 if let mangaObject = libraryObject.manga {
                     // update details
                     if updateMetadata {
-                        mangaObject.load(from: book)
+                        mangaObject.load(from: manga)
                     }
 
                     // update chapter list
                     if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
                         CoreDataManager.shared.setChapters(
                             chapters,
-                            sourceId: book.sourceId,
-                            mangaId: book.id,
+                            sourceId: manga.sourceId,
+                            mangaId: manga.id,
                             context: context
                         )
                         libraryObject.lastUpdated = Date()

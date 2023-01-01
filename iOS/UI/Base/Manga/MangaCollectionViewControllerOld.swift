@@ -1,5 +1,5 @@
 //
-//  MangaCollectionViewController.swift
+//  MangaCollectionViewControllerOld.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 1/23/22.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MangaCollectionViewController: UIViewController {
+class MangaCollectionViewControllerOld: UIViewController {
 
     enum MangaCellBadgeType {
         case none
@@ -154,7 +154,7 @@ class MangaCollectionViewController: UIViewController {
 }
 
 // MARK: - Collection View Data Source
-extension MangaCollectionViewController: UICollectionViewDataSource {
+extension MangaCollectionViewControllerOld: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         section == 0 && !pinnedManga.isEmpty ? pinnedManga.count : manga.count
@@ -182,7 +182,7 @@ extension MangaCollectionViewController: UICollectionViewDataSource {
 }
 
 // MARK: - Collection View Delegate
-extension MangaCollectionViewController: UICollectionViewDelegate {
+extension MangaCollectionViewControllerOld: UICollectionViewDelegate {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         pinnedManga.isEmpty ? 1 : 2
@@ -251,7 +251,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
                 })
             }
 
-            if let url = URL(string: targetManga.url ?? "") {
+            if let url = targetManga.url {
                 actions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
                     image: UIImage(systemName: "square.and.arrow.up")
@@ -273,7 +273,7 @@ extension MangaCollectionViewController: UICollectionViewDelegate {
 }
 
 // MARK: - Key Handler
-extension MangaCollectionViewController {
+extension MangaCollectionViewControllerOld {
     override var canBecomeFirstResponder: Bool { true }
     override var canResignFirstResponder: Bool { true }
 

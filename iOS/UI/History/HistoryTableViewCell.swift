@@ -112,8 +112,7 @@ class HistoryTableViewCell: UITableViewCell {
     func loadCoverImage() async {
         guard
             let imageView = imageView,
-            let urlString = entry?.manga.cover,
-            let url = URL(string: urlString)
+            let url = entry?.manga.coverUrl
         else { return }
 
         let request = ImageRequest(url: url, processors: [DownsampleProcessor(size: bounds.size)])

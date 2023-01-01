@@ -53,10 +53,10 @@ extension CoreDataManager {
     }
 
     /// Remove a MangaObject in the background.
-    func removeManga(sourceId: String, id: String) async {
+    func removeManga(sourceId: String, mangaId: String) async {
         await container.performBackgroundTask { context in
             let request = MangaObject.fetchRequest()
-            request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, sourceId)
+            request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, sourceId)
             request.fetchLimit = 1
             do {
                 if let object = (try context.fetch(request)).first {
@@ -72,7 +72,7 @@ extension CoreDataManager {
     func getMangaSourceReadingMode(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Int {
         let context = context ?? self.context
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", sourceId, mangaId)
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, sourceId)
         request.fetchLimit = 1
         request.propertiesToFetch = ["viewer"]
         return Int((try? context.fetch(request))?.first?.viewer ?? -1)

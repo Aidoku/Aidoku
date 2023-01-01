@@ -8,7 +8,7 @@
 import UIKit
 import LocalAuthentication
 
-class LibraryViewController: BookCollectionViewController {
+class LibraryViewController: MangaCollectionViewController {
 
     let viewModel = LibraryViewModel()
 
@@ -231,7 +231,7 @@ class LibraryViewController: BookCollectionViewController {
         }
 
         // TODO: change this notification (elsewhere)
-        // it should come with the book info or chapter or whatever that was read
+        // it should come with the manga info or chapter or whatever that was read
         addObserver(forName: "updateHistory") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
@@ -277,7 +277,7 @@ class LibraryViewController: BookCollectionViewController {
     override func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, _, info in
             cell.sourceId = info.sourceId
-            cell.bookId = info.bookId
+            cell.mangaId = info.mangaId
             cell.title = info.title
             cell.badgeNumber = info.unread
             Task {
@@ -288,7 +288,7 @@ class LibraryViewController: BookCollectionViewController {
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
         Task { @MainActor in
-            await BookManager.shared.refreshLibrary()
+            await MangaManager.shared.refreshLibrary()
             viewModel.loadLibrary()
             updateDataSource()
             refreshControl?.endRefreshing()
@@ -304,28 +304,28 @@ class LibraryViewController: BookCollectionViewController {
 extension LibraryViewController {
 
     func clearDataSource() {
-        let snapshot = NSDiffableDataSourceSnapshot<Section, BookInfo>()
+        let snapshot = NSDiffableDataSourceSnapshot<Section, MangaInfo>()
         dataSource.apply(snapshot)
     }
 
     func updateDataSource() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, BookInfo>()
+        var snapshot = NSDiffableDataSourceSnapshot<Section, MangaInfo>()
 
         if !locked {
-            if !viewModel.pinnedBooks.isEmpty {
+            if !viewModel.pinnedManga.isEmpty {
                 snapshot.appendSections(Section.allCases)
-                snapshot.appendItems(viewModel.pinnedBooks, toSection: .pinned)
+                snapshot.appendItems(viewModel.pinnedManga, toSection: .pinned)
             } else {
                 snapshot.appendSections([.regular])
             }
 
-            snapshot.appendItems(viewModel.books, toSection: .regular)
+            snapshot.appendItems(viewModel.manga, toSection: .regular)
         }
 
         dataSource.apply(snapshot)
 
         // handle empty library or category
-        emptyStackView.isHidden = !viewModel.books.isEmpty || !viewModel.pinnedBooks.isEmpty
+        emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
         collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil
     }
@@ -534,9 +534,9 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 // MARK: - Collection View Delegate
 extension LibraryViewController {
 
-    func openInfoView(book: BookInfo) {
+    func openInfoView(manga: MangaInfo) {
         navigationController?.pushViewController(
-            MangaViewController(manga: book.toBook().toManga(), chapters: []),
+            MangaViewController(manga: manga.toManga(), chapters: []),
             animated: true
         )
     }
@@ -551,9 +551,9 @@ extension LibraryViewController {
                 // get most recently read chapter
                 let history = await CoreDataManager.shared.getReadingHistory(
                     sourceId: info.sourceId,
-                    mangaId: info.bookId
+                    mangaId: info.mangaId
                 )
-                let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.bookId)
+                let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.mangaId)
                 let targetChapter: Chapter?
                 let id = history.max { a, b in a.value.1 < b.value.1 }?.key
                 if let id = id {
@@ -571,12 +571,12 @@ extension LibraryViewController {
                 }
             }
         } else {
-            openInfoView(book: info)
+            openInfoView(manga: info)
         }
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.bookId)
-                self.viewModel.bookOpened(sourceId: info.sourceId, bookId: info.bookId)
+                await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.mangaId)
+                self.viewModel.mangaOpened(sourceId: info.sourceId, mangaId: info.mangaId)
                 self.updateDataSource()
             }
         }
@@ -587,9 +587,9 @@ extension LibraryViewController {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        let book = indexPath.section == 0 && !viewModel.pinnedBooks.isEmpty
-            ? viewModel.pinnedBooks[indexPath.row]
-            : viewModel.books[indexPath.row]
+        let manga = indexPath.section == 0 && !viewModel.pinnedManga.isEmpty
+            ? viewModel.pinnedManga[indexPath.row]
+            : viewModel.manga[indexPath.row]
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIAction] = []
 
@@ -598,7 +598,7 @@ extension LibraryViewController {
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
                     image: UIImage(systemName: "info.circle")
                 ) { _ in
-                    self.openInfoView(book: book)
+                    self.openInfoView(manga: manga)
                 })
             }
 
@@ -607,7 +607,7 @@ extension LibraryViewController {
                     title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
                     image: UIImage(systemName: "folder.badge.gearshape")
                 ) { _ in
-                    let manga = book.toBook().toManga()
+                    let manga = manga.toManga()
                     self.present(
                         UINavigationController(rootViewController: CategorySelectViewController(manga: manga)),
                         animated: true
@@ -615,7 +615,7 @@ extension LibraryViewController {
                 })
             }
 
-            if let url = book.url {
+            if let url = manga.url {
                 actions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
                     image: UIImage(systemName: "square.and.arrow.up")
@@ -635,7 +635,7 @@ extension LibraryViewController {
                     image: UIImage(systemName: "folder.badge.minus"),
                     attributes: .destructive
                 ) { _ in
-                    self.viewModel.removeFromCurrentCategory(book: book)
+                    self.viewModel.removeFromCurrentCategory(manga: manga)
                     self.updateDataSource()
                 })
             }
@@ -645,7 +645,7 @@ extension LibraryViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                self.viewModel.removeFromLibrary(book: book)
+                self.viewModel.removeFromLibrary(manga: manga)
                 self.updateDataSource()
             })
 
