@@ -46,11 +46,6 @@ class BrowseViewModel {
 
     // filter external sources and updates
     func filterExternalSources() {
-        storedUpdatesSources = nil
-        storedExternalSources = nil
-        updatesSources = []
-        externalSources = []
-
         guard
             let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         else { return }
@@ -58,23 +53,20 @@ class BrowseViewModel {
         let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
 
-        externalSources.append(contentsOf: unfilteredExternalSources.compactMap { info in
-            // hide nsfw sources
-            let contentRating = SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe
-            if !showNsfw && contentRating == .nsfw {
-                return nil
-            }
-            // hide unselected languages
-            if !selectedLanguages.contains(info.lang) {
-                return nil
-            }
+        storedUpdatesSources = nil
+        storedExternalSources = nil
+        updatesSources = []
+
+        externalSources = unfilteredExternalSources.compactMap { info in
+            var update = false
             // strip installed sources from external list
             if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
                 // check if it's an update
                 if info.version > installedSource.version {
-                    updatesSources.append(externalSourceToInfo(info: info))
+                    update = true
+                } else {
+                    return nil
                 }
-                return nil
             }
             // check version availability
             if let minAppVersion = info.minAppVersion {
@@ -89,8 +81,22 @@ class BrowseViewModel {
                     return nil
                 }
             }
+            // add to updates after checking version
+            if update {
+                updatesSources.append(externalSourceToInfo(info: info))
+                return nil
+            }
+            // hide nsfw sources
+            let contentRating = SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe
+            if !showNsfw && contentRating == .nsfw {
+                return nil
+            }
+            // hide unselected languages
+            if !selectedLanguages.contains(info.lang) {
+                return nil
+            }
             return externalSourceToInfo(info: info)
-        })
+        }
 
         // sort first by name, then by language
         externalSources.sort { $0.name < $1.name }
