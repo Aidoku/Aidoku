@@ -190,7 +190,7 @@ class BackupManager {
         NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
         NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
 
-        await BookManager.shared.refreshLibrary(forceAll: true)
+        await MangaManager.shared.refreshLibrary(forceAll: true)
 
         NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
     }

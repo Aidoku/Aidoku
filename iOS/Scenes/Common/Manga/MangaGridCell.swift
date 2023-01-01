@@ -1,5 +1,5 @@
 //
-//  BookGridCell.swift
+//  MangaGridCell.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 7/24/22.
@@ -8,10 +8,10 @@
 import UIKit
 import Nuke
 
-class BookGridCell: UICollectionViewCell {
+class MangaGridCell: UICollectionViewCell {
 
     var sourceId: String?
-    var bookId: String?
+    var mangaId: String?
 
     var title: String? {
         get {
@@ -211,7 +211,7 @@ class BookGridCell: UICollectionViewCell {
 }
 
 // MARK: - Nuke Delegate
-extension BookGridCell: ImageTaskDelegate {
+extension MangaGridCell: ImageTaskDelegate {
 
     func imageTaskCreated(_ task: ImageTask) {
         imageTask = task

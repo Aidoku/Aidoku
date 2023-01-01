@@ -8,7 +8,7 @@
 import UIKit
 import SafariServices
 
-class SourceViewController: MangaCollectionViewController {
+class SourceViewController: MangaCollectionViewControllerOld {
 
     let source: Source
 

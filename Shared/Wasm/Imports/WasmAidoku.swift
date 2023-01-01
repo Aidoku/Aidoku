@@ -44,17 +44,33 @@ extension WasmAidoku {
                         tagList.append(str)
                     }
                 }
+                let coverString = coverUrlLen > 0 ? self.globalStore.readString(offset: coverUrl, length: coverUrlLen) : nil
+                let coverUrl: URL?
+                if let coverString = coverString {
+                    coverUrl = URL(string: coverString)
+                } else {
+                    coverUrl = nil
+                }
+                let urlString = urlLen > 0 ? self.globalStore.readString(offset: url, length: urlLen) : nil
+                let url: URL?
+                if let urlString = urlString {
+                    url = URL(string: urlString)
+                } else {
+                    url = nil
+                }
                 let manga = Manga(
                     sourceId: self.globalStore.id,
                     id: mangaId,
                     title: titleLen > 0 ? self.globalStore.readString(offset: title, length: titleLen) : nil,
                     author: authorLen > 0 ? self.globalStore.readString(offset: author, length: authorLen) : nil,
                     artist: artistLen > 0 ? self.globalStore.readString(offset: artist, length: artistLen) : nil,
-                    description: descriptionLen > 0 ? self.globalStore.readString(offset: description,
-                                                                                  length: descriptionLen) : nil,
+                    description: descriptionLen > 0 ? self.globalStore.readString(
+                        offset: description,
+                        length: descriptionLen
+                    ) : nil,
                     tags: tagList,
-                    cover: coverUrlLen > 0 ? self.globalStore.readString(offset: coverUrl, length: coverUrlLen) : nil,
-                    url: urlLen > 0 ? self.globalStore.readString(offset: url, length: urlLen) : nil,
+                    coverUrl: coverUrl,
+                    url: url,
                     status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
                     nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
                     viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer

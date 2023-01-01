@@ -1,5 +1,5 @@
 //
-//  BookCollectionViewController.swift
+//  MangaCollectionViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/1/22.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class BookCollectionViewController: BaseCollectionViewController {
+class MangaCollectionViewController: BaseCollectionViewController {
 
     lazy var dataSource = makeDataSource()
 
@@ -34,12 +34,12 @@ class BookCollectionViewController: BaseCollectionViewController {
     }
 
     // MARK: Cell Registration
-    typealias CellRegistration = UICollectionView.CellRegistration<BookGridCell, BookInfo>
+    typealias CellRegistration = UICollectionView.CellRegistration<MangaGridCell, MangaInfo>
 
     func makeCellRegistration() -> CellRegistration {
         CellRegistration { cell, _, info in
             cell.sourceId = info.sourceId
-            cell.bookId = info.bookId
+            cell.mangaId = info.mangaId
             cell.title = info.title
             Task {
                 await cell.loadImage(url: info.coverUrl)
@@ -64,7 +64,7 @@ class BookCollectionViewController: BaseCollectionViewController {
     }
 }
 
-extension BookCollectionViewController {
+extension MangaCollectionViewController {
 
     // TODO: list layout
 //    func makeListLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
@@ -102,16 +102,16 @@ extension BookCollectionViewController {
 }
 
 // MARK: - Collection View Delegate
-extension BookCollectionViewController {
+extension MangaCollectionViewController {
 
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        if let cell = collectionView.cellForItem(at: indexPath) as? BookGridCell {
+        if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
             cell.highlight()
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        if let cell = collectionView.cellForItem(at: indexPath) as? BookGridCell {
+        if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
             cell.unhighlight(animated: true)
         }
     }
@@ -119,21 +119,21 @@ extension BookCollectionViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
         navigationController?.pushViewController(
-            MangaViewController(manga: info.toBook().toManga(), chapters: []),
+            MangaViewController(manga: info.toManga(), chapters: []),
             animated: true
         )
     }
 }
 
 // MARK: - Data Source
-extension BookCollectionViewController {
+extension MangaCollectionViewController {
 
     enum Section: Int, CaseIterable {
         case pinned
         case regular
     }
 
-    func makeDataSource() -> UICollectionViewDiffableDataSource<Section, BookInfo> {
+    func makeDataSource() -> UICollectionViewDiffableDataSource<Section, MangaInfo> {
         UICollectionViewDiffableDataSource(
             collectionView: collectionView,
             cellProvider: makeCellRegistration().cellProvider
