@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Kingfisher
 
 class SourceInfoHeaderView: UIView {
 
@@ -24,25 +23,29 @@ class SourceInfoHeaderView: UIView {
     init(source: Source) {
         self.source = source
         super.init(frame: .zero)
-        layoutViews()
+        configure()
+        constrain()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func layoutViews() {
+    func configure() {
         contentView.backgroundColor = .secondarySystemGroupedBackground
         contentView.layer.cornerRadius = 16
         contentView.layer.cornerCurve = .continuous
         contentView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(contentView)
 
-        iconView.kf.setImage(
-            with: source.url.appendingPathComponent("Icon.png"),
-            placeholder: UIImage(named: "MangaPlaceholder"),
-            options: nil
-        )
+        let iconUrl = source.url.appendingPathComponent("Icon.png")
+        let path: String
+        if #available(iOS 16.0, *) {
+            path = iconUrl.path()
+        } else {
+            path = iconUrl.path
+        }
+        iconView.image = UIImage(contentsOfFile: path)
         iconView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
         iconView.layer.borderWidth = 1
         iconView.layer.cornerRadius = iconSize * 0.225
@@ -71,11 +74,9 @@ class SourceInfoHeaderView: UIView {
 //        uninstallButton.backgroundColor = tintColor
         uninstallButton.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(uninstallButton)
-
-        activateConstraints()
     }
 
-    func activateConstraints() {
+    func constrain() {
         NSLayoutConstraint.activate([
             contentView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             contentView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 20),
