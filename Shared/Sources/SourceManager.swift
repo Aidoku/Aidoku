@@ -145,4 +145,24 @@ extension SourceManager {
         UserDefaults.standard.set([], forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
     }
+
+    func loadSourceList(url: URL) async -> [ExternalSourceInfo]? {
+        if url.pathExtension == "json" {
+            return try? await URLSession.shared.object(
+                from: url
+            ) as [ExternalSourceInfo]
+        } else {
+            if let sources = try? await URLSession.shared.object(
+                from: url.appendingPathComponent("index.min.json")
+            ) as [ExternalSourceInfo] {
+                return sources
+            } else if let sources = try? await URLSession.shared.object(
+                from: url.appendingPathComponent("index.json")
+            ) as [ExternalSourceInfo] {
+                return sources
+            } else {
+                return nil
+            }
+        }
+    }
 }

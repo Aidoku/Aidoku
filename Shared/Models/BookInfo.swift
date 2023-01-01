@@ -1,6 +1,6 @@
 //
 //  BookInfo.swift
-//  Aidoku (iOS)
+//  Aidoku
 //
 //  Created by Skitty on 8/7/22.
 //

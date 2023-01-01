@@ -14,8 +14,8 @@ class LibraryViewModel {
     var pinnedBooks: [BookInfo] = []
 
     // temporary storage when searching
-    var storedBooks: [BookInfo]?
-    var storedPinnedBooks: [BookInfo]?
+    private var storedBooks: [BookInfo]?
+    private var storedPinnedBooks: [BookInfo]?
 
     enum PinType {
         case none

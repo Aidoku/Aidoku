@@ -33,7 +33,7 @@ class BookCollectionViewController: BaseCollectionViewController {
         }
     }
 
-    // MARK: - Cell Registration
+    // MARK: Cell Registration
     typealias CellRegistration = UICollectionView.CellRegistration<BookGridCell, BookInfo>
 
     func makeCellRegistration() -> CellRegistration {
@@ -47,7 +47,7 @@ class BookCollectionViewController: BaseCollectionViewController {
         }
     }
 
-    // MARK: - Collection View Layout
+    // MARK: Collection View Layout
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             switch Section(rawValue: sectionIndex) {

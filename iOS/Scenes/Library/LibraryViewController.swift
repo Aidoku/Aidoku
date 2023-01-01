@@ -10,7 +10,7 @@ import LocalAuthentication
 
 class LibraryViewController: BookCollectionViewController {
 
-    lazy var viewModel = LibraryViewModel()
+    let viewModel = LibraryViewModel()
 
     private lazy var filterBarButton: UIBarButtonItem = {
         let filterImage: UIImage?
@@ -38,8 +38,8 @@ class LibraryViewController: BookCollectionViewController {
 
     private lazy var refreshControl = UIRefreshControl()
 
-    private let emptyStackView = EmptyPageStackView()
-    private let lockedStackView = LockedPageStackView()
+    private lazy var emptyStackView = EmptyPageStackView()
+    private lazy var lockedStackView = LockedPageStackView()
 
     private lazy var locked = viewModel.isCategoryLocked()
 
