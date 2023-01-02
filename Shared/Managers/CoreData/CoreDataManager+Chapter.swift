@@ -34,6 +34,7 @@ extension CoreDataManager {
             format: "sourceId == %@ AND mangaId == %@",
             sourceId, mangaId
         )
+        request.sortDescriptors = [NSSortDescriptor(key: "sourceOrder", ascending: true)]
         return (try? context.fetch(request)) ?? []
     }
 
