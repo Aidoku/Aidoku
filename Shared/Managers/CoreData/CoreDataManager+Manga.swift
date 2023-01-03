@@ -64,7 +64,23 @@ extension CoreDataManager {
                     try context.save()
                 }
             } catch {
-                LogManager.logger.error("Removing manga \(error.localizedDescription)")
+                LogManager.logger.error("CoreDataManager.removeManga: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func updateMangaDetails(manga: Manga) async {
+        await container.performBackgroundTask { context in
+            guard let object = self.getManga(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                context: context
+            ) else { return }
+            object.load(from: manga)
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.updateMangaDetails: \(error.localizedDescription)")
             }
         }
     }

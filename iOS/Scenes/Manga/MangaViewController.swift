@@ -281,29 +281,47 @@ class MangaViewController: BaseTableViewController {
     @objc func refresh(_ refreshControl: UIRefreshControl) {
         Task {
             if let source = SourceManager.shared.source(for: manga.sourceId) {
-                // update manga details
-                let newManga = try? await source.getMangaDetails(manga: manga)
-                if let newManga = newManga {
-                    manga = manga.copy(from: newManga)
-                }
-                // TODO: store manga details in db
-                if CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id) {
+                let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+                await withTaskGroup(of: Void.self) { group in
+                    // update manga details
+                    group.addTask {
+                        let oldManga = await self.manga
+                        let newManga = try? await source.getMangaDetails(manga: oldManga)
+                        if let newManga = newManga {
+                            let updatedManga = oldManga.copy(from: newManga)
+                            await MainActor.run {
+                                self.manga = updatedManga
+                            }
+                            // update in db
+                            if inLibrary {
+                                await CoreDataManager.shared.updateMangaDetails(manga: updatedManga)
+                            }
+                        }
+                    }
                     // update chapters
-                    let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
-                    await CoreDataManager.shared.container.performBackgroundTask { context in
-                        CoreDataManager.shared.setChapters(
-                            chapterList,
-                            sourceId: self.manga.sourceId,
-                            mangaId: self.manga.id,
-                            context: context
-                        )
-                        try? context.save()
+                    group.addTask {
+                        let manga = await self.manga
+                        let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
+                        await MainActor.run {
+                            self.viewModel.chapterList = chapterList
+                        }
+                        // update in db
+                        if inLibrary {
+                            await CoreDataManager.shared.container.performBackgroundTask { context in
+                                CoreDataManager.shared.setChapters(
+                                    chapterList,
+                                    sourceId: manga.sourceId,
+                                    mangaId: manga.id,
+                                    context: context
+                                )
+                                try? context.save()
+                            }
+                        }
                     }
                 }
             }
             headerView.configure(with: manga)
             await viewModel.loadHistory(manga: manga)
-            await viewModel.loadChapterList(manga: manga)
             updateDataSource()
             updateReadButton()
             refreshControl.endRefreshing()
@@ -538,6 +556,7 @@ extension MangaViewController {
                                 await CoreDataManager.shared.removeHistory(chapters: selectedChapters)
                                 self.viewModel.removeHistory(for: selectedChapters)
                                 self.reloadCells(for: selectedChapters)
+                                self.updateReadButton()
                                 self.hideLoadingIndicator()
                                 self.setEditing(false, animated: true)
                             }
@@ -553,6 +572,7 @@ extension MangaViewController {
                                 await CoreDataManager.shared.setCompleted(chapters: selectedChapters, date: date)
                                 self.viewModel.addHistory(for: selectedChapters, date: date)
                                 self.reloadCells(for: selectedChapters)
+                                self.updateReadButton()
                                 self.hideLoadingIndicator()
                                 self.setEditing(false, animated: true)
                             }
@@ -706,6 +726,7 @@ extension MangaViewController {
                         )
                         self.viewModel.readingHistory.removeValue(forKey: chapter.id)
                         self.reloadCells(for: [chapter])
+                        self.updateReadButton()
                     }
                 })
             }
@@ -748,12 +769,11 @@ extension MangaViewController {
                     let chapters = [Chapter](self.viewModel.chapterList[
                         indexPath.row..<self.viewModel.chapterList.count
                     ])
-                    await CoreDataManager.shared.setCompleted(chapters: chapters)
                     let date = Date()
-                    for chapter in chapters {
-                        self.viewModel.readingHistory[chapter.id] = (-1, Int(date.timeIntervalSince1970))
-                    }
+                    await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
+                    self.viewModel.addHistory(for: chapters, date: date)
                     self.reloadCells(for: chapters)
+                    self.updateReadButton()
                 }
             },
             UIAction(
@@ -765,10 +785,9 @@ extension MangaViewController {
                         indexPath.row..<self.viewModel.chapterList.count
                     ])
                     await CoreDataManager.shared.removeHistory(chapters: chapters)
-                    for chapter in chapters {
-                        self.viewModel.readingHistory.removeValue(forKey: chapter.id)
-                    }
+                    self.viewModel.removeHistory(for: chapters)
                     self.reloadCells(for: chapters)
+                    self.updateReadButton()
                 }
             }
         ])
@@ -817,11 +836,17 @@ extension MangaViewController {
     func updateDataSource() {
         updateHeader()
 
+        let current = dataSource.snapshot()
+
         // refresh chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
-        snapshot.appendSections(dataSource.snapshot().sectionIdentifiers)
+        snapshot.appendSections(current.sectionIdentifiers)
         snapshot.appendItems(viewModel.chapterList)
-        dataSource.apply(snapshot)
+        dataSource.apply(
+            snapshot,
+            // skip animation if chapters are the same (needed when chapter is a class)
+            animatingDifferences: current.itemIdentifiers != viewModel.chapterList
+        )
     }
 
     func refreshDataSource() {
@@ -937,11 +962,13 @@ extension MangaViewController: ChapterSortDelegate {
     func sortOptionChanged(_ newOption: ChapterSortOption) {
         viewModel.sortChapters(method: newOption)
         refreshDataSource()
+        updateReadButton()
     }
 
     func sortAscendingChanged(_ newValue: Bool) {
         viewModel.sortChapters(ascending: newValue)
         refreshDataSource()
+        updateReadButton()
     }
 }
 
