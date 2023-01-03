@@ -13,6 +13,9 @@
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
+		FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F8662964917A00D1EA2D /* SourceViewController.swift */; };
+		FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
+		FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */; };
@@ -287,7 +290,6 @@
 		FBED233427C095170095D0C0 /* SettingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232A27BEAC980095D0C0 /* SettingItem.swift */; };
 		FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232227BB461D0095D0C0 /* SourceObject.swift */; };
 		FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
-		FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED62B1279DB3FC0096B717 /* SourceViewController.swift */; };
 		FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */; };
 		FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
@@ -303,6 +305,9 @@
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
+		FB05F8662964917A00D1EA2D /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
+		FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Source.swift"; sourceTree = "<group>"; };
+		FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewModel.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Manga.swift"; sourceTree = "<group>"; };
 		FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+LibraryManga.swift"; sourceTree = "<group>"; };
@@ -513,7 +518,6 @@
 		FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputTableViewCell.swift; sourceTree = "<group>"; };
 		FBED232A27BEAC980095D0C0 /* SettingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingItem.swift; sourceTree = "<group>"; };
 		FBED233727C3D0E30095D0C0 /* SourceActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceActor.swift; sourceTree = "<group>"; };
-		FBED62B1279DB3FC0096B717 /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
 		FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverCell.swift; sourceTree = "<group>"; };
 		FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
@@ -555,6 +559,7 @@
 				FB427509295FB78E00131377 /* Browse */,
 				FB792D9529615D9E00666074 /* Manga */,
 				FB0CAA6828A9BB900024561A /* Reader */,
+				FB05F8652964907200D1EA2D /* Source */,
 			);
 			path = Scenes;
 			sourceTree = "<group>";
@@ -593,6 +598,15 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		FB05F8652964907200D1EA2D /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				FB05F8662964917A00D1EA2D /* SourceViewController.swift */,
+				FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */,
+			);
+			path = Source;
+			sourceTree = "<group>";
+		};
 		FB0CAA4A28A2AD2E0024561A /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
@@ -603,6 +617,7 @@
 				FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */,
 				FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */,
 				FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */,
+				FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -1051,7 +1066,6 @@
 				FBED232E27C08F940095D0C0 /* SourceCell */,
 				FBED232F27C08FA80095D0C0 /* Filters */,
 				FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */,
-				FBED62B1279DB3FC0096B717 /* SourceViewController.swift */,
 				FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */,
 			);
 			path = Browse;
@@ -1395,6 +1409,7 @@
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB5114772962070600E9163F /* ChapterListHeaderConfiguration.swift in Sources */,
 				FB4B0AE0285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
+				FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */,
 				FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */,
@@ -1437,6 +1452,7 @@
 				FB792D9B2961FE9D00666074 /* MangaViewModel.swift in Sources */,
 				FB55AFA028AAAD9E0083EFC3 /* UIToolbar.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
+				FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */,
 				FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */,
 				FB0CAA5428A68FDF0024561A /* LockedPageStackView.swift in Sources */,
 				FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */,
@@ -1548,11 +1564,11 @@
 				FB72500B27CA8DED0037F1C9 /* BackupsViewController.swift in Sources */,
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */,
+				FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */,
 				FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */,
 				37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */,
 				FB0CAA5228A68FD70024561A /* EmptyPageStackView.swift in Sources */,
 				FB427512295FBEC100131377 /* SourceInfo.swift in Sources */,
-				FBED62B2279DB3FC0096B717 /* SourceViewController.swift in Sources */,
 				FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */,
 				FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */,
 				FB2BE5EB295385B900FAD8A7 /* ZoomableLayoutProtocol.swift in Sources */,

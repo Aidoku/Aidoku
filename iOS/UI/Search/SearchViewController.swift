@@ -163,13 +163,14 @@ class SearchViewController: UIViewController {
     @objc func openSearchView(_ sender: UIButton) {
         guard sources.count > sender.tag else { return }
         let source = sources[sender.tag]
-        let vc = SourceViewController(source: source)
-        vc.restrictToSearch = true
-        vc.page = 1
-        vc.query = query
-        vc.hasMore = results[source.id]?.hasNextPage ?? false
-        vc.manga = results[source.id]?.manga ?? []
-        navigationController?.pushViewController(vc, animated: true)
+        let sourceController = SourceViewController(source: source)
+        sourceController.hidesListings = true
+        sourceController.navigationItem.searchController?.searchBar.text = query
+        sourceController.viewModel.titleQuery = query
+        sourceController.viewModel.currentPage = 1
+        sourceController.viewModel.manga = (results[source.id]?.manga ?? []).map { $0.toInfo() }
+        sourceController.viewModel.hasMore = results[source.id]?.hasNextPage ?? false
+        navigationController?.pushViewController(sourceController, animated: true)
     }
 
     func fetchData() async {

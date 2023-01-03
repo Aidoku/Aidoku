@@ -20,6 +20,8 @@ class MangaViewController: BaseTableViewController {
     private lazy var refreshControl = UIRefreshControl()
     private lazy var splitScrollView = UIScrollView() // ipad only
 
+    private var storedTabBarAppearance: UITabBarAppearance?
+
     override var tableViewStyle: UITableView.Style {
         UIDevice.current.userInterfaceIdiom == .pad ? .plain : .grouped // use sticky header on ipad
     }
@@ -228,6 +230,27 @@ class MangaViewController: BaseTableViewController {
         addObserver(forName: "downloadCancelled", using: updateDownloadCellBlock)
         addObserver(forName: "downloadsRemoved", using: updateDownloadCellsBlock)
         addObserver(forName: "downloadsCancelled", using: updateDownloadCellsBlock)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // fix tab bar background turning clear when presenting
+        if #available(iOS 15.0, *) {
+            storedTabBarAppearance = navigationController?.tabBarController?.tabBar.scrollEdgeAppearance
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = tabBarAppearance
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        // reset tab bar background fix
+        if #available(iOS 15.0, *) {
+            navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = storedTabBarAppearance
+        }
     }
 
     override func viewWillLayoutSubviews() {
