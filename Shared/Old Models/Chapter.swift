@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Chapter: Identifiable {
+class Chapter: Identifiable {
 
     let sourceId: String
     let id: String
