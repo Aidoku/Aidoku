@@ -144,26 +144,15 @@ class MangaViewController: BaseTableViewController {
 
     // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
-        // listen for this manga being added to library from another page to update bookmark button
-        addObserver(forName: "addToLibrary") { [weak self] notification in
-            guard
-                let self = self,
-                let manga = notification.object as? Manga,
-                manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
-            else { return }
-            Task { @MainActor in
-                self.headerView.bookmarkButton.tintColor = .white
-                self.headerView.bookmarkButton.backgroundColor = self.headerView.tintColor
-                self.updateNavbarButtons()
-            }
-        }
         // update reading history stored in view model
-        addObserver(forName: "updateHistory") { [weak self] _ in
+        addObserver(forName: "updateHistory") { [weak self] notification in
             guard let self = self else { return }
             Task {
                 await self.viewModel.loadHistory(manga: self.manga)
                 self.updateReadButton()
-                self.updateDataSource()
+                if let chapter = notification.object as? Chapter {
+                    self.reloadCells(for: [chapter])
+                }
             }
         }
         // update tracking state
