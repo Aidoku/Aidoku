@@ -32,6 +32,15 @@ class MangaGridCell: UICollectionViewCell {
         }
     }
 
+    var showsBookmark: Bool {
+        get {
+            !bookmarkView.isHidden
+        }
+        set {
+            bookmarkView.isHidden = !newValue
+        }
+    }
+
     let imageView = UIImageView()
     private let titleLabel = UILabel()
     private let overlayView = UIView()
@@ -188,10 +197,15 @@ class MangaGridCell: UICollectionViewCell {
         )
 
         do {
+            let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
             let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
             Task { @MainActor in
-                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                if wasCached {
                     self.imageView.image = image
+                } else {
+                    UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                        self.imageView.image = image
+                    }
                 }
             }
         } catch {
