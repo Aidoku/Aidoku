@@ -50,6 +50,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
 
+        // fix tab bar background flashing when performing appearance hack on manga view and source view
+        if #available(iOS 15.0, *) {
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            tabController.tabBar.scrollEdgeAppearance = tabBarAppearance
+            tabController.tabBar.scrollEdgeAppearance = nil
+        }
+
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
             window.rootViewController = tabController
