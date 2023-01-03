@@ -173,16 +173,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 Task { @MainActor in
                     if url.pathComponents.count > 1 { // /sourceId/mangaId
                         if let manga = try? await source.getMangaDetails(manga: Manga(sourceId: source.id, id: url.pathComponents[1])) {
-                            let vc = MangaViewController(manga: manga, chapters: [])
+                            let scrollTo: Chapter?
                             if let chapterId = url.pathComponents[safe: 2] {
-                                vc.scrollToChapter = Chapter(
+                                scrollTo = Chapter(
                                     sourceId: source.id,
                                     id: chapterId,
                                     mangaId: manga.id,
                                     title: nil,
                                     sourceOrder: 0
                                 )
+                            } else {
+                                scrollTo = nil
                             }
+                            let vc = MangaViewController(manga: manga, scrollTo: scrollTo)
                             navigationController?.pushViewController(vc, animated: true)
                         }
                     } else { // /sourceId
@@ -253,7 +256,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     let link = try? await targetSource.handleUrl(url: finalUrl)
                     if let manga = link?.manga {
                         navigationController?.pushViewController(
-                            MangaViewController(manga: manga, chapters: [], scrollTo: link?.chapter), animated: true
+                            MangaViewController(manga: manga, scrollTo: link?.chapter), animated: true
                         )
                     }
                 }

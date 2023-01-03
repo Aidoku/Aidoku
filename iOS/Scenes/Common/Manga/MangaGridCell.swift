@@ -32,7 +32,7 @@ class MangaGridCell: UICollectionViewCell {
         }
     }
 
-    private let imageView = UIImageView()
+    let imageView = UIImageView()
     private let titleLabel = UILabel()
     private let overlayView = UIView()
     private let gradient = CAGradientLayer()

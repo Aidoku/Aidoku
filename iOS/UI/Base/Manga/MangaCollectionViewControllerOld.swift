@@ -147,7 +147,7 @@ class MangaCollectionViewControllerOld: UIViewController {
 
     func openMangaView(for manga: Manga) {
         navigationController?.pushViewController(
-            MangaViewController(manga: manga, chapters: chapters["\(manga.sourceId).\(manga.id)"] ?? []),
+            MangaViewController(manga: manga, chapterList: chapters["\(manga.sourceId).\(manga.id)"] ?? []),
             animated: true
         )
     }

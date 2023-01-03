@@ -534,13 +534,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 // MARK: - Collection View Delegate
 extension LibraryViewController {
 
-    func openInfoView(manga: MangaInfo) {
-        navigationController?.pushViewController(
-            MangaViewController(manga: manga.toManga(), chapters: []),
-            animated: true
-        )
-    }
-
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard
             let info = dataSource.itemIdentifier(for: indexPath)
@@ -571,7 +564,7 @@ extension LibraryViewController {
                 }
             }
         } else {
-            openInfoView(manga: info)
+            super.collectionView(collectionView, didSelectItemAt: indexPath)
         }
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
@@ -598,7 +591,7 @@ extension LibraryViewController {
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
                     image: UIImage(systemName: "info.circle")
                 ) { _ in
-                    self.openInfoView(manga: manga)
+                    super.collectionView(collectionView, didSelectItemAt: indexPath) // open info view
                 })
             }
 
