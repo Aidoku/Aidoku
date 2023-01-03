@@ -81,7 +81,11 @@ class AniListTracker: OAuthTracker {
 
     func register(trackId: String) async {
         guard let id = Int(trackId) else { return }
-        await api.update(media: id, update: TrackUpdate(status: .reading))
+        // set status to reading if status doesn't already exist
+        let state = await api.getState(media: id)
+        if state?.status == nil {
+            await api.update(media: id, update: TrackUpdate(status: .planning))
+        }
     }
 
     func update(trackId: String, update: TrackUpdate) async {
