@@ -126,7 +126,7 @@ final class CoreDataManager {
                     let chapterObject = self.getChapter(
                         sourceId: historyObject.sourceId,
                         mangaId: historyObject.mangaId,
-                        id: historyObject.chapterId,
+                        chapterId: historyObject.chapterId,
                         context: context
                     )
                 else { continue }

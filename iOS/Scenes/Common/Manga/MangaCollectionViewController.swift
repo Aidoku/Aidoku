@@ -118,10 +118,12 @@ extension MangaCollectionViewController {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
-        navigationController?.pushViewController(
-            MangaViewController(manga: info.toManga(), chapters: []),
-            animated: true
-        )
+        let vc = MangaViewController(manga: info.toManga())
+        // preload cover image
+        if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+            vc.headerView.coverImageView.image = cell.imageView.image
+        }
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

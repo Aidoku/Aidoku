@@ -7,19 +7,19 @@
 
 import Foundation
 
-struct Chapter: KVCObject, Identifiable, Hashable {
+struct Chapter: Identifiable {
 
     let sourceId: String
     let id: String
-    let mangaId: String
-    let title: String?
-    let scanlator: String?
-    let url: String?
-    let lang: String
-    let chapterNum: Float?
-    let volumeNum: Float?
-    let dateUploaded: Date?
-    let sourceOrder: Int
+    var mangaId: String
+    var title: String?
+    var scanlator: String?
+    var url: String?
+    var lang: String
+    var chapterNum: Float?
+    var volumeNum: Float?
+    var dateUploaded: Date?
+    var sourceOrder: Int
 
     init(
         sourceId: String,
@@ -46,7 +46,9 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         self.dateUploaded = dateUploaded
         self.sourceOrder = sourceOrder
     }
+}
 
+extension Chapter: KVCObject {
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id
@@ -57,5 +59,19 @@ struct Chapter: KVCObject, Identifiable, Hashable {
         case "volumeNum": return volumeNum
         default: return nil
         }
+    }
+}
+
+extension Chapter: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(sourceId)
+        hasher.combine(mangaId)
+        hasher.combine(id)
+    }
+}
+
+extension Chapter: Equatable {
+    static func == (lhs: Chapter, rhs: Chapter) -> Bool {
+        lhs.hashValue == rhs.hashValue
     }
 }

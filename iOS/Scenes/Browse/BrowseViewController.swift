@@ -223,7 +223,7 @@ extension BrowseViewController {
 // MARK: - Data Source
 extension BrowseViewController {
 
-    enum Section: Int, CaseIterable {
+    enum Section: Int {
 //        case pinned
         case updates
         case installed
@@ -231,8 +231,9 @@ extension BrowseViewController {
     }
 
     private func makeDataSource() -> UITableViewDiffableDataSource<Section, SourceInfo2> {
-        UITableViewDiffableDataSource(tableView: tableView) { tableView, indexPath, info in
+        UITableViewDiffableDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
             guard
+                let self = self,
                 let cell = tableView.dequeueReusableCell(
                     withIdentifier: String(describing: SourceTableViewCell.self)
                 ) as? SourceTableViewCell,

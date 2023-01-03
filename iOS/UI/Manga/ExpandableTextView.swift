@@ -9,7 +9,7 @@ import UIKit
 
 class ExpandableTextView: UIView {
 
-    weak var host: UIViewController?
+    weak var sizeChangeListener: SizeChangeListenerDelegate?
 
     var text: String? {
         get {
@@ -26,14 +26,15 @@ class ExpandableTextView: UIView {
                 UIView.transition(with: self, duration: 0.3, options: .transitionCrossDissolve) {
                     self.textLabel.numberOfLines = 0
                     self.invalidateIntrinsicContentSize()
-                    self.host?.view.setNeedsLayout()
+//                    self.host?.view.setNeedsLayout()
                     self.moreButton.alpha = 0
                     self.fadeView.alpha = 0
+                    self.sizeChangeListener?.sizeChanged(self.bounds.size)
                 }
             } else {
                 textLabel.numberOfLines = 4
                 invalidateIntrinsicContentSize()
-                host?.view.setNeedsLayout()
+                self.sizeChangeListener?.sizeChanged(self.bounds.size)
                 moreButton.alpha = 1
                 fadeView.alpha = 1
             }
@@ -106,6 +107,8 @@ class ExpandableTextView: UIView {
         fadeView.bottomAnchor.constraint(equalTo: moreButton.bottomAnchor).isActive = true
         fadeView.heightAnchor.constraint(equalTo: moreButton.heightAnchor).isActive = true
         fadeView.widthAnchor.constraint(equalToConstant: 20).isActive = true
+
+        heightAnchor.constraint(equalTo: textLabel.heightAnchor).isActive = true
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

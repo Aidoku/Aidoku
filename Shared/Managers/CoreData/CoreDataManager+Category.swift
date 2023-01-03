@@ -60,9 +60,7 @@ extension CoreDataManager {
 
     /// Create a category object.
     @discardableResult
-    func createCategory(title: String, context: NSManagedObjectContext? = nil) -> CategoryObject? {
-        guard hasCategory(title: title, context: context) else { return nil }
-
+    func createCategory(title: String, context: NSManagedObjectContext? = nil) -> CategoryObject {
         let context = context ?? self.context
 
         let request = CategoryObject.fetchRequest()
@@ -107,6 +105,24 @@ extension CoreDataManager {
                 try context.save()
             } catch {
                 LogManager.logger.error("CoreDataManager.removeCategoriesFromManga: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func setMangaCategories(sourceId: String, mangaId: String, categories: [String]) async {
+        await container.performBackgroundTask { context in
+            guard let libraryObject = self.getLibraryManga(
+                sourceId: sourceId,
+                mangaId: mangaId,
+                context: context
+            ) else { return }
+            libraryObject.categories = NSSet(array: categories.compactMap {
+                self.getCategory(title: $0, context: context)
+            })
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.setMangaCategories: \(error.localizedDescription)")
             }
         }
     }
