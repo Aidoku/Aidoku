@@ -183,7 +183,7 @@ class ReaderViewController: BaseObservingViewController {
                     chapterId: chapter.id
                 )
                 NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
-                NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+                NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: chapter)
             }
         }
     }
