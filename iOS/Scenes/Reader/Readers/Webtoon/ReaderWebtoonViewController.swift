@@ -465,11 +465,13 @@ extension ReaderWebtoonViewController {
                 let pageCountAbove = pages[0..<2].reduce(0, { result, pages in
                     result + pages.count + 1
                 })
-                collectionView.scrollToItem(
-                    at: IndexPath(row: pageCountAbove, section: 0),
-                    at: .bottom,
-                    animated: false
-                )
+                if snapshot.itemIdentifiers(inSection: 0).count > pageCountAbove {
+                    collectionView.scrollToItem(
+                        at: IndexPath(row: pageCountAbove, section: 0),
+                        at: .bottom,
+                        animated: false
+                    )
+                }
                 collectionView.setContentOffset(
                     CGPoint(x: collectionView.contentOffset.x, y: collectionView.contentOffset.y - previousOffset),
                     animated: false
