@@ -1,6 +1,7 @@
 disabled_rules:
   - todo
   - identifier_name
+  - opening_brace
 opt_in_rules:
   - closure_end_indentation
   - closure_spacing

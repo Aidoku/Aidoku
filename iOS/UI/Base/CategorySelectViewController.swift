@@ -10,16 +10,18 @@ import UIKit
 class CategorySelectViewController: UITableViewController {
 
     let manga: Manga
+    var chapterList: [Chapter]
 
     var categories: [String] = []
     var selectedCategories: [String] = []
 
     var inLibrary: Bool {
-        DataManager.shared.libraryContains(manga: manga)
+        CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
     }
 
-    init(manga: Manga) {
+    init(manga: Manga, chapterList: [Chapter] = []) {
         self.manga = manga
+        self.chapterList = chapterList
         super.init(style: .plain)
     }
 
@@ -37,9 +39,10 @@ class CategorySelectViewController: UITableViewController {
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
-        categories = DataManager.shared.getCategories()
+        categories = CoreDataManager.shared.getCategories().compactMap { $0.title }
         if inLibrary {
-            selectedCategories = DataManager.shared.getCategories(for: manga)
+            selectedCategories = CoreDataManager.shared.getCategories(sourceId: manga.sourceId, mangaId: manga.id)
+                .compactMap { $0.title }
         }
     }
 
@@ -49,22 +52,18 @@ class CategorySelectViewController: UITableViewController {
 
     @objc func addCategory() {
         close()
-        Task.detached {
-            if await self.inLibrary {
-                await DataManager.shared.setMangaCategories(
-                    manga: self.manga, categories: self.selectedCategories, context: DataManager.shared.backgroundContext
-                )
-                NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
-            } else {
-                DataManager.shared.addToLibrary(manga: self.manga, context: DataManager.shared.backgroundContext) {
-                    Task {
-                        await DataManager.shared.setMangaCategories(
-                            manga: self.manga, categories: self.selectedCategories, context: DataManager.shared.backgroundContext
-                        )
-                        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
-                    }
-                }
+        Task {
+            if !inLibrary {
+                await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapterList)
+                NotificationCenter.default.post(name: NSNotification.Name("addToLibrary"), object: self.manga)
+                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
+            await CoreDataManager.shared.setMangaCategories(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                categories: selectedCategories
+            )
+            NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
         }
     }
 }

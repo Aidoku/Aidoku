@@ -24,8 +24,8 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND chapterId == %@",
-            sourceId, mangaId, chapterId
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
@@ -41,11 +41,51 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND chapterId == %@",
-            sourceId, mangaId, chapterId
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
+    }
+
+    /// Removes a HistoryObject in the background.
+    func removeHistory(sourceId: String, mangaId: String, chapterId: String) async {
+        await container.performBackgroundTask { context in
+            do {
+                if let object = self.getHistory(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    chapterId: chapterId,
+                    context: context
+                ) {
+                    context.delete(object)
+                    try context.save()
+                }
+            } catch {
+                LogManager.logger.error("CoreDataManager.removeHistory: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Removes history linked to the given chapters
+    func removeHistory(chapters: [Chapter]) async {
+        await container.performBackgroundTask { context in
+            do {
+                for chapter in chapters {
+                    if let object = self.getHistory(
+                        sourceId: chapter.sourceId,
+                        mangaId: chapter.mangaId,
+                        chapterId: chapter.id,
+                        context: context
+                    ) {
+                        context.delete(object)
+                    }
+                }
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.removeHistory(chapters:): \(error.localizedDescription)")
+            }
+        }
     }
 
     func getOrCreateHistory(
@@ -69,7 +109,7 @@ extension CoreDataManager {
         if let chapterObject = self.getChapter(
             sourceId: sourceId,
             mangaId: mangaId,
-            id: chapterId,
+            chapterId: chapterId,
             context: context
         ) {
             historyObject.chapter = chapterObject
@@ -86,19 +126,19 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@",
-            sourceId, mangaId
+            format: "mangaId == %@ AND sourceId == %@",
+            mangaId, sourceId
         )
         return (try? context.fetch(request)) ?? []
     }
 
     // format: [chapterId: (page (-1 if completed), read date)]
-    func getReadingHistory(sourceId: String, mangaId: String) async -> [String: (Int, Int)] {
+    func getReadingHistory(sourceId: String, mangaId: String) async -> [String: (page: Int, date: Int)] {
         await container.performBackgroundTask { context in
             let objects = self.getHistoryForManga(sourceId: sourceId, mangaId: mangaId, context: context)
 
             var needsSave = false
-            var historyDict: [String: (Int, Int)] = [:]
+            var historyDict: [String: (page: Int, date: Int)] = [:]
 
             for history in objects {
                 // remove duplicate read history objects for the same chapter
@@ -109,7 +149,7 @@ extension CoreDataManager {
                 }
                 historyDict[history.chapterId] = (
                     history.completed ? -1 : Int(history.progress),
-                    Int((history.dateRead ?? Date.distantPast).timeIntervalSince1970)
+                    Int(history.dateRead?.timeIntervalSince1970 ?? -1)
                 )
             }
 
@@ -146,9 +186,11 @@ extension CoreDataManager {
         }
     }
 
+    /// Marks chapter as completed.
     func setCompleted(
         _ completed: Bool = true,
         progress: Int? = nil,
+        date: Date = Date(),
         sourceId: String,
         mangaId: String,
         chapterId: String
@@ -165,11 +207,33 @@ extension CoreDataManager {
             if let progress = progress {
                 historyObject.progress = Int16(progress)
             }
-            historyObject.dateRead = Date()
+            historyObject.dateRead = date
             do {
                 try context.save()
             } catch {
                 LogManager.logger.error("CoreDataManager.setCompleted: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Marks chapters as completed.
+    func setCompleted(chapters: [Chapter], date: Date = Date()) async {
+        await container.performBackgroundTask { context in
+            for chapter in chapters {
+                let historyObject = self.getOrCreateHistory(
+                    sourceId: chapter.sourceId,
+                    mangaId: chapter.mangaId,
+                    chapterId: chapter.id,
+                    context: context
+                )
+                guard !historyObject.completed else { continue }
+                historyObject.completed = true
+                historyObject.dateRead = date
+            }
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.setCompleted(chapters:): \(error.localizedDescription)")
             }
         }
     }

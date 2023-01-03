@@ -15,12 +15,17 @@ extension CoreDataManager {
     }
 
     /// Get a particular chapter object.
-    func getChapter(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> ChapterObject? {
+    func getChapter(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> ChapterObject? {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND id == %@",
-            sourceId, mangaId, id
+            format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
+            chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
@@ -31,8 +36,8 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@",
-            sourceId, mangaId
+            format: "mangaId == %@ AND sourceId == %@",
+            mangaId, sourceId
         )
         request.sortDescriptors = [NSSortDescriptor(key: "sourceOrder", ascending: true)]
         return (try? context.fetch(request)) ?? []
@@ -43,18 +48,6 @@ extension CoreDataManager {
             let objects = self.getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
             return objects.map { $0.toChapter() }
         }
-    }
-
-    /// Check if a chapter exists in the data store.
-    func hasChapter(sourceId: String, mangaId: String, id: String, context: NSManagedObjectContext? = nil) -> Bool {
-        let context = context ?? self.context
-        let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND id == %@",
-            sourceId, mangaId, id
-        )
-        request.fetchLimit = 1
-        return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Create a chapter object.
@@ -84,6 +77,37 @@ extension CoreDataManager {
         return object
     }
 
+    /// Check if a chapter exists in the data store.
+    func hasChapter(sourceId: String, mangaId: String, chapterId: String, context: NSManagedObjectContext? = nil) -> Bool {
+        let context = context ?? self.context
+        let request = ChapterObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
+            chapterId, mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
+    }
+
+    /// Removes a ChapterObject in the background.
+    func removeChapter(sourceId: String, mangaId: String, chapterId: String) async {
+        await container.performBackgroundTask { context in
+            do {
+                if let object = self.getChapter(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    chapterId: chapterId,
+                    context: context
+                ) {
+                    context.delete(object)
+                    try context.save()
+                }
+            } catch {
+                LogManager.logger.error("CoreDataManager.removeChapter: \(error.localizedDescription)")
+            }
+        }
+    }
+
     /// Set a list of chapters for a manga.
     func setChapters(_ chapters: [Chapter], sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
         let context = context ?? self.context
@@ -107,7 +131,7 @@ extension CoreDataManager {
         for chapter in newChapters where !hasChapter(
             sourceId: sourceId,
             mangaId: mangaId,
-            id: chapter.id,
+            chapterId: chapter.id,
             context: context
         ) {
             createChapter(chapter, mangaObject: manga, context: context)
