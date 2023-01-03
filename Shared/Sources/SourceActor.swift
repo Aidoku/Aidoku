@@ -72,7 +72,7 @@ actor SourceActor {
 
         source.globalStore.chapterCounter = 0
 
-        var chapters = source.globalStore.readStdValue(chapterListDescriptor) as? [Chapter] ?? []
+        let chapters = source.globalStore.readStdValue(chapterListDescriptor) as? [Chapter] ?? []
         source.globalStore.removeStdValue(chapterListDescriptor)
         source.globalStore.removeStdValue(mangaDescriptor)
 
@@ -132,7 +132,7 @@ actor SourceActor {
         source.globalStore.removeStdValue(deepLinkDescriptor)
         source.globalStore.removeStdValue(urlDescriptor)
 
-        guard var deepLink = deepLink else { throw SourceError.missingValue }
+        guard let deepLink = deepLink else { throw SourceError.missingValue }
 
         if let manga = deepLink.manga {
             deepLink.chapter?.mangaId = manga.id
