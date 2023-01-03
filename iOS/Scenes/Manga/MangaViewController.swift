@@ -224,6 +224,8 @@ class MangaViewController: BaseTableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        headerView.scaleTitle()
+
         // fix tab bar background turning clear when presenting
         if #available(iOS 15.0, *) {
             storedTabBarAppearance = navigationController?.tabBarController?.tabBar.scrollEdgeAppearance
@@ -248,6 +250,13 @@ class MangaViewController: BaseTableViewController {
         if tableView.tableHeaderView?.subviews.first is MangaDetailHeaderView {
             tableView.tableHeaderView?.layoutIfNeeded()
             tableView.tableHeaderView = tableView.tableHeaderView // needed in order to update table view offset
+        }
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate { _ in
+            self.headerView.scaleTitle()
         }
     }
 

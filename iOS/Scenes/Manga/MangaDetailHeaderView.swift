@@ -281,7 +281,7 @@ class MangaDetailHeaderView: UIView {
     func configure(with manga: Manga) {
         self.manga = manga
 
-        titleLabel.text = manga.title
+        titleLabel.text = manga.title ?? NSLocalizedString("UNTITLED", comment: "")
         authorLabel.text = manga.author
         descriptionLabel.text = manga.description
         descriptionLabel.alpha = manga.description == nil ? 0 : 1 // for animating in
@@ -330,6 +330,7 @@ class MangaDetailHeaderView: UIView {
         load(tags: manga.tags ?? [])
 
         updateReadButtonTitle()
+        scaleTitle()
 
         UIView.animate(withDuration: 0.3) {
             self.authorLabel.isHidden = manga.author == nil
@@ -337,12 +338,41 @@ class MangaDetailHeaderView: UIView {
             self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe
         }
 
-        // TODO: animate description load
         if let url = manga.coverUrl {
             Task {
                 await setCover(url: url, sourceId: manga.sourceId)
             }
         }
+    }
+
+    func scaleTitle() {
+        if superview != nil {
+            layoutIfNeeded()
+        }
+
+        guard titleLabel.bounds.size.height > 0 else { return }
+
+        // check title label size
+        let titleSize: CGSize = ((titleLabel.text ?? "") as NSString).boundingRect(
+            with: CGSize(width: titleLabel.frame.size.width, height: .greatestFiniteMagnitude),
+            options: .usesLineFragmentOrigin,
+            attributes: [.font: titleLabel.font ?? .systemFont(ofSize: 22, weight: .semibold)],
+            context: nil
+        ).size
+
+        let scaleFactor: CGFloat
+        if titleSize.height > titleLabel.bounds.size.height { // text is truncated, resize
+            scaleFactor = max(titleLabel.bounds.size.height / titleSize.height, 0.75)
+        } else {
+            scaleFactor = 1
+        }
+
+        titleLabel.numberOfLines = Int((3 / scaleFactor).rounded(.up))
+        titleLabel.font = .systemFont(ofSize: 22 * scaleFactor, weight: .semibold)
+
+        authorLabel.font = .systemFont(ofSize: 16 * scaleFactor, weight: .regular)
+
+        setNeedsLayout()
     }
 
     private func setCover(url: URL, sourceId: String? = nil) async {
