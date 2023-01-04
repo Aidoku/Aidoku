@@ -70,6 +70,7 @@ struct ReaderChapterListView: View {
                 }
             }
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     func displayString(for chapter: Chapter) -> String {
