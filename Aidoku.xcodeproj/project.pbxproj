@@ -55,6 +55,7 @@
 		FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CDA288AEB0400B67BA9 /* OAuthResponse.swift */; };
 		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB11EDF02784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
+		FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482D277CE18D0056D02C /* AidokuApp.swift */; };
@@ -328,6 +329,7 @@
 		FB0E1CD7288AEAF700B67BA9 /* OAuthClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthClient.swift; sourceTree = "<group>"; };
 		FB0E1CDA288AEB0400B67BA9 /* OAuthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthResponse.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
+		FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCategoryViewController.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
 		FB1B4830277CE1920056D02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -584,6 +586,7 @@
 			children = (
 				FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */,
 				FBE40E2E288EDDB700CCA4DC /* LibraryViewModel.swift */,
+				FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -1435,6 +1438,7 @@
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FB51147929627A5600E9163F /* ChapterCellConfiguration.swift in Sources */,
 				FB0CAA6A28A9BB9C0024561A /* ReaderViewController.swift in Sources */,
+				FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */,
 				FB0E1CCE288AE9B000B67BA9 /* AniListTracker.swift in Sources */,
 				FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */,
 				FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */,

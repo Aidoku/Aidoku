@@ -44,8 +44,9 @@ extension BaseViewController {
 
     /// Shows an action sheet to confirm an action before proceeding.
     func confirmAction(
-        title: String,
-        message: String,
+        title: String? = nil,
+        message: String? = nil,
+        actions: [UIAlertAction] = [],
         continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
         destructive: Bool = true,
         proceed: @escaping () -> Void
@@ -56,7 +57,15 @@ extension BaseViewController {
             preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
         )
 
-        let action = UIAlertAction(title: continueActionName, style: destructive ? .destructive : .default) { _ in proceed() }
+        for action in actions {
+            alertView.addAction(action)
+        }
+        let action = UIAlertAction(
+            title: continueActionName,
+            style: destructive ? .destructive : .default
+        ) { _ in
+            proceed()
+        }
         alertView.addAction(action)
 
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))

@@ -52,6 +52,50 @@ class MangaGridCell: UICollectionViewCell {
 
     private var url: String?
     private var imageTask: ImageTask?
+    var isEditing = false
+
+    // shadow shown when in selection mode
+    private lazy var shadowOverlayView: UIView = {
+        let shadowOverlayView = UIView()
+        shadowOverlayView.alpha = 0
+        shadowOverlayView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+        shadowOverlayView.layer.cornerRadius = layer.cornerRadius
+        shadowOverlayView.translatesAutoresizingMaskIntoConstraints = false
+        return shadowOverlayView
+    }()
+
+    // selection circle in bottom right
+    private lazy var selectionView: UIView = {
+        let selectionView = UIView()
+        selectionView.frame.size = CGSize(width: 24, height: 24)
+        selectionView.layer.cornerRadius = 12
+        selectionView.layer.borderColor = UIColor.white.cgColor
+        selectionView.layer.borderWidth = 2
+        selectionView.translatesAutoresizingMaskIntoConstraints = false
+
+        let innerCircleView = UIView()
+        innerCircleView.frame = CGRect(x: 3, y: 3, width: 18, height: 18)
+        innerCircleView.backgroundColor = .white
+        innerCircleView.layer.cornerRadius = 10
+        selectionView.addSubview(innerCircleView)
+
+        selectionView.layer.shadowOpacity = 0
+        selectionView.layer.shadowOffset = .zero
+        selectionView.layer.shadowRadius = 0
+
+        return selectionView
+    }()
+
+    // checkmark icon shown in selection circle when selected
+    private lazy var checkmarkImageView: UIImageView = {
+        let checkmarkImageView = UIImageView()
+        checkmarkImageView.image = UIImage(
+            systemName: "checkmark.circle.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 21)
+        )
+        checkmarkImageView.translatesAutoresizingMaskIntoConstraints = false
+        return checkmarkImageView
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -70,6 +114,7 @@ class MangaGridCell: UICollectionViewCell {
         layer.borderWidth = 1
         layer.borderColor = UIColor.quaternarySystemFill.cgColor
 
+        imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
@@ -117,40 +162,62 @@ class MangaGridCell: UICollectionViewCell {
         highlightView.layer.cornerRadius = layer.cornerRadius
         highlightView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(highlightView)
+
+        shadowOverlayView.alpha = 0
+        selectionView.alpha = 0
+        checkmarkImageView.isHidden = true
+        addSubview(shadowOverlayView)
+        addSubview(selectionView)
+        selectionView.addSubview(checkmarkImageView)
     }
 
     func constrain() {
-        imageView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        imageView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        imageView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        imageView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: topAnchor),
+            imageView.leftAnchor.constraint(equalTo: leftAnchor),
+            imageView.rightAnchor.constraint(equalTo: rightAnchor),
+            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-        overlayView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        overlayView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        overlayView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        overlayView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+            overlayView.topAnchor.constraint(equalTo: topAnchor),
+            overlayView.leftAnchor.constraint(equalTo: leftAnchor),
+            overlayView.rightAnchor.constraint(equalTo: rightAnchor),
+            overlayView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-        titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8).isActive = true
-        titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8).isActive = true
-        titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
 
-        badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
-        badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5).isActive = true
-        badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10).isActive = true
-        badgeView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+            badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
+            badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+            badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10),
+            badgeView.heightAnchor.constraint(equalToConstant: 20),
 
-        badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor).isActive = true
-        badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor).isActive = true
+            badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor),
+            badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor),
 
-        bookmarkView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8).isActive = true
-        bookmarkView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        bookmarkView.widthAnchor.constraint(equalToConstant: 17).isActive = true
-        bookmarkView.heightAnchor.constraint(equalToConstant: 27).isActive = true
+            bookmarkView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            bookmarkView.topAnchor.constraint(equalTo: topAnchor),
+            bookmarkView.widthAnchor.constraint(equalToConstant: 17),
+            bookmarkView.heightAnchor.constraint(equalToConstant: 27),
 
-        highlightView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        highlightView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        highlightView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        highlightView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+            highlightView.topAnchor.constraint(equalTo: topAnchor),
+            highlightView.leftAnchor.constraint(equalTo: leftAnchor),
+            highlightView.rightAnchor.constraint(equalTo: rightAnchor),
+            highlightView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            shadowOverlayView.topAnchor.constraint(equalTo: topAnchor),
+            shadowOverlayView.leftAnchor.constraint(equalTo: leftAnchor),
+            shadowOverlayView.rightAnchor.constraint(equalTo: rightAnchor),
+            shadowOverlayView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            selectionView.rightAnchor.constraint(equalTo: rightAnchor, constant: -10),
+            selectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            selectionView.widthAnchor.constraint(equalToConstant: selectionView.frame.width),
+            selectionView.heightAnchor.constraint(equalToConstant: selectionView.frame.height),
+
+            checkmarkImageView.centerXAnchor.constraint(equalTo: selectionView.centerXAnchor),
+            checkmarkImageView.centerYAnchor.constraint(equalTo: selectionView.centerYAnchor)
+        ])
     }
 
     override func layoutSubviews() {
@@ -159,21 +226,18 @@ class MangaGridCell: UICollectionViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        imageView.image = UIImage(named: "MangaPlaceholder")
         imageTask?.cancel()
         imageTask = nil
-        imageView.image = UIImage(named: "MangaPlaceholder")
     }
 
     func loadImage(url: URL?) async {
         guard let url = url else { return }
 
-        if imageTask != nil {
-            imageTask?.cancel()
-            imageTask = nil
-        }
         self.url = url.absoluteString
 
         if imageTask != nil && imageTask?.state == .running {
+            return
         }
 
         var urlRequest = URLRequest(url: url)
@@ -197,10 +261,6 @@ class MangaGridCell: UICollectionViewCell {
             processors: [DownsampleProcessor(width: bounds.width)]
         )
 
-        do {
-            let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
-            let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
-            Task { @MainActor in
         if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
             imageView.image = image.image
         } else {
@@ -221,11 +281,46 @@ class MangaGridCell: UICollectionViewCell {
             self.highlightView.alpha = 0
         }
     }
+
+    func setEditing(_ editing: Bool, animated: Bool = true) {
+        isEditing = editing
+        if editing {
+            checkmarkImageView.isHidden = true
+        }
+        UIView.animate(withDuration: animated ? 0.3 : 0) {
+            self.shadowOverlayView.alpha = editing ? 1 : 0
+            self.selectionView.alpha = editing ? 1 : 0
+        }
+    }
+
+    func select(animated: Bool = true) {
+        guard isEditing else { return }
+        checkmarkImageView.isHidden = false
+        UIView.animate(withDuration: animated ? 0.3 : 0) {
+            self.shadowOverlayView.alpha = 0
+            self.selectionView.layer.shadowOpacity = 1
+        }
+    }
+
+    func deselect(animated: Bool = true) {
+        guard isEditing else { return }
+        checkmarkImageView.isHidden = true
+        UIView.animate(withDuration: animated ? 0.3 : 0) {
+            self.shadowOverlayView.alpha = 1
+            self.selectionView.layer.shadowOpacity = 0
+        }
+    }
 }
 
 // MARK: - Nuke Delegate
 extension MangaGridCell: ImageTaskDelegate {
 
+    func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {
+        switch result {
+        case .success(let response):
+            if task.request.imageId != url {
+                return
+            }
             Task { @MainActor in
                 UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
                     self.imageView.image = response.image
@@ -241,6 +336,7 @@ extension MangaGridCell: ImageTaskDelegate {
             imageTask = task
         }
     }
+
     func imageTaskDidCancel(_ task: ImageTask) {
         Task { @MainActor in
             imageTask = nil

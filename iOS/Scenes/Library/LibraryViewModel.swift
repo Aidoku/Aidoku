@@ -288,25 +288,21 @@ class LibraryViewModel {
         }
     }
 
-    func removeFromLibrary(manga: MangaInfo) {
+    func removeFromLibrary(manga: MangaInfo) async {
         pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
-        Task {
-            await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
-        }
+        await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
     }
 
-    func removeFromCurrentCategory(manga: MangaInfo) {
+    func removeFromCurrentCategory(manga: MangaInfo) async {
         guard let currentCategory = currentCategory else { return }
         pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
-        Task {
-            await CoreDataManager.shared.removeCategoriesFromManga(
-                sourceId: manga.sourceId,
-                mangaId: manga.mangaId,
-                categories: [currentCategory]
-            )
-        }
+        await CoreDataManager.shared.removeCategoriesFromManga(
+            sourceId: manga.sourceId,
+            mangaId: manga.mangaId,
+            categories: [currentCategory]
+        )
     }
 
     func shouldUpdateLibrary() -> Bool {
