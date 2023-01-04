@@ -301,6 +301,14 @@ extension ReaderWebtoonViewController {
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
         })
     }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        self.collectionView(collectionView, contextMenuConfigurationForItemsAt: [indexPath], point: point)
+    }
 }
 
 // MARK: - Infinite Scroll

@@ -358,6 +358,14 @@ extension SourceViewController {
             return UIMenu(title: "", children: actions)
         }
     }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        self.collectionView(collectionView, contextMenuConfigurationForItemsAt: [indexPath], point: point)
+    }
 }
 
 // MARK: - Data Source

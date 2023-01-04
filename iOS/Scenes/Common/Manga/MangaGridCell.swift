@@ -50,6 +50,7 @@ class MangaGridCell: UICollectionViewCell {
     private let bookmarkView = UIImageView()
     private let highlightView = UIView()
 
+    private var url: String?
     private var imageTask: ImageTask?
 
     override init(frame: CGRect) {
@@ -170,9 +171,9 @@ class MangaGridCell: UICollectionViewCell {
             imageTask?.cancel()
             imageTask = nil
         }
+        self.url = url.absoluteString
 
-        Task { @MainActor in
-            imageView.image = UIImage(named: "MangaPlaceholder")
+        if imageTask != nil && imageTask?.state == .running {
         }
 
         var urlRequest = URLRequest(url: url)
@@ -200,16 +201,14 @@ class MangaGridCell: UICollectionViewCell {
             let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
             let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
             Task { @MainActor in
-                if wasCached {
-                    self.imageView.image = image
-                } else {
-                    UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
-                        self.imageView.image = image
-                    }
-                }
+        if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
+            imageView.image = image.image
+        } else {
+            do {
+                _ = try await ImagePipeline.shared.image(for: request, delegate: self).image
+            } catch {
+                imageTask = nil
             }
-        } catch {
-            imageTask = nil
         }
     }
 
@@ -227,7 +226,24 @@ class MangaGridCell: UICollectionViewCell {
 // MARK: - Nuke Delegate
 extension MangaGridCell: ImageTaskDelegate {
 
+            Task { @MainActor in
+                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    self.imageView.image = response.image
+                }
+            }
+        case .failure:
+            break
+        }
+    }
+
     func imageTaskCreated(_ task: ImageTask) {
-        imageTask = task
+        Task { @MainActor in
+            imageTask = task
+        }
+    }
+    func imageTaskDidCancel(_ task: ImageTask) {
+        Task { @MainActor in
+            imageTask = nil
+        }
     }
 }
