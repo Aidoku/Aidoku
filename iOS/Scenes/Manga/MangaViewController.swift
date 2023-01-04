@@ -645,6 +645,7 @@ extension MangaViewController {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard !tableView.isEditing else {
+            updateNavbarButtons()
             updateToolbar()
             return
         }
@@ -656,6 +657,7 @@ extension MangaViewController {
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         if tableView.isEditing {
+            updateNavbarButtons()
             updateToolbar()
         }
     }
@@ -897,9 +899,15 @@ extension MangaViewController {
 
     func reloadCells(for chapters: [Chapter]) {
         var snapshot = dataSource.snapshot()
+        guard !snapshot.itemIdentifiers.isEmpty else { return }
+        var chapters = chapters.filter { snapshot.itemIdentifiers.contains($0) } // filter out chapters not in data source
         if #available(iOS 15.0, *) {
             snapshot.reconfigureItems(chapters)
         } else {
+            // swap chapters with chapters in data store (not doing this results in "invalid item identifier" crash)
+            chapters = chapters.compactMap { chapter in
+                snapshot.itemIdentifiers.first(where: { $0 == chapter })
+            }
             snapshot.reloadItems(chapters)
         }
         dataSource.apply(snapshot)

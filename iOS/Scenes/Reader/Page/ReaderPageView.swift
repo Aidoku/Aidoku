@@ -217,7 +217,9 @@ class ReaderPageView: UIView {
 extension ReaderPageView: ImageTaskDelegate {
 
     func imageTaskCreated(_ task: ImageTask) {
-        imageTask = task
+        Task { @MainActor in
+            imageTask = task
+        }
     }
 
     func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {

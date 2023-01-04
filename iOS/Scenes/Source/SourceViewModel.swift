@@ -44,6 +44,7 @@ class SourceViewModel {
         }
     }
 
+    @MainActor
     func loadNextMangaPage() async {
         guard let source = source else { return }
         if currentPage == nil {
@@ -68,6 +69,7 @@ class SourceViewModel {
         manga.append(contentsOf: mangaInfo)
     }
 
+    @MainActor
     func search(titleQuery: String?) async -> Bool {
         manga = []
         currentPage = nil
