@@ -17,14 +17,20 @@ class BrowseViewModel {
     private var unfilteredExternalSources: [ExternalSourceInfo] = []
 
     // stored sources when searching
+    private var query: String?
     private var storedUpdatesSources: [SourceInfo2]?
     private var storedInstalledSources: [SourceInfo2]?
     private var storedExternalSources: [SourceInfo2]?
 
     // load installed sources
     func loadInstalledSources() {
-        storedInstalledSources = nil
-        installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+        let installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+        if storedInstalledSources != nil {
+            storedInstalledSources = installedSources
+            search(query: query)
+        } else {
+            self.installedSources = installedSources
+        }
     }
 
     // load external source lists
@@ -53,11 +59,9 @@ class BrowseViewModel {
         let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
 
-        storedUpdatesSources = nil
-        storedExternalSources = nil
-        updatesSources = []
+        var updatesSources: [SourceInfo2] = []
 
-        externalSources = unfilteredExternalSources.compactMap { info in
+        var externalSources: [SourceInfo2] = unfilteredExternalSources.compactMap { info in
             var update = false
             // strip installed sources from external list
             if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
@@ -105,6 +109,15 @@ class BrowseViewModel {
             let rhs = SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
             return lhs < rhs
         }
+
+        if storedExternalSources != nil {
+            storedUpdatesSources = updatesSources
+            storedExternalSources = externalSources
+            search(query: query)
+        } else {
+            self.updatesSources = updatesSources
+            self.externalSources = externalSources
+        }
     }
 
     // convert Source to SourceInfo
@@ -136,6 +149,7 @@ class BrowseViewModel {
 
     // filter sources by search query
     func search(query: String?) {
+        self.query = query
         if let query = query?.lowercased(), !query.isEmpty {
             // store full source arrays
             if storedUpdatesSources == nil {

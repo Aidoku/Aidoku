@@ -44,11 +44,12 @@ class SourceViewModel {
         }
     }
 
-    @MainActor
     func loadNextMangaPage() async {
         guard let source = source else { return }
         if currentPage == nil {
-            manga = []
+            await MainActor.run {
+                manga = []
+            }
         }
         let page = (currentPage ?? 0) + 1
         let result: MangaPageResult?
@@ -63,13 +64,14 @@ class SourceViewModel {
             // load regular manga list
             result = try? await source.getMangaList(filters: selectedFilters.filters, page: page)
         }
-        currentPage = page
-        hasMore = result?.hasNextPage ?? false
         let mangaInfo = result?.manga.map { $0.toInfo() } ?? []
-        manga.append(contentsOf: mangaInfo)
+        await MainActor.run {
+            currentPage = page
+            hasMore = result?.hasNextPage ?? false
+            manga.append(contentsOf: mangaInfo)
+        }
     }
 
-    @MainActor
     func search(titleQuery: String?) async -> Bool {
         manga = []
         currentPage = nil
@@ -80,7 +82,7 @@ class SourceViewModel {
         }
         let task = Task {
             // delay search in case it's cancelled immediately
-            try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            try await Task.sleep(nanoseconds: 500_000_000) // 500ms
             await loadNextMangaPage()
         }
         searchTask = task

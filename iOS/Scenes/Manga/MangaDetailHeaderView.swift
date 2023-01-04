@@ -327,6 +327,8 @@ class MangaDetailHeaderView: UIView {
         trackerButton.tintColor = isTracking ? .white : tintColor
         trackerButton.backgroundColor = isTracking ? tintColor : .secondarySystemFill
 
+        safariButton.isHidden = manga.url == nil
+
         load(tags: manga.tags ?? [])
 
         updateReadButtonTitle()
