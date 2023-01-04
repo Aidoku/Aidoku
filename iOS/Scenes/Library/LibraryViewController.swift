@@ -36,6 +36,13 @@ class LibraryViewController: MangaCollectionViewController {
         action: #selector(toggleLock)
     )
 
+    private lazy var moreBarButton = UIBarButtonItem(
+        image: UIImage(systemName: "ellipsis"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
+
     private lazy var refreshControl = UIRefreshControl()
 
     private lazy var emptyStackView = EmptyPageStackView()
@@ -74,18 +81,47 @@ class LibraryViewController: MangaCollectionViewController {
         navigationItem.searchController = searchController
 
         // navbar buttons
-        var items: [UIBarButtonItem] = []
-        if viewModel.categories.isEmpty {
-            items.append(filterBarButton)
-        }
-        if viewModel.isCategoryLocked() {
-            items.append(lockBarButton)
-        }
-        navigationItem.rightBarButtonItems = items
+        moreBarButton.menu = UIMenu(children: [
+            UIAction(
+                title: NSLocalizedString("SELECT", comment: ""),
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.setEditing(true, animated: true)
+            }
+        ])
+        updateNavbarItems()
+
+        // toolbar buttons (editing)
+        let deleteButton = UIBarButtonItem(
+            title: nil,
+            style: .plain,
+            target: self,
+            action: #selector(removeSelectedFromLibrary)
+        )
+        deleteButton.image = UIImage(systemName: "trash")
+        deleteButton.tintColor = .red
+
+        let addButton = UIBarButtonItem(
+            title: nil,
+            style: .plain,
+            target: self,
+            action: #selector(addSelectedToCategories)
+        )
+        addButton.image = UIImage(systemName: "folder.badge.plus")
+
+        toolbarItems = [
+            deleteButton,
+            UIBarButtonItem(systemItem: .flexibleSpace),
+            addButton
+        ]
 
         // pull to refresh
         refreshControl.addTarget(self, action: #selector(updateLibraryRefresh(refreshControl:)), for: .valueChanged)
         collectionView.refreshControl = refreshControl
+
+        collectionView.allowsMultipleSelection = true
+        collectionView.allowsSelectionDuringEditing = true
 
         // header view
         let registration = UICollectionView.SupplementaryRegistration<MangaListSelectionHeader>(
@@ -151,24 +187,22 @@ class LibraryViewController: MangaCollectionViewController {
         ])
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
         super.observe()
 
         let checkNavbarDownloadButton: (Notification) -> Void = { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
+                guard !self.isEditing else { return }
                 let shouldShowButton = await DownloadManager.shared.hasQueuedDownloads()
                 let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.downloadBarButton)
                 if shouldShowButton && index == nil {
-                    if self.navigationItem.rightBarButtonItems?.count ?? 0 == 0 {
-                        self.navigationItem.rightBarButtonItems = [self.downloadBarButton]
-                    } else if let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.filterBarButton) {
-                        // left of filter button
-                        self.navigationItem.rightBarButtonItems?.insert(self.downloadBarButton, at: index + 1)
-                    } else {
-                        // rightmost button
-                        self.navigationItem.rightBarButtonItems?.insert(self.downloadBarButton, at: 0)
-                    }
+                    // rightmost button
+                    self.navigationItem.rightBarButtonItems?.insert(
+                        self.downloadBarButton,
+                        at: (self.navigationItem.rightBarButtonItems?.count ?? 1) - 1
+                    )
                 } else if !shouldShowButton, let index = index {
                     self.navigationItem.rightBarButtonItems?.remove(at: index)
                 }
@@ -186,10 +220,17 @@ class LibraryViewController: MangaCollectionViewController {
                 self.viewModel.refreshCategories()
                 self.collectionView.collectionViewLayout = self.makeCollectionViewLayout()
                 self.updateDataSource()
-                if self.viewModel.categories.isEmpty {
-                    self.navigationItem.rightBarButtonItem = self.filterBarButton
-                } else {
-                    self.navigationItem.rightBarButtonItem = nil
+                if !self.isEditing {
+                    self.updateToolbar() // show/hide add category button
+                    let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.downloadBarButton)
+                    if self.viewModel.categories.isEmpty && index == nil {
+                        self.navigationItem.rightBarButtonItems?.insert(
+                            self.filterBarButton,
+                            at: 1
+                        )
+                    } else if let index = index {
+                        self.navigationItem.rightBarButtonItems?.remove(at: index)
+                    }
                 }
                 self.updateHeaderCategories()
             }
@@ -275,15 +316,138 @@ class LibraryViewController: MangaCollectionViewController {
 
     // cells with unread badges
     override func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, _, info in
+        CellRegistration { [weak self] cell, _, info in
             cell.sourceId = info.sourceId
             cell.mangaId = info.mangaId
             cell.title = info.title
             cell.badgeNumber = info.unread
+            cell.setEditing(self?.isEditing ?? false, animated: false)
+            if cell.isSelected {
+                cell.select(animated: false)
+            } else {
+                cell.deselect(animated: false)
+            }
             Task {
                 await cell.loadImage(url: info.coverUrl)
             }
         }
+    }
+
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+//        collectionView.setEditing(editing, animated: animated)
+        updateNavbarItems()
+        updateToolbar()
+        reloadItems()
+    }
+
+    @objc func stopEditing() {
+        setEditing(false, animated: true)
+        deselectAllItems()
+    }
+
+    func updateNavbarItems() {
+        if isEditing {
+            if collectionView.indexPathsForSelectedItems?.count ?? 0 == dataSource.snapshot().itemIdentifiers.count {
+                navigationItem.leftBarButtonItem = UIBarButtonItem(
+                    title: NSLocalizedString("DESELECT_ALL", comment: ""),
+                    style: .plain,
+                    target: self,
+                    action: #selector(deselectAllItems)
+                )
+            } else {
+                navigationItem.leftBarButtonItem = UIBarButtonItem(
+                    title: NSLocalizedString("SELECT_ALL", comment: ""),
+                    style: .plain,
+                    target: self,
+                    action: #selector(selectAllItems)
+                )
+            }
+            navigationItem.rightBarButtonItems = [UIBarButtonItem(
+                barButtonSystemItem: .done,
+                target: self,
+                action: #selector(stopEditing)
+            )]
+        } else {
+            var items: [UIBarButtonItem] = [moreBarButton]
+            if viewModel.categories.isEmpty {
+                items.append(filterBarButton)
+            }
+            if viewModel.isCategoryLocked() {
+                items.append(lockBarButton)
+            }
+            navigationItem.rightBarButtonItems = items
+            navigationItem.leftBarButtonItem = nil
+            Task { @MainActor in
+                if await DownloadManager.shared.hasQueuedDownloads() {
+                    let index = (navigationItem.rightBarButtonItems?.count ?? 1) - 1
+                    guard !(navigationItem.rightBarButtonItems?.contains(downloadBarButton) ?? true) else { return }
+                    navigationItem.rightBarButtonItems?.insert(
+                        downloadBarButton,
+                        at: index
+                    )
+                }
+            }
+        }
+    }
+
+    func updateToolbar() {
+        if isEditing {
+            // show toolbar
+            if navigationController?.isToolbarHidden ?? false {
+                UIView.animate(withDuration: 0.3) {
+                    self.navigationController?.isToolbarHidden = false
+                    self.navigationController?.toolbar.alpha = 1
+                }
+            }
+            // show add to category button if categories exist
+            if viewModel.categories.isEmpty {
+                if #available(iOS 16.0, *) {
+                    toolbarItems?.last?.isHidden = true
+                } else {
+                    toolbarItems?.last?.image = nil
+                }
+            } else {
+                if !self.viewModel.categories.isEmpty {
+                    if #available(iOS 16.0, *) {
+                        toolbarItems?.last?.isHidden = false
+                    } else {
+                        toolbarItems?.last?.image = UIImage(systemName: "folder.badge.plus")
+                    }
+                }
+            }
+            // enable items
+            let selectedItems = collectionView.indexPathsForSelectedItems ?? []
+            toolbarItems?.first?.isEnabled = !selectedItems.isEmpty
+            toolbarItems?.last?.isEnabled = !selectedItems.isEmpty
+        } else if !(self.navigationController?.isToolbarHidden ?? true) {
+            // fade out toolbar
+            UIView.animate(withDuration: 0.3) {
+                self.navigationController?.toolbar.alpha = 0
+            } completion: { _ in
+                self.navigationController?.isToolbarHidden = true
+            }
+        }
+    }
+
+    @objc func selectAllItems() {
+        for item in dataSource.snapshot().itemIdentifiers {
+            if let indexPath = dataSource.indexPath(for: item) {
+                collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
+            }
+        }
+        updateNavbarItems()
+        reloadItems()
+    }
+
+    @objc func deselectAllItems() {
+        for item in dataSource.snapshot().itemIdentifiers {
+            if let indexPath = dataSource.indexPath(for: item) {
+                collectionView.deselectItem(at: indexPath, animated: false)
+            }
+        }
+        updateNavbarItems()
+        reloadItems()
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
@@ -297,6 +461,52 @@ class LibraryViewController: MangaCollectionViewController {
 
     @objc func openDownloadQueue() {
         present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
+    }
+
+    @objc func removeSelectedFromLibrary() {
+        let inCategory = viewModel.currentCategory != nil
+        let selectedItems = collectionView.indexPathsForSelectedItems ?? []
+        confirmAction(
+            actions: inCategory ? [
+                UIAlertAction(
+                    title: NSLocalizedString("REMOVE_FROM_CATEGORY", comment: ""),
+                    style: .destructive
+                ) { _ in
+                    Task {
+                        for path in selectedItems {
+                            guard let manga = self.dataSource.itemIdentifier(for: path) else { continue }
+                            await self.viewModel.removeFromCurrentCategory(manga: manga)
+                        }
+                        self.updateDataSource()
+                        self.updateNavbarItems()
+                        self.updateToolbar()
+                    }
+                }
+            ] : [],
+            continueActionName: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: "")
+        ) {
+            Task {
+                for path in selectedItems {
+                    guard let manga = self.dataSource.itemIdentifier(for: path) else { continue }
+                    await self.viewModel.removeFromLibrary(manga: manga)
+                }
+                self.updateDataSource()
+                self.updateNavbarItems()
+                self.updateToolbar()
+            }
+        }
+    }
+    @objc func addSelectedToCategories() {
+        let manga = (collectionView.indexPathsForSelectedItems ?? []).compactMap {
+            dataSource.itemIdentifier(for: $0)
+        }
+        self.present(
+            UINavigationController(rootViewController: AddToCategoryViewController(
+                manga: manga,
+                disabledCategories: viewModel.currentCategory != nil ? [viewModel.currentCategory!] : []
+            )),
+            animated: true
+        )
     }
 }
 
@@ -328,6 +538,16 @@ extension LibraryViewController {
         emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
         collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil
+    }
+
+    func reloadItems() {
+        var snapshot = dataSource.snapshot()
+        if #available(iOS 15.0, *) {
+            snapshot.reconfigureItems(snapshot.itemIdentifiers)
+        } else {
+            snapshot.reloadItems(snapshot.itemIdentifiers)
+        }
+        dataSource.apply(snapshot)
     }
 }
 
@@ -386,6 +606,7 @@ extension LibraryViewController {
     }
 
     func updateNavbarLock() {
+        guard !self.isEditing else { return }
         let index = navigationItem.rightBarButtonItems?.firstIndex(of: lockBarButton)
         if locked && index == nil {
             if navigationItem.rightBarButtonItems?.count ?? 0 == 0 {
@@ -527,6 +748,9 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
         locked = viewModel.isCategoryLocked()
         updateNavbarLock()
         updateLockState()
+        deselectAllItems()
+        updateToolbar()
+        updateNavbarItems()
         updateDataSource()
     }
 }
@@ -538,6 +762,15 @@ extension LibraryViewController {
         guard
             let info = dataSource.itemIdentifier(for: indexPath)
         else { return }
+
+        if isEditing {
+            if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+                cell.select()
+                updateNavbarItems()
+                updateToolbar()
+            }
+            return
+        }
 
         if opensReaderView {
             Task {
@@ -573,13 +806,36 @@ extension LibraryViewController {
                 self.updateDataSource()
             }
         }
+        collectionView.deselectItem(at: indexPath, animated: true)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if isEditing {
+            if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+                cell.deselect()
+                updateNavbarItems()
+                updateToolbar()
+            }
+        }
+    }
+
+    // hide highlighting when editing
+    override func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        guard !isEditing else { return }
+        super.collectionView(collectionView, didHighlightItemAt: indexPath)
+    }
+
+    override func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        guard !isEditing else { return }
+        super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
     func collectionView(
         _ collectionView: UICollectionView,
-        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
+        guard let indexPath = indexPaths.first else { return nil }
         let manga = indexPath.section == 0 && !viewModel.pinnedManga.isEmpty
             ? viewModel.pinnedManga[indexPath.row]
             : viewModel.manga[indexPath.row]
@@ -628,8 +884,10 @@ extension LibraryViewController {
                     image: UIImage(systemName: "folder.badge.minus"),
                     attributes: .destructive
                 ) { _ in
-                    self.viewModel.removeFromCurrentCategory(manga: manga)
-                    self.updateDataSource()
+                    Task {
+                        await self.viewModel.removeFromCurrentCategory(manga: manga)
+                        self.updateDataSource()
+                    }
                 })
             }
 
@@ -638,12 +896,22 @@ extension LibraryViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                self.viewModel.removeFromLibrary(manga: manga)
-                self.updateDataSource()
+                Task {
+                    await self.viewModel.removeFromLibrary(manga: manga)
+                    self.updateDataSource()
+                }
             })
 
             return UIMenu(title: "", children: actions)
         }
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfigurationForItemAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        self.collectionView(collectionView, contextMenuConfigurationForItemsAt: [indexPath], point: point)
     }
 }
 
