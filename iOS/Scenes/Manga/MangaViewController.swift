@@ -733,6 +733,7 @@ extension MangaViewController {
                             mangaId: chapter.mangaId,
                             chapterId: chapter.id
                         )
+                        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
                         await self.viewModel.loadHistory(manga: self.manga)
                         self.viewModel.readingHistory[chapter.id] = (-1, Int(Date().timeIntervalSince1970))
                         self.reloadCells(for: [chapter])
@@ -751,6 +752,7 @@ extension MangaViewController {
                             mangaId: chapter.mangaId,
                             chapterId: chapter.id
                         )
+                        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
                         self.viewModel.readingHistory.removeValue(forKey: chapter.id)
                         self.reloadCells(for: [chapter])
                         self.updateReadButton()
@@ -798,6 +800,7 @@ extension MangaViewController {
                     ])
                     let date = Date()
                     await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
+                    NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
                     self.viewModel.addHistory(for: chapters, date: date)
                     self.reloadCells(for: chapters)
                     self.updateReadButton()
@@ -812,6 +815,7 @@ extension MangaViewController {
                         indexPath.row..<self.viewModel.chapterList.count
                     ])
                     await CoreDataManager.shared.removeHistory(chapters: chapters)
+                    NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
                     self.viewModel.removeHistory(for: chapters)
                     self.reloadCells(for: chapters)
                     self.updateReadButton()
