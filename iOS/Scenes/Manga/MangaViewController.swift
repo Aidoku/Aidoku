@@ -169,27 +169,29 @@ class MangaViewController: BaseTableViewController {
             } else if let download = notification.object as? Download, let chapterCast = download.chapter {
                 chapter = chapterCast
             }
-            if let chapter = chapter {
-                self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
-                self.reloadCells(for: [chapter])
-            }
             Task { @MainActor in
+                if let chapter = chapter {
+                    self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
+                    self.reloadCells(for: [chapter])
+                }
                 self.updateNavbarButtons()
             }
         }
         let updateDownloadCellsBlock: (Notification) -> Void = { [weak self] notification in
             guard let self = self else { return }
-            if let chapters = notification.object as? [Chapter] {
-                for chapter in chapters {
-                    self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
+            Task { @MainActor in
+                if let chapters = notification.object as? [Chapter] {
+                    for chapter in chapters {
+                        self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
+                    }
+                    self.reloadCells(for: chapters)
+                } else if
+                    let manga = notification.object as? Manga,
+                    manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
+                { // all chapters
+                    self.viewModel.downloadProgress = [:]
+                    self.updateDataSource()
                 }
-                self.reloadCells(for: chapters)
-            } else if
-                let manga = notification.object as? Manga,
-                manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
-            { // all chapters
-                self.viewModel.downloadProgress = [:]
-                self.updateDataSource()
             }
         }
 
@@ -200,10 +202,12 @@ class MangaViewController: BaseTableViewController {
                 let downloads = notification.object as? [Download]
             else { return }
             let chapters = downloads.compactMap { $0.chapter }
-            for chapter in chapters {
-                self.viewModel.downloadProgress[chapter.id] = 0
+            Task { @MainActor in
+                for chapter in chapters {
+                    self.viewModel.downloadProgress[chapter.id] = 0
+                }
+                self.reloadCells(for: chapters)
             }
-            self.reloadCells(for: chapters)
         }
         addObserver(forName: "downloadProgressed") { [weak self] notification in
             guard
@@ -211,8 +215,10 @@ class MangaViewController: BaseTableViewController {
                 let download = notification.object as? Download,
                 let chapter = download.chapter
             else { return }
-            self.viewModel.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)
-            self.reloadCells(for: [chapter])
+            Task { @MainActor in
+                self.viewModel.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)
+                self.reloadCells(for: [chapter])
+            }
         }
         addObserver(forName: "downloadFinished", using: updateDownloadCellBlock)
         addObserver(forName: "downloadRemoved", using: updateDownloadCellBlock)
