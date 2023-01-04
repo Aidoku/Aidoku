@@ -292,7 +292,7 @@ class LibraryViewModel {
         pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         Task {
-            await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, mangaId: manga.mangaId)
+            await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
         }
     }
 

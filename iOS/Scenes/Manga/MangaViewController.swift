@@ -905,18 +905,15 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
             let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
             if inLibrary {
                 // remove from library
-                await CoreDataManager.shared.removeManga(sourceId: manga.sourceId, mangaId: manga.id)
-                NotificationCenter.default.post(name: Notification.Name("removeFromLibrary"), object: manga)
-                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+                await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.id)
                 headerView.bookmarkButton.tintColor = headerView.tintColor
                 headerView.bookmarkButton.backgroundColor = .secondarySystemFill
             } else {
                 // check if category select should open
                 let categories = CoreDataManager.shared.getCategoryTitles()
                 var shouldAskCategory = !categories.isEmpty
-                let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first
                 if
-                    let defaultCategory = defaultCategory,
+                    let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
                     defaultCategory == "none" || categories.contains(defaultCategory)
                 {
                     shouldAskCategory = false
@@ -933,16 +930,7 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
                     // adjust tint ahead of delay
                     headerView.bookmarkButton.tintColor = .white
                     headerView.bookmarkButton.backgroundColor = headerView.tintColor
-                    await CoreDataManager.shared.addToLibrary(manga: manga, chapters: viewModel.chapterList)
-                    // add to default category
-                    if
-                        let defaultCategory = defaultCategory,
-                        CoreDataManager.shared.hasCategory(title: defaultCategory)
-                    {
-                        await CoreDataManager.shared.addCategoriesToManga(sourceId: manga.sourceId, mangaId: manga.id, categories: [defaultCategory])
-                    }
-                    NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
-                    NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+                    await MangaManager.shared.addToLibrary(manga: manga, chapters: viewModel.chapterList)
                 }
             }
         }

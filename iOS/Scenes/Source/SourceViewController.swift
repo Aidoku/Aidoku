@@ -319,7 +319,7 @@ extension SourceViewController {
                     attributes: .destructive
                 ) { _ in
                     Task {
-                        await CoreDataManager.shared.removeManga(
+                        await MangaManager.shared.removeFromLibrary(
                             sourceId: mangaInfo.sourceId,
                             mangaId: mangaInfo.mangaId
                         )
@@ -332,12 +332,7 @@ extension SourceViewController {
                     image: UIImage(systemName: "books.vertical.fill")
                 ) { _ in
                     Task {
-                        guard
-                            let source = SourceManager.shared.source(for: mangaInfo.sourceId),
-                            let manga = try? await source.getMangaDetails(manga: mangaInfo.toManga()),
-                            let chapters = try? await source.getChapterList(manga: manga)
-                        else { return }
-                        await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters)
+                        await MangaManager.shared.addToLibrary(manga: mangaInfo.toManga(), fetchMangaDetails: true)
                         self.refreshCells(for: [mangaInfo])
                     }
                 })
