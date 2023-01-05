@@ -82,7 +82,7 @@ class AniListTracker: OAuthTracker {
     func register(trackId: String) async {
         guard let id = Int(trackId) else { return }
         // set status to reading if status doesn't already exist
-        let state = await api.getState(media: id)
+        let state = await api.getMediaState(id: id)
         if state?.mediaListEntry?.status == nil {
             await api.update(media: id, update: TrackUpdate(status: .planning))
         }
@@ -100,7 +100,7 @@ class AniListTracker: OAuthTracker {
     func getState(trackId: String) async -> TrackState {
         guard
             let id = Int(trackId),
-            let result = await api.getState(media: id)
+            let result = await api.getMediaState(id: id)
         else { return TrackState() }
 
         let score: Int?
@@ -131,7 +131,27 @@ class AniListTracker: OAuthTracker {
     }
 
     func search(title: String) async -> [TrackSearchItem] {
-        await search(title: title, nsfw: false)
+        if
+            let url = URL(string: title),
+            url.host == "anilist.co",
+            case let pathComponents = url.pathComponents,
+            pathComponents.count >= 3,
+            let id = Int(pathComponents[2])
+        {
+            // use anilist url to search
+            guard let media = await api.getMedia(id: id) else { return [] }
+            return [TrackSearchItem(
+                id: String(media.id ?? 0),
+                trackerId: self.id,
+                title: media.title?.english ?? media.title?.romaji,
+                coverUrl: media.coverImage?.medium,
+                description: media.description,
+                status: getPublishingStatus(statusString: media.status ?? ""),
+                type: getMediaType(typeString: media.format ?? "")
+            )]
+        } else {
+            return await search(title: title, nsfw: false)
+        }
     }
 
     private func search(title: String, nsfw: Bool) async -> [TrackSearchItem] {
