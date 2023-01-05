@@ -449,6 +449,13 @@ class MangaDetailHeaderView: UIView {
         }
     }
 
+    func reloadBookmarkButton(inLibrary: Bool? = nil) {
+        guard let manga = manga else { return }
+        let inLibrary = inLibrary ?? CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+        bookmarkButton.tintColor = inLibrary ? .white : tintColor
+        bookmarkButton.backgroundColor = inLibrary ? tintColor : .secondarySystemFill
+    }
+
     func reloadTrackerButton() {
         if let manga = manga {
             let isTracking = CoreDataManager.shared.hasTrack(sourceId: manga.sourceId, mangaId: manga.id)

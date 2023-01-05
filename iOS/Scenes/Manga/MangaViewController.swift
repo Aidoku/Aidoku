@@ -144,6 +144,17 @@ class MangaViewController: BaseTableViewController {
 
     // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
+        // update library status
+        addObserver(forName: "addToLibrary") { [weak self] notification in
+            guard
+                let self = self,
+                let manga = notification.object as? Manga,
+                manga == self.manga
+            else { return }
+            Task { @MainActor in
+                self.headerView.reloadBookmarkButton(inLibrary: true)
+            }
+        }
         // update reading history stored in view model
         addObserver(forName: "updateHistory") { [weak self] notification in
             guard let self = self else { return }
@@ -926,8 +937,7 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
             if inLibrary {
                 // remove from library
                 await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.id)
-                headerView.bookmarkButton.tintColor = headerView.tintColor
-                headerView.bookmarkButton.backgroundColor = .secondarySystemFill
+                headerView.reloadBookmarkButton(inLibrary: false)
             } else {
                 // check if category select should open
                 let categories = CoreDataManager.shared.getCategoryTitles()
@@ -948,8 +958,7 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
                     )
                 } else { // add to library
                     // adjust tint ahead of delay
-                    headerView.bookmarkButton.tintColor = .white
-                    headerView.bookmarkButton.backgroundColor = headerView.tintColor
+                    headerView.reloadBookmarkButton(inLibrary: true)
                     await MangaManager.shared.addToLibrary(manga: manga, chapters: viewModel.chapterList)
                 }
             }

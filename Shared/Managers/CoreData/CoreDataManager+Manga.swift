@@ -52,21 +52,10 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
-    /// Remove a MangaObject in the background.
-    func removeManga(sourceId: String, mangaId: String) async {
-        await container.performBackgroundTask { context in
-            let request = MangaObject.fetchRequest()
-            request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, sourceId)
-            request.fetchLimit = 1
-            do {
-                if let object = (try context.fetch(request)).first {
-                    context.delete(object)
-                    try context.save()
-                }
-            } catch {
-                LogManager.logger.error("CoreDataManager.removeManga: \(error.localizedDescription)")
-            }
-        }
+    /// Removes a manga object.
+    func removeManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+        guard let object = getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
+        (context ?? self.context).delete(object)
     }
 
     func updateMangaDetails(manga: Manga) async {
