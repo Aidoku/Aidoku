@@ -83,7 +83,7 @@ class AniListTracker: OAuthTracker {
         guard let id = Int(trackId) else { return }
         // set status to reading if status doesn't already exist
         let state = await api.getState(media: id)
-        if state?.status == nil {
+        if state?.mediaListEntry?.status == nil {
             await api.update(media: id, update: TrackUpdate(status: .planning))
         }
     }
@@ -112,7 +112,7 @@ class AniListTracker: OAuthTracker {
 
         return TrackState(
             score: score,
-            status: getStatus(statusString: result.mediaListEntry?.status ?? ""),
+            status: getStatus(statusString: result.mediaListEntry?.status),
             lastReadChapter: Float(result.mediaListEntry?.progress ?? 0),
             lastReadVolume: result.mediaListEntry?.progressVolumes,
             totalChapters: result.chapters,
@@ -175,7 +175,7 @@ class AniListTracker: OAuthTracker {
 
 private extension AniListTracker {
 
-    func getStatus(statusString: String) -> TrackStatus {
+    func getStatus(statusString: String?) -> TrackStatus {
         switch statusString {
         case "CURRENT": return .reading
         case "PLANNING": return .planning
@@ -183,6 +183,7 @@ private extension AniListTracker {
         case "DROPPED": return .dropped
         case "PAUSED": return .paused
         case "REPEATING": return .rereading
+        case nil: return .none
         default: return .planning
         }
     }

@@ -18,7 +18,11 @@ struct TrackerListView: View {
         VStack {
             ForEach(TrackerManager.shared.trackers, id: \.id) { tracker in
                 if tracker.isLoggedIn {
-                    if let item = DataManager.shared.getTrackItem(trackerId: tracker.id, manga: manga) {
+                    if let item = CoreDataManager.shared.getTrack(
+                        trackerId: tracker.id,
+                        sourceId: manga.sourceId,
+                        mangaId: manga.id
+                    )?.toItem() {
                         TrackerView(tracker: tracker, item: item, refresh: $refresh)
                             .transition(.opacity)
                     } else {

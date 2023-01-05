@@ -158,7 +158,9 @@ class MangaViewController: BaseTableViewController {
         // update tracking state
         addObserver(forName: "updateTrackers") { [weak self] _ in
             guard let self = self else { return }
-            self.headerView.reloadTrackerButton()
+            Task { @MainActor in
+                self.headerView.reloadTrackerButton()
+            }
         }
 
         let updateDownloadCellBlock: (Notification) -> Void = { [weak self] notification in

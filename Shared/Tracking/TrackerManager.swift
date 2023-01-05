@@ -73,4 +73,42 @@ class TrackerManager {
             await tracker.update(trackId: item.id, update: update)
         }
     }
+
+    /// Saves a TrackItem to the data store.
+    func saveTrackItem(item: TrackItem) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.createTrack(
+                id: item.id,
+                trackerId: item.trackerId,
+                sourceId: item.sourceId,
+                mangaId: item.mangaId,
+                title: item.title,
+                context: context
+            )
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("TrackManager.saveTrackItem(item: \(item)): \(error.localizedDescription)")
+            }
+        }
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
+
+    /// Removes the TrackItem from the data store.
+    func removeTrackItem(item: TrackItem) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeTrack(
+                trackerId: item.trackerId,
+                sourceId: item.sourceId,
+                mangaId: item.mangaId,
+                context: context
+            )
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("TrackManager.removeTrackItem(item: \(item)): \(error.localizedDescription)")
+            }
+        }
+        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+    }
 }

@@ -15,6 +15,7 @@ class TrackStatus {
     static let paused = TrackStatus(4)
     static let dropped = TrackStatus(5)
     static let rereading = TrackStatus(6)
+    static let none = TrackStatus(7)
 
     /// An array of the built-in track statuses.
     static let defaultStatuses = [
