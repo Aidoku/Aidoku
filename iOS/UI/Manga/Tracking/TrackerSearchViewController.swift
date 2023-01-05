@@ -84,15 +84,13 @@ class TrackerSearchViewController: UITableViewController {
         let result = results[selectedIndex ?? 0]
         Task { @MainActor in
             await tracker.register(trackId: result.id)
-            DataManager.shared.addTrackItem(
-                item: TrackItem(
-                    id: result.id,
-                    trackerId: tracker.id,
-                    sourceId: manga.sourceId,
-                    mangaId: manga.id,
-                    title: result.title
-                )
-            )
+            await TrackerManager.shared.saveTrackItem(item: TrackItem(
+                id: result.id,
+                trackerId: tracker.id,
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                title: result.title
+            ))
         }
         dismiss(animated: true)
     }

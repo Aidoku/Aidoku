@@ -320,7 +320,7 @@ class MangaDetailHeaderView: UIView {
             sourceLabelView.isHidden = true
         }
 
-        let isTracking = CoreDataManager.shared.hasTracker(sourceId: manga.sourceId, mangaId: manga.id)
+        let isTracking = CoreDataManager.shared.hasTrack(sourceId: manga.sourceId, mangaId: manga.id)
 
         bookmarkButton.tintColor = inLibrary ? .white : tintColor
         bookmarkButton.backgroundColor = inLibrary ? tintColor : .secondarySystemFill
@@ -451,7 +451,7 @@ class MangaDetailHeaderView: UIView {
 
     func reloadTrackerButton() {
         if let manga = manga {
-            let isTracking = CoreDataManager.shared.hasTracker(sourceId: manga.sourceId, mangaId: manga.id)
+            let isTracking = CoreDataManager.shared.hasTrack(sourceId: manga.sourceId, mangaId: manga.id)
             trackerButton.tintColor = isTracking ? .white : tintColor
             trackerButton.backgroundColor = isTracking ? tintColor : .secondarySystemFill
         }

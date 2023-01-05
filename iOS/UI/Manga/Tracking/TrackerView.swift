@@ -43,10 +43,12 @@ struct TrackerView: View {
                 Spacer()
                 Menu {
                     Button {
-                        DataManager.shared.removeTrackObject(id: item.id, trackerId: item.trackerId)
-                        stateUpdated = false
-                        withAnimation {
-                            refresh.toggle()
+                        Task {
+                            await TrackerManager.shared.removeTrackItem(item: item)
+                            stateUpdated = false
+                            withAnimation {
+                                refresh.toggle()
+                            }
                         }
                     } label: {
                         Text(NSLocalizedString("STOP_TRACKING", comment: ""))
