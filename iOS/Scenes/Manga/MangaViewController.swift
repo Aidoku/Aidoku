@@ -173,6 +173,28 @@ class MangaViewController: BaseTableViewController {
                 self.headerView.reloadTrackerButton()
             }
         }
+        // check for local tracker sync
+        let checkSyncBlock: (Notification) -> Void = { [weak self] notification in
+            guard
+                let self = self,
+                let item = notification.object as? TrackItem,
+                item.mangaId == self.manga.id && item.sourceId == self.manga.sourceId,
+                let tracker = TrackerManager.shared.getTracker(id: item.trackerId)
+            else { return }
+            Task {
+                let latestChapterRead = self.viewModel.chapterList.first {
+                    self.viewModel.readingHistory[$0.id]?.page ?? 0 == -1
+                }
+                let latestChapterNum = latestChapterRead?.chapterNum ?? -1 // if not started, -1
+                let state = await tracker.getState(trackId: item.id)
+                if let lastReadChapter = state.lastReadChapter, latestChapterNum < lastReadChapter {
+                    // ask to sync
+                    self.syncWithTracker(chapterNum: lastReadChapter)
+                }
+            }
+        }
+        addObserver(forName: "trackItemAdded", using: checkSyncBlock)
+        addObserver(forName: "syncTrackItem", using: checkSyncBlock)
 
         let updateDownloadCellBlock: (Notification) -> Void = { [weak self] notification in
             guard let self = self else { return }
@@ -286,27 +308,8 @@ class MangaViewController: BaseTableViewController {
         updateToolbar()
     }
 
-    // returns first chapter not completed, or falls back to last read chapter
-    func getNextChapter() -> Chapter? {
-        guard !viewModel.chapterList.isEmpty else { return nil }
-        // get first chapter not completed
-        let chapter = viewModel.chapterList.reversed().first(where: { viewModel.readingHistory[$0.id]?.page ?? 0 != -1 })
-        if let chapter = chapter {
-            return chapter
-        }
-        // get last read chapter
-        let id = viewModel.readingHistory.max { a, b in a.value.date < b.value.date }?.key
-        let lastRead: Chapter
-        if let id = id, let match = viewModel.chapterList.first(where: { $0.id == id }) {
-            lastRead = match
-        } else {
-            lastRead = viewModel.chapterList.last!
-        }
-        return lastRead
-    }
-
     func updateReadButton() {
-        guard let nextChapter = getNextChapter() else { return }
+        guard let nextChapter = viewModel.getNextChapter() else { return }
         headerView.continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
         headerView.nextChapter = nextChapter
     }
@@ -316,6 +319,51 @@ class MangaViewController: BaseTableViewController {
         let navigationController = ReaderNavigationController(rootViewController: readerController)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true)
+    }
+
+    /// Marks given chapters as read.
+    func markRead(chapters: [Chapter]) async {
+        await CoreDataManager.shared.setRead(
+            sourceId: manga.sourceId,
+            mangaId: manga.id
+        )
+        let date = Date()
+        await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
+        viewModel.addHistory(for: chapters, date: date)
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+        reloadCells(for: chapters)
+        updateReadButton()
+    }
+
+    /// Marks given chapters as unread.
+    func markUnread(chapters: [Chapter]) async {
+        await CoreDataManager.shared.removeHistory(chapters: chapters)
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+        viewModel.removeHistory(for: chapters)
+        reloadCells(for: chapters)
+        updateReadButton()
+    }
+
+    func syncWithTracker(chapterNum: Float) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Sync with Tracker", comment: ""),
+            message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO", comment: ""), chapterNum),
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel) { _ in })
+
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
+            let chapters = self.viewModel.chapterList.filter {
+                $0.chapterNum ?? -1 <= chapterNum
+            }
+            Task {
+                await self.markRead(chapters: chapters)
+            }
+        })
+
+        let presenter = presentedViewController ?? self
+        presenter.present(alert, animated: true, completion: nil)
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl) {
@@ -593,10 +641,7 @@ extension MangaViewController {
                             guard let self = self else { return }
                             self.showLoadingIndicator()
                             Task {
-                                await CoreDataManager.shared.removeHistory(chapters: selectedChapters)
-                                self.viewModel.removeHistory(for: selectedChapters)
-                                self.reloadCells(for: selectedChapters)
-                                self.updateReadButton()
+                                await self.markUnread(chapters: selectedChapters)
                                 self.hideLoadingIndicator()
                                 self.setEditing(false, animated: true)
                             }
@@ -608,11 +653,7 @@ extension MangaViewController {
                             guard let self = self else { return }
                             self.showLoadingIndicator()
                             Task {
-                                let date = Date()
-                                await CoreDataManager.shared.setCompleted(chapters: selectedChapters, date: date)
-                                self.viewModel.addHistory(for: selectedChapters, date: date)
-                                self.reloadCells(for: selectedChapters)
-                                self.updateReadButton()
+                                await self.markRead(chapters: selectedChapters)
                                 self.hideLoadingIndicator()
                                 self.setEditing(false, animated: true)
                             }
@@ -739,20 +780,7 @@ extension MangaViewController {
                     image: UIImage(systemName: "eye")
                 ) { _ in
                     Task {
-                        await CoreDataManager.shared.setRead(
-                            sourceId: chapter.sourceId,
-                            mangaId: chapter.mangaId
-                        )
-                        await CoreDataManager.shared.setCompleted(
-                            sourceId: chapter.sourceId,
-                            mangaId: chapter.mangaId,
-                            chapterId: chapter.id
-                        )
-                        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-                        await self.viewModel.loadHistory(manga: self.manga)
-                        self.viewModel.readingHistory[chapter.id] = (-1, Int(Date().timeIntervalSince1970))
-                        self.reloadCells(for: [chapter])
-                        self.updateReadButton()
+                        await self.markRead(chapters: [chapter])
                     }
                 })
             }
@@ -762,15 +790,7 @@ extension MangaViewController {
                     image: UIImage(systemName: "eye.slash")
                 ) { _ in
                     Task {
-                        await CoreDataManager.shared.removeHistory(
-                            sourceId: chapter.sourceId,
-                            mangaId: chapter.mangaId,
-                            chapterId: chapter.id
-                        )
-                        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-                        self.viewModel.readingHistory.removeValue(forKey: chapter.id)
-                        self.reloadCells(for: [chapter])
-                        self.updateReadButton()
+                        await self.markUnread(chapters: [chapter])
                     }
                 })
             }
@@ -805,35 +825,22 @@ extension MangaViewController {
                 title: NSLocalizedString("READ", comment: ""),
                 image: UIImage(systemName: "eye")
             ) { _ in
+                let chapters = [Chapter](self.viewModel.chapterList[
+                    indexPath.row..<self.viewModel.chapterList.count
+                ])
                 Task {
-                    await CoreDataManager.shared.setRead(
-                        sourceId: self.manga.sourceId,
-                        mangaId: self.manga.id
-                    )
-                    let chapters = [Chapter](self.viewModel.chapterList[
-                        indexPath.row..<self.viewModel.chapterList.count
-                    ])
-                    let date = Date()
-                    await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
-                    NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-                    self.viewModel.addHistory(for: chapters, date: date)
-                    self.reloadCells(for: chapters)
-                    self.updateReadButton()
+                    await self.markRead(chapters: chapters)
                 }
             },
             UIAction(
                 title: NSLocalizedString("UNREAD", comment: ""),
                 image: UIImage(systemName: "eye.slash")
             ) { _ in
+                let chapters = [Chapter](self.viewModel.chapterList[
+                    indexPath.row..<self.viewModel.chapterList.count
+                ])
                 Task {
-                    let chapters = [Chapter](self.viewModel.chapterList[
-                        indexPath.row..<self.viewModel.chapterList.count
-                    ])
-                    await CoreDataManager.shared.removeHistory(chapters: chapters)
-                    NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-                    self.viewModel.removeHistory(for: chapters)
-                    self.reloadCells(for: chapters)
-                    self.updateReadButton()
+                    await self.markUnread(chapters: chapters)
                 }
             }
         ])

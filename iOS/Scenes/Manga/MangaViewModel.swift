@@ -75,4 +75,23 @@ class MangaViewModel {
             }
         }
     }
+
+    // returns first chapter not completed, or falls back to top chapter
+    func getNextChapter() -> Chapter? {
+        guard !chapterList.isEmpty else { return nil }
+        // get first chapter not completed
+        let chapter = chapterList.reversed().first(where: { readingHistory[$0.id]?.page ?? 0 != -1 })
+        if let chapter = chapter {
+            return chapter
+        }
+        // get last read chapter (doesn't work if all chapters were marked read at the same time)
+//        let id = viewModel.readingHistory.max { a, b in a.value.date < b.value.date }?.key
+//        let lastRead: Chapter
+//        if let id = id, let match = viewModel.chapterList.first(where: { $0.id == id }) {
+//            lastRead = match
+//        } else {
+//            lastRead = viewModel.chapterList.last!
+//        }
+        return chapterList.first
+    }
 }
