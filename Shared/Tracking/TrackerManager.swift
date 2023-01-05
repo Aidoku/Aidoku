@@ -93,6 +93,7 @@ class TrackerManager {
             }
         }
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+        NotificationCenter.default.post(name: Notification.Name("trackItemAdded"), object: item)
     }
 
     /// Removes the TrackItem from the data store.

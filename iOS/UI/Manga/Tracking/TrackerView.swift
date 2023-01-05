@@ -51,7 +51,10 @@ struct TrackerView: View {
                             }
                         }
                     } label: {
-                        Text(NSLocalizedString("STOP_TRACKING", comment: ""))
+                        Label(
+                            NSLocalizedString("STOP_TRACKING", comment: ""),
+                            systemImage: "xmark"
+                        )
                     }
                     Button {
                         Task {
@@ -60,7 +63,18 @@ struct TrackerView: View {
                             showSafari = true
                         }
                     } label: {
-                        Text(NSLocalizedString("VIEW_ON_WEBSITE", comment: ""))
+                        Label(
+                            NSLocalizedString("VIEW_ON_WEBSITE", comment: ""),
+                            systemImage: "safari"
+                        )
+                    }
+                    Button {
+                        NotificationCenter.default.post(name: Notification.Name("syncTrackItem"), object: item)
+                    } label: {
+                        Label(
+                            NSLocalizedString("SYNC_LOCAL_HISTORY", comment: ""),
+                            systemImage: "clock.arrow.circlepath"
+                        )
                     }
                 } label: {
                     Image(systemName: "ellipsis")
