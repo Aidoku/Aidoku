@@ -37,7 +37,7 @@ protocol Tracker: AnyObject {
     /// user's database on the tracker
     ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func register(trackId: String) async
+    func register(trackId: String, hasReadChapters: Bool) async
 
     /// Update the state of a tracked title.
     ///

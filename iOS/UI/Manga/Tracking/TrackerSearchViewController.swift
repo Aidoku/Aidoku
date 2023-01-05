@@ -83,7 +83,10 @@ class TrackerSearchViewController: UITableViewController {
     @objc func track() {
         let result = results[selectedIndex ?? 0]
         Task { @MainActor in
-            await tracker.register(trackId: result.id)
+            let hasReadChapters = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasHistory(sourceId: self.manga.sourceId, mangaId: self.manga.id, context: context)
+            }
+            await tracker.register(trackId: result.id, hasReadChapters: hasReadChapters)
             await TrackerManager.shared.saveTrackItem(item: TrackItem(
                 id: result.id,
                 trackerId: tracker.id,
