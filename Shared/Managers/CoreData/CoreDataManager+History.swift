@@ -48,6 +48,22 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
+    /// Check if history exists for a manga.
+    func hasHistory(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@ ",
+            mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
+    }
+
     /// Removes a HistoryObject in the background.
     func removeHistory(sourceId: String, mangaId: String, chapterId: String) async {
         await container.performBackgroundTask { context in
