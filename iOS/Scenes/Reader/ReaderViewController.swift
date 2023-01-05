@@ -335,11 +335,11 @@ extension ReaderViewController: ReaderHoldingDelegate {
         else {
             return nil
         }
-        // find next non-duplicate chapter
+        var skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
         index -= 1
         while index >= 0 {
             let new = chapterList[index]
-            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum {
+            if !skipDuplicates || (new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum) {
                 return new
             }
             index -= 1
