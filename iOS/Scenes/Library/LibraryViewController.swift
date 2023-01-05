@@ -52,6 +52,8 @@ class LibraryViewController: MangaCollectionViewController {
 
     private lazy var opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
 
+    private var ignoreOptionChange = false
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
@@ -641,10 +643,13 @@ extension LibraryViewController {
         guard let header = (collectionView.supplementaryView(
             forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
         ) as? MangaListSelectionHeader) else { return }
+        ignoreOptionChange = true
         header.options = [NSLocalizedString("ALL", comment: "")] + viewModel.categories
-        header.selectedOption = viewModel.currentCategory != nil
-            ? (viewModel.categories.firstIndex(of: viewModel.currentCategory!) ?? -1) + 1
-            : 0
+        header.setSelectedOption(
+            viewModel.currentCategory != nil
+                ? (viewModel.categories.firstIndex(of: viewModel.currentCategory!) ?? -1) + 1
+                : 0
+        )
     }
 }
 
@@ -735,6 +740,10 @@ extension LibraryViewController {
 extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
     func optionSelected(_ index: Int) {
+        guard !ignoreOptionChange else {
+            ignoreOptionChange = false
+            return
+        }
         if index == 0 {
             viewModel.currentCategory = nil
             emptyStackView.title = NSLocalizedString("LIBRARY_EMPTY", comment: "")
