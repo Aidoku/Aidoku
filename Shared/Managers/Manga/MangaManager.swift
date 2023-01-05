@@ -44,10 +44,32 @@ extension MangaManager {
     }
 
     func removeFromLibrary(sourceId: String, mangaId: String) async {
-        await CoreDataManager.shared.removeManga(
-            sourceId: sourceId,
-            mangaId: mangaId
-        )
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            // remove from library
+            CoreDataManager.shared.removeManga(
+                sourceId: sourceId,
+                mangaId: mangaId,
+                context: context
+            )
+            // remove associated trackers
+            if
+                case let items = CoreDataManager.shared.getTracks(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    context: context
+                ).map({ $0.toItem() }),
+                !items.isEmpty
+            {
+                for item in items {
+                    TrackerManager.shared.removeTrackItem(item: item, context: context)
+                }
+            }
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("MangaManager.removeFromLibrary(mangaId: \(mangaId)): \(error.localizedDescription)")
+            }
+        }
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 }

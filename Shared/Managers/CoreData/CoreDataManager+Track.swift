@@ -50,6 +50,17 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
+    /// Fetches all track items for a specified manga.
+    func getTracks(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+        let context = context ?? self.context
+        let request = TrackObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@",
+            mangaId, sourceId
+        )
+        return (try? context.fetch(request)) ?? []
+    }
+
     /// Creates a new track item.
     @discardableResult
     func createTrack(

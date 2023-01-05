@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 /// An interface to interact with title tracking services.
 class TrackerManager {
@@ -97,17 +98,21 @@ class TrackerManager {
     /// Removes the TrackItem from the data store.
     func removeTrackItem(item: TrackItem) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeTrack(
-                trackerId: item.trackerId,
-                sourceId: item.sourceId,
-                mangaId: item.mangaId,
-                context: context
-            )
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("TrackManager.removeTrackItem(item: \(item)): \(error.localizedDescription)")
-            }
+            self.removeTrackItem(item: item, context: context)
+        }
+    }
+
+    func removeTrackItem(item: TrackItem, context: NSManagedObjectContext) {
+        CoreDataManager.shared.removeTrack(
+            trackerId: item.trackerId,
+            sourceId: item.sourceId,
+            mangaId: item.mangaId,
+            context: context
+        )
+        do {
+            try context.save()
+        } catch {
+            LogManager.logger.error("TrackManager.removeTrackItem(item: \(item)): \(error.localizedDescription)")
         }
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
