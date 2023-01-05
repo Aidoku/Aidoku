@@ -32,9 +32,16 @@ extension AniListApi {
         return response?.data.Page
     }
 
-    func getState(media: Int) async -> Media? {
+    func getMedia(id: Int) async -> Media? {
         let response: GraphQLResponse<AniListMediaStatusResponse>? = await request(
-            GraphQLVariableQuery(query: AniListQueries.mediaStatusQuery, variables: AniListMediaStatusVars(id: media))
+            GraphQLVariableQuery(query: AniListQueries.mediaQuery, variables: AniListMediaStatusVars(id: id))
+        )
+        return response?.data.Media
+    }
+
+    func getMediaState(id: Int) async -> Media? {
+        let response: GraphQLResponse<AniListMediaStatusResponse>? = await request(
+            GraphQLVariableQuery(query: AniListQueries.mediaStatusQuery, variables: AniListMediaStatusVars(id: id))
         )
         return response?.data.Media
     }

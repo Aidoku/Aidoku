@@ -49,6 +49,24 @@ struct AniListQueries {
     }
     """
 
+    static let mediaQuery = """
+    query ($id: Int) {
+      Media(id: $id) {
+        id
+        title {
+          english
+          romaji
+        }
+        description
+        status
+        format
+        coverImage {
+          medium
+        }
+      }
+    }
+    """
+
     static let mediaStatusQuery = """
     query ($id: Int) {
       Media(id: $id) {
