@@ -76,6 +76,7 @@ class SourceListsViewController: UITableViewController {
             textField.autocapitalizationType = .none
             textField.autocorrectionType = .no
             textField.keyboardType = .URL
+            textField.returnKeyType = .done
         }
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in

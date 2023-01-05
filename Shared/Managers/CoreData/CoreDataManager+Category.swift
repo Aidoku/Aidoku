@@ -40,8 +40,8 @@ extension CoreDataManager {
         return (libraryObject?.categories?.allObjects as? [CategoryObject]) ?? []
     }
 
-    func getCategoryTitles(context: NSManagedObjectContext? = nil) -> [String] {
-        getCategories(context: context).compactMap { $0.title }
+    func getCategoryTitles(sorted: Bool = true, context: NSManagedObjectContext? = nil) -> [String] {
+        getCategories(sorted: sorted, context: context).compactMap { $0.title }
     }
 
     /// Get category objects for a library object.
@@ -65,12 +65,37 @@ extension CoreDataManager {
 
         let request = CategoryObject.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: false)]
+        request.fetchLimit = 1
         let lastCategoryIndex = (try? context.fetch(request))?.first?.sort ?? -1
 
         let categoryObject = CategoryObject(context: context)
         categoryObject.title = title
         categoryObject.sort = lastCategoryIndex + 1
         return categoryObject
+    }
+
+    /// Removes a category in the background.
+    func removeCategory(title: String) async {
+        await container.performBackgroundTask { context in
+            do {
+                if let object = self.getCategory(title: title, context: context) {
+                    context.delete(object)
+                    try context.save()
+                }
+            } catch {
+                LogManager.logger.error("CoreDataManager.removeCategory: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// Sets a new title for a category object with the given title.
+    func renameCategory(title: String, newTitle: String, context: NSManagedObjectContext? = nil) -> Bool {
+        guard
+            !hasCategory(title: newTitle, context: context),
+            let object = getCategory(title: title, context: context)
+        else { return false }
+        object.title = newTitle
+        return true
     }
 
     /// Add categories to library manga.
