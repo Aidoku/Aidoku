@@ -639,7 +639,6 @@
 				FB55AFAA28AABD8D0083EFC3 /* Page */,
 				FB55AFA128AAAEBD0083EFC3 /* Readers */,
 				FB0CAA6928A9BB9C0024561A /* ReaderViewController.swift */,
-				FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController.swift */,
 				FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */,
 				FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */,
 				FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */,
@@ -1077,6 +1076,7 @@
 		FB9A65942781F91F0071F1A2 /* Reader */ = {
 			isa = PBXGroup;
 			children = (
+				FB1B51A728E3405D00D3CE0E /* ReaderSettingsViewController.swift */,
 				FB1B48B6277CF8280056D02C /* ZoomableScrollView.swift */,
 				FB1F553528B0069600CFE182 /* ReaderPageViewDelegate.swift */,
 				FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */,

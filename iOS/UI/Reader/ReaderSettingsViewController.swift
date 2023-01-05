@@ -24,6 +24,11 @@ class ReaderSettingsViewController: SettingsTableViewController {
             ],
             notification: "Reader.readingMode"
         ),
+        SettingItem(
+            type: "switch",
+            key: "Reader.skipDuplicateChapters",
+            title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
+        ),
         SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
         SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
     ])

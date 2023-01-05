@@ -70,6 +70,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "History.lockHistoryTab": false,
 
                 "Reader.readingMode": "default",
+                "Reader.skipDuplicateChapters": true,
                 "Reader.downsampleImages": true,
                 "Reader.saveImageOption": true,
                 "Reader.verticalInfiniteScroll": false,
