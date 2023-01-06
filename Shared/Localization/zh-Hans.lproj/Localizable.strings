@@ -70,7 +70,7 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "Build";
+"BUILD" = "";
 "BUTTON_FILTER" = "过滤器";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
@@ -282,9 +282,17 @@
 "VIEW_ON_WEBSITE" = "在网站上查看";
 "LAST_UPDATED" = "最后更新";
 "RELOAD" = "重新加载";
-"ONE_PAGE_LEFT" = "剩下1页";
+"ONE_PAGE_LEFT" = "还剩 1 页";
 "FAILED_CHAPTER_LOAD" = "载入章节失败";
 "TOTAL_CHAPTERS" = "章节总数";
 "UNREAD_CHAPTERS" = "未读章节";
 "FAILED_CHAPTER_LOAD_INFO" = "您可能处于离线状态或来源可能有问题.";
 "%i_PAGES_LEFT" = "还剩 %i 页";
+"REMOVE_FROM_CATEGORY" = "从分类中删除";
+"ADD_TO_CATEGORY" = "添加到类别";
+"PINNED" = "置顶";
+"1_CHAPTER" = "第1章";
+"%i_CHAPTERS" = "%i章节";
+"UPCOMING" = "即将推出";
+"SELECT" = "选择";
+"ADD_TO_CATEGORIES" = "添加到类别";

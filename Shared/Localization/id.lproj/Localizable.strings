@@ -196,7 +196,7 @@
 "NO_CHAPTERS_AVAILABLE" = "Tidak ada Chapter tersedia";
 
 // Reader
-"CHAPTER" = "Chapter";
+"CHAPTER" = "Bagian";
 "DESELECT_ALL" = "Batalkan Semua Pilihan";
 "MARK_PREVIOUS" = "Tandai Sebelumnya";
 "START_READING" = "Mulai Baca";
@@ -272,3 +272,6 @@
 "MANHUA" = "Manhua";
 "VIEW_ON_WEBSITE" = "Lihat Di Situs Web";
 "CLEAR_TRACKED_MANGA_TEXT" = "Tindakan ini tidak dapat diubah. Pelacakan untuk semua pelacak yang ditambahkan ke manga akan dihapus.";
+"VOLUME_X" = "Bab %g";
+"CHAPTER_X" = "Bagian %g";
+"VOL_X" = "Bab.%g";

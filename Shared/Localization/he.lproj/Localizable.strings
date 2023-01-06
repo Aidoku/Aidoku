@@ -161,3 +161,24 @@
 "AUTH_TO_DISABLE" = "הזדהה על מנת להשבית.";
 "GITHUB_REPO" = "מאגר GitHub";
 "LANDSCAPE" = "אופקי";
+
+// Browse
+"BROWSE" = "לדפדף";
+"BUTTON_GET" = "קבל";
+"SOURCE_ORDER" = "סדר מקורות";
+"UPDATE_INTERVAL" = "השהיית עדכון";
+"OPEN_READER_VIEW" = "פתח תצוגת קורא";
+"PIN_MANGA_UPDATED" = "עודכן";
+"LIBRARY_UPDATING" = "ספריה מתעדכנת";
+"RESTORE_BACKUP" = "לשחזר לעדכון הזה?";
+"SOURCE_LISTS" = "רשימת מקורות";
+"SOURCE_LIST_ADDED" = "רשימת מקורות הוספה";
+"RENAME_BACKUP" = "שנה שם גיבוי";
+"RENAME_BACKUP_TEXT" = "הכנס שם עבור הגיבוי שלך";
+"CORRUPTED_BACKUP" = "גיבוי מושחת";
+"BACKUP_INFO" = "לחץ לחיצה ארוכה על גיבוי כדי לייצא אותו, או החלק שמאלה כדי למחוק.";
+"MISSING_SOURCES_TEXT" = "הגיבוי המשוחזר עשוי להכיל נתונים מהמקורות הבאים, שאינם מותקנים כעת:";
+"START_TRACKING" = "התחל מעקב";
+"STOP_TRACKING" = "הפסק מעקב";
+"CORRUPTED_BACKUP_TEXT" = "נראה כי לגיבוי הזה יש נתונים שגויים. שינוי שם אינו אפשרי.";
+"MISSING_SOURCES" = "מקורות חסרים";

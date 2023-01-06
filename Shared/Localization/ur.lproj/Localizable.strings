@@ -30,3 +30,27 @@
 "LIBRARY_SEARCH" = "لائبریری میں تلاش کریں";
 "LIBRARY_ADD_FROM_BROWSE" = "براوز ٹیب میں سے Manga شامل کریں";
 "REMOVE_FROM_LIBRARY" = "لائبریری سےہٹا دیں";
+"ADD_TO_LIBRARY" = "لائبریری میں شامل کریں";
+"MANGA_INFO" = "مانگا معلومات";
+"LAST_READ" = "آخری پڑھا";
+"LATEST_CHAPTER" = "تازہ ترین باب";
+"DATE_ADDED" = "شامل کرنے کی تاریخ";
+
+// Categories
+"ALL" = "سب";
+"NONE" = "کچھ نہیں";
+"CATEGORIES" = "زمرے";
+"EDIT_CATEGORIES" = "زمرہ جات تدوین کریں";
+"CATEGORY_ADD" = "زمرہ کا اضافہ کریں";
+"CATEGORY_TITLE" = "زمرہ کا عنوان";
+"DEFAULT_CATEGORY" = "پہلے سے طے شدہ زمرہ";
+"ALWAYS_ASK" = "ہمیشہ پوچھو";
+
+// Browse
+"BROWSE" = "براؤز";
+"TITLE" = "عنوان";
+"SORT_BY" = "ترتیب دیں";
+"FILTER_BY" = "فلٹر بذریعہ";
+"LAST_OPENED" = "آخری بار کھولا گیا";
+"CATEGORY_ADD_TEXT" = "تخلیق کرنے کے لئے نئے زمرے کا عنوان درج کریں.";
+"BROWSE_NO_SOURCES" = "کوئی ذرائع نہیں";
