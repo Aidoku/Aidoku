@@ -17,7 +17,7 @@ class SourceManager {
     var sources: [Source] = []
     var sourceLists: [URL] = []
 
-    var languageCodes = [
+    static let languageCodes = [
         "multi", "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
     ]
 
@@ -26,9 +26,13 @@ class SourceManager {
     }
 
     init() {
-        sources = (try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? []
-        sources.sort { $0.manifest.info.name < $1.manifest.info.name }
-        sources.sort { languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0 < languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0 }
+        sources = ((try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? [])
+            .sorted { $0.manifest.info.name < $1.manifest.info.name }
+            .sorted {
+                let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
+                let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
+                return lhs < rhs
+            }
         sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
 
         Task {
@@ -84,7 +88,11 @@ extension SourceManager {
                 await DataManager.shared.add(source: source, context: DataManager.shared.backgroundContext)
                 sources.append(source)
                 sources.sort { $0.manifest.info.name < $1.manifest.info.name }
-                sources.sort { languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0 < languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0 }
+                sources.sort {
+                    let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
+                    let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
+                    return lhs < rhs
+                }
 
                 NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
 

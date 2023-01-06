@@ -56,6 +56,8 @@
 		FB11EDEF2784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB11EDF02784B0690007365D /* Volume.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB11EDEE2784B0690007365D /* Volume.swift */; };
 		FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */; };
+		FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1711472967444B00AD523D /* MigrateMangaView.swift */; };
+		FB17114B296770CC00AD523D /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = FB17114A296770CC00AD523D /* NukeUI */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482D277CE18D0056D02C /* AidokuApp.swift */; };
@@ -157,7 +159,6 @@
 		FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFA828AAB1440083EFC3 /* UIViewController.swift */; };
 		FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAB28AABD980083EFC3 /* ReaderPageView.swift */; };
 		FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55AFAE28AAD40B0083EFC3 /* ReaderPageViewController.swift */; };
-		FB5E7DC2295CAAC000CBF1AC /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = FB5E7DC1295CAAC000CBF1AC /* Nuke */; };
 		FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */ = {isa = PBXBuildFile; productRef = FB6340B0278E61600072A2A2 /* WasmInterpreter */; };
 		FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B4278F89930072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
@@ -232,6 +233,14 @@
 		FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */; };
 		FB90F6CC2899867D000C37E6 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */; };
 		FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */; };
+		FB9A48332967E41400FFC414 /* MigrateSourceSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */; };
+		FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */; };
+		FB9A48372967E44200FFC414 /* MigrateSearchMatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48362967E44200FFC414 /* MigrateSearchMatchView.swift */; };
+		FB9A48392967E45800FFC414 /* MangaGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48382967E45800FFC414 /* MangaGridView.swift */; };
+		FB9A483B2967E47200FFC414 /* MigrationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483A2967E47200FFC414 /* MigrationState.swift */; };
+		FB9A483E2967E48300FFC414 /* MigrationStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483D2967E48300FFC414 /* MigrationStrategy.swift */; };
+		FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */; };
+		FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
 		FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
@@ -330,6 +339,7 @@
 		FB0E1CDA288AEB0400B67BA9 /* OAuthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthResponse.swift; sourceTree = "<group>"; };
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCategoryViewController.swift; sourceTree = "<group>"; };
+		FB1711472967444B00AD523D /* MigrateMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateMangaView.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
 		FB1B4830277CE1920056D02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -462,6 +472,14 @@
 		FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSession.swift; sourceTree = "<group>"; };
 		FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaInfo.swift; sourceTree = "<group>"; };
+		FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSourceSelectionView.swift; sourceTree = "<group>"; };
+		FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaToMangaView.swift; sourceTree = "<group>"; };
+		FB9A48362967E44200FFC414 /* MigrateSearchMatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSearchMatchView.swift; sourceTree = "<group>"; };
+		FB9A48382967E45800FFC414 /* MangaGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridView.swift; sourceTree = "<group>"; };
+		FB9A483A2967E47200FFC414 /* MigrationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationState.swift; sourceTree = "<group>"; };
+		FB9A483D2967E48300FFC414 /* MigrationStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationStrategy.swift; sourceTree = "<group>"; };
+		FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSourcesView.swift; sourceTree = "<group>"; };
+		FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUINavigationView.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
@@ -532,9 +550,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB17114B296770CC00AD523D /* NukeUI in Frameworks */,
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
 				FB6340B1278E61600072A2A2 /* WasmInterpreter in Frameworks */,
-				FB5E7DC2295CAAC000CBF1AC /* Nuke in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
 			);
@@ -562,6 +580,7 @@
 				FB792D9529615D9E00666074 /* Manga */,
 				FB0CAA6828A9BB900024561A /* Reader */,
 				FB05F8652964907200D1EA2D /* Source */,
+				FB171144296742C100AD523D /* Migration */,
 			);
 			path = Scenes;
 			sourceTree = "<group>";
@@ -577,6 +596,7 @@
 				FB42750D295FB86600131377 /* BaseTableViewController.swift */,
 				FB0CAA5128A68FD70024561A /* EmptyPageStackView.swift */,
 				FB0CAA5328A68FDF0024561A /* LockedPageStackView.swift */,
+				FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -665,6 +685,20 @@
 				FB0E1CDA288AEB0400B67BA9 /* OAuthResponse.swift */,
 			);
 			path = Auth;
+			sourceTree = "<group>";
+		};
+		FB171144296742C100AD523D /* Migration */ = {
+			isa = PBXGroup;
+			children = (
+				FB9A483C2967E47500FFC414 /* Models */,
+				FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */,
+				FB1711472967444B00AD523D /* MigrateMangaView.swift */,
+				FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */,
+				FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */,
+				FB9A48362967E44200FFC414 /* MigrateSearchMatchView.swift */,
+				FB9A48382967E45800FFC414 /* MangaGridView.swift */,
+			);
+			path = Migration;
 			sourceTree = "<group>";
 		};
 		FB1B4825277CE18D0056D02C = {
@@ -1073,6 +1107,15 @@
 			path = Browse;
 			sourceTree = "<group>";
 		};
+		FB9A483C2967E47500FFC414 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FB9A483A2967E47200FFC414 /* MigrationState.swift */,
+				FB9A483D2967E48300FFC414 /* MigrationStrategy.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		FB9A65942781F91F0071F1A2 /* Reader */ = {
 			isa = PBXGroup;
 			children = (
@@ -1254,7 +1297,7 @@
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
 				FB6340B0278E61600072A2A2 /* WasmInterpreter */,
 				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
-				FB5E7DC1295CAAC000CBF1AC /* Nuke */,
+				FB17114A296770CC00AD523D /* NukeUI */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -1335,7 +1378,7 @@
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */,
 				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
-				FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */,
+				FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -1461,11 +1504,13 @@
 				FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */,
 				FB0CAA5628A6BF8A0024561A /* NSPersistentContainer.swift in Sources */,
 				FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */,
+				FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB90F6CC2899867D000C37E6 /* CoreDataManager.swift in Sources */,
 				FB72501327CAAC9F0037F1C9 /* Backup.swift in Sources */,
 				FBE40E2F288EDDB700CCA4DC /* LibraryViewModel.swift in Sources */,
+				FB9A483E2967E48300FFC414 /* MigrationStrategy.swift in Sources */,
 				FB7864862848215500125DC0 /* Reachability.swift in Sources */,
 				FB78648C2849008700125DC0 /* HistoryTableViewCell.swift in Sources */,
 				FB427510295FBAEA00131377 /* BrowseViewModel.swift in Sources */,
@@ -1490,11 +1535,14 @@
 				FBE578F728983C3C00F9F1B5 /* MangaCollectionViewController.swift in Sources */,
 				FB792D992961F0AF00666074 /* MangaDetailHeaderView.swift in Sources */,
 				FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */,
+				FB9A48372967E44200FFC414 /* MigrateSearchMatchView.swift in Sources */,
 				FB1B485D277CE6600056D02C /* DataManager.swift in Sources */,
 				FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */,
+				FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
 				FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */,
 				FB0CAA5028A55BB80024561A /* CoreDataManager+Category.swift in Sources */,
+				FB9A48332967E41400FFC414 /* MigrateSourceSelectionView.swift in Sources */,
 				FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */,
 				FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */,
 				FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */,
@@ -1530,6 +1578,7 @@
 				FB1B51B328E35B4700D3CE0E /* ReaderWebtoonViewModel.swift in Sources */,
 				FB51147B29633F3200E9163F /* SizeChangeListenerDelegate.swift in Sources */,
 				FBED232127BB2BBE0095D0C0 /* FilterModalViewController.swift in Sources */,
+				FB9A483B2967E47200FFC414 /* MigrationState.swift in Sources */,
 				FB1B4853277CE4510056D02C /* AppDelegate.swift in Sources */,
 				FB72502227CBE9170037F1C9 /* SourceInfoHeaderView.swift in Sources */,
 				FB2BE5E429527A7000FAD8A7 /* ReaderPageViewDelegate.swift in Sources */,
@@ -1545,6 +1594,7 @@
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
 				FB4275162960C80000131377 /* SmallSectionHeaderConfiguration.swift in Sources */,
+				FB9A48392967E45800FFC414 /* MangaGridView.swift in Sources */,
 				FB6E34CA279DF9D800BFE54B /* MangaCollectionViewControllerOld.swift in Sources */,
 				FB4275192961203100131377 /* SemanticVersion.swift in Sources */,
 				FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */,
@@ -1580,8 +1630,10 @@
 				FB0CAA6528A9B5440024561A /* MangaManager.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */,
+				FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */,
 				FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
+				FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */,
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
 				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
@@ -2014,20 +2066,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
-			};
-		};
-		FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/Nuke";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.0;
 			};
 		};
 		FB6340AF278E61600072A2A2 /* XCRemoteSwiftPackageReference "wasm-interpreter-apple" */ = {
@@ -2049,15 +2101,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FB17114A296770CC00AD523D /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
+		};
 		FB31AD0E27AE18DA00D50410 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
-		};
-		FB5E7DC1295CAAC000CBF1AC /* Nuke */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB5E7DC0295CAAC000CBF1AC /* XCRemoteSwiftPackageReference "Nuke" */;
-			productName = Nuke;
 		};
 		FB6340B0278E61600072A2A2 /* WasmInterpreter */ = {
 			isa = XCSwiftPackageProductDependency;

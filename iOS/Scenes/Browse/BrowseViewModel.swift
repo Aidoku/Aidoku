@@ -105,8 +105,8 @@ class BrowseViewModel {
         // sort first by name, then by language
         externalSources.sort { $0.name < $1.name }
         externalSources.sort {
-            let lhs = SourceManager.shared.languageCodes.firstIndex(of: $0.lang) ?? 0
-            let rhs = SourceManager.shared.languageCodes.firstIndex(of: $1.lang) ?? 0
+            let lhs = SourceManager.languageCodes.firstIndex(of: $0.lang) ?? 0
+            let rhs = SourceManager.languageCodes.firstIndex(of: $1.lang) ?? 0
             return lhs < rhs
         }
 
