@@ -11,8 +11,32 @@ import Nuke
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var loadingAlert: UIAlertController?
-    var progressView: UIProgressView?
+    private lazy var loadingAlert: UIAlertController = {
+        let loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
+        progressView.tintColor = loadingAlert.view.tintColor
+        loadingAlert.view.addSubview(progressView)
+        loadingAlert.view.addSubview(loadingIndicator)
+        NSLayoutConstraint.activate([
+            progressView.centerXAnchor.constraint(equalTo: loadingAlert.view.centerXAnchor),
+            progressView.bottomAnchor.constraint(equalTo: loadingAlert.view.bottomAnchor, constant: -8),
+            progressView.widthAnchor.constraint(equalTo: loadingAlert.view.widthAnchor, constant: -30)
+        ])
+        return loadingAlert
+    }()
+
+    private lazy var loadingIndicator: UIActivityIndicatorView = {
+        let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+        loadingIndicator.style = .medium
+        loadingIndicator.tag = 3
+        return loadingIndicator
+    }()
+
+    private lazy var progressView: UIProgressView = {
+        let progressView = UIProgressView(frame: .zero)
+        progressView.progress = 0
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        return progressView
+    }()
 
     var navigationController: UINavigationController? {
         (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
@@ -119,32 +143,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func migrateHistory() async {
-        showLoadingIndicator()
+        showLoadingIndicator(style: .progress)
         try? await Task.sleep(nanoseconds: 500 * 1000000)
         await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
             Task { @MainActor in
-                self.progressView?.progress = progress
+                self.progressView.progress = progress
             }
         })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
-        loadingAlert?.dismiss(animated: true)
+        hideLoadingIndicator()
     }
 
-    func showLoadingIndicator() {
-        if loadingAlert == nil {
-            loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
-            progressView = UIProgressView(frame: .zero)
-            progressView!.progress = 0
-            progressView!.tintColor = loadingAlert!.view.tintColor
-            progressView!.translatesAutoresizingMaskIntoConstraints = false
-            loadingAlert!.view.addSubview(self.progressView!)
-            NSLayoutConstraint.activate([
-                progressView!.centerXAnchor.constraint(equalTo: loadingAlert!.view.centerXAnchor),
-                progressView!.bottomAnchor.constraint(equalTo: loadingAlert!.view.bottomAnchor, constant: -8),
-                progressView!.widthAnchor.constraint(equalTo: loadingAlert!.view.widthAnchor, constant: -30)
-            ])
+    enum LoadingStyle {
+        case indefinite
+        case progress
+    }
+
+    func showLoadingIndicator(style: LoadingStyle = .indefinite) {
+        switch style {
+        case .indefinite:
+            loadingIndicator.startAnimating()
+            loadingIndicator.isHidden = false
+            progressView.isHidden = true
+        case .progress:
+            loadingIndicator.isHidden = true
+            progressView.isHidden = false
         }
-        navigationController?.present(loadingAlert!, animated: true, completion: nil)
+        visibleViewController?.present(loadingAlert, animated: true, completion: nil)
+    }
+
+    func hideLoadingIndicator() {
+        loadingAlert.dismiss(animated: true) {
+            self.loadingIndicator.stopAnimating()
+        }
     }
 
     // swiftlint:disable:next cyclomatic_complexity

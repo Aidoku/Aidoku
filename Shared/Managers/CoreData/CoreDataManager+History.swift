@@ -64,6 +64,15 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
+    /// Removes history for manga.
+    func removeHistory(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+        let context = context ?? self.context
+        let history = getHistoryForManga(sourceId: sourceId, mangaId: mangaId, context: context)
+        for item in history {
+            context.delete(item)
+        }
+    }
+
     /// Removes a HistoryObject in the background.
     func removeHistory(sourceId: String, mangaId: String, chapterId: String) async {
         await container.performBackgroundTask { context in
@@ -233,19 +242,24 @@ extension CoreDataManager {
     }
 
     /// Marks chapters as completed.
+    func setCompleted(chapters: [Chapter], date: Date = Date(), context: NSManagedObjectContext? = nil) {
+        for chapter in chapters {
+            let historyObject = self.getOrCreateHistory(
+                sourceId: chapter.sourceId,
+                mangaId: chapter.mangaId,
+                chapterId: chapter.id,
+                context: context
+            )
+            guard !historyObject.completed else { continue }
+            historyObject.completed = true
+            historyObject.dateRead = date
+        }
+    }
+
+    /// Marks chapters as completed.
     func setCompleted(chapters: [Chapter], date: Date = Date()) async {
         await container.performBackgroundTask { context in
-            for chapter in chapters {
-                let historyObject = self.getOrCreateHistory(
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id,
-                    context: context
-                )
-                guard !historyObject.completed else { continue }
-                historyObject.completed = true
-                historyObject.dateRead = date
-            }
+            self.setCompleted(chapters: chapters, date: date, context: context)
             do {
                 try context.save()
             } catch {

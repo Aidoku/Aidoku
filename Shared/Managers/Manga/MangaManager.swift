@@ -51,6 +51,8 @@ extension MangaManager {
                 mangaId: mangaId,
                 context: context
             )
+            // remove chapters
+            CoreDataManager.shared.removeChapters(sourceId: sourceId, mangaId: mangaId, context: context)
             // remove associated trackers
             if
                 case let items = CoreDataManager.shared.getTracks(

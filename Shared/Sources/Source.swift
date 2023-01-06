@@ -118,6 +118,17 @@ class Source: Identifiable {
         initialize()
     }
 
+    func toInfo() -> SourceInfo2 {
+        SourceInfo2(
+            sourceId: manifest.info.id,
+            iconUrl: url.appendingPathComponent("Icon.png"),
+            name: manifest.info.name,
+            lang: manifest.info.lang,
+            version: manifest.info.version,
+            contentRating: SourceInfo2.ContentRating(rawValue: manifest.info.nsfw ?? 0) ?? .safe
+        )
+    }
+
     func exportFunctions() {
         try? globalStore.vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
         try? globalStore.vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)

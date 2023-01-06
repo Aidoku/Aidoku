@@ -335,7 +335,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         else {
             return nil
         }
-        var skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
+        let skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
         index -= 1
         while index >= 0 {
             let new = chapterList[index]
