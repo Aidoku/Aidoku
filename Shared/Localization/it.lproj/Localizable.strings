@@ -82,7 +82,7 @@
 // Manga
 "UNTITLED" = "Senza titolo";
 "ONGOING" = "In corso";
-"NSFW" = "Erotico";
+"NSFW" = "NSFW";
 "MISSING_SOURCE_TEXT" = "La fonte originale sembra essere mancante per questo manga. Per favore riscaricalo o rimuovi questo titolo dalla tua raccolta.";
 "SELECT_ALL" = "Seleziona tutto";
 "NO_CHAPTERS_AVAILABLE" = "Nessun capitolo disponibile";
@@ -107,9 +107,9 @@
 "BUTTON_FILTER" = "Filtra";
 "LIST_HEADER" = "Lista";
 "CANCELLED" = "Annullato";
-"COMPLETED" = "Completato";
-"HIATUS" = "Iato";
-"MORE" = "più";
+"COMPLETED" = "Concluso";
+"HIATUS" = "In pausa";
+"MORE" = "altro";
 "INSTALLED" = "Installato";
 
 // Source
@@ -218,7 +218,7 @@
 "DAILY" = "Giornaliero";
 "EVERY_2_DAYS" = "Ogni 2 giorni";
 "WITH_UNREAD_CHAPTERS" = "Con i capitoli non letti";
-"WITH_COMPLETED_STATUS" = "Con stato completato";
+"WITH_COMPLETED_STATUS" = "Con stato concluso";
 "SAVE_IMAGE_OPTION" = "Opzione Salva immagine";
 "BACKUPS" = "Backup";
 "BACKUP_IMPORT_FAIL" = "Importazione fallita";
@@ -251,5 +251,43 @@
 "VOL_SPACE_X" = "Vol. %g";
 "PORTRAIT" = "Ritratto";
 "LANDSCAPE" = "Paesaggio";
-"PIN_MANGA" = "Fissare Mangas";
-"PIN_MANGA_TYPE" = "Fissare Tipo";
+"PIN_MANGA" = "Manga in evidenza";
+"PIN_MANGA_TYPE" = "Metti in evidenza";
+"UNREAD_CHAPTERS" = "Capitoli non letti";
+"FAILED_CHAPTER_LOAD_INFO" = "Potresti essere offline o la fonte potrebbe avere dei problemi.";
+"RELOAD" = "Ricarica";
+"%i_OF_%i" = "%i di %i";
+"ONE_PAGE_LEFT" = "1 pagina rimanente";
+"LAST_UPDATED" = "Ultimo aggiornamento";
+"TOTAL_CHAPTERS" = "Capitoli totali";
+"WEBTOON" = "Webtoon";
+"FINISHED" = "Finito";
+"%i_PAGES_LEFT" = "%i pagine rimanenti";
+"FAILED_CHAPTER_LOAD" = "Caricamento fallito del capitolo";
+"STATUS" = "Stato";
+"VOLUMES" = "Volumi";
+"STARTED" = "Iniziato";
+"STOP_TRACKING" = "Interrompi il tracciamento";
+"REREADING" = "Rilettura";
+"START_TRACKING" = "Avvia tracciamento";
+"SCORE" = "Punteggio";
+"PAUSED" = "In pausa";
+"READING" = "In lettura";
+"PLANNING" = "Pianificato";
+"DROPPED" = "Abbandonato";
+"NOT_PUBLISHED" = "Non pubblicato";
+"TYPE_COLON_%@" = "Tipo: %@";
+"STATUS_COLON_%@" = "Stato: %@";
+"VIEW_ON_WEBSITE" = "Visualizza sul sito web";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Sei sicuro/a di voler rimuovere tutti gli scaricamenti?";
+"SUPPORT_VIA_KOFI" = "Sostenere tramite Ko-Fi";
+"ONESHOT" = "Oneshot";
+"MANHWA" = "Manhwa";
+"MANGA" = "Manga";
+"LIGHT_NOVEL" = "Light Novel";
+"TRACK" = "Traccia";
+"CLEAR_TRACKED_MANGA" = "Cancella i manga tracciati";
+"CACHE_SIZE_%@" = "Dimensione cache: %@";
+"MANHUA" = "Manhua";
+"CLEAR_TRACKED_MANGA_TEXT" = "L'azione è irreversibile. Sarà interrotto il tracciamento per tutti i manga.";
+"REMOVE_FROM_CATEGORY" = "Rimuovi dalla categoria";
