@@ -11,8 +11,8 @@ struct MigrateMangaView: View {
 
     @Environment(\.presentationMode) var presentationMode
 
-    var manga: [Manga]
-    var sources: [SourceInfo2?]
+    @State var manga: [Manga]
+    @State var sources: [Int: SourceInfo2?]
 
     @State private var migrationState: MigrationState = .idle
 
@@ -21,103 +21,128 @@ struct MigrateMangaView: View {
     private var strategies = MigrationStrategory.allCases
     @State private var selectedStrategry: MigrationStrategory = .firstAlternative
 
-    @State private var migratedManga: [Manga?] = []
-    @State private var newChapters: [[Chapter]] = []
-    @State private var states: [MigrationState] = []
+    @State private var migratedManga: [Int: Manga?] = [:]
+    @State private var newChapters: [Int: [Chapter]] = [:]
+    @State private var states: [Int: MigrationState] = [:]
 
     @State var showingConfirmAlert = false
 
     init(manga: [Manga]) {
-        self.manga = manga
-        self.sources = manga.map {
-            SourceManager.shared.source(for: $0.sourceId)?.toInfo()
+        _manga = State(initialValue: manga)
+        var sources: [Int: SourceInfo2?] = [:]
+        for manga in manga {
+            sources[manga.hashValue] = SourceManager.shared.source(for: manga.sourceId)?.toInfo()
         }
-        _migratedManga = State(initialValue: (0..<manga.count).map { _ in nil })
-        _newChapters = State(initialValue: (0..<manga.count).map { _ in [] })
-        _states = State(initialValue: (0..<manga.count).map { _ in .idle })
+        _sources = State(initialValue: sources)
     }
 
     var body: some View {
-        NavigationView {
-            List {
-                if migrationState == .idle {
-                    Section(header: Text(NSLocalizedString("OPTIONS", comment: ""))) {
-                        NavigationLink(NSLocalizedString("DESTINATION", comment: ""), destination: MigrateSourceSelectionView(
-                            selectedSources: $selectedSources
-                        ))
-                        // TODO: most chapters option
+        List {
+            if migrationState == .idle {
+                Section(header: Text(NSLocalizedString("OPTIONS", comment: ""))) {
+                    NavigationLink(NSLocalizedString("DESTINATION", comment: ""), destination: MigrateSourceSelectionView(
+                        selectedSources: $selectedSources
+                    ))
+                    // TODO: most chapters option
 //                        Picker(selection: $selectedStrategry, label: Text("Migration Strategy")) {
 //                            ForEach(strategies, id: \.self) { strategy in
 //                                Text(strategy.toString())
 //                            }
 //                        }
-                        Button {
-                            Task {
-                                await performSearch()
-                            }
-                        } label: {
-                            HStack {
-                                Image(systemName: "arrow.left.arrow.right")
-                                    .padding(4)
-                                Text("Start Matching")
-                            }
-                        }
-                        .disabled(selectedSources.isEmpty)
-                    }
-                }
-                Section(header: Text(NSLocalizedString("TITLES", comment: ""))) {
-                    ForEach(Array(manga.enumerated()), id: \.offset) { offset, manga in
-                        MangaToMangaView(
-                            fromSource: sources[offset]?.name,
-                            fromManga: manga,
-                            toManga: $migratedManga[offset],
-                            state: $states[offset],
-                            selectedSources: $selectedSources
-                        )
-                    }
-                }
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle(NSLocalizedString("MIGRATION", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("CANCEL", comment: "")) {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if migrationState == .done {
-                        Button(NSLocalizedString("MIGRATE", comment: "")) {
-                            showingConfirmAlert = true
-                        }
-                        .disabled(migratedManga.filter({ $0 != nil }).isEmpty)
-                    } else if migrationState == .running {
-                        ProgressView()
-                    }
-                }
-            }
-            .alert(isPresented: $showingConfirmAlert) {
-                let itemCount = migratedManga.filter({ $0 != nil }).count
-                return Alert(
-                    title: Text(
-                        itemCount == 1
-                            ? NSLocalizedString("MIGRATE_ONE_ITEM?", comment: "")
-                            : String(format: NSLocalizedString("MIGRATE_%i_ITEMS?", comment: ""), itemCount)
-                    ),
-                    primaryButton: .default(Text(NSLocalizedString("CONTINUE", comment: ""))) {
+                    Button {
                         Task {
-                            (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
-                            await performMigration()
-                            dismiss()
-                            (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                            await performSearch()
                         }
-                    },
-                    secondaryButton: .cancel()
-                )
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.left.arrow.right")
+                                .padding(4)
+                            Text(NSLocalizedString("START_MATCHING", comment: ""))
+                        }
+                    }
+                    .disabled(selectedSources.isEmpty)
+                }
+            }
+            Section(header: Text(NSLocalizedString("TITLES", comment: ""))) {
+                ForEach(manga, id: \.hashValue) { manga in
+                    MangaToMangaView(
+                        fromSource: sources[manga.hashValue]??.name,
+                        fromManga: manga,
+                        toManga: self.migratedMangaBinding(for: manga.hashValue),
+                        state: stateBinding(for: manga.hashValue),
+                        selectedSources: $selectedSources
+                    )
+                    .contextMenu {
+                        if #available(iOS 15.0, *) {
+                            Button(role: .destructive) {
+                                remove(manga: manga)
+                            } label: {
+                                Label(NSLocalizedString("REMOVE", comment: ""), systemImage: "trash")
+                            }
+                        } else {
+                            Button {
+                            } label: {
+                                Label(NSLocalizedString("REMOVE", comment: ""), systemImage: "trash")
+                            }
+                            .foregroundColor(.red)
+                        }
+                    }
+                }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .listStyle(.insetGrouped)
+        .navigationTitle(NSLocalizedString("MIGRATION", comment: ""))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if migrationState == .done {
+                    Button(NSLocalizedString("MIGRATE", comment: "")) {
+                        showingConfirmAlert = true
+                    }
+                    .disabled(!migratedManga.contains(where: { $0.value != nil }))
+                } else if migrationState == .running {
+                    ProgressView()
+                }
+            }
+        }
+        .alert(isPresented: $showingConfirmAlert) {
+            let itemCount = migratedManga.filter({ $0.value != nil }).count
+            return Alert(
+                title: Text(
+                    itemCount == 1
+                        ? NSLocalizedString("MIGRATE_ONE_ITEM?", comment: "")
+                        : String(format: NSLocalizedString("MIGRATE_%i_ITEMS?", comment: ""), itemCount)
+                ),
+                primaryButton: .default(Text(NSLocalizedString("CONTINUE", comment: ""))) {
+                    Task {
+                        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                        await performMigration()
+                        dismiss()
+                        (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                    }
+                },
+                secondaryButton: .cancel()
+            )
+        }
+    }
+
+    private func migratedMangaBinding(for key: Int) -> Binding<Manga?> {
+        .init(
+            get: { self.migratedManga[key, default: nil] },
+            set: { self.migratedManga[key] = $0 })
+    }
+    private func stateBinding(for key: Int) -> Binding<MigrationState> {
+        .init(
+            get: { self.states[key, default: .idle] },
+            set: { self.states[key] = $0 })
+    }
+
+    func remove(manga: Manga) {
+        self.manga.removeAll { $0 == manga }
+        sources.removeValue(forKey: manga.hashValue)
+        newChapters.removeValue(forKey: manga.hashValue)
+        migratedManga.removeValue(forKey: manga.hashValue)
+        states.removeValue(forKey: manga.hashValue)
     }
 
     // attempts all items according to selected sources
@@ -129,7 +154,7 @@ struct MigrateMangaView: View {
         for i in 0..<states.count {
             states[i] = .running
         }
-        mangaLoop: for (offset, manga) in manga.enumerated() {
+        mangaLoop: for manga in manga {
             // check sources until a manga is found
             for source in selectedSources {
                 guard
@@ -142,14 +167,14 @@ struct MigrateMangaView: View {
                     let details = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
                     // load chapters
                     let chapters = try? await source.getChapterList(manga: details)
-                    migratedManga[offset] = details
-                    newChapters[offset] = chapters ?? []
-                    states[offset] = .done
+                    migratedManga[manga.hashValue] = details
+                    newChapters[manga.hashValue] = chapters ?? []
+                    states[manga.hashValue] = .done
                     continue mangaLoop
                 }
             }
             // didn't find a manga in any of the sources
-            states[offset] = .failed
+            states[manga.hashValue] = .failed
         }
         withAnimation {
             migrationState = .done
@@ -159,9 +184,12 @@ struct MigrateMangaView: View {
     func performMigration() async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             var migrations: [(from: Manga, to: Manga)] = []
-            for (offset, oldManga) in manga.enumerated() {
-                guard let newManga = migratedManga[offset] else { continue }
-                let newChapters = newChapters[offset]
+            for oldManga in manga {
+                guard
+                    let newManga = migratedManga[oldManga.hashValue],
+                    let newManga = newManga,
+                    let newChapters = newChapters[oldManga.hashValue]
+                else { continue }
 
                 // migrate manga
                 var storedManga = CoreDataManager.shared.getManga(

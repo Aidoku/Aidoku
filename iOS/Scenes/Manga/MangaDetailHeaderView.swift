@@ -322,6 +322,7 @@ class MangaDetailHeaderView: UIView {
 
         let isTracking = CoreDataManager.shared.hasTrack(sourceId: manga.sourceId, mangaId: manga.id)
 
+        let tintColor = readButton.backgroundColor
         bookmarkButton.tintColor = inLibrary ? .white : tintColor
         bookmarkButton.backgroundColor = inLibrary ? tintColor : .secondarySystemFill
         trackerButton.tintColor = isTracking ? .white : tintColor

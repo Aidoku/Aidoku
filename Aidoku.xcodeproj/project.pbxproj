@@ -239,6 +239,8 @@
 		FB9A48392967E45800FFC414 /* MangaGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48382967E45800FFC414 /* MangaGridView.swift */; };
 		FB9A483B2967E47200FFC414 /* MigrationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483A2967E47200FFC414 /* MigrationState.swift */; };
 		FB9A483E2967E48300FFC414 /* MigrationStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483D2967E48300FFC414 /* MigrationStrategy.swift */; };
+		FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */; };
+		FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */; };
 		FB9A65932781F8B10071F1A2 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A65922781F8B10071F1A2 /* LibraryView.swift */; };
 		FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
@@ -476,6 +478,8 @@
 		FB9A48382967E45800FFC414 /* MangaGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridView.swift; sourceTree = "<group>"; };
 		FB9A483A2967E47200FFC414 /* MigrationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationState.swift; sourceTree = "<group>"; };
 		FB9A483D2967E48300FFC414 /* MigrationStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrationStrategy.swift; sourceTree = "<group>"; };
+		FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSourcesView.swift; sourceTree = "<group>"; };
+		FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUINavigationView.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
 		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
@@ -592,6 +596,7 @@
 				FB42750D295FB86600131377 /* BaseTableViewController.swift */,
 				FB0CAA5128A68FD70024561A /* EmptyPageStackView.swift */,
 				FB0CAA5328A68FDF0024561A /* LockedPageStackView.swift */,
+				FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -686,6 +691,7 @@
 			isa = PBXGroup;
 			children = (
 				FB9A483C2967E47500FFC414 /* Models */,
+				FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */,
 				FB1711472967444B00AD523D /* MigrateMangaView.swift */,
 				FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */,
 				FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */,
@@ -1624,8 +1630,10 @@
 				FB0CAA6528A9B5440024561A /* MangaManager.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */,
+				FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */,
 				FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
+				FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */,
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
 				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,

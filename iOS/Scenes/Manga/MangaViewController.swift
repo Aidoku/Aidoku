@@ -382,7 +382,7 @@ class MangaViewController: BaseTableViewController {
 
     func migrateManga() {
         let migrateView = MigrateMangaView(manga: [manga])
-        present(UIHostingController(rootView: migrateView), animated: true)
+        present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {

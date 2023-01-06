@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import SafariServices
 
 class BrowseViewController: BaseTableViewController {
@@ -42,12 +43,20 @@ class BrowseViewController: BaseTableViewController {
         } else {
             globeImage = UIImage(systemName: "globe")
         }
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: globeImage,
-            style: .plain,
-            target: self,
-            action: #selector(openLanguageSelectPage)
-        )
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(
+                image: globeImage,
+                style: .plain,
+                target: self,
+                action: #selector(openLanguageSelectPage)
+            ),
+            UIBarButtonItem(
+                image: UIImage(systemName: "arrow.left.arrow.right"),
+                style: .plain,
+                target: self,
+                action: #selector(openMigrateSourcePage)
+            )
+        ]
 
         // configure table view
         tableView.dataSource = dataSource
@@ -156,6 +165,11 @@ class BrowseViewController: BaseTableViewController {
 
     @objc func openLanguageSelectPage() {
         present(UINavigationController(rootViewController: LanguageSelectViewController()), animated: true)
+    }
+
+    @objc func openMigrateSourcePage() {
+        let migrateView = MigrateSourcesView()
+        present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
     }
 }
 
