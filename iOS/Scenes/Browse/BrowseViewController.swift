@@ -132,6 +132,9 @@ class BrowseViewController: BaseTableViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // fix refresh control snapping height
+        refreshControl.didMoveToSuperview()
+
         // hack to show search bar on initial presentation
         if !navigationItem.hidesSearchBarWhenScrolling {
             navigationItem.hidesSearchBarWhenScrolling = true
