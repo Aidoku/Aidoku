@@ -9,7 +9,7 @@ import UIKit
 
 class LanguageSelectViewController: SettingSelectViewController {
 
-    var languageCodes = Array(SourceManager.shared.languageCodes.dropFirst()) // remove "multi"
+    var languageCodes = Array(SourceManager.languageCodes.dropFirst()) // remove "multi"
 
     init() {
         // sort alphabetically

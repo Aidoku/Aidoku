@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import SafariServices
 
 class MangaViewController: BaseTableViewController {
@@ -196,6 +197,19 @@ class MangaViewController: BaseTableViewController {
         addObserver(forName: "trackItemAdded", using: checkSyncBlock)
         addObserver(forName: "syncTrackItem", using: checkSyncBlock)
 
+        // check for manga migration
+        addObserver(forName: "migratedManga") { [weak self] notification in
+            guard
+                let self = self,
+                let migration = notification.object as? (from: Manga, to: Manga),
+                migration.from.id == self.manga.id && migration.from.sourceId == self.manga.sourceId
+            else { return }
+            Task {
+                self.manga = migration.to
+                self.refresh()
+            }
+        }
+
         let updateDownloadCellBlock: (Notification) -> Void = { [weak self] notification in
             guard let self = self else { return }
             var chapter: Chapter?
@@ -346,7 +360,7 @@ class MangaViewController: BaseTableViewController {
 
     func syncWithTracker(chapterNum: Float) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Sync with Tracker", comment: ""),
+            title: NSLocalizedString("SYNC_WITH_TRACKER", comment: ""),
             message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO", comment: ""), chapterNum),
             preferredStyle: .alert
         )
@@ -366,7 +380,12 @@ class MangaViewController: BaseTableViewController {
         presenter.present(alert, animated: true, completion: nil)
     }
 
-    @objc func refresh(_ refreshControl: UIRefreshControl) {
+    func migrateManga() {
+        let migrateView = MigrateMangaView(manga: [manga])
+        present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
+    }
+
+    @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
         Task {
             if let source = SourceManager.shared.source(for: manga.sourceId) {
                 let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
@@ -412,7 +431,7 @@ class MangaViewController: BaseTableViewController {
             await viewModel.loadHistory(manga: manga)
             updateDataSource()
             updateReadButton()
-            refreshControl.endRefreshing()
+            refreshControl?.endRefreshing()
         }
     }
 
@@ -478,19 +497,27 @@ extension MangaViewController {
 
         // add edit categories button if in library and have categories
         let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
-        if inLibrary, !CoreDataManager.shared.getCategories(sorted: false).isEmpty {
+        if inLibrary {
+            if !CoreDataManager.shared.getCategories(sorted: false).isEmpty {
+                actions.append(UIAction(
+                    title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
+                    image: UIImage(systemName: "folder.badge.gearshape")
+                ) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.present(
+                        UINavigationController(rootViewController: CategorySelectViewController(
+                            manga: self.manga,
+                            chapterList: self.viewModel.chapterList
+                        )),
+                        animated: true
+                    )
+                })
+            }
             actions.append(UIAction(
-                title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
-                image: UIImage(systemName: "folder.badge.gearshape")
+                title: NSLocalizedString("MIGRATE", comment: ""),
+                image: UIImage(systemName: "arrow.left.arrow.right")
             ) { [weak self] _ in
-                guard let self = self else { return }
-                self.present(
-                    UINavigationController(rootViewController: CategorySelectViewController(
-                        manga: self.manga,
-                        chapterList: self.viewModel.chapterList
-                    )),
-                    animated: true
-                )
+                self?.migrateManga()
             })
         }
 

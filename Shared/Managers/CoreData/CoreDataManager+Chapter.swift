@@ -89,22 +89,24 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
-    /// Removes a ChapterObject in the background.
-    func removeChapter(sourceId: String, mangaId: String, chapterId: String) async {
-        await container.performBackgroundTask { context in
-            do {
-                if let object = self.getChapter(
-                    sourceId: sourceId,
-                    mangaId: mangaId,
-                    chapterId: chapterId,
-                    context: context
-                ) {
-                    context.delete(object)
-                    try context.save()
-                }
-            } catch {
-                LogManager.logger.error("CoreDataManager.removeChapter: \(error.localizedDescription)")
-            }
+    /// Removes a ChapterObject.
+    func removeChapter(sourceId: String, mangaId: String, chapterId: String, context: NSManagedObjectContext? = nil) {
+        if let object = self.getChapter(
+            sourceId: sourceId,
+            mangaId: mangaId,
+            chapterId: chapterId,
+            context: context
+        ) {
+            (context ?? self.context).delete(object)
+        }
+    }
+
+    /// Removes chapters for manga.
+    func removeChapters(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+        let context = context ?? self.context
+        let chapters = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+        for chapter in chapters {
+            context.delete(chapter)
         }
     }
 

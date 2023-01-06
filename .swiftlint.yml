@@ -47,7 +47,7 @@ custom_rules:
       - number
       - attribute.builtin
     message: "Don't add a .0 to the end of floating point literals"
-type_body_length: 400
+type_body_length: 500
 function_body_length: 150
 line_length:
     warning: 150
