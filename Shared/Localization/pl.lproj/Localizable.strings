@@ -14,7 +14,7 @@
 // Downloads
 "DOWNLOAD" = "Pobierz";
 "CLEAR" = "Wyczyść";
-"DOWNLOAD_QUEUE" = "Kolejka Pobierania";
+"DOWNLOAD_QUEUE" = "Kolejka pobierania";
 "LIBRARY_SEARCH" = "Znajdź w Bibliotece";
 "REMOVE_FROM_LIBRARY" = "Usuń z Biblioteki";
 "LAST_READ" = "Ostatnio Czytane";
@@ -34,7 +34,7 @@
 "COMPLETED" = "Ukończone";
 "DOWNLOADED" = "Pobrane";
 "RESET" = "Reset";
-"CANCEL_DOWNLOAD" = "Anuluj Pobieranie";
+"CANCEL_DOWNLOAD" = "Anuluj pobieranie";
 
 // Library
 "LIBRARY" = "Biblioteka";
@@ -101,9 +101,9 @@
 "GENERAL" = "Ogólne";
 "ICLOUD_SYNC" = "Synchronizacja iCloud";
 "INCOGNITO_MODE" = "Tryb Incognito";
-"SUPPORT_VIA_KOFI" = "Wsparcie przez Ko-Fi";
-"REMOVE_DOWNLOADS" = "Usuń Pobrania";
-"REMOVE_DOWNLOADS_CONFIRM" = "Usunąć wszystkie wybrane pobrania?";
+"SUPPORT_VIA_KOFI" = "Wesprzyj przez Ko-Fi";
+"REMOVE_DOWNLOADS" = "Usuń pobrane";
+"REMOVE_DOWNLOADS_CONFIRM" = "Usunąć wszystko pobrane?";
 "LIBRARY_ADD_FROM_BROWSE" = "Dodaj mangę z zakładki przeglądaj";
 "FILTER_BY" = "Filtruj według";
 
@@ -111,7 +111,7 @@
 "ALL" = "Wszystkie";
 "NONE" = "Żadne";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Jak dodać źródło";
-"BROWSE_NO_SOURCES_TEXT" = "Skonfiguruj swoją listę źródeł lub\notwórz źródło w Aidoku, aby zacząć";
+"BROWSE_NO_SOURCES_TEXT" = "Aby zacząć, skonfiguruj swoją listę źródeł lub\notwórz źródło w Aidoku";
 "BUTTON_GET" = "Weź";
 
 // Source
@@ -213,8 +213,8 @@
 "LOGOUT_FROM_%@" = "Wylogować się z %@?";
 "MARK_UNREAD" = "Oznacz jako nieprzeczytane";
 "FINISHED_COLON" = "Zakończone:";
-"REMOVE_DOWNLOAD" = "Usuń Pobrane";
-"REMOVE_ALL_DOWNLOADS" = "Usuń Wszystkie Pobrane";
+"REMOVE_DOWNLOAD" = "Usuń pobrane";
+"REMOVE_ALL_DOWNLOADS" = "Usuń wszystko pobrane";
 "PREVIOUS_COLON" = "Poprzednie:";
 "APPEARANCE_DARK" = "Ciemny";
 "SOURCE_LIST_ADDED_TEXT" = "Możesz teraz przeglądać zewnętrzne źródła w zakładce Przeglądaj.";
@@ -255,7 +255,7 @@
 "DOUBLE_PAGE" = "Podwójna strona";
 "TRACKERS" = "Trackery";
 "PLANNING" = "Planowane";
-"DROPPED" = "Zaprzestane";
+"DROPPED" = "Porzucone";
 "CLEAR_TRACKED_MANGA_TEXT" = "Ta czynność jest nieodwracalna. Śledzenie dla każdej dodanej mangi zostanie usunięte.";
 "VOLUMES" = "Tomy";
 "STARTED" = "Zaczęte";
@@ -278,5 +278,16 @@
 "STATUS_COLON_%@" = "Status: %@";
 "VIEW_ON_WEBSITE" = "Zobacz na stronie";
 "CLEAR_TRACKED_MANGA" = "Wyczyść śledzone mangi";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Czy na pewno chcesz usunąć wszystkie pobrane?";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Czy na pewno chcesz usunąć wszystkie pobrane pliki?";
 "CACHE_SIZE_%@" = "Rozmiar pamięci: %@";
+"FAILED_CHAPTER_LOAD_INFO" = "Możesz być offline lub źródło może mieć problemy.";
+"RELOAD" = "Załaduj ponownie";
+"UNREAD_CHAPTERS" = "Nieprzeczytane rozdziały";
+"%i_PAGES_LEFT" = "Pozostało %i stron";
+"%i_OF_%i" = "%i z %i";
+"FAILED_CHAPTER_LOAD" = "Nie udało się załadować rozdziału";
+"LAST_UPDATED" = "Ostatnio zaktualizowane";
+"WEBTOON" = "Webtoon";
+"REMOVE_FROM_CATEGORY" = "Usuń z kategorii";
+"ONE_PAGE_LEFT" = "Została 1 strona";
+"TOTAL_CHAPTERS" = "Wszystkie rozdziały";
