@@ -14,6 +14,11 @@ extension CoreDataManager {
         clear(request: HistoryObject.fetchRequest(), context: context)
     }
 
+    /// Gets all history objects.
+    func getHistory(context: NSManagedObjectContext? = nil) -> [HistoryObject] {
+        (try? (context ?? self.context).fetch(HistoryObject.fetchRequest())) ?? []
+    }
+
     /// Get a particular history object.
     func getHistory(
         sourceId: String,

@@ -111,80 +111,106 @@ class BackupManager {
         NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func restore(from backup: Backup) async {
-        // this should probably do some more checks before running, idk
-
-        await CoreDataManager.shared.container.performBackgroundTask { context in
-            if backup.history != nil {
-                CoreDataManager.shared.clearHistory(context: context)
-                backup.history?.forEach {
-                    _ = $0.toObject(context: context)
-                }
-            }
-
-            if backup.manga != nil {
-                CoreDataManager.shared.clearManga(context: context)
-                backup.manga?.forEach {
-                    _ = $0.toObject(context: context)
-                }
-            }
-
-            if backup.categories != nil {
-                CoreDataManager.shared.clearCategories(context: context)
-                backup.categories?.forEach {
-                    CoreDataManager.shared.createCategory(title: $0, context: context)
-                }
-            }
-
-            if backup.library != nil {
-                CoreDataManager.shared.clearLibrary(context: context)
-                backup.library?.forEach {
-                    let libraryObject = $0.toObject(context: context)
-                    if let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId, context: context) {
-                        libraryObject.manga = manga
-                        if !$0.categories.isEmpty {
-                            CoreDataManager.shared.addCategoriesToManga(
-                                sourceId: $0.sourceId,
-                                mangaId: $0.mangaId,
-                                categories: $0.categories,
-                                context: context
-                            )
-                        }
+        let mangaTask = Task {
+            if let backupManga = backup.manga {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearManga(context: context)
+                    for item in backupManga {
+                        _ = item.toObject(context: context)
                     }
+                    try? context.save()
                 }
-            }
-
-            if backup.chapters != nil {
-                CoreDataManager.shared.clearChapters(context: context)
-                backup.chapters?.forEach {
-                    let chapter = $0.toObject(context: context)
-                    chapter.manga = CoreDataManager.shared.getManga(
-                        sourceId: $0.sourceId,
-                        mangaId: $0.mangaId,
-                        context: context
-                    )
-                    chapter.history = CoreDataManager.shared.getHistory(
-                        sourceId: chapter.sourceId,
-                        mangaId: chapter.mangaId,
-                        chapterId: chapter.id,
-                        context: context
-                    )
-                }
-            }
-
-            if backup.trackItems != nil {
-                CoreDataManager.shared.clearTracks(context: context)
-                backup.trackItems?.forEach {
-                    _ = $0.toObject(context: context)
-                }
-            }
-
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("Backup failed to save: \(error.localizedDescription)")
             }
         }
+        let categoriesTask = Task {
+            if let backupCategories = backup.categories {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearCategories(context: context)
+                    for category in backupCategories {
+                        CoreDataManager.shared.createCategory(title: category, context: context)
+                    }
+                    try? context.save()
+                }
+            }
+        }
+        let libraryTask = Task {
+            await mangaTask.value
+            await categoriesTask.value
+            if let backupLibrary = backup.library {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearLibrary(context: context)
+                    let manga = CoreDataManager.shared.getManga(context: context)
+                    for libraryBackupItem in backupLibrary {
+                        let libraryObject = libraryBackupItem.toObject(context: context)
+                        if let manga = manga.first(where: {
+                            $0.id == libraryBackupItem.mangaId && $0.sourceId == libraryBackupItem.sourceId
+                        }) {
+                            libraryObject.manga = manga
+                            if !libraryBackupItem.categories.isEmpty {
+                                CoreDataManager.shared.addCategoriesToManga(
+                                    sourceId: libraryBackupItem.sourceId,
+                                    mangaId: libraryBackupItem.mangaId,
+                                    categories: libraryBackupItem.categories,
+                                    context: context
+                                )
+                            }
+                        }
+                    }
+                    try? context.save()
+                }
+            }
+        }
+        let historyTask = Task {
+            if let backupHistory = backup.history {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearHistory(context: context)
+                    for item in backupHistory {
+                        _ = item.toObject(context: context)
+                    }
+                    try? context.save()
+                }
+            }
+        }
+        let chaptersTask = Task {
+            await historyTask.value // need to link chapters with history
+            if let backupChapters = backup.chapters {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearChapters(context: context)
+                    let manga = CoreDataManager.shared.getManga(context: context)
+                    let history = CoreDataManager.shared.getHistory(context: context)
+                    for backupChapter in backupChapters {
+                        let chapter = backupChapter.toObject(context: context)
+                        chapter.manga = manga.first {
+                            $0.id == backupChapter.mangaId && $0.sourceId == backupChapter.sourceId
+                        }
+                        chapter.history = history.first {
+                            $0.chapterId == backupChapter.id
+                                && $0.mangaId == backupChapter.mangaId
+                                && $0.sourceId == backupChapter.sourceId
+                        }
+                    }
+                    try? context.save()
+                }
+            }
+        }
+        let trackTask = Task {
+            if let backupTrackItems = backup.trackItems {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearTracks(context: context)
+                    for item in backupTrackItems {
+                        _ = item.toObject(context: context)
+                    }
+                    try? context.save()
+                }
+            }
+        }
+
+        // wait for db changes to finish
+        await libraryTask.value
+        await chaptersTask.value
+        await trackTask.value
 
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
         NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)

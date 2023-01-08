@@ -14,6 +14,11 @@ extension CoreDataManager {
         clear(request: MangaObject.fetchRequest(), context: context)
     }
 
+    /// Gets all manga objects.
+    func getManga(context: NSManagedObjectContext? = nil) -> [MangaObject] {
+        (try? (context ?? self.context).fetch(MangaObject.fetchRequest())) ?? []
+    }
+
     /// Get a particular manga object.
     func getManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> MangaObject? {
         let context = context ?? self.context
