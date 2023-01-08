@@ -166,11 +166,13 @@ class SearchViewController: UIViewController {
         let sourceController = SourceViewController(source: source)
         sourceController.hidesListings = true
         sourceController.navigationItem.searchController?.searchBar.text = query
-        sourceController.viewModel.titleQuery = query
-        sourceController.viewModel.currentPage = 1
-        sourceController.viewModel.manga = (results[source.id]?.manga ?? []).map { $0.toInfo() }
-        sourceController.viewModel.hasMore = results[source.id]?.hasNextPage ?? false
-        navigationController?.pushViewController(sourceController, animated: true)
+        Task {
+            await sourceController.viewModel.setTitleQuery(query)
+            await sourceController.viewModel.setCurrentPage(1)
+            await sourceController.viewModel.setManga((results[source.id]?.manga ?? []).map { $0.toInfo() })
+            await sourceController.viewModel.setHasMore(results[source.id]?.hasNextPage ?? false)
+            navigationController?.pushViewController(sourceController, animated: true)
+        }
     }
 
     func fetchData() async {
