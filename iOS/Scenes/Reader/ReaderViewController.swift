@@ -400,6 +400,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                     chapterId: chapter.id
                 )
                 await TrackerManager.shared.setCompleted(chapter: chapter)
+                NotificationCenter.default.post(name: NSNotification.Name("readChapter"), object: chapter)
             }
         }
     }

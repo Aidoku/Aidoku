@@ -167,6 +167,12 @@ class MangaViewController: BaseTableViewController {
                 }
             }
         }
+        addObserver(forName: "readChapter") { [weak self] notification in
+            guard let self = self, let chapter = notification.object as? Chapter  else { return }
+            self.viewModel.addHistory(for: [chapter])
+            self.updateReadButton()
+            self.reloadCells(for: [chapter])
+        }
         // update tracking state
         addObserver(forName: "updateTrackers") { [weak self] _ in
             guard let self = self else { return }
