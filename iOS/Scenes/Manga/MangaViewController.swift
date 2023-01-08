@@ -186,7 +186,7 @@ class MangaViewController: BaseTableViewController {
                 let latestChapterRead = self.viewModel.chapterList.first {
                     self.viewModel.readingHistory[$0.id]?.page ?? 0 == -1
                 }
-                let latestChapterNum = latestChapterRead?.chapterNum ?? -1 // if not started, -1
+                let latestChapterNum = latestChapterRead?.chapterNum ?? 0 // if not started, 0
                 let state = await tracker.getState(trackId: item.id)
                 if let lastReadChapter = state.lastReadChapter, latestChapterNum < lastReadChapter {
                     // ask to sync
