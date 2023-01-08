@@ -147,13 +147,13 @@ extension MangaManager {
         if libraryRefreshTask != nil {
             // wait for already running library refresh
             await libraryRefreshTask?.value
-            libraryRefreshTask = nil
         } else {
             // spawn new library refresh
             libraryRefreshTask = Task {
                 await doLibraryRefresh(forceAll: forceAll)
                 libraryRefreshTask = nil
             }
+            await libraryRefreshTask?.value
         }
     }
 
