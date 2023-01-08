@@ -45,6 +45,11 @@ class LibraryViewModel {
         }
     }
 
+    enum BadgeType {
+        case none
+        case unread
+    }
+
     struct LibraryFilter {
         var type: FilterMethod
         var exclude: Bool
@@ -57,6 +62,7 @@ class LibraryViewModel {
     lazy var pinType: PinType = getPinType()
     lazy var sortMethod = SortMethod(rawValue: UserDefaults.standard.integer(forKey: "Library.sortOption")) ?? .lastOpened
     lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
+    lazy var badgeType: BadgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
 
     var filters: [LibraryFilter] = []
 

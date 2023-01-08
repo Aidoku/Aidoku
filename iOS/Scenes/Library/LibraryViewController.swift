@@ -276,6 +276,12 @@ class LibraryViewController: MangaCollectionViewController {
             self?.opensReaderView = notification.object as? Bool ?? false
         }
 
+        // refresh unread badges
+        addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
+            self?.viewModel.badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+            self?.reloadItems()
+        }
+
         // TODO: change this notification (elsewhere)
         // it should come with the manga info or chapter or whatever that was read
         addObserver(forName: "updateHistory") { [weak self] _ in
@@ -325,7 +331,11 @@ class LibraryViewController: MangaCollectionViewController {
             cell.sourceId = info.sourceId
             cell.mangaId = info.mangaId
             cell.title = info.title
-            cell.badgeNumber = info.unread
+            if self?.viewModel.badgeType == .unread {
+                cell.badgeNumber = info.unread
+            } else {
+                cell.badgeNumber = 0
+            }
             cell.setEditing(self?.isEditing ?? false, animated: false)
             if cell.isSelected {
                 cell.select(animated: false)
