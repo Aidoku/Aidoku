@@ -468,9 +468,11 @@ class MangaDetailHeaderView: UIView {
 
     private func updateReadButtonTitle() {
         guard let manga = manga else { return }
+        readButton.isUserInteractionEnabled = true
         var title = ""
         if SourceManager.shared.source(for: manga.sourceId) == nil {
             title = NSLocalizedString("UNAVAILABLE", comment: "")
+            readButton.isUserInteractionEnabled = false
         } else if let chapter = nextChapter {
             if !continueReading {
                 title = NSLocalizedString("START_READING", comment: "")
