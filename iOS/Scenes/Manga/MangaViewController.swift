@@ -216,7 +216,7 @@ class MangaViewController: BaseTableViewController {
             }
         }
 
-        let updateDownloadCellBlock: (Notification) -> Void = { [weak self] notification in
+        let removeDownloadBlock: (Notification) -> Void = { [weak self] notification in
             guard let self = self else { return }
             var chapter: Chapter?
             if let chapterCast = notification.object as? Chapter {
@@ -232,7 +232,7 @@ class MangaViewController: BaseTableViewController {
                 self.updateNavbarButtons()
             }
         }
-        let updateDownloadCellsBlock: (Notification) -> Void = { [weak self] notification in
+        let removeDownloadsBlock: (Notification) -> Void = { [weak self] notification in
             guard let self = self else { return }
             Task { @MainActor in
                 if let chapters = notification.object as? [Chapter] {
@@ -275,11 +275,11 @@ class MangaViewController: BaseTableViewController {
                 self.reloadCells(for: [chapter])
             }
         }
-        addObserver(forName: "downloadFinished", using: updateDownloadCellBlock)
-        addObserver(forName: "downloadRemoved", using: updateDownloadCellBlock)
-        addObserver(forName: "downloadCancelled", using: updateDownloadCellBlock)
-        addObserver(forName: "downloadsRemoved", using: updateDownloadCellsBlock)
-        addObserver(forName: "downloadsCancelled", using: updateDownloadCellsBlock)
+        addObserver(forName: "downloadFinished", using: removeDownloadBlock)
+        addObserver(forName: "downloadRemoved", using: removeDownloadBlock)
+        addObserver(forName: "downloadCancelled", using: removeDownloadBlock)
+        addObserver(forName: "downloadsRemoved", using: removeDownloadsBlock)
+        addObserver(forName: "downloadsCancelled", using: removeDownloadsBlock)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -953,14 +953,13 @@ extension MangaViewController {
     func reloadCells(for chapters: [Chapter]) {
         var snapshot = dataSource.snapshot()
         guard !snapshot.itemIdentifiers.isEmpty else { return }
-        var chapters = chapters.filter { snapshot.itemIdentifiers.contains($0) } // filter out chapters not in data source
+        // swap chapters with chapters in data store (not doing this results in "invalid item identifier" crash)
+        let chapters = chapters.compactMap { chapter in
+            snapshot.itemIdentifiers.first(where: { $0 == chapter })
+        }
         if #available(iOS 15.0, *) {
             snapshot.reconfigureItems(chapters)
         } else {
-            // swap chapters with chapters in data store (not doing this results in "invalid item identifier" crash)
-            chapters = chapters.compactMap { chapter in
-                snapshot.itemIdentifiers.first(where: { $0 == chapter })
-            }
             snapshot.reloadItems(chapters)
         }
         dataSource.apply(snapshot)
