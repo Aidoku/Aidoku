@@ -27,13 +27,18 @@ struct MigrateSourceSelectionView: View {
             }
             Section(header: Text(NSLocalizedString("AVAILABLE", comment: ""))) {
                 ForEach(availableSources, id: \.sourceId) { source in
-                    Button(source.name) {
+                    Button {
                         select(source: source)
+                    } label: {
+                        HStack {
+                            Text(source.name)
+                            Spacer() // for ios 15
+                        }
                     }
                     .disabled(
                         selectedSources.contains(source) || excludedSources.contains(source.sourceId)
                     )
-                    .ios14ButtonFix()
+                    .cellButtonFix()
                 }
             }
         }
@@ -56,15 +61,19 @@ struct MigrateSourceSelectionView: View {
     }
 }
 
-// fixes buttons not being selectable in lists on ios 14
-// if BorderlessButtonStyle is enabled on ios 15+, only the text becomes selectable and not the entire cell (smh apple)
+// fixes buttons not being selectable in lists pre-ios 16
+// if BorderlessButtonStyle is enabled on ios 16+, only the text becomes selectable and not the entire cell (smh apple)
 fileprivate extension View {
     @ViewBuilder
-    func ios14ButtonFix() -> some View {
-        if #available(iOS 15.0, *) {
+    func cellButtonFix() -> some View {
+        if #available(iOS 16.0, *) {
             self
+        } else if #available(iOS 15.0, *) {
+            self
+                .contentShape(Rectangle()) // to make the entire cell selectable and not just the text
+                .buttonStyle(.borderless)
         } else {
-            self.buttonStyle(BorderlessButtonStyle())
+            self.buttonStyle(.borderless)
         }
     }
 }

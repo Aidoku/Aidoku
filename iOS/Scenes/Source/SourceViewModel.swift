@@ -153,7 +153,7 @@ actor SourceViewModel {
 
 // MARK: - Setters
 extension SourceViewModel {
-    
+
     func setSource(_ source: Source?) {
         self.source = source
     }
