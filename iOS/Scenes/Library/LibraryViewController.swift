@@ -227,7 +227,7 @@ class LibraryViewController: MangaCollectionViewController {
                 self.updateDataSource()
                 if !self.isEditing {
                     self.updateToolbar() // show/hide add category button
-                    let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.downloadBarButton)
+                    let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.filterBarButton)
                     if self.viewModel.categories.isEmpty && index == nil {
                         self.navigationItem.rightBarButtonItems?.insert(
                             self.filterBarButton,
