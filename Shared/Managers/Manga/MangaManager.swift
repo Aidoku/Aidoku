@@ -80,7 +80,12 @@ extension MangaManager {
 extension MangaManager {
 
     /// Check if a manga should skip updating based on skip options.
-    private func shouldSkip(manga: Manga, options: [String], context: NSManagedObjectContext? = nil) -> Bool {
+    private func shouldSkip(
+        manga: Manga,
+        options: [String],
+        excludedCategories: [String] = [],
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
         // completed
         if options.contains("completed") && manga.status == .completed {
             return true
@@ -102,42 +107,55 @@ extension MangaManager {
             return true
         }
 
-        return false
-    }
-
-    /// Get the latest chapters for all manga in the array, indexed by manga.key.
-    private func getLatestChapters(manga: [Manga], skipOptions: [String] = []) async -> [String: [Chapter]] {
-        await withTaskGroup(
-            of: (String, [Chapter]).self,
-            returning: [String: [Chapter]].self,
-            body: { taskGroup in
-                for mangaItem in manga {
-                    if shouldSkip(manga: mangaItem, options: skipOptions) {
-                        continue
-                    }
-                    taskGroup.addTask {
-                        let chapters = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
-                            .getChapterList(manga: mangaItem)
-                        return (mangaItem.key, chapters ?? [])
-                    }
-                }
-
-                var results: [String: [Chapter]] = [:]
-                for await result in taskGroup {
-                    results[result.0] = result.1
-                }
-                return results
+        if !excludedCategories.isEmpty {
+            guard let libraryObject = CoreDataManager.shared.getLibraryManga(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                context: context
+            ) else {
+                return false
             }
-        )
+
+            // check if excluded via category
+            let categories = CoreDataManager.shared.getCategories(
+                libraryManga: libraryObject
+            ).compactMap { $0.title }
+
+            if !categories.isEmpty {
+                if excludedCategories.contains(where: categories.contains) {
+                    return false
+                }
+            }
+        }
+
+        return false
     }
 
     /// Update properties on manga from latest source info.
     func updateMangaDetails(manga: [Manga]) async {
+        let newDetails = await withTaskGroup(
+            of: (Int, Manga)?.self,
+            returning: [Int: Manga].self
+        ) { taskGroup in
+            for mangaItem in manga {
+                taskGroup.addTask {
+                    guard
+                        let newInfo = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
+                            .getMangaDetails(manga: mangaItem)
+                    else { return nil }
+                    return (mangaItem.hashValue, newInfo)
+                }
+            }
+
+            var results: [Int: Manga] = [:]
+            for await result in taskGroup {
+                guard let result = result else { continue }
+                results[result.0] = result.1
+            }
+            return results
+        }
         for mangaItem in manga {
-            guard
-                let newInfo = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
-                    .getMangaDetails(manga: mangaItem)
-            else { continue }
+            guard let newInfo = newDetails[manga.hashValue] else { return }
             mangaItem.load(from: newInfo)
         }
     }
@@ -176,60 +194,58 @@ extension MangaManager {
             await updateMangaDetails(manga: allManga)
         }
 
-        // fetch new chapters
-        let newChapters = await getLatestChapters(manga: allManga, skipOptions: skipOptions)
-
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        await withTaskGroup(of: Void.self) { group in
             for manga in allManga {
-                guard let chapters = newChapters[manga.key] else { continue }
-
-                guard let libraryObject = CoreDataManager.shared.getLibraryManga(
-                    sourceId: manga.sourceId,
-                    mangaId: manga.id,
-                    context: context
-                ) else {
-                    continue
-                }
-
-                // check if excluded via category
-                if !excludedCategories.isEmpty {
-                    let categories = CoreDataManager.shared.getCategories(
-                        libraryManga: libraryObject
-                    ).compactMap { $0.title }
-
-                    if !categories.isEmpty {
-                        if excludedCategories.contains(where: categories.contains) {
-                            continue
-                        }
+                group.addTask {
+                    let shouldSkip = await CoreDataManager.shared.container.performBackgroundTask { context in
+                        self.shouldSkip(
+                            manga: manga,
+                            options: skipOptions,
+                            excludedCategories: excludedCategories,
+                            context: context
+                        )
                     }
-                }
+                    guard
+                        !shouldSkip,
+                        let chapters = try? await SourceManager.shared.source(for: manga.sourceId)?
+                            .getChapterList(manga: manga)
+                    else { return }
 
-                // update manga object
-                if let mangaObject = libraryObject.manga {
-                    // update details
-                    if updateMetadata {
-                        mangaObject.load(from: manga)
-                    }
-
-                    // update chapter list
-                    if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                        CoreDataManager.shared.setChapters(
-                            chapters,
+                    await CoreDataManager.shared.container.performBackgroundTask { context in
+                        guard let libraryObject = CoreDataManager.shared.getLibraryManga(
                             sourceId: manga.sourceId,
                             mangaId: manga.id,
                             context: context
-                        )
-                        libraryObject.lastUpdated = Date()
+                        ) else {
+                            return
+                        }
+
+                        // update manga object
+                        if let mangaObject = libraryObject.manga {
+                            // update details
+                            if updateMetadata {
+                                mangaObject.load(from: manga)
+                            }
+
+                            // update chapter list
+                            if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
+                                CoreDataManager.shared.setChapters(
+                                    chapters,
+                                    sourceId: manga.sourceId,
+                                    mangaId: manga.id,
+                                    context: context
+                                )
+                                libraryObject.lastUpdated = Date()
+                                try? context.save()
+                            }
+                        }
                     }
                 }
             }
-
-            // save changes (runs on main thread)
-            if context.hasChanges {
-                try? context.save()
-            }
-
-            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
         }
+
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
     }
 }
+
+// 58.46609902381897
