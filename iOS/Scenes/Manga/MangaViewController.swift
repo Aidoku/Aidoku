@@ -335,7 +335,11 @@ class MangaViewController: BaseTableViewController {
     }
 
     func openReaderView(chapter: Chapter) {
-        let readerController = ReaderViewController(chapter: chapter, chapterList: viewModel.chapterList)
+        let readerController = ReaderViewController(
+            chapter: chapter,
+            chapterList: viewModel.chapterList,
+            defaultReadingMode: ReadingMode(rawValue: manga.viewer.rawValue)
+        )
         let navigationController = ReaderNavigationController(rootViewController: readerController)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true)
