@@ -29,8 +29,10 @@ class SourceViewController: MangaCollectionViewController {
 
     init(source: Source) {
         self.source = source
-        self.viewModel.source = source
         super.init()
+        Task {
+            await viewModel.setSource(source)
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -47,7 +49,9 @@ class SourceViewController: MangaCollectionViewController {
             let searchController = UISearchController(searchResultsController: nil)
             searchController.searchResultsUpdater = self
             searchController.obscuresBackgroundDuringPresentation = false
-            searchController.searchBar.text = viewModel.titleQuery
+            Task {
+                searchController.searchBar.text = await viewModel.titleQuery
+            }
             navigationItem.searchController = searchController
         }
 
@@ -59,14 +63,18 @@ class SourceViewController: MangaCollectionViewController {
             elementKind: UICollectionView.elementKindSectionHeader
         ) { [weak self] header, _, _ in
             guard let self = self else { return }
-            header.delegate = self
-            header.title = NSLocalizedString("LIST_HEADER", comment: "")
-            header.options = self.viewModel.listings.map { $0.name } + [NSLocalizedString("LIST_ALL", comment: "")]
-            header.selectedOption = self.viewModel.currentListing != nil
-                ? self.viewModel.listings.firstIndex(of: self.viewModel.currentListing!) ?? 0
-                : self.viewModel.listings.count
-            header.filterButton.alpha = self.source.filterable ? 1 : 0
-            header.filterButton.addTarget(self, action: #selector(self.openFilterPopover), for: .touchUpInside)
+            Task {
+                let listings = await self.viewModel.listings
+                let currentListing = await self.viewModel.currentListing
+                header.delegate = self
+                header.title = NSLocalizedString("LIST_HEADER", comment: "")
+                header.options = listings.map { $0.name } + [NSLocalizedString("LIST_ALL", comment: "")]
+                header.selectedOption = currentListing != nil
+                    ? listings.firstIndex(of: currentListing!) ?? 0
+                    : listings.count
+                header.filterButton.alpha = self.source.filterable ? 1 : 0
+                header.filterButton.addTarget(self, action: #selector(self.openFilterPopover), for: .touchUpInside)
+            }
         }
 
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
@@ -87,17 +95,19 @@ class SourceViewController: MangaCollectionViewController {
         Task {
             if !hidesListings {
                 await viewModel.loadListings()
-                self.collectionView.collectionViewLayout = self.makeCollectionViewLayout()
+                self.collectionView.collectionViewLayout = self.makeCollectionViewLayout(
+                    showHeader: await !viewModel.listings.isEmpty
+                )
                 updateHeaderListing()
             }
             if source.filterable {
                 await viewModel.loadFilters()
-                if viewModel.listings.isEmpty {
-                    updateNavbarItems() // add filter button to navbar
+                if await viewModel.listings.isEmpty {
+                    updateNavbarItems(listingsHidden: true) // add filter button to navbar
                 }
             }
             await viewModel.loadNextMangaPage()
-            updateDataSource()
+            await updateDataSource()
         }
     }
 
@@ -158,13 +168,13 @@ class SourceViewController: MangaCollectionViewController {
     }
 
     // collection view layout with header
-    override func makeCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = super.makeCollectionViewLayout()
+    func makeCollectionViewLayout(showHeader: Bool) -> UICollectionViewLayout {
+        let layout = makeCollectionViewLayout()
         guard let layout = layout as? UICollectionViewCompositionalLayout else { return layout }
 
         let config = UICollectionViewCompositionalLayoutConfiguration()
         config.interSectionSpacing = layout.configuration.interSectionSpacing
-        if !viewModel.listings.isEmpty {
+        if showHeader {
             let globalHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1),
@@ -180,7 +190,7 @@ class SourceViewController: MangaCollectionViewController {
         return layout
     }
 
-    func updateNavbarItems(showFilterButton: Bool = true) {
+    func updateNavbarItems(showFilterButton: Bool = true, listingsHidden: Bool = false) {
         var items = [
             UIBarButtonItem(
                 image: UIImage(systemName: "ellipsis"),
@@ -190,7 +200,7 @@ class SourceViewController: MangaCollectionViewController {
             )
         ]
         // show filter button in navbar if header is hidden
-        if showFilterButton && source.filterable && (hidesListings || viewModel.listings.isEmpty) {
+        if showFilterButton && source.filterable && (hidesListings || listingsHidden) {
             let filterImage: UIImage?
             if #available(iOS 15.0, *) {
                 filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
@@ -227,18 +237,22 @@ class SourceViewController: MangaCollectionViewController {
         guard let header = (collectionView.supplementaryView(
             forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
         ) as? MangaListSelectionHeader) else { return }
-        let listingOption = self.viewModel.currentListing != nil
-            ? self.viewModel.listings.firstIndex(of: self.viewModel.currentListing!) ?? 0
-            : self.viewModel.listings.count
-        ignoreOptionChange = true
-        header.setSelectedOption(listingOption)
+        Task {
+            let listings = await viewModel.listings
+            let currentListing = await viewModel.currentListing
+            let listingOption = currentListing != nil
+                ? listings.firstIndex(of: currentListing!) ?? 0
+                : listings.count
+            ignoreOptionChange = true
+            header.setSelectedOption(listingOption)
+        }
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
-        viewModel.currentPage = nil
         Task {
+            await viewModel.setCurrentPage(nil)
             await viewModel.loadNextMangaPage()
-            updateDataSource()
+            await updateDataSource()
             refreshControl?.endRefreshing()
         }
     }
@@ -250,13 +264,14 @@ class SourceViewController: MangaCollectionViewController {
 
     @objc func openFilterPopover() {
         // save current filters to compare with when done
-        viewModel.saveSelectedFilters()
-
-        let vc = FilterModalViewController(filters: viewModel.filters, selectedFilters: viewModel.selectedFilters)
-        vc.delegate = self
-        vc.resetButton.addTarget(self, action: #selector(resetSelectedFilters), for: .touchUpInside)
-        vc.modalPresentationStyle = .overFullScreen
-        present(vc, animated: false)
+        Task {
+            await viewModel.saveSelectedFilters()
+            let vc = FilterModalViewController(filters: await viewModel.filters, selectedFilters: viewModel.selectedFilters)
+            vc.delegate = self
+            vc.resetButton.addTarget(self, action: #selector(resetSelectedFilters), for: .touchUpInside)
+            vc.modalPresentationStyle = .overFullScreen
+            present(vc, animated: false)
+        }
     }
 
     @objc func openSourceWebView() {
@@ -275,7 +290,9 @@ class SourceViewController: MangaCollectionViewController {
     }
 
     @objc func resetSelectedFilters() {
-        viewModel.resetSelectedFilters()
+        Task {
+            await viewModel.resetSelectedFilters()
+        }
     }
 }
 
@@ -286,10 +303,12 @@ extension SourceViewController {
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
-        if indexPath.row == viewModel.manga.count - 1 && viewModel.hasMore {
-            Task {
+        Task {
+            let mangaCount = await viewModel.manga.count
+            let hasMore = await viewModel.hasMore
+            if indexPath.row == mangaCount - 1 && hasMore {
                 await viewModel.loadNextMangaPage()
-                updateDataSource()
+                await updateDataSource()
             }
         }
     }
@@ -371,27 +390,32 @@ extension SourceViewController {
 // MARK: - Data Source
 extension SourceViewController {
 
-    func updateDataSource() {
+    func updateDataSource() async {
         // show/hide loading indicator
-        if viewModel.manga.isEmpty && viewModel.hasMore {
-            activityIndicator.startAnimating()
-            UIView.animate(withDuration: 0.3) {
-                self.activityIndicator.alpha = 1
+        let manga = await viewModel.manga.unique() // ensure unique elements for data source
+        Task {
+            let hasMore = await viewModel.hasMore
+            if manga.isEmpty && hasMore {
+                activityIndicator.startAnimating()
+                UIView.animate(withDuration: 0.3) {
+                    self.activityIndicator.alpha = 1
+                }
+            } else if activityIndicator.alpha == 1 {
+                UIView.animate(withDuration: 0.3) {
+                    self.activityIndicator.alpha = 0
+                } completion: { _ in
+                    self.activityIndicator.stopAnimating()
+                }
             }
-        } else if activityIndicator.alpha == 1 {
-            UIView.animate(withDuration: 0.3) {
-                self.activityIndicator.alpha = 0
-            } completion: { _ in
-                self.activityIndicator.stopAnimating()
-            }
+            await viewModel.setManga(manga)
         }
 
         var snapshot = NSDiffableDataSourceSnapshot<Section, MangaInfo>()
 
-        viewModel.manga = viewModel.manga.unique() // ensure unique elements for data source
+        await viewModel.setManga(manga)
 
         snapshot.appendSections([.regular])
-        snapshot.appendItems(viewModel.manga)
+        snapshot.appendItems(manga)
 
         dataSource.apply(snapshot)
     }
@@ -421,15 +445,13 @@ extension SourceViewController: UISearchResultsUpdating {
         if query?.isEmpty ?? false {
             query = nil
         }
-        if query != viewModel.titleQuery {
-            Task {
-                viewModel.currentListing = nil
+        Task {
+            if await query != viewModel.titleQuery {
+                await viewModel.setCurrentListing(nil)
                 updateHeaderListing()
                 let success = await viewModel.search(titleQuery: searchController.searchBar.text)
                 if success {
-                    await MainActor.run {
-                        updateDataSource()
-                    }
+                    await updateDataSource()
                 }
             }
         }
@@ -444,25 +466,24 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
             ignoreOptionChange = false
             return
         }
-        if index == viewModel.listings.count { // "all" listing
-            viewModel.currentListing = nil
+        Task {
+        if await index == viewModel.listings.count { // "all" listing
+            await viewModel.setCurrentListing(nil)
             Task {
                 await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
             }
         } else {
             // remove search query when switching to listing
             navigationItem.searchController?.searchBar.text = nil
-            viewModel.titleQuery = nil
-            viewModel.currentListing = viewModel.listings[index]
+            await viewModel.setTitleQuery(nil)
+            await viewModel.setCurrentListing(index)
             Task {
                 await CoreDataManager.shared.setListing(sourceId: source.id, listing: index + 1)
             }
-            DataManager.shared.setListing(for: source, listing: index + 1)
         }
-        viewModel.currentPage = nil
-        Task {
+            await viewModel.setCurrentPage(nil)
             await viewModel.loadNextMangaPage()
-            updateDataSource()
+            await updateDataSource()
         }
     }
 }
@@ -471,18 +492,17 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
 extension SourceViewController: MiniModalDelegate {
 
     func modalWillDismiss() {
-        let shouldRefresh = viewModel.savedFiltersDiffer()
-        viewModel.clearSavedFilters()
-        if shouldRefresh {
-            viewModel.currentPage = nil
-            viewModel.currentListing = nil
-            viewModel.manga = []
-            Task {
-                await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
-            }
-            Task {
+        Task {
+            let shouldRefresh = await viewModel.savedFiltersDiffer()
+            await viewModel.clearSavedFilters()
+            if shouldRefresh {
+                await viewModel.setCurrentPage(nil)
+                await viewModel.setCurrentListing(nil)
+                Task {
+                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
+                }
                 await viewModel.loadNextMangaPage()
-                updateDataSource()
+                await updateDataSource()
             }
         }
     }

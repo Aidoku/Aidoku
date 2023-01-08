@@ -7,7 +7,7 @@
 
 import Foundation
 
-class SourceViewModel {
+actor SourceViewModel {
 
     weak var source: Source?
 
@@ -47,9 +47,7 @@ class SourceViewModel {
     func loadNextMangaPage() async {
         guard let source = source else { return }
         if currentPage == nil {
-            await MainActor.run {
-                manga = []
-            }
+            manga = []
         }
         let page = (currentPage ?? 0) + 1
         let result: MangaPageResult?
@@ -65,11 +63,9 @@ class SourceViewModel {
             result = try? await source.getMangaList(filters: selectedFilters.filters, page: page)
         }
         let mangaInfo = result?.manga.map { $0.toInfo() } ?? []
-        await MainActor.run {
-            currentPage = page
-            hasMore = result?.hasNextPage ?? false
-            manga.append(contentsOf: mangaInfo)
-        }
+        currentPage = page
+        hasMore = result?.hasNextPage ?? false
+        manga.append(contentsOf: mangaInfo)
     }
 
     func search(titleQuery: String?) async -> Bool {
@@ -152,5 +148,37 @@ class SourceViewModel {
             }
         }
         return false
+    }
+}
+
+// MARK: - Setters
+extension SourceViewModel {
+    
+    func setSource(_ source: Source?) {
+        self.source = source
+    }
+
+    func setManga(_ manga: [MangaInfo]) {
+        self.manga = manga
+    }
+
+    func setCurrentPage(_ currentPage: Int?) {
+        self.currentPage = currentPage
+    }
+
+    func setCurrentListing(_ currentListing: Int?) {
+        if let currentListing = currentListing {
+            self.currentListing = listings[currentListing]
+        } else {
+            self.currentListing = nil
+        }
+    }
+
+    func setTitleQuery(_ titleQuery: String?) {
+        self.titleQuery = titleQuery
+    }
+
+    func setHasMore(_ hasMore: Bool) {
+        self.hasMore = hasMore
     }
 }
