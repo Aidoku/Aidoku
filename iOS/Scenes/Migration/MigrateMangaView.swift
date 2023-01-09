@@ -81,10 +81,10 @@ struct MigrateMangaView: View {
                             }
                         } else {
                             Button {
+                                remove(manga: manga)
                             } label: {
                                 Label(NSLocalizedString("REMOVE", comment: ""), systemImage: "trash")
                             }
-                            .foregroundColor(.red)
                         }
                     }
                 }
@@ -106,7 +106,9 @@ struct MigrateMangaView: View {
             }
         }
         .alert(isPresented: $showingConfirmAlert) {
-            let itemCount = migratedManga.filter({ $0.value != nil }).count
+            let itemCount = migratedManga.filter({ item in
+                item.value != nil && manga.contains(where: { manga in manga.hashValue == item.key })
+            }).count
             return Alert(
                 title: Text(
                     itemCount == 1
@@ -154,27 +156,33 @@ struct MigrateMangaView: View {
         for i in 0..<states.count {
             states[i] = .running
         }
-        mangaLoop: for manga in manga {
-            // check sources until a manga is found
-            for source in selectedSources {
-                guard
-                    let title = manga.title,
-                    let source = SourceManager.shared.source(for: source.sourceId)
-                else { continue }
-                let search = try? await source.fetchSearchManga(query: title)
-                if let newManga = search?.manga.first {
-                    // fetch full manga details
-                    let details = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
-                    // load chapters
-                    let chapters = try? await source.getChapterList(manga: details)
-                    migratedManga[manga.hashValue] = details
-                    newChapters[manga.hashValue] = chapters ?? []
-                    states[manga.hashValue] = .done
-                    continue mangaLoop
+        await withTaskGroup(of: Void.self) { group in
+            for manga in manga {
+                group.addTask {
+                    // check sources until a manga is found
+                    for source in selectedSources {
+                        guard
+                            let title = manga.title,
+                            let source = SourceManager.shared.source(for: source.sourceId)
+                        else { continue }
+                        let search = try? await source.fetchSearchManga(query: title)
+                        if let newManga = search?.manga.first {
+                            // fetch full manga details
+                            let details = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
+                            // load chapters
+                            let chapters = try? await source.getChapterList(manga: details)
+                            withAnimation {
+                                migratedManga[manga.hashValue] = details
+                                newChapters[manga.hashValue] = chapters ?? []
+                                states[manga.hashValue] = .done
+                            }
+                            return
+                        }
+                    }
+                    // didn't find a manga in any of the sources
+                    states[manga.hashValue] = .failed
                 }
             }
-            // didn't find a manga in any of the sources
-            states[manga.hashValue] = .failed
         }
         withAnimation {
             migrationState = .done
@@ -280,12 +288,15 @@ struct MigrateMangaView: View {
     }
 
     func dismiss() {
-        presentationMode.wrappedValue.dismiss()
-        if var topController = UIApplication.shared.windows.first!.rootViewController {
-            while let presentedViewController = topController.presentedViewController {
-                topController = presentedViewController
+        if #available(iOS 15.0, *) {
+            presentationMode.wrappedValue.dismiss()
+        } else {
+            if var topController = UIApplication.shared.windows.first!.rootViewController {
+                while let presentedViewController = topController.presentedViewController {
+                    topController = presentedViewController
+                }
+                topController.dismiss(animated: true)
             }
-            topController.dismiss(animated: true)
         }
     }
 }
