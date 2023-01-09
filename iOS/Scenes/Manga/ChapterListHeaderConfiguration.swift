@@ -10,11 +10,13 @@ import UIKit
 enum ChapterSortOption: CaseIterable {
     case sourceOrder
     case chapter
+    case uploadDate
 
     func toString() -> String {
         switch self {
         case .sourceOrder: return NSLocalizedString("SOURCE_ORDER", comment: "")
         case .chapter: return NSLocalizedString("CHAPTER", comment: "")
+        case .uploadDate: return NSLocalizedString("UPLOAD_DATE", comment: "")
         }
     }
 }
