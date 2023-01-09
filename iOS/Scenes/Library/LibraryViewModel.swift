@@ -125,7 +125,7 @@ class LibraryViewModel {
         }
 
         main: for object in libraryObjects {
-            let manga = object.manga!
+            guard let manga = object.manga else { continue }
 
             let unreadCount = CoreDataManager.shared.unreadCount(
                 sourceId: manga.sourceId,

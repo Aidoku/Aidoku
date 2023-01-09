@@ -65,6 +65,9 @@ class ChapterCellContentView: UIView, UIContentView {
         return downloadedView
     }()
 
+    private lazy var accessoryViewTrailingConstraint: NSLayoutConstraint =
+        accessoryView.trailingAnchor.constraint(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor, constant: -12)
+
     init(_ configuration: UIContentConfiguration) {
         self.configuration = configuration
         super.init(frame: .zero)
@@ -89,17 +92,17 @@ class ChapterCellContentView: UIView, UIContentView {
             titleLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 0),
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 22/3),
             titleLabel.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor, constant: -12),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: accessoryView.leadingAnchor, constant: -2),
 
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8/3),
             subtitleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -22/3),
             subtitleLabel.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor, constant: 12),
-            subtitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor, constant: -12),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: accessoryView.leadingAnchor, constant: -2),
 
             accessoryView.widthAnchor.constraint(equalToConstant: 15),
             accessoryView.heightAnchor.constraint(equalToConstant: 15),
             accessoryView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            accessoryView.trailingAnchor.constraint(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor, constant: -12),
+            accessoryViewTrailingConstraint,
 
             heightAnchor.constraint(greaterThanOrEqualToConstant: 42)
         ])
@@ -114,6 +117,13 @@ class ChapterCellContentView: UIView, UIContentView {
         downloadedView.isHidden = !configuration.downloaded
         progressView.isHidden = !configuration.downloading
         progressView.setProgress(value: configuration.downloadProgress, withAnimation: false)
+
+        // move accessoryView out of the way if it's hidden
+        if downloadedView.isHidden && progressView.isHidden {
+            accessoryViewTrailingConstraint.constant = -12 + 15
+        } else {
+            accessoryViewTrailingConstraint.constant = -12
+        }
     }
 
     /// Returns a formatted title for provided chapter.
