@@ -175,15 +175,7 @@ class ReaderViewController: BaseObservingViewController {
                     // don't add history if there is none and we're at the first page
                     return
                 }
-                await CoreDataManager.shared.setRead(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                await CoreDataManager.shared.setProgress(
-                    currentPage,
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id
-                )
-                NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
-                NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: chapter)
+                await HistoryManager.shared.setProgress(chapter: chapter, progress: currentPage)
             }
         }
     }
@@ -392,15 +384,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setCompleted(_ completed: Bool = true, page: Int? = nil) {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await CoreDataManager.shared.setCompleted(
-                    completed,
-                    progress: page,
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id
-                )
-                await TrackerManager.shared.setCompleted(chapter: chapter)
-                NotificationCenter.default.post(name: NSNotification.Name("readChapter"), object: chapter)
+                await HistoryManager.shared.addHistory(chapters: [chapter])
             }
         }
     }
