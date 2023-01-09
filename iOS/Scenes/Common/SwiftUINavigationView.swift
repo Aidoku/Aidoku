@@ -30,13 +30,16 @@ struct SwiftUINavigationView: View {
     }
 
     func dismiss() {
-        presentationMode.wrappedValue.dismiss()
-        // for ios 14
-        if var topController = UIApplication.shared.windows.first!.rootViewController {
-            while let presentedViewController = topController.presentedViewController {
-                topController = presentedViewController
+        if #available(iOS 15.0, *) {
+            presentationMode.wrappedValue.dismiss()
+        } else {
+            // for ios 14
+            if var topController = UIApplication.shared.windows.first!.rootViewController {
+                while let presentedViewController = topController.presentedViewController {
+                    topController = presentedViewController
+                }
+                topController.dismiss(animated: true)
             }
-            topController.dismiss(animated: true)
         }
     }
 }
