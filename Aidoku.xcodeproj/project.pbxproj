@@ -95,6 +95,8 @@
 		FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */; };
 		FB2E02522868A67500786F21 /* TrackerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E02512868A67500786F21 /* TrackerView.swift */; };
 		FB2E02542868B3D900786F21 /* TrackerSettingOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */; };
+		FB30D582296CC0FE006B03A7 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB30D581296CC0FE006B03A7 /* HistoryManager.swift */; };
+		FB30D583296CC0FE006B03A7 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB30D581296CC0FE006B03A7 /* HistoryManager.swift */; };
 		FB31AD0127AC2C3000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
 		FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0227AC39F500D50410 /* UIColor.swift */; };
 		FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0027AC2C3000D50410 /* UIImageColors.swift */; };
@@ -372,6 +374,7 @@
 		FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerModalViewController.swift; sourceTree = "<group>"; };
 		FB2E02512868A67500786F21 /* TrackerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerView.swift; sourceTree = "<group>"; };
 		FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionView.swift; sourceTree = "<group>"; };
+		FB30D581296CC0FE006B03A7 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
 		FB31AD0027AC2C3000D50410 /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		FB31AD0227AC39F500D50410 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
@@ -649,6 +652,7 @@
 			isa = PBXGroup;
 			children = (
 				FB0CAA6428A9B5440024561A /* MangaManager.swift */,
+				FB30D581296CC0FE006B03A7 /* HistoryManager.swift */,
 			);
 			path = Manga;
 			sourceTree = "<group>";
@@ -1605,6 +1609,7 @@
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
 				FB0CAA5828A83F020024561A /* CoreDataManager+Chapter.swift in Sources */,
+				FB30D582296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
 				FB2BE5E629527A9E00FAD8A7 /* ReaderNavigationController.swift in Sources */,
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
 				FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */,
@@ -1696,6 +1701,7 @@
 				FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
 				FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */,
+				FB30D583296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
 				FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB7B7EDB278CEA6A001E6EAF /* FileManager.swift in Sources */,
 				FB0CAA6128A998880024561A /* Manga.swift in Sources */,

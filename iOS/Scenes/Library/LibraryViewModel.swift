@@ -177,6 +177,45 @@ class LibraryViewModel {
         }
     }
 
+    // updates unread counts and manga sort order for history change
+    func updateHistory(for manga: [MangaInfo], read: Bool) async {
+        await withTaskGroup(of: Void.self) { group in
+            for item in manga {
+                group.addTask {
+                    func getUnreadCount() async -> Int {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.unreadCount(
+                                sourceId: item.sourceId,
+                                mangaId: item.mangaId,
+                                context: context
+                            )
+                        }
+                    }
+                    if let pinnedIndex = self.pinnedManga.firstIndex(where: {
+                        $0.mangaId == item.mangaId && $0.sourceId == item.sourceId
+                    }) {
+                        self.pinnedManga[pinnedIndex].unread = await getUnreadCount()
+                        if read && self.sortMethod == .lastRead && pinnedIndex != 0 {
+                            let manga = self.pinnedManga.remove(at: pinnedIndex)
+                            self.pinnedManga.insert(manga, at: 0)
+                        }
+                    } else if let mangaIndex = self.manga.firstIndex(where: {
+                        $0.mangaId == item.mangaId && $0.sourceId == item.sourceId
+                    }) {
+                        self.manga[mangaIndex].unread = await getUnreadCount()
+                        if read && self.sortMethod == .lastRead && mangaIndex != 0 {
+                            let manga = self.manga.remove(at: mangaIndex)
+                            self.manga.insert(manga, at: 0)
+                        }
+                    }
+                }
+            }
+        }
+        if sortMethod == .unreadChapters {
+            sortLibrary()
+        }
+    }
+
     func fetchUnreads() {
         for (i, manga) in manga.enumerated() {
             self.manga[i].unread = CoreDataManager.shared.unreadCount(
@@ -291,6 +330,17 @@ class LibraryViewModel {
                 let manga = manga.remove(at: index)
                 self.manga.insert(manga, at: 0)
             }
+        }
+    }
+
+    func mangaRead(sourceId: String, mangaId: String) {
+        guard sortMethod == .lastRead else { return }
+        if let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId }) {
+            let manga = pinnedManga.remove(at: pinnedIndex)
+            self.manga.insert(manga, at: 0)
+        } else if let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId }) {
+            let manga = manga.remove(at: index)
+            self.manga.insert(manga, at: 0)
         }
     }
 

@@ -282,13 +282,35 @@ class LibraryViewController: MangaCollectionViewController {
             self?.reloadItems()
         }
 
-        // TODO: change this notification (elsewhere)
-        // it should come with the manga info or chapter or whatever that was read
+        // update history
         addObserver(forName: "updateHistory") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
                 self.viewModel.fetchUnreads()
                 self.viewModel.loadLibrary()
+                self.updateDataSource()
+            }
+        }
+        addObserver(forName: "historyAdded") { [weak self] notification in
+            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            Task { @MainActor in
+                let manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                await self.viewModel.updateHistory(for: manga, read: true)
+                self.updateDataSource()
+            }
+        }
+        addObserver(forName: "historyRemoved") { [weak self] notification in
+            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            Task { @MainActor in
+                let manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                await self.viewModel.updateHistory(for: manga, read: false)
+                self.updateDataSource()
+            }
+        }
+        addObserver(forName: "historySet") { [weak self] notification in
+            guard let self = self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
+            Task { @MainActor in
+                self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
                 self.updateDataSource()
             }
         }

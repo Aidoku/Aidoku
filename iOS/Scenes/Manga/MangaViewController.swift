@@ -157,21 +157,37 @@ class MangaViewController: BaseTableViewController {
             }
         }
         // update reading history stored in view model
-        addObserver(forName: "updateHistory") { [weak self] notification in
+        addObserver(forName: "updateHistory") { [weak self] _ in
             guard let self = self else { return }
             Task {
                 await self.viewModel.loadHistory(manga: self.manga)
                 self.updateReadButton()
-                if let chapter = notification.object as? Chapter {
-                    self.reloadCells(for: [chapter])
-                }
+                self.updateDataSource()
             }
         }
-        addObserver(forName: "readChapter") { [weak self] notification in
-            guard let self = self, let chapter = notification.object as? Chapter  else { return }
-            self.viewModel.addHistory(for: [chapter])
-            self.updateReadButton()
-            self.reloadCells(for: [chapter])
+        addObserver(forName: "historyAdded") { [weak self] notification in
+            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            Task {
+                self.viewModel.addHistory(for: chapters)
+                self.reloadCells(for: chapters)
+                self.updateReadButton()
+            }
+        }
+        addObserver(forName: "historyRemoved") { [weak self] notification in
+            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            Task {
+                self.viewModel.removeHistory(for: chapters)
+                self.reloadCells(for: chapters)
+                self.updateReadButton()
+            }
+        }
+        addObserver(forName: "historySet") { [weak self] notification in
+            guard let self = self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
+            Task {
+                self.viewModel.readingHistory[item.chapter.id] = (page: item.page, date: Int(Date().timeIntervalSince1970))
+                self.reloadCells(for: [item.chapter])
+                self.updateReadButton()
+            }
         }
         // update tracking state
         addObserver(forName: "updateTrackers") { [weak self] _ in
@@ -347,25 +363,12 @@ class MangaViewController: BaseTableViewController {
 
     /// Marks given chapters as read.
     func markRead(chapters: [Chapter]) async {
-        await CoreDataManager.shared.setRead(
-            sourceId: manga.sourceId,
-            mangaId: manga.id
-        )
-        let date = Date()
-        await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
-        viewModel.addHistory(for: chapters, date: date)
-        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-        reloadCells(for: chapters)
-        updateReadButton()
+        await HistoryManager.shared.addHistory(chapters: chapters)
     }
 
     /// Marks given chapters as unread.
     func markUnread(chapters: [Chapter]) async {
-        await CoreDataManager.shared.removeHistory(chapters: chapters)
-        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-        viewModel.removeHistory(for: chapters)
-        reloadCells(for: chapters)
-        updateReadButton()
+        await HistoryManager.shared.removeHistory(chapters: chapters)
     }
 
     func syncWithTracker(chapterNum: Float) {
