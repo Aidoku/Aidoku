@@ -73,6 +73,13 @@ class MangaViewModel {
             } else {
                 chapterList.sort { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }
             }
+        case .uploadDate:
+            let now = Date()
+            if ascending {
+                chapterList.sort { $0.dateUploaded ?? now > $1.dateUploaded ?? now }
+            } else {
+                chapterList.sort { $0.dateUploaded ?? now < $1.dateUploaded ?? now }
+            }
         }
     }
 
@@ -80,7 +87,7 @@ class MangaViewModel {
     func getNextChapter() -> Chapter? {
         guard !chapterList.isEmpty else { return nil }
         // get first chapter not completed
-        let chapter = chapterList.reversed().first(where: { readingHistory[$0.id]?.page ?? 0 != -1 })
+        let chapter = getOrderedChapterList().reversed().first(where: { readingHistory[$0.id]?.page ?? 0 != -1 })
         if let chapter = chapter {
             return chapter
         }
@@ -93,5 +100,11 @@ class MangaViewModel {
 //            lastRead = viewModel.chapterList.last!
 //        }
         return chapterList.first
+    }
+
+    func getOrderedChapterList() -> [Chapter] {
+        (sortAscending && sortMethod == .sourceOrder) || (!sortAscending && sortMethod != .sourceOrder)
+            ? chapterList.reversed()
+            : chapterList
     }
 }

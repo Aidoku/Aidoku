@@ -337,7 +337,7 @@ class MangaViewController: BaseTableViewController {
     func openReaderView(chapter: Chapter) {
         let readerController = ReaderViewController(
             chapter: chapter,
-            chapterList: viewModel.chapterList,
+            chapterList: viewModel.getOrderedChapterList(),
             defaultReadingMode: ReadingMode(rawValue: manga.viewer.rawValue)
         )
         let navigationController = ReaderNavigationController(rootViewController: readerController)
@@ -763,6 +763,8 @@ extension MangaViewController {
         else { return nil }
         var config = ChapterListHeaderConfiguration()
         config.delegate = self
+        config.sortOption = viewModel.sortMethod
+        config.sortAscending = viewModel.sortAscending
         config.chapterCount = viewModel.chapterList.count
         cell.contentConfiguration = config
         return cell

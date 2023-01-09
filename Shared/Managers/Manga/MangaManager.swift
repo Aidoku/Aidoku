@@ -247,5 +247,3 @@ extension MangaManager {
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
     }
 }
-
-// 58.46609902381897
