@@ -37,7 +37,12 @@ class SettingsViewController: SettingsTableViewController {
                         title: NSLocalizedString("INCOGNITO_MODE", comment: "")
 //                        subtitle: NSLocalizedString("INCOGNITO_MODE_TEXT", comment: "")
                     ),
-                    SettingItem(type: "switch", key: "General.icloudSync", title: NSLocalizedString("ICLOUD_SYNC", comment: "")),
+                    SettingItem(
+                        type: "switch",
+                        key: "General.icloudSync",
+                        title: NSLocalizedString("ICLOUD_SYNC", comment: ""),
+                        requiresFalse: "isSideloaded"
+                    ),
                     SettingItem(
                         type: "segment",
                         key: "General.appearance",
@@ -456,6 +461,7 @@ extension SettingsViewController {
                     title: NSLocalizedString("RESET", comment: ""),
                     message: NSLocalizedString("RESET_TEXT", comment: "")
                 ) {
+                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
                     self.clearNetworkCache()
                     self.resetSettings()
                     Task {
@@ -470,6 +476,11 @@ extension SettingsViewController {
                         }
                         SourceManager.shared.clearSources()
                         SourceManager.shared.clearSourceLists()
+                        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+                        (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }
                 }
 

@@ -50,21 +50,23 @@ class BackupsViewController: UITableViewController {
             forName: Notification.Name("updateBackupList"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let self = self else { return }
-            let previousBackups = self.backups
-            self.backups = BackupManager.backupUrls
-            let previousCount = previousBackups.count
-            let currentCount = self.backups.count
-            if previousCount == currentCount {
-                self.tableView.reloadData()
-            } else {
-                self.tableView.performBatchUpdates {
-                    if previousCount > currentCount { // remove
-                        for (i, url) in previousBackups.enumerated() where !self.backups.contains(url) {
-                            self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
-                        }
-                    } else { // add
-                        for url in self.backups where !previousBackups.contains(url) {
-                            self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+            Task { @MainActor in
+                let previousBackups = self.backups
+                self.backups = BackupManager.backupUrls
+                let previousCount = previousBackups.count
+                let currentCount = self.backups.count
+                if previousCount == currentCount {
+                    self.tableView.reloadData()
+                } else {
+                    self.tableView.performBatchUpdates {
+                        if previousCount > currentCount { // remove
+                            for (i, url) in previousBackups.enumerated() where !self.backups.contains(url) {
+                                self.tableView.deleteRows(at: [IndexPath(row: i, section: 0)], with: .fade)
+                            }
+                        } else { // add
+                            for url in self.backups where !previousBackups.contains(url) {
+                                self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+                            }
                         }
                     }
                 }
