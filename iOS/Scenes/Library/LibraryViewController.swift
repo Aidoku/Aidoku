@@ -479,6 +479,7 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
         updateNavbarItems()
+        updateToolbar()
         reloadItems()
     }
 
@@ -489,6 +490,7 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
         updateNavbarItems()
+        updateToolbar()
         reloadItems()
     }
 
@@ -515,8 +517,8 @@ class LibraryViewController: MangaCollectionViewController {
                     style: .destructive
                 ) { _ in
                     Task {
-                        for path in selectedItems {
-                            guard let manga = self.dataSource.itemIdentifier(for: path) else { continue }
+                        let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
+                        for manga in identifiers {
                             await self.viewModel.removeFromCurrentCategory(manga: manga)
                         }
                         self.updateDataSource()
@@ -528,9 +530,15 @@ class LibraryViewController: MangaCollectionViewController {
             continueActionName: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: "")
         ) {
             Task {
-                for path in selectedItems {
-                    guard let manga = self.dataSource.itemIdentifier(for: path) else { continue }
-                    await self.viewModel.removeFromLibrary(manga: manga)
+                let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
+                for manga in identifiers {
+                    await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
+                }
+                self.viewModel.pinnedManga = self.viewModel.pinnedManga.filter { item in
+                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
+                }
+                self.viewModel.manga = self.viewModel.pinnedManga.filter { item in
+                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
                 }
                 self.updateDataSource()
                 self.updateNavbarItems()
