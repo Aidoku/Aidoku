@@ -190,7 +190,11 @@ class MangaViewController: BaseTableViewController {
             }
         }
         addObserver(forName: "historySet") { [weak self] notification in
-            guard let self = self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
+            guard
+                let self = self,
+                let item = notification.object as? (chapter: Chapter, page: Int),
+                self.viewModel.readingHistory[item.chapter.id]?.page != -1
+            else { return }
             Task {
                 self.viewModel.readingHistory[item.chapter.id] = (page: item.page, date: Int(Date().timeIntervalSince1970))
                 self.reloadCells(for: [item.chapter])
