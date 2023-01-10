@@ -11,6 +11,8 @@ import Nuke
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    static let isSideloaded = Bundle.main.bundleIdentifier != "xyz.skitty.Aidoku"
+
     private lazy var loadingAlert: UIAlertController = {
         let loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
         progressView.tintColor = loadingAlert.view.tintColor
@@ -55,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         UserDefaults.standard.register(
             defaults: [
-//                "currentVersion": "0.6", // uncomment next update
+                "isSideloaded": Self.isSideloaded, // for icloud sync setting
 
                 "General.incognitoMode": false,
                 "General.icloudSync": false,

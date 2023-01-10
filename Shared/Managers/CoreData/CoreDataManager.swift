@@ -51,7 +51,8 @@ final class CoreDataManager {
         localDescription.shouldInferMappingModelAutomatically = true
 
         if UserDefaults.standard.bool(forKey: "General.icloudSync") {
-            cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.xyz.skitty.Aidoku")
+            cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+                containerIdentifier: "iCloud.xyz.skitty.Aidoku")
         } else {
             cloudDescription.cloudKitContainerOptions = nil
         }
