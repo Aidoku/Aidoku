@@ -14,6 +14,11 @@ extension CoreDataManager {
         clear(request: SourceObject.fetchRequest(), context: context)
     }
 
+    /// Gets all source objects.
+    func getSources(context: NSManagedObjectContext? = nil) -> [SourceObject] {
+        (try? (context ?? self.context).fetch(SourceObject.fetchRequest())) ?? []
+    }
+
     /// Check if a source exists in the data store.
     func hasSource(id: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
@@ -30,6 +35,21 @@ extension CoreDataManager {
         request.predicate = NSPredicate(format: "id == %@", id)
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
+    }
+
+    /// Creates a new track item.
+    @discardableResult
+    func createSource(source: Source, context: NSManagedObjectContext? = nil) -> SourceObject {
+        let context = context ?? self.context
+        let object = SourceObject(context: context)
+        object.load(from: source)
+        return object
+    }
+
+    /// Removes a source object.
+    func removeSource(id: String, context: NSManagedObjectContext? = nil) {
+        guard let object = getSource(id: id, context: context) else { return }
+        (context ?? self.context).delete(object)
     }
 
     func setListing(sourceId: String, listing: Int) async {

@@ -39,7 +39,9 @@ class BackupManager {
     }
 
     func saveNewBackup() {
-        save(backup: createBackup())
+        Task {
+            save(backup: await createBackup())
+        }
     }
 
     func importBackup(from url: URL) -> Bool {
@@ -66,38 +68,41 @@ class BackupManager {
         }
     }
 
-    func createBackup() -> Backup {
-        let library = (try? DataManager.shared.getLibraryObjects())?.map {
-            BackupLibraryManga(libraryObject: $0)
-        } ?? []
-        let history = (try? DataManager.shared.getReadHistory())?.map {
-            BackupHistory(historyObject: $0)
-        } ?? []
-        let manga = (try? DataManager.shared.getMangaObjects())?.map {
-            BackupManga(mangaObject: $0)
-        } ?? []
-        let chapters = (try? DataManager.shared.getChapterObjects())?.map {
-            BackupChapter(chapterObject: $0)
-        } ?? []
-        let trackItems = (try? DataManager.shared.getTrackObjects())?.compactMap {
-            BackupTrackItem(trackObject: $0)
-        } ?? []
-        let categories = DataManager.shared.getCategories()
-        let sources = (try? DataManager.shared.getSourceObjects())?.compactMap {
-            $0.id
-        } ?? []
+    func createBackup() async  -> Backup {
+        // no
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            let library = CoreDataManager.shared.getLibraryManga(context: context).map {
+                BackupLibraryManga(libraryObject: $0)
+            }
+            let history = CoreDataManager.shared.getHistory(context: context).map {
+                BackupHistory(historyObject: $0)
+            }
+            let manga = CoreDataManager.shared.getManga(context: context).map {
+                BackupManga(mangaObject: $0)
+            }
+            let chapters = CoreDataManager.shared.getChapters(context: context).map {
+                BackupChapter(chapterObject: $0)
+            }
+            let trackItems = CoreDataManager.shared.getTracks(context: context).compactMap {
+                BackupTrackItem(trackObject: $0)
+            }
+            let categories = CoreDataManager.shared.getCategoryTitles(context: context)
+            let sources = CoreDataManager.shared.getSources(context: context).compactMap {
+                $0.id
+            }
 
-        return Backup(
-            library: library,
-            history: history,
-            manga: manga,
-            chapters: chapters,
-            trackItems: trackItems,
-            categories: categories,
-            sources: sources,
-            date: Date(),
-            version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-        )
+            return Backup(
+                library: library,
+                history: history,
+                manga: manga,
+                chapters: chapters,
+                trackItems: trackItems,
+                categories: categories,
+                sources: sources,
+                date: Date(),
+                version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+            )
+        }
     }
 
     func renameBackup(url: URL, name: String?) {

@@ -149,7 +149,7 @@ extension BackupsViewController {
                     self.loadingAlert?.dismiss(animated: true)
 
                     let missingSources = (backup.sources ?? []).filter {
-                        !DataManager.shared.hasSource(id: $0)
+                        !CoreDataManager.shared.hasSource(id: $0)
                     }
                     if !missingSources.isEmpty {
                         var message = NSLocalizedString("MISSING_SOURCES_TEXT", comment: "")

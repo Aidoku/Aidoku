@@ -98,6 +98,30 @@ extension CoreDataManager {
         return true
     }
 
+    /// Moves a cateogry to a new position.
+    func moveCategory(title: String, position: Int, context: NSManagedObjectContext? = nil) {
+        guard
+            position >= 0,
+            let categoryObject = getCategory(title: title, context: context),
+            categoryObject.sort != position
+        else { return }
+        let currentPos = Int(categoryObject.sort)
+        let categories = getCategories(context: context)
+        guard position < categories.count else { return }
+        if position > currentPos {
+            // move categories above currentPos down a position
+            for i in currentPos + 1...position {
+                categories[i].sort -= 1
+            }
+        } else {
+            // move categories below currentPos up a position
+            for i in position..<currentPos {
+                categories[i].sort += 1
+            }
+        }
+        categoryObject.sort = Int16(position)
+    }
+
     /// Add categories to library manga.
     func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String], context: NSManagedObjectContext? = nil) {
         guard let libraryObject = getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }

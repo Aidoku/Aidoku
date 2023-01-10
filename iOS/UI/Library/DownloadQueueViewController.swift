@@ -203,7 +203,7 @@ extension DownloadQueueViewController {
         if let manga = download.manga {
             cell.titleLabel.text = manga.title ?? NSLocalizedString("UNTITLED", comment: "")
         } else {
-            let manga = DataManager.shared.getMangaObject(withId: download.mangaId, sourceId: download.sourceId)
+            let manga = CoreDataManager.shared.getManga(sourceId: download.sourceId, mangaId: download.mangaId)
             cell.titleLabel.text = manga?.title ?? NSLocalizedString("UNTITLED", comment: "")
         }
 

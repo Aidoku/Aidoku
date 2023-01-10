@@ -17,6 +17,7 @@ class SettingsViewController: SettingsTableViewController {
 
     // swiftlint:disable:next function_body_length
     init() {
+        let categories = CoreDataManager.shared.getCategoryTitles()
         super.init(items: [
             // MARK: About
             SettingItem(type: "group", title: NSLocalizedString("ABOUT", comment: ""), items: [
@@ -130,16 +131,16 @@ class SettingsViewController: SettingsTableViewController {
                     type: "multi-single-select",
                     key: "Library.defaultCategory",
                     title: NSLocalizedString("DEFAULT_CATEGORY", comment: ""),
-                    values: ["", "none"] + DataManager.shared.getCategories(),
+                    values: ["", "none"] + categories,
                     titles: [
                         NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
-                    ] + DataManager.shared.getCategories()
+                    ] + categories
                 ),
                 SettingItem(
                     type: "multi-select",
                     key: "Library.lockedCategories",
                     title: NSLocalizedString("LOCKED_CATEGORIES", comment: ""),
-                    values: DataManager.shared.getCategories(),
+                    values: categories,
                     notification: "updateLibraryLock",
                     requires: "Library.lockLibrary",
                     authToOpen: true
@@ -175,7 +176,7 @@ class SettingsViewController: SettingsTableViewController {
                     type: "multi-select",
                     key: "Library.excludedUpdateCategories",
                     title: NSLocalizedString("EXCLUDED_CATEGORIES", comment: ""),
-                    values: DataManager.shared.getCategories()
+                    values: categories
                 ),
                 SettingItem(
                     type: "switch",
@@ -236,7 +237,7 @@ class SettingsViewController: SettingsTableViewController {
             ]),
             // MARK: Advanced
             SettingItem(type: "group", title: NSLocalizedString("ADVANCED", comment: ""), items: [
-                SettingItem(type: "button", key: "Advanced.clearChapterCache", title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: "")),
+//                SettingItem(type: "button", key: "Advanced.clearChapterCache", title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearTrackedManga", title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
@@ -278,7 +279,7 @@ class SettingsViewController: SettingsTableViewController {
                let lockedCategoriesIndex = self.items[categoryPrefsIndex].items?.firstIndex(where: { $0.key == "Library.lockedCategories" }),
                let updatePrefsIndex = self.items.firstIndex(where: { $0.title == NSLocalizedString("LIBRARY_UPDATING", comment: "") }),
                let excludedCategoriesIndex = self.items[updatePrefsIndex].items?.firstIndex(where: { $0.key == "Library.excludedUpdateCategories" }) {
-                let categories = DataManager.shared.getCategories()
+                let categories = CoreDataManager.shared.getCategoryTitles()
                 self.items[categoryPrefsIndex].items?[categoryIndex].values = ["", "none"] + categories
                 self.items[categoryPrefsIndex].items?[categoryIndex].titles = [
                     NSLocalizedString("ALWAYS_ASK", comment: ""), NSLocalizedString("NONE", comment: "")
@@ -374,20 +375,27 @@ extension SettingsViewController {
             case "Logs.display":
                 navigationController?.pushViewController(LogViewController(), animated: true)
 
-            case "Advanced.clearChapterCache":
-                confirmAction(title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: ""),
-                              message: NSLocalizedString("CLEAR_CHAPTER_CACHE_TEXT", comment: "")) {
-                    DataManager.shared.clearChapters()
-                    Task {
-                        await DataManager.shared.updateLibrary()
-                    }
-                }
+//            case "Advanced.clearChapterCache":
+//                confirmAction(
+//                    title: NSLocalizedString("CLEAR_CHAPTER_CACHE", comment: ""),
+//                    message: NSLocalizedString("CLEAR_CHAPTER_CACHE_TEXT", comment: "")
+//                ) {
+//                    DataManager.shared.clearChapters()
+//                    Task {
+//                        await DataManager.shared.updateLibrary()
+//                    }
+//                }
             case "Advanced.clearTrackedManga":
                 confirmAction(
                     title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: ""),
                     message: NSLocalizedString("CLEAR_TRACKED_MANGA_TEXT", comment: "")
                 ) {
-                    DataManager.shared.clearTrackItems()
+                    Task {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.clearTracks(context: context)
+                            try? context.save()
+                        }
+                    }
                 }
             case "Advanced.clearNetworkCache":
                 var totalCacheSize = URLCache.shared.currentDiskUsage
@@ -408,15 +416,22 @@ extension SettingsViewController {
                     self.clearNetworkCache()
                 }
             case "Advanced.clearReadHistory":
-                confirmAction(title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
-                              message: NSLocalizedString("CLEAR_READ_HISTORY_TEXT", comment: "")) {
-                    DataManager.shared.clearHistory()
+                confirmAction(
+                    title: NSLocalizedString("CLEAR_READ_HISTORY", comment: ""),
+                    message: NSLocalizedString("CLEAR_READ_HISTORY_TEXT", comment: "")
+                ) {
+                    Task {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.clearHistory(context: context)
+                            try? context.save()
+                        }
+                    }
                 }
             case "Advanced.migrateHistory":
                 confirmAction(
                     title: "Migrate Chapter History",
                     // swiftlint:disable:next line_length
-                    message: "This will migrate leftover reading history from old versions that aren not currently linked with stored chapters in the local database. This should've happened automatically upon updating, but if it didn't complete, it can be re-executed this way."
+                    message: "This will migrate leftover reading history from old versions that are not currently linked with stored chapters in the local database. This should've happened automatically upon updating, but if it didn't complete, it can be re-executed this way."
                 ) {
                     Task {
                         self.showLoadingIndicator()
@@ -430,23 +445,32 @@ extension SettingsViewController {
                     }
                 }
             case "Advanced.resetSettings":
-                confirmAction(title: NSLocalizedString("RESET_SETTINGS", comment: ""),
-                              message: NSLocalizedString("RESET_SETTINGS_TEXT", comment: "")) {
+                confirmAction(
+                    title: NSLocalizedString("RESET_SETTINGS", comment: ""),
+                    message: NSLocalizedString("RESET_SETTINGS_TEXT", comment: "")
+                ) {
                     self.resetSettings()
                 }
             case "Advanced.reset":
-                confirmAction(title: NSLocalizedString("RESET", comment: ""),
-                              message: NSLocalizedString("RESET_TEXT", comment: "")) {
+                confirmAction(
+                    title: NSLocalizedString("RESET", comment: ""),
+                    message: NSLocalizedString("RESET_TEXT", comment: "")
+                ) {
                     self.clearNetworkCache()
-                    DataManager.shared.clearLibrary()
-                    DataManager.shared.clearHistory()
-                    DataManager.shared.clearManga()
-                    DataManager.shared.clearChapters()
-                    DataManager.shared.clearCategories()
-                    DataManager.shared.clearTrackItems()
-                    SourceManager.shared.clearSources()
-                    SourceManager.shared.clearSourceLists()
                     self.resetSettings()
+                    Task {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.clearLibrary(context: context)
+                            CoreDataManager.shared.clearHistory(context: context)
+                            CoreDataManager.shared.clearChapters(context: context)
+                            CoreDataManager.shared.clearCategories(context: context)
+                            CoreDataManager.shared.clearTracks(context: context)
+                            CoreDataManager.shared.clearTracks(context: context)
+                            try? context.save()
+                        }
+                        SourceManager.shared.clearSources()
+                        SourceManager.shared.clearSourceLists()
+                    }
                 }
 
             default:

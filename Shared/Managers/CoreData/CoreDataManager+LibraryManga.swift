@@ -97,7 +97,6 @@ extension CoreDataManager {
             let libraryObject = LibraryMangaObject(context: context)
             libraryObject.manga = mangaObject
             self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
-//            DataManager.shared.libraryManga.append(manga) // temporary
             do {
                 try context.save()
             } catch {

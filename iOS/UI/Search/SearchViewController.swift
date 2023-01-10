@@ -230,7 +230,7 @@ extension SearchViewController: UICollectionViewDataSource {
         }
         if let manga = results[sources[indexPath.section].id]?.manga[indexPath.row] {
             cell?.manga = manga
-            cell?.showsLibraryBadge = DataManager.shared.libraryContains(manga: manga)
+            cell?.showsLibraryBadge = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
         }
         return cell ?? UICollectionViewCell()
     }
@@ -270,14 +270,16 @@ extension SearchViewController: UICollectionViewDelegate {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
             if let manga = self.results[self.sources[indexPath.section].id]?.manga[indexPath.row] {
-                if DataManager.shared.libraryContains(manga: manga) {
+                if CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id) {
                     actions.append(UIAction(
                         title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
                         image: UIImage(systemName: "trash"),
                         attributes: .destructive
                     ) { _ in
-                        DataManager.shared.delete(manga: manga)
-                        (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
+                        Task {
+                            await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.id)
+                            (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
+                        }
                     })
                 } else {
                     actions.append(UIAction(
@@ -285,10 +287,8 @@ extension SearchViewController: UICollectionViewDelegate {
                         image: UIImage(systemName: "books.vertical.fill")
                     ) { _ in
                         Task {
-                            if let manga = try? await SourceManager.shared.source(for: manga.sourceId)?.getMangaDetails(manga: manga) {
-                                DataManager.shared.addToLibrary(manga: manga)
-                                (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
-                            }
+                            await MangaManager.shared.addToLibrary(manga: manga, fetchMangaDetails: true)
+                            (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                         }
                     })
                 }

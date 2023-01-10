@@ -300,9 +300,14 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
         addObserver(forName: "historyRemoved") { [weak self] notification in
-            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            guard let self = self else { return }
             Task { @MainActor in
-                let manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                var manga: [MangaInfo] = []
+                if let chapters = notification.object as? [Chapter] {
+                    manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                } else if let mangaObject = notification.object as? Manga {
+                    manga = [mangaObject.toInfo()]
+                }
                 await self.viewModel.updateHistory(for: manga, read: false)
                 self.updateDataSource()
             }
