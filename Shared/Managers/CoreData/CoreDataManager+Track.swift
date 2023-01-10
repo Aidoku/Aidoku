@@ -14,6 +14,11 @@ extension CoreDataManager {
         clear(request: TrackObject.fetchRequest(), context: context)
     }
 
+    /// Gets all track objects.
+    func getTracks(context: NSManagedObjectContext? = nil) -> [TrackObject] {
+        (try? (context ?? self.context).fetch(TrackObject.fetchRequest())) ?? []
+    }
+
     /// Checks if a track item exists in the data store for a manga.
     func hasTrack(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
@@ -61,6 +66,17 @@ extension CoreDataManager {
         return (try? context.fetch(request)) ?? []
     }
 
+    /// Fetches all track items for a specified tracker.
+    func getTracks(trackerId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+        let context = context ?? self.context
+        let request = TrackObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "trackerId == %@",
+            trackerId
+        )
+        return (try? context.fetch(request)) ?? []
+    }
+
     /// Creates a new track item.
     @discardableResult
     func createTrack(
@@ -90,5 +106,17 @@ extension CoreDataManager {
             context: context
         ) else { return }
         (context ?? self.context).delete(object)
+    }
+
+    /// Removes all track items for a tracker.
+    func removeTracks(trackerId: String, context: NSManagedObjectContext? = nil) {
+        let objects = getTracks(
+            trackerId: trackerId,
+            context: context
+        )
+        let context = context ?? self.context
+        for object in objects {
+            context.delete(object)
+        }
     }
 }

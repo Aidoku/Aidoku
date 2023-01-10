@@ -35,7 +35,9 @@ class HistoryViewController: UIViewController {
     var offset = 0
     var loadingMore = false {
         didSet {
-            tableView.tableFooterView?.isHidden = !loadingMore
+            Task { @MainActor in
+                tableView.tableFooterView?.isHidden = !loadingMore
+            }
         }
     }
     var loadingTask: Task<(), Never>?
@@ -148,6 +150,21 @@ class HistoryViewController: UIViewController {
             self?.queueRefresh = true
         })
         observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("historyAdded"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.queueRefresh = true
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("historyRemoved"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.queueRefresh = true
+        })
+        observers.append(NotificationCenter.default.addObserver(
+            forName: Notification.Name("historySet"), object: nil, queue: nil
+        ) { [weak self] _ in
+            self?.queueRefresh = true
+        })
+        observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("History.lockHistoryTab"), object: nil, queue: nil
         ) { [weak self] _ in
             self?.locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
@@ -248,45 +265,54 @@ class HistoryViewController: UIViewController {
         loadingMore = true
         let entries = entries
         let offset = offset
-        loadingTask = Task.detached {
+        loadingTask = Task {
             var historyDict: [Int: [HistoryEntry]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
-            let historyObj = (try? DataManager.shared.getReadHistory(limit: 15, offset: offset)) ?? []
-            // all history is displayed
-            if historyObj.isEmpty {
-                Task { @MainActor in
+            var mangaKeys: [String] = self.shownMangaKeys
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                let historyObj = CoreDataManager.shared.getRecentHistory(limit: 15, offset: offset, context: context)
+                // all history is displayed
+                if historyObj.isEmpty {
                     self.reachedEnd = true
                     self.loadingMore = false
+                    return
                 }
-                return
-            }
-            var mangaKeys: [String] = await self.shownMangaKeys
-            for obj in historyObj {
-                let days = Calendar.autoupdatingCurrent.dateComponents(
-                    Set([Calendar.Component.day]),
-                    from: obj.dateRead ?? Date.distantPast,
-                    to: Date()
-                ).day ?? 0
-                var arr = historyDict[days] ?? []
+                for obj in historyObj {
+                    let days = Calendar.autoupdatingCurrent.dateComponents(
+                        Set([Calendar.Component.day]),
+                        from: obj.dateRead ?? Date.distantPast,
+                        to: Date()
+                    ).day ?? 0
+                    var arr = historyDict[days] ?? []
 
-                let key = "\(obj.sourceId).\(obj.mangaId)"
+                    let key = "\(obj.sourceId).\(obj.mangaId)"
 
-                guard !mangaKeys.contains(key),
-                      let manga = await DataManager.shared.getManga(sourceId: obj.sourceId, mangaId: obj.mangaId),
-                      let chapter = await DataManager.shared.getChapter(sourceId: obj.sourceId, mangaId: obj.mangaId, chapterId: obj.chapterId) else {
-                    continue
+                    guard
+                        !mangaKeys.contains(key),
+                        let manga = CoreDataManager.shared.getManga(
+                            sourceId: obj.sourceId,
+                            mangaId: obj.mangaId,
+                            context: context
+                        )?.toManga(),
+                        let chapter = CoreDataManager.shared.getChapter(
+                            sourceId: obj.sourceId,
+                            mangaId: obj.mangaId,
+                            chapterId: obj.chapterId,
+                            context: context
+                        )?.toChapter()
+                    else { continue }
+
+                    mangaKeys.append(key)
+
+                    let new = HistoryEntry(
+                        manga: manga,
+                        chapter: chapter,
+                        date: obj.dateRead ?? Date.distantPast,
+                        currentPage: obj.completed ? -1 : Int(obj.progress),
+                        totalPages: Int(obj.total)
+                    )
+                    arr.append(new)
+                    historyDict[days] = arr
                 }
-
-                mangaKeys.append(key)
-
-                let new = HistoryEntry(
-                    manga: manga,
-                    chapter: chapter,
-                    date: obj.dateRead ?? Date.distantPast,
-                    currentPage: obj.completed ? -1 : Int(obj.progress),
-                    totalPages: Int(obj.total)
-                )
-                arr.append(new)
-                historyDict[days] = arr
             }
             let finalMangaKeys = mangaKeys
             let finalHistoryDict = historyDict
@@ -353,7 +379,10 @@ class HistoryViewController: UIViewController {
 
         let action = UIAlertAction(title: NSLocalizedString("CLEAR", comment: ""), style: .destructive) { _ in
             Task { @MainActor in
-                DataManager.shared.clearHistory()
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearHistory(context: context)
+                    try? context.save()
+                }
                 self.reloadHistory()
             }
         }
@@ -492,14 +521,18 @@ extension HistoryViewController: UITableViewDelegate {
             )
 
             alertView.addAction(UIAlertAction(title: NSLocalizedString("REMOVE", comment: ""), style: .destructive) { _ in
-                DataManager.shared.removeHistory(for: entry.chapter)
-                self.reloadHistory()
-                completion(true)
+                Task {
+                    await HistoryManager.shared.removeHistory(chapters: [entry.chapter])
+                    self.reloadHistory()
+                    completion(true)
+                }
             })
             alertView.addAction(UIAlertAction(title: NSLocalizedString("REMOVE_ALL_MANGA_HISTORY", comment: ""), style: .destructive) { _ in
-                DataManager.shared.removeHistory(for: entry.manga)
-                self.reloadHistory()
-                completion(true)
+                Task {
+                    await HistoryManager.shared.removeHistory(manga: entry.manga)
+                    self.reloadHistory()
+                    completion(true)
+                }
             })
             alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel) { _ in
                 completion(false)

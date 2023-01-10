@@ -113,7 +113,13 @@ extension CategoriesViewController {
         let category = categories[sourceIndexPath.row]
         categories.remove(at: sourceIndexPath.row)
         categories.insert(category, at: destinationIndexPath.row)
-        DataManager.shared.moveCategory(title: category, toPosition: destinationIndexPath.row)
+        Task {
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.moveCategory(title: category, position: destinationIndexPath.row)
+                try? context.save()
+            }
+            NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+        }
     }
 
     override func tableView(

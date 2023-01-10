@@ -226,28 +226,26 @@ extension MangaCollectionViewControllerOld: UICollectionViewDelegate {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
 
-            if DataManager.shared.libraryContains(manga: targetManga) {
+            if CoreDataManager.shared.hasLibraryManga(sourceId: targetManga.sourceId, mangaId: targetManga.id) {
                 actions.append(UIAction(
                     title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
                     image: UIImage(systemName: "trash"),
                     attributes: .destructive
                 ) { _ in
-                    Task.detached {
-                        DataManager.shared.delete(manga: targetManga, context: DataManager.shared.backgroundContext)
+                    Task {
+                        await MangaManager.shared.removeFromLibrary(sourceId: targetManga.sourceId, mangaId: targetManga.id)
+                        (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
                     }
-                    (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
                 })
             } else {
                 actions.append(UIAction(
                     title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
                     image: UIImage(systemName: "books.vertical.fill")
                 ) { _ in
-                    Task.detached {
-                        if let newManga = try? await SourceManager.shared.source(for: targetManga.sourceId)?.getMangaDetails(manga: targetManga) {
-                            DataManager.shared.addToLibrary(manga: newManga, context: DataManager.shared.backgroundContext)
-                        }
+                    Task {
+                        await MangaManager.shared.addToLibrary(manga: targetManga, fetchMangaDetails: true)
+                        (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                     }
-                    (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                 })
             }
 

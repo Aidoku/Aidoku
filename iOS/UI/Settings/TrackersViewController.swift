@@ -56,7 +56,12 @@ class TrackersViewController: UITableViewController {
             guard indexPath.row < self.trackers.count else { return }
             self.trackers[indexPath.row].logout()
             self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
-            DataManager.shared.removeTrackObjects(trackerId: self.trackers[indexPath.row].id)
+            Task {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.removeTracks(trackerId: self.trackers[indexPath.row].id, context: context)
+                    try? context.save()
+                }
+            }
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alert, animated: true)

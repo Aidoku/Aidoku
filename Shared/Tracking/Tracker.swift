@@ -108,6 +108,6 @@ extension Tracker {
 extension Tracker {
     /// Check if tracker is currently tracking a manga object.
     func isTracking(manga: Manga) -> Bool {
-        DataManager.shared.getTrackObject(trackerId: id, sourceId: manga.sourceId, mangaId: manga.id) != nil
+        CoreDataManager.shared.hasTrack(trackerId: id, sourceId: manga.sourceId, mangaId: manga.id)
     }
 }

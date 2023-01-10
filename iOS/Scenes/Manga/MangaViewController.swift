@@ -174,10 +174,18 @@ class MangaViewController: BaseTableViewController {
             }
         }
         addObserver(forName: "historyRemoved") { [weak self] notification in
-            guard let self = self, let chapters = notification.object as? [Chapter] else { return }
+            guard let self = self else { return }
             Task {
-                self.viewModel.removeHistory(for: chapters)
-                self.reloadCells(for: chapters)
+                if let chapters = notification.object as? [Chapter] {
+                    self.viewModel.removeHistory(for: chapters)
+                    self.reloadCells(for: chapters)
+                } else if
+                    let manga = notification.object as? Manga,
+                    manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
+                {
+                    self.viewModel.readingHistory = [:]
+                    self.updateDataSource()
+                }
                 self.updateReadButton()
             }
         }

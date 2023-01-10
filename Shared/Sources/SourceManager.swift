@@ -26,7 +26,8 @@ class SourceManager {
     }
 
     init() {
-        sources = ((try? DataManager.shared.getSourceObjects())?.compactMap { $0.toSource() } ?? [])
+        sources = CoreDataManager.shared.getSources()
+            .compactMap { $0.toSource() }
             .sorted { $0.manifest.info.name < $1.manifest.info.name }
             .sorted {
                 let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
@@ -85,7 +86,10 @@ extension SourceManager {
 
                 source.url = destination
 
-                await DataManager.shared.add(source: source, context: DataManager.shared.backgroundContext)
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.createSource(source: source, context: context)
+                    try? context.save()
+                }
                 sources.append(source)
                 sources.sort { $0.manifest.info.name < $1.manifest.info.name }
                 sources.sort {
@@ -112,15 +116,25 @@ extension SourceManager {
             try? FileManager.default.removeItem(at: source.url)
         }
         sources = []
-        DataManager.shared.clearSources()
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        Task {
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.clearSources(context: context)
+                try? context.save()
+            }
+            NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        }
     }
 
     func remove(source: Source) {
         try? FileManager.default.removeItem(at: source.url)
-        DataManager.shared.delete(source: source)
         sources.removeAll { $0.id == source.id }
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        Task {
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.removeSource(id: source.id, context: context)
+                try? context.save()
+            }
+            NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        }
     }
 }
 

@@ -35,12 +35,12 @@ class TrackerManager {
     func setCompleted(chapter: Chapter) async {
         guard let chapterNum = chapter.chapterNum else { return }
         let volumeNum = Int(floor(chapter.volumeNum ?? -1))
-        let trackItems: [TrackItem] = await DataManager.shared.container.performBackgroundTask { context in
-            DataManager.shared.getTrackItems(
+        let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getTracks(
                 sourceId: chapter.sourceId,
                 mangaId: chapter.mangaId,
                 context: context
-            )
+            ).map { $0.toItem() }
         }
 
         for item in trackItems {

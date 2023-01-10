@@ -48,4 +48,12 @@ extension HistoryManager {
         await CoreDataManager.shared.removeHistory(chapters: chapters)
         NotificationCenter.default.post(name: NSNotification.Name("historyRemoved"), object: chapters)
     }
+
+    func removeHistory(manga: Manga) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeHistory(sourceId: manga.sourceId, mangaId: manga.id, context: context)
+            try? context.save()
+        }
+        NotificationCenter.default.post(name: NSNotification.Name("historyRemoved"), object: manga)
+    }
 }

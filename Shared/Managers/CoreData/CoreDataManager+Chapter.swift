@@ -14,6 +14,11 @@ extension CoreDataManager {
         clear(request: ChapterObject.fetchRequest(), context: context)
     }
 
+    /// Gets all chapter objects.
+    func getChapters(context: NSManagedObjectContext? = nil) -> [ChapterObject] {
+        (try? (context ?? self.context).fetch(ChapterObject.fetchRequest())) ?? []
+    }
+
     /// Get a particular chapter object.
     func getChapter(
         sourceId: String,

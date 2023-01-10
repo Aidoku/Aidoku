@@ -36,6 +36,15 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
+    /// Gets sorted history objects.
+    func getRecentHistory(limit: Int, offset: Int, context: NSManagedObjectContext? = nil) -> [HistoryObject] {
+        let request = HistoryObject.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: false)]
+        request.fetchLimit = limit
+        request.fetchOffset = offset
+        return (try? (context ?? self.context).fetch(request)) ?? []
+    }
+
     /// Check if history exists for a chapter.
     func hasHistory(
         sourceId: String,
