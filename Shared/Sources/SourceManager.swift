@@ -36,6 +36,8 @@ class SourceManager {
             }
         sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
 
+        sources.append(TachiJsSource())
+
         Task {
             for source in sources {
                 _ = try? await source.getFilters()

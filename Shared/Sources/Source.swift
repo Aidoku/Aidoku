@@ -68,8 +68,8 @@ class Source: Identifiable {
     var id: String {
         manifest.info.id
     }
-    var url: URL
-    var manifest: SourceManifest
+    var url: URL!
+    var manifest: SourceManifest!
 
     var filters: [FilterBase] = []
     var defaultFilters: [FilterBase] = []
@@ -95,10 +95,12 @@ class Source: Identifiable {
     var handlesImageRequests = false
     var needsFilterRefresh = true
 
-    var globalStore: WasmGlobalStore
-    var netModule: WasmNet
+    var globalStore: WasmGlobalStore!
+    var netModule: WasmNet!
 
     var actor: SourceActor!
+
+    init() {}
 
     init(from url: URL) throws {
         self.url = url
@@ -159,10 +161,8 @@ class Source: Identifiable {
             LogManager.logger.error("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
         }
     }
-}
 
-// MARK: - Settings
-extension Source {
+    // MARK: - Settings
 
     // swiftlint:disable:next cyclomatic_complexity
     func loadSettings() {
@@ -233,10 +233,8 @@ extension Source {
             UserDefaults.standard.register(defaults: ["\(id).languages": defaultLanguages])
         }
     }
-}
 
-// MARK: - Get Functions
-extension Source {
+    // MARK: - Get Functions
 
     func getDefaultFilters() -> [FilterBase] {
         guard (defaultFilters.isEmpty || needsFilterRefresh) && !filters.isEmpty else { return defaultFilters }

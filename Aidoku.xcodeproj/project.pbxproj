@@ -16,6 +16,10 @@
 		FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F8662964917A00D1EA2D /* SourceViewController.swift */; };
 		FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
 		FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */; };
+		FB0B9A182971EF1D00822046 /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0B9A172971EF1D00822046 /* Promise.swift */; };
+		FB0B9A192971EF1D00822046 /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0B9A172971EF1D00822046 /* Promise.swift */; };
+		FB0B9A1B297217EC00822046 /* fetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0B9A1A297217EC00822046 /* fetch.swift */; };
+		FB0B9A1C297217EC00822046 /* fetch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0B9A1A297217EC00822046 /* fetch.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */; };
@@ -58,6 +62,12 @@
 		FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */; };
 		FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1711472967444B00AD523D /* MigrateMangaView.swift */; };
 		FB17114B296770CC00AD523D /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = FB17114A296770CC00AD523D /* NukeUI */; };
+		FB1A42882971A8E600615E25 /* TachiJsSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A42872971A8E600615E25 /* TachiJsSource.swift */; };
+		FB1A42892971A8E600615E25 /* TachiJsSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A42872971A8E600615E25 /* TachiJsSource.swift */; };
+		FB1A428B2971AC6D00615E25 /* tachi-js.js in Resources */ = {isa = PBXBuildFile; fileRef = FB1A428A2971AC6D00615E25 /* tachi-js.js */; };
+		FB1A428C2971AC6D00615E25 /* tachi-js.js in Resources */ = {isa = PBXBuildFile; fileRef = FB1A428A2971AC6D00615E25 /* tachi-js.js */; };
+		FB1A428F2971CFBC00615E25 /* DOMParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A428E2971CFBC00615E25 /* DOMParser.swift */; };
+		FB1A42902971CFBC00615E25 /* DOMParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A428E2971CFBC00615E25 /* DOMParser.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482D277CE18D0056D02C /* AidokuApp.swift */; };
@@ -318,6 +328,8 @@
 		FB05F8662964917A00D1EA2D /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
 		FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Source.swift"; sourceTree = "<group>"; };
 		FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewModel.swift; sourceTree = "<group>"; };
+		FB0B9A172971EF1D00822046 /* Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
+		FB0B9A1A297217EC00822046 /* fetch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fetch.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Manga.swift"; sourceTree = "<group>"; };
 		FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+LibraryManga.swift"; sourceTree = "<group>"; };
@@ -340,6 +352,9 @@
 		FB11EDEE2784B0690007365D /* Volume.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Volume.swift; sourceTree = "<group>"; };
 		FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCategoryViewController.swift; sourceTree = "<group>"; };
 		FB1711472967444B00AD523D /* MigrateMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateMangaView.swift; sourceTree = "<group>"; };
+		FB1A42872971A8E600615E25 /* TachiJsSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TachiJsSource.swift; sourceTree = "<group>"; };
+		FB1A428A2971AC6D00615E25 /* tachi-js.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "tachi-js.js"; sourceTree = "<group>"; };
+		FB1A428E2971CFBC00615E25 /* DOMParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DOMParser.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
 		FB1B4830277CE1920056D02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -702,6 +717,16 @@
 			path = Migration;
 			sourceTree = "<group>";
 		};
+		FB1A428D2971CFB200615E25 /* JavaScriptCore */ = {
+			isa = PBXGroup;
+			children = (
+				FB1A428E2971CFBC00615E25 /* DOMParser.swift */,
+				FB0B9A172971EF1D00822046 /* Promise.swift */,
+				FB0B9A1A297217EC00822046 /* fetch.swift */,
+			);
+			path = JavaScriptCore;
+			sourceTree = "<group>";
+		};
 		FB1B4825277CE18D0056D02C = {
 			isa = PBXGroup;
 			children = (
@@ -801,12 +826,15 @@
 		FB1B4891277CECF60056D02C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				FB1A428D2971CFB200615E25 /* JavaScriptCore */,
 				FB7B7ED0278CE670001E6EAF /* SourceManager.swift */,
 				FB7B7ED3278CE692001E6EAF /* Source.swift */,
+				FB1A42872971A8E600615E25 /* TachiJsSource.swift */,
 				FBED233727C3D0E30095D0C0 /* SourceActor.swift */,
 				FB6340CD27947BCA0072A2A2 /* ExternalSourceInfo.swift */,
 				FBED232A27BEAC980095D0C0 /* SettingItem.swift */,
 				FB2E024C286606FC00786F21 /* JsonAnyValue.swift */,
+				FB1A428A2971AC6D00615E25 /* tachi-js.js */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -1396,6 +1424,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4846277CE1920056D02C /* Assets.xcassets in Resources */,
+				FB1A428B2971AC6D00615E25 /* tachi-js.js in Resources */,
 				FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */,
 				FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */,
 			);
@@ -1406,6 +1435,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4847277CE1920056D02C /* Assets.xcassets in Resources */,
+				FB1A428C2971AC6D00615E25 /* tachi-js.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1550,6 +1580,7 @@
 				FB2BE5E82953851100FAD8A7 /* ZoomableCollectionView.swift in Sources */,
 				FB31AD0327AC39F500D50410 /* UIColor.swift in Sources */,
 				FBED231527B838980095D0C0 /* SettingsAboutViewController.swift in Sources */,
+				FB1A428F2971CFBC00615E25 /* DOMParser.swift in Sources */,
 				FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
@@ -1570,6 +1601,8 @@
 				FB55AFA728AAAFE10083EFC3 /* UINavigationItem.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FBED231927B8BA7C0095D0C0 /* MiniModalViewController.swift in Sources */,
+				FB1A42882971A8E600615E25 /* TachiJsSource.swift in Sources */,
+				FB0B9A182971EF1D00822046 /* Promise.swift in Sources */,
 				FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */,
 				FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */,
 				FB4B0AD7285BC9690066A13B /* TrackStatus.swift in Sources */,
@@ -1618,6 +1651,7 @@
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */,
 				FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */,
+				FB0B9A1B297217EC00822046 /* fetch.swift in Sources */,
 				FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */,
 				37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */,
 				FB0CAA5228A68FD70024561A /* EmptyPageStackView.swift in Sources */,
@@ -1671,6 +1705,7 @@
 				FB1B4869277CE76B0056D02C /* MangaModels.swift in Sources */,
 				FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */,
 				FB0E1CD9288AEAF700B67BA9 /* OAuthClient.swift in Sources */,
+				FB1A42902971CFBC00615E25 /* DOMParser.swift in Sources */,
 				FB72501A27CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
 				FBD6A4092858D365007116C9 /* TrackerManager.swift in Sources */,
 				FB42751A2961216E00131377 /* SemanticVersion.swift in Sources */,
@@ -1720,6 +1755,7 @@
 				FB31AD0427AC3A1000D50410 /* UIImageColors.swift in Sources */,
 				FB4B0AE1285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
 				FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
+				FB0B9A192971EF1D00822046 /* Promise.swift in Sources */,
 				FB4B0ADB285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */,
 				FB0CAA5F28A9986A0024561A /* CoreDataManager+LibraryManga.swift in Sources */,
@@ -1727,8 +1763,10 @@
 				FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */,
 				FB0CAA5D28A998670024561A /* CoreDataManager+Chapter.swift in Sources */,
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
+				FB0B9A1C297217EC00822046 /* fetch.swift in Sources */,
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
+				FB1A42892971A8E600615E25 /* TachiJsSource.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 			);
