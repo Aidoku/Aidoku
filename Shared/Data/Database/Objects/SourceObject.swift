@@ -20,7 +20,7 @@ extension SourceObject {
 
     func toSource() -> Source? {
         if let path = path {
-            return try? Source(from: FileManager.default.documentDirectory.appendingPathComponent(path))
+            return SourceManager.shared.source(from: FileManager.default.documentDirectory.appendingPathComponent(path))
         }
         return nil
     }

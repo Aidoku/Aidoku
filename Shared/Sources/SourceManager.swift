@@ -14,8 +14,16 @@ class SourceManager {
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Sources", isDirectory: true)
 
-    var sources: [Source] = []
-    var sourceLists: [URL] = []
+    lazy var sources: [Source] = CoreDataManager.shared.getSources()
+        .compactMap { $0.toSource() }
+        .sorted { $0.manifest.info.name < $1.manifest.info.name }
+        .sorted {
+            let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
+            let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
+            return lhs < rhs
+        }
+    lazy var sourceLists: [URL] = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? [])
+        .compactMap { URL(string: $0) }
 
     static let languageCodes = [
         "multi", "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
@@ -26,18 +34,6 @@ class SourceManager {
     }
 
     init() {
-        sources = CoreDataManager.shared.getSources()
-            .compactMap { $0.toSource() }
-            .sorted { $0.manifest.info.name < $1.manifest.info.name }
-            .sorted {
-                let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
-                let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
-                return lhs < rhs
-            }
-        sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
-
-        sources.append(TachiJsSource())
-
         Task {
             for source in sources {
                 _ = try? await source.getFilters()
@@ -58,6 +54,16 @@ extension SourceManager {
         sources.contains { $0.id == id }
     }
 
+    func source(from url: URL) -> Source? {
+        let source: Source?
+        if url.appendingPathComponent("main.js").exists {
+            source = try? TachiJsSource(from: url)
+        } else {
+            source = try? Source(from: url)
+        }
+        return source
+    }
+
     func importSource(from url: URL) async -> Source? {
         Self.directory.createDirectory()
 
@@ -76,7 +82,7 @@ extension SourceManager {
             try? FileManager.default.removeItem(at: fileUrl)
 
             let payload = temporaryDirectory.appendingPathComponent("Payload")
-            let source = try? Source(from: payload)
+            let source = source(from: payload)
             if let source = source {
                 let destination = Self.directory.appendingPathComponent(source.id)
                 if destination.exists {

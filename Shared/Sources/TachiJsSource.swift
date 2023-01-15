@@ -14,10 +14,14 @@ class TachiJsSource: Source {
 
     let context = JSContext()!
 
-    override init() {
+    override init(from url: URL) throws {
         super.init()
 
-        self.url = URL(string: "https://skitty.xyz/")!
+        self.url = url
+
+        let jsonData = try Data(contentsOf: url.appendingPathComponent("source.json"))
+        manifest = try JSONDecoder().decode(SourceManifest.self, from: jsonData)
+        let jsData = try Data(contentsOf: url.appendingPathComponent("main.js"))
 
         context.exceptionHandler = { _, error in
             if let error = error {
@@ -58,19 +62,9 @@ class JsPage {}
 class JsMangasPage {}
 """)
 
-        // load tachijs (example source: tcbscans)
-        // swiftlint:disable:next force_try
-        context.evaluateScript(try! String(contentsOf: Bundle.main.url(forResource: "tachi-js", withExtension: "js")!))
-
-        let name = context.evaluateScript("this[\"tachi-js\"].name()").toString() ?? ""
-
-        self.manifest = SourceManifest(
-            info: SourceInfo(id: "tachijs", lang: "en", name: name, version: 1, url: nil, urls: nil, nsfw: nil),
-            languageSelectType: nil,
-            languages: nil,
-            listings: [Listing(name: "Popular"), Listing(name: "Latest")],
-            filters: nil
-        )
+        // load main.js
+        let jsString = String(data: jsData, encoding: .utf8)
+        context.evaluateScript(jsString)
     }
 
     override func getFilters() async throws -> [FilterBase] {
@@ -103,7 +97,7 @@ class JsMangasPage {}
                 print("CAUGHT ERROR", error)
                 continuation.resume(throwing: JSError.jsError(error))
             }
-            let promise = context.evaluateScript("this[\"tachi-js\"]." + call)
+            let promise = context.evaluateScript("this.\(manifest.info.module ?? "")." + call)
             _ = (promise?.toObject() as? Promise)?
                 .then(JSValue(object: thenBlock, in: context))
                 .catch(JSValue(object: catchBlock, in: context))

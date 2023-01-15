@@ -16,6 +16,7 @@ struct SourceInfo: Codable {
     let url: String?
     let urls: [String]?
     let nsfw: Int?
+    let module: String? // for tachijs
 }
 
 struct LanguageInfo: Codable {
