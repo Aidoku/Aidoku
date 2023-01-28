@@ -26,19 +26,39 @@ class SourceManager {
     }
 
     init() {
-        sources = CoreDataManager.shared.getSources()
-            .compactMap { $0.toSource() }
-            .sorted { $0.manifest.info.name < $1.manifest.info.name }
-            .sorted {
-                let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
-                let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
-                return lhs < rhs
+        CoreDataManager.shared.context.performAndWait {
+            // fetch sources from db
+            let dbSources = CoreDataManager.shared.getSources()
+            var sources: [Source] = []
+            for dbSource in dbSources {
+                if let source = dbSource.toSource(), !sources.contains(where: { $0.id == source.id }) {
+                    sources.append(source)
+                } else {
+                    // strip duplicate and dead sources
+                    CoreDataManager.shared.remove(dbSource)
+                }
             }
+            CoreDataManager.shared.saveIfNeeded()
+
+            // sort and store sources
+            self.sources = sources
+                .sorted { $0.manifest.info.name < $1.manifest.info.name }
+                .sorted {
+                    let lhs = Self.languageCodes.firstIndex(of: $0.manifest.info.lang) ?? 0
+                    let rhs = Self.languageCodes.firstIndex(of: $1.manifest.info.lang) ?? 0
+                    return lhs < rhs
+                }
+        }
         sourceLists = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? []).compactMap { URL(string: $0) }
 
+        // load source filters
         Task {
-            for source in sources {
-                _ = try? await source.getFilters()
+            await withTaskGroup(of: Void.self) { group in
+                for source in sources {
+                    group.addTask {
+                        _ = try? await source.getFilters()
+                    }
+                }
             }
             NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
         }
