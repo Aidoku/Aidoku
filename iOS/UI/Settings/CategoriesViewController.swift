@@ -43,6 +43,11 @@ class CategoriesViewController: UITableViewController {
             if !success { return false }
             do {
                 try context.save()
+                var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+                if let oldIndex = locked.firstIndex(of: title) {
+                    locked[oldIndex] = newTitle
+                    UserDefaults.standard.set(locked, forKey: "Library.lockedCategories")
+                }
                 return true
             } catch {
                 LogManager.logger.error("CategoriesViewController.renameCategory(title: \(title)): \(error.localizedDescription)")
