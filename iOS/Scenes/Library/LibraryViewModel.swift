@@ -57,6 +57,7 @@ class LibraryViewModel {
 
     enum FilterMethod: Int {
         case downloaded = 0
+        case tracking
     }
 
     lazy var pinType: PinType = getPinType()
@@ -144,13 +145,16 @@ class LibraryViewModel {
 
             // process filters
             for filter in filters {
+                let condition: Bool
                 switch filter.type {
                 case .downloaded:
-                    let downloaded = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
-                    let shouldSkip = filter.exclude ? downloaded : !downloaded
-                    if shouldSkip {
-                        continue main
-                    }
+                    condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                case .tracking:
+                    condition = TrackerManager.shared.isTracking(sourceId: info.sourceId, mangaId: info.mangaId)
+                }
+                let shouldSkip = filter.exclude ? condition : !condition
+                if shouldSkip {
+                    continue main
                 }
             }
 

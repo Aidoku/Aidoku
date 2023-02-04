@@ -763,11 +763,22 @@ extension LibraryViewController {
             }
         ])
         func filterImage(for method: LibraryViewModel.FilterMethod) -> UIImage? {
-            if let filter = viewModel.filters.first(where: { $0.type == .downloaded }) {
+            if let filter = viewModel.filters.first(where: { $0.type == method }) {
                 return UIImage(systemName: filter.exclude ? "xmark" : "checkmark")
             } else {
                 return nil
             }
+        }
+        let trackingFilter: [UIAction]
+        if TrackerManager.shared.hasAvailableTrackers {
+            trackingFilter = [UIAction(
+                title: NSLocalizedString("TRACKING", comment: ""),
+                image: filterImage(for: .tracking)
+            ) { _ in
+                self.toggleFilter(method: .tracking)
+            }]
+        } else {
+            trackingFilter = []
         }
         let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
             UIAction(
@@ -776,7 +787,7 @@ extension LibraryViewController {
             ) { _ in
                 self.toggleFilter(method: .downloaded)
             }
-        ])
+        ] + trackingFilter)
         filterBarButton.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
         (collectionView.supplementaryView(
             forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
