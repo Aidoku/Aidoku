@@ -338,7 +338,7 @@ class MangaDetailHeaderView: UIView {
         UIView.animate(withDuration: 0.3) {
             self.authorLabel.isHidden = manga.author == nil
             self.descriptionLabel.isHidden = manga.description == nil
-            self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe
+            self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe && !inLibrary
         }
 
         if let url = manga.coverUrl {
