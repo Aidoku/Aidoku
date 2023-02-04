@@ -56,7 +56,9 @@ actor SourceViewModel {
             result = try? await source.getMangaListing(listing: currentListing, page: page)
         } else if let titleQuery = titleQuery {
             // load search results
-            guard !(searchTask?.isCancelled ?? true) else { return }
+            if let searchTask = searchTask { // ensure active search task wasn't cancelled
+                guard !searchTask.isCancelled else { return }
+            }
             result = try? await source.fetchSearchManga(query: titleQuery, filters: selectedFilters.filters, page: page)
         } else {
             // load regular manga list
