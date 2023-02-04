@@ -217,12 +217,22 @@ class MangaViewController: BaseTableViewController {
                 let tracker = TrackerManager.shared.getTracker(id: item.trackerId)
             else { return }
             Task {
-                let latestChapterRead = self.viewModel.chapterList.first {
+                let latestChapterNum = self.viewModel.chapterList.max {
+                    $0.chapterNum ?? -1 > $1.chapterNum ?? -1
+                }?.chapterNum ?? -1
+                let latestReadChapterNum = self.viewModel.chapterList.first {
                     self.viewModel.readingHistory[$0.id]?.page ?? 0 == -1
+                }?.chapterNum ?? 0 // if not started, 0
+                let hasUnreadChapters = self.viewModel.chapterList.contains {
+                    self.viewModel.readingHistory[$0.id] == nil
                 }
-                let latestChapterNum = latestChapterRead?.chapterNum ?? 0 // if not started, 0
                 let state = await tracker.getState(trackId: item.id)
-                if let lastReadChapter = state.lastReadChapter, latestChapterNum < lastReadChapter {
+                if
+                    let lastReadChapter = state.lastReadChapter,
+                    latestReadChapterNum < lastReadChapter,
+                    // check if there are chapters to actually mark read
+                    latestChapterNum >= lastReadChapter || hasUnreadChapters
+                {
                     // ask to sync
                     self.syncWithTracker(chapterNum: lastReadChapter)
                 }
@@ -394,7 +404,7 @@ class MangaViewController: BaseTableViewController {
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
             let chapters = self.viewModel.chapterList.filter {
-                $0.chapterNum ?? -1 <= chapterNum
+                floor($0.chapterNum ?? -1) <= chapterNum
             }
             Task {
                 await self.markRead(chapters: chapters)
