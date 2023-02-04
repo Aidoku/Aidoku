@@ -142,6 +142,17 @@ class LibraryViewController: MangaCollectionViewController {
             header.filterButton.menu = self.filterBarButton.menu
             header.filterButton.showsMenuAsPrimaryAction = true
             header.updateMenu()
+
+            // load locked icons
+            if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
+                let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+                header.lockedOptions = [0] + lockedCategories.compactMap { category -> Int? in
+                    if let index = self.viewModel.categories.firstIndex(of: category) {
+                        return index + 1
+                    }
+                    return nil
+                }
+            }
         }
 
         dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
@@ -177,7 +188,6 @@ class LibraryViewController: MangaCollectionViewController {
         viewModel.loadLibrary()
         updateSortMenu()
         updateLockState()
-        updateHeaderLockIcons()
         updateDataSource()
     }
 
