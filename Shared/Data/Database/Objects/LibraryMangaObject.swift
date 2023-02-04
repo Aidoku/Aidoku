@@ -10,6 +10,7 @@ import CoreData
 
 @objc(LibraryMangaObject)
 public class LibraryMangaObject: NSManagedObject {
+
     func opened() {
         self.lastOpened = Date()
     }

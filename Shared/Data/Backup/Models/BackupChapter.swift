@@ -37,7 +37,7 @@ struct BackupChapter: Codable {
         if let context = context {
             obj = ChapterObject(context: context)
         } else {
-            obj = ChapterObject()
+            obj = ChapterObject(context: CoreDataManager.shared.context)
         }
         obj.sourceId = sourceId
         obj.mangaId = mangaId
@@ -47,9 +47,13 @@ struct BackupChapter: Codable {
         obj.lang = lang
         if let chapter = chapter {
             obj.chapter = NSNumber(value: chapter)
+        } else {
+            obj.chapter = nil
         }
         if let volume = volume {
             obj.volume = NSNumber(value: volume)
+        } else {
+            obj.volume = nil
         }
         obj.dateUploaded = dateUploaded
         obj.sourceOrder = Int16(sourceOrder)
