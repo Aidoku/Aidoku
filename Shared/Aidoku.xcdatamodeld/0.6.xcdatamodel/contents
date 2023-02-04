@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21279" systemVersion="21G115" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="CategoryObject" syncable="YES" codeGenerationType="class">
         <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
         <relationship name="libraryObjects" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="LibraryManga" inverseName="categories" inverseEntity="LibraryManga"/>
     </entity>
     <entity name="Chapter" representedClassName="ChapterObject" syncable="YES">
-        <attribute name="chapter" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="chapter" optional="YES" attributeType="Float" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="dateUploaded" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lang" attributeType="String" defaultValueString="en"/>
@@ -16,7 +16,7 @@
         <attribute name="sourceOrder" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="url" optional="YES" attributeType="String"/>
-        <attribute name="volume" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="volume" optional="YES" attributeType="Float" defaultValueString="-1" usesScalarValueType="YES"/>
         <relationship name="history" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="History" inverseName="chapter" inverseEntity="History"/>
         <relationship name="manga" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Manga" inverseName="chapters" inverseEntity="Manga"/>
     </entity>
@@ -85,13 +85,4 @@
     <configuration name="Local">
         <memberEntity name="Source"/>
     </configuration>
-    <elements>
-        <element name="Category" positionX="-329.6425170898438" positionY="-141.2743072509766" width="128" height="74"/>
-        <element name="Chapter" positionX="85.629638671875" positionY="-120.7567901611328" width="128" height="224"/>
-        <element name="History" positionX="254.8212280273438" positionY="-95.5120849609375" width="128" height="149"/>
-        <element name="LibraryManga" positionX="-317.98779296875" positionY="14.94075012207031" width="118.5792236328125" height="119"/>
-        <element name="Manga" positionX="-129.6734619140625" positionY="-103.6321411132812" width="128" height="275"/>
-        <element name="Source" positionX="-126" positionY="18" width="128" height="134"/>
-        <element name="Track" positionX="-126" positionY="18" width="128" height="104"/>
-    </elements>
 </model>

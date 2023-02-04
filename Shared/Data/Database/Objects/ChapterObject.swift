@@ -34,8 +34,8 @@ public class ChapterObject: NSManagedObject {
             scanlator: scanlator,
             url: url,
             lang: lang,
-            chapterNum: chapter?.floatValue,
-            volumeNum: volume?.floatValue,
+            chapterNum: chapter == -1 ? nil : chapter?.floatValue,
+            volumeNum: volume == -1 ? nil : volume?.floatValue,
             dateUploaded: dateUploaded,
             sourceOrder: Int(sourceOrder)
         )
