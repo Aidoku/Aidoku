@@ -24,6 +24,12 @@ class FilterModalViewController: MiniModalViewController {
 
     let bottomInset = UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
 
+    lazy var scrollViewUpperHeightConstraint: NSLayoutConstraint = {
+        let constraint = scrollView.heightAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.height - 64)
+        constraint.priority = .defaultHigh
+        return constraint
+    }()
+
     init(filters: [FilterBase], selectedFilters: SelectedFilters) {
         self.filters = filters
         self.selectedFilters = selectedFilters
@@ -69,9 +75,7 @@ class FilterModalViewController: MiniModalViewController {
 
         scrollView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
 
-        let one = scrollView.heightAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.height - 64)
-        one.priority = .defaultHigh
-        one.isActive = true
+        scrollViewUpperHeightConstraint.isActive = true
 
         let two = scrollView.heightAnchor.constraint(equalTo: stackView!.heightAnchor, constant: 25 + 60 + bottomInset)
         two.priority = .defaultLow
@@ -90,11 +94,11 @@ class FilterModalViewController: MiniModalViewController {
         separatorView.widthAnchor.constraint(equalTo: toolbarView.widthAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
 
-        resetButton.leadingAnchor.constraint(equalTo: toolbarView.leadingAnchor, constant: 22).isActive = true
+        resetButton.leadingAnchor.constraint(equalTo: toolbarView.safeAreaLayoutGuide.leadingAnchor, constant: 22).isActive = true
         resetButton.topAnchor.constraint(equalTo: toolbarView.topAnchor, constant: 15).isActive = true
         resetButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
 
-        doneButton.trailingAnchor.constraint(equalTo: toolbarView.trailingAnchor, constant: -22).isActive = true
+        doneButton.trailingAnchor.constraint(equalTo: toolbarView.safeAreaLayoutGuide.trailingAnchor, constant: -22).isActive = true
         doneButton.topAnchor.constraint(equalTo: toolbarView.topAnchor, constant: 15).isActive = true
 
         doneButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
@@ -106,7 +110,19 @@ class FilterModalViewController: MiniModalViewController {
         updateContentSize()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        coordinator.animate(alongsideTransition: nil) { _ in
+            self.scrollViewUpperHeightConstraint.constant = UIScreen.main.bounds.height - 64
+            self.updateContentSize()
+        }
+    }
+
     func updateContentSize() {
-        scrollView.contentSize = CGSize(width: scrollView.bounds.width, height: (stackView?.bounds.size.height ?? 0) + 25 + 60)
+        scrollView.contentSize = CGSize(
+            width: scrollView.bounds.width,
+            height: (stackView?.bounds.size.height ?? 0) + 25 + 60
+        )
     }
 }

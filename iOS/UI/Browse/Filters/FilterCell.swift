@@ -88,10 +88,10 @@ class FilterCell: UIView {
         symbolView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(symbolView)
 
-        titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: insets).isActive = true
+        titleLabel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: insets).isActive = true
         titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
 
-        symbolView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -insets).isActive = true
+        symbolView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -insets).isActive = true
         symbolView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
     }
 
