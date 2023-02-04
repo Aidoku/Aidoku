@@ -108,7 +108,12 @@ class BrowseViewController: BaseTableViewController {
         addObserver(forName: "updateSourceList") { [weak self] _ in
             self?.viewModel.loadInstalledSources()
             self?.viewModel.filterExternalSources()
-            self?.updateDataSource()
+            Task { @MainActor in
+                if let query = self?.navigationItem.searchController?.searchBar.text, !query.isEmpty {
+                    self?.viewModel.search(query: query)
+                }
+                self?.updateDataSource()
+            }
         }
         // source lists added/removed
         addObserver(forName: "updateSourceLists") { [weak self] _ in
@@ -154,7 +159,7 @@ class BrowseViewController: BaseTableViewController {
     @objc func refreshSourceLists(_ refreshControl: UIRefreshControl? = nil) {
         Task {
             await viewModel.loadExternalSources()
-            updateDataSource()
+            updateExternalSources()
             refreshControl?.endRefreshing()
         }
     }
@@ -292,6 +297,32 @@ extension BrowseViewController {
         }
 
         dataSource.apply(snapshot)
+
+        Task { @MainActor in
+            emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty
+            checkUpdateCount()
+        }
+    }
+
+    func updateExternalSources() {
+        var snapshot = dataSource.snapshot()
+
+        snapshot.deleteSections([.updates, .external])
+        if !viewModel.updatesSources.isEmpty {
+            snapshot.appendSections([.updates])
+            snapshot.appendItems(viewModel.updatesSources, toSection: .updates)
+        }
+        if !viewModel.externalSources.isEmpty {
+            snapshot.appendSections([.external])
+            snapshot.appendItems(viewModel.externalSources, toSection: .external)
+        }
+
+        if #available(iOS 15.0, *) {
+            // prevents jumpiness from pull to refresh
+            dataSource.applySnapshotUsingReloadData(snapshot)
+        } else {
+            dataSource.apply(snapshot)
+        }
 
         Task { @MainActor in
             emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty

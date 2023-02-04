@@ -35,16 +35,24 @@ class BrowseViewModel {
 
     // load external source lists
     func loadExternalSources() async {
-        unfilteredExternalSources = []
-
-        for url in SourceManager.shared.sourceLists {
-            // load sources from list
-            guard var sources = await SourceManager.shared.loadSourceList(url: url) else { continue }
-            // set source url in external infos
-            for index in sources.indices {
-                sources[index].sourceUrl = url
+        unfilteredExternalSources = await withTaskGroup(of: [ExternalSourceInfo]?.self) { group in
+            for url in SourceManager.shared.sourceLists {
+                // load sources from list
+                group.addTask {
+                    guard var sources = await SourceManager.shared.loadSourceList(url: url) else { return nil }
+                    // set source url in external infos
+                    for index in sources.indices {
+                        sources[index].sourceUrl = url
+                    }
+                    return sources
+                }
             }
-            unfilteredExternalSources += sources
+            var results: [ExternalSourceInfo] = []
+            for await result in group {
+                guard let result = result else { continue }
+                results += result
+            }
+            return results
         }
 
         filterExternalSources()
