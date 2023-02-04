@@ -33,8 +33,9 @@ class MiniModalViewController: UIViewController {
     let scrollView = UIScrollView()
 
     let maxDimmedAlpha: CGFloat = 0.6
-    let maxHeight: CGFloat = UIScreen.main.bounds.height - 64 - 30
+    var maxHeight: CGFloat = UIScreen.main.bounds.height - 64 - 30
 
+    var containerViewMaxHeightConstraint: NSLayoutConstraint?
     var containerViewHeightConstraint: NSLayoutConstraint?
     var containerViewBottomConstraint: NSLayoutConstraint?
 
@@ -76,7 +77,6 @@ class MiniModalViewController: UIViewController {
     }
 
     func activateConstraints() {
-
         NSLayoutConstraint.activate([
             dimmedView.topAnchor.constraint(equalTo: view.topAnchor),
             dimmedView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -87,12 +87,21 @@ class MiniModalViewController: UIViewController {
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
 
-        containerView.heightAnchor.constraint(lessThanOrEqualToConstant: maxHeight).isActive = true
+        containerViewMaxHeightConstraint = containerView.heightAnchor.constraint(lessThanOrEqualToConstant: maxHeight)
         containerViewHeightConstraint = containerView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         containerViewBottomConstraint = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 500)
         containerViewHeightConstraint?.isActive = true
         containerViewBottomConstraint?.isActive = true
+        containerViewMaxHeightConstraint?.isActive = true
+    }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        coordinator.animate(alongsideTransition: nil) { _ in
+            self.maxHeight = UIScreen.main.bounds.height - 64 - 30
+            self.containerViewMaxHeightConstraint?.constant = self.maxHeight
+        }
     }
 
     @objc func handlePanGesture(gesture: UIPanGestureRecognizer) {
