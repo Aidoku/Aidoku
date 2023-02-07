@@ -215,7 +215,7 @@ class LibraryViewModel {
                 }
             }
         }
-        if sortMethod == .unreadChapters {
+        if sortMethod == .unreadChapters || pinType == .unread {
             sortLibrary()
         }
     }
