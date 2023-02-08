@@ -368,7 +368,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         toolbarView.currentPage = page
         toolbarView.updateSliderPosition()
         if page == toolbarView.totalPages {
-            setCompleted(true, page: page)
+            setCompleted()
         }
     }
 
@@ -381,7 +381,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         toolbarView.displayPage(page)
     }
 
-    func setCompleted(_ completed: Bool = true, page: Int? = nil) {
+    func setCompleted() {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
                 await HistoryManager.shared.addHistory(chapters: [chapter])
