@@ -139,6 +139,9 @@ struct TrackerView: View {
         .onChange(of: statusOption) { newValue in
             let new = tracker.supportedStatuses.count > newValue ?? 100 ? tracker.supportedStatuses[newValue!] : nil
             guard state?.status != new else { return }
+            if new == .completed || new == .dropped {
+                finishReadDate = Date()
+            }
             state?.status = new
             update.status = new
             stateUpdated = true
