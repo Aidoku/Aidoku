@@ -514,7 +514,7 @@ class LibraryViewController: MangaCollectionViewController {
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
         Task { @MainActor in
-            await MangaManager.shared.refreshLibrary()
+            await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory)
             viewModel.loadLibrary()
             updateDataSource()
             refreshControl?.endRefreshing()
