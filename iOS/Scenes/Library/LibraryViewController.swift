@@ -603,7 +603,9 @@ extension LibraryViewController {
         dataSource.apply(snapshot)
 
         // handle empty library or category
-        emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
+        if navigationItem.searchController?.searchBar.text?.isEmpty ?? true {
+            emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
+        }
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
         collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil
     }
