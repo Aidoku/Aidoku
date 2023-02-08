@@ -75,8 +75,8 @@ extension CoreDataManager {
     }
 
     /// Removes a category in the background.
-    func removeCategory(title: String) async {
-        await container.performBackgroundTask { context in
+    func removeCategory(title: String) {
+        container.performBackgroundTask { context in
             do {
                 if let object = self.getCategory(title: title, context: context) {
                     context.delete(object)
