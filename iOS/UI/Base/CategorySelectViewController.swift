@@ -56,12 +56,11 @@ class CategorySelectViewController: UITableViewController {
             if !inLibrary {
                 await MangaManager.shared.addToLibrary(manga: manga, chapters: chapterList)
             }
-            await CoreDataManager.shared.setMangaCategories(
+            await MangaManager.shared.setCategories(
                 sourceId: manga.sourceId,
                 mangaId: manga.id,
                 categories: selectedCategories
             )
-            NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
         }
     }
 }
