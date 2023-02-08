@@ -76,6 +76,22 @@ extension MangaManager {
     }
 }
 
+// MARK: - Category Managing
+extension MangaManager {
+
+    func setCategories(sourceId: String, mangaId: String, categories: [String]) async {
+        await CoreDataManager.shared.setMangaCategories(
+            sourceId: sourceId,
+            mangaId: mangaId,
+            categories: categories
+        )
+        NotificationCenter.default.post(
+            name: Notification.Name("updateMangaCategories"),
+            object: MangaInfo(mangaId: mangaId, sourceId: sourceId)
+        )
+    }
+}
+
 // MARK: - Library Updating
 extension MangaManager {
 

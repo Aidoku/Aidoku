@@ -251,6 +251,14 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
 
+        addObserver(forName: "updateMangaCategories") { [weak self] _ in
+            guard let self = self, self.viewModel.currentCategory != nil else { return }
+            Task { @MainActor in
+                self.viewModel.loadLibrary()
+                self.updateDataSource()
+            }
+        }
+
         addObserver(forName: "updateLibraryLock") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
