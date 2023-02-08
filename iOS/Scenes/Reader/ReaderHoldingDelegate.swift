@@ -17,5 +17,5 @@ protocol ReaderHoldingDelegate: AnyObject {
     func setCurrentPage(_ page: Int)
     func setTotalPages(_ pages: Int)
     func displayPage(_ page: Int) // show page on toolbar but don't set it as current page
-    func setCompleted(_ completed: Bool, page: Int?)
+    func setCompleted()
 }
