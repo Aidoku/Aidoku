@@ -299,7 +299,9 @@ extension BrowseViewController {
         dataSource.apply(snapshot)
 
         Task { @MainActor in
-            emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty
+            if navigationItem.searchController?.searchBar.text?.isEmpty ?? true {
+                emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty
+            }
             checkUpdateCount()
         }
     }
