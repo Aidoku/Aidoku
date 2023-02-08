@@ -24,10 +24,14 @@ extension CoreDataManager {
     }
 
     /// Get all library manga objects.
-    func getLibraryManga(context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
+    func getLibraryManga(category: String? = nil, context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
         let context = context ?? self.context
         let request = LibraryMangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "manga != nil")
+        if let category = category {
+            request.predicate = NSPredicate(format: "manga != nil AND any categories.title = %@", category)
+        } else {
+            request.predicate = NSPredicate(format: "manga != nil")
+        }
         return (try? context.fetch(request)) ?? []
     }
 

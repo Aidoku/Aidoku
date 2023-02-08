@@ -168,6 +168,14 @@ extension ReaderWebtoonViewController {
         isSliding = false
         scrollViewDidScroll(scrollView)
     }
+
+    // fix content size when rotating
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate { _ in
+            self.zoomView.adjustContentSize()
+        }
+    }
 }
 
 // MARK: - Collection View Delegate
@@ -346,6 +354,7 @@ extension ReaderWebtoonViewController {
             // append next chapter
             if bottom == pagesCount {
                 loadingNext = true
+                delegate?.setCompleted()
                 Task {
                     await appendNextChapter()
                     loadingNext = false

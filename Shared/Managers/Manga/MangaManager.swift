@@ -76,6 +76,22 @@ extension MangaManager {
     }
 }
 
+// MARK: - Category Managing
+extension MangaManager {
+
+    func setCategories(sourceId: String, mangaId: String, categories: [String]) async {
+        await CoreDataManager.shared.setMangaCategories(
+            sourceId: sourceId,
+            mangaId: mangaId,
+            categories: categories
+        )
+        NotificationCenter.default.post(
+            name: Notification.Name("updateMangaCategories"),
+            object: MangaInfo(mangaId: mangaId, sourceId: sourceId)
+        )
+    }
+}
+
 // MARK: - Library Updating
 extension MangaManager {
 
@@ -161,23 +177,23 @@ extension MangaManager {
     }
 
     /// Refresh manga objects in library.
-    func refreshLibrary(forceAll: Bool = false) async {
+    func refreshLibrary(category: String? = nil, forceAll: Bool = false) async {
         if libraryRefreshTask != nil {
             // wait for already running library refresh
             await libraryRefreshTask?.value
         } else {
             // spawn new library refresh
             libraryRefreshTask = Task {
-                await doLibraryRefresh(forceAll: forceAll)
+                await doLibraryRefresh(category: category, forceAll: forceAll)
                 libraryRefreshTask = nil
             }
             await libraryRefreshTask?.value
         }
     }
 
-    private func doLibraryRefresh(forceAll: Bool) async {
+    private func doLibraryRefresh(category: String?, forceAll: Bool) async {
         let allManga = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getLibraryManga(context: context).compactMap { $0.manga?.toManga() }
+            CoreDataManager.shared.getLibraryManga(category: category, context: context).compactMap { $0.manga?.toManga() }
         }
 
         // check if connected to wi-fi

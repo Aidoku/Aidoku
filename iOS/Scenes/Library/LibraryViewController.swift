@@ -251,6 +251,14 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
 
+        addObserver(forName: "updateMangaCategories") { [weak self] _ in
+            guard let self = self, self.viewModel.currentCategory != nil else { return }
+            Task { @MainActor in
+                self.viewModel.loadLibrary()
+                self.updateDataSource()
+            }
+        }
+
         addObserver(forName: "updateLibraryLock") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
@@ -506,7 +514,7 @@ class LibraryViewController: MangaCollectionViewController {
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
         Task { @MainActor in
-            await MangaManager.shared.refreshLibrary()
+            await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory)
             viewModel.loadLibrary()
             updateDataSource()
             refreshControl?.endRefreshing()
@@ -595,7 +603,9 @@ extension LibraryViewController {
         dataSource.apply(snapshot)
 
         // handle empty library or category
-        emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
+        if navigationItem.searchController?.searchBar.text?.isEmpty ?? true {
+            emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
+        }
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
         collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil
     }
