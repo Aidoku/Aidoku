@@ -319,3 +319,6 @@
 "FIRST_ALTERNATIVE" = "Birinci Alternatif";
 "MIGRATE_%i_ITEMS?" = "%i Öğeyi Taşı?";
 "MIGRATE_ONE_ITEM?" = "1 Öğeyi Taşı?";
+"MIGRATE_SOURCES" = "Kaynakları Taşı";
+"START_MATCHING" = "Eşleştirmeye Başla";
+"UPLOAD_DATE" = "Yükleme Zamanı";
