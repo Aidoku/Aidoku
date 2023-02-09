@@ -324,7 +324,11 @@ class LibraryViewModel {
         if let pinnedIndex = pinnedIndex {
             if sortMethod == .lastOpened {
                 let manga = pinnedManga.remove(at: pinnedIndex)
-                self.manga.insert(manga, at: 0)
+                if pinType == .updated {
+                    self.manga.insert(manga, at: 0)
+                } else {
+                    pinnedManga.insert(manga, at: 0)
+                }
             } else {
                 loadLibrary() // don't know where to put in manga array, just refresh
             }
