@@ -260,6 +260,17 @@ class HistoryViewController: UIViewController {
         }
     }
 
+    struct HistoryInfo {
+        let sourceId: String
+        let mangaId: String
+        let chapterId: String
+        let dateRead: Date?
+        let progress: Int16
+        let total: Int16
+        let completed: Bool
+    }
+
+    // swiftlint:disable:next cyclomatic_complexity
     func fetchNewEntries() {
         guard !loadingMore, !reachedEnd else { return }
         loadingMore = true
@@ -268,51 +279,75 @@ class HistoryViewController: UIViewController {
         loadingTask = Task {
             var historyDict: [Int: [HistoryEntry]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
             var mangaKeys: [String] = self.shownMangaKeys
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                let historyObj = CoreDataManager.shared.getRecentHistory(limit: 15, offset: offset, context: context)
-                // all history is displayed
-                if historyObj.isEmpty {
-                    self.reachedEnd = true
-                    self.loadingMore = false
-                    return
+            let historyObj = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getRecentHistory(limit: 15, offset: offset, context: context).map {
+                    HistoryInfo(
+                        sourceId: $0.sourceId,
+                        mangaId: $0.mangaId,
+                        chapterId: $0.chapterId,
+                        dateRead: $0.dateRead,
+                        progress: $0.progress,
+                        total: $0.total,
+                        completed: $0.completed
+                    )
                 }
-                for obj in historyObj {
-                    let days = Calendar.autoupdatingCurrent.dateComponents(
-                        Set([Calendar.Component.day]),
-                        from: obj.dateRead ?? Date.distantPast,
-                        to: Date()
-                    ).day ?? 0
-                    var arr = historyDict[days] ?? []
+            }
+            // all history is displayed
+            if historyObj.isEmpty {
+                self.reachedEnd = true
+                self.loadingMore = false
+                return
+            }
+            for obj in historyObj {
+                let days = Calendar.autoupdatingCurrent.dateComponents(
+                    Set([Calendar.Component.day]),
+                    from: obj.dateRead ?? Date.distantPast,
+                    to: Date()
+                ).day ?? 0
+                var arr = historyDict[days] ?? []
 
-                    let key = "\(obj.sourceId).\(obj.mangaId)"
+                let key = "\(obj.sourceId).\(obj.mangaId)"
 
-                    guard
-                        !mangaKeys.contains(key),
-                        let manga = CoreDataManager.shared.getManga(
+                guard !mangaKeys.contains(key) else { continue }
+
+                var (manga, chapter) = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    (
+                        CoreDataManager.shared.getManga(
                             sourceId: obj.sourceId,
                             mangaId: obj.mangaId,
                             context: context
                         )?.toManga(),
-                        let chapter = CoreDataManager.shared.getChapter(
+                        CoreDataManager.shared.getChapter(
                             sourceId: obj.sourceId,
                             mangaId: obj.mangaId,
                             chapterId: obj.chapterId,
                             context: context
                         )?.toChapter()
-                    else { continue }
-
-                    mangaKeys.append(key)
-
-                    let new = HistoryEntry(
-                        manga: manga,
-                        chapter: chapter,
-                        date: obj.dateRead ?? Date.distantPast,
-                        currentPage: obj.completed ? -1 : Int(obj.progress),
-                        totalPages: Int(obj.total)
                     )
-                    arr.append(new)
-                    historyDict[days] = arr
                 }
+                if manga == nil || chapter == nil {
+                    let source = SourceManager.shared.source(for: obj.sourceId)
+                    let tempManga = Manga(sourceId: obj.sourceId, id: obj.mangaId)
+                    if manga == nil {
+                        manga = try? await source?.getMangaDetails(manga: tempManga)
+                    }
+                    if chapter == nil {
+                        chapter = (try? await source?.getChapterList(manga: tempManga))?.first { $0.id == obj.chapterId }
+                    }
+                }
+                guard let manga = manga, let chapter = chapter else { continue }
+
+                mangaKeys.append(key)
+
+                let new = HistoryEntry(
+                    manga: manga,
+                    chapter: chapter,
+                    date: obj.dateRead ?? Date.distantPast,
+                    currentPage: obj.completed ? -1 : Int(obj.progress),
+                    totalPages: Int(obj.total)
+                )
+                arr.append(new)
+                historyDict[days] = arr
             }
             let finalMangaKeys = mangaKeys
             let finalHistoryDict = historyDict

@@ -207,7 +207,7 @@ extension CoreDataManager {
     }
 
     /// Set page progress for a chapter and creates a history object if it doesn't already exist.
-    func setProgress(_ progress: Int, sourceId: String, mangaId: String, chapterId: String) async {
+    func setProgress(_ progress: Int, sourceId: String, mangaId: String, chapterId: String, totalPages: Int? = nil) async {
         await container.performBackgroundTask { context in
             let historyObject = self.getOrCreateHistory(
                 sourceId: sourceId,
@@ -217,6 +217,9 @@ extension CoreDataManager {
             )
             historyObject.progress = Int16(progress)
             historyObject.dateRead = Date()
+            if let totalPages = totalPages {
+                historyObject.total = Int16(totalPages)
+            }
             do {
                 try context.save()
             } catch {

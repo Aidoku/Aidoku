@@ -92,7 +92,7 @@ class HistoryTableViewCell: UITableViewCell {
     func updateInfo() {
         titleLabel.text = entry?.manga.title ?? ""
         var subtitleText = ""
-        if entry?.chapter.chapterNum ?? -1 > 0 {
+        if entry?.chapter.chapterNum ?? -1 >= 0 {
             subtitleText += String(format: NSLocalizedString("CH_SPACE_X", comment: ""), entry?.chapter.chapterNum ?? 0)
         }
         if let currentPage = entry?.currentPage, let totalPages = entry?.totalPages, currentPage > 0, currentPage < totalPages {
