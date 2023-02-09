@@ -125,8 +125,14 @@ class LibraryViewModel {
             return
         }
 
+        var ids = Set<String>()
+
         main: for object in libraryObjects {
-            guard let manga = object.manga else { continue }
+            guard
+                let manga = object.manga,
+                // ensure the manga hasn't already been accounted for
+                ids.insert("\(manga.sourceId)|\(manga.id)").inserted
+            else { continue }
 
             let unreadCount = CoreDataManager.shared.unreadCount(
                 sourceId: manga.sourceId,
