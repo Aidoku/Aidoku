@@ -221,7 +221,9 @@ class LibraryViewModel {
                 }
             }
         }
-        if sortMethod == .unreadChapters || pinType == .unread {
+        if pinType == .unread {
+            loadLibrary()
+        } else if sortMethod == .unreadChapters {
             sortLibrary()
         }
     }
@@ -239,7 +241,9 @@ class LibraryViewModel {
                 mangaId: manga.mangaId
             )
         }
-        if sortMethod == .unreadChapters {
+        if pinType == .unread {
+            loadLibrary()
+        } else if sortMethod == .unreadChapters {
             sortLibrary()
         }
     }
