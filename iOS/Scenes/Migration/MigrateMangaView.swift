@@ -116,11 +116,14 @@ struct MigrateMangaView: View {
                         : String(format: NSLocalizedString("MIGRATE_%i_ITEMS?", comment: ""), itemCount)
                 ),
                 primaryButton: .default(Text(NSLocalizedString("CONTINUE", comment: ""))) {
-                    Task {
-                        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
-                        await performMigration()
-                        (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
-                        dismiss()
+                    guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+                    appDelegate.showLoadingIndicator {
+                        Task {
+                            await performMigration()
+                            appDelegate.hideLoadingIndicator {
+                                dismiss()
+                            }
+                        }
                     }
                 },
                 secondaryButton: .cancel()
@@ -304,15 +307,14 @@ struct MigrateMangaView: View {
     }
 
     func dismiss() {
-        if #available(iOS 15.0, *) {
-            presentationMode.wrappedValue.dismiss()
-        } else {
-            if var topController = UIApplication.shared.windows.first!.rootViewController {
-                while let presentedViewController = topController.presentedViewController {
-                    topController = presentedViewController
-                }
-                topController.dismiss(animated: true)
+        presentationMode.wrappedValue.dismiss()
+
+        // for ios 14 and to dismiss the sheet if migrating from browse tab
+        if var topController = UIApplication.shared.windows.first!.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
             }
+            topController.dismiss(animated: true)
         }
     }
 }
