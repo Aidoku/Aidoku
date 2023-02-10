@@ -11,7 +11,7 @@
 "REMOVE" = "移除";
 "RENAME" = "重命名";
 "CLEAR" = "清除";
-"LOADING_ELLIPSIS" = "载入中…";
+"LOADING_ELLIPSIS" = "正在加载…";
 "SHARE" = "分享";
 
 // Downloads
@@ -36,7 +36,7 @@
 "FILTER_BY" = "筛选方式";
 "TITLE" = "标题";
 "LAST_OPENED" = "最后打开";
-"LAST_READ" = "最后阅读";
+"LAST_READ" = "最近阅读";
 "LATEST_CHAPTER" = "最新章节";
 "DATE_ADDED" = "添加日期";
 
@@ -70,7 +70,7 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "";
+"BUILD" = "Build";
 "BUTTON_FILTER" = "过滤器";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
@@ -182,13 +182,13 @@
 "THAT_HAVENT_BEEN_READ" = "尚未阅读";
 "SOURCE_LISTS" = "图源列表";
 "SOURCE_LIST_ADDED" = "添加图源列表";
-"SOURCE_LIST_ADDED_TEXT" = "您可以在浏览标签添加外部图源.";
-"SHOW_NSFW_SOURCES" = "显示18+图源";
-"SOURCE_LIST_URL" = "图源列表 URL";
+"SOURCE_LIST_ADDED_TEXT" = "您可以在浏览页添加外部图源.";
+"SHOW_NSFW_SOURCES" = "显示NSFW图源";
+"SOURCE_LIST_URL" = "图源列表网址";
 "SOURCE_LIST_ADD" = "添加图源列表";
-"SOURCE_LIST_ADD_TEXT" = "输入图源列表 URL";
+"SOURCE_LIST_ADD_TEXT" = "输入图源列表网址";
 "SOURCE_LIST_ADD_FAIL" = "添加图源列表失败";
-"SOURCE_LIST_ADD_FAIL_TEXT" = "提供的图源列表 URL 无效或已添加.";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "提供的图源列表网址无效或已添加.";
 "LOCK_HISTORY_TAB" = "锁定历史标签";
 "DOWNSAMPLE_IMAGES" = "降低图片质量";
 "SAVE_IMAGE_OPTION" = "保存图片选项";
@@ -280,7 +280,7 @@
 "SUPPORT_VIA_KOFI" = "通过Ko-Fi支持";
 "VOLUMES" = "卷数";
 "VIEW_ON_WEBSITE" = "在网站上查看";
-"LAST_UPDATED" = "最后更新";
+"LAST_UPDATED" = "最新更新";
 "RELOAD" = "重新加载";
 "ONE_PAGE_LEFT" = "还剩 1 页";
 "FAILED_CHAPTER_LOAD" = "载入章节失败";
@@ -289,10 +289,37 @@
 "FAILED_CHAPTER_LOAD_INFO" = "您可能处于离线状态或来源可能有问题.";
 "%i_PAGES_LEFT" = "还剩 %i 页";
 "REMOVE_FROM_CATEGORY" = "从分类中删除";
-"ADD_TO_CATEGORY" = "添加到类别";
+"ADD_TO_CATEGORY" = "添加到分类";
 "PINNED" = "置顶";
 "1_CHAPTER" = "第1章";
 "%i_CHAPTERS" = "%i章节";
 "UPCOMING" = "即将推出";
 "SELECT" = "选择";
-"ADD_TO_CATEGORIES" = "添加到类别";
+"ADD_TO_CATEGORIES" = "添加到分类";
+"MIGRATE_ONE_ITEM?" = "迁移1个项目?";
+"DESTINATION" = "目标";
+"MIGRATE_SOURCES" = "迁移图源";
+"MIGRATE" = "迁移";
+"START_MATCHING" = "开始匹配";
+"SYNC_LOCAL_HISTORY" = "同步本地历史";
+"MIGRATION" = "迁移";
+"OPTIONS" = "选项";
+"SELECTED" = "已选";
+"NOT_FOUND" = "未找到";
+"TITLES" = "标题";
+"MOST_CHAPTERS_SLOWER" = "多数章节 (较慢)";
+"MIGRATE_%i_ITEMS?" = "迁移 %i 项目?";
+"RENAME_CATEGORY_INFO" = "为此分类输入一个新的名称.";
+"RENAME_CATEGORY_FAIL" = "无法重命名分类";
+"SKIP_DUPLICATE_CHAPTERS" = "跳过重复章节";
+"RENAME_CATEGORY" = "重新命名分类";
+"CATEGORY_NAME" = "分类名称";
+"%i_OF_%i" = "%i/%i";
+"WEBTOON" = "网络漫画";
+"AVAILABLE" = "可用";
+"FIRST_ALTERNATIVE" = "第一选择";
+"RENAME_CATEGORY_FAIL_INFO" = "分类名称必须是唯一的.";
+"SYNC_WITH_TRACKER" = "与追踪器同步";
+"SYNC_WITH_TRACKER_INFO" = "看起来跟踪器中设置的最新章节 (%g) 高于您最近阅读的章节. 是否要更新本地历史记录以匹配?";
+"UPLOAD_DATE" = "上传日期";
+"TRACKING" = "追踪";

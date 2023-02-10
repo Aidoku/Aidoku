@@ -327,3 +327,5 @@
 "FIRST_ALTERNATIVE" = "First Alternative";
 "MIGRATE_%i_ITEMS?" = "Migrate %i items?";
 "MIGRATE_ONE_ITEM?" = "Migrate 1 item?";
+"UPLOAD_DATE" = "Upload Date";
+"TRACKING" = "Tracking";
