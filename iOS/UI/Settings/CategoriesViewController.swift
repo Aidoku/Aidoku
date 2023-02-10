@@ -60,6 +60,24 @@ class CategoriesViewController: UITableViewController {
         return success
     }
 
+     private func removeCategory(title: String) async -> Bool {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeCategory(title: title, context: context)
+            do {
+                try context.save()
+                var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+                if let oldIndex = locked.firstIndex(of: title) {
+                    locked.remove(at: oldIndex)
+                    UserDefaults.standard.set(locked, forKey: "Library.lockedCategories")
+                }
+                return true
+            } catch {
+                LogManager.logger.error("CategoriesViewController.removeCategory(title: \(title)): \(error.localizedDescription)")
+                return false
+            }
+        }
+    }
+
     @objc func addCategory() {
         let alert = UIAlertController(
             title: NSLocalizedString("CATEGORY_ADD", comment: ""),
@@ -194,11 +212,13 @@ extension CategoriesViewController {
         ) { _, _, completion in
             Task {
                 let category = self.categories[indexPath.row]
-                await CoreDataManager.shared.removeCategory(title: category)
-                self.categories.remove(at: indexPath.row)
-                tableView.deleteRows(at: [indexPath], with: .automatic)
-                completion(true)
-                NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+                let success = await self.removeCategory(title: category)
+                if success {
+                    self.categories.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
+                    NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+                }
+                completion(success)
             }
         }
 

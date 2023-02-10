@@ -68,7 +68,7 @@ class BackupManager {
         }
     }
 
-    func createBackup() async  -> Backup {
+    func createBackup() async -> Backup {
         // no
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let library = CoreDataManager.shared.getLibraryManga(context: context).map {
