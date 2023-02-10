@@ -542,6 +542,8 @@
 		FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
 		FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInfoPageView.swift; sourceTree = "<group>"; };
+		FBFAC3BB2996B292004D8489 /* af */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = af; path = af.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FBFAC3BC2996B2CB004D8489 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBFDD40227838AB90055ED9F /* Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1372,6 +1374,8 @@
 				ur,
 				"zh-Hant",
 				id,
+				af,
+				cs,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -1761,6 +1765,8 @@
 				FBE40E28288DC12F00CCA4DC /* ur */,
 				FB43BE0729453E6D004E5AE4 /* zh-Hant */,
 				FB43BE0829453E9D004E5AE4 /* id */,
+				FBFAC3BB2996B292004D8489 /* af */,
+				FBFAC3BC2996B2CB004D8489 /* cs */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
