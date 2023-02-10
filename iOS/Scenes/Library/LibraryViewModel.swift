@@ -125,8 +125,14 @@ class LibraryViewModel {
             return
         }
 
+        var ids = Set<String>()
+
         main: for object in libraryObjects {
-            guard let manga = object.manga else { continue }
+            guard
+                let manga = object.manga,
+                // ensure the manga hasn't already been accounted for
+                ids.insert("\(manga.sourceId)|\(manga.id)").inserted
+            else { continue }
 
             let unreadCount = CoreDataManager.shared.unreadCount(
                 sourceId: manga.sourceId,
@@ -215,7 +221,9 @@ class LibraryViewModel {
                 }
             }
         }
-        if sortMethod == .unreadChapters || pinType == .unread {
+        if pinType == .unread {
+            loadLibrary()
+        } else if sortMethod == .unreadChapters {
             sortLibrary()
         }
     }
@@ -233,7 +241,9 @@ class LibraryViewModel {
                 mangaId: manga.mangaId
             )
         }
-        if sortMethod == .unreadChapters {
+        if pinType == .unread {
+            loadLibrary()
+        } else if sortMethod == .unreadChapters {
             sortLibrary()
         }
     }
@@ -324,7 +334,11 @@ class LibraryViewModel {
         if let pinnedIndex = pinnedIndex {
             if sortMethod == .lastOpened {
                 let manga = pinnedManga.remove(at: pinnedIndex)
-                self.manga.insert(manga, at: 0)
+                if pinType == .updated {
+                    self.manga.insert(manga, at: 0)
+                } else {
+                    pinnedManga.insert(manga, at: 0)
+                }
             } else {
                 loadLibrary() // don't know where to put in manga array, just refresh
             }

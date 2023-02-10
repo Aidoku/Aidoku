@@ -175,7 +175,11 @@ class ReaderViewController: BaseObservingViewController {
                     // don't add history if there is none and we're at the first page
                     return
                 }
-                await HistoryManager.shared.setProgress(chapter: chapter, progress: currentPage)
+                await HistoryManager.shared.setProgress(
+                    chapter: chapter,
+                    progress: currentPage,
+                    totalPages: toolbarView.totalPages
+                )
             }
         }
     }

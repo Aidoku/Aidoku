@@ -14,13 +14,14 @@ class HistoryManager {
 
 extension HistoryManager {
 
-    func setProgress(chapter: Chapter, progress: Int) async {
+    func setProgress(chapter: Chapter, progress: Int, totalPages: Int? = nil) async {
         await CoreDataManager.shared.setRead(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
         await CoreDataManager.shared.setProgress(
             progress,
             sourceId: chapter.sourceId,
             mangaId: chapter.mangaId,
-            chapterId: chapter.id
+            chapterId: chapter.id,
+            totalPages: totalPages
         )
         NotificationCenter.default.post(name: NSNotification.Name("historySet"), object: (chapter, progress))
     }

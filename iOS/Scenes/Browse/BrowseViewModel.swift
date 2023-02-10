@@ -48,10 +48,11 @@ class BrowseViewModel {
                     return sources
                 }
             }
+            var ids = Set<String>() // ensure external sources have unique ids
             var results: [ExternalSourceInfo] = []
             for await result in group {
                 guard let result = result else { continue }
-                results += result
+                results += result.filter { ids.insert($0.id).inserted }
             }
             return results
         }
