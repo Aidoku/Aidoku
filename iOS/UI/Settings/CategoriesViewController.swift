@@ -62,12 +62,12 @@ class CategoriesViewController: UITableViewController {
 
      private func removeCategory(title: String) async -> Bool {
         let success = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeCategory(title: category)
+            CoreDataManager.shared.removeCategory(title: title)
             do {
                 try context.save()
                 var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
                 if let oldIndex = locked.firstIndex(of: title) {
-                    locked.remove(at : oldIndex)
+                    locked.remove(at: oldIndex)
                     UserDefaults.standard.set(locked, forKey: "Library.lockedCategories")
                 }
                 return true
@@ -215,11 +215,12 @@ extension CategoriesViewController {
             title: NSLocalizedString("DELETE", comment: "")
         ) { _, _, completion in
             Task {
+                let category = self.categories[indexPath.row]
                 let success = await self.removeCategory(title: category)
                 if success {
                     self.categories.remove(at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .automatic)
-                    completion(true) 
+                    completion(true)
                 }
                 NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
                 NotificationCenter.default.post(name: Notification.Name("updateLibraryLock"), object: nil)
