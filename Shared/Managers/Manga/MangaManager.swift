@@ -33,11 +33,13 @@ extension MangaManager {
         }
         await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters)
         // add to default category
-        if
-            let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
-            CoreDataManager.shared.hasCategory(title: defaultCategory)
-        {
-            await CoreDataManager.shared.addCategoriesToManga(sourceId: manga.sourceId, mangaId: manga.id, categories: [defaultCategory])
+        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+            let hasCategory = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
+            }
+            if hasCategory {
+                await CoreDataManager.shared.addCategoriesToManga(sourceId: manga.sourceId, mangaId: manga.id, categories: [defaultCategory])
+            }
         }
         NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
