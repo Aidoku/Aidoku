@@ -61,8 +61,8 @@ class CategoriesViewController: UITableViewController {
     }
 
      private func removeCategory(title: String) async -> Bool {
-        let success = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeCategory(title: title)
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeCategory(title: title, context: context)
             do {
                 try context.save()
                 var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
@@ -76,10 +76,6 @@ class CategoriesViewController: UITableViewController {
                 return false
             }
         }
-        if success {
-            NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
-        }
-        return success
     }
 
     @objc func addCategory() {
@@ -220,10 +216,9 @@ extension CategoriesViewController {
                 if success {
                     self.categories.remove(at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .automatic)
-                    completion(true)
+                    NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
                 }
-                NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
-                NotificationCenter.default.post(name: Notification.Name("updateLibraryLock"), object: nil)
+                completion(success)
             }
         }
 
