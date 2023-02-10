@@ -74,17 +74,11 @@ extension CoreDataManager {
         return categoryObject
     }
 
-    /// Removes a category in the background.
-    func removeCategory(title: String) async {
-        await container.performBackgroundTask { context in
-            do {
-                if let object = self.getCategory(title: title, context: context) {
-                    context.delete(object)
-                    try context.save()
-                }
-            } catch {
-                LogManager.logger.error("CoreDataManager.removeCategory: \(error.localizedDescription)")
-            }
+    /// Removes a category with the given title.
+    func removeCategory(title: String, context: NSManagedObjectContext? = nil) {
+        let context = context ?? self.context
+        if let object = self.getCategory(title: title, context: context) {
+            context.delete(object)
         }
     }
 

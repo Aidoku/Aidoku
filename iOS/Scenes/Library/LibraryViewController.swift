@@ -250,6 +250,10 @@ class LibraryViewController: MangaCollectionViewController {
                     }
                 }
                 self.updateHeaderCategories()
+                // update lock state
+                if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
+                    NotificationCenter.default.post(name: Notification.Name("updateLibraryLock"), object: nil)
+                }
             }
         }
 
@@ -268,6 +272,7 @@ class LibraryViewController: MangaCollectionViewController {
                 self.updateNavbarLock()
                 self.updateHeaderLockIcons()
                 self.updateLockState()
+                self.updateLockStackViewText()
                 self.updateDataSource()
             }
         }
@@ -829,13 +834,10 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
         }
         if index == 0 {
             viewModel.currentCategory = nil
-            emptyStackView.title = NSLocalizedString("LIBRARY_EMPTY", comment: "")
-            lockedStackView.text = NSLocalizedString("LIBRARY_LOCKED", comment: "")
         } else {
             viewModel.currentCategory = viewModel.categories[index - 1]
-            emptyStackView.title = NSLocalizedString("CATEGORY_EMPTY", comment: "")
-            lockedStackView.text = NSLocalizedString("CATEGORY_LOCKED", comment: "")
         }
+        updateLockStackViewText()
         locked = viewModel.isCategoryLocked()
         updateNavbarLock()
         updateLockState()
@@ -846,6 +848,12 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
             await viewModel.loadLibrary()
             updateDataSource()
         }
+    }
+
+    private func updateLockStackViewText() {
+        lockedStackView.text = viewModel.currentCategory == nil
+            ? NSLocalizedString("LIBRARY_LOCKED", comment: "")
+            : NSLocalizedString("CATEGORY_LOCKED", comment: "")
     }
 }
 
