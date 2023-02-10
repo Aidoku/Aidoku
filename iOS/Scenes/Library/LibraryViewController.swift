@@ -185,10 +185,12 @@ class LibraryViewController: MangaCollectionViewController {
         view.addSubview(lockedStackView)
 
         // load data
-        viewModel.loadLibrary()
-        updateSortMenu()
-        updateLockState()
-        updateDataSource()
+        Task {
+            await viewModel.loadLibrary()
+            updateSortMenu()
+            updateLockState()
+            updateDataSource()
+        }
     }
 
     override func constrain() {
@@ -254,7 +256,7 @@ class LibraryViewController: MangaCollectionViewController {
         addObserver(forName: "updateMangaCategories") { [weak self] _ in
             guard let self = self, self.viewModel.currentCategory != nil else { return }
             Task { @MainActor in
-                self.viewModel.loadLibrary()
+                await self.viewModel.loadLibrary()
                 self.updateDataSource()
             }
         }
@@ -273,7 +275,7 @@ class LibraryViewController: MangaCollectionViewController {
         addObserver(forName: "updateLibrary") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                self.viewModel.loadLibrary()
+                await self.viewModel.loadLibrary()
                 self.updateDataSource()
             }
         }
@@ -282,7 +284,7 @@ class LibraryViewController: MangaCollectionViewController {
             guard let self = self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
             Task { @MainActor in
-                self.viewModel.loadLibrary()
+                await self.viewModel.loadLibrary()
                 self.updateDataSource()
             }
         }
@@ -305,7 +307,9 @@ class LibraryViewController: MangaCollectionViewController {
             guard let self = self else { return }
             Task { @MainActor in
                 self.viewModel.fetchUnreads()
-                self.viewModel.loadLibrary()
+                if self.viewModel.pinType != .unread {
+                    await self.viewModel.loadLibrary()
+                }
                 self.updateDataSource()
             }
         }
@@ -515,7 +519,7 @@ class LibraryViewController: MangaCollectionViewController {
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
         Task { @MainActor in
             await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory)
-            viewModel.loadLibrary()
+            await viewModel.loadLibrary()
             updateDataSource()
             refreshControl?.endRefreshing()
         }
@@ -832,14 +836,16 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
             emptyStackView.title = NSLocalizedString("CATEGORY_EMPTY", comment: "")
             lockedStackView.text = NSLocalizedString("CATEGORY_LOCKED", comment: "")
         }
-        viewModel.loadLibrary()
         locked = viewModel.isCategoryLocked()
         updateNavbarLock()
         updateLockState()
         deselectAllItems()
         updateToolbar()
         updateNavbarItems()
-        updateDataSource()
+        Task {
+            await viewModel.loadLibrary()
+            updateDataSource()
+        }
     }
 }
 
