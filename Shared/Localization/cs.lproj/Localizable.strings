@@ -1,0 +1,132 @@
+
+
+"UNKNOWN" = "Neznámé";
+"UNAVAILABLE" = "Nedostupné";
+"RESET" = "Resetovat";
+"DELETE" = "Smazat";
+"REMOVE" = "Odstranit";
+"RENAME" = "Přejmenovat";
+"CLEAR" = "Smazat";
+"LOADING_ELLIPSIS" = "Načítání…";
+// General
+"CONTINUE" = "Pokračovat";
+"CANCEL" = "Zrušit";
+"OK" = "OK";
+"SHARE" = "Sdílet";
+
+// Downloads
+"DOWNLOAD" = "Stáhnout";
+"DOWNLOADED" = "Staženo";
+"DOWNLOAD_QUEUE" = "Seznam stahování";
+"CANCEL_DOWNLOAD" = "Zrušit stahování";
+"REMOVE_DOWNLOAD" = "Odstranit položku";
+"REMOVE_ALL_DOWNLOADS" = "Odstranit všechny stažené položky";
+"REMOVE_DOWNLOADS" = "Odstranit stažené položky";
+"REMOVE_DOWNLOADS_CONFIRM" = "Chcete odstranit všechny stažené položky?";
+
+// Library
+"LIBRARY" = "Knihovna";
+"LIBRARY_SEARCH" = "Hledat v knihovně";
+"LIBRARY_EMPTY" = "Knihovna je prázdná";
+"LIBRARY_ADD_FROM_BROWSE" = "Přidat mangu z panelu prohlížeče";
+"ADD_TO_LIBRARY" = "Přidat do knihovny";
+"REMOVE_FROM_LIBRARY" = "Odstranit z knihovny";
+"MANGA_INFO" = "Informace o manze";
+"SORT_BY" = "Seřadit podle";
+"FILTER_BY" = "Filtr";
+"TITLE" = "titulek";
+"LATEST_CHAPTER" = "Poslední kapitola";
+"CATEGORIES" = "Kategorie";
+"EDIT_CATEGORIES" = "Upravit kategorie";
+"CATEGORY_ADD" = "Přidat kategorii";
+"CATEGORY_ADD_TEXT" = "Zadejte název nové kategorie.";
+"CATEGORY_TITLE" = "Název kategorie";
+"DEFAULT_CATEGORY" = "Výchozí kategorie";
+"ALWAYS_ASK" = "Vždy se zeptat";
+
+// Browse
+"BROWSE" = "Procházet";
+"BROWSE_NO_SOURCES" = "Žádné zdroje";
+"LAST_OPENED" = "Naposledy otevřeno";
+"LAST_READ" = "Naposledy čteno";
+"DATE_ADDED" = "Datum přidání";
+"BROWSE_NO_SOURCES_TEXT" = "Začněte nakonfigurováním seznamu zdrojů\nnebo otevřením zdroje v Aidoku";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Průvodce přidáváním zdrojů";
+"UPDATES" = "Aktualizace";
+"INSTALLED" = "Nainstalováno";
+"EXTERNAL" = "Externí";
+"BUTTON_UPDATE" = "AKTUALIZOVAT";
+"BUTTON_GET" = "ZÍSKAT";
+"BUTTON_ERROR" = "CHYBA";
+"UNINSTALL" = "Odinstalovat";
+
+// Source
+"SOURCE_INFO" = "Informace o zdroji";
+"LANGUAGE" = "Jazyk";
+"LANGUAGES" = "Jazyky";
+"INFO" = "Informace";
+"VERSION" = "Verze";
+"BUILD" = "Sestavení";
+"BUTTON_FILTER" = "Filtr";
+"LIST_HEADER" = "Seznam";
+"LIST_ALL" = "Vše";
+
+// Manga
+"UNTITLED" = "Bez názvu";
+"CANCELLED" = "Zrušeno";
+"COMPLETED" = "Dokončeno";
+"SUGGESTIVE" = "Sugestivní";
+"NSFW" = "18+";
+"MORE" = "více";
+"SOURCE_ORDER" = "Pořadí zdrojů";
+"MISSING_SOURCE" = "Zdroj chybí";
+"MISSING_SOURCE_TEXT" = "Původní zdroj této mangy chybí. Znovu ji stáhněte nebo ji odstraňte z nikovny.";
+"SELECT_ALL" = "Vybrat vše";
+"DESELECT_ALL" = "Zrušit výběr všech";
+
+// Reader
+"CHAPTER" = "Kapitola";
+"VOLUME_X" = "Díl %g";
+"CHAPTER_X" = "Kapitola %g";
+"VOL_X" = "Díl %g";
+"VOL_SPACE_X" = "Díl %g";
+"CH_SPACE_X" = "Kap. %g";
+"NO_CHAPTERS_AVAILABLE" = "Žádné kaptoly nejsou dostupné";
+"START_READING" = "Číst";
+"CONTINUE_READING" = "Pokračovat ve čtení";
+"READ" = "Číst";
+"UNREAD" = "Nepřečteno";
+"MARK" = "Označit";
+"MARK_ALL" = "Označit vše";
+"MARK_PREVIOUS" = "Označit předchozí";
+"MARK_READ" = "Označit jako přečtené";
+"MARK_UNREAD" = "Označit jako nepřečtené";
+"PREVIOUS_COLON" = "Předchozí:";
+"NEXT_COLON" = "Následující:";
+"CURRENT_COLON" = "Současné:";
+"NO_NEXT_CHAPTER" = "Nejsou žádné další kapitoly";
+"NO_PREVIOUS_CHAPTER" = "Nejsou žádné předchozí kapitoly";
+"READER_SETTINGS" = "Nastavení čtečky";
+"READING_MODE" = "Režim čtečky";
+"DEFAULT" = "Výchozí";
+"LTR" = "Zleva doprava";
+"RTL" = "Zprava doleva";
+"VERTICAL" = "Svisle";
+"VERTICAL_SCROLL" = "Svislé posouvání";
+"EXPERIMENTAL" = "Experimentální";
+"INFINITE_VERTICAL_SCROLL" = "Nekonečné vertikální posouvání";
+"SAVE_TO_PHOTOS" = "Uložit do Fotek";
+
+// History
+"HISTORY" = "Historie";
+"%@_AGO" = "Před %@";
+"PAGE_X" = "Stránka %i";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Tímto smažete historii této kapitoly. Určitě chcete pokračovat?";
+"REMOVE_ALL_MANGA_HISTORY" = "Odstranit veškerou historii mang";
+"HISTORY_LOCKED" = "Historie je zamknutá.";
+"VIEW_HISTORY" = "Zobrazit historii";
+"SELECT_CHAPTERS" = "Vybrat kapitoly";
+"NO_CHAPTERS" = "Žádné kapitoly";
+"CHAPTERS" = "Kapitoly";
+"CH_X" = "Kap. %g";
+"FINISHED_COLON" = "Dokončeno:";

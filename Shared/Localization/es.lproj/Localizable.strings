@@ -320,3 +320,6 @@
 "SYNC_WITH_TRACKER" = "Sincronizar con rastreador";
 "SYNC_WITH_TRACKER_INFO" = "El último episodio de la audiencia es más alto (%g) que el último episodio que leíste. ¿Quieres actualizar tu historial local para que sea el mismo?";
 "MIGRATION" = "Migración";
+"START_MATCHING" = "Empezar a emparejar";
+"UPLOAD_DATE" = "Fecha de carga";
+"TRACKING" = "Tracking";

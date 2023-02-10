@@ -1,0 +1,225 @@
+
+
+"CANCEL" = "Kanselleer";
+"UNKNOWN" = "Onbekend";
+"UNAVAILABLE" = "Onbeskikbaar";
+"REMOVE" = "Bewyder";
+"RENAME" = "Hernoem";
+"LOADING_ELLIPSIS" = "Laai…";
+"SHARE" = "Deel";
+
+// Downloads
+"DOWNLOAD" = "Aflaai";
+"DOWNLOADED" = "Afgelaai";
+"CANCEL_DOWNLOAD" = "Kanselleer Aflaai";
+"REMOVE_ALL_DOWNLOADS" = "Verwyder Alle Aflaaisels";
+"REMOVE_DOWNLOADS" = "Verwyder Aflaaisels";
+
+// Library
+"LIBRARY" = "Biblioteek";
+"LIBRARY_SEARCH" = "Vind in Biblioteek";
+"LIBRARY_ADD_FROM_BROWSE" = "Voeg manga by van die blaaioortjie af";
+"ADD_TO_LIBRARY" = "Voeg by Biblioteek";
+"OK" = "OK";
+"RESET" = "Stel terug";
+"DELETE" = "Skrap";
+"CLEAR" = "Maak skoon";
+"REMOVE_DOWNLOAD" = "Verwyder Aflaaisel";
+"LIBRARY_EMPTY" = "Biblioteek is Leeg";
+"REMOVE_FROM_LIBRARY" = "Verwyder uit biblioteek";
+"MANGA_INFO" = "Manga-inligting";
+"SORT_BY" = "Sorteer Volgens";
+"FILTER_BY" = "Filter Volgens";
+"LAST_OPENED" = "Laas Geopen";
+"LAST_READ" = "Laas Gelees";
+"DATE_ADDED" = "Datum Bygevoeg";
+
+// Categories
+"ALL" = "Alle";
+"CATEGORIES" = "Kategorieë";
+"EDIT_CATEGORIES" = "Redigeer kategorieë";
+"CATEGORY_ADD" = "Voeg Kategorie By";
+"CATEGORY_TITLE" = "Kategorie Titel";
+"DEFAULT_CATEGORY" = "Standaard Kategorie";
+"ALWAYS_ASK" = "Vra Altyd";
+
+// Browse
+"BROWSE" = "Blaai Deur";
+"BROWSE_NO_SOURCES" = "Geen bronne nie";
+"BROWSE_NO_SOURCES_TEXT" = "Stel jou bronnelys op of maak 'n \nbron in Aidoku oop om te begin";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Gids Vir Bronne Byvoeging";
+"UPDATES" = "Opdaterings";
+"INSTALLED" = "Geïnstalleer";
+"BUTTON_UPDATE" = "OPDATEER";
+"BUTTON_GET" = "KRY";
+"BUTTON_ERROR" = "FOUT";
+"UNINSTALL" = "Deïnstalleer";
+
+// Source
+"SOURCE_INFO" = "Bron Inligting";
+"INFO" = "Inligting";
+"VERSION" = "Weergawe";
+"BUILD" = "Bou";
+"BUTTON_FILTER" = "Filter";
+"LIST_HEADER" = "Lys";
+"LIST_ALL" = "Alle";
+
+// Manga
+"UNTITLED" = "Titelloos";
+"ONGOING" = "Aanlopend";
+"CANCELLED" = "Gekanselleer";
+"COMPLETED" = "Gevoltooi";
+"SUGGESTIVE" = "Suggestief";
+"NSFW" = "NSFW";
+"SOURCE_ORDER" = "Bron Orde";
+"MISSING_SOURCE" = "Vermiste Bron";
+"SELECT_CHAPTERS" = "Kies Hoofstukke";
+"SELECT_ALL" = "Kies Alles";
+"CHAPTERS" = "Hoofstukke";
+"VOLUME_X" = "Volume %g";
+"CHAPTER_X" = "Hoofstuk %g";
+"INCOGNITO_MODE_TEXT" = "Onderbreek leesgeskiedenis wanneer dit aan is";
+"APPEARANCE" = "Voorkoms";
+"APPEARANCE_LIGHT" = "Lig";
+"APPEARANCE_DARK" = "Donker";
+"USE_SYSTEM_APPEARANCE" = "Gebruik Stelselvoorkoms";
+"MANGA_PAGE" = "Manga Bladsy";
+"SHOW_SOURCE_LABEL" = "Wys Bronetiket";
+"USE_MANGA_TINT" = "Gebruik Manga Tint";
+"MANGA_PER_ROW" = "Manga per ry";
+"ONLY_UPDATE_ON_WIFI" = "Dateer Slegs op Wi-Fi op";
+"EXCLUDED_CATEGORIES" = "Uitgeslote Kategorieë";
+"REFRESH_METADATA" = "Herlaai Metadata";
+"NEVER" = "Nooit";
+"EVERY_12_HOURS" = "Elke 12 ure";
+"DAILY" = "Daagliks";
+"EVERY_2_DAYS" = "Elke 2 dae";
+"WEEKLY" = "Weekliks";
+"WITH_UNREAD_CHAPTERS" = "Met ongeleesde hoofstukke";
+"WITH_COMPLETED_STATUS" = "Met voltooide status";
+"THAT_HAVENT_BEEN_READ" = "Wat nie gelees is nie";
+"SOURCE_LISTS" = "Bronnelyste";
+"SOURCE_LIST_ADDED" = "Bronnelys Bygevoeg";
+"SHOW_NSFW_SOURCES" = "Wys NSFW-bronne";
+"BACKUP_IMPORT_FAIL_TEXT" = "Kon nie rugsteun stoor nie. Verseker asseblief dat jou rugsteun in die regte formaat is.";
+"EXPORT" = "Voer Uit";
+"RESTORE" = "Herstel";
+"LOGS" = "Logs";
+"LOGGING" = "Logginings";
+"LOG_SERVER" = "Log Bediener";
+"EXPORT_LOGS" = "Voer Logs Uit";
+"DISPLAY_LOGS" = "Wys Logs";
+"ADVANCED" = "Gevorderd";
+"RESET_TEXT" = "Hierdie aksie is onomkeerbaar. Alle data, instellings en kas sal uitgevee en teruggestel word.";
+"CLEAR_CHAPTER_CACHE" = "Vee Hoofstukkas Uit";
+// General
+"CONTINUE" = "Gaan voort";
+"REMOVE_DOWNLOADS_CONFIRM" = "Verwyder alle selekteerde aflaaisels?";
+"DOWNLOAD_QUEUE" = "Aflaai Waglys";
+"TITLE" = "Titel";
+"MARK" = "Merk";
+"LATEST_CHAPTER" = "Nuutste Hoofstuk";
+"NONE" = "Geen";
+"CATEGORY_ADD_TEXT" = "Voeg die titel van die nuwe kategorie in.";
+"EXTERNAL" = "Eksterne";
+"LANGUAGE" = "Taal";
+"LANGUAGES" = "Tale";
+"HIATUS" = "Op 'n Breek";
+"MORE" = "meer";
+"DESELECT_ALL" = "Ontkies Alles";
+"MISSING_SOURCE_TEXT" = "Die oorspronklike bron vir hierdie Manga is ontbreek. Laai dit asseblief weer af of verwyder hierdie titel uit jou biblioteek.";
+
+// Reader
+"CHAPTER" = "Hoofstuk";
+"VOL_X" = "Vol.%g";
+"CH_X" = "Hfst.%g";
+"VOL_SPACE_X" = "Vol. %g";
+"CH_SPACE_X" = "Hfst. %g";
+"NO_CHAPTERS_AVAILABLE" = "Geen Hoofstukke Beskikbaar";
+"NO_CHAPTERS" = "Geen Hoofstukke";
+"MARK_READ" = "Merk as Gelees";
+"START_READING" = "Begin Lees";
+"CONTINUE_READING" = "Lees Verder";
+"READ" = "Lees";
+"UNREAD" = "Ongeleesde";
+"MARK_ALL" = "Merk Alles";
+"MARK_PREVIOUS" = "Merk Vorige";
+"NEXT_COLON" = "Volgende:";
+"FINISHED_COLON" = "Klaar:";
+"CURRENT_COLON" = "Huidige:";
+"PREVIOUS_COLON" = "Vorige:";
+"READER_SETTINGS" = "Leser-instellings";
+"MARK_UNREAD" = "Merk as Ongelees";
+"NO_NEXT_CHAPTER" = "Daar is geen volgende hoofstuk nie";
+"NO_PREVIOUS_CHAPTER" = "Daar is geen vorige hoofstuk nie";
+"DEFAULT" = "Verstek";
+"READING_MODE" = "Leesmodus";
+"LTR" = "Links na Regs";
+"RTL" = "Regs na Links";
+"VERTICAL" = "Vertikaal";
+"VERTICAL_SCROLL" = "Vertikale Rol";
+"INCOGNITO_MODE" = "Incognito-Modus";
+"EXPERIMENTAL" = "Eksperimenteel";
+"INFINITE_VERTICAL_SCROLL" = "Oneindige Vertikale Rol";
+"SAVE_TO_PHOTOS" = "Stoor na Foto's";
+
+// History
+"HISTORY" = "Geskiedenis";
+"PAGE_X" = "Bladsy %i";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Dit sal die geskiedenis vir hierdie hoofstuk verwyder. Is jy seker jy wil voortgaan?";
+"%@_AGO" = "%@ gelede";
+"REMOVE_ALL_MANGA_HISTORY" = "Verwyder Alle Mangageskiedenis";
+"HISTORY_LOCKED" = "Geskiedenis is gesluit.";
+
+// Search
+"SEARCH" = "Soek";
+"AUTH_TO_DISABLE" = "Verifieer om af te sit.";
+"AUTH_TO_ENABLE" = "Verifieer om aan te sit.";
+"ICLOUD_SYNC" = "iCloud-Sinkronisering";
+"VIEW_HISTORY" = "Bekyk Geskiedenis";
+"AUTH_FOR_HISTORY" = "Verifieer om leesgeskiedenis te sien.";
+"VIEW_MORE" = "Sien Meer";
+
+// Settings
+"SETTINGS" = "Instellings";
+"SUPPPORT_DEVELOPMENT" = "Ondersteun Ontwikkeling";
+"GITHUB_REPO" = "GitHub-Bewaarplek";
+"ABOUT" = "Meer Oor";
+"DISCORD_SERVER" = "Discord-Bediener";
+"GENERAL" = "Algemeen";
+"USE_MANGA_TINT_INFO" = "Tint manga bladsye gebaseer op die kleur van die voorbladprent";
+"READER" = "Leser";
+"PIN_MANGA_UPDATED" = "Opgedateer";
+"LIBRARY_UPDATING" = "Biblioteekopdatering";
+"UPDATE_INTERVAL" = "Opdateringsinterval";
+"LOCK_HISTORY_TAB" = "Sluit Geskiedenis Oortjie";
+"OPEN_READER_VIEW" = "Maak Lesersaansig Oop";
+"UNREAD_CHAPTER_BADGES" = "Ongeleesde hoofstuk-kentekens";
+"PIN_MANGA" = "Speld Manga";
+"PIN_MANGA_UNREAD" = "Ongeleesde";
+"PORTRAIT" = "Portret";
+"LANDSCAPE" = "Landskap";
+"PIN_MANGA_TYPE" = "Speld Tipe";
+"SKIP_TITLES" = "Slaan Titels Oor";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "Die URL wat verskaf word, is ongeldig of is reeds bygevoeg.";
+"SOURCE_LIST_ADDED_TEXT" = "Jy kan nou deur eksterne bronne blaai in die Blaai-lys.";
+"SOURCE_LIST_URL" = "Bronlys URL";
+"SOURCE_LIST_ADD" = "Voeg Bronnelys By";
+"SOURCE_LIST_ADD_TEXT" = "Voer die bronnelys-URL in";
+"BACKUP_NAME" = "Rugsteun Naam";
+"RENAME_BACKUP" = "Hernoem Rugsteun";
+"RENAME_BACKUP_TEXT" = "Tik 'n nuwe naam vir jou rugsteun in";
+"SOURCE_LIST_ADD_FAIL" = "Kon Bronnelys Nie Byvoeg Nie";
+"DOWNSAMPLE_IMAGES" = "Verlaag Prente Kwaliteit";
+"SAVE_IMAGE_OPTION" = "Stoor Prent Opsie";
+"BACKUPS" = "Rugsteune";
+"CORRUPTED_BACKUP" = "Korrupte Rugsteun";
+"CORRUPTED_BACKUP_TEXT" = "Hierdie rugsteun se data is verkeerd gekonfigureer. Om te Hernoem is nie moontlik nie.";
+"BACKUP_INFO" = "Druk lank op 'n rugsteun om dit uit te voer, of swiep na links om uit te vee.";
+"MISSING_SOURCES" = "Vermiste Bronne";
+"RESTORE_BACKUP_TEXT" = "Alle huidige data sal verwyder en vervang word deur die data van hierdie rugsteun.";
+"MISSING_SOURCES_TEXT" = "Die herstelde rugsteun kan data van die volgende bronne bevat, wat nie tans geïnstalleer is nie:";
+"RESTORE_BACKUP" = "Herstel na hierdie rugsteun?";
+"BACKUP_IMPORT_FAIL" = "Invoer Misluk";
+"BACKUP_IMPORT_SUCCESS" = "Rugsteun Ingevoer";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Om na hierdie rugsteun te herstel, vind dit in die rugsteunbladsy in instellings.";
