@@ -106,31 +106,39 @@ class BrowseViewController: BaseTableViewController {
     override func observe() {
         // source installed/imported
         addObserver(forName: "updateSourceList") { [weak self] _ in
-            self?.viewModel.loadInstalledSources()
-            self?.viewModel.filterExternalSources()
+            guard let self = self else { return }
             Task { @MainActor in
-                if let query = self?.navigationItem.searchController?.searchBar.text, !query.isEmpty {
-                    self?.viewModel.search(query: query)
+                self.viewModel.loadInstalledSources()
+                self.viewModel.filterExternalSources()
+                if let query = self.navigationItem.searchController?.searchBar.text, !query.isEmpty {
+                    self.viewModel.search(query: query)
                 }
-                self?.updateDataSource()
+                self.updateDataSource()
             }
         }
         // source lists added/removed
         addObserver(forName: "updateSourceLists") { [weak self] _ in
+            guard let self = self else { return }
             Task {
-                await self?.viewModel.loadExternalSources()
-                self?.updateDataSource()
+                await self.viewModel.loadExternalSources()
+                self.updateDataSource()
             }
         }
         // show nsfw sources setting
         addObserver(forName: "Browse.showNsfwSources") { [weak self] _ in
-            self?.viewModel.filterExternalSources()
-            self?.updateDataSource()
+            guard let self = self else { return }
+            Task {
+                self.viewModel.filterExternalSources()
+                self.updateDataSource()
+            }
         }
         // browse language selection
         addObserver(forName: "Browse.languages") { [weak self] _ in
-            self?.viewModel.filterExternalSources()
-            self?.updateDataSource()
+            guard let self = self else { return }
+            Task {
+                self.viewModel.filterExternalSources()
+                self.updateDataSource()
+            }
         }
     }
 

@@ -319,7 +319,7 @@ class LibraryViewController: MangaCollectionViewController {
         addObserver(forName: "updateHistory") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                self.viewModel.fetchUnreads()
+                await self.viewModel.fetchUnreads()
                 if self.viewModel.pinType != .unread {
                     await self.viewModel.loadLibrary()
                 }
@@ -621,7 +621,7 @@ extension LibraryViewController {
 
         // handle empty library or category
         if navigationItem.searchController?.searchBar.text?.isEmpty ?? true {
-            emptyStackView.isHidden = !viewModel.manga.isEmpty || !viewModel.pinnedManga.isEmpty
+            emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty
         }
         collectionView.isScrollEnabled = emptyStackView.isHidden && lockedStackView.isHidden
         collectionView.refreshControl = collectionView.isScrollEnabled ? refreshControl : nil

@@ -195,7 +195,8 @@ class LibraryViewModel {
 
     // updates unread counts and manga sort order for history change
     func updateHistory(for manga: [MangaInfo], read: Bool) async {
-        await withTaskGroup(of: Void.self) { group in
+        let currentManga = self.manga + self.pinnedManga
+        let unreadCounts = await withTaskGroup(of: (Int, Int)?.self, returning: [Int: Int].self) { group in
             for item in manga {
                 group.addTask {
                     func getUnreadCount() async -> Int {
@@ -207,23 +208,34 @@ class LibraryViewModel {
                             )
                         }
                     }
-                    if let pinnedIndex = self.pinnedManga.firstIndex(where: {
+                    if let manga = currentManga.first(where: {
                         $0.mangaId == item.mangaId && $0.sourceId == item.sourceId
                     }) {
-                        self.pinnedManga[pinnedIndex].unread = await getUnreadCount()
-                        if read && self.sortMethod == .lastRead && pinnedIndex != 0 {
-                            let manga = self.pinnedManga.remove(at: pinnedIndex)
-                            self.pinnedManga.insert(manga, at: 0)
-                        }
-                    } else if let mangaIndex = self.manga.firstIndex(where: {
-                        $0.mangaId == item.mangaId && $0.sourceId == item.sourceId
-                    }) {
-                        self.manga[mangaIndex].unread = await getUnreadCount()
-                        if read && self.sortMethod == .lastRead && mangaIndex != 0 {
-                            let manga = self.manga.remove(at: mangaIndex)
-                            self.manga.insert(manga, at: 0)
-                        }
+                        return (manga.hashValue, await getUnreadCount())
+                    } else {
+                        return nil
                     }
+                }
+            }
+            var ret: [Int: Int] = [:]
+            for await result in group {
+                guard let result = result else { continue }
+                ret[result.0] = result.1
+            }
+            return ret
+        }
+        for count in unreadCounts {
+            if let pinnedIndex = pinnedManga.firstIndex(where: { $0.hashValue == count.key }) {
+                pinnedManga[pinnedIndex].unread = count.value
+                if read && sortMethod == .lastRead && pinnedIndex != 0 {
+                    let manga = pinnedManga.remove(at: pinnedIndex)
+                    pinnedManga.insert(manga, at: 0)
+                }
+            } else if let mangaIndex = currentManga.firstIndex(where: { $0.hashValue == count.key }) {
+                self.manga[mangaIndex].unread = count.value
+                if read && sortMethod == .lastRead && mangaIndex != 0 {
+                    let manga = self.manga.remove(at: mangaIndex)
+                    self.manga.insert(manga, at: 0)
                 }
             }
         }
@@ -234,27 +246,33 @@ class LibraryViewModel {
         }
     }
 
-    func fetchUnreads() {
-        for (i, manga) in manga.enumerated() {
-            self.manga[i].unread = CoreDataManager.shared.unreadCount(
-                sourceId: manga.sourceId,
-                mangaId: manga.mangaId
-            )
+    func fetchUnreads() async {
+        var unreadCounts: [Int: Int] = [:]
+        let currentManga = self.manga + self.pinnedManga
+        // fetch new unread counts
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            for manga in currentManga {
+                unreadCounts[manga.hashValue] = CoreDataManager.shared.unreadCount(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.mangaId,
+                    context: context
+                )
+            }
         }
-        for (i, manga) in pinnedManga.enumerated() {
-            pinnedManga[i].unread = CoreDataManager.shared.unreadCount(
-                sourceId: manga.sourceId,
-                mangaId: manga.mangaId
-            )
+        // set unread counts
+        for (i, manga) in self.manga.enumerated() {
+            guard let count = unreadCounts[manga.hashValue] else { continue }
+            self.manga[i].unread = count
         }
+        for (i, manga) in self.pinnedManga.enumerated() {
+            guard let count = unreadCounts[manga.hashValue] else { continue }
+            self.pinnedManga[i].unread = count
+        }
+        // re-sort library if needed
         if pinType == .unread {
-            Task {
-                await loadLibrary()
-            }
+            await loadLibrary()
         } else if sortMethod == .unreadChapters {
-            Task {
-                await sortLibrary()
-            }
+            await sortLibrary()
         }
     }
 
