@@ -159,9 +159,15 @@ class SourceViewController: MangaCollectionViewController {
             cell.sourceId = info.sourceId
             cell.mangaId = info.mangaId
             cell.title = info.title
-            let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: info.sourceId, mangaId: info.mangaId)
-            cell.showsBookmark = inLibrary
             Task {
+                let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.hasLibraryManga(
+                        sourceId: info.sourceId,
+                        mangaId: info.mangaId,
+                        context: context
+                    )
+                }
+                cell.showsBookmark = inLibrary
                 await cell.loadImage(url: info.coverUrl)
             }
         }
@@ -323,39 +329,46 @@ extension SourceViewController {
             let mangaInfo = dataSource.itemIdentifier(for: indexPath)
         else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
-            var actions: [UIAction] = []
-
-            let inLibrary = CoreDataManager.shared.hasLibraryManga(
-                sourceId: mangaInfo.sourceId,
-                mangaId: mangaInfo.mangaId
-            )
+            var actions: [UIMenuElement] = []
 
             // library option
-            if inLibrary {
-                actions.append(UIAction(
-                    title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
-                    image: UIImage(systemName: "trash"),
-                    attributes: .destructive
-                ) { _ in
-                    Task {
-                        await MangaManager.shared.removeFromLibrary(
+            actions.append(UIDeferredMenuElement { [weak self] completion in
+                guard let self = self else { return }
+                Task {
+                    let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                        CoreDataManager.shared.hasLibraryManga(
                             sourceId: mangaInfo.sourceId,
-                            mangaId: mangaInfo.mangaId
+                            mangaId: mangaInfo.mangaId,
+                            context: context
                         )
-                        self.refreshCells(for: [mangaInfo])
                     }
-                })
-            } else {
-                actions.append(UIAction(
-                    title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
-                    image: UIImage(systemName: "books.vertical.fill")
-                ) { _ in
-                    Task {
-                        await MangaManager.shared.addToLibrary(manga: mangaInfo.toManga(), fetchMangaDetails: true)
-                        self.refreshCells(for: [mangaInfo])
+                    if inLibrary {
+                        completion([UIAction(
+                            title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
+                            image: UIImage(systemName: "trash"),
+                            attributes: .destructive
+                        ) { _ in
+                            Task {
+                                await MangaManager.shared.removeFromLibrary(
+                                    sourceId: mangaInfo.sourceId,
+                                    mangaId: mangaInfo.mangaId
+                                )
+                                self.refreshCells(for: [mangaInfo])
+                            }
+                        }])
+                    } else {
+                        completion([UIAction(
+                            title: NSLocalizedString("ADD_TO_LIBRARY", comment: ""),
+                            image: UIImage(systemName: "books.vertical.fill")
+                        ) { _ in
+                            Task {
+                                await MangaManager.shared.addToLibrary(manga: mangaInfo.toManga(), fetchMangaDetails: true)
+                                self.refreshCells(for: [mangaInfo])
+                            }
+                        }])
                     }
-                })
-            }
+                }
+            })
 
             // share option
             if let url = mangaInfo.url {

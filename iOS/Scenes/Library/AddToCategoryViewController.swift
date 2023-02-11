@@ -56,8 +56,12 @@ class AddToCategoryViewController: BaseTableViewController {
         tableView.dataSource = dataSource
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
-        categories = CoreDataManager.shared.getCategories().compactMap { $0.title }
-        updateDataSource()
+        Task {
+            categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+            }
+            updateDataSource()
+        }
     }
 
     @objc func close() {

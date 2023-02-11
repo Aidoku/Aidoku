@@ -311,20 +311,8 @@ class MangaDetailHeaderView: UIView {
             contentRatingLabelView.isHidden = true
         }
 
-        let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
-        let showSourceLabel = inLibrary && UserDefaults.standard.bool(forKey: "General.showSourceLabel")
-        if showSourceLabel, let source = SourceManager.shared.source(for: manga.sourceId) {
-            sourceLabelView.text = source.manifest.info.name
-            sourceLabelView.isHidden = false
-        } else {
-            sourceLabelView.isHidden = true
-        }
-
-        let isTracking = TrackerManager.shared.isTracking(sourceId: manga.sourceId, mangaId: manga.id)
-
         let tintColor = readButton.backgroundColor
-        bookmarkButton.tintColor = inLibrary ? .white : tintColor
-        bookmarkButton.backgroundColor = inLibrary ? tintColor : .secondarySystemFill
+        let isTracking = TrackerManager.shared.isTracking(sourceId: manga.sourceId, mangaId: manga.id)
         trackerButton.tintColor = isTracking ? .white : tintColor
         trackerButton.backgroundColor = isTracking ? tintColor : .secondarySystemFill
 
@@ -338,11 +326,33 @@ class MangaDetailHeaderView: UIView {
         UIView.animate(withDuration: 0.3) {
             self.authorLabel.isHidden = manga.author == nil
             self.descriptionLabel.isHidden = manga.description == nil
-            self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe && !inLibrary
+            self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe
         }
 
-        if let url = manga.coverUrl {
-            Task {
+        Task {
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasLibraryManga(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
+                    context: context
+                )
+            }
+            let showSourceLabel = inLibrary && UserDefaults.standard.bool(forKey: "General.showSourceLabel")
+            if showSourceLabel, let source = SourceManager.shared.source(for: manga.sourceId) {
+                sourceLabelView.text = source.manifest.info.name
+                sourceLabelView.isHidden = false
+            } else {
+                sourceLabelView.isHidden = true
+            }
+
+            bookmarkButton.tintColor = inLibrary ? .white : tintColor
+            bookmarkButton.backgroundColor = inLibrary ? tintColor : .secondarySystemFill
+
+            UIView.animate(withDuration: 0.3) {
+                self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe && !showSourceLabel
+            }
+
+            if let url = manga.coverUrl {
                 await setCover(url: url, sourceId: manga.sourceId)
             }
         }

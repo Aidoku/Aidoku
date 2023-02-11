@@ -88,7 +88,13 @@ class MangaViewController: BaseTableViewController {
 
         Task {
             // load details if not in library
-            let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasLibraryManga(
+                    sourceId: self.manga.sourceId,
+                    mangaId: self.manga.id,
+                    context: context
+                )
+            }
             if !inLibrary, let source = SourceManager.shared.source(for: manga.sourceId) {
                 let newManga = try? await source.getMangaDetails(manga: manga)
                 if let newManga = newManga {
@@ -423,7 +429,13 @@ class MangaViewController: BaseTableViewController {
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
         Task {
             if let source = SourceManager.shared.source(for: manga.sourceId) {
-                let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+                let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.hasLibraryManga(
+                        sourceId: self.manga.sourceId,
+                        mangaId: self.manga.id,
+                        context: context
+                    )
+                }
                 await withTaskGroup(of: Void.self) { group in
                     // update manga details
                     group.addTask {
@@ -519,7 +531,7 @@ class MangaViewController: BaseTableViewController {
 // MARK: View Updating
 extension MangaViewController {
 
-    private func makeMenu() -> [UIMenuElement] {
+    private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
         var actions = [
             UIAction(
@@ -531,29 +543,35 @@ extension MangaViewController {
         ]
 
         // add edit categories button if in library and have categories
-        let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
-        if inLibrary {
-            if !CoreDataManager.shared.getCategories(sorted: false).isEmpty {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            let inLibrary = CoreDataManager.shared.hasLibraryManga(
+                sourceId: self.manga.sourceId,
+                mangaId: self.manga.id,
+                context: context
+            )
+            if inLibrary {
+                if !CoreDataManager.shared.getCategories(sorted: false, context: context).isEmpty {
+                    actions.append(UIAction(
+                        title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
+                        image: UIImage(systemName: "folder.badge.gearshape")
+                    ) { [weak self] _ in
+                        guard let self = self else { return }
+                        self.present(
+                            UINavigationController(rootViewController: CategorySelectViewController(
+                                manga: self.manga,
+                                chapterList: self.viewModel.chapterList
+                            )),
+                            animated: true
+                        )
+                    })
+                }
                 actions.append(UIAction(
-                    title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
-                    image: UIImage(systemName: "folder.badge.gearshape")
+                    title: NSLocalizedString("MIGRATE", comment: ""),
+                    image: UIImage(systemName: "arrow.left.arrow.right")
                 ) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.present(
-                        UINavigationController(rootViewController: CategorySelectViewController(
-                            manga: self.manga,
-                            chapterList: self.viewModel.chapterList
-                        )),
-                        animated: true
-                    )
+                    self?.migrateManga()
                 })
             }
-            actions.append(UIAction(
-                title: NSLocalizedString("MIGRATE", comment: ""),
-                image: UIImage(systemName: "arrow.left.arrow.right")
-            ) { [weak self] _ in
-                self?.migrateManga()
-            })
         }
 
         // add share button if manga has a url
@@ -632,7 +650,9 @@ extension MangaViewController {
                             completion([])
                             return
                         }
-                        completion(self.makeMenu())
+                        Task {
+                            completion(await self.makeMenu())
+                        }
                     }
                 ])
             } else {
@@ -642,7 +662,9 @@ extension MangaViewController {
                             completion([])
                             return
                         }
-                        completion(self.makeMenu())
+                        Task {
+                            completion(await self.makeMenu())
+                        }
                     }
                 ])
             }
@@ -1003,7 +1025,13 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
     // add to library
     func bookmarkPressed() {
         Task {
-            let inLibrary = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasLibraryManga(
+                    sourceId: self.manga.sourceId,
+                    mangaId: self.manga.id,
+                    context: context
+                )
+            }
             if inLibrary {
                 // remove from library
                 await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.id)
