@@ -134,7 +134,10 @@ struct MigrateMangaView: View {
     private func migratedMangaBinding(for key: Int) -> Binding<Manga?> {
         .init(
             get: { self.migratedManga[key, default: nil] },
-            set: { self.migratedManga[key] = $0 })
+            set: {
+                self.migratedManga[key] = $0
+                self.newChapters.removeValue(forKey: key)
+            })
     }
     private func stateBinding(for key: Int) -> Binding<MigrationState> {
         .init(
@@ -170,13 +173,11 @@ struct MigrateMangaView: View {
                         else { continue }
                         let search = try? await source.fetchSearchManga(query: title)
                         if let newManga = search?.manga.first {
-                            // fetch full manga details
-                            let details = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
-                            // load chapters
-                            let chapters = try? await source.getChapterList(manga: details)
+                            // if we need to check chapters
+//                            let chapters = try? await source.getChapterList(manga: newManga)
                             withAnimation {
-                                migratedManga[manga.hashValue] = details
-                                newChapters[manga.hashValue] = chapters ?? []
+                                migratedManga[manga.hashValue] = newManga
+//                                newChapters[manga.hashValue] = chapters
                                 states[manga.hashValue] = .done
                             }
                             return
@@ -192,15 +193,49 @@ struct MigrateMangaView: View {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func performMigration() async {
-        await withTaskGroup(of: (from: Manga, to: Manga)?.self) { group in
+        let newDetails = await withTaskGroup(
+            of: (Int, Manga, [Chapter])?.self,
+            returning: [Int: (Manga, [Chapter])].self
+        ) { group in
             for oldManga in manga {
                 group.addTask {
                     guard
                         let newManga = migratedManga[oldManga.hashValue],
                         let newManga = newManga,
-                        let newChapters = newChapters[oldManga.hashValue]
+                        let source = SourceManager.shared.source(for: newManga.sourceId)
                     else { return nil }
+
+                    let mangaDetails = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
+
+                    let chapters: [Chapter]
+                    if let newChapters = newChapters[oldManga.hashValue] {
+                        chapters = newChapters
+                    } else {
+                        chapters = (try? await source.getChapterList(manga: mangaDetails)) ?? []
+                    }
+
+                    return (oldManga.hashValue, mangaDetails, chapters)
+                }
+            }
+            var ret: [Int: (Manga, [Chapter])] = [:]
+            for await result in group {
+                guard let result = result else { continue }
+                ret[result.0] = (result.1, result.2)
+            }
+            return ret
+        }
+
+        await withTaskGroup(of: (from: Manga, to: Manga)?.self) { group in
+            for oldManga in manga {
+                group.addTask {
+                    guard
+                        let details = newDetails[oldManga.hashValue]
+                    else { return nil }
+
+                    let newManga = details.0
+                    let newChapters = details.1
 
                     // migrate manga
                     let mangaMigrateTask = Task {
@@ -245,8 +280,16 @@ struct MigrateMangaView: View {
                                 .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
                                 .chapter?.floatValue
                             // remove old chapters and history
-                            CoreDataManager.shared.removeChapters(sourceId: oldManga.sourceId, mangaId: oldManga.id, context: context)
-                            CoreDataManager.shared.removeHistory(sourceId: oldManga.sourceId, mangaId: oldManga.id, context: context)
+                            CoreDataManager.shared.removeChapters(
+                                sourceId: oldManga.sourceId,
+                                mangaId: oldManga.id,
+                                context: context
+                            )
+                            CoreDataManager.shared.removeHistory(
+                                sourceId: oldManga.sourceId,
+                                mangaId: oldManga.id,
+                                context: context
+                            )
                             // store new chapters
                             CoreDataManager.shared.setChapters(
                                 newChapters,
