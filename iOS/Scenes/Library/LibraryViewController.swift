@@ -234,7 +234,7 @@ class LibraryViewController: MangaCollectionViewController {
         addObserver(forName: "updateCategories") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                self.viewModel.refreshCategories()
+                await self.viewModel.refreshCategories()
                 self.collectionView.collectionViewLayout = self.makeCollectionViewLayout()
                 self.updateDataSource()
                 if !self.isEditing {
@@ -734,15 +734,19 @@ extension LibraryViewController {
 extension LibraryViewController {
 
     func toggleSort(method: LibraryViewModel.SortMethod) {
-        viewModel.toggleSort(method: method)
-        updateDataSource()
-        updateSortMenu()
+        Task {
+            await viewModel.toggleSort(method: method)
+            updateDataSource()
+            updateSortMenu()
+        }
     }
 
     func toggleFilter(method: LibraryViewModel.FilterMethod) {
-        viewModel.toggleFilter(method: method)
-        updateDataSource()
-        updateSortMenu()
+        Task {
+            await viewModel.toggleFilter(method: method)
+            updateDataSource()
+            updateSortMenu()
+        }
     }
 
     func updateSortMenu() {
@@ -904,7 +908,7 @@ extension LibraryViewController {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
                 await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.mangaId)
-                self.viewModel.mangaOpened(sourceId: info.sourceId, mangaId: info.mangaId)
+                await self.viewModel.mangaOpened(sourceId: info.sourceId, mangaId: info.mangaId)
                 self.updateDataSource()
             }
         }

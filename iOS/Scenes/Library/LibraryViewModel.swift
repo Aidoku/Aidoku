@@ -94,13 +94,11 @@ class LibraryViewModel {
         }
     }
 
-    func refreshCategories() {
+    func refreshCategories() async {
         categories = CoreDataManager.shared.getCategories().map { $0.title ?? "" }
         if currentCategory != nil && !categories.contains(currentCategory!) {
             currentCategory = nil
-            Task {
-                await loadLibrary()
-            }
+            await loadLibrary()
         }
     }
 
@@ -189,7 +187,7 @@ class LibraryViewModel {
         self.manga = manga
 
         if sortMethod == .unreadChapters {
-            sortLibrary()
+            await sortLibrary()
         }
     }
 
@@ -230,7 +228,7 @@ class LibraryViewModel {
         if pinType == .unread {
             await loadLibrary()
         } else if sortMethod == .unreadChapters {
-            sortLibrary()
+            await sortLibrary()
         }
     }
 
@@ -252,11 +250,13 @@ class LibraryViewModel {
                 await loadLibrary()
             }
         } else if sortMethod == .unreadChapters {
-            sortLibrary()
+            Task {
+                await sortLibrary()
+            }
         }
     }
 
-    func sortLibrary() {
+    func sortLibrary() async {
         switch sortMethod {
         case .alphabetical:
             if sortAscending {
@@ -277,13 +277,11 @@ class LibraryViewModel {
             }
 
         default:
-            Task {
-                await loadLibrary()
-            }
+            await loadLibrary()
         }
     }
 
-    func toggleSort(method: SortMethod) {
+    func toggleSort(method: SortMethod) async {
         if sortMethod == method {
             sortAscending.toggle()
         } else {
@@ -294,10 +292,10 @@ class LibraryViewModel {
 
         UserDefaults.standard.set(sortAscending, forKey: "Library.sortAscending")
 
-        sortLibrary()
+        await sortLibrary()
     }
 
-    func toggleFilter(method: FilterMethod) {
+    func toggleFilter(method: FilterMethod) async {
         let filterIndex = filters.firstIndex(where: { $0.type == method })
         if let filterIndex = filterIndex {
             if filters[filterIndex].exclude {
@@ -308,9 +306,7 @@ class LibraryViewModel {
         } else {
             filters.append(LibraryFilter(type: method, exclude: false))
         }
-        Task {
-            await loadLibrary()
-        }
+        await loadLibrary()
     }
 
     func search(query: String) {
@@ -338,7 +334,7 @@ class LibraryViewModel {
         manga = storedManga.filter { $0.title?.lowercased().contains(query) ?? false }
     }
 
-    func mangaOpened(sourceId: String, mangaId: String) {
+    func mangaOpened(sourceId: String, mangaId: String) async {
         guard sortMethod == .lastOpened || pinType == .updated else { return }
 
         let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
@@ -351,9 +347,7 @@ class LibraryViewModel {
                     pinnedManga.insert(manga, at: 0)
                 }
             } else {
-                Task {
-                    await loadLibrary() // don't know where to put in manga array, just refresh
-                }
+                await loadLibrary() // don't know where to put in manga array, just refresh
             }
         } else if sortMethod == .lastOpened {
             let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
