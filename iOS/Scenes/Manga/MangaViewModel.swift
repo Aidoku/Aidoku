@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class MangaViewModel {
 
     var chapterList: [Chapter] = []

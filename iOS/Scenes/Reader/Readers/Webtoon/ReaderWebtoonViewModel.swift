@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class ReaderWebtoonViewModel: ReaderPagedViewModel {
 
     override class var settings: SettingItem {
