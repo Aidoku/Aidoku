@@ -186,6 +186,14 @@ class LibraryViewController: MangaCollectionViewController {
 
         // load data
         Task {
+            // load categories
+            viewModel.categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+            }
+            // refresh header
+            collectionView.collectionViewLayout = self.makeCollectionViewLayout()
+
+            // load library
             await viewModel.loadLibrary()
             updateSortMenu()
             updateLockState()

@@ -67,7 +67,7 @@ class LibraryViewModel {
 
     var filters: [LibraryFilter] = []
 
-    lazy var categories = CoreDataManager.shared.getCategories().map { $0.title ?? "" }
+    var categories: [String] = []
     lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
         didSet {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
@@ -95,7 +95,9 @@ class LibraryViewModel {
     }
 
     func refreshCategories() async {
-        categories = CoreDataManager.shared.getCategories().map { $0.title ?? "" }
+        categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+        }
         if currentCategory != nil && !categories.contains(currentCategory!) {
             currentCategory = nil
             await loadLibrary()
