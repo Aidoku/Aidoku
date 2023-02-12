@@ -24,6 +24,9 @@ struct AniListQueries {
           coverImage {
             medium
           }
+          mediaListEntry {
+            id
+          }
         }
       }
     }
@@ -43,6 +46,9 @@ struct AniListQueries {
           format
           coverImage {
             medium
+          }
+          mediaListEntry {
+            id
           }
         }
       }
