@@ -138,7 +138,7 @@ extension CategoriesViewController {
         categories.insert(category, at: destinationIndexPath.row)
         Task {
             await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.moveCategory(title: category, position: destinationIndexPath.row)
+                CoreDataManager.shared.moveCategory(title: category, position: destinationIndexPath.row, context: context)
                 try? context.save()
             }
             NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
