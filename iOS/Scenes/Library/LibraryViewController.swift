@@ -95,7 +95,6 @@ class LibraryViewController: MangaCollectionViewController {
                 self.setEditing(true, animated: true)
             }
         ])
-        updateNavbarItems()
 
         // toolbar buttons (editing)
         let deleteButton = UIBarButtonItem(
@@ -192,6 +191,7 @@ class LibraryViewController: MangaCollectionViewController {
             }
             // refresh header
             collectionView.collectionViewLayout = self.makeCollectionViewLayout()
+            updateNavbarItems()
 
             // load library
             await viewModel.loadLibrary()
