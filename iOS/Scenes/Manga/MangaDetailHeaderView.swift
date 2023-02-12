@@ -20,12 +20,8 @@ class MangaDetailHeaderView: UIView {
 
     private var manga: Manga?
 
-    var continueReading: Bool = false
-    var nextChapter: Chapter? {
-        didSet {
-            updateReadButtonTitle()
-        }
-    }
+    private var continueReading: Bool = false
+    private(set) var nextChapter: Chapter?
 
     weak var delegate: MangaDetailHeaderViewDelegate?
     weak var sizeChangeListener: SizeChangeListenerDelegate?
@@ -320,7 +316,7 @@ class MangaDetailHeaderView: UIView {
 
         load(tags: manga.tags ?? [])
 
-        updateReadButtonTitle()
+        updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
         scaleTitle()
 
         UIView.animate(withDuration: 0.3) {
@@ -476,11 +472,20 @@ class MangaDetailHeaderView: UIView {
         trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
     }
 
-    private func updateReadButtonTitle() {
+    func updateReadButtonTitle(
+        nextChapter: Chapter? = nil,
+        continueReading: Bool = false,
+        allRead: Bool = false
+    ) {
         guard let manga = manga else { return }
+        self.nextChapter = nextChapter
+        self.continueReading = continueReading
         readButton.isUserInteractionEnabled = true
         var title = ""
-        if SourceManager.shared.source(for: manga.sourceId) == nil {
+        if allRead {
+            title = NSLocalizedString("ALL_CHAPTERS_READ", comment: "")
+            readButton.isUserInteractionEnabled = false
+        } else if SourceManager.shared.source(for: manga.sourceId) == nil {
             title = NSLocalizedString("UNAVAILABLE", comment: "")
             readButton.isUserInteractionEnabled = false
         } else if let chapter = nextChapter {
