@@ -84,13 +84,19 @@ class MangaViewModel {
         }
     }
 
+    enum ChapterResult {
+        case none
+        case allRead
+        case chapter(Chapter)
+    }
+
     // returns first chapter not completed, or falls back to top chapter
-    func getNextChapter() -> Chapter? {
-        guard !chapterList.isEmpty else { return nil }
+    func getNextChapter() -> ChapterResult {
+        guard !chapterList.isEmpty else { return .none }
         // get first chapter not completed
         let chapter = getOrderedChapterList().reversed().first(where: { readingHistory[$0.id]?.page ?? 0 != -1 })
         if let chapter = chapter {
-            return chapter
+            return .chapter(chapter)
         }
         // get last read chapter (doesn't work if all chapters were marked read at the same time)
 //        let id = viewModel.readingHistory.max { a, b in a.value.date < b.value.date }?.key
@@ -100,7 +106,7 @@ class MangaViewModel {
 //        } else {
 //            lastRead = viewModel.chapterList.last!
 //        }
-        return chapterList.first
+        return .allRead
     }
 
     func getOrderedChapterList() -> [Chapter] {

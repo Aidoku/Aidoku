@@ -373,9 +373,16 @@ class MangaViewController: BaseTableViewController {
     }
 
     func updateReadButton() {
-        guard let nextChapter = viewModel.getNextChapter() else { return }
-        headerView.continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
-        headerView.nextChapter = nextChapter
+        let nextChapter = viewModel.getNextChapter()
+        switch nextChapter {
+        case .none:
+            return
+        case .allRead:
+            headerView.updateReadButtonTitle(allRead: true)
+        case .chapter(let nextChapter):
+            let continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
+            headerView.updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
+        }
     }
 
     func openReaderView(chapter: Chapter) {
