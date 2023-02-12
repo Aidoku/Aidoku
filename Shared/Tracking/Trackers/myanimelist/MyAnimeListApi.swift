@@ -36,7 +36,7 @@ extension MyAnimeListApi {
     func getMangaDetails(id: Int) async -> MyAnimeListManga? {
         guard var url = URL(string: baseApiUrl + "/manga/\(id)") else { return nil }
         url.queryParameters = [
-            "fields": "id,title,synopsis,num_chapters,main_picture,status,media_type,start_date"
+            "fields": "id,title,synopsis,num_chapters,main_picture,status,media_type,start_date,my_list_status"
         ]
         return try? await URLSession.shared.object(from: oauth.authorizedRequest(for: url))
     }

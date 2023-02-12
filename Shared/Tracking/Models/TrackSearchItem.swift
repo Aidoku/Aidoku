@@ -23,6 +23,8 @@ struct TrackSearchItem {
     var status: PublishingStatus?
     /// The type or format of the tracker item.
     var type: MediaType?
+    /// A boolean indicating if the item is currently being tracked by the user.
+    var tracked: Bool
 
     /// Converts the search item to a TrackItem for the given manga.
     func toItem(for manga: Manga) -> TrackItem {

@@ -14,6 +14,7 @@ class TrackerSearchTableViewCell: UITableViewCell {
     private let typeLabel = UILabel()
     private let statusLabel = UILabel()
 //    private let descriptionLabel = UILabel() // TODO
+    private let trackedIndicator = UIView()
 
     var item: TrackSearchItem? {
         didSet {
@@ -83,6 +84,17 @@ class TrackerSearchTableViewCell: UITableViewCell {
         labelStack.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor).isActive = true
         labelStack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
 
+        trackedIndicator.isHidden = true
+        trackedIndicator.layer.cornerRadius = 5
+        trackedIndicator.backgroundColor = .systemBlue.withAlphaComponent(0.5)
+        trackedIndicator.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(trackedIndicator)
+
+        trackedIndicator.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
+        trackedIndicator.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor).isActive = true
+        trackedIndicator.widthAnchor.constraint(equalToConstant: 10).isActive = true
+        trackedIndicator.heightAnchor.constraint(equalToConstant: 10).isActive = true
+
         let separator = UIView()
         separator.backgroundColor = .separator
         separator.translatesAutoresizingMaskIntoConstraints = false
@@ -104,6 +116,7 @@ class TrackerSearchTableViewCell: UITableViewCell {
         if item?.status != .unknown, let status = item?.status?.toString() {
             statusLabel.text = String(format: NSLocalizedString("STATUS_COLON_%@", comment: ""), status)
         }
+        trackedIndicator.isHidden = !(item?.tracked ?? false)
         Task {
             await loadIcon()
         }

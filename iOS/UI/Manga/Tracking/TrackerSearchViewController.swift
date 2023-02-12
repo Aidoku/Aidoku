@@ -49,6 +49,8 @@ class TrackerSearchViewController: UITableViewController {
         searchController.searchBar.showsCancelButton = false
         navigationItem.searchController = searchController
 
+        navigationItem.hidesSearchBarWhenScrolling = false
+
         tableView.register(TrackerSearchTableViewCell.self, forCellReuseIdentifier: "TrackerSearchTableViewCell")
         tableView.separatorStyle = .none
 

@@ -89,7 +89,8 @@ class MyAnimeListTracker: OAuthTracker {
                 coverUrl: details?.mainPicture?.large,
                 description: details?.synopsis,
                 status: self.getPublishingStatus(statusString: details?.status ?? ""),
-                type: self.getMediaType(typeString: details?.mediaType ?? "")
+                type: self.getMediaType(typeString: details?.mediaType ?? ""),
+                tracked: details?.myListStatus != nil
             )
         }) ?? []
     }

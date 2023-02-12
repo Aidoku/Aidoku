@@ -147,7 +147,8 @@ class AniListTracker: OAuthTracker {
                 coverUrl: media.coverImage?.medium,
                 description: media.description,
                 status: getPublishingStatus(statusString: media.status ?? ""),
-                type: getMediaType(typeString: media.format ?? "")
+                type: getMediaType(typeString: media.format ?? ""),
+                tracked: media.mediaListEntry != nil
             )]
         } else {
             return await search(title: title, nsfw: false)
@@ -167,7 +168,8 @@ class AniListTracker: OAuthTracker {
                 coverUrl: $0.coverImage?.medium,
                 description: $0.description,
                 status: getPublishingStatus(statusString: $0.status ?? ""),
-                type: getMediaType(typeString: $0.format ?? "")
+                type: getMediaType(typeString: $0.format ?? ""),
+                tracked: $0.mediaListEntry != nil
             )
         }
     }
