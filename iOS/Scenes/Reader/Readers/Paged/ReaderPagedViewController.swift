@@ -172,14 +172,14 @@ extension ReaderPagedViewController {
     }
 
     func move(toPage page: Int, animated: Bool) {
-        guard page - 1 < viewModel.pages.count && page > 0 else {
+        guard page <= viewModel.pages.count && page > 0 else {
             return
         }
 
         let vcIndex = page + (previousChapter != nil ? 1 : 0)
         var targetViewController: UIViewController?
 
-        if usesDoublePages && vcIndex + 1 < pageViewControllers.count {
+        if usesDoublePages && vcIndex + 1 < pageViewControllers.count - (nextChapter != nil ? 1 : 0) - 1 {
             let firstPage = pageViewControllers[vcIndex]
             let secondPage = pageViewControllers[vcIndex + 1]
             if case .page = firstPage.type, case .page = secondPage.type {
@@ -344,6 +344,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             }
 
         case viewModel.pages.count + 1: // next chapter transition page
+            delegate?.setCurrentPage(viewModel.pages.count)
             // preload next
             if let nextChapter = nextChapter {
                 Task {
