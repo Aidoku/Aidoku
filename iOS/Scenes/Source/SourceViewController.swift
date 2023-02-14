@@ -43,7 +43,9 @@ class SourceViewController: MangaCollectionViewController {
         super.configure()
 
         title = source.manifest.info.name
-        navigationItem.hidesSearchBarWhenScrolling = false
+        if UIDevice.current.userInterfaceIdiom != .pad {
+            navigationItem.hidesSearchBarWhenScrolling = false
+        }
 
         if source.titleSearchable {
             let searchController = UISearchController(searchResultsController: nil)

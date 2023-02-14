@@ -45,18 +45,12 @@ class SettingsTableViewController: UITableViewController {
 
         title = NSLocalizedString("SETTINGS", comment: "")
         navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.hidesSearchBarWhenScrolling = false
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        navigationItem.hidesSearchBarWhenScrolling = true
     }
 }
 
