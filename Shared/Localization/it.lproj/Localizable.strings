@@ -322,3 +322,5 @@
 "RENAME_CATEGORY_FAIL_INFO" = "I nomi delle categorie devono essere unici.";
 "SYNC_WITH_TRACKER" = "Sincronizza con i tracker";
 "SYNC_WITH_TRACKER_INFO" = "Sembra che l'ultimo capitolo presente nel tracker sia più recente del capitolo che hai letto. Vuoi correggere la tua cronologia di lettura?";
+"ALL_CHAPTERS_READ" = "Tutti i capitoli letti";
+"TRACKING" = "Tracciamento";
