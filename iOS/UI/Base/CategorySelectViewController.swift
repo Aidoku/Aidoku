@@ -52,6 +52,7 @@ class CategorySelectViewController: UITableViewController {
                     .compactMap { $0.title }
                 }
             }
+            tableView.reloadData()
         }
     }
 
