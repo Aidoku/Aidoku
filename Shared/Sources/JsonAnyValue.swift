@@ -135,7 +135,7 @@ struct JsonAnyValue: Codable {
         case .string: return stringValue
         case .bool: return boolValue
         case .array: return stringArrayValue
-        case .object: return objectValue
+        case .object: return objectValue?.mapValues { $0.toRaw() }
         case .double: return doubleValue
         }
     }
