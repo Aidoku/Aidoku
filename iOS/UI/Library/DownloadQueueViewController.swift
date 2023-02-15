@@ -19,7 +19,9 @@ class DownloadQueueViewController: UITableViewController {
             NotificationCenter.default.removeObserver(observer)
         }
         for chapter in chapters {
-            DownloadManager.shared.removeProgressBlock(for: chapter)
+            Task {
+                await DownloadManager.shared.removeProgressBlock(for: chapter)
+            }
         }
     }
 
@@ -139,18 +141,18 @@ class DownloadQueueViewController: UITableViewController {
         // get initial download queue
         Task {
             let globalQueue = await DownloadManager.shared.getDownloadQueue()
-            self.queue = []
+            var queue: [(String, [Download])] = []
             for queueObject in globalQueue where !queueObject.value.isEmpty {
-                self.queue.append((queueObject.key, queueObject.value))
+                queue.append((queueObject.key, queueObject.value))
             }
-            Task { @MainActor in
+            await MainActor.run {
+                self.queue = queue
                 self.tableView.reloadData()
                 self.updateClearButton()
             }
         }
     }
 
-    @MainActor
     func updateClearButton() {
         if !queue.isEmpty {
             navigationItem.leftBarButtonItem = UIBarButtonItem(

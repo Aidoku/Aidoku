@@ -56,11 +56,10 @@ actor DownloadQueue {
     func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
         var downloads: [Download] = []
         for chapter in chapters {
-            Task { // create tmp directory so we know it's queued
-                cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                    .appendingSafePathComponent(".tmp_\(chapter.id)")
-                    .createDirectory()
-            }
+            // create tmp directory so we know it's queued
+            await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                .appendingSafePathComponent(".tmp_\(chapter.id)")
+                .createDirectory()
             var download = Download.from(chapter: chapter)
             download.manga = manga
             downloads.append(download)
@@ -83,7 +82,7 @@ actor DownloadQueue {
             await task.cancel(chapter: chapter)
         } else {
             // no longer in queue but the tmp download directory still exists, so we should remove it
-            cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+            await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
                 .appendingSafePathComponent(".tmp_\(chapter.id)")
                 .removeItem()
         }
@@ -94,7 +93,7 @@ actor DownloadQueue {
             if let task = tasks[chapter.sourceId] {
                 await task.cancel(chapter: chapter)
             } else {
-                cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
                     .appendingSafePathComponent(".tmp_\(chapter.id)")
                     .removeItem()
             }

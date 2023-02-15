@@ -345,8 +345,10 @@ extension Source {
     }
 
     func getPageList(chapter: Chapter, skipDownloadedCheck: Bool = false) async throws -> [Page] {
-        if !skipDownloadedCheck && DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
-            return DownloadManager.shared.getDownloadedPages(for: chapter)
+        if !skipDownloadedCheck {
+            if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+                return await DownloadManager.shared.getDownloadedPages(for: chapter)
+            }
         }
         return await actor.getPageList(chapter: chapter)
     }

@@ -109,6 +109,9 @@ class LibraryViewModel {
         var pinnedManga: [MangaInfo] = []
         var manga: [MangaInfo] = []
 
+        var checkDownloads = false
+        var excludeDownloads = false
+
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let request = LibraryMangaObject.fetchRequest()
             if let currentCategory = self.currentCategory {
@@ -156,7 +159,9 @@ class LibraryViewModel {
                     let condition: Bool
                     switch filter.type {
                     case .downloaded:
-                        condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                        checkDownloads = true
+                        excludeDownloads = filter.exclude
+                        continue
                     case .tracking:
                         condition = TrackerManager.shared.isTracking(sourceId: info.sourceId, mangaId: info.mangaId)
                     }
@@ -182,6 +187,24 @@ class LibraryViewModel {
                         manga.append(info)
                     }
                 }
+            }
+        }
+
+        if checkDownloads {
+            let pinnedMangaCopy = pinnedManga
+            let mangaCopy = manga
+            let exclude = excludeDownloads
+            (pinnedManga, manga) = await MainActor.run {
+                (
+                    pinnedMangaCopy.filter { info in
+                        let condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                        return exclude ? !condition : condition
+                    },
+                    mangaCopy.filter { info in
+                        let condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                        return exclude ? !condition : condition
+                    }
+                )
             }
         }
 
