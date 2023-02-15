@@ -59,7 +59,7 @@ actor DownloadTask: Identifiable {
             let chapter = Chapter(sourceId: download.sourceId, id: download.chapterId, mangaId: download.mangaId, title: nil, sourceOrder: -1)
 
             // if directory exists (chapter already downloaded) return
-            let directory = cache.directory(for: chapter)
+            let directory = await cache.directory(for: chapter)
             guard !directory.exists else {
                 downloads.removeFirst()
                 return await next()
@@ -86,7 +86,7 @@ actor DownloadTask: Identifiable {
         guard downloads.count >= downloadIndex else { return }
 
         let chapter = downloads[downloadIndex].toChapter()
-        let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+        let tmpDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
             .appendingSafePathComponent(".tmp_\(chapter.id)")
         tmpDirectory.createDirectory()
 
@@ -126,7 +126,7 @@ actor DownloadTask: Identifiable {
 
         if currentPage == pages.count {
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
-                cache.add(chapter: chapter)
+                await cache.add(chapter: chapter)
             }
             downloads[downloadIndex].status = .finished
             await delegate?.downloadFinished(download: getDownload(downloadIndex)!)
@@ -167,11 +167,11 @@ actor DownloadTask: Identifiable {
                 currentPage = 0
             }
             // remove chapter tmp download directory
-            cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
-                .removeItem()
             let download = downloads[index]
             Task {
+                await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                    .appendingSafePathComponent(".tmp_\(chapter.id)")
+                    .removeItem()
                 await delegate?.downloadCancelled(download: download)
                 downloads.removeAll { $0 == download }
                 if wasRunning {
@@ -191,15 +191,15 @@ actor DownloadTask: Identifiable {
                 downloads.remove(at: i)
             }
             // remove cached tmp directories
-            for manga in manga {
-                cache.directory(forSourceId: manga.sourceId, mangaId: manga.id)
-                    .contents
-                    .filter { $0.lastPathComponent.hasPrefix(".tmp") }
-                    .forEach { $0.removeItem() }
-            }
-            pages = []
-            currentPage = 0
             Task {
+                for manga in manga {
+                    await cache.directory(forSourceId: manga.sourceId, mangaId: manga.id)
+                        .contents
+                        .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                        .forEach { $0.removeItem() }
+                }
+                pages = []
+                currentPage = 0
                 await delegate?.taskCancelled(task: self)
             }
         }

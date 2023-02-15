@@ -9,6 +9,7 @@ import Foundation
 
 // cache of downloads directory contents on the filesystem
 // TODO: should probably be reloaded every once in a while so we can recheck filesystem for user modifications
+@MainActor
 class DownloadCache {
 
     struct Directory {

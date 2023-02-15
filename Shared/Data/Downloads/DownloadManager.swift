@@ -19,6 +19,7 @@ import Foundation
  */
 
 // global class to manage downloads
+@MainActor
 class DownloadManager {
 
     static let shared = DownloadManager()
