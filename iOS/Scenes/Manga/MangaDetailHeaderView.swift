@@ -369,16 +369,13 @@ class MangaDetailHeaderView: UIView {
             context: nil
         ).size
 
-        let scaleFactor: CGFloat
-        if titleSize.height > titleLabel.bounds.size.height { // text is truncated, resize
-            scaleFactor = max(titleLabel.bounds.size.height / titleSize.height, 0.75)
-        } else {
-            scaleFactor = 1
-        }
+        // if text isn't truncated we don't need to scale
+        guard titleSize.height > titleLabel.bounds.size.height else { return }
+
+        let scaleFactor: CGFloat = max(titleLabel.bounds.size.height / titleSize.height, 0.75)
 
         titleLabel.numberOfLines = Int((3 / scaleFactor).rounded(.up))
         titleLabel.font = .systemFont(ofSize: 22 * scaleFactor, weight: .semibold)
-
         authorLabel.font = .systemFont(ofSize: 16 * scaleFactor, weight: .regular)
 
         setNeedsLayout()
