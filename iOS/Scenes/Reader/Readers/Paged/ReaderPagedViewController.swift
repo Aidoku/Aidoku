@@ -367,7 +367,10 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         }
     }
 
-    func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
+    func pageViewController(
+        _ pageViewController: UIPageViewController,
+        willTransitionTo pendingViewControllers: [UIViewController]
+    ) {
         for controller in pendingViewControllers {
             if let controller = controller as? ReaderDoublePageViewController {
                 if let first = getIndex(of: controller, pos: .first) {
@@ -469,7 +472,8 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
     ) -> UIContextMenuConfiguration? {
         guard
             UserDefaults.standard.bool(forKey: "Reader.saveImageOption"),
-            let pageView = interaction.view as? UIImageView
+            let pageView = interaction.view as? UIImageView,
+            pageView.image != nil
         else {
             return nil
         }

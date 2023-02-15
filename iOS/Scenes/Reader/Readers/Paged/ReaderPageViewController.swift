@@ -122,8 +122,10 @@ class ReaderPageViewController: BaseViewController {
         guard !pageSet, let pageView = pageView else { return }
         pageSet = true
         self.page = page
+        zoomView?.zoomEnabled = false
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
+            zoomView?.zoomEnabled = result
             if !result {
                 pageSet = false
                 pageView.progressView.isHidden = true
