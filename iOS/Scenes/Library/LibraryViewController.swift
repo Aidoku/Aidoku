@@ -1012,10 +1012,10 @@ extension LibraryViewController {
             }
 
 
-            let downloadAllAction = UIAction(title: "All") { action in
+            let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { action in
                 self.downloadAllAction(manga: manga.toManga())
             }
-            let downloadUnreadAction = UIAction(title: "Unread") { action in
+            let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { action in
                 self.downloadUnreadAction(manga: manga.toManga())
             }
 
