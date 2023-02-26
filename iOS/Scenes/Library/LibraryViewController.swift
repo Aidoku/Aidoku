@@ -944,6 +944,25 @@ extension LibraryViewController {
         super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
+    func downloadAllAction(manga: Manga) {
+        Task {
+            let source = SourceManager.shared.source(for: manga.sourceId)
+            let chapters = (try? await source?.getChapterList(manga: manga)) ?? []
+            DownloadManager.shared.download(chapters: chapters, manga: manga)
+        }
+    }
+
+    func downloadUnreadAction(manga: Manga) {
+        Task {
+            let source = SourceManager.shared.source(for: manga.sourceId)
+            let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
+            let chapters = ((try? await source?.getChapterList(manga: manga)) ?? []).filter {
+                readingHistory[$0.id] == nil
+            }
+            DownloadManager.shared.download(chapters: chapters, manga: manga)
+        }
+    }
+
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
@@ -954,7 +973,7 @@ extension LibraryViewController {
             ? viewModel.pinnedManga[indexPath.row]
             : viewModel.manga[indexPath.row]
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            var actions: [UIAction] = []
+            var actions: [UIMenuElement] = []
 
             if self.opensReaderView {
                 actions.append(UIAction(
@@ -991,6 +1010,20 @@ extension LibraryViewController {
                     self.present(activityViewController, animated: true)
                 })
             }
+
+
+            let downloadAllAction = UIAction(title: "All") { action in
+                self.downloadAllAction(manga: manga.toManga())
+            }
+            let downloadUnreadAction = UIAction(title: "Unread") { action in
+                self.downloadUnreadAction(manga: manga.toManga())
+            }
+
+            actions.append(UIMenu(
+                title: NSLocalizedString("DOWNLOAD", comment: ""),
+                image: UIImage(systemName: "arrow.down.circle"),
+                children: [downloadAllAction, downloadUnreadAction]
+            ))
 
             if self.viewModel.currentCategory != nil {
                 actions.append(UIAction(
