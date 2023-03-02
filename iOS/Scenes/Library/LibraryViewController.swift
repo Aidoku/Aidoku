@@ -944,23 +944,17 @@ extension LibraryViewController {
         super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
-    func downloadAllAction(manga: Manga) {
-        Task {
-            let source = SourceManager.shared.source(for: manga.sourceId)
-            let chapters = (try? await source?.getChapterList(manga: manga)) ?? []
-            DownloadManager.shared.download(chapters: chapters, manga: manga)
-        }
+    func downloadAll(manga: Manga) async {
+        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+        DownloadManager.shared.download(chapters: chapters, manga: manga)
     }
 
-    func downloadUnreadAction(manga: Manga) {
-        Task {
-            let source = SourceManager.shared.source(for: manga.sourceId)
-            let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-            let chapters = ((try? await source?.getChapterList(manga: manga)) ?? []).filter {
-                readingHistory[$0.id] == nil
-            }
-            DownloadManager.shared.download(chapters: chapters, manga: manga)
+    func downloadUnread(manga: Manga) async {
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
+        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id).filter {
+            readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1
         }
+        DownloadManager.shared.download(chapters: chapters, manga: manga)
     }
 
     func collectionView(
@@ -1012,11 +1006,15 @@ extension LibraryViewController {
             }
 
 
-            let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { action in
-                self.downloadAllAction(manga: manga.toManga())
+            let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
+                Task {
+                    await self.downloadAll(manga: manga.toManga())
+                }
             }
-            let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { action in
-                self.downloadUnreadAction(manga: manga.toManga())
+            let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
+                Task {
+                    await self.downloadUnread(manga: manga.toManga())
+                }
             }
 
             actions.append(UIMenu(
