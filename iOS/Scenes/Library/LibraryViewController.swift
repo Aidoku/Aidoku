@@ -1005,7 +1005,6 @@ extension LibraryViewController {
                 })
             }
 
-
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
                 Task {
                     await self.downloadAll(manga: manga.toManga())
