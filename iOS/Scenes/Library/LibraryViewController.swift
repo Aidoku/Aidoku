@@ -944,19 +944,6 @@ extension LibraryViewController {
         super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
-    func downloadAll(manga: Manga) async {
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-        DownloadManager.shared.download(chapters: chapters, manga: manga)
-    }
-
-    func downloadUnread(manga: Manga) async {
-        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id).filter {
-            readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1
-        }
-        DownloadManager.shared.download(chapters: chapters, manga: manga)
-    }
-
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
@@ -1007,12 +994,12 @@ extension LibraryViewController {
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
                 Task {
-                    await self.downloadAll(manga: manga.toManga())
+                    await DownloadManager.shared.downloadAll(manga: manga.toManga())
                 }
             }
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
                 Task {
-                    await self.downloadUnread(manga: manga.toManga())
+                    await DownloadManager.shared.downloadUnread(manga: manga.toManga())
                 }
             }
 
