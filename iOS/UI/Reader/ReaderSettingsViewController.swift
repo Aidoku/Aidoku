@@ -9,34 +9,30 @@ import UIKit
 
 class ReaderSettingsViewController: SettingsTableViewController {
 
-    static let settings = SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
-        SettingItem(
-            type: "select",
-            key: "Reader.readingMode",
-            title: NSLocalizedString("READING_MODE", comment: ""),
-            values: ["default", "rtl", "ltr", "vertical", "webtoon"],
-            titles: [
-                NSLocalizedString("DEFAULT", comment: ""),
-                NSLocalizedString("RTL", comment: ""),
-                NSLocalizedString("LTR", comment: ""),
-                NSLocalizedString("VERTICAL", comment: ""),
-                NSLocalizedString("WEBTOON", comment: "")
-            ],
-            notification: "Reader.readingMode"
-        ),
-        SettingItem(
-            type: "switch",
-            key: "Reader.skipDuplicateChapters",
-            title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
-        ),
-        SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
-        SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
-    ])
-
-    init() {
-        var settings = Self.settings
-        settings.title = NSLocalizedString("GENERAL", comment: "")
-        super.init(items: [settings])
+    init(mangaId: String) {
+        super.init(items: [SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
+            SettingItem(
+                type: "select",
+                key: "Reader.readingMode.\(mangaId)",
+                title: NSLocalizedString("READING_MODE", comment: ""),
+                values: ["default", "rtl", "ltr", "vertical", "webtoon"],
+                titles: [
+                    NSLocalizedString("AUTOMATIC", comment: ""),
+                    NSLocalizedString("RTL", comment: ""),
+                    NSLocalizedString("LTR", comment: ""),
+                    NSLocalizedString("VERTICAL", comment: ""),
+                    NSLocalizedString("WEBTOON", comment: "")
+                ],
+                notification: "Reader.readingMode"
+            ),
+            SettingItem(
+                type: "switch",
+                key: "Reader.skipDuplicateChapters",
+                title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
+            ),
+            SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
+            SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
+        ])])
     }
 
     required init?(coder: NSCoder) {

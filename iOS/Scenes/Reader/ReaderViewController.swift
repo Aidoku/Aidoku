@@ -137,7 +137,11 @@ class ReaderViewController: BaseObservingViewController {
         view.addGestureRecognizer(barToggleTapGesture)
 
         // set reader
-        setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+        let readingModeKey = "Reader.readingMode.\(chapter.mangaId)"
+        UserDefaults.standard.register(defaults: [
+            readingModeKey: UserDefaults.standard.string(forKey: "Reader.readingMode") as Any
+        ])
+        setReadingMode(UserDefaults.standard.string(forKey: readingModeKey))
 
         // load chapter list
         Task {
@@ -155,9 +159,9 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     override func observe() {
-        addObserver(forName: "Reader.readingMode") { [weak self] _ in
+        addObserver(forName: "Reader.readingMode.\(chapter.mangaId)") { [weak self] _ in
             guard let self = self else { return }
-            self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode"))
+            self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.chapter.mangaId)"))
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
     }
@@ -219,7 +223,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     @objc func openReaderSettings() {
-        let vc = UINavigationController(rootViewController: ReaderSettingsViewController())
+        let vc = UINavigationController(rootViewController: ReaderSettingsViewController(mangaId: chapter.mangaId))
         present(vc, animated: true)
     }
 
