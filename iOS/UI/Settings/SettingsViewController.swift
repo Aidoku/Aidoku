@@ -214,7 +214,29 @@ class SettingsViewController: SettingsTableViewController {
                 )
             ]),
             // MARK: Reader
-            ReaderSettingsViewController.settings,
+            SettingItem(type: "group", title: NSLocalizedString("READER", comment: ""), items: [
+                SettingItem(
+                    type: "select",
+                    key: "Reader.readingMode",
+                    title: NSLocalizedString("DEFAULT_READING_MODE", comment: ""),
+                    values: ["default", "rtl", "ltr", "vertical", "webtoon"],
+                    titles: [
+                        NSLocalizedString("AUTOMATIC", comment: ""),
+                        NSLocalizedString("RTL", comment: ""),
+                        NSLocalizedString("LTR", comment: ""),
+                        NSLocalizedString("VERTICAL", comment: ""),
+                        NSLocalizedString("WEBTOON", comment: "")
+                    ],
+                    notification: "Reader.readingMode"
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.skipDuplicateChapters",
+                    title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
+                ),
+                SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
+                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
+            ]),
             ReaderPagedViewModel.settings,
             ReaderWebtoonViewModel.settings,
             // MARK: Backups
