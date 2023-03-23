@@ -34,4 +34,14 @@ extension String {
         formatter.dateFormat = format
         return formatter.date(from: self)
     }
+
+    func fuzzyMatch(_ pattern: String) -> Bool? {
+        if pattern.isEmpty {return false}
+        var rem = pattern[...]
+        for char in self where char == rem[rem.startIndex] {
+            rem.removeFirst()
+            if rem.isEmpty { return true }
+        }
+        return false
+    }
 }
