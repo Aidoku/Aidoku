@@ -319,7 +319,11 @@ extension BrowseViewController {
 
         snapshot.deleteSections([.updates, .external])
         if !viewModel.updatesSources.isEmpty {
-            snapshot.appendSections([.updates])
+            if snapshot.indexOfSection(.installed) != nil {
+                snapshot.insertSections([.updates], beforeSection: .installed)
+            } else {
+                snapshot.appendSections([.updates])
+            }
             snapshot.appendItems(viewModel.updatesSources, toSection: .updates)
         }
         if !viewModel.externalSources.isEmpty {
