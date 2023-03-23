@@ -20,11 +20,15 @@ struct MigrateSearchMatchView: View {
     @State private var searching = true
     @State private var searchResults: [String: [Manga]] = [:]
 
+    @State private var searchText: String = ""
+    @State private var searchTask: Task<Void, Never>?
+
     init(manga: Manga, newManga: Binding<Manga?>, sourcesToSearch: [SourceInfo2]) {
         self.manga = manga
         self.sourcesToSearch = sourcesToSearch
         _newManga = newManga
         sources = sourcesToSearch.compactMap { SourceManager.shared.source(for: $0.sourceId) }
+//        _searchText = State(initialValue: manga.title ?? "")
     }
 
     var body: some View {
@@ -62,14 +66,34 @@ struct MigrateSearchMatchView: View {
                 .padding(.bottom, 10)
             }
         }
+        .navigationBarSearch($searchText, hidesSearchBarWhenScrolling: false)
+        .onChange(of: searchText) { _ in
+            search(delay: 3)
+        }
         .onAppear {
-            Task {
-                for source in sources {
-                    Task {
-                        let results = (try? await source.fetchSearchManga(query: manga.title ?? ""))?.manga
-                        withAnimation {
-                            searchResults[source.id] = results ?? []
-                        }
+            search()
+        }
+    }
+
+    // delay in ms
+    func search(delay: UInt64 = 0) {
+        searchTask?.cancel()
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: delay * 100_000_000)
+            if Task.isCancelled {
+                return
+            }
+            let searchText: String
+            if self.searchText.isEmpty {
+                searchText = manga.title ?? ""
+            } else {
+                searchText = self.searchText
+            }
+            for source in sources {
+                Task {
+                    let results = (try? await source.fetchSearchManga(query: searchText))?.manga
+                    withAnimation {
+                        searchResults[source.id] = results ?? []
                     }
                 }
             }
