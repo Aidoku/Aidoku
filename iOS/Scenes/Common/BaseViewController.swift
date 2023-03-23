@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import AsyncDisplayKit
 
-class BaseViewController: UIViewController {
+class BaseViewController: ASDKViewController<ASDisplayNode> {
 
     private lazy var loadingAlert: UIAlertController = {
         let loadingAlert = UIAlertController(
@@ -22,10 +23,15 @@ class BaseViewController: UIViewController {
         return loadingAlert
     }()
 
-    init() {
-        super.init(nibName: nil, bundle: nil)
+    override init() {
+        super.init(node: ASDisplayNode())
     }
 
+    override init(node: ASDisplayNode) {
+        super.init(node: node)
+    }
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

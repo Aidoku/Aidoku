@@ -125,6 +125,10 @@ class ReaderSliderView: UIControl {
         ])
     }
 
+    override func tintColorDidChange() {
+        progressedTrackView.backgroundColor = tintColor
+    }
+
     private func updateLayerFrames() {
         guard trackView.frame.size != .zero else { return }
         let position = positionForValue(currentValue)
