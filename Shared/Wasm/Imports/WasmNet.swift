@@ -149,7 +149,7 @@ extension WasmNet {
             let code = (response as? HTTPURLResponse)?.statusCode ?? -1
 
             // check for cloudflare block
-            if cloudflare && headers["Server"] == "cloudflare" && (code == 503 || code == 403) {
+            if cloudflare && headers["Server"] == "cloudflare" && (code == 503 || code == 403 || code == 429) {
                 DispatchQueue.main.async {
                     let request = request
                     let handler = WasmNetWebViewHandler(netModule: self, request: request)
