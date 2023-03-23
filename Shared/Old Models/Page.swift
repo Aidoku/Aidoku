@@ -16,6 +16,7 @@ struct Page: Hashable {
     }
 
     var type: PageType = .imagePage
+    var sourceId: String
     var chapterId: String
     var index: Int
     var imageURL: String?
@@ -23,8 +24,7 @@ struct Page: Hashable {
     var text: String?
 
     var key: String {
-        // using the full base64 string as a key slows stuff down because it's so large, so hopefully this is unique enough
-        imageURL ?? (base64 != nil ? String(index) + (base64?.take(first: 10) ?? "") + (base64?.take(last: 20) ?? "") : nil) ?? String(index)
+        "\(chapterId)|\(index)"
     }
 
     func hash(into hasher: inout Hasher) {

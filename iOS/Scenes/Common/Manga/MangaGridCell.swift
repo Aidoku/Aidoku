@@ -231,6 +231,10 @@ class MangaGridCell: UICollectionViewCell {
         imageTask = nil
     }
 
+    override func tintColorDidChange() {
+        badgeView.backgroundColor = tintColor
+    }
+
     func loadImage(url: URL?) async {
         guard let url = url else { return }
 

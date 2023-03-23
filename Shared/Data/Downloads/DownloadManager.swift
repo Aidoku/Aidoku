@@ -49,6 +49,7 @@ class DownloadManager {
             if let data = try? Data(contentsOf: page) {
                 pages.append(
                     Page(
+                        sourceId: chapter.sourceId,
                         chapterId: chapter.id,
                         index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
                         imageURL: nil,

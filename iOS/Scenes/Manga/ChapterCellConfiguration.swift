@@ -52,6 +52,7 @@ class ChapterCellContentView: UIView, UIContentView {
 
     private lazy var progressView: CircularProgressView = {
         let progressView = CircularProgressView(frame: CGRect(x: 1, y: 1, width: 13, height: 13))
+        progressView.radius = 13 / 2
         progressView.trackColor = .quaternaryLabel
         progressView.progressColor = tintColor
         progressView.isHidden = true

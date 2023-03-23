@@ -26,24 +26,26 @@ class CircularProgressView: UIView {
     private var progressLayer = CAShapeLayer()
     private var trackLayer = CAShapeLayer()
 
-    var progressColor = UIColor.white {
+    lazy var progressColor: UIColor = tintColor ?? .white {
         willSet(newValue) {
             progressLayer.strokeColor = newValue.cgColor
         }
     }
-    var trackColor = UIColor.white {
+    var trackColor = UIColor.quaternaryLabel {
         willSet(newValue) {
             trackLayer.strokeColor = newValue.cgColor
         }
     }
     var lineWidth: CGFloat = 3
 
+    lazy var radius: CGFloat = 20
+
     override func draw(_ rect: CGRect) {
-        layer.cornerRadius = frame.size.width / 2
+        layer.cornerRadius = radius
 
         let circlePath = UIBezierPath(
             arcCenter: CGPoint(x: frame.size.width / 2, y: frame.size.height / 2),
-            radius: (frame.size.width - 1.5) / 2,
+            radius: (radius * 2 - 1.5) / 2,
             startAngle: -0.5 * .pi,
             endAngle: CGFloat(1.5 * .pi),
             clockwise: true)

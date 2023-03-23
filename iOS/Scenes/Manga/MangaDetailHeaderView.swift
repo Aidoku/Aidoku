@@ -208,6 +208,10 @@ class MangaDetailHeaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func tintColorDidChange() {
+        readButton.backgroundColor = tintColor
+    }
+
     private func configure() {
         descriptionLabel.sizeChangeListener = self
 
@@ -307,7 +311,6 @@ class MangaDetailHeaderView: UIView {
             contentRatingLabelView.isHidden = true
         }
 
-        let tintColor = readButton.backgroundColor
         let isTracking = TrackerManager.shared.isTracking(sourceId: manga.sourceId, mangaId: manga.id)
         trackerButton.tintColor = isTracking ? .white : tintColor
         trackerButton.backgroundColor = isTracking ? tintColor : .secondarySystemFill

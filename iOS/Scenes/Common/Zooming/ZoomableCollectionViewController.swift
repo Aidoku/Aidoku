@@ -6,41 +6,45 @@
 //
 
 import UIKit
+import AsyncDisplayKit
 
-class ZoomableCollectionViewController: BaseObservingViewController, UICollectionViewDelegate {
+class ZoomableCollectionViewController: BaseObservingViewController {
 
-    lazy var zoomView = ZoomableCollectionView(frame: .zero, layout: makeCollectionViewLayout())
+    let zoomView: ZoomableCollectionView
 
-    var scrollView: UIScrollView {
-        zoomView.scrollView
+    var scrollNode: ASScrollNode {
+        zoomView.scrollNode
     }
-    var collectionView: UICollectionView {
-        zoomView.collectionView
+    var scrollView: UIScrollView {
+        zoomView.scrollNode.view
+    }
+    var collectionNode: ASCollectionNode {
+        zoomView.collectionNode
+    }
+
+    convenience override init() {
+        self.init(layout: UICollectionViewLayout())
+    }
+
+    init(layout: UICollectionViewLayout) {
+        let zoomView = ZoomableCollectionView(layout: layout)
+        self.zoomView = zoomView
+        super.init(node: zoomView)
+        configure()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func configure() {
-        collectionView.delegate = self
         scrollView.delegate = self
         scrollView.delaysContentTouches = false
         scrollView.alwaysBounceVertical = true
         scrollView.showsHorizontalScrollIndicator = false
-        zoomView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(zoomView)
-    }
-
-    override func constrain() {
-        NSLayoutConstraint.activate([
-            zoomView.topAnchor.constraint(equalTo: view.topAnchor),
-            zoomView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            zoomView.leftAnchor.constraint(equalTo: view.leftAnchor),
-            zoomView.rightAnchor.constraint(equalTo: view.rightAnchor)
-        ])
-    }
-
-    func makeCollectionViewLayout() -> UICollectionViewLayout {
-        UICollectionViewCompositionalLayout { _, _ in
-            nil
-        }
+        scrollNode.isUserInteractionEnabled = true
+        scrollNode.automaticallyManagesContentSize = false
     }
 }
 

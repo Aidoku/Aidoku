@@ -6,84 +6,89 @@
 //
 
 import UIKit
+import AsyncDisplayKit
 
-class ZoomableCollectionView: UIView {
+class ZoomableCollectionView: ASDisplayNode {
 
-    let collectionView: UICollectionView
-    let scrollView: UIScrollView
-    private let dummyZoomView: UIView
+    let collectionNode: ASCollectionNode
+    let scrollNode = ASScrollNode()
+    private let dummyZoomView = UIView(frame: .zero)
     let layout: UICollectionViewLayout
 
-    lazy private var zoomingTap: UITapGestureRecognizer = {
-        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        zoomingTap.numberOfTapsRequired = 2
-        return zoomingTap
-    }()
+    private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
+    private var lastHit = Date.distantPast
 
-    init(frame: CGRect, layout: UICollectionViewLayout) {
-        collectionView = UICollectionView(frame: frame, collectionViewLayout: layout)
-        scrollView = UIScrollView(frame: frame)
-        dummyZoomView = UIView(frame: .zero)
+//    lazy private var zoomingTap: UITapGestureRecognizer = {
+//        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+//        zoomingTap.numberOfTapsRequired = 2
+//        return zoomingTap
+//    }()
 
+    init(layout: UICollectionViewLayout) {
         self.layout = layout
+        collectionNode = ASCollectionNode(collectionViewLayout: layout)
+        super.init()
 
-        super.init(frame: frame)
+        automaticallyManagesSubnodes = true
+        collectionNode.backgroundColor = .clear
 
         // remove gesture recognizers from the collection view (in order to use scroll view's)
-        collectionView.gestureRecognizers?.forEach {
-            collectionView.removeGestureRecognizer($0)
+        collectionNode.view.gestureRecognizers?.forEach {
+            collectionNode.view.removeGestureRecognizer($0)
         }
 
-        scrollView.delegate = self
+        scrollNode.view.delegate = self
 
         // bounce not supported since it doesn't call scrollViewDidZoom
-        scrollView.bouncesZoom = false
-
-        addSubview(collectionView)
-        addSubview(scrollView)
-        scrollView.addSubview(dummyZoomView)
+        scrollNode.view.bouncesZoom = false
+        scrollNode.view.addSubview(dummyZoomView)
 
         // TODO: make double tap zoom at location
 //        dummyZoomView.addGestureRecognizer(zoomingTap)
 //        dummyZoomView.isUserInteractionEnabled = true
-
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: topAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-
-            scrollView.topAnchor.constraint(equalTo: topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            scrollView.leftAnchor.constraint(equalTo: leftAnchor),
-            scrollView.rightAnchor.constraint(equalTo: rightAnchor)
-        ])
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
+        ASOverlayLayoutSpec(child: collectionNode, overlay: scrollNode)
+    }
+
+    override func layoutDidFinish() {
+        super.layoutDidFinish()
         adjustContentSize()
     }
 
     func adjustContentSize() {
         let size = layout.collectionViewContentSize
-        scrollView.contentSize = size
+        scrollNode.view.contentSize = size
         dummyZoomView.frame = CGRect(origin: .zero, size: size)
     }
 
+    // move force touch gestures on cell nodes to scroll node and then remove on next hit
+    // if the gestures aren't removed, new ones wont work
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        if collectionView.gestureRecognizers?.contains(where: { gestureRecognizerShouldBegin($0) }) == true {
-            // move force touch gestures to scroll view
-            collectionView.gestureRecognizers?.forEach {
-                collectionView.removeGestureRecognizer($0)
-                scrollView.addGestureRecognizer($0)
+        let orig = collectionNode.hitTest(convert(point, to: collectionNode), with: event)
+        if let orig = orig as? _ASDisplayView {
+            if lastHit.timeIntervalSinceNow <= -0.1 {
+                if !tempGestures.isEmpty {
+                    tempGestures.forEach {
+                        scrollNode.view.removeGestureRecognizer($0.gesture)
+                        $0.parent.addGestureRecognizer($0.gesture)
+                    }
+                    tempGestures = []
+                }
+            }
+            lastHit = Date()
+
+            orig.gestureRecognizers?.forEach {
+                if gestureRecognizerShouldBegin($0) {
+                    tempGestures.append((orig, $0))
+                    orig.removeGestureRecognizer($0)
+                    scrollNode.view.addGestureRecognizer($0)
+                }
             }
         }
         return super.hitTest(point, with: event)
@@ -94,7 +99,7 @@ class ZoomableCollectionView: UIView {
 extension ZoomableCollectionView: UIScrollViewDelegate {
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        collectionView.contentOffset = scrollView.contentOffset
+        collectionNode.contentOffset = scrollView.contentOffset
     }
 
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
@@ -103,7 +108,7 @@ extension ZoomableCollectionView: UIScrollViewDelegate {
             layout.getScale() != scrollView.zoomScale
         else { return }
         layout.setScale(scrollView.zoomScale)
-        collectionView.contentOffset = scrollView.contentOffset
+        collectionNode.contentOffset = scrollView.contentOffset
         self.layout.invalidateLayout()
     }
 
@@ -117,23 +122,23 @@ extension ZoomableCollectionView {
 
     // simulates an animated zoom
     // necessary since zoom toRect doesn't call scrollViewDidZoom
-    @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
+//    @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
 //        let location = sender.location(in: sender.view)
-        Task {
-            let steps = 30
-            let out = scrollView.zoomScale > 1
-            let to = out ? scrollView.zoomScale : scrollView.maximumZoomScale
-            for i in 0...steps {
-                let scale: CGFloat
-                if (out && i >= steps / 2) || (!out && i < steps / 2) {
-                    scale = 1 + ((pow(CGFloat(out ? steps - i : i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
-                } else {
-                    scale = to - ((pow(CGFloat(out ? i : steps - i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
-                }
-                scrollView.zoomScale = scale
-                scrollViewDidZoom(scrollView)
-                try? await Task.sleep(nanoseconds: 10 * 1000000)
-            }
-        }
-    }
+//        Task { @MainActor in
+//            let steps = 30
+//            let out = scrollNode.view.zoomScale > 1
+//            let to = out ? scrollNode.view.zoomScale : scrollNode.view.maximumZoomScale
+//            for i in 0...steps {
+//                let scale: CGFloat
+//                if (out && i >= steps / 2) || (!out && i < steps / 2) {
+//                    scale = 1 + ((pow(CGFloat(out ? steps - i : i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
+//                } else {
+//                    scale = to - ((pow(CGFloat(out ? i : steps - i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
+//                }
+//                scrollNode.view.zoomScale = scale
+//                scrollViewDidZoom(scrollNode.view)
+//                try? await Task.sleep(nanoseconds: 10 * 1000000)
+//            }
+//        }
+//    }
 }
