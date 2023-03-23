@@ -954,7 +954,7 @@ extension LibraryViewController {
             ? viewModel.pinnedManga[indexPath.row]
             : viewModel.manga[indexPath.row]
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            var actions: [UIAction] = []
+            var actions: [UIMenuElement] = []
 
             if self.opensReaderView {
                 actions.append(UIAction(
@@ -991,6 +991,23 @@ extension LibraryViewController {
                     self.present(activityViewController, animated: true)
                 })
             }
+
+            let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
+                Task {
+                    await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                }
+            }
+            let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
+                Task {
+                    await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                }
+            }
+
+            actions.append(UIMenu(
+                title: NSLocalizedString("DOWNLOAD", comment: ""),
+                image: UIImage(systemName: "arrow.down.circle"),
+                children: [downloadAllAction, downloadUnreadAction]
+            ))
 
             if self.viewModel.currentCategory != nil {
                 actions.append(UIAction(
