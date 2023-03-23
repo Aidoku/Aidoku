@@ -395,7 +395,10 @@ class HistoryViewController: UIViewController {
         var entries = entries
         var i = 0
         for section in entries {
-            entries[i] = (section.0, section.1.filter { $0.manga.title?.lowercased().contains(searchString) ?? false })
+            entries[i] = (section.0, section.1.filter {
+                $0.manga.title?.lowercased().fuzzyMatch(searchString) ?? false ||
+                $0.manga.author?.lowercased().fuzzyMatch(searchString) ?? false
+            })
             if entries[i].1.isEmpty {
                 entries.remove(at: i)
                 i -= 1

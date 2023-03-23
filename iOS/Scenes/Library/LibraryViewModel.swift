@@ -374,7 +374,7 @@ class LibraryViewModel {
 
         let query = query.lowercased()
         pinnedManga = storedPinnedManga.filter { $0.title?.lowercased().contains(query) ?? false }
-        manga = storedManga.filter { $0.title?.lowercased().contains(query) ?? false }
+        manga = storedManga.filter { $0.title?.lowercased().fuzzyMatch(query) ?? false || $0.author?.lowercased().fuzzyMatch(query) ?? false }
     }
 
     func mangaOpened(sourceId: String, mangaId: String) async {
