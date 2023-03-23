@@ -20,7 +20,6 @@ opt_in_rules:
   - yoda_condition
   - nslocalizedstring_key
   - unused_setter_value
-  - unused_import
   - optional_enum_case_matching
   - prefer_self_type_over_type_of_self
   - contains_over_range_nil_comparison
@@ -30,6 +29,8 @@ opt_in_rules:
   - contains_over_filter_count
   - contains_over_filter_is_empty
   - reduce_into
+analyzer_rules:
+  - unused_import
 custom_rules:
   comment_whitespace:
     name: "Comment Whitespace"
