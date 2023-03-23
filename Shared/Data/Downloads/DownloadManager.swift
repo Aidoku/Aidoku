@@ -91,6 +91,19 @@ class DownloadManager {
 
 extension DownloadManager {
 
+    func downloadAll(manga: Manga) async {
+        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+        download(chapters: chapters, manga: manga)
+    }
+
+    func downloadUnread(manga: Manga) async {
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
+        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id).filter {
+            readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1
+        }
+        download(chapters: chapters, manga: manga)
+    }
+
     func download(chapters: [Chapter], manga: Manga? = nil) {
         Task {
             let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
