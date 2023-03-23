@@ -15,8 +15,9 @@ class ReaderSettingsViewController: SettingsTableViewController {
                 type: "select",
                 key: "Reader.readingMode.\(mangaId)",
                 title: NSLocalizedString("READING_MODE", comment: ""),
-                values: ["default", "rtl", "ltr", "vertical", "webtoon"],
+                values: ["default", "auto", "rtl", "ltr", "vertical", "webtoon"],
                 titles: [
+                    NSLocalizedString("DEFAULT", comment: ""),
                     NSLocalizedString("AUTOMATIC", comment: ""),
                     NSLocalizedString("RTL", comment: ""),
                     NSLocalizedString("LTR", comment: ""),

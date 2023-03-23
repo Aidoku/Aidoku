@@ -219,7 +219,7 @@ class SettingsViewController: SettingsTableViewController {
                     type: "select",
                     key: "Reader.readingMode",
                     title: NSLocalizedString("DEFAULT_READING_MODE", comment: ""),
-                    values: ["default", "rtl", "ltr", "vertical", "webtoon"],
+                    values: ["auto", "rtl", "ltr", "vertical", "webtoon"],
                     titles: [
                         NSLocalizedString("AUTOMATIC", comment: ""),
                         NSLocalizedString("RTL", comment: ""),

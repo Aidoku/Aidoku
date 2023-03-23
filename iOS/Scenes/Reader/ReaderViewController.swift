@@ -138,9 +138,7 @@ class ReaderViewController: BaseObservingViewController {
 
         // set reader
         let readingModeKey = "Reader.readingMode.\(chapter.mangaId)"
-        UserDefaults.standard.register(defaults: [
-            readingModeKey: UserDefaults.standard.string(forKey: "Reader.readingMode") as Any
-        ])
+        UserDefaults.standard.register(defaults: [readingModeKey: "default"])
         setReadingMode(UserDefaults.standard.string(forKey: readingModeKey))
 
         // load chapter list
@@ -254,6 +252,7 @@ class ReaderViewController: BaseObservingViewController {
 // MARK: - Reading Mode
 extension ReaderViewController {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func setReadingMode(_ mode: String?) {
         switch mode {
         case "rtl": readingMode = .rtl
@@ -261,7 +260,14 @@ extension ReaderViewController {
         case "vertical": readingMode = .vertical
         case "scroll", "webtoon": readingMode = .webtoon
         case "continuous": readingMode = .continuous
-        default:
+        case "default":
+            let defaultMode = UserDefaults.standard.string(forKey: "Reader.readingMode")
+            if defaultMode == "default" {
+                setReadingMode("auto")
+            } else {
+                setReadingMode(defaultMode)
+            }
+        default: // auto
             // use given default reading mode
             if let defaultReadingMode = defaultReadingMode {
                 readingMode = defaultReadingMode
