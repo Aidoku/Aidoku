@@ -279,6 +279,7 @@
 		FBE53F0C29CC015E00899601 /* AsyncDisplayKit in Frameworks */ = {isa = PBXBuildFile; productRef = FBE53F0B29CC015E00899601 /* AsyncDisplayKit */; };
 		FBE53F0E29CCA78000899601 /* HeightQueryable.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE53F0D29CCA78000899601 /* HeightQueryable.swift */; };
 		FBE53F1029CCFC1A00899601 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE53F0F29CCFC1A00899601 /* SearchBar.swift */; };
+		FBE53F1229CDDCD300899601 /* BaseObservingCellNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE53F1129CDDCD300899601 /* BaseObservingCellNode.swift */; };
 		FBE578F728983C3C00F9F1B5 /* MangaCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F628983C3C00F9F1B5 /* MangaCollectionViewController.swift */; };
 		FBE578F928983F5700F9F1B5 /* UICollectionView+CellRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */; };
 		FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */; };
@@ -526,6 +527,7 @@
 		FBE53F0529CB723D00899601 /* ReaderWebtoonTransitionNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWebtoonTransitionNode.swift; sourceTree = "<group>"; };
 		FBE53F0D29CCA78000899601 /* HeightQueryable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeightQueryable.swift; sourceTree = "<group>"; };
 		FBE53F0F29CCFC1A00899601 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		FBE53F1129CDDCD300899601 /* BaseObservingCellNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseObservingCellNode.swift; sourceTree = "<group>"; };
 		FBE578F0289021BD00F9F1B5 /* 0.6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.xcdatamodel; sourceTree = "<group>"; };
 		FBE578F628983C3C00F9F1B5 /* MangaCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCollectionViewController.swift; sourceTree = "<group>"; };
 		FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionView+CellRegistration.swift"; sourceTree = "<group>"; };
@@ -608,6 +610,7 @@
 				FB2BE5E92953855000FAD8A7 /* Zooming */,
 				FB55AFA428AAAEF70083EFC3 /* BaseViewController.swift */,
 				FBE578FC289951F700F9F1B5 /* BaseObservingViewController.swift */,
+				FBE53F1129CDDCD300899601 /* BaseObservingCellNode.swift */,
 				FB1B51B428E35BEA00D3CE0E /* BaseCollectionViewController.swift */,
 				FB42750D295FB86600131377 /* BaseTableViewController.swift */,
 				FB0CAA5128A68FD70024561A /* EmptyPageStackView.swift */,
@@ -1632,6 +1635,7 @@
 				FB4275192961203100131377 /* SemanticVersion.swift in Sources */,
 				FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */,
 				FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */,
+				FBE53F1229CDDCD300899601 /* BaseObservingCellNode.swift in Sources */,
 				FB4B0AE6285CDD3F0066A13B /* TrackersViewController.swift in Sources */,
 				FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */,
 				FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */,

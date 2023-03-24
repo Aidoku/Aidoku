@@ -169,6 +169,7 @@ extension ReaderWebtoonViewController {
     }
 
     // fix content size when rotating
+    // TODO: fix scroll offset when rotating
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate { _ in

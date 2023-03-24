@@ -152,6 +152,7 @@ extension SettingsTableViewController {
         if let min = item.minimumValue {
             stepperView.minimumValue = min
         }
+        stepperView.stepValue = item.stepValue ?? 1
         stepperView.defaultsKey = item.key ?? ""
         stepperView.handleChange { _ in
             cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))

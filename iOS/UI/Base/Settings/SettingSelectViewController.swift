@@ -143,7 +143,7 @@ extension SettingSelectViewController {
             NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
         }
         if let key = item.key {
-            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name(key), object: multi ? values : value)
         }
 
         tableView.deselectRow(at: indexPath, animated: true)

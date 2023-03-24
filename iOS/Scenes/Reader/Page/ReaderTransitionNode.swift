@@ -21,6 +21,10 @@ class ReaderTransitionNode: ASDisplayNode {
 
     var transition: Transition
 
+    private static let defaultFontSize: CGFloat = 16
+    private lazy var fontSize = Self.defaultFontSize
+    private var lastWidth: CGFloat = 0
+
     func title(for chapter: Chapter) -> String {
         if let chapterTitle = chapter.title {
             return [
@@ -41,7 +45,7 @@ class ReaderTransitionNode: ASDisplayNode {
                 : NSLocalizedString("FINISHED_COLON", comment: ""),
             attributes: [
                 .foregroundColor: UIColor.label,
-                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
+                .font: UIFont.systemFont(ofSize: Self.defaultFontSize, weight: .medium)
             ]
         )
         return node
@@ -58,7 +62,7 @@ class ReaderTransitionNode: ASDisplayNode {
             string: title(for: chapter),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
-                .font: UIFont.systemFont(ofSize: 16)
+                .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
             ]
         )
         node.maximumNumberOfLines = 2
@@ -73,7 +77,7 @@ class ReaderTransitionNode: ASDisplayNode {
                 : NSLocalizedString("NEXT_COLON", comment: ""),
             attributes: [
                 .foregroundColor: UIColor.label,
-                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
+                .font: UIFont.systemFont(ofSize: Self.defaultFontSize, weight: .medium)
             ]
         )
         return node
@@ -90,7 +94,7 @@ class ReaderTransitionNode: ASDisplayNode {
             string: title(for: chapter),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
-                .font: UIFont.systemFont(ofSize: 16)
+                .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
             ]
         )
         node.maximumNumberOfLines = 2
@@ -105,7 +109,7 @@ class ReaderTransitionNode: ASDisplayNode {
                 : NSLocalizedString("NO_NEXT_CHAPTER", comment: ""),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
-                .font: UIFont.systemFont(ofSize: 16)
+                .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
             ]
         )
         return node
@@ -118,24 +122,43 @@ class ReaderTransitionNode: ASDisplayNode {
         backgroundColor = .systemBackground
     }
 
+    override func layout() {
+        super.layout()
+        if frame.width != lastWidth {
+            lastWidth = frame.width
+            fontSize = Self.defaultFontSize - Self.defaultFontSize * (1 - frame.width / UIScreen.main.bounds.width) / 3
+            func fixText(node: ASTextNode) {
+                if let attr = node.attributedText?.mutableCopy() as? NSMutableAttributedString {
+                    attr.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(0..<attr.length))
+                    node.attributedText = attr
+                }
+            }
+            fixText(node: topChapterTextNode)
+            fixText(node: topChapterTitleTextNode)
+            fixText(node: bottomChapterTextNode)
+            fixText(node: bottomChapterTitleTextNode)
+            fixText(node: noChapterTextNode)
+        }
+    }
+
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         if transition.to == nil {
             return ASCenterLayoutSpec(
                 horizontalPosition: .center,
                 verticalPosition: .center,
-                sizingOption: .minimumWidth,
+                sizingOption: [],
                 child: noChapterTextNode
             )
         } else {
             return ASInsetLayoutSpec(
-                insets: UIEdgeInsets(top: 16, left: 32, bottom: 16, right: 32),
+                insets: UIEdgeInsets(top: fontSize, left: fontSize * 2, bottom: fontSize, right: fontSize * 2),
                 child: ASCenterLayoutSpec(
                     horizontalPosition: .center,
                     verticalPosition: .center,
                     sizingOption: .minimumWidth,
                     child: ASStackLayoutSpec(
                         direction: .vertical,
-                        spacing: 14,
+                        spacing: fontSize * 7/8,
                         justifyContent: .center,
                         alignItems: .start,
                         children: [

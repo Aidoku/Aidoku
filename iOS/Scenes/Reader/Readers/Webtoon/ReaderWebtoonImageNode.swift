@@ -8,7 +8,7 @@
 import AsyncDisplayKit
 import Nuke
 
-class ReaderWebtoonImageNode: ASCellNode {
+class ReaderWebtoonImageNode: BaseObservingCellNode {
 
     let page: Page
 
@@ -17,6 +17,10 @@ class ReaderWebtoonImageNode: ASCellNode {
     var image: UIImage?
     private var imageTask: ImageTask?
     private var loading = false
+
+    var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
+    var pillarboxAmount = CGFloat(UserDefaults.standard.double(forKey: "Reader.pillarboxAmount"))
+    var pillarboxOrientation = UserDefaults.standard.string(forKey: "Reader.pillarboxOrientation")
 
     static let defaultRatio: CGFloat = 1.435
 
@@ -45,6 +49,19 @@ class ReaderWebtoonImageNode: ASCellNode {
         super.init()
         automaticallyManagesSubnodes = true
         shouldAnimateSizeChanges = false
+        addObserver(forName: "Reader.pillarbox") { [weak self] notification in
+            self?.pillarbox = notification.object as? Bool ?? false
+            self?.transition()
+        }
+        addObserver(forName: "Reader.pillarboxAmount") { [weak self] notification in
+            guard let doubleValue = notification.object as? Double else { return }
+            self?.pillarboxAmount = CGFloat(doubleValue)
+            self?.transition()
+        }
+        addObserver(forName: "Reader.pillarboxOrientation") { [weak self] notification in
+            self?.pillarboxOrientation = notification.object as? String ?? "both"
+            self?.transition()
+        }
     }
 
     override func didEnterDisplayState() {
@@ -99,10 +116,37 @@ class ReaderWebtoonImageNode: ASCellNode {
         layout.isInsertingCellsAbove = yOffset < collectionNode.contentOffset.y
     }
 
+    func getPillarboxHeight(percent: CGFloat, maxWidth: CGFloat) -> CGFloat {
+        guard let image else { return 0 }
+        let width = maxWidth * percent
+        return width / image.size.width * image.size.height
+    }
+
+    func isPillarboxOrientation() -> Bool {
+        pillarboxOrientation == "both" ||
+            (pillarboxOrientation == "portrait" && UIDevice.current.orientation.isPortrait) ||
+            (pillarboxOrientation == "landscape" && UIDevice.current.orientation.isLandscape)
+    }
+
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         if let image {
-            // TODO: pillarboxing
-            return ASRatioLayoutSpec(ratio: image.size.height / image.size.width, child: imageNode)
+            if pillarbox && isPillarboxOrientation() {
+                let percent = (100 - pillarboxAmount) / 100
+                let height = getPillarboxHeight(percent: percent, maxWidth: constrainedSize.max.width)
+
+                imageNode.style.width = ASDimensionMakeWithFraction(percent)
+                imageNode.style.height = ASDimensionMakeWithPoints(height)
+                imageNode.style.alignSelf = .center
+
+                return ASCenterLayoutSpec(
+                    horizontalPosition: .center,
+                    verticalPosition: .center,
+                    sizingOption: [],
+                    child: imageNode
+                )
+            } else {
+                return ASRatioLayoutSpec(ratio: image.size.height / image.size.width, child: imageNode)
+            }
         } else {
             return ASRatioLayoutSpec(
                 ratio: Self.defaultRatio,
@@ -204,12 +248,7 @@ extension ReaderWebtoonImageNode {
         imageNode.image = image
         imageNode.shouldAnimateSizeChanges = false
 
-        let ratio = image.size.width / image.size.height
-        let scaledHeight = UIScreen.main.bounds.width / ratio
-        let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
-        frame = .init(origin: .zero, size: size)
-
-        transitionLayout(with: .init(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
+        transition()
 
         Task { @MainActor in
             imageNode.isUserInteractionEnabled = true
@@ -217,6 +256,15 @@ extension ReaderWebtoonImageNode {
                 imageNode.view.addInteraction(UIContextMenuInteraction(delegate: delegate))
             }
         }
+    }
+
+    private func transition() {
+        guard let image else { return }
+        let ratio = image.size.width / image.size.height
+        let scaledHeight = UIScreen.main.bounds.width / ratio
+        let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
+        frame = CGRect(origin: .zero, size: size)
+        transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
     }
 }
 

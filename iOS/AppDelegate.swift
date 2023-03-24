@@ -99,9 +99,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.skipDuplicateChapters": true,
                 "Reader.downsampleImages": true,
                 "Reader.saveImageOption": true,
-                "Reader.verticalInfiniteScroll": false,
                 "Reader.pagesToPreload": 2,
-                "Reader.pagedPageLayout": "auto"
+                "Reader.pagedPageLayout": "auto",
+                "Reader.verticalInfiniteScroll": true,
+                "Reader.pillarbox": false,
+                "Reader.pillarboxAmount": 15,
+                "Reader.pillarboxOrientation": "both"
             ]
         )
 
