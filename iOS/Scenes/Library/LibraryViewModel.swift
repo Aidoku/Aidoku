@@ -254,7 +254,7 @@ class LibraryViewModel {
                     let manga = pinnedManga.remove(at: pinnedIndex)
                     pinnedManga.insert(manga, at: 0)
                 }
-            } else if let mangaIndex = currentManga.firstIndex(where: { $0.hashValue == count.key }) {
+            } else if let mangaIndex = self.manga.firstIndex(where: { $0.hashValue == count.key }) {
                 self.manga[mangaIndex].unread = count.value
                 if read && sortMethod == .lastRead && mangaIndex != 0 {
                     let manga = self.manga.remove(at: mangaIndex)
