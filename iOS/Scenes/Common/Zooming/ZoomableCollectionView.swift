@@ -18,11 +18,13 @@ class ZoomableCollectionView: ASDisplayNode {
     private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
     private var lastHit = Date.distantPast
 
-//    lazy private var zoomingTap: UITapGestureRecognizer = {
-//        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-//        zoomingTap.numberOfTapsRequired = 2
-//        return zoomingTap
-//    }()
+    var zoomTimer: Timer?
+
+    lazy private var zoomingTap: UITapGestureRecognizer = {
+        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        zoomingTap.numberOfTapsRequired = 2
+        return zoomingTap
+    }()
 
     init(layout: UICollectionViewLayout) {
         self.layout = layout
@@ -44,8 +46,8 @@ class ZoomableCollectionView: ASDisplayNode {
         scrollNode.view.addSubview(dummyZoomView)
 
         // TODO: make double tap zoom at location
-//        dummyZoomView.addGestureRecognizer(zoomingTap)
-//        dummyZoomView.isUserInteractionEnabled = true
+        dummyZoomView.addGestureRecognizer(zoomingTap)
+        dummyZoomView.isUserInteractionEnabled = true
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -102,6 +104,14 @@ extension ZoomableCollectionView: UIScrollViewDelegate {
         collectionNode.contentOffset = scrollView.contentOffset
     }
 
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // cancel double tap zoom if user starts scrolling mid zoom
+        if let zoomTimer {
+            zoomTimer.invalidate()
+            self.zoomTimer = nil
+        }
+    }
+
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         guard
             let layout = layout as? ZoomableLayoutProtocol,
@@ -122,23 +132,73 @@ extension ZoomableCollectionView {
 
     // simulates an animated zoom
     // necessary since zoom toRect doesn't call scrollViewDidZoom
-//    @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
-//        let location = sender.location(in: sender.view)
-//        Task { @MainActor in
-//            let steps = 30
-//            let out = scrollNode.view.zoomScale > 1
-//            let to = out ? scrollNode.view.zoomScale : scrollNode.view.maximumZoomScale
-//            for i in 0...steps {
-//                let scale: CGFloat
-//                if (out && i >= steps / 2) || (!out && i < steps / 2) {
-//                    scale = 1 + ((pow(CGFloat(out ? steps - i : i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
-//                } else {
-//                    scale = to - ((pow(CGFloat(out ? i : steps - i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
-//                }
-//                scrollNode.view.zoomScale = scale
-//                scrollViewDidZoom(scrollNode.view)
-//                try? await Task.sleep(nanoseconds: 10 * 1000000)
-//            }
-//        }
-//    }
+    @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
+        if let zoomTimer {
+            zoomTimer.invalidate()
+            self.zoomTimer = nil
+        }
+
+        let location = sender.location(in: sender.view)
+        let xLoc = (location.x - scrollNode.view.contentOffset.x) / scrollNode.view.bounds.width
+        let yLoc = (location.y - scrollNode.view.contentOffset.y) / scrollNode.view.bounds.height
+        let startY = scrollNode.view.contentOffset.y
+        let startX = scrollNode.view.contentOffset.x
+
+        let steps = 120
+        let out = scrollNode.view.zoomScale > 1
+        let from = scrollNode.view.zoomScale
+        let to = out ? scrollNode.view.zoomScale : scrollNode.view.maximumZoomScale
+
+        var scales: [CGFloat] = []
+        var points: [CGPoint] = []
+
+        for i in 0...steps {
+            // set zoom scale
+            let scale: CGFloat
+            if (out && i >= steps / 2) || (!out && i < steps / 2) {
+                let step = ((pow(CGFloat(out ? steps - i : i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
+                scale = 1 + step
+            } else {
+                let step = ((pow(CGFloat(out ? i : steps - i) / (CGFloat(steps) / 2), 2) / 2) * (to - 1))
+                scale = to - step
+            }
+            scales.append(scale)
+            // set offset
+            let point: CGPoint
+            if out {
+                let newX = startX - (1 - (scale - 1)/(from - 1)) * startX
+                point = CGPoint(x: newX, y: scrollNode.view.contentOffset.y)
+            } else {
+                let xStep = (scale - 1) * scrollNode.view.bounds.width
+                let yStep = (scale - 1) * scrollNode.view.bounds.height
+                let newX = min(max(0, 2 * xStep * xLoc - xStep / 2), xStep)
+                let newY = startY + min(max(0, 2 * yStep * yLoc - yStep / 2), yStep) + (scale - 1) * startY
+                point = CGPoint(x: newX, y: newY)
+            }
+            points.append(point)
+        }
+
+        let finalScales = scales
+        let finalPoints = points
+
+        var i = 0
+        // ~300ms animation
+        zoomTimer = Timer.scheduledTimer(withTimeInterval: 0.3 / Double(steps), repeats: true) { timer in
+            if i > steps || !timer.isValid {
+                timer.invalidate()
+                return
+            }
+            self.scrollNode.view.zoomScale = finalScales[i]
+            self.scrollViewDidZoom(self.scrollNode.view)
+            if out {
+                self.scrollNode.view.setContentOffset(
+                    CGPoint(x: finalPoints[i].x, y: self.scrollNode.view.contentOffset.y),
+                    animated: false
+                )
+            } else {
+                self.scrollNode.view.setContentOffset(finalPoints[i], animated: false)
+            }
+            i += 1
+        }
+    }
 }
