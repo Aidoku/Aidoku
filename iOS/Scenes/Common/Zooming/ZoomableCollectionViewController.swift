@@ -62,4 +62,8 @@ extension ZoomableCollectionViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         zoomView.viewForZooming(in: scrollView)
     }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        zoomView.scrollViewWillBeginDragging(scrollView)
+    }
 }
