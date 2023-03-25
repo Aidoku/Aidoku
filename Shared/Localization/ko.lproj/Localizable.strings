@@ -78,7 +78,7 @@
 
 // Reader
 "CHAPTER" = "챕터";
-"VOL_X" = "Vol.%g";
+"VOL_X" = "볼륨 %g";
 "CH_X" = "Ch.%g";
 "VOL_SPACE_X" = "Vol. %g";
 "READ" = "읽기";
@@ -322,3 +322,5 @@
 "RENAME_CATEGORY_FAIL_INFO" = "범주 이름은 고유해야 합니다.";
 "SYNC_WITH_TRACKER" = "트래커와 동기화";
 "SYNC_WITH_TRACKER_INFO" = "트래커 (%g)에 설정된 최신 장이 최근에 읽은 장보다 높은 것 같습니다. 일치하도록 로컬 기록을 업데이트하겠습니까?";
+"ALL_CHAPTERS_READ" = "모든 장 읽기";
+"TRACKING" = "트래킹";

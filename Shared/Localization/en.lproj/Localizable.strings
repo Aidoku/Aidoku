@@ -330,3 +330,9 @@
 "UPLOAD_DATE" = "Upload Date";
 "TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
+"DEFAULT_READING_MODE" = "Default Reading Mode";
+"PILLARBOX" = "Pillarbox";
+"PILLARBOX_AMOUNT" = "Pillarbox Amount";
+"PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
+"PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
+"BOTH" = "Both";
