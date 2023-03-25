@@ -1,0 +1,102 @@
+
+
+
+// Library
+"LIBRARY" = "Βιβλιοθήκη";
+"LIBRARY_SEARCH" = "Εύρεση στην βιβλιοθήκη";
+"LIBRARY_EMPTY" = "Κενή Βιβλιοθήκη";
+"LIBRARY_ADD_FROM_BROWSE" = "Προσθήκη Μάνγκα από την Καρτέλα του Προγράμματος Περιήγησης";
+"REMOVE_FROM_LIBRARY" = "Αφαίρεση από Βιβλιοθήκη";
+"MANGA_INFO" = "Πληροφορίες Μάνγκα";
+"FILTER_BY" = "Φιλτράρισμα Κατά";
+"TITLE" = "Τίτλος";
+"LAST_READ" = "Πιο Πρόσφατη Ανάγνωση";
+"LATEST_CHAPTER" = "Πρόσφατο Κεφάλαιο";
+"DATE_ADDED" = "Ημερομηνία που Προστέθηκε";
+
+// Categories
+"ALL" = "Όλα";
+"EDIT_CATEGORIES" = "Επεξεργασία Κατηγοριών";
+"CATEGORY_ADD" = "Προσθήκη Κατηγορίας";
+"CATEGORY_ADD_TEXT" = "Εισαγάγετε τον Τίτλο της Νέας Κατηγορίας για Δημιουργία.";
+"CATEGORY_TITLE" = "Τίτλος Κατηγορίας";
+"ALWAYS_ASK" = "Ερώτηση Πάντοτε";
+"BROWSE_NO_SOURCES" = "Έλλειψη Πηγών";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Οδηγός Προσθήκης Πηγών";
+"UPDATES" = "Ενημερώσεις";
+"INSTALLED" = "Εγκατεστημένα";
+"EXTERNAL" = "Εξωτερικά";
+// General
+"CONTINUE" = "Συνέχεια";
+"CANCEL" = "Ακύρωση";
+"OK" = "Εντάξει";
+"UNKNOWN" = "Άγνωστο";
+"UNAVAILABLE" = "Μη διαθέσιμο";
+"RESET" = "Επαναφορά";
+"DELETE" = "Διαγραφή";
+"REMOVE" = "Αφαίρεση";
+"RENAME" = "Μετονομασία";
+"CLEAR" = "Εκκαθάριση";
+"LOADING_ELLIPSIS" = "Φόρτωση…";
+"SHARE" = "Κοινοποίηση";
+
+// Downloads
+"DOWNLOAD" = "Λήψη";
+"DOWNLOADED" = "Ληφθέν";
+"DOWNLOAD_QUEUE" = "Ουρά Λήψης";
+"CANCEL_DOWNLOAD" = "Ακύρωση Λήψης";
+"REMOVE_DOWNLOAD" = "Αφαίρεση Λήψης";
+"REMOVE_ALL_DOWNLOADS" = "Αφαίρεση όλων των λήψεων";
+"REMOVE_DOWNLOADS_CONFIRM" = "Αφαίρεση όλων των επιλεγμένων λήψεων;";
+"NONE" = "Κανένα";
+"CATEGORIES" = "Κατηγορίες";
+"REMOVE_DOWNLOADS" = "Αφαίρεση Λήψεων";
+"ADD_TO_LIBRARY" = "Προσθήκη στην Βιβλιοθήκη";
+"DEFAULT_CATEGORY" = "Προκαθορισμένη Κατηγορία";
+
+// Browse
+"BROWSE" = "Αναζήτηση";
+"SORT_BY" = "Ταξινόμηση Κατά";
+"LAST_OPENED" = "Άνοιγμα πιο Πρόσφατου";
+"BROWSE_NO_SOURCES_TEXT" = "Διαμορφώστε τη λίστα πηγών σας ή ανοίξτε μια\nπηγή στο Aidoku για να ξεκινήσετε";
+"BUTTON_UPDATE" = "Ανανέωση";
+"BUTTON_GET" = "Πάρε";
+"BUTTON_ERROR" = "Σφάλμα";
+"UNINSTALL" = "Απεγκατάσταση";
+
+// Source
+"SOURCE_INFO" = "Πληροφορίες Πηγής";
+"LANGUAGE" = "Γλώσσα";
+"LANGUAGES" = "Γλώσσες";
+"INFO" = "Πληροφορίες";
+"VERSION" = "Εκδοχή";
+"BUILD" = "Έκδοση";
+"BUTTON_FILTER" = "Φίλτρο";
+"ONGOING" = "Σε εξέλιξη";
+"COMPLETED" = "Ολοκληρωμένο";
+"HIATUS" = "Σε διάλυμα";
+"CANCELLED" = "Ακυρωμένο";
+"SUGGESTIVE" = "Υπαινισσόμενος";
+"NSFW" = "ΜΑΓΔ";
+"MORE" = "Περισσότερα";
+"SOURCE_ORDER" = "Διάταξη Πηγής";
+"MISSING_SOURCE" = "Έλλειψη Πηγής";
+"MISSING_SOURCE_TEXT" = "Η αρχική πηγή φαίνεται να λείπει για αυτό το Manga. Κατεβάστε το ξανά ή αφαιρέστε αυτόν τον τίτλο από τη βιβλιοθήκη σας.";
+"SELECT_CHAPTERS" = "Επιλογή Κεφαλαίων";
+"SELECT_ALL" = "Επιλογή Όλων";
+"DESELECT_ALL" = "Κατάργηση Όλων";
+
+// Reader
+"CHAPTER" = "Κεφάλαιο";
+"CHAPTERS" = "Κεφάλαια";
+"CHAPTER_X" = "Κεφάλαιο %g";
+"CH_X" = "Κεφ. %g";
+"VOL_SPACE_X" = "Τομ. %g";
+"CH_SPACE_X" = "Κεφ. %g";
+"VOLUME_X" = "Ένταση %g";
+"VOL_X" = "Τομ. %g";
+"LIST_ALL" = "Όλα";
+
+// Manga
+"UNTITLED" = "Χωρίς Τίτλο";
+"LIST_HEADER" = "Λίστα";

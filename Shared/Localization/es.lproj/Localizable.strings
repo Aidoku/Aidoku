@@ -54,7 +54,7 @@
 "HIATUS" = "Hiato";
 "SUGGESTIVE" = "Insinuante";
 "NSFW" = "NSFW";
-"MORE" = "más";
+"MORE" = "Ver más";
 "SOURCE_ORDER" = "Orden de fuentes";
 "MISSING_SOURCE" = "Fuente faltante";
 "MISSING_SOURCE_TEXT" = "Parece que falta la fuente original para este manga. Vuelve a descargarla o elimina este manga de tu biblioteca.";
@@ -138,7 +138,7 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "Esta acción es irreversible. Las solicitudes de red y las imágenes almacenadas en caché se borrarán.";
 "CLEAR_READ_HISTORY" = "Borrar historial de lectura";
 "CLEAR_READ_HISTORY_TEXT" = "Esta acción es irreversible. Se eliminará todo el historial de lectura.";
-"REMOVE" = "Remover";
+"REMOVE" = "Eliminar";
 "CLEAR" = "Limpiar";
 "SHARE" = "Compartir";
 "CANCEL_DOWNLOAD" = "Cancelar descarga";
@@ -148,7 +148,7 @@
 
 // Downloads
 "DOWNLOAD" = "Descargar";
-"DOWNLOADED" = "Descargado";
+"DOWNLOADED" = "Descargados";
 "DOWNLOAD_QUEUE" = "Cola de descargas";
 "CATEGORY_ADD_TEXT" = "Escribe el título de la nueva categoría a crear.";
 "DEFAULT_CATEGORY" = "Categoría por defecto";
@@ -162,7 +162,7 @@
 "PREVIOUS_COLON" = "Anterior:";
 "NEXT_COLON" = "Siguiente:";
 "CURRENT_COLON" = "Actual:";
-"NO_NEXT_CHAPTER" = "No hay próximo capítulo";
+"NO_NEXT_CHAPTER" = "No hay más capítulos";
 "NO_PREVIOUS_CHAPTER" = "No hay capítulo anterior";
 
 // History
@@ -252,7 +252,7 @@
 "MULTI_LANGUAGE" = "Multi-lenguaje";
 "LOGOUT" = "Cerrar la sesión";
 "LOGOUT_FROM_%@" = "¿Cerrar la sesión de %@?";
-"TRACKERS" = "Servicios";
+"TRACKERS" = "Seguimiento";
 "VOLUMES" = "Volúmenes";
 "STARTED" = "Empezado";
 "STATUS" = "Estado";
@@ -282,7 +282,7 @@
 "MANGA" = "Manga";
 "RELOAD" = "Recargar";
 "%i_OF_%i" = "%i de %i";
-"LAST_UPDATED" = "Ultima actualización";
+"LAST_UPDATED" = "Última actualización";
 "TOTAL_CHAPTERS" = "Total de capítulos";
 "%i_PAGES_LEFT" = "%i páginas restantes";
 "UNREAD_CHAPTERS" = "Capítulos no leídos";
@@ -314,13 +314,19 @@
 "MIGRATE_ONE_ITEM?" = "¿Migrar 1 elemento?";
 "SYNC_LOCAL_HISTORY" = "Sincronizar el historial";
 "TITLES" = "Títulos";
-"MIGRATE" = "Cambiar";
+"MIGRATE" = "Migrar";
 "SELECTED" = "Seleccionado";
 "MOST_CHAPTERS_SLOWER" = "Casi todo los capítulos (más lento)";
 "SYNC_WITH_TRACKER" = "Sincronizar con rastreador";
 "SYNC_WITH_TRACKER_INFO" = "El último episodio de la audiencia es más alto (%g) que el último episodio que leíste. ¿Quieres actualizar tu historial local para que sea el mismo?";
 "MIGRATION" = "Migración";
 "START_MATCHING" = "Empezar a emparejar";
-"UPLOAD_DATE" = "Fecha de carga";
+"UPLOAD_DATE" = "Fecha de subida";
 "TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "Todos los capítulos leídos";
+"DEFAULT_READING_MODE" = "Modo de lectura por defecto";
+"PILLARBOX_ORIENTATION" = "Orientación del Pillarbox";
+"BOTH" = "Ambas";
+"PILLARBOX_AMOUNT" = "Cantidad de Pillarbox";
+"PILLARBOX" = "Efecto Pillarbox";
+"PILLARBOX_ORIENTATION_INFO" = "Orientación del Pillarbox determina para qué orientaciones debe activarse el efecto pillarbox.";

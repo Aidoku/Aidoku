@@ -324,3 +324,4 @@
 "UPLOAD_DATE" = "上传日期";
 "TRACKING" = "追踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
+"DEFAULT_READING_MODE" = "默认阅读模式";

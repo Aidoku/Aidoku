@@ -14,7 +14,7 @@
 "DOWNLOADED" = "Téléchargé";
 "REMOVE_ALL_DOWNLOADS" = "Retirer tous les téléchargements";
 "REMOVE_DOWNLOADS" = "Retirer les téléchargements";
-"REMOVE_DOWNLOADS_CONFIRM" = "Supprimer tous les téléchargements sélectionnés ?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Supprimer tous les téléchargements sélectionnés ?";
 "LIBRARY_ADD_FROM_BROWSE" = "Ajouter un manga à partir de l'onglet Parcourir";
 "ADD_TO_LIBRARY" = "Ajouter à la bibliothèque";
 "MANGA_INFO" = "Infos sur le manga";
@@ -324,3 +324,5 @@
 "MIGRATE_ONE_ITEM?" = "Migrer 1 élément ?";
 "TRACKING" = "Suivi";
 "ALL_CHAPTERS_READ" = "Tous les chapitres lus";
+"BOTH" = "Les deux";
+"DEFAULT_READING_MODE" = "Mode de lecture par défaut";

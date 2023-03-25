@@ -126,7 +126,7 @@
 "READER" = "Читалка";
 "OPEN_READER_VIEW" = "Открыть просмотр чтения";
 "UNREAD_CHAPTER_BADGES" = "Значки Непрочитанных глав";
-"PIN_MANGA" = "Пин-код Манги";
+"PIN_MANGA" = "Закрепить мангу";
 "PIN_MANGA_TYPE" = "Тип штифта";
 "PIN_MANGA_UPDATED" = "Обновленное";
 "EXCLUDED_CATEGORIES" = "Исключенные категории";
