@@ -155,11 +155,11 @@
 "USE_MANGA_TINT_INFO" = "Colora le pagine del manga in base al colore dell'immagine di copertina";
 "READER" = "Lettore";
 "OPEN_READER_VIEW" = "Apri la vista del lettore";
-"UNREAD_CHAPTER_BADGES" = "Badge dei capitolo non letti";
+"UNREAD_CHAPTER_BADGES" = "Badge dei capitoli non letti";
 "PIN_MANGA_UPDATED" = "Aggiornato";
 "ONLY_UPDATE_ON_WIFI" = "Aggiornamento solo su Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Categorie escluse";
-"SOURCE_LISTS" = "Elenchi di fonti";
+"SOURCE_LISTS" = "Elenchi delle fonti";
 "SOURCE_LIST_ADDED" = "Elenco fonti aggiunto";
 "SOURCE_LIST_ADDED_TEXT" = "È ora possibile sfogliare le fonti esterne nella scheda Sfoglia.";
 "SHOW_NSFW_SOURCES" = "Mostra fonti per adulti";
@@ -205,7 +205,7 @@
 "AUTH_FOR_HISTORY" = "Autenticati per visualizzare la cronologia di lettura.";
 "LIBRARY_UPDATING" = "Aggiornamento della raccolta";
 "VIEW_HISTORY" = "Visualizza la cronologia";
-"UPDATE_INTERVAL" = "Intervallo di aggiornamento";
+"UPDATE_INTERVAL" = "Frequenza di aggiornamento";
 "SKIP_TITLES" = "Salta i titoli";
 "PIN_MANGA_UNREAD" = "Non letto";
 "REFRESH_METADATA" = "Aggiorna i metadati";
@@ -247,7 +247,7 @@
 "LOGOUT" = "Esci";
 "LOGOUT_FROM_%@" = "Uscire da %@?";
 "VOLUME_X" = "Volume %g";
-"VOL_X" = "Vol.%g";
+"VOL_X" = "Vol. %g";
 "VOL_SPACE_X" = "Vol. %g";
 "PORTRAIT" = "Verticale";
 "LANDSCAPE" = "Orizzontale";

@@ -12,7 +12,7 @@
 "DOWNLOAD" = "Descarregar";
 "DOWNLOADED" = "Descarregado(s)";
 "DOWNLOAD_QUEUE" = "Fila de descargas";
-"CANCEL_DOWNLOAD" = "Cancelar download";
+"CANCEL_DOWNLOAD" = "Cancelar descarga";
 "REMOVE_DOWNLOAD" = "Remover download";
 "REMOVE_ALL_DOWNLOADS" = "Remover todos os downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remover todas as descargas selecionadas?";
