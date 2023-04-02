@@ -581,6 +581,23 @@ extension MangaViewController {
             }
         }
 
+        // add mark all button if enabled in settings.
+        let showReadAll = UserDefaults.standard.bool(forKey: "General.showMarkAllRead")
+        if showReadAll {
+            actions.append(UIAction(
+                title: NSLocalizedString("MARK_ALL_READ", comment: ""),
+                image: UIImage(systemName: "eye")
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.showLoadingIndicator()
+                let chapters = [Chapter](self.viewModel.chapterList)
+                Task {
+                    await self.markRead(chapters: chapters)
+                    self.hideLoadingIndicator()
+                }
+            })
+        }
+        
         // add share button if manga has a url
         if let url = manga.url {
             actions.append(UIAction(
