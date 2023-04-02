@@ -70,17 +70,12 @@ class SettingsViewController: SettingsTableViewController {
                         type: "switch",
                         key: "General.showSourceLabel",
                         title: NSLocalizedString("SHOW_SOURCE_LABEL", comment: "")
-//                    ),
+                    )
 //                    SettingItem(
 //                        type: "switch",
 //                        key: "General.useMangaTint",
 //                        title: NSLocalizedString("USE_MANGA_TINT", comment: "")
-                    ),
-                    SettingItem(
-                        type: "switch",
-                        key: "General.showMarkAllRead",
-                        title: NSLocalizedString("SHOW_ALL_READ_BUTTON", comment: "")
-                    )
+//                    )
                 ]
             ),
             // MARK: Manga per row

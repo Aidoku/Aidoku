@@ -117,7 +117,6 @@
 "MARK_PREVIOUS" = "Mark Previous";
 "MARK_READ" = "Mark as Read";
 "MARK_UNREAD" = "Mark as Unread";
-"MARK_ALL_READ" = "Mark all as Read";
 "PREVIOUS_COLON" = "Previous:";
 "NEXT_COLON" = "Next:";
 "FINISHED_COLON" = "Finished:";
@@ -167,7 +166,6 @@
 "USE_SYSTEM_APPEARANCE" = "Use System Appearance";
 "MANGA_PAGE" = "Manga Page";
 "SHOW_SOURCE_LABEL" = "Show Source Label";
-"SHOW_ALL_READ_BUTTON" = "Show Mark All Button";
 "USE_MANGA_TINT" = "Use Manga Tint";
 "USE_MANGA_TINT_INFO" = "Tint manga pages based on the color of the cover image";
 "MANGA_PER_ROW" = "Manga per row";
