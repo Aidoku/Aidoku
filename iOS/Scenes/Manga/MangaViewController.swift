@@ -540,7 +540,7 @@ extension MangaViewController {
 
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
-        var actions = [
+        var actions: [UIMenuElement] = [
             UIAction(
                 title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
                 image: UIImage(systemName: "checkmark.circle")
@@ -548,6 +548,29 @@ extension MangaViewController {
                 self?.setEditing(true, animated: true)
             }
         ]
+
+        // mark as read & mark as unread submenu
+        actions.append(
+            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: [
+                // read chapters
+                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                    self.showLoadingIndicator()
+                    let chapters = [Chapter](self.viewModel.chapterList)
+                    Task {
+                        await self.markRead(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                },
+                // unread chapters
+                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                    self.showLoadingIndicator()
+                    let chapters = [Chapter](self.viewModel.chapterList)
+                    Task {
+                        await self.markUnread(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                }
+            ]))
 
         // add edit categories button if in library and have categories
         await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -579,23 +602,6 @@ extension MangaViewController {
                     self?.migrateManga()
                 })
             }
-        }
-
-        // add mark all button if enabled in settings.
-        let showReadAll = UserDefaults.standard.bool(forKey: "General.showMarkAllRead")
-        if showReadAll {
-            actions.append(UIAction(
-                title: NSLocalizedString("MARK_ALL_READ", comment: ""),
-                image: UIImage(systemName: "eye")
-            ) { [weak self] _ in
-                guard let self = self else { return }
-                self.showLoadingIndicator()
-                let chapters = [Chapter](self.viewModel.chapterList)
-                Task {
-                    await self.markRead(chapters: chapters)
-                    self.hideLoadingIndicator()
-                }
-            })
         }
         
         // add share button if manga has a url
