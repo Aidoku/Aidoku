@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Combine
 
 public extension View {
     func navigationBarSearch(
@@ -16,7 +15,7 @@ public extension View {
     ) -> some View {
         overlay(SearchBar(
             text: searchText,
-            searching: searching,
+            searching: searching ?? Binding(get: { true }, set: { _, _ in }),
             hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling
         ).frame(width: 0, height: 0))
     }
@@ -24,74 +23,66 @@ public extension View {
 
 private struct SearchBar: UIViewControllerRepresentable {
 
+    let searchController = UISearchController(searchResultsController: nil)
+
     @Binding var text: String
     @Binding var searching: Bool
 
     let hidesSearchBarWhenScrolling: Bool
 
-    init(text: Binding<String>, searching: Binding<Bool>?, hidesSearchBarWhenScrolling: Bool = true) {
-        self._text = text
-        self._searching = searching ?? Binding(get: { true }, set: { _, _ in })
-        self.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
-    }
-
     func makeUIViewController(context: Context) -> SearchBarWrapperController {
-        SearchBarWrapperController()
+        searchController.searchBar.delegate = context.coordinator
+        searchController.searchResultsUpdater = context.coordinator
+
+        searchController.hidesNavigationBarDuringPresentation = true
+        searchController.obscuresBackgroundDuringPresentation = false
+
+        return SearchBarWrapperController(searchController: searchController)
     }
 
     func updateUIViewController(_ controller: SearchBarWrapperController, context: Context) {
-        controller.searchController = context.coordinator.searchController
         controller.parent?.navigationItem.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, searching: $searching)
+        Coordinator(self)
     }
 
-    class Coordinator: NSObject, UISearchResultsUpdating {
+    class Coordinator: NSObject, UISearchBarDelegate, UISearchResultsUpdating {
 
-        @Binding var text: String
-        @Binding var searching: Bool
-        let searchController: UISearchController
+        let parent: SearchBar
 
-        private var subscription: AnyCancellable?
-
-        init(text: Binding<String>, searching: Binding<Bool>) {
-            self._text = text
-            self._searching = searching
-            self.searchController = UISearchController(searchResultsController: nil)
-
-            super.init()
-
-            searchController.searchResultsUpdater = self
-            searchController.hidesNavigationBarDuringPresentation = true
-            searchController.obscuresBackgroundDuringPresentation = false
-
-            self.searchController.searchBar.text = self.text
-            self.subscription = self.text.publisher.sink { _ in
-                self.searchController.searchBar.text = self.text
-            }
+        init(_ parent: SearchBar) {
+            self.parent = parent
         }
 
-        deinit {
-            self.subscription?.cancel()
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            parent.text = searchText
+        }
+
+        func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+            parent.text = ""
         }
 
         func updateSearchResults(for searchController: UISearchController) {
-            guard let text = searchController.searchBar.text else { return }
-            self.text = text
             withAnimation {
-                self.searching = searchController.isActive
+                parent.searching = searchController.isActive
             }
         }
     }
 
     class SearchBarWrapperController: UIViewController {
 
-        var searchController: UISearchController? {
-            didSet {
-                self.parent?.navigationItem.searchController = searchController
-            }
+        let searchController: UISearchController
+
+        init(searchController: UISearchController) {
+            self.searchController = searchController
+            super.init(nibName: nil, bundle: nil)
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
         }
 
         override func viewWillAppear(_ animated: Bool) {
