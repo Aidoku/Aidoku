@@ -36,7 +36,7 @@ extension String {
     }
 
     func fuzzyMatch(_ pattern: String) -> Bool? {
-        if pattern.isEmpty {return false}
+        if pattern.isEmpty { return false }
         var rem = pattern[...]
         for char in self where char == rem[rem.startIndex] {
             rem.removeFirst()

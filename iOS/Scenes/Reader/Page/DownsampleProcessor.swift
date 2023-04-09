@@ -70,7 +70,7 @@ struct DownsampleProcessor: ImageProcessing {
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceThumbnailMaxPixelSize: maxDimension
-        ] as CFDictionary
+        ] as [CFString: Any] as CFDictionary
 
         guard let output = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options) else {
             return nil
