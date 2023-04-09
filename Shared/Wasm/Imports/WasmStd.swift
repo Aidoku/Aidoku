@@ -124,13 +124,13 @@ extension WasmStd {
 
     var create_object: () -> Int32 {
         {
-            self.globalStore.storeStdValue([:])
+            self.globalStore.storeStdValue([AnyHashable: AnyHashable]())
         }
     }
 
     var create_array: () -> Int32 {
         {
-            self.globalStore.storeStdValue([])
+            self.globalStore.storeStdValue([AnyHashable]())
         }
     }
 

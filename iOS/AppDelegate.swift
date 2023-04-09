@@ -80,11 +80,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.lockLibrary": false,
 
                 "Library.defaultCategory": [""],
-                "Library.lockedCategories": [],
+                "Library.lockedCategories": [String](),
 
                 "Library.updateInterval": "daily",
                 "Library.skipTitles": ["hasUnread", "completed", "notStarted"],
-                "Library.excludedUpdateCategories": [],
+                "Library.excludedUpdateCategories": [String](),
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
 
