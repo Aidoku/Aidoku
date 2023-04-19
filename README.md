@@ -1,4 +1,7 @@
 # Aidoku
+
+English | [Español](README_ES.md)
+
 A free and open source manga reading application for iOS and iPadOS.
 
 ## Features
