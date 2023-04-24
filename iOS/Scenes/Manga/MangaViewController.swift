@@ -591,8 +591,7 @@ extension MangaViewController {
 
                 let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = self.view
-                // TODO: share dialog on manga view
-                // activityViewController.popoverPresentationController?.sourceRect = CGRect(x: point.x, y: point.y, width: 0, height: 0)
+                activityViewController.popoverPresentationController?.sourceRect = CGRect(x: CGRectGetMidX(self.view.bounds), y: CGRectGetMidY(self.view.bounds), width: 0, height: 0)
 
                 self.present(activityViewController, animated: true, completion: nil)
             })
