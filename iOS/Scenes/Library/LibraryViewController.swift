@@ -988,7 +988,9 @@ extension LibraryViewController {
                         applicationActivities: nil
                     )
                     activityViewController.popoverPresentationController?.sourceView = self.view
-                    self.present(activityViewController, animated: true)
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(x: point.x, y: point.y, width: 0, height: 0)
+
+                    self.present(activityViewController, animated: true, completion: nil)
                 })
             }
 
