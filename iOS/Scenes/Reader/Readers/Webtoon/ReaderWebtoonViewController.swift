@@ -268,7 +268,7 @@ extension ReaderWebtoonViewController {
         }
 
         // queue remove last section if we have three already
-        let removeLast = chapters.count >= 3
+//        let removeLast = chapters.count >= 3
 
         chapters.insert(prevChapter, at: 0)
         pages.insert(
@@ -292,25 +292,25 @@ extension ReaderWebtoonViewController {
                 collectionNode.insertSections(IndexSet(integer: 0))
             } completion: { finished in
                 if finished {
-                    if removeLast {
-                        self.chapters.removeLast()
-                        self.pages.removeLast()
-
-                        // remove last section
-                        self.collectionNode.performBatchUpdates {
-                            self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
-                        } completion: { finished in
-                            if finished {
-                                self.scrollView.contentOffset = self.collectionNode.contentOffset
-                                self.zoomView.adjustContentSize()
-                                CATransaction.commit()
-                            }
-                        }
-                    } else {
+//                    if removeLast {
+//                        self.chapters.removeLast()
+//                        self.pages.removeLast()
+//
+//                        // remove last section
+//                        self.collectionNode.performBatchUpdates {
+//                            self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
+//                        } completion: { finished in
+//                            if finished {
+//                                self.scrollView.contentOffset = self.collectionNode.contentOffset
+//                                self.zoomView.adjustContentSize()
+//                                CATransaction.commit()
+//                            }
+//                        }
+//                    } else {
                         self.scrollView.contentOffset = self.collectionNode.contentOffset
                         self.zoomView.adjustContentSize()
                         CATransaction.commit()
-                    }
+//                    }
                 }
             }
         }
@@ -327,7 +327,7 @@ extension ReaderWebtoonViewController {
         }
 
         // queue remove first section if we have three already
-        let removeFirst = chapters.count >= 3
+//        let removeFirst = chapters.count >= 3
 
         chapters.append(nextChapter)
         pages.append(viewModel.preloadedPages + [Page(
@@ -343,24 +343,24 @@ extension ReaderWebtoonViewController {
             } completion: { finished in
                 // disable animations and adjust offset before re-enabling
                 if finished {
-                    if removeFirst {
-                        self.chapters.removeFirst()
-                        self.pages.removeFirst()
-                        CATransaction.begin()
-                        CATransaction.setDisableActions(true)
-                        self.collectionNode.performBatchUpdates {
-                            self.collectionNode.deleteSections(IndexSet(integer: 0))
-                        } completion: { finished in
-                            if finished {
-                                self.scrollView.contentOffset = self.collectionNode.contentOffset
-                                self.zoomView.adjustContentSize()
-                                CATransaction.commit()
-                            }
-                        }
-                    } else {
+//                    if removeFirst {
+//                        self.chapters.removeFirst()
+//                        self.pages.removeFirst()
+//                        CATransaction.begin()
+//                        CATransaction.setDisableActions(true)
+//                        self.collectionNode.performBatchUpdates {
+//                            self.collectionNode.deleteSections(IndexSet(integer: 0))
+//                        } completion: { finished in
+//                            if finished {
+//                                self.scrollView.contentOffset = self.collectionNode.contentOffset
+//                                self.zoomView.adjustContentSize()
+//                                CATransaction.commit()
+//                            }
+//                        }
+//                    } else {
                         self.scrollView.contentOffset = self.collectionNode.contentOffset
                         self.zoomView.adjustContentSize()
-                    }
+//                    }
                 }
             }
         }
