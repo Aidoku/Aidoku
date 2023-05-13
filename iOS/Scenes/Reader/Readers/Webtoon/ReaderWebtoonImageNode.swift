@@ -210,7 +210,6 @@ extension ReaderWebtoonImageNode {
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             image = imageContainer?.image
-            progressNode.alpha = 0
             if isNodeLoaded {
                 displayImage()
             }
@@ -229,7 +228,6 @@ extension ReaderWebtoonImageNode {
                 }
                 ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
                 self.image = image
-                progressNode.alpha = 0
                 if isNodeLoaded {
                     displayImage()
                 }
@@ -285,9 +283,8 @@ extension ReaderWebtoonImageNode: ImageTaskDelegate {
             }
         case .failure:
             // TODO: handle failure
-            break
+            progressView.setProgress(value: 0, withAnimation: true)
         }
-        progressNode.alpha = 0
     }
 
     func imageTaskDidCancel(_ task: ImageTask) {
