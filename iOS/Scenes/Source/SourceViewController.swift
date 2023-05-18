@@ -385,6 +385,7 @@ extension SourceViewController {
                         applicationActivities: nil
                     )
                     activityViewController.popoverPresentationController?.sourceView = self.view
+                    activityViewController.popoverPresentationController?.sourceRect = CGRect(origin: point, size: .zero)
 
                     self.present(activityViewController, animated: true)
                 })

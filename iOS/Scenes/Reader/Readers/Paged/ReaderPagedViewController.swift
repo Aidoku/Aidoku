@@ -494,7 +494,11 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 if let image = pageView.image {
                     let items = [image]
                     let activityController = UIActivityViewController(activityItems: items, applicationActivities: nil)
-                    self.present(activityController, animated: true)
+
+                    activityController.popoverPresentationController?.sourceView = self.view
+                    activityController.popoverPresentationController?.sourceRect = CGRect(origin: location, size: .zero)
+
+                    self.present(activityController, animated: true, completion: nil)
                 }
             }
 
