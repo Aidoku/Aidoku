@@ -98,7 +98,7 @@ class SourceListsViewController: UITableViewController {
             }
         })
 
-        self.present(alert, animated: true, completion: nil)
+        self.present(alert, animated: true)
     }
 }
 

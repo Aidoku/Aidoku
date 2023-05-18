@@ -108,7 +108,7 @@ class CategoriesViewController: UITableViewController {
             }
         })
 
-        self.present(alert, animated: true, completion: nil)
+        self.present(alert, animated: true)
     }
 }
 
@@ -202,7 +202,7 @@ extension CategoriesViewController {
                 }
             })
 
-            self.present(alert, animated: true, completion: nil)
+            self.present(alert, animated: true)
         }
         renameAction.backgroundColor = .systemIndigo
 
