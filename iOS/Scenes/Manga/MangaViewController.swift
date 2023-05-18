@@ -592,8 +592,10 @@ extension MangaViewController {
                 let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = self.view
 
-                let x = (self.navigationController?.navigationBar.frame.midX)! * 0.95
-                activityViewController.popoverPresentationController?.sourceRect = (self.navigationController?.navigationBar.frame.offsetBy(dx: x, dy: 0))!
+                if let navigationController = self.navigationController {
+                    let x = navigationController.navigationBar.frame.midX * 0.95
+                    activityViewController.popoverPresentationController?.sourceRect = navigationController.navigationBar.frame.offsetBy(dx: x, dy: 0)
+                }
 
                 self.present(activityViewController, animated: true, completion: nil)
             })
