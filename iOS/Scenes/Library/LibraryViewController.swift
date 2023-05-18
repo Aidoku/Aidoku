@@ -988,7 +988,9 @@ extension LibraryViewController {
                         applicationActivities: nil
                     )
                     activityViewController.popoverPresentationController?.sourceView = self.view
-                    self.present(activityViewController, animated: true)
+                    activityViewController.popoverPresentationController?.sourceRect = collectionView.cellForItem(at: indexPath)?.frame ?? .zero
+
+                    self.present(activityViewController, animated: true, completion: nil)
                 })
             }
 
