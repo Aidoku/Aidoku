@@ -114,6 +114,7 @@ extension ReaderWebtoonViewController {
     func getCurrentPage() -> Int {
         guard let chapter = chapter else { return 0 }
         let chapterIndex = chapters.firstIndex(of: chapter) ?? 0
+        guard !pages.isEmpty && pages.count >= chapterIndex else { return 0 }
         let pageRow = getCurrentPagePath()?.row ?? 0
         let hasStartInfo = pages[chapterIndex].first?.type != .imagePage
         let hasEndInfo = pages[chapterIndex].last?.type != .imagePage
@@ -427,6 +428,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         guard
             let chapter = chapter,
             let chapterIndex = chapters.firstIndex(of: chapter),
+            !pages.isEmpty && pages.count >= chapterIndex,
             let layout = self.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
         else { return }
 
