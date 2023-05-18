@@ -212,7 +212,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
                 activityController.popoverPresentationController?.sourceView = self.view
                 activityController.popoverPresentationController?.sourceRect = CGRect(origin: location, size: .zero)
 
-                self.present(activityController, animated: true, completion: nil)
+                self.present(activityController, animated: true)
             }
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction])
         })

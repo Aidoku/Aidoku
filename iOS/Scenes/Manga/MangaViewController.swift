@@ -425,7 +425,7 @@ class MangaViewController: BaseTableViewController {
         })
 
         let presenter = presentedViewController ?? self
-        presenter.present(alert, animated: true, completion: nil)
+        presenter.present(alert, animated: true)
     }
 
     func migrateManga() {
@@ -597,7 +597,7 @@ extension MangaViewController {
                     activityViewController.popoverPresentationController?.sourceRect = navigationController.navigationBar.frame.offsetBy(dx: x, dy: 0)
                 }
 
-                self.present(activityViewController, animated: true, completion: nil)
+                self.present(activityViewController, animated: true)
             })
         }
 

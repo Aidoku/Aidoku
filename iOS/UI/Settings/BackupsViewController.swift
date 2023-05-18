@@ -83,7 +83,7 @@ class BackupsViewController: UITableViewController {
             loadingIndicator.startAnimating()
             loadingAlert?.view.addSubview(loadingIndicator)
         }
-        present(loadingAlert!, animated: true, completion: nil)
+        present(loadingAlert!, animated: true)
     }
 
     @objc func createBackup() {
@@ -187,7 +187,7 @@ extension BackupsViewController {
                     let textField = alert.textFields![0]
                     BackupManager.shared.renameBackup(url: self.backups[indexPath.row], name: textField.text)
                 }))
-                self.present(alert, animated: true, completion: nil)
+                self.present(alert, animated: true)
             } else {
                 let alert = UIAlertController(
                     title: NSLocalizedString("CORRUPTED_BACKUP", comment: ""),
@@ -195,7 +195,7 @@ extension BackupsViewController {
                     preferredStyle: .alert
                 )
                 alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: { _ in }))
-                self.present(alert, animated: true, completion: nil)
+                self.present(alert, animated: true)
             }
             completion(true)
         }

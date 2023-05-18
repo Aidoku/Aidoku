@@ -366,7 +366,7 @@ class SettingsViewController: SettingsTableViewController {
                 progressView!.widthAnchor.constraint(equalTo: loadingAlert!.view.widthAnchor, constant: -30)
             ])
         }
-        present(loadingAlert!, animated: true, completion: nil)
+        present(loadingAlert!, animated: true)
     }
 }
 
