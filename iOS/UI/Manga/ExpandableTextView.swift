@@ -27,16 +27,14 @@ class ExpandableTextView: UIView {
                     self.textLabel.numberOfLines = 0
                     self.invalidateIntrinsicContentSize()
 //                    self.host?.view.setNeedsLayout()
-                    self.moreButton.alpha = 0
-                    self.fadeView.alpha = 0
+                    self.moreButton.setTitle(NSLocalizedString("LESS", comment: "Description collapse button"), for: .normal)
                     self.sizeChangeListener?.sizeChanged(self.bounds.size)
                 }
             } else {
                 textLabel.numberOfLines = 4
                 invalidateIntrinsicContentSize()
                 self.sizeChangeListener?.sizeChanged(self.bounds.size)
-                moreButton.alpha = 1
-                fadeView.alpha = 1
+                self.moreButton.setTitle(NSLocalizedString("MORE", comment: "Description expansion button"), for: .normal)
             }
         }
     }

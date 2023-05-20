@@ -90,6 +90,7 @@
 "SUGGESTIVE" = "Suggestive";
 "NSFW" = "NSFW";
 "MORE" = "more";
+"LESS" = "less";
 "SOURCE_ORDER" = "Source Order";
 "MISSING_SOURCE" = "Missing Source";
 "MISSING_SOURCE_TEXT" = "The original source seems to be missing for this Manga. Please redownload it or remove this title from your library.";
