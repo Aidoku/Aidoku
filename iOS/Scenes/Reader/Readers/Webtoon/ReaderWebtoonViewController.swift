@@ -112,15 +112,17 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 extension ReaderWebtoonViewController {
 
     func getCurrentPage() -> Int {
-        guard let chapter = chapter else { return 0 }
-        let chapterIndex = chapters.firstIndex(of: chapter) ?? 0
-        guard !pages.isEmpty && pages.count >= chapterIndex else { return 0 }
+        guard
+            let chapter = chapter,
+            let chapterIndex = chapters.firstIndex(of: chapter),
+            let currentPages = pages[safe: chapterIndex]
+        else { return 0 }
         let pageRow = getCurrentPagePath()?.row ?? 0
-        let hasStartInfo = pages[chapterIndex].first?.type != .imagePage
-        let hasEndInfo = pages[chapterIndex].last?.type != .imagePage
+        let hasStartInfo = currentPages.first?.type != .imagePage
+        let hasEndInfo = currentPages.last?.type != .imagePage
         return min(
             max(pageRow + (hasStartInfo ? 0 : 1), 1),
-            pages[chapterIndex].count - (hasStartInfo ? 1 : 0) - (hasEndInfo ? 1 : 0)
+            currentPages.count - (hasStartInfo ? 1 : 0) - (hasEndInfo ? 1 : 0)
         )
     }
 
@@ -131,9 +133,11 @@ extension ReaderWebtoonViewController {
         // ignore if page slider is being used
         guard !isSliding else { return }
 
-        guard let chapter = chapter else { return }
+        guard
+            let chapter = chapter,
+            let chapterIndex = chapters.firstIndex(of: chapter)
+        else { return }
 
-        let chapterIndex = chapters.firstIndex(of: chapter) ?? 0
         let pagePath = getCurrentPagePath()
         let pageSection = pagePath?.section ?? 0
 
@@ -286,39 +290,28 @@ extension ReaderWebtoonViewController {
             at: 0
         )
 
-        await MainActor.run {
-            let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
-            layout?.isInsertingCellsAbove = true
+        let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+        layout?.isInsertingCellsAbove = true
 
-            // disable animations and adjust offset before re-enabling
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            collectionNode.performBatchUpdates {
-                collectionNode.insertSections(IndexSet(integer: 0))
-            } completion: { finished in
-                if finished {
-//                    if removeLast {
-//                        self.chapters.removeLast()
-//                        self.pages.removeLast()
-//
-//                        // remove last section
-//                        self.collectionNode.performBatchUpdates {
-//                            self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
-//                        } completion: { finished in
-//                            if finished {
-//                                self.scrollView.contentOffset = self.collectionNode.contentOffset
-//                                self.zoomView.adjustContentSize()
-//                                CATransaction.commit()
-//                            }
-//                        }
-//                    } else {
-                        self.scrollView.contentOffset = self.collectionNode.contentOffset
-                        self.zoomView.adjustContentSize()
-                        CATransaction.commit()
-//                    }
-                }
-            }
+        // disable animations and adjust offset before re-enabling 
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        CATransaction.setAnimationDuration(0)
+        await collectionNode.performBatch(animated: false) {
+            collectionNode.insertSections(IndexSet(integer: 0))
         }
+//        if removeLast {
+//            chapters.removeLast()
+//            pages.removeLast()
+//
+//            // remove last section
+//            await collectionNode.performBatchUpdates {
+//                self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
+//            }
+//        }
+        self.scrollView.contentOffset = self.collectionNode.contentOffset
+        self.zoomView.adjustContentSize()
+        CATransaction.commit()
     }
 
     /// Append the next chapter's pages
@@ -342,33 +335,23 @@ extension ReaderWebtoonViewController {
             index: -2
         )])
 
-        await MainActor.run {
-            collectionNode.performBatchUpdates {
-                collectionNode.insertSections(IndexSet(integer: pages.count - 1))
-            } completion: { finished in
-                // disable animations and adjust offset before re-enabling
-                if finished {
-//                    if removeFirst {
-//                        self.chapters.removeFirst()
-//                        self.pages.removeFirst()
-//                        CATransaction.begin()
-//                        CATransaction.setDisableActions(true)
-//                        self.collectionNode.performBatchUpdates {
-//                            self.collectionNode.deleteSections(IndexSet(integer: 0))
-//                        } completion: { finished in
-//                            if finished {
-//                                self.scrollView.contentOffset = self.collectionNode.contentOffset
-//                                self.zoomView.adjustContentSize()
-//                                CATransaction.commit()
-//                            }
-//                        }
-//                    } else {
-                        self.scrollView.contentOffset = self.collectionNode.contentOffset
-                        self.zoomView.adjustContentSize()
-//                    }
-                }
-            }
+        // disable animations and adjust offset before re-enabling
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        CATransaction.setAnimationDuration(0)
+        await collectionNode.performBatch(animated: false) {
+            collectionNode.insertSections(IndexSet(integer: pages.count - 1))
         }
+//        if removeFirst {
+//            chapters.removeFirst()
+//            pages.removeFirst()
+//            await collectionNode.performBatchUpdates {
+//                collectionNode.deleteSections(IndexSet(integer: 0))
+//            }
+//        }
+        scrollView.contentOffset = self.collectionNode.contentOffset
+        zoomView.adjustContentSize()
+        CATransaction.commit()
     }
 
     /// Switch current chapter to previous
@@ -376,10 +359,9 @@ extension ReaderWebtoonViewController {
         guard
             let currChapter = chapter,
             let chapterIndex = chapters.firstIndex(of: currChapter),
-            chapterIndex > 0
+            let chapter = chapters[safe: chapterIndex - 1],
+            let pages = pages[safe: chapterIndex - 1]
         else { return }
-        let chapter = chapters[chapterIndex - 1]
-        let pages = pages[chapterIndex - 1]
         self.chapter = chapter
         delegate?.setChapter(chapter)
         delegate?.setTotalPages(pages.filter({ $0.type == .imagePage }).count)
@@ -391,10 +373,9 @@ extension ReaderWebtoonViewController {
         guard
             let currChapter = chapter,
             let chapterIndex = chapters.firstIndex(of: currChapter),
-            chapters.count > chapterIndex
+            let chapter = chapters[safe: chapterIndex + 1],
+            let pages = pages[safe: chapterIndex + 1]
         else { return }
-        let chapter = chapters[chapterIndex + 1]
-        let pages = pages[chapterIndex + 1]
         self.chapter = chapter
         delegate?.setChapter(chapter)
         delegate?.setTotalPages(pages.filter({ $0.type == .imagePage }).count)
@@ -432,8 +413,8 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         guard
             let chapter = chapter,
             let chapterIndex = chapters.firstIndex(of: chapter),
-            !pages.isEmpty && pages.count >= chapterIndex,
-            let layout = self.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+            let layout = self.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout,
+            let currentPages = pages[safe: chapterIndex]
         else { return }
 
         var offset: CGFloat = 0
@@ -441,8 +422,8 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             offset += layout.getHeightFor(section: idx)
         }
 
-        let hasStartInfo = pages[chapterIndex].first?.type != .imagePage
-        let hasEndInfo = pages[chapterIndex].last?.type != .imagePage
+        let hasStartInfo = currentPages.first?.type != .imagePage
+        let hasEndInfo = currentPages.last?.type != .imagePage
 
         if hasStartInfo {
             offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
@@ -450,7 +431,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
 
         let height = layout.getHeightFor(
             section: chapterIndex,
-            range: (hasStartInfo ? 1 : 0)..<pages[chapterIndex].count - (hasEndInfo ? 1 : 0)
+            range: (hasStartInfo ? 1 : 0)..<currentPages.count - (hasEndInfo ? 1 : 0)
         ) - collectionNode.bounds.height
 
         scrollView.setContentOffset(
