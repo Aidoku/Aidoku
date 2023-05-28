@@ -589,7 +589,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		FB02E1EE288D7B9D00B9E2DE /* Scenes */ = {
+		FB02E1EE288D7B9D00B9E2DE /* UI */ = {
 			isa = PBXGroup;
 			children = (
 				FB02E1EF288D7BA700B9E2DE /* Common */,
@@ -600,7 +600,7 @@
 				FB05F8652964907200D1EA2D /* Source */,
 				FB171144296742C100AD523D /* Migration */,
 			);
-			path = Scenes;
+			path = UI;
 			sourceTree = "<group>";
 		};
 		FB02E1EF288D7BA700B9E2DE /* Common */ = {
@@ -777,9 +777,9 @@
 			children = (
 				FB1B4852277CE4510056D02C /* AppDelegate.swift */,
 				FB1B4855277CE5560056D02C /* SceneDelegate.swift */,
-				FB02E1EE288D7B9D00B9E2DE /* Scenes */,
+				FB02E1EE288D7B9D00B9E2DE /* UI */,
 				FB31AD0527AC3A1900D50410 /* Extensions */,
-				FB1B48B0277CF7880056D02C /* UI */,
+				FB1B48B0277CF7880056D02C /* Old UI */,
 				FB1B4850277CE2300056D02C /* Info.plist */,
 				FB4EEBDE27A4F5AF005081A3 /* iOS.entitlements */,
 			);
@@ -862,7 +862,7 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
-		FB1B48B0277CF7880056D02C /* UI */ = {
+		FB1B48B0277CF7880056D02C /* Old UI */ = {
 			isa = PBXGroup;
 			children = (
 				FBED232C27C08F060095D0C0 /* Base */,
@@ -874,7 +874,7 @@
 				FB1B48A6277CF6240056D02C /* Manga */,
 				FB9A65942781F91F0071F1A2 /* Reader */,
 			);
-			path = UI;
+			path = "Old UI";
 			sourceTree = "<group>";
 		};
 		FB1B48B1277CF78E0056D02C /* Views */ = {
