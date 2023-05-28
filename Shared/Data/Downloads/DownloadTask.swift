@@ -113,7 +113,7 @@ actor DownloadTask: Identifiable {
                     }
                     if let body = request.body { urlRequest.httpBody = body }
                 }
-                if let data = try? await URLSession.shared.data(for: urlRequest) {
+                if let (data, _) = try? await URLSession.shared.data(for: urlRequest) {
                     try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
