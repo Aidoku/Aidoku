@@ -28,7 +28,7 @@ class MyAnimeListApi {
         // check if token expired
         if oauth.tokens?.expired ?? true || (response as? HTTPURLResponse)?.statusCode == 401 {
             // refresh access token
-            guard var url = URL(string: baseApiUrl + "/token") else { return data }
+            guard let url = URL(string: baseApiUrl + "/token") else { return data }
             var request = oauth.authorizedRequest(for: url)
             request.httpMethod = "POST"
             request.httpBody = [
