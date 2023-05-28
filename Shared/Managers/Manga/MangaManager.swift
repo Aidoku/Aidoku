@@ -31,14 +31,24 @@ extension MangaManager {
                 }
             }
         }
-        await CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters)
-        // add to default category
-        if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
-            let hasCategory = await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
+            // add to default category
+            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+                let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
+                if hasCategory {
+                    CoreDataManager.shared.addCategoriesToManga(
+                        sourceId: manga.sourceId,
+                        mangaId: manga.id,
+                        categories: [defaultCategory],
+                        context: context
+                    )
+                }
             }
-            if hasCategory {
-                await CoreDataManager.shared.addCategoriesToManga(sourceId: manga.sourceId, mangaId: manga.id, categories: [defaultCategory])
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("MangaManager.addToLibrary: \(error.localizedDescription)")
             }
         }
         NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
