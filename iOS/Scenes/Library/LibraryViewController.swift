@@ -888,26 +888,23 @@ extension LibraryViewController {
 
         if opensReaderView {
             Task {
-                // get most recently read chapter
+                // get next chapter to read
                 let history = await CoreDataManager.shared.getReadingHistory(
                     sourceId: info.sourceId,
                     mangaId: info.mangaId
                 )
                 let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.mangaId)
-                let targetChapter: Chapter?
-                let id = history.max { a, b in a.value.1 < b.value.1 }?.key
-                if let id = id {
-                    targetChapter = chapters.first { $0.id == id }
-                } else {
-                    targetChapter = chapters.last // fall back to first chapter
-                }
+                let chapter = chapters.reversed().first(where: { history[$0.id]?.page ?? 0 != -1 })
 
-                // open reader view
-                if let chapter = targetChapter {
+                if let chapter = chapter {
+                    // open reader view
                     let readerController = ReaderViewController(chapter: chapter, chapterList: chapters)
                     let navigationController = ReaderNavigationController(rootViewController: readerController)
                     navigationController.modalPresentationStyle = .fullScreen
                     present(navigationController, animated: true)
+                } else {
+                    // no chapter to read, open manga page
+                    super.collectionView(collectionView, didSelectItemAt: indexPath)
                 }
             }
         } else {
