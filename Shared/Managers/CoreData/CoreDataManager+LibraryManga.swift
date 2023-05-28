@@ -78,34 +78,24 @@ extension CoreDataManager {
     }
 
     /// Set LibraryManga last read date to current date.
-    func setRead(sourceId: String, mangaId: String) async {
-        await container.performBackgroundTask { context in
-            let request = LibraryMangaObject.fetchRequest()
-            request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
-            request.fetchLimit = 1
-            do {
-                if let object = (try context.fetch(request)).first {
-                    object.lastRead = Date()
-                    try context.save()
-                }
-            } catch {
-                LogManager.logger.error("setRead: \(error.localizedDescription)")
+    func setRead(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+        let request = LibraryMangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+        request.fetchLimit = 1
+        do {
+            if let object = (try context?.fetch(request))?.first {
+                object.lastRead = Date()
             }
+        } catch {
+            LogManager.logger.error("setRead: \(error.localizedDescription)")
         }
     }
 
     /// Add a manga with the specified chapters to the library.
-    func addToLibrary(manga: Manga, chapters: [Chapter]) async {
-        await container.performBackgroundTask { context in
-            let mangaObject = self.getOrCreateManga(manga, context: context)
-            let libraryObject = LibraryMangaObject(context: context)
-            libraryObject.manga = mangaObject
-            self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("addToLibrary: \(error.localizedDescription)")
-            }
-        }
+    func addToLibrary(manga: Manga, chapters: [Chapter], context: NSManagedObjectContext? = nil) {
+        let mangaObject = self.getOrCreateManga(manga, context: context)
+        let libraryObject = LibraryMangaObject(context: context ?? self.context)
+        libraryObject.manga = mangaObject
+        self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
     }
 }
