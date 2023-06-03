@@ -324,3 +324,9 @@
 "SYNC_WITH_TRACKER_INFO" = "트래커 (%g)에 설정된 최신 장이 최근에 읽은 장보다 높은 것 같습니다. 일치하도록 로컬 기록을 업데이트하겠습니까?";
 "ALL_CHAPTERS_READ" = "모든 장 읽기";
 "TRACKING" = "트래킹";
+"DEFAULT_READING_MODE" = "기본 읽기 모드";
+"PILLARBOX" = "필라박스";
+"PILLARBOX_AMOUNT" = "필라박스 금액";
+"PILLARBOX_ORIENTATION" = "필라박스 방향";
+"PILLARBOX_ORIENTATION_INFO" = "필라박스 박향은 필러박스를 활성화해야 하는 방향을 결정합니다.";
+"BOTH" = "둘 다";

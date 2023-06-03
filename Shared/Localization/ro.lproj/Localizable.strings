@@ -190,7 +190,7 @@
 "TITLES" = "Titluri";
 "DESTINATION" = "Destinație";
 "SELECTED" = "Selectate";
-"AVAILABLE" = "Valabile";
+"AVAILABLE" = "Valabil";
 "NOT_FOUND" = "Nu a fost găsit";
 "MOST_CHAPTERS_SLOWER" = "Cele mai multe capitole (mai lent)";
 "FIRST_ALTERNATIVE" = "Prima alternativă";
@@ -324,3 +324,9 @@
 "ONE_PAGE_LEFT" = "o pagină ramasă";
 "FAILED_CHAPTER_LOAD_INFO" = "S-ar putea să fiți offline sau sursa să aibă probleme.";
 "ALL_CHAPTERS_READ" = "Toate capitolele citite";
+"DEFAULT_READING_MODE" = "Mod implicit de citire";
+"PILLARBOX" = "Pillarbox";
+"PILLARBOX_AMOUNT" = "Suma Pillarbox";
+"BOTH" = "Ambele";
+"PILLARBOX_ORIENTATION" = "Orientare Pillarbox";
+"PILLARBOX_ORIENTATION_INFO" = "Orientarea Pillarbox determină orientările pentru care trebuie activată pilierboxingul.";
