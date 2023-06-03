@@ -483,20 +483,20 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
             return
         }
         Task {
-        if await index == viewModel.listings.count { // "all" listing
-            await viewModel.setCurrentListing(nil)
-            Task {
-                await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
+            if await index == viewModel.listings.count { // "all" listing
+                await viewModel.setCurrentListing(nil)
+                Task {
+                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
+                }
+            } else {
+                // remove search query when switching to listing
+                navigationItem.searchController?.searchBar.text = nil
+                await viewModel.setTitleQuery(nil)
+                await viewModel.setCurrentListing(index)
+                Task {
+                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: index + 1)
+                }
             }
-        } else {
-            // remove search query when switching to listing
-            navigationItem.searchController?.searchBar.text = nil
-            await viewModel.setTitleQuery(nil)
-            await viewModel.setCurrentListing(index)
-            Task {
-                await CoreDataManager.shared.setListing(sourceId: source.id, listing: index + 1)
-            }
-        }
             await viewModel.setCurrentPage(nil)
             await viewModel.loadNextMangaPage()
             await updateDataSource()
@@ -514,9 +514,7 @@ extension SourceViewController: MiniModalDelegate {
             if shouldRefresh {
                 await viewModel.setCurrentPage(nil)
                 await viewModel.setCurrentListing(nil)
-                Task {
-                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
-                }
+                updateHeaderListing()
                 await viewModel.loadNextMangaPage()
                 await updateDataSource()
             }
