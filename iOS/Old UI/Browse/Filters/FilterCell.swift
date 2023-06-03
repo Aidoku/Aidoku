@@ -189,5 +189,6 @@ class FilterCell: UIView {
         selectedFilters.filters = newArray
 
         parent?.detailView?.updateCellImages()
+        updateImage()
     }
 }
