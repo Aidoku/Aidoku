@@ -120,7 +120,7 @@
 "CHAPTERS" = "Capitoli";
 "CH_SPACE_X" = "Ca. %g";
 "CONTINUE_READING" = "Continua a leggere";
-"MARK_ALL" = "Contrassegna tutto";
+"MARK_ALL" = "Contrassegna Tutto";
 "FINISHED_COLON" = "Finito:";
 "VERTICAL" = "Verticale";
 "INFINITE_VERTICAL_SCROLL" = "Scorrimento verticale infinito";
@@ -324,3 +324,9 @@
 "SYNC_WITH_TRACKER_INFO" = "Sembra che l'ultimo capitolo presente nel tracker sia più recente del capitolo che hai letto. Vuoi correggere la tua cronologia di lettura?";
 "ALL_CHAPTERS_READ" = "Tutti i capitoli letti";
 "TRACKING" = "Tracciamento";
+"DEFAULT_READING_MODE" = "Modalità di lettura di Default";
+"PILLARBOX" = "Pillarbox";
+"PILLARBOX_AMOUNT" = "Totale Pillarbox";
+"PILLARBOX_ORIENTATION" = "Orientamento Pillarbox";
+"PILLARBOX_ORIENTATION_INFO" = "L'orientamento dei Pillarbox determina quale orientamento deve essere abilitato.";
+"BOTH" = "Entrambi";

@@ -319,3 +319,14 @@
 "1_CHAPTER" = "1 Rozdział";
 "UPCOMING" = "Nadchodzące";
 "RENAME_CATEGORY_FAIL_INFO" = "Nazwy kategorii muszą być unikalne.";
+"ALL_CHAPTERS_READ" = "Wszystkie rozdziały przeczytane";
+"FIRST_ALTERNATIVE" = "Pierwsza Alternatywa";
+"DEFAULT_READING_MODE" = "Domyślny Tryb Czytania";
+"BOTH" = "Oba";
+"SYNC_WITH_TRACKER" = "Synchronizuj z trackerem";
+"SYNC_WITH_TRACKER_INFO" = "Ostatni rozdział w trackerze (%g) jest wyższy od ostatnio przeczytanego. Czy chcesz zaktualizować lokalną historię względem trackera?";
+"TRACKING" = "Śledzenie";
+"PILLARBOX" = "Pillarbox";
+"PILLARBOX_ORIENTATION_INFO" = "Orientacja pillarboxa określa, dla jakich orientacji pillarbox powinien być włączony.";
+"PILLARBOX_ORIENTATION" = "Orientacja pillarboxa";
+"PILLARBOX_AMOUNT" = "Ilość Pillarbox";
