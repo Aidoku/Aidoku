@@ -179,12 +179,26 @@ extension CoreDataManager {
             var needsSave = false
             var historyDict: [String: (page: Int, date: Int)] = [:]
 
+            let inLibrary = self.hasLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+
             for history in objects {
                 // remove duplicate read history objects for the same chapter
                 if historyDict[history.chapterId] != nil {
                     needsSave = true
                     context.delete(history)
                     continue
+                }
+                // link history to chapter if link is missing
+                if inLibrary && history.chapter == nil {
+                    if let chapter = self.getChapter(
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        chapterId: history.chapterId,
+                        context: context
+                    ) {
+                        history.chapter = chapter
+                        needsSave = true
+                    }
                 }
                 historyDict[history.chapterId] = (
                     history.completed ? -1 : Int(history.progress),
