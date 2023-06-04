@@ -142,9 +142,12 @@ private extension MyAnimeListTracker {
         case "unknown": return .unknown
         case "manga": return .manga
         case "novel": return .novel
+        case "light_novel": return .novel
         case "manhwa": return .manhwa
         case "manhua": return .manhua
         case "oel": return .oel
+        case "one_shot": return .oneShot
+        case "doujinshi": return .manga
         default: return .manga
         }
     }
