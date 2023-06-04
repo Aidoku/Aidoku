@@ -393,6 +393,11 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     func displayPage(_ page: Int) {
         toolbarView.displayPage(page)
+        
+        if (toolbarView.currentPageLabelVal != page) {
+            let feedbackGenerator = UISelectionFeedbackGenerator()
+            feedbackGenerator.selectionChanged()
+        }
     }
 
     func setCompleted() {

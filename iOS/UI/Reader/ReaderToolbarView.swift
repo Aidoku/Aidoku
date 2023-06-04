@@ -8,7 +8,8 @@
 import UIKit
 
 class ReaderToolbarView: UIView {
-
+    
+    var currentPageLabelVal: Int?
     var currentPage: Int? {
         didSet { updatePageLabels() }
     }
@@ -99,8 +100,10 @@ class ReaderToolbarView: UIView {
             currentPage = 1
         }
         let pagesLeft = totalPages - currentPage
-
+        
+        currentPageLabelVal = currentPage
         currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), currentPage, totalPages)
+        
         if pagesLeft < 1 {
             pagesLeftLabel.text = nil
         } else {
