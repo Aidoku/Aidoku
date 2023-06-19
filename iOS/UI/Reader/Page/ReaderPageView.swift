@@ -122,8 +122,13 @@ class ReaderPageView: UIView {
                 if let body = request.body { urlRequest.httpBody = body }
             }
 
-            let shouldDownscale = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
-            let processors = shouldDownscale ? [DownsampleProcessor(width: UIScreen.main.bounds.width)] : []
+            var processors: [ImageProcessing] = []
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
+            }
+            if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                processors.append(CropBordersProcessor())
+            }
 
             request = ImageRequest(
                 urlRequest: urlRequest,
@@ -153,7 +158,6 @@ class ReaderPageView: UIView {
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
-            cropBorders()
             progressView.isHidden = true
             fixImageSize()
             return true
@@ -168,9 +172,15 @@ class ReaderPageView: UIView {
                         image = processedImage
                     }
                 }
+                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                    let processor = CropBordersProcessor()
+                    let processedImage = processor.process(image)
+                    if let processedImage = processedImage {
+                        image = processedImage
+                    }
+                }
                 ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
                 imageView.image = image
-                cropBorders()
                 progressView.isHidden = true
                 fixImageSize()
                 return true
@@ -213,13 +223,6 @@ class ReaderPageView: UIView {
         imageWidthConstraint?.isActive = true
         imageHeightConstraint?.isActive = true
     }
-    
-    func cropBorders() {
-        guard imageView.image != nil else { return }
-        if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-            imageView.image = imageView.image!.cropWhiteBlackBorder()
-        }
-    }
 }
 
 // MARK: - Nuke Delegate
@@ -235,7 +238,6 @@ extension ReaderPageView: ImageTaskDelegate {
         switch result {
         case .success(let response):
             imageView.image = response.image
-            cropBorders()
             fixImageSize()
             completion?(true)
         case .failure:
