@@ -153,6 +153,7 @@ class ReaderPageView: UIView {
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
+            cropBorders()
             progressView.isHidden = true
             fixImageSize()
             return true
@@ -169,6 +170,7 @@ class ReaderPageView: UIView {
                 }
                 ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
                 imageView.image = image
+                cropBorders()
                 progressView.isHidden = true
                 fixImageSize()
                 return true
@@ -211,6 +213,13 @@ class ReaderPageView: UIView {
         imageWidthConstraint?.isActive = true
         imageHeightConstraint?.isActive = true
     }
+    
+    func cropBorders() {
+        guard imageView.image != nil else { return }
+        if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+            imageView.image = imageView.image!.cropWhiteBorder()
+        }
+    }
 }
 
 // MARK: - Nuke Delegate
@@ -226,6 +235,7 @@ extension ReaderPageView: ImageTaskDelegate {
         switch result {
         case .success(let response):
             imageView.image = response.image
+            cropBorders()
             fixImageSize()
             completion?(true)
         case .failure:

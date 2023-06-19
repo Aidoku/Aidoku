@@ -98,6 +98,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.readingMode": "auto",
                 "Reader.skipDuplicateChapters": true,
                 "Reader.downsampleImages": true,
+                "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
                 "Reader.pagesToPreload": 2,
                 "Reader.pagedPageLayout": "auto",
