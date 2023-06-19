@@ -217,7 +217,7 @@ class ReaderPageView: UIView {
     func cropBorders() {
         guard imageView.image != nil else { return }
         if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-            imageView.image = imageView.image!.cropWhiteBorder()
+            imageView.image = imageView.image!.cropWhiteBlackBorder()
         }
     }
 }

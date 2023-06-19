@@ -16,7 +16,7 @@ extension UIImage {
         return CGSize(width: pageSize.width, height: scaledHeight)
     }
     
-    func cropWhiteBorder() -> UIImage {
+    func cropWhiteBlackBorder() -> UIImage {
             let newRect = self.cropRect
             if let imageRef = self.cgImage!.cropping(to: newRect) {
                 return UIImage(cgImage: imageRef)
@@ -57,6 +57,8 @@ extension UIImage {
                 if data[Int(pixelIndex)] == 0 { continue } // crop transparent
 
                 if data[Int(pixelIndex+1)] > 0xE0 && data[Int(pixelIndex+2)] > 0xE0 && data[Int(pixelIndex+3)] > 0xE0 { continue } // crop white
+                
+                if data[Int(pixelIndex+1)] < 0x05 && data[Int(pixelIndex+2)] < 0x05 && data[Int(pixelIndex+3)] < 0x05 { continue } // crop black
 
                 lowX = min(x, lowX)
                 highX = max(x, highX)
