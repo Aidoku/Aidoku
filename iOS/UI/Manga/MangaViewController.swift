@@ -915,11 +915,11 @@ extension MangaViewController {
             return UIMenu(title: "", children: actions)
         }
     }
-    
+
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard let chapter = dataSource.itemIdentifier(for: indexPath) else { return nil }
         var actions: [UIContextualAction] = []
-        
+
         // marking actions
         let markAction: UIContextualAction
         let history = self.viewModel.readingHistory[chapter.id] ?? (0, -1)
@@ -935,8 +935,7 @@ extension MangaViewController {
             markAction.image = UIImage(systemName: "eye")
             markAction.backgroundColor = .systemBlue
             actions.append(markAction)
-        }
-        else if history.1 > 0 { // has read date
+        } else if history.1 > 0 { // has read date
             markAction = UIContextualAction(
                 style: .normal,
                 title: NSLocalizedString("MARK_UNREAD", comment: "")
@@ -949,7 +948,7 @@ extension MangaViewController {
             markAction.backgroundColor = .systemBlue
             actions.append(markAction)
         }
-        
+
         // download action
         let downloadAction: UIContextualAction
         let downloadStatus = DownloadManager.shared.getDownloadStatus(for: chapter)
@@ -983,7 +982,7 @@ extension MangaViewController {
             downloadAction.backgroundColor = .systemGreen
         }
         actions.append(downloadAction)
-        
+
         let swipeConfiguration = UISwipeActionsConfiguration(actions: actions)
         return swipeConfiguration
     }
