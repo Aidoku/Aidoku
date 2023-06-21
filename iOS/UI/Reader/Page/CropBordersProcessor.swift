@@ -15,21 +15,21 @@ import CoreGraphics
 #endif
 
 struct CropBordersProcessor: ImageProcessing {
-    
+
     var identifier: String {
         "com.github.Aidoku/Aidoku/cropBorders"
     }
-    
+
     func process(_ image: PlatformImage) -> PlatformImage? {
         guard let cgImage = image.cgImage else { return image }
-        
+
         let newRect = createCropRect(cgImage)
         if let croppedImage = cgImage.cropping(to: newRect) {
             return PlatformImage(cgImage: croppedImage)
         }
         return image
     }
-    
+
     func createCropRect(_ cgImage: CGImage) -> CGRect {
         guard let context = createARGBBitmapContextFromImage(inImage: cgImage) else {
             return CGRect.zero
@@ -62,7 +62,7 @@ struct CropBordersProcessor: ImageProcessing {
                 if data[Int(pixelIndex)] == 0 { continue } // crop transparent
 
                 if data[Int(pixelIndex+1)] > 0xE0 && data[Int(pixelIndex+2)] > 0xE0 && data[Int(pixelIndex+3)] > 0xE0 { continue } // crop white
-                
+
                 if data[Int(pixelIndex+1)] < 0x05 && data[Int(pixelIndex+2)] < 0x05 && data[Int(pixelIndex+3)] < 0x05 { continue } // crop black
 
                 lowX = min(x, lowX)
@@ -91,13 +91,7 @@ struct CropBordersProcessor: ImageProcessing {
             return nil
         }
 
-        let context = CGContext (data: bitmapData,
-                                 width: width,
-                                 height: height,
-                                 bitsPerComponent: 8,      // bits per component
-            bytesPerRow: bitmapBytesPerRow,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        let context = CGContext(data: bitmapData, width: width, height: height, bitsPerComponent: 8, bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
 
         return context
     }
