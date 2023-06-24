@@ -36,27 +36,8 @@ class BrowseViewController: BaseTableViewController {
         searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.searchController = searchController
 
-        // language select navbar button
-        let globeImage: UIImage?
-        if #available(iOS 15.0, *) {
-            globeImage = UIImage(systemName: "globe.americas.fill")
-        } else {
-            globeImage = UIImage(systemName: "globe")
-        }
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: globeImage,
-                style: .plain,
-                target: self,
-                action: #selector(openLanguageSelectPage)
-            ),
-            UIBarButtonItem(
-                image: UIImage(systemName: "arrow.left.arrow.right"),
-                style: .plain,
-                target: self,
-                action: #selector(openMigrateSourcePage)
-            )
-        ]
+        // Initial navbar with migration and lang select buttons.
+        self.updateNavBar()
 
         // configure table view
         tableView.dataSource = dataSource
@@ -87,6 +68,7 @@ class BrowseViewController: BaseTableViewController {
 
         // load data
         viewModel.loadInstalledSources()
+        viewModel.loadPinnedSources()
         updateDataSource()
         Task {
             await viewModel.loadExternalSources()
@@ -104,11 +86,12 @@ class BrowseViewController: BaseTableViewController {
     }
 
     override func observe() {
-        // source installed/imported
+        // source installed/imported/pinned
         addObserver(forName: "updateSourceList") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
                 self.viewModel.loadInstalledSources()
+                self.viewModel.loadPinnedSources()
                 self.viewModel.filterExternalSources()
                 if let query = self.navigationItem.searchController?.searchBar.text, !query.isEmpty {
                     self.viewModel.search(query: query)
@@ -187,6 +170,11 @@ class BrowseViewController: BaseTableViewController {
         let migrateView = MigrateSourcesView()
         present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
     }
+
+    @objc func stopEditing() {
+        tableView.setEditing(false, animated: true)
+        self.updateNavBar()
+    }
 }
 
 // MARK: - Table View Delegate
@@ -194,7 +182,7 @@ extension BrowseViewController {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if
-            sectionIdentifier(for: indexPath.section) == .installed,
+            sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         {
@@ -213,10 +201,10 @@ extension BrowseViewController {
         else { return nil }
         var config = SmallSectionHeaderConfiguration()
         switch currentSection {
-//        case .pinned:
-//            config.title = NSLocalizedString("PINNED", comment: "")
         case .updates:
             config.title = NSLocalizedString("UPDATES", comment: "")
+        case .pinned:
+            config.title = NSLocalizedString("PINNED", comment: "")
         case .installed:
             config.title = NSLocalizedString("INSTALLED", comment: "")
         case .external:
@@ -226,26 +214,81 @@ extension BrowseViewController {
         return cell
     }
 
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return sectionIdentifier(for: indexPath.section) == .pinned
+    }
+
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        return sectionIdentifier(for: indexPath.section) == .pinned
+    }
+
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        // untested because I can't execute them
+        let grabbedCell = self.viewModel.pinnedSources[sourceIndexPath.row]
+        self.viewModel.pinnedSources.remove(at: sourceIndexPath.row)
+        self.viewModel.pinnedSources.insert(grabbedCell, at: destinationIndexPath.row)
+    }
+
     func tableView(
         _ tableView: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
-            sectionIdentifier(for: indexPath.section) == .installed,
+            sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         else { return nil }
+        if tableView.isEditing { return nil } // Hide context menu when the user is reshuffling sources.
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            let action = UIAction(
-                title: NSLocalizedString("UNINSTALL", comment: ""),
-                image: UIImage(systemName: "trash")
-            ) { _ in
-                SourceManager.shared.remove(source: source)
-                self.viewModel.loadInstalledSources()
-                self.updateDataSource()
+            var actions: [UIMenuElement] = []
+            switch (self.sectionIdentifier(for: indexPath.section)) {
+            case .installed:
+                actions = [
+                    UIAction(
+                        title: NSLocalizedString("PINNED_PIN", comment: ""),
+                        image: UIImage(systemName: "pin")
+                    ) { _ in
+                        SourceManager.shared.pin(source: source)
+                        self.viewModel.loadPinnedSources()
+                        self.updateDataSource()
+                    }, UIAction(
+                        title: NSLocalizedString("UNINSTALL", comment: ""),
+                        image: UIImage(systemName: "trash")
+                    ) { _ in
+                        SourceManager.shared.remove(source: source)
+                        self.viewModel.loadInstalledSources()
+                        self.updateDataSource()
+                    }
+                ]
+            case .pinned:
+                actions = [
+                    UIMenu(title: "", options: .displayInline, children: [UIAction(
+                        title: NSLocalizedString("PINNED_SHUFFLE", comment: ""),
+                        image: UIImage(systemName: "shuffle")
+                    ) { _ in
+                        tableView.setEditing(true, animated: true)
+                        self.updateNavBar()
+                    }]), UIAction(
+                        title: NSLocalizedString("PINNED_UNPIN", comment: ""),
+                        image: UIImage(systemName: "pin.slash")
+                    ) { _ in
+                        SourceManager.shared.unpin(source: source)
+                        self.viewModel.loadPinnedSources()
+                        self.updateDataSource()
+                    }, UIAction(
+                        title: NSLocalizedString("UNINSTALL", comment: ""),
+                        image: UIImage(systemName: "trash")
+                    ) { _ in
+                        SourceManager.shared.remove(source: source)
+                        self.viewModel.loadInstalledSources()
+                        self.updateDataSource()
+                    }
+                ]
+            default:
+                break
             }
-            return UIMenu(title: "", children: [action])
+            return UIMenu(title: "", children: actions)
         }
     }
 }
@@ -254,7 +297,7 @@ extension BrowseViewController {
 extension BrowseViewController {
 
     enum Section: Int {
-//        case pinned
+        case pinned
         case updates
         case installed
         case external
@@ -294,6 +337,10 @@ extension BrowseViewController {
         if !viewModel.updatesSources.isEmpty {
             snapshot.appendSections([.updates])
             snapshot.appendItems(viewModel.updatesSources, toSection: .updates)
+        }
+        if !viewModel.pinnedSources.isEmpty {
+            snapshot.appendSections([.pinned])
+            snapshot.appendItems(viewModel.pinnedSources, toSection: .pinned)
         }
         if !viewModel.installedSources.isEmpty {
             snapshot.appendSections([.installed])
@@ -362,5 +409,37 @@ extension BrowseViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         viewModel.search(query: searchController.searchBar.text)
         updateDataSource()
+    }
+}
+
+// Updating view
+extension BrowseViewController {
+    func updateNavBar() {
+        if tableView.isEditing {
+            Task { @MainActor in
+                navigationItem.rightBarButtonItems = [UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(stopEditing))]
+            }
+        } else {
+            let globeImage: UIImage?
+            if #available(iOS 15.0, *) {
+                globeImage = UIImage(systemName: "globe.americas.fill")
+            } else {
+                globeImage = UIImage(systemName: "globe")
+            }
+            navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(
+                    image: globeImage,
+                    style: .plain,
+                    target: self,
+                    action: #selector(openLanguageSelectPage)
+                ),
+                UIBarButtonItem(
+                    image: UIImage(systemName: "arrow.left.arrow.right"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(openMigrateSourcePage)
+                )
+            ]
+        }
     }
 }

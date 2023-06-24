@@ -11,6 +11,7 @@ class BrowseViewModel {
 
     // TODO: source pinning
     var updatesSources: [SourceInfo2] = []
+    var pinnedSources: [SourceInfo2] = []
     var installedSources: [SourceInfo2] = []
     var externalSources: [SourceInfo2] = []
 
@@ -19,6 +20,7 @@ class BrowseViewModel {
     // stored sources when searching
     private var query: String?
     private var storedUpdatesSources: [SourceInfo2]?
+    private var storedPinnedSources: [SourceInfo2]?
     private var storedInstalledSources: [SourceInfo2]?
     private var storedExternalSources: [SourceInfo2]?
 
@@ -30,6 +32,34 @@ class BrowseViewModel {
             search(query: query)
         } else {
             self.installedSources = installedSources
+        }
+    }
+
+    func loadPinnedSources() {
+        let installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+        let defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
+        
+        var pinnedSources: [SourceInfo2] = []
+        // Keep the order of pinned sources while populating the array.
+        for sourceId in defaultPinnedSources {
+            guard let source = installedSources.first(where: { $0.sourceId == sourceId }) else {
+                continue
+            }
+            pinnedSources.append(source)
+            // remove sources from the installed array.
+            if let index = self.installedSources.firstIndex(of: source) {
+                self.installedSources.remove(at: index)
+            }
+            // remove sources from the stored installed array.
+            if let index = self.storedInstalledSources?.firstIndex(of: source) {
+                self.storedInstalledSources?.remove(at: index)
+            }
+        }
+        if storedPinnedSources != nil {
+            storedPinnedSources = pinnedSources
+            search(query: query)
+        } else {
+            self.pinnedSources = pinnedSources
         }
     }
 
@@ -77,6 +107,15 @@ class BrowseViewModel {
             if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
                 // check if it's an update
                 if info.version > installedSource.version {
+                    update = true
+                } else {
+                    return nil
+                }
+            }
+            // remove pinned sources from external list
+            if let pinnedSources = pinnedSources.first(where: { $0.sourceId == info.id }) {
+                // check if it's an update
+                if info.version > pinnedSources.version {
                     update = true
                 } else {
                     return nil
@@ -164,15 +203,18 @@ class BrowseViewModel {
             // store full source arrays
             if storedUpdatesSources == nil {
                 storedUpdatesSources = updatesSources
+                storedPinnedSources = pinnedSources
                 storedInstalledSources = installedSources
                 storedExternalSources = externalSources
             }
             guard
                 let storedUpdatesSources = storedUpdatesSources,
+                let storedPinnedSources = storedPinnedSources,
                 let storedInstalledSources = storedInstalledSources,
                 let storedExternalSources = storedExternalSources
             else { return }
             updatesSources = storedUpdatesSources.filter { $0.name.lowercased().contains(query) }
+            pinnedSources = storedPinnedSources.filter { $0.name.lowercased().contains(query) }
             installedSources = storedInstalledSources.filter { $0.name.lowercased().contains(query) }
             externalSources = storedExternalSources.filter { $0.name.lowercased().contains(query) }
         } else {
@@ -180,6 +222,10 @@ class BrowseViewModel {
             if let storedUpdatesSources = storedUpdatesSources {
                 updatesSources = storedUpdatesSources
                 self.storedUpdatesSources = nil
+            }
+            if let storedPinnedSources = storedPinnedSources {
+                pinnedSources = storedPinnedSources
+                self.storedPinnedSources = nil
             }
             if let storedInstalledSources = storedInstalledSources {
                 installedSources = storedInstalledSources

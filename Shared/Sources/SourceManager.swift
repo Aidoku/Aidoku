@@ -146,6 +146,7 @@ extension SourceManager {
     }
 
     func remove(source: Source) {
+        self.unpin(source: source) // Remove source from pin list.
         try? FileManager.default.removeItem(at: source.url)
         sources.removeAll { $0.id == source.id }
         Task {
@@ -155,6 +156,30 @@ extension SourceManager {
             }
             NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
         }
+    }
+
+    // Pin a source in browse tab.
+    func pin(source: Source) {
+        let key = "Browse.pinnedList"
+        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        if !pinnedList.contains(source.id) {
+            pinnedList.append(source.id)
+            UserDefaults.standard.set(pinnedList, forKey: key)
+        }
+        // Notify Observers
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+    }
+
+    // Unpin a source in browse tab.
+    func unpin(source: Source) {
+        let key = "Browse.pinnedList"
+        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        if let index = pinnedList.firstIndex(of: source.id) {
+            pinnedList.remove(at: index)
+            UserDefaults.standard.set(pinnedList, forKey: key)
+        }
+        // Notify Observers
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
 }
 
