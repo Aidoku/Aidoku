@@ -10,6 +10,7 @@
 		0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */; };
 		37F3E66B2850F53200A944E0 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66A2850F53200A944E0 /* CGRect.swift */; };
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
+		489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -321,6 +322,7 @@
 		0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		37F3E66A2850F53200A944E0 /* CGRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
+		489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverViewController.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -1113,6 +1115,7 @@
 				FB792D9A2961FE9D00666074 /* MangaViewModel.swift */,
 				FB792D982961F0AF00666074 /* MangaDetailHeaderView.swift */,
 				FB51147C29634C3C00E9163F /* MangaLabelView.swift */,
+				489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */,
 				FB5114762962070600E9163F /* ChapterListHeaderConfiguration.swift */,
 				FB51147829627A5600E9163F /* ChapterCellConfiguration.swift */,
 				FB51147A29633F3200E9163F /* SizeChangeListenerDelegate.swift */,
@@ -1603,6 +1606,7 @@
 				FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
+				489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
 				FB2BE5E329527A6E00FAD8A7 /* ReaderInfoPageView.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,

@@ -14,6 +14,7 @@ protocol MangaDetailHeaderViewDelegate: AnyObject {
     func trackerPressed()
     func safariPressed()
     func readPressed()
+    func coverPressed()
 }
 
 class MangaDetailHeaderView: UIView {
@@ -72,6 +73,7 @@ class MangaDetailHeaderView: UIView {
         coverImageView.layer.borderWidth = 1
         coverImageView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
         coverImageView.translatesAutoresizingMaskIntoConstraints = false
+        coverImageView.isUserInteractionEnabled = true
         return coverImageView
     }()
 
@@ -222,6 +224,7 @@ class MangaDetailHeaderView: UIView {
         safariButton.addTarget(self, action: #selector(safariPressed), for: .touchUpInside)
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
+        coverImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(coverPressed)))
 
         trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
 
@@ -523,6 +526,9 @@ class MangaDetailHeaderView: UIView {
     }
     @objc private func readPressed() {
         delegate?.readPressed()
+    }
+    @objc private func coverPressed() {
+        delegate?.coverPressed()
     }
 
     @objc private func bookmarkHoldBegan() {
