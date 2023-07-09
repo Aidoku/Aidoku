@@ -23,7 +23,11 @@ class MyAnimeListApi {
     )
 
     private func requestData(url: URL) async throws -> Data {
-        var (data, response) = try await URLSession.shared.data(for: oauth.authorizedRequest(for: url))
+        try await requestData(urlRequest: oauth.authorizedRequest(for: url))
+    }
+
+    private func requestData(urlRequest: URLRequest) async throws -> Data {
+        var (data, response) = try await URLSession.shared.data(for: urlRequest)
 
         // check if token expired
         if oauth.tokens?.expired ?? true || (response as? HTTPURLResponse)?.statusCode == 401 {
@@ -40,7 +44,11 @@ class MyAnimeListApi {
             UserDefaults.standard.set(try? JSONEncoder().encode(oauth.tokens), forKey: "Token.\(oauth.id).oauth")
 
             // try request again
-            (data, _) = try await URLSession.shared.data(for: oauth.authorizedRequest(for: url))
+            if let newAuthorization = oauth.authorizedRequest(for: url).value(forHTTPHeaderField: "Authorization") {
+                var newRequest = urlRequest
+                newRequest.addValue(newAuthorization, forHTTPHeaderField: "Authorization")
+                (data, _) = try await URLSession.shared.data(for: newRequest)
+            }
         }
 
         return data
@@ -93,6 +101,6 @@ extension MyAnimeListApi {
         request.httpMethod = "PATCH"
         request.httpBody = status.percentEncoded()
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        _ = try? await self.requestData(url: url)
+        _ = try? await self.requestData(urlRequest: request)
     }
 }
