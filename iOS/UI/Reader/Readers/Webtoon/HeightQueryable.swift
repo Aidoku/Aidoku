@@ -18,12 +18,7 @@ extension ReaderWebtoonImageNode: HeightQueryable {
             let height = getPillarboxHeight(percent: percent, maxWidth: UIScreen.main.bounds.width)
             return height
         } else {
-            let ratio: CGFloat
-            if let image {
-                ratio = image.size.height / image.size.width
-            } else {
-                ratio = Self.defaultRatio
-            }
+            let ratio = ratio ?? Self.defaultRatio
             return UIScreen.main.bounds.width * ratio
         }
     }
