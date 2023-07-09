@@ -14,7 +14,13 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
 
     weak var delegate: ReaderWebtoonViewController?
 
-    weak var image: UIImage?
+    var image: UIImage? {
+        didSet {
+            guard let image else { return }
+            ratio = image.size.height / image.size.width
+        }
+    }
+    var ratio: CGFloat?
     private var imageTask: ImageTask?
     private var loading = false
 
@@ -72,6 +78,9 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
     override func didExitVisibleState() {
         super.didExitVisibleState()
         imageNode.image = nil
+        image = nil
+        imageNode.alpha = 0
+        progressNode.alpha = 1
     }
 
     override func didEnterPreloadState() {
@@ -154,7 +163,7 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
             }
         } else {
             return ASRatioLayoutSpec(
-                ratio: Self.defaultRatio,
+                ratio: ratio ?? Self.defaultRatio,
                 child: progressNode
             )
         }
@@ -249,7 +258,6 @@ extension ReaderWebtoonImageNode {
         }
         progressNode.alpha = 0
         imageNode.image = image
-        imageNode.shouldAnimateSizeChanges = false
 
         transition()
 
