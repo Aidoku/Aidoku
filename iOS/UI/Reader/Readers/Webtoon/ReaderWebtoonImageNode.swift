@@ -14,7 +14,7 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
 
     weak var delegate: ReaderWebtoonViewController?
 
-    var image: UIImage?
+    weak var image: UIImage?
     private var imageTask: ImageTask?
     private var loading = false
 
@@ -67,6 +67,11 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
     override func didEnterDisplayState() {
         super.didEnterDisplayState()
         displayImage()
+    }
+
+    override func didExitVisibleState() {
+        super.didExitVisibleState()
+        imageNode.image = nil
     }
 
     override func didEnterPreloadState() {
