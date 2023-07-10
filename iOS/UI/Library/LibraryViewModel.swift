@@ -352,15 +352,21 @@ class LibraryViewModel {
         await loadLibrary()
     }
 
-    func search(query: String) {
+    func search(query: String) async {
         guard !query.isEmpty else {
+            var shouldResort = false
             if let storedManga = storedManga {
                 manga = storedManga
                 self.storedManga = nil
+                shouldResort = true
             }
             if let storedPinnedManga = storedPinnedManga {
                 pinnedManga = storedPinnedManga
                 self.storedPinnedManga = nil
+                shouldResort = true
+            }
+            if shouldResort {
+                await sortLibrary()
             }
             return
         }
