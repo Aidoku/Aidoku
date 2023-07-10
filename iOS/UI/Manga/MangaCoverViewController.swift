@@ -9,9 +9,9 @@ import UIKit
 import Nuke
 
 class MangaCoverViewController: BaseViewController {
-    
+
     var coverUrl: URL
-    
+
     // main stack view (containing everything)
     lazy var stackView: UIStackView = {
         let stackView = UIStackView()
@@ -22,9 +22,9 @@ class MangaCoverViewController: BaseViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
-    
+
     let imageContainerView = UIView()
-    
+
     // cover image
     private lazy var coverImageView: UIImageView = {
         let coverImageView = UIImageView()
@@ -37,65 +37,65 @@ class MangaCoverViewController: BaseViewController {
         coverImageView.isUserInteractionEnabled = true
         return coverImageView
     }()
-    
+
     private var imageWidthConstraint: NSLayoutConstraint?
     private var imageHeightConstraint: NSLayoutConstraint?
-    
+
     init(coverUrl: URL) {
         self.coverUrl = coverUrl
         super.init()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func configure() {
         super.configure()
-        
+
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.title = NSLocalizedString("COVER", comment: "")
-        
+
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .done,
             target: self,
             action: #selector(closePressed)
         )
-        
+
         view.addSubview(stackView)
         stackView.addArrangedSubview(imageContainerView)
-        
+
         coverImageView.addInteraction(UIContextMenuInteraction(delegate: self))
-        
+
         imageContainerView.addSubview(coverImageView)
-        
+
         imageWidthConstraint = coverImageView.widthAnchor.constraint(equalTo: imageContainerView.widthAnchor)
         imageWidthConstraint?.isActive = true
-        
+
         Task {
             await setCover()
         }
     }
-    
+
     override func constrain() {
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: view.topAnchor),
             stackView.leftAnchor.constraint(equalTo: view.leftAnchor),
             stackView.rightAnchor.constraint(equalTo: view.rightAnchor),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
+
             imageContainerView.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 16),
             imageContainerView.leftAnchor.constraint(lessThanOrEqualTo: stackView.leftAnchor, constant: 16),
             imageContainerView.rightAnchor.constraint(equalTo: stackView.rightAnchor, constant: -16),
             imageContainerView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -16),
-            
+
             coverImageView.heightAnchor.constraint(lessThanOrEqualTo: imageContainerView.heightAnchor),
             coverImageView.widthAnchor.constraint(lessThanOrEqualTo: imageContainerView.widthAnchor),
             coverImageView.centerXAnchor.constraint(equalTo: imageContainerView.centerXAnchor),
             coverImageView.centerYAnchor.constraint(equalTo: imageContainerView.centerYAnchor)
         ])
     }
-    
+
     private func setCover() async {
         Task { @MainActor in
             if coverImageView.image == nil {
@@ -113,14 +113,14 @@ class MangaCoverViewController: BaseViewController {
             }
         }
     }
-    
+
     // match image constraints with image size
     func fixImageSize() {
         guard coverImageView.image != nil else { return }
 
         imageWidthConstraint?.isActive = false
         imageHeightConstraint?.isActive = false
-        
+
         if
             case let height = coverImageView.image!.size.height * (imageContainerView.bounds.width / coverImageView.image!.size.width),
             height > imageContainerView.bounds.height
@@ -141,11 +141,11 @@ class MangaCoverViewController: BaseViewController {
                 multiplier: multiplier
             )
         }
-        
+
         imageWidthConstraint?.isActive = true
         imageHeightConstraint?.isActive = true
     }
-    
+
     @objc private func closePressed() {
         dismiss(animated: true)
     }
