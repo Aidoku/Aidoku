@@ -23,6 +23,8 @@ class MangaCoverViewController: BaseViewController {
         return stackView
     }()
     
+    let imageContainerView = UIView()
+    
     // cover image
     private lazy var coverImageView: UIImageView = {
         let coverImageView = UIImageView()
@@ -35,6 +37,9 @@ class MangaCoverViewController: BaseViewController {
         coverImageView.isUserInteractionEnabled = true
         return coverImageView
     }()
+    
+    private var imageWidthConstraint: NSLayoutConstraint?
+    private var imageHeightConstraint: NSLayoutConstraint?
     
     init(coverUrl: URL) {
         self.coverUrl = coverUrl
@@ -57,10 +62,15 @@ class MangaCoverViewController: BaseViewController {
             action: #selector(closePressed)
         )
         
+        view.addSubview(stackView)
+        stackView.addArrangedSubview(imageContainerView)
+        
         coverImageView.addInteraction(UIContextMenuInteraction(delegate: self))
         
-        view.addSubview(stackView)
-        stackView.addArrangedSubview(coverImageView)
+        imageContainerView.addSubview(coverImageView)
+        
+        imageWidthConstraint = coverImageView.widthAnchor.constraint(equalTo: imageContainerView.widthAnchor)
+        imageWidthConstraint?.isActive = true
         
         Task {
             await setCover()
@@ -74,10 +84,15 @@ class MangaCoverViewController: BaseViewController {
             stackView.rightAnchor.constraint(equalTo: view.rightAnchor),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            coverImageView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 16),
-            coverImageView.leftAnchor.constraint(equalTo: stackView.leftAnchor, constant: 16),
-            coverImageView.rightAnchor.constraint(equalTo: stackView.rightAnchor, constant: -16),
-            coverImageView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -16)
+            imageContainerView.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 16),
+            imageContainerView.leftAnchor.constraint(lessThanOrEqualTo: stackView.leftAnchor, constant: 16),
+            imageContainerView.rightAnchor.constraint(equalTo: stackView.rightAnchor, constant: -16),
+            imageContainerView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -16),
+            
+            coverImageView.heightAnchor.constraint(lessThanOrEqualTo: imageContainerView.heightAnchor),
+            coverImageView.widthAnchor.constraint(lessThanOrEqualTo: imageContainerView.widthAnchor),
+            coverImageView.centerXAnchor.constraint(equalTo: imageContainerView.centerXAnchor),
+            coverImageView.centerYAnchor.constraint(equalTo: imageContainerView.centerYAnchor)
         ])
     }
     
@@ -94,8 +109,41 @@ class MangaCoverViewController: BaseViewController {
         Task { @MainActor in
             UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
                 self.coverImageView.image = image
+                self.fixImageSize()
             }
         }
+    }
+    
+    // match image constraints with image size
+    func fixImageSize() {
+        guard coverImageView.image != nil else { return }
+
+        imageWidthConstraint?.isActive = false
+        imageHeightConstraint?.isActive = false
+        
+        if
+            case let height = coverImageView.image!.size.height * (imageContainerView.bounds.width / coverImageView.image!.size.width),
+            height > imageContainerView.bounds.height
+        {
+            // max height, variable width
+            let multiplier = coverImageView.image!.size.width / coverImageView.image!.size.height
+            imageWidthConstraint = coverImageView.widthAnchor.constraint(
+                equalTo: coverImageView.heightAnchor,
+                multiplier: multiplier
+            )
+            imageHeightConstraint = coverImageView.heightAnchor.constraint(equalTo: imageContainerView.heightAnchor)
+        } else {
+            // max width, variable height
+            let multiplier = coverImageView.image!.size.height / coverImageView.image!.size.width
+            imageWidthConstraint = coverImageView.widthAnchor.constraint(equalTo: imageContainerView.widthAnchor)
+            imageHeightConstraint = coverImageView.heightAnchor.constraint(
+                equalTo: coverImageView.widthAnchor,
+                multiplier: multiplier
+            )
+        }
+        
+        imageWidthConstraint?.isActive = true
+        imageHeightConstraint?.isActive = true
     }
     
     @objc private func closePressed() {
