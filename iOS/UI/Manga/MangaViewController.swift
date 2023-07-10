@@ -226,21 +226,32 @@ class MangaViewController: BaseTableViewController {
                 let latestChapterNum = self.viewModel.chapterList.max {
                     $0.chapterNum ?? -1 > $1.chapterNum ?? -1
                 }?.chapterNum ?? -1
-                let latestReadChapterNum = self.viewModel.chapterList.first {
+                let lastReadChapterNum = self.viewModel.chapterList.first {
                     self.viewModel.readingHistory[$0.id]?.page ?? 0 == -1
                 }?.chapterNum ?? 0 // if not started, 0
                 let hasUnreadChapters = self.viewModel.chapterList.contains {
                     self.viewModel.readingHistory[$0.id] == nil
                 }
-                let state = await tracker.getState(trackId: item.id)
-                if
-                    let lastReadChapter = state.lastReadChapter,
-                    latestReadChapterNum < lastReadChapter,
-                    // check if there are chapters to actually mark read
-                    latestChapterNum >= lastReadChapter || hasUnreadChapters
-                {
-                    // ask to sync
-                    self.syncWithTracker(chapterNum: lastReadChapter)
+                let trackerState = await tracker.getState(trackId: item.id)
+
+                if let trackerLastReadChapter = trackerState.lastReadChapter {
+                    // check if latest read chapter is below tracker last read
+                    var shouldSync = (lastReadChapterNum < trackerLastReadChapter)
+                        // check if there are chapters to actually mark read
+                        && (latestChapterNum >= trackerLastReadChapter || hasUnreadChapters)
+
+                    if !shouldSync && hasUnreadChapters {
+                        // see if there are unread chapters under the last read that are unread and below tracker last read
+                        shouldSync = self.viewModel.chapterList.contains {
+                            self.viewModel.readingHistory[$0.id] == nil
+                            && $0.chapterNum ?? 0 < trackerLastReadChapter
+                        }
+                    }
+
+                    if shouldSync {
+                        // ask to sync
+                        self.syncWithTracker(chapterNum: lastReadChapterNum)
+                    }
                 }
             }
         }

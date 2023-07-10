@@ -53,6 +53,7 @@ class LibraryViewController: MangaCollectionViewController {
     private lazy var opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
 
     private var ignoreOptionChange = false
+    private var lastSearch: String?
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -1049,7 +1050,11 @@ extension LibraryViewController {
 extension LibraryViewController: UISearchResultsUpdating {
 
     func updateSearchResults(for searchController: UISearchController) {
-        viewModel.search(query: searchController.searchBar.text ?? "")
-        updateDataSource()
+        guard searchController.searchBar.text != lastSearch else { return }
+        lastSearch = searchController.searchBar.text
+        Task {
+            await viewModel.search(query: searchController.searchBar.text ?? "")
+            updateDataSource()
+        }
     }
 }
