@@ -18,18 +18,9 @@ class MangaCoverViewController: BaseViewController {
         stackView.distribution = .fillProportionally
         stackView.axis = .vertical
         stackView.backgroundColor = .systemBackground
-        stackView.alignment = .trailing
+        stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
-    }()
-    
-    // close button
-    private lazy var closeButton: UIButton = {
-        let readButton = UIButton(type: .system)
-        readButton.setTitle(NSLocalizedString("OK", comment: ""), for: .normal)
-        readButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
-        readButton.translatesAutoresizingMaskIntoConstraints = false
-        return readButton
     }()
     
     // cover image
@@ -55,12 +46,18 @@ class MangaCoverViewController: BaseViewController {
     override func configure() {
         super.configure()
         
-        closeButton.addTarget(self, action: #selector(closePressed), for: .touchUpInside)
+        navigationItem.largeTitleDisplayMode = .never
+        navigationItem.title = NSLocalizedString("COVER", comment: "")
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .done,
+            target: self,
+            action: #selector(closePressed)
+        )
+        
         coverImageView.addInteraction(UIContextMenuInteraction(delegate: self))
         
         view.addSubview(stackView)
-        
-        stackView.addArrangedSubview(closeButton)
         stackView.addArrangedSubview(coverImageView)
         
         Task {
@@ -70,15 +67,12 @@ class MangaCoverViewController: BaseViewController {
     
     override func constrain() {
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            stackView.topAnchor.constraint(equalTo: view.topAnchor),
             stackView.leftAnchor.constraint(equalTo: view.leftAnchor),
             stackView.rightAnchor.constraint(equalTo: view.rightAnchor),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-
-            closeButton.topAnchor.constraint(equalTo: stackView.topAnchor),
-            closeButton.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -8),
             
-            coverImageView.topAnchor.constraint(equalTo: closeButton.bottomAnchor),
+            coverImageView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
             coverImageView.leftAnchor.constraint(equalTo: stackView.leftAnchor),
             coverImageView.rightAnchor.constraint(equalTo: stackView.rightAnchor),
             coverImageView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor)
