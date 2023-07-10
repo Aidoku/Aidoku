@@ -29,6 +29,8 @@ class MangaCoverViewController: BaseViewController {
         coverImageView.image = UIImage(named: "MangaPlaceholder")
         coverImageView.contentMode = .scaleAspectFit
         coverImageView.clipsToBounds = true
+        coverImageView.layer.cornerRadius = 5
+        coverImageView.layer.cornerCurve = .continuous
         coverImageView.translatesAutoresizingMaskIntoConstraints = false
         coverImageView.isUserInteractionEnabled = true
         return coverImageView
