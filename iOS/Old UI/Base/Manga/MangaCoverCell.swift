@@ -206,19 +206,6 @@ class MangaCoverCell: UICollectionViewCell {
         }
     }
 
-    func getTintColor(from image: UIImage) {
-//        image.getColors(quality: .low) { colors in
-//            let luma = colors?.background.luminance ?? 0
-//            if luma >= 0.9 || luma <= 0.1, let secondary = colors?.secondary {
-//                self.manga?.tintColor = CodableColor(color: secondary)
-//            } else if let background = colors?.background {
-//                self.manga?.tintColor = CodableColor(color: background)
-//            } else {
-//                self.manga?.tintColor = nil
-//            }
-//        }
-    }
-
     func loadImage() async {
         guard let url = manga?.coverUrl else {
             imageView.image = nil
