@@ -223,6 +223,7 @@ extension ReaderWebtoonImageNode {
         // check cache
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
+            loading = false
             image = imageContainer?.image
             if isNodeLoaded {
                 displayImage()
@@ -241,6 +242,7 @@ extension ReaderWebtoonImageNode {
                     }
                 }
                 ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+                loading = false
                 self.image = image
                 if isNodeLoaded {
                     displayImage()
