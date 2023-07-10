@@ -938,9 +938,10 @@ extension MangaViewController {
             markAction = UIContextualAction(
                 style: .normal,
                 title: NSLocalizedString("MARK_READ", comment: "")
-            ) { _, _, _ in
+            ) { _, _, complete in
                 Task {
                     await self.markRead(chapters: [chapter])
+                    complete(true)
                 }
             }
             markAction.image = UIImage(systemName: "eye")
@@ -950,9 +951,10 @@ extension MangaViewController {
             markAction = UIContextualAction(
                 style: .normal,
                 title: NSLocalizedString("MARK_UNREAD", comment: "")
-            ) { _, _, _ in
+            ) { _, _, complete in
                 Task {
                     await self.markUnread(chapters: [chapter])
+                    complete(true)
                 }
             }
             markAction.image = UIImage(systemName: "eye.slash")
@@ -967,8 +969,9 @@ extension MangaViewController {
             downloadAction = UIContextualAction(
                 style: .destructive,
                 title: NSLocalizedString("REMOVE_DOWNLOAD", comment: "")
-            ) { _, _, _ in
+            ) { _, _, complete in
                 DownloadManager.shared.delete(chapters: [chapter])
+                complete(true)
                 self.reloadCells(for: [chapter])
             }
             downloadAction.image = UIImage(systemName: "trash")
@@ -976,8 +979,9 @@ extension MangaViewController {
             downloadAction = UIContextualAction(
                 style: .destructive,
                 title: NSLocalizedString("CANCEL_DOWNLOAD", comment: "")
-            ) { _, _, _ in
+            ) { _, _, complete in
                 DownloadManager.shared.cancelDownload(for: chapter)
+                complete(true)
                 self.reloadCells(for: [chapter])
             }
             downloadAction.image = UIImage(systemName: "xmark")
@@ -985,8 +989,9 @@ extension MangaViewController {
             downloadAction = UIContextualAction(
                 style: .normal,
                 title: NSLocalizedString("DOWNLOAD", comment: "")
-            ) { _, _, _ in
+            ) { _, _, complete in
                 DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                complete(true)
                 self.reloadCells(for: [chapter])
             }
             downloadAction.image = UIImage(systemName: "arrow.down.circle")
