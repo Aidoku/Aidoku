@@ -72,10 +72,10 @@ class MangaCoverViewController: BaseViewController {
             stackView.rightAnchor.constraint(equalTo: view.rightAnchor),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            coverImageView.topAnchor.constraint(equalTo: stackView.bottomAnchor),
-            coverImageView.leftAnchor.constraint(equalTo: stackView.leftAnchor),
-            coverImageView.rightAnchor.constraint(equalTo: stackView.rightAnchor),
-            coverImageView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor)
+            coverImageView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 16),
+            coverImageView.leftAnchor.constraint(equalTo: stackView.leftAnchor, constant: 16),
+            coverImageView.rightAnchor.constraint(equalTo: stackView.rightAnchor, constant: -16),
+            coverImageView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -16)
         ])
     }
     
