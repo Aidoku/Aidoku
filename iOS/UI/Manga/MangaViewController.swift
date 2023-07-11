@@ -250,7 +250,7 @@ class MangaViewController: BaseTableViewController {
 
                     if shouldSync {
                         // ask to sync
-                        self.syncWithTracker(chapterNum: lastReadChapterNum)
+                        self.syncWithTracker(chapterNum: trackerLastReadChapter)
                     }
                 }
             }
