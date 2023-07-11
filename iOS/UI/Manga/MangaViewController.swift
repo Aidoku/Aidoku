@@ -1113,7 +1113,7 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
         guard let chapter = headerView.nextChapter else { return }
         openReaderView(chapter: chapter)
     }
-    
+
     // open full manga cover view
     func coverPressed() {
         if let coverUrl = manga.coverUrl {

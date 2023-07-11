@@ -158,7 +158,7 @@ extension MangaCoverViewController: UIContextMenuInteractionDelegate {
         _ interaction: UIContextMenuInteraction,
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { [weak self] _ in
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { [weak self] _ in
             let saveToPhotosAction = UIAction(
                 title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
                 image: UIImage(systemName: "photo")
