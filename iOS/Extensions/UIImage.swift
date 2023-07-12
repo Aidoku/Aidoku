@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import CoreGraphics
 
 extension UIImage {
     func sizeToFit(_ pageSize: CGSize) -> CGSize {
