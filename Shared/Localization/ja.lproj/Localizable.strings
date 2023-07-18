@@ -85,7 +85,7 @@
 "DEFAULT_CATEGORY" = "既定のカテゴリ";
 "ALWAYS_ASK" = "常に尋ねる";
 "BROWSE_NO_SOURCES" = "ソースなし";
-"BROWSE_NO_SOURCES_TEXT" = "ソースリストを設定するか、Aidokuでソースを開いて開始してください";
+"BROWSE_NO_SOURCES_TEXT" = "ソースリストを設定するか、\nAidokuでソースを開いて、開始してください。";
 "ADDING_SOURCES_GUIDE_BUTTON" = "ソースの追加ガイド";
 "UPDATES" = "アップデート";
 "EXTERNAL" = "外部";
@@ -126,7 +126,7 @@
 "MARK" = "マーク";
 "PREVIOUS_COLON" = "前の：";
 "FINISHED_COLON" = "終了：";
-"MARK_ALL" = "マークオール";
+"MARK_ALL" = "全て選択";
 "MARK_UNREAD" = "未読としてマーク";
 "CURRENT_COLON" = "現在の：";
 "NO_NEXT_CHAPTER" = "次の章はありません";
@@ -232,7 +232,7 @@
 "SINGLE_PAGE" = "単一ページ";
 "STOP_TRACKING" = "追跡を停止";
 "READING" = "読書";
-"PLANNING" = "プランニング";
+"PLANNING" = "計画中";
 "VIEW_ON_WEBSITE" = "ウェブサイトで見る";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "すべてのダウンロードを削除したいですか？";
 "SUPPORT_VIA_KOFI" = "Ko-Fi経由のサポート";
@@ -270,7 +270,7 @@
 "CLEAR_READ_HISTORY" = "読み取り履歴のクリア";
 "CLEAR_READ_HISTORY_TEXT" = "この動作は不可逆的です。すべての読み取り履歴が削除されます。";
 "RESET_SETTINGS_TEXT" = "この操作は元に戻せません。すべてのアプリとソースの設定がリセットされます。";
-"FAILED_CHAPTER_LOAD_INFO" = "オフラインか、ソースに問題があるかもしれません";
+"FAILED_CHAPTER_LOAD_INFO" = "接続がオフラインになっているか、ソースに問題が発生している可能性があります。";
 "%i_PAGES_LEFT" = "残り%iページ";
 "FAILED_CHAPTER_LOAD" = "チャプターの読み込みに失敗しました";
 "TOTAL_CHAPTERS" = "総章数";
@@ -280,7 +280,7 @@
 "DEFAULT_READING_MODE" = "デフォルトの読書モード";
 "PILLARBOX" = "ピラーボックス";
 "PILLARBOX_AMOUNT" = "ピラーボックス量";
-"PILLARBOX_ORIENTATION_INFO" = "ピラーボックスの向きは、どの向きでピラーボックスを有効にするかを決定します";
+"PILLARBOX_ORIENTATION_INFO" = "ピラーボックスの向き設定は、どの向きでピラーボックスを有効にするかを決定します。";
 "BOTH" = "両方とも";
 "DOUBLE_PAGE" = "ダブルページ";
 "PINNED" = "ピン留め";
@@ -291,13 +291,13 @@
 "MULTI_LANGUAGE" = "多言語";
 "MOST_CHAPTERS_SLOWER" = "ほとんどの章(遅い)";
 "VOLUMES" = "巻数";
-"STARTED" = "開始した";
+"STARTED" = "開始済み";
 "STATUS" = "地位";
 "START_TRACKING" = "トラッキングを開始する";
 "SCORE" = "スコア";
-"REREADING" = "再読";
-"PAUSED" = "一時 停止";
-"DROPPED" = "落とした";
+"REREADING" = "再読する";
+"PAUSED" = "一時停止";
+"DROPPED" = "放棄済み";
 "TRACKERS" = "トラッカー";
 "LOGOUT_FROM_%@" = "%@からログアウトしますか？";
 "NOT_PUBLISHED" = "未発表";
@@ -305,10 +305,10 @@
 "TYPE_COLON_%@" = "タイプ: %@";
 "STATUS_COLON_%@" = "ステータス: %@";
 "CLEAR_TRACKED_MANGA" = "追跡された漫画をクリア";
-"CLEAR_TRACKED_MANGA_TEXT" = "この操作は元に戻せません。漫画に追加されたすべてのトラッカーの追跡が削除されます";
+"CLEAR_TRACKED_MANGA_TEXT" = "この操作は元に戻すことができません。マンガに追加されたすべてのトラッカーのトラッキングが削除されます。";
 "CACHE_SIZE_%@" = "キャッシュ サイズ: %@";
 "1_CHAPTER" = "章1";
-"RENAME_CATEGORY_FAIL_INFO" = "カテゴリ名は一意である必要があります";
+"RENAME_CATEGORY_FAIL_INFO" = "カテゴリ名は一意である必要があります。";
 "SYNC_WITH_TRACKER" = "トラッカーと同期する";
 "SYNC_WITH_TRACKER_INFO" = "トラッカーに設定された最新の章（%g）が、あなたが最後に読んだ章よりも新しいようです。ローカルの履歴を更新して一致させますか？";
 "OPTIONS" = "オプション";
@@ -325,3 +325,6 @@
 "MANHWA" = "漫画";
 "MANHUA" = "漫画";
 "UPCOMING" = "今後";
+"MARK_PREVIOUS" = "一つ前を選択";
+"WITH_UNREAD_CHAPTERS" = "未読のチャプターと共に";
+"FINISHED" = "完了済み";

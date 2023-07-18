@@ -1,0 +1,59 @@
+{
+  "pins" : [
+    {
+      "identity" : "nuke",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kean/Nuke",
+      "state" : {
+        "revision" : "3ed0597082b40932481fb8971af8813a4284203c",
+        "version" : "11.6.1"
+      }
+    },
+    {
+      "identity" : "swiftsoup",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/scinfu/SwiftSoup.git",
+      "state" : {
+        "revision" : "f707b8680cddb96dc1855632340a572ef37bbb98",
+        "version" : "2.5.3"
+      }
+    },
+    {
+      "identity" : "synchronized",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shareup/synchronized.git",
+      "state" : {
+        "revision" : "3a07451bbd0933933804c7d9a92ef2fa57b6766f",
+        "version" : "4.0.0"
+      }
+    },
+    {
+      "identity" : "texture",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Skittyblock/Texture.git",
+      "state" : {
+        "revision" : "6a6475db9bf9f7e04731ab60053c3ca4934c1ac6",
+        "version" : "3.1.1"
+      }
+    },
+    {
+      "identity" : "wasm-interpreter-apple",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Skittyblock/wasm-interpreter-apple.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1089ea6ad6b725e1f22104a799ed37eb79791fb1"
+      }
+    },
+    {
+      "identity" : "zipfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/weichsel/ZIPFoundation.git",
+      "state" : {
+        "revision" : "43ec568034b3731101dbf7670765d671c30f54f3",
+        "version" : "0.9.16"
+      }
+    }
+  ],
+  "version" : 2
+}
