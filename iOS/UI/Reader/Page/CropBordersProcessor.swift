@@ -20,6 +20,9 @@ struct CropBordersProcessor: ImageProcessing {
         "com.github.Aidoku/Aidoku/cropBorders"
     }
 
+    private let whiteThreshold = 0xAA
+    private let blackThreshold = 0x05
+
     func process(_ image: PlatformImage) -> PlatformImage? {
         guard let cgImage = image.cgImage else { return image }
 
@@ -59,11 +62,26 @@ struct CropBordersProcessor: ImageProcessing {
                 let x = CGFloat(x)
                 let pixelIndex = (width * y + x) * 4 /* 4 for A, R, G, B */
 
-                if data[Int(pixelIndex)] == 0 { continue } // crop transparent
+                // crop transparent
+                if data[Int(pixelIndex)] == 0 { continue }
 
-                if data[Int(pixelIndex+1)] > 0xE0 && data[Int(pixelIndex+2)] > 0xE0 && data[Int(pixelIndex+3)] > 0xE0 { continue } // crop white
+                // crop white
+                if
+                    data[Int(pixelIndex+1)] > whiteThreshold
+                    && data[Int(pixelIndex+2)] > whiteThreshold
+                    && data[Int(pixelIndex+3)] > whiteThreshold
+                {
+                    continue
+                }
 
-                if data[Int(pixelIndex+1)] < 0x05 && data[Int(pixelIndex+2)] < 0x05 && data[Int(pixelIndex+3)] < 0x05 { continue } // crop black
+                // crop black
+                if
+                    data[Int(pixelIndex+1)] < blackThreshold
+                    && data[Int(pixelIndex+2)] < blackThreshold
+                    && data[Int(pixelIndex+3)] < blackThreshold
+                {
+                    continue
+                }
 
                 lowX = min(x, lowX)
                 highX = max(x, highX)
