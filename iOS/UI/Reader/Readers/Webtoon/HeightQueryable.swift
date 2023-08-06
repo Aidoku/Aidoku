@@ -13,10 +13,10 @@ protocol HeightQueryable {
 
 extension ReaderWebtoonImageNode: HeightQueryable {
     func getHeight() -> CGFloat {
-        if pillarbox && image != nil && isPillarboxOrientation() {
+        if pillarbox && isPillarboxOrientation() {
             let percent = (100 - pillarboxAmount) / 100
-            let height = getPillarboxHeight(percent: percent, maxWidth: UIScreen.main.bounds.width)
-            return height
+            let ratio = percent * (ratio ?? Self.defaultRatio)
+            return UIScreen.main.bounds.width * ratio
         } else {
             let ratio = ratio ?? Self.defaultRatio
             return UIScreen.main.bounds.width * ratio

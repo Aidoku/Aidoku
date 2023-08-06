@@ -166,10 +166,20 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
                 return ASRatioLayoutSpec(ratio: image.size.height / image.size.width, child: imageNode)
             }
         } else {
-            return ASRatioLayoutSpec(
-                ratio: ratio ?? Self.defaultRatio,
-                child: progressNode
-            )
+            if pillarbox && isPillarboxOrientation() {
+                let percent = (100 - pillarboxAmount) / 100
+                let ratio = percent * (ratio ?? Self.defaultRatio)
+
+                return ASRatioLayoutSpec(
+                    ratio: ratio,
+                    child: progressNode
+                )
+            } else {
+                return ASRatioLayoutSpec(
+                    ratio: ratio ?? Self.defaultRatio,
+                    child: progressNode
+                )
+            }
         }
     }
 }
