@@ -7,12 +7,7 @@
 
 import Foundation
 import Nuke
-
-#if os(iOS) || os(tvOS)
-import UIKit
-#else
 import CoreGraphics
-#endif
 
 struct CropBordersProcessor: ImageProcessing {
 
