@@ -224,7 +224,11 @@ class MangaDetailHeaderView: UIView {
         safariButton.addTarget(self, action: #selector(safariPressed), for: .touchUpInside)
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
-        coverImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(coverPressed)))
+
+        let coverImageLongPress = UILongPressGestureRecognizer(target: self, action: #selector(coverPressed))
+        coverImageLongPress.minimumPressDuration = 0
+        coverImageView.addGestureRecognizer(coverImageLongPress)
+        coverImageView.addOverlay(color: .black)
 
         trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
 
@@ -527,8 +531,15 @@ class MangaDetailHeaderView: UIView {
     @objc private func readPressed() {
         delegate?.readPressed()
     }
-    @objc private func coverPressed() {
-        delegate?.coverPressed()
+    @objc private func coverPressed(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            coverImageView.showOverlay(color: .black, alpha: 0.5)
+        } else if sender.state == .ended {
+            delegate?.coverPressed()
+            UIView.transition(with: coverImageView, duration: 1, options: [.allowAnimatedContent, .allowUserInteraction]) {
+                self.coverImageView.hideOverlay(color: .black)
+            }
+        }
     }
 
     @objc private func bookmarkHoldBegan() {
