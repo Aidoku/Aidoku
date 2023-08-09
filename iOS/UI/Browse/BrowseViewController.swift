@@ -241,13 +241,6 @@ extension BrowseViewController {
         return sectionIdentifier(for: indexPath.section) == .pinned
     }
 
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        // untested because I can't execute them
-        let grabbedCell = self.viewModel.pinnedSources[sourceIndexPath.row]
-        self.viewModel.pinnedSources.remove(at: sourceIndexPath.row)
-        self.viewModel.pinnedSources.insert(grabbedCell, at: destinationIndexPath.row)
-    }
-
     func tableView(
         _ tableView: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
