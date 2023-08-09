@@ -541,6 +541,14 @@ extension MangaViewController {
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
         var actions: [UIMenuElement] = [
+            UIMenu(title: "", options: .displayInline, children: [UIAction(title: NSLocalizedString("MARK_READ", comment: ""), image: UIImage(systemName: "eye")) { _ in
+                self.showLoadingIndicator()
+                let chapters = [Chapter](self.viewModel.chapterList)
+                Task {
+                    await self.markRead(chapters: chapters)
+                    self.hideLoadingIndicator()
+                }
+            }]),
             UIAction(
                 title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
                 image: UIImage(systemName: "checkmark.circle")
@@ -548,29 +556,6 @@ extension MangaViewController {
                 self?.setEditing(true, animated: true)
             }
         ]
-
-        // mark as read & mark as unread submenu
-        actions.append(
-            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: [
-                // read chapters
-                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
-                    self.showLoadingIndicator()
-                    let chapters = [Chapter](self.viewModel.chapterList)
-                    Task {
-                        await self.markRead(chapters: chapters)
-                        self.hideLoadingIndicator()
-                    }
-                },
-                // unread chapters
-                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
-                    self.showLoadingIndicator()
-                    let chapters = [Chapter](self.viewModel.chapterList)
-                    Task {
-                        await self.markUnread(chapters: chapters)
-                        self.hideLoadingIndicator()
-                    }
-                }
-            ]))
 
         // add edit categories button if in library and have categories
         await CoreDataManager.shared.container.performBackgroundTask { context in
