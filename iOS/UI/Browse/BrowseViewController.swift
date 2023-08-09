@@ -86,6 +86,21 @@ class BrowseViewController: BaseTableViewController {
     }
 
     override func observe() {
+        // update pinned list
+        addObserver(forName: "updatePinnedList") { [weak self] _ in
+            guard let self = self else { return }
+            let snapshot = self.dataSource.snapshot()
+            let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
+            UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
+            
+            if sourceList.count == 0 { self.stopEditing() }
+            Task { @MainActor in
+                self.viewModel.loadInstalledSources()
+                self.viewModel.loadPinnedSources()
+                self.viewModel.filterExternalSources()
+                self.updateDataSource()
+            }
+        }
         // source installed/imported/pinned
         addObserver(forName: "updateSourceList") { [weak self] _ in
             guard let self = self else { return }
@@ -179,6 +194,10 @@ class BrowseViewController: BaseTableViewController {
 
 // MARK: - Table View Delegate
 extension BrowseViewController {
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .none
+    }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if
@@ -281,6 +300,7 @@ extension BrowseViewController {
                         image: UIImage(systemName: "trash")
                     ) { _ in
                         SourceManager.shared.remove(source: source)
+                        self.viewModel.loadPinnedSources()
                         self.viewModel.loadInstalledSources()
                         self.updateDataSource()
                     }
@@ -302,9 +322,64 @@ extension BrowseViewController {
         case installed
         case external
     }
+    
+    // Ability to edit tableview for a diffable data source.
+    class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
+        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            if #available(iOS 15.0, *) {
+                return sectionIdentifier(for: indexPath.section) == .pinned
+            } else {
+                return false
+            }
+        }
+        
+        override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+            if #available(iOS 15.0, *) {
+                return sectionIdentifier(for: indexPath.section) == .pinned
+            } else {
+                return false
+            }
+        }
+        
+        func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+                // Prevent rows from changing sections
+                if sourceIndexPath.section != proposedDestinationIndexPath.section {
+                    return sourceIndexPath
+                } else {
+                    return proposedDestinationIndexPath
+                }
+            }
+        
+        override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+            guard let sourceItem = itemIdentifier(for: sourceIndexPath) else { return }
+            guard sourceIndexPath != destinationIndexPath else { return }
+            
+            let destinationItem = itemIdentifier(for: destinationIndexPath)
+            
+            var snapshot = self.snapshot()
+            
+            if let destinationItem = destinationItem {
+                if let sourceIndex = snapshot.indexOfItem(sourceItem),
+                   let destinationIndex = snapshot.indexOfItem(destinationItem) {
+                    
+                    snapshot.deleteItems([sourceItem])
+                    
+                    if destinationIndex > sourceIndex {
+                        snapshot.insertItems([sourceItem], afterItem: destinationItem)
+                    }
+                    else {
+                        snapshot.insertItems([sourceItem], beforeItem: destinationItem)
+                    }
+                }
+            }
+            apply(snapshot, animatingDifferences: false)
+            NotificationCenter.default.post(name: Notification.Name("updatePinnedList"), object: nil)
+        }
+        
+    }
 
     private func makeDataSource() -> UITableViewDiffableDataSource<Section, SourceInfo2> {
-        UITableViewDiffableDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
+        SourceCellDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
             guard
                 let self = self,
                 let cell = tableView.dequeueReusableCell(

@@ -146,7 +146,6 @@ extension SourceManager {
     }
 
     func remove(source: Source) {
-        self.unpin(source: source) // Remove source from pin list.
         try? FileManager.default.removeItem(at: source.url)
         sources.removeAll { $0.id == source.id }
         Task {
