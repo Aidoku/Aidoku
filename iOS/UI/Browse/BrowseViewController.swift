@@ -198,7 +198,11 @@ extension BrowseViewController {
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .none
     }
-
+    
+    func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
+        return false
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if
             sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
