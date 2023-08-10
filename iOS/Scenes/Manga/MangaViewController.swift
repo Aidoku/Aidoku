@@ -541,19 +541,10 @@ extension MangaViewController {
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
         var actions: [UIMenuElement] = [
-            UIAction(
-                title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
-                image: UIImage(systemName: "checkmark.circle")
-            ) { [weak self] _ in
-                self?.setEditing(true, animated: true)
-            }
-        ]
-
-        // mark as read & mark as unread submenu
-        actions.append(
-            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), children: [
+            // mark as read & mark as unread submenu
+            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: UIImage(systemName: "pencil.tip.crop.circle"),children: [
                 // read chapters
-                UIAction(title: NSLocalizedString("READ", comment: ""), image: nil) { _ in
+                UIAction(title: NSLocalizedString("READ", comment: "")) { _ in
                     self.showLoadingIndicator()
                     let chapters = [Chapter](self.viewModel.chapterList)
                     Task {
@@ -562,7 +553,7 @@ extension MangaViewController {
                     }
                 },
                 // unread chapters
-                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: nil) { _ in
+                UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
                     self.showLoadingIndicator()
                     let chapters = [Chapter](self.viewModel.chapterList)
                     Task {
@@ -570,7 +561,17 @@ extension MangaViewController {
                         self.hideLoadingIndicator()
                     }
                 }
-            ]))
+            ])
+        ]
+        
+        actions.append(
+            UIAction(
+                title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                self?.setEditing(true, animated: true)
+            }
+        )
 
         // add edit categories button if in library and have categories
         await CoreDataManager.shared.container.performBackgroundTask { context in
