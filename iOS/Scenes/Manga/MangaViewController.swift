@@ -561,17 +561,15 @@ extension MangaViewController {
                         self.hideLoadingIndicator()
                     }
                 }
-            ])
-        ]
-        
-        actions.append(
+            ]),
+            // Select chapters
             UIAction(
                 title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
                 image: UIImage(systemName: "checkmark.circle")
             ) { [weak self] _ in
                 self?.setEditing(true, animated: true)
             }
-        )
+        ]
 
         // add edit categories button if in library and have categories
         await CoreDataManager.shared.container.performBackgroundTask { context in
