@@ -326,7 +326,10 @@ extension BrowseViewController {
             if #available(iOS 15.0, *) {
                 return sectionIdentifier(for: indexPath.section) == .pinned
             } else {
-                return false
+                let section = indexPath.section
+                guard section >= 0 else { return false }
+                let sections = self.snapshot().sectionIdentifiers
+                return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
             }
         }
         
@@ -334,7 +337,10 @@ extension BrowseViewController {
             if #available(iOS 15.0, *) {
                 return sectionIdentifier(for: indexPath.section) == .pinned
             } else {
-                return false
+                let section = indexPath.section
+                guard section >= 0 else { return false }
+                let sections = self.snapshot().sectionIdentifiers
+                return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
             }
         }
         
