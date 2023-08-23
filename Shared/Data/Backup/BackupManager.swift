@@ -14,7 +14,7 @@ class BackupManager {
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Backups", isDirectory: true)
 
     static var backupUrls: [URL] {
-        Self.directory.contentModificationDateKey
+        Self.directory.contentsByDateModified
     }
 
     static var backups: [Backup] {

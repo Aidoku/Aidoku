@@ -29,7 +29,7 @@ extension URL {
         (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
     }
 
-    var contentModificationDateKey: [URL] {
+    var contentsByDateModified: [URL] {
         if let urls = try? FileManager.default.contentsOfDirectory(at: self,
                                                                    includingPropertiesForKeys: [.contentModificationDateKey]) {
             return urls.sorted {
