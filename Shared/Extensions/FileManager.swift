@@ -29,13 +29,13 @@ extension URL {
         (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
     }
 
-    var contentsByDateAdded: [URL] {
+    var contentModificationDateKey: [URL] {
         if let urls = try? FileManager.default.contentsOfDirectory(at: self,
                                                                    includingPropertiesForKeys: [.contentModificationDateKey]) {
             return urls.sorted {
-                ((try? $0.resourceValues(forKeys: [.addedToDirectoryDateKey]))?.addedToDirectoryDate ?? Date.distantPast)
+                ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDateKey ?? Date.distantPast)
                 >
-                ((try? $1.resourceValues(forKeys: [.addedToDirectoryDateKey]))?.addedToDirectoryDate ?? Date.distantPast)
+                ((try? $1.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDateKey ?? Date.distantPast)
             }
         }
         return self.contents
