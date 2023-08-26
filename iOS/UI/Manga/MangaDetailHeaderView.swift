@@ -225,8 +225,7 @@ class MangaDetailHeaderView: UIView {
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
 
-        let coverImageLongPress = UILongPressGestureRecognizer(target: self, action: #selector(coverPressed))
-        coverImageLongPress.minimumPressDuration = 0
+        let coverImageLongPress = TouchDownGestureRecognizer(target: self, action: #selector(coverPressed))
         coverImageView.addGestureRecognizer(coverImageLongPress)
         coverImageView.addOverlay(color: .black)
 
@@ -531,14 +530,21 @@ class MangaDetailHeaderView: UIView {
     @objc private func readPressed() {
         delegate?.readPressed()
     }
-    @objc private func coverPressed(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == .began {
+    @objc private func coverPressed(_ sender: TouchDownGestureRecognizer) {
+        switch sender.state {
+        case .began:
             coverImageView.showOverlay(color: .black, alpha: 0.5)
-        } else if sender.state == .ended {
+        case .ended:
             delegate?.coverPressed()
-            UIView.transition(with: coverImageView, duration: 1, options: [.allowAnimatedContent, .allowUserInteraction]) {
+            UIView.transition(with: coverImageView, duration: 0.35, options: [.allowAnimatedContent, .allowUserInteraction]) {
                 self.coverImageView.hideOverlay(color: .black)
             }
+        case .cancelled:
+            UIView.transition(with: coverImageView, duration: 0.35, options: [.allowAnimatedContent, .allowUserInteraction]) {
+                self.coverImageView.hideOverlay(color: .black)
+            }
+        default:
+            break
         }
     }
 
