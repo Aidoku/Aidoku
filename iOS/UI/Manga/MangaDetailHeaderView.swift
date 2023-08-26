@@ -14,6 +14,7 @@ protocol MangaDetailHeaderViewDelegate: AnyObject {
     func trackerPressed()
     func safariPressed()
     func readPressed()
+    func coverPressed()
 }
 
 class MangaDetailHeaderView: UIView {
@@ -72,6 +73,7 @@ class MangaDetailHeaderView: UIView {
         coverImageView.layer.borderWidth = 1
         coverImageView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
         coverImageView.translatesAutoresizingMaskIntoConstraints = false
+        coverImageView.isUserInteractionEnabled = true
         return coverImageView
     }()
 
@@ -222,6 +224,10 @@ class MangaDetailHeaderView: UIView {
         safariButton.addTarget(self, action: #selector(safariPressed), for: .touchUpInside)
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
+
+        let coverImageLongPress = TouchDownGestureRecognizer(target: self, action: #selector(coverPressed))
+        coverImageView.addGestureRecognizer(coverImageLongPress)
+        coverImageView.addOverlay(color: .black)
 
         trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
 
@@ -523,6 +529,23 @@ class MangaDetailHeaderView: UIView {
     }
     @objc private func readPressed() {
         delegate?.readPressed()
+    }
+    @objc private func coverPressed(_ sender: TouchDownGestureRecognizer) {
+        switch sender.state {
+        case .began:
+            coverImageView.showOverlay(color: .black, alpha: 0.5)
+        case .ended:
+            delegate?.coverPressed()
+            UIView.transition(with: coverImageView, duration: 0.35, options: [.allowAnimatedContent, .allowUserInteraction]) {
+                self.coverImageView.hideOverlay(color: .black)
+            }
+        case .cancelled:
+            UIView.transition(with: coverImageView, duration: 0.35, options: [.allowAnimatedContent, .allowUserInteraction]) {
+                self.coverImageView.hideOverlay(color: .black)
+            }
+        default:
+            break
+        }
     }
 
     @objc private func bookmarkHoldBegan() {
