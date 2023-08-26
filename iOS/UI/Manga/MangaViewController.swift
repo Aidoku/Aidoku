@@ -1113,6 +1113,15 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
         guard let chapter = headerView.nextChapter else { return }
         openReaderView(chapter: chapter)
     }
+
+    // open full manga cover view
+    func coverPressed() {
+        if let coverUrl = manga.coverUrl {
+            let navigationController = UINavigationController(rootViewController: MangaCoverViewController(coverUrl: coverUrl))
+            navigationController.modalPresentationStyle = .fullScreen
+            present(navigationController, animated: true)
+        }
+    }
 }
 
 // MARK: - Chapter Sort Delegate
