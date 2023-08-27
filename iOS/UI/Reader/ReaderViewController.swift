@@ -162,6 +162,10 @@ class ReaderViewController: BaseObservingViewController {
             self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.chapter.mangaId)"))
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
+        addObserver(forName: "Reader.downsampleImages") { [weak self] _ in
+            guard let self = self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
         addObserver(forName: "Reader.cropBorders") { [weak self] _ in
             guard let self = self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
