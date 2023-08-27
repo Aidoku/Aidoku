@@ -551,7 +551,26 @@ extension MangaViewController {
 
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
-        var actions = [
+        var actions: [UIMenuElement] = [
+            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: nil, children: [
+                // read chapters
+                UIAction(title: NSLocalizedString("READ", comment: ""), image: UIImage(systemName: "eye")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        await self.markRead(chapters: self.viewModel.chapterList)
+                        self.hideLoadingIndicator()
+                    }
+                },
+                // unread chapters
+                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: UIImage(systemName: "eye.slash")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        await self.markUnread(chapters: self.viewModel.chapterList)
+                        self.hideLoadingIndicator()
+                    }
+                }
+            ]),
+            // Select chapters
             UIAction(
                 title: NSLocalizedString("SELECT_CHAPTERS", comment: ""),
                 image: UIImage(systemName: "checkmark.circle")
