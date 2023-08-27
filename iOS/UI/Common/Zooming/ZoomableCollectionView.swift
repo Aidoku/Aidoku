@@ -45,7 +45,6 @@ class ZoomableCollectionView: ASDisplayNode {
         scrollNode.view.bouncesZoom = false
         scrollNode.view.addSubview(dummyZoomView)
 
-        // TODO: make double tap zoom at location
         dummyZoomView.addGestureRecognizer(zoomingTap)
         dummyZoomView.isUserInteractionEnabled = true
     }
@@ -118,7 +117,6 @@ extension ZoomableCollectionView: UIScrollViewDelegate {
             layout.getScale() != scrollView.zoomScale
         else { return }
         layout.setScale(scrollView.zoomScale)
-        collectionNode.contentOffset = scrollView.contentOffset
         self.layout.invalidateLayout()
     }
 

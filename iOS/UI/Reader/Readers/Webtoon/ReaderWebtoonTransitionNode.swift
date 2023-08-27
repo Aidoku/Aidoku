@@ -51,7 +51,7 @@ class ReaderWebtoonTransitionNode: BaseObservingCellNode {
             return ASCenterLayoutSpec(
                 horizontalPosition: .center,
                 verticalPosition: .center,
-                sizingOption: .minimumWidth,
+                sizingOption: [],
                 child: transitionNode
             )
         } else {

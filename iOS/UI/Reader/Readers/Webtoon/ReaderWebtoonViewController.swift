@@ -31,6 +31,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     // Indicates if the page slider is currently in use
     private var isSliding = false
+    // Indicates if a zoom gesture is in progress
+    var isZooming = false
     // Indicates if an info refresh should be done if info pages are off screen
     private var needsInfoRefresh = false
 
@@ -131,7 +133,7 @@ extension ReaderWebtoonViewController {
         super.scrollViewDidScroll(scrollView)
 
         // ignore if page slider is being used
-        guard !isSliding else { return }
+        guard !isSliding && !isZooming else { return }
 
         guard
             let chapter = chapter,
@@ -165,11 +167,11 @@ extension ReaderWebtoonViewController {
     // disable slider movement while zooming
     // zooming sometimes causes page count to jitter between two pages
     func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
-        isSliding = true
+        isZooming = true
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        isSliding = false
+        isZooming = false
         scrollViewDidScroll(scrollView)
     }
 

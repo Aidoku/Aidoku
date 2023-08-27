@@ -45,6 +45,7 @@
 "LAST_READ" = "Last Read";
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
+"COVER" = "Cover";
 
 // Categories
 "ALL" = "All";

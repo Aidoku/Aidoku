@@ -77,6 +77,10 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
 
     override func didExitVisibleState() {
         super.didExitVisibleState()
+        // don't hide images if zooming in/out
+        if let delegate, delegate.isZooming {
+            return
+        }
         imageNode.image = nil
         image = nil
         imageNode.alpha = 0
@@ -162,10 +166,20 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
                 return ASRatioLayoutSpec(ratio: image.size.height / image.size.width, child: imageNode)
             }
         } else {
-            return ASRatioLayoutSpec(
-                ratio: ratio ?? Self.defaultRatio,
-                child: progressNode
-            )
+            if pillarbox && isPillarboxOrientation() {
+                let percent = (100 - pillarboxAmount) / 100
+                let ratio = percent * (ratio ?? Self.defaultRatio)
+
+                return ASRatioLayoutSpec(
+                    ratio: ratio,
+                    child: progressNode
+                )
+            } else {
+                return ASRatioLayoutSpec(
+                    ratio: ratio ?? Self.defaultRatio,
+                    child: progressNode
+                )
+            }
         }
     }
 }
