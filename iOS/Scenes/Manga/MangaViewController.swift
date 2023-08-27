@@ -541,23 +541,20 @@ extension MangaViewController {
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
         var actions: [UIMenuElement] = [
-            // mark as read & mark as unread submenu
-            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: UIImage(systemName: "pencil.tip.crop.circle"),children: [
+            UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: nil, children: [
                 // read chapters
                 UIAction(title: NSLocalizedString("READ", comment: "")) { _ in
                     self.showLoadingIndicator()
-                    let chapters = [Chapter](self.viewModel.chapterList)
                     Task {
-                        await self.markRead(chapters: chapters)
+                        await self.markRead(chapters: self.viewModel.chapterList)
                         self.hideLoadingIndicator()
                     }
                 },
                 // unread chapters
                 UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
                     self.showLoadingIndicator()
-                    let chapters = [Chapter](self.viewModel.chapterList)
                     Task {
-                        await self.markUnread(chapters: chapters)
+                        await self.markUnread(chapters: self.viewModel.chapterList)
                         self.hideLoadingIndicator()
                     }
                 }
@@ -602,7 +599,7 @@ extension MangaViewController {
                 })
             }
         }
-        
+
         // add share button if manga has a url
         if let url = manga.url {
             actions.append(UIAction(
