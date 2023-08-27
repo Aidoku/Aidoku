@@ -38,15 +38,15 @@ class BrowseViewModel {
     func loadPinnedSources() {
         let installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
         let defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
-        
+
         var pinnedSources: [SourceInfo2] = []
         for sourceId in defaultPinnedSources {
             guard let source = installedSources.first(where: { $0.sourceId == sourceId }) else {
                 // remove sourceId from userdefault stored pinned list in cases such as uninstall.
-                UserDefaults.standard.set(defaultPinnedSources.filter({ $0 != sourceId }), forKey:  "Browse.pinnedList")
+                UserDefaults.standard.set(defaultPinnedSources.filter({ $0 != sourceId }), forKey: "Browse.pinnedList")
                 continue
             }
-            
+
             pinnedSources.append(source)
             // remove sources from the installed array.
             if let index = self.installedSources.firstIndex(of: source) {

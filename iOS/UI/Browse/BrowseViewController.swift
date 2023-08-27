@@ -92,8 +92,8 @@ class BrowseViewController: BaseTableViewController {
             let snapshot = self.dataSource.snapshot()
             let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
             UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
-            
-            if sourceList.count == 0 { self.stopEditing() }
+
+            if sourceList.isEmpty { self.stopEditing() }
             Task { @MainActor in
                 self.viewModel.loadInstalledSources()
                 self.viewModel.loadPinnedSources()
@@ -194,15 +194,15 @@ class BrowseViewController: BaseTableViewController {
 
 // MARK: - Table View Delegate
 extension BrowseViewController {
-    
+
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        return .none
+        .none
     }
-    
+
     func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
-        return false
+        false
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if
             sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
@@ -238,11 +238,11 @@ extension BrowseViewController {
     }
 
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return sectionIdentifier(for: indexPath.section) == .pinned
+        sectionIdentifier(for: indexPath.section) == .pinned
     }
 
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return sectionIdentifier(for: indexPath.section) == .pinned
+        sectionIdentifier(for: indexPath.section) == .pinned
     }
 
     func tableView(
@@ -258,11 +258,11 @@ extension BrowseViewController {
         if tableView.isEditing { return nil } // Hide context menu when the user is reshuffling sources.
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
-            switch (self.sectionIdentifier(for: indexPath.section)) {
+            switch self.sectionIdentifier(for: indexPath.section) {
             case .installed:
                 actions = [
                     UIAction(
-                        title: NSLocalizedString("PINNED_PIN", comment: ""),
+                        title: NSLocalizedString("PIN", comment: ""),
                         image: UIImage(systemName: "pin")
                     ) { _ in
                         SourceManager.shared.pin(source: source)
@@ -280,13 +280,13 @@ extension BrowseViewController {
             case .pinned:
                 actions = [
                     UIMenu(title: "", options: .displayInline, children: [UIAction(
-                        title: NSLocalizedString("PINNED_SHUFFLE", comment: ""),
+                        title: NSLocalizedString("REORDER", comment: ""),
                         image: UIImage(systemName: "shuffle")
                     ) { _ in
                         tableView.setEditing(true, animated: true)
                         self.updateNavBar()
                     }]), UIAction(
-                        title: NSLocalizedString("PINNED_UNPIN", comment: ""),
+                        title: NSLocalizedString("UNPIN", comment: ""),
                         image: UIImage(systemName: "pin.slash")
                     ) { _ in
                         SourceManager.shared.unpin(source: source)
@@ -319,7 +319,7 @@ extension BrowseViewController {
         case installed
         case external
     }
-    
+
     // Ability to edit tableview for a diffable data source.
     class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
         override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -332,7 +332,7 @@ extension BrowseViewController {
                 return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
             }
         }
-        
+
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             if #available(iOS 15.0, *) {
                 return sectionIdentifier(for: indexPath.section) == .pinned
@@ -343,34 +343,35 @@ extension BrowseViewController {
                 return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
             }
         }
-        
-        func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-                // Prevent rows from changing sections
-                if sourceIndexPath.section != proposedDestinationIndexPath.section {
-                    return sourceIndexPath
-                } else {
-                    return proposedDestinationIndexPath
-                }
+
+        func tableView(_ tableView: UITableView,
+                       targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath,
+                       toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+            // Prevent rows from changing sections
+            if sourceIndexPath.section != proposedDestinationIndexPath.section {
+                return sourceIndexPath
+            } else {
+                return proposedDestinationIndexPath
             }
-        
+        }
+
         override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
             guard let sourceItem = itemIdentifier(for: sourceIndexPath) else { return }
             guard sourceIndexPath != destinationIndexPath else { return }
-            
+
             let destinationItem = itemIdentifier(for: destinationIndexPath)
-            
+
             var snapshot = self.snapshot()
-            
+
             if let destinationItem = destinationItem {
                 if let sourceIndex = snapshot.indexOfItem(sourceItem),
                    let destinationIndex = snapshot.indexOfItem(destinationItem) {
-                    
+
                     snapshot.deleteItems([sourceItem])
-                    
+
                     if destinationIndex > sourceIndex {
                         snapshot.insertItems([sourceItem], afterItem: destinationItem)
-                    }
-                    else {
+                    } else {
                         snapshot.insertItems([sourceItem], beforeItem: destinationItem)
                     }
                 }
@@ -378,7 +379,7 @@ extension BrowseViewController {
             apply(snapshot, animatingDifferences: false)
             NotificationCenter.default.post(name: Notification.Name("updatePinnedList"), object: nil)
         }
-        
+
     }
 
     private func makeDataSource() -> UITableViewDiffableDataSource<Section, SourceInfo2> {

@@ -69,6 +69,9 @@
 "BUTTON_GET" = "GET";
 "BUTTON_ERROR" = "ERROR";
 "UNINSTALL" = "Uninstall";
+"PIN" = "Pin";
+"UNPIN" = "Unpin";
+"REORDER" = "Reorder";
 
 // Source
 "SOURCE_INFO" = "Source Info";
