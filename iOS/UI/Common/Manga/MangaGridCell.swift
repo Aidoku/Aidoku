@@ -268,25 +268,22 @@ class MangaGridCell: UICollectionViewCell {
         if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
             imageView.image = image.image
         } else {
-            imageTask = ImagePipeline.shared.loadImage(
-                with: request,
-                completion: { [weak self] result in
-                    guard let self = self else { return }
-                    switch result {
-                    case .success(let response):
-                        if response.request.imageId != self.url {
-                            return
-                        }
-                        Task { @MainActor in
-                            UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
-                                self.imageView.image = response.image
-                            }
-                        }
-                    case .failure:
-                        imageTask = nil
+            imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let response):
+                    if response.request.imageId != self.url {
+                        return
                     }
+                    Task { @MainActor in
+                        UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                            self.imageView.image = response.image
+                        }
+                    }
+                case .failure:
+                    imageTask = nil
                 }
-            )
+            }
         }
     }
 

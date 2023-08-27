@@ -227,13 +227,13 @@ extension ReaderWebtoonImageNode {
         _ = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
-                guard let self = self else { return }
+                guard let self else { return }
                 Task { @MainActor in
                     self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
                 }
             },
             completion: { [weak self] result in
-                guard let self = self else { return }
+                guard let self else { return }
                 loading = false
                 switch result {
                 case .success(let response):

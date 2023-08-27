@@ -179,26 +179,23 @@ class SourceTableViewCell: UITableViewCell {
         )
         let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
 
-        imageTask = ImagePipeline.shared.loadImage(
-            with: request,
-            completion: { [weak self] result in
-                guard let self = self else { return }
-                switch result {
-                case .success(let response):
-                    Task { @MainActor in
-                        if wasCached {
+        imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let response):
+                Task { @MainActor in
+                    if wasCached {
+                        self.iconView.image = response.image
+                    } else {
+                        UIView.transition(with: self.iconView, duration: 0.3, options: .transitionCrossDissolve) {
                             self.iconView.image = response.image
-                        } else {
-                            UIView.transition(with: self.iconView, duration: 0.3, options: .transitionCrossDissolve) {
-                                self.iconView.image = response.image
-                            }
                         }
                     }
-                case .failure:
-                    imageTask = nil
                 }
+            case .failure:
+                imageTask = nil
             }
-        )
+        }
     }
 
     @objc func getPressed() {

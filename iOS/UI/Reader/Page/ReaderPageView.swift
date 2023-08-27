@@ -139,11 +139,11 @@ class ReaderPageView: UIView {
         imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
             },
             completion: { [weak self] result in
-                guard let self = self else { return }
+                guard let self else { return }
                 switch result {
                 case .success(let response):
                     imageView.image = response.image
