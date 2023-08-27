@@ -45,6 +45,7 @@
 "LAST_READ" = "Last Read";
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
+"COVER" = "Cover";
 
 // Categories
 "ALL" = "All";
@@ -203,6 +204,7 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
 "LOCK_HISTORY_TAB" = "Lock History Tab";
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
+"CROP_BORDERS" = "Crop Borders";
 "SAVE_IMAGE_OPTION" = "Save Image Option";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";

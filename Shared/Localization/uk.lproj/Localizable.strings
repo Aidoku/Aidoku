@@ -324,3 +324,9 @@
 "UPCOMING" = "Найближчі";
 "SKIP_DUPLICATE_CHAPTERS" = "Пропустити дублікати глав";
 "MOST_CHAPTERS_SLOWER" = "Більше глав (повільніше)";
+"DEFAULT_READING_MODE" = "Режим читання за замовчуванням";
+"PILLARBOX" = "Pillarbox";
+"PILLARBOX_AMOUNT" = "Сума Pillarbox";
+"PILLARBOX_ORIENTATION" = "Орієнтація Pillarbox";
+"PILLARBOX_ORIENTATION_INFO" = "Орієнтація Pillarbox визначає, для яких орієнтацій слід увімкнути опорні пункти.";
+"BOTH" = "Обидва";

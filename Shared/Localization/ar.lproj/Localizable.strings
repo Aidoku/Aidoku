@@ -325,5 +325,8 @@
 "RENAME_CATEGORY_FAIL_INFO" = "يجب أن يكون اسم الفئة فريدًا.";
 "SYNC_WITH_TRACKER" = "مزامنة مع جهة التتبع";
 "SYNC_WITH_TRACKER_INFO" = "يبدو أن أحدث فصل محدد في جهة التتبع )%g( أعلى من آخر فصل مقروء. هل تود تحديث تاريخك المحلي ليطابقه؟";
-"ALL_CHAPTERS_READ" = "جميع الفصول قرأت";
+"ALL_CHAPTERS_READ" = "جميع الفصول مقروءة";
 "TRACKING" = "تتبع";
+"DEFAULT_READING_MODE" = "وضعيت القراءة الافتراضية";
+"PILLARBOX" = "بيلار بوكس";
+"BOTH" = "كلاهما";

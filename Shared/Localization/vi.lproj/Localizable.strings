@@ -303,3 +303,6 @@
 "UPCOMING" = "Sắp tới";
 "RENAME_CATEGORY_FAIL_INFO" = "Tên thư viện không được trùng lặp.";
 "SYNC_WITH_TRACKER" = "Đồng bộ với Tracker";
+"MIGRATE_SOURCES" = "Chuyển nguồn";
+"ADD_TO_CATEGORIES" = "Thêm vào thư viện";
+"LAST_UPDATED" = "Lần cuối cập nhật";

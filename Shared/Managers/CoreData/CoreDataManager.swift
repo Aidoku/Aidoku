@@ -11,16 +11,23 @@ final class CoreDataManager {
 
     static let shared = CoreDataManager()
 
-    private var cloudSyncObserver: NSObjectProtocol?
+    private var observers: [NSObjectProtocol] = []
+    private var lastHistoryToken: NSPersistentHistoryToken?
 
     deinit {
-        if let cloudSyncObserver = cloudSyncObserver {
-            NotificationCenter.default.removeObserver(cloudSyncObserver)
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
         }
     }
 
     init() {
-        cloudSyncObserver = NotificationCenter.default.addObserver(
+        observers.append(NotificationCenter.default.addObserver(
+            forName: .NSPersistentStoreRemoteChange, object: container.persistentStoreCoordinator, queue: nil
+        ) { [weak self] _ in
+            self?.storeRemoteChange()
+        })
+
+        observers.append(NotificationCenter.default.addObserver(
             forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
         ) { [weak self] _ in
             guard let cloudDescription = self?.container.persistentStoreDescriptions.first else { return }
@@ -29,7 +36,7 @@ final class CoreDataManager {
             } else {
                 cloudDescription.cloudKitContainerOptions = nil
             }
-        }
+        })
     }
 
     lazy var container: NSPersistentCloudKitContainer = {
@@ -71,6 +78,12 @@ final class CoreDataManager {
             }
         }
         return container
+    }()
+
+    lazy var queue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
     }()
 
     var context: NSManagedObjectContext {
@@ -137,6 +150,118 @@ final class CoreDataManager {
             try? context.save()
 
             LogManager.logger.info("Migrated \(count)/\(historyObjects.count) history objects")
+        }
+    }
+}
+
+extension CoreDataManager {
+
+    func storeRemoteChange() {
+        queue.addOperation {
+            let context = self.container.newBackgroundContext()
+            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            context.performAndWait {
+                let historyFetchRequest = NSPersistentHistoryTransaction.fetchRequest!
+                let request = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastHistoryToken)
+                request.fetchRequest = historyFetchRequest
+
+                let result = (try? context.execute(request)) as? NSPersistentHistoryResult
+                guard
+                    let transactions = result?.result as? [NSPersistentHistoryTransaction],
+                    !transactions.isEmpty
+                else { return }
+
+                var newObjectIds = [NSManagedObjectID]()
+                let entityNames = [
+                    CategoryObject.entity().name,
+                    ChapterObject.entity().name,
+                    HistoryObject.entity().name,
+                    LibraryMangaObject.entity().name,
+                    MangaObject.entity().name,
+                    TrackObject.entity().name
+                ]
+
+                for
+                    transaction in transactions
+                    where transaction.changes != nil && transaction.author == "NSCloudKitMirroringDelegate.import"
+                {
+                    for
+                        change in transaction.changes!
+                        where entityNames.contains(change.changedObjectID.entity.name) && change.changeType == .insert
+                    {
+                        newObjectIds.append(change.changedObjectID)
+                    }
+                }
+
+                if !newObjectIds.isEmpty {
+                    self.deduplicate(objectIds: newObjectIds)
+                }
+
+                self.lastHistoryToken = transactions.last!.token
+            }
+        }
+    }
+
+    func deduplicate(objectIds: [NSManagedObjectID]) {
+        let context = container.newBackgroundContext()
+        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.performAndWait {
+            for objectId in objectIds {
+                deduplicate(objectId: objectId, context: context)
+            }
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("deduplicate: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func deduplicate(objectId: NSManagedObjectID, context: NSManagedObjectContext) {
+        let object = context.object(with: objectId)
+
+        let request: NSFetchRequest<NSFetchRequestResult>?
+
+        if let object = object as? MangaObject {
+            request = MangaObject.fetchRequest()
+            request?.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", object.sourceId, object.id)
+        } else if let object = object as? CategoryObject {
+            request = CategoryObject.fetchRequest()
+            request?.predicate = NSPredicate(format: "title == %@", object.title ?? "")
+        } else if let object = object as? ChapterObject {
+            request = ChapterObject.fetchRequest()
+            request?.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND id == %@",
+                object.sourceId, object.mangaId, object.id
+            )
+        } else if let object = object as? HistoryObject {
+            request = HistoryObject.fetchRequest()
+            request?.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND chapterId == %@",
+                object.sourceId, object.mangaId, object.chapterId
+            )
+        } else if let object = object as? LibraryMangaObject {
+            request = LibraryMangaObject.fetchRequest()
+            request?.predicate = NSPredicate(
+                format: "manga.sourceId == %@ AND manga.id == %@",
+                object.manga?.sourceId ?? "", object.manga?.id ?? ""
+            )
+        } else if let object = object as? TrackObject {
+            request = TrackObject.fetchRequest()
+            request?.predicate = NSPredicate(format: "id == %@ AND trackerId == %@", object.id ?? "", object.trackerId ?? "")
+        } else {
+            request = nil
+        }
+
+        guard let request = request else { return }
+
+        if (try? context.count(for: request)) ?? 0 > 1 {
+            guard let objects = try? context.fetch(request) else { return }
+            for object in objects.dropFirst(1) {
+                if let object = object as? NSManagedObject {
+                    context.delete(object)
+                }
+            }
         }
     }
 }

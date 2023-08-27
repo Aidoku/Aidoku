@@ -15,14 +15,22 @@ class HistoryManager {
 extension HistoryManager {
 
     func setProgress(chapter: Chapter, progress: Int, totalPages: Int? = nil) async {
-        await CoreDataManager.shared.setRead(sourceId: chapter.sourceId, mangaId: chapter.mangaId)
-        await CoreDataManager.shared.setProgress(
-            progress,
-            sourceId: chapter.sourceId,
-            mangaId: chapter.mangaId,
-            chapterId: chapter.id,
-            totalPages: totalPages
-        )
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.setRead(sourceId: chapter.sourceId, mangaId: chapter.mangaId, context: context)
+            CoreDataManager.shared.setProgress(
+                progress,
+                sourceId: chapter.sourceId,
+                mangaId: chapter.mangaId,
+                chapterId: chapter.id,
+                totalPages: totalPages,
+                context: context
+            )
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("HistoryManager.setProgress: \(error.localizedDescription)")
+            }
+        }
         NotificationCenter.default.post(name: NSNotification.Name("historySet"), object: (chapter, progress))
     }
 
@@ -30,14 +38,22 @@ extension HistoryManager {
         // get unique set of manga ids from chapters array
         let mangaItems = Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) })
         // mark each manga as read
-        for item in mangaItems {
-            await CoreDataManager.shared.setRead(
-                sourceId: item.sourceId,
-                mangaId: item.mangaId
-            )
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            for item in mangaItems {
+                CoreDataManager.shared.setRead(
+                    sourceId: item.sourceId,
+                    mangaId: item.mangaId,
+                    context: context
+                )
+            }
+            // mark chapters as read
+            CoreDataManager.shared.setCompleted(chapters: chapters, date: date, context: context)
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
+            }
         }
-        // mark chapters as read
-        await CoreDataManager.shared.setCompleted(chapters: chapters, date: date)
         // update tracker with chapter with largest number
         if let maxChapter = chapters.max(by: { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }) {
             await TrackerManager.shared.setCompleted(chapter: maxChapter)

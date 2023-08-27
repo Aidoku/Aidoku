@@ -83,7 +83,7 @@ actor DownloadTask: Identifiable {
 
     // perform download
     func download(_ downloadIndex: Int, from source: Source, to directory: URL) async {
-        guard downloads.count >= downloadIndex else { return }
+        guard !downloads.isEmpty && downloads.count >= downloadIndex else { return }
 
         let chapter = downloads[downloadIndex].toChapter()
         let tmpDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
@@ -99,10 +99,10 @@ actor DownloadTask: Identifiable {
             )) ?? []
             downloads[downloadIndex].total = pages.count
         }
-        while currentPage < pages.count && running {
+        while !pages.isEmpty && currentPage < pages.count && running {
             downloads[downloadIndex].progress = currentPage + 1
-            await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
             let page = pages[currentPage]
+            await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
             let pageNumber = String(format: "%03d", page.index + 1) // XXX.png
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 var urlRequest = URLRequest(url: url)
@@ -113,7 +113,7 @@ actor DownloadTask: Identifiable {
                     }
                     if let body = request.body { urlRequest.httpBody = body }
                 }
-                if let data = try? await URLSession.shared.data(for: urlRequest) {
+                if let (data, _) = try? await URLSession.shared.data(for: urlRequest) {
                     try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {

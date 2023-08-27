@@ -280,3 +280,4 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem certeza que deseja deletar todos os downloads?";
 "CACHE_SIZE_%@" = "Tamanho de Cache: %@";
 "SUPPORT_VIA_KOFI" = "Ajude-nos via Ko-Fi";
+"PILLARBOX_ORIENTATION_INFO" = "";

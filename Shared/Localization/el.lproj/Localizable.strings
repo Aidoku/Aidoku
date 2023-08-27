@@ -100,3 +100,35 @@
 // Manga
 "UNTITLED" = "Χωρίς Τίτλο";
 "LIST_HEADER" = "Λίστα";
+"START_READING" = "Έναρξη Ανάγνωσης";
+"MARK_PREVIOUS" = "Επισήμανση Προηγούμενων";
+"NO_NEXT_CHAPTER" = "Δεν υπάρχει επόμενο κεφάλαιο";
+"LTR" = "Αριστερά στα Δεξιά";
+"VERTICAL" = "Κατακόρυφα";
+"INFINITE_VERTICAL_SCROLL" = "Συνεχόμενη Κατακόρυφη Ανάγνωση";
+"NO_CHAPTERS" = "Κανένα Κεφάλαιο";
+"NO_CHAPTERS_AVAILABLE" = "Κανένα Διαθέσιμο Κεφάλαιο";
+"CONTINUE_READING" = "Συνέχεια Ανάγνωσης";
+"READ" = "Διάβασε";
+"UNREAD" = "Μη Αναγνωσμένο";
+"MARK_READ" = "Επισήμανση ως Διαβασμένου";
+"MARK_ALL" = "Επισήμανση_Όλων";
+"MARK" = "Επισήμανση";
+"MARK_UNREAD" = "Επισήμανση ως μη Διαβασμένου";
+"PREVIOUS_COLON" = "Προηγούμενο:";
+"NEXT_COLON" = "Επόμενο:";
+"FINISHED_COLON" = "Ολοκληρωμένο:";
+"CURRENT_COLON" = "Τρέχων:";
+"NO_PREVIOUS_CHAPTER" = "Δεν υπάρχει προηγούμενο κεφάλαιο";
+"READER_SETTINGS" = "Ρυθμίσεις Ανάγνωση";
+"READING_MODE" = "Τύπος Αναγνωστεί";
+"DEFAULT" = "Προεπιλογή";
+"RTL" = "Δεξιά στα Αριστερά";
+"VERTICAL_SCROLL" = "Κατακόρυφη Κύληση";
+"EXPERIMENTAL" = "Πειραματικό";
+"SAVE_TO_PHOTOS" = "Αποθήκευση στις Φωτογραφίες";
+
+// History
+"HISTORY" = "Ιστορικό";
+"%@_AGO" = "%@ ago";
+"PAGE_X" = "Page %i";

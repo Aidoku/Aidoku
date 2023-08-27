@@ -124,8 +124,13 @@ extension CoreDataManager {
 
         // update existing chapter objects
         let chapterObjects = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+        var chapterIds: Set<String> = Set()
         for object in chapterObjects {
             if let newChapter = chapters.first(where: { $0.id == object.id }) {
+                let (inserted, _) = chapterIds.insert(object.id)
+                if !inserted {
+                    context.delete(object) // remove duplicates
+                }
                 object.load(from: newChapter)
                 object.manga = manga
                 newChapters.removeAll { $0.id == object.id }

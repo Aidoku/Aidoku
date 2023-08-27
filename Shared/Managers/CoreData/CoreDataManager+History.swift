@@ -179,12 +179,26 @@ extension CoreDataManager {
             var needsSave = false
             var historyDict: [String: (page: Int, date: Int)] = [:]
 
+            let inLibrary = self.hasLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+
             for history in objects {
                 // remove duplicate read history objects for the same chapter
                 if historyDict[history.chapterId] != nil {
                     needsSave = true
                     context.delete(history)
                     continue
+                }
+                // link history to chapter if link is missing
+                if inLibrary && history.chapter == nil {
+                    if let chapter = self.getChapter(
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        chapterId: history.chapterId,
+                        context: context
+                    ) {
+                        history.chapter = chapter
+                        needsSave = true
+                    }
                 }
                 historyDict[history.chapterId] = (
                     history.completed ? -1 : Int(history.progress),
@@ -207,24 +221,24 @@ extension CoreDataManager {
     }
 
     /// Set page progress for a chapter and creates a history object if it doesn't already exist.
-    func setProgress(_ progress: Int, sourceId: String, mangaId: String, chapterId: String, totalPages: Int? = nil) async {
-        await container.performBackgroundTask { context in
-            let historyObject = self.getOrCreateHistory(
-                sourceId: sourceId,
-                mangaId: mangaId,
-                chapterId: chapterId,
-                context: context
-            )
-            historyObject.progress = Int16(progress)
-            historyObject.dateRead = Date()
-            if let totalPages = totalPages {
-                historyObject.total = Int16(totalPages)
-            }
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("CoreDataManager.setProgress: \(error.localizedDescription)")
-            }
+    func setProgress(
+        _ progress: Int,
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        totalPages: Int? = nil,
+        context: NSManagedObjectContext? = nil
+    ) {
+        let historyObject = self.getOrCreateHistory(
+            sourceId: sourceId,
+            mangaId: mangaId,
+            chapterId: chapterId,
+            context: context
+        )
+        historyObject.progress = Int16(progress)
+        historyObject.dateRead = Date()
+        if let totalPages = totalPages {
+            historyObject.total = Int16(totalPages)
         }
     }
 

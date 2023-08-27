@@ -32,7 +32,7 @@ class WasmHtml {
         try? globalStore.vm.addImportHandler(named: "append", namespace: namespace, block: self.append)
 
         try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
-        try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.first)
+        try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.last)
         try? globalStore.vm.addImportHandler(named: "next", namespace: namespace, block: self.next)
         try? globalStore.vm.addImportHandler(named: "previous", namespace: namespace, block: self.previous)
 

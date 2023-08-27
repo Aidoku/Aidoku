@@ -1,0 +1,109 @@
+
+
+
+// Source
+"SOURCE_INFO" = "Izvor Info";
+"BUTTON_FILTER" = "filtar";
+"SUGGESTIVE" = "Sugestivno";
+"CANCELLED" = "Otkazano";
+"MISSING_SOURCE_TEXT" = "Čini se da za ovu Mangu nedostaje originalni izvor. Molimo vas da ga ponovno preuzmite ili uklonite ovaj naslov iz vaše knjižnice.";
+"MARK_READ" = "Označi kao pročitano";
+"SELECT_ALL" = "Odaberi sve";
+"UNREAD" = "Nepročitano";
+
+// Downloads
+"DOWNLOAD" = "preuzimanje datoteka";
+"CANCEL" = "otkaži";
+"UNKNOWN" = "nepoznato";
+"DELETE" = "isbriši";
+"RENAME" = "preimenovati";
+"CLEAR" = "čisto";
+"LOADING_ELLIPSIS" = "Učitavati…";
+"SHARE" = "dijeliti";
+"DOWNLOADED" = "preuzeto";
+"CANCEL_DOWNLOAD" = "odustani od preuzimanja";
+"REMOVE_DOWNLOAD" = "ukloniti preuzimanje";
+"REMOVE_ALL_DOWNLOADS" = "uklonite sva preuzimanja";
+"REMOVE_DOWNLOADS" = "ukloniti preuzimanja";
+"REMOVE_DOWNLOADS_CONFIRM" = "Ukloniti sva odabrana preuzimanja?";
+
+// Library
+"LIBRARY" = "knjižnica";
+"LIBRARY_SEARCH" = "pronaći u knjižnici";
+"MANGA_INFO" = "Informacije o mangi";
+"SORT_BY" = "Poredati po";
+"FILTER_BY" = "Filtrirati po";
+"TITLE" = "Naslov";
+"LAST_OPENED" = "zadnji put otvoren";
+"LAST_READ" = "zadnje čitanje";
+"DATE_ADDED" = "podaci dodani";
+
+// Categories
+"ALL" = "svi";
+"NONE" = "nijedan";
+"CATEGORIES" = "kategorije";
+"EDIT_CATEGORIES" = "uređivati kategorije";
+"CATEGORY_TITLE" = "Naslov kategorije";
+"DEFAULT_CATEGORY" = "standardan kategorija";
+"ALWAYS_ASK" = "uvijek pitaj";
+
+// Browse
+"BROWSE" = "Pretraživati";
+"BROWSE_NO_SOURCES" = "Nema izvora";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Dodavanje Vodič izvora";
+"INSTALLED" = "instaliran";
+"EXTERNAL" = "Vanjski";
+"BUTTON_UPDATE" = "AŽURIRAJ";
+"BUTTON_GET" = "DOBIT";
+"BUTTON_ERROR" = "POGREŠKA";
+"UNINSTALL" = "Deinstaliraj";
+"LANGUAGE" = "Jezik";
+"LANGUAGES" = "Jezici";
+"INFO" = "Informacija";
+"VERSION" = "Verzija";
+"LIST_HEADER" = "Lista";
+"LIST_ALL" = "svi";
+
+// Manga
+"UNTITLED" = "bez naslova";
+"ONGOING" = "U tijeku";
+"COMPLETED" = "Završeno";
+"NSFW" = "NSFW";
+"MORE" = "više";
+"SOURCE_ORDER" = "Redoslijed izvora";
+"MISSING_SOURCE" = "Nedostaje izvor";
+"SELECT_CHAPTERS" = "Odaberite Poglavlja";
+"DESELECT_ALL" = "Odznači sve";
+
+// Reader
+"CHAPTER" = "Poglavlje";
+"CHAPTERS" = "poglavlja";
+"CHAPTER_X" = "Poglavlje %g";
+"NO_CHAPTERS" = "Nema poglavlja";
+"NO_CHAPTERS_AVAILABLE" = "Nema dostupnih poglavlja";
+"START_READING" = "Počnite čitati";
+"CONTINUE_READING" = "Nastavi čitati";
+"READ" = "Čitat";
+"MARK" = "Oznak";
+"MARK_ALL" = "Označi_Sve";
+"MARK_PREVIOUS" = "Označi prethodno";
+"MARK_UNREAD" = "Označi kao nepročitano";
+"PREVIOUS_COLON" = "Prijašnji:";
+"NEXT_COLON" = "Sljedeći:";
+"FINISHED_COLON" = "Završeno:";
+// General
+"CONTINUE" = "nastavi";
+"OK" = "OK";
+"UNAVAILABLE" = "nedostupan";
+"RESET" = "resetirat";
+"CATEGORY_ADD" = "dodati kategoriju";
+"REMOVE" = "uklonit";
+"DOWNLOAD_QUEUE" = "red čekanja za preuzimanje";
+"ADD_TO_LIBRARY" = "Dodaj u knjižnicu";
+"LIBRARY_ADD_FROM_BROWSE" = "Dodajte mangu s kartice pregledavanja";
+"LIBRARY_EMPTY" = "prazna knjižnica";
+"REMOVE_FROM_LIBRARY" = "ukloniti iz knjižnice";
+"LATEST_CHAPTER" = "zadjne poglavlje";
+"CATEGORY_ADD_TEXT" = "Unesite naslov nove kategorije koju želite stvoriti.";
+"BROWSE_NO_SOURCES_TEXT" = "Konfigurirajte svoj popis izvora ili otvorite\nizvor u Aidoku da poćnete";
+"UPDATES" = "Ažuriraj";

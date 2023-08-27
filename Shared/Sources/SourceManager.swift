@@ -182,7 +182,7 @@ extension SourceManager {
 
     func clearSourceLists() {
         sourceLists = []
-        UserDefaults.standard.set([], forKey: "Browse.sourceLists")
+        UserDefaults.standard.set([URL](), forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
     }
 
