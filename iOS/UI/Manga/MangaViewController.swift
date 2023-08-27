@@ -1104,7 +1104,10 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
 
     // open safari web view
     func safariPressed() {
-        guard let url = manga.url else { return }
+        guard
+            let url = manga.url,
+            url.scheme == "https" || url.scheme == "http"
+        else { return }
         present(SFSafariViewController(url: url), animated: true)
     }
 
