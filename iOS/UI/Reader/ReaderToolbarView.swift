@@ -10,15 +10,10 @@ import UIKit
 class ReaderToolbarView: UIView {
     var currentPageValue: Int? {
         didSet {
-            if previousPageValue != currentPageValue {
-                previousPageValue = currentPageValue
+            if oldValue != currentPageValue {
+                let feedbackGenerator = UISelectionFeedbackGenerator()
+                feedbackGenerator.selectionChanged()
             }
-        }
-    }
-    var previousPageValue: Int? {
-        willSet {
-            let feedbackGenerator = UISelectionFeedbackGenerator()
-            feedbackGenerator.selectionChanged()
         }
     }
     var currentPage: Int? {
