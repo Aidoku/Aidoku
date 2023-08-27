@@ -541,6 +541,9 @@ extension MangaViewController {
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
         var actions: [UIMenuElement] = [
+            // UIMenu to mark all the chapters of the manga as read.
+            // uses markRead function to mark all the chapters in the model as read.
+            // Function will show a loading indicator until the model populates its chapterList.
             UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: nil, children: [
                 // read chapters
                 UIAction(title: NSLocalizedString("READ", comment: "")) { _ in
