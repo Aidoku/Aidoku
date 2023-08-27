@@ -8,7 +8,14 @@
 import UIKit
 
 class ReaderToolbarView: UIView {
-
+    var currentPageValue: Int? {
+        didSet {
+            if oldValue != currentPageValue {
+                let feedbackGenerator = UISelectionFeedbackGenerator()
+                feedbackGenerator.selectionChanged()
+            }
+        }
+    }
     var currentPage: Int? {
         didSet { updatePageLabels() }
     }
@@ -84,6 +91,7 @@ class ReaderToolbarView: UIView {
             page = 1
         }
         currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), page, totalPages)
+        currentPageValue = page
     }
 
     func updatePageLabels() {
@@ -99,7 +107,6 @@ class ReaderToolbarView: UIView {
             currentPage = 1
         }
         let pagesLeft = totalPages - currentPage
-
         currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), currentPage, totalPages)
         if pagesLeft < 1 {
             pagesLeftLabel.text = nil
