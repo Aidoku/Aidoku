@@ -237,14 +237,6 @@ extension BrowseViewController {
         return cell
     }
 
-    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        sectionIdentifier(for: indexPath.section) == .pinned
-    }
-
-    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        sectionIdentifier(for: indexPath.section) == .pinned
-    }
-
     func tableView(
         _ tableView: UITableView,
         contextMenuConfigurationForRowAt indexPath: IndexPath,
@@ -259,6 +251,7 @@ extension BrowseViewController {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
             switch self.sectionIdentifier(for: indexPath.section) {
+            // Context menu items for a source in Installed section of the table
             case .installed:
                 actions = [
                     UIAction(
@@ -277,18 +270,21 @@ extension BrowseViewController {
                         self.updateDataSource()
                     }
                 ]
+            // Context menu items for a source in Pinned section of the table
             case .pinned:
                 actions = [
                     UIMenu(title: "", options: .displayInline, children: [UIAction(
                         title: NSLocalizedString("REORDER", comment: ""),
                         image: UIImage(systemName: "shuffle")
                     ) { _ in
+                        // Let user re-order sources inside the pinned section.
                         tableView.setEditing(true, animated: true)
                         self.updateNavBar()
                     }]), UIAction(
                         title: NSLocalizedString("UNPIN", comment: ""),
                         image: UIImage(systemName: "pin.slash")
                     ) { _ in
+                        // Remove source from the pinned array, recreate the installed source list and update the table.
                         SourceManager.shared.unpin(source: source)
                         self.viewModel.loadPinnedSources()
                         self.updateDataSource()
@@ -296,6 +292,7 @@ extension BrowseViewController {
                         title: NSLocalizedString("UNINSTALL", comment: ""),
                         image: UIImage(systemName: "trash")
                     ) { _ in
+                        // Remove the source from the installed list, pinned list and update the table
                         SourceManager.shared.remove(source: source)
                         self.viewModel.loadPinnedSources()
                         self.viewModel.loadInstalledSources()
@@ -321,18 +318,9 @@ extension BrowseViewController {
     }
 
     // Ability to edit tableview for a diffable data source.
+    // Changing data in a diffable data source requires its seperate tableview override which can't be done with the view's tableview delegate.
     class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
-        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-            if #available(iOS 15.0, *) {
-                return sectionIdentifier(for: indexPath.section) == .pinned
-            } else {
-                let section = indexPath.section
-                guard section >= 0 else { return false }
-                let sections = self.snapshot().sectionIdentifiers
-                return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
-            }
-        }
-
+        // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             if #available(iOS 15.0, *) {
                 return sectionIdentifier(for: indexPath.section) == .pinned
@@ -344,17 +332,7 @@ extension BrowseViewController {
             }
         }
 
-        func tableView(_ tableView: UITableView,
-                       targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath,
-                       toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-            // Prevent rows from changing sections
-            if sourceIndexPath.section != proposedDestinationIndexPath.section {
-                return sourceIndexPath
-            } else {
-                return proposedDestinationIndexPath
-            }
-        }
-
+        // Move a selected source row from pinned section to a destination index.
         override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
             guard let sourceItem = itemIdentifier(for: sourceIndexPath) else { return }
             guard sourceIndexPath != destinationIndexPath else { return }
@@ -376,6 +354,7 @@ extension BrowseViewController {
                     }
                 }
             }
+            // Save the order and notify the observer to reload table.
             apply(snapshot, animatingDifferences: false)
             NotificationCenter.default.post(name: Notification.Name("updatePinnedList"), object: nil)
         }
@@ -383,6 +362,7 @@ extension BrowseViewController {
     }
 
     private func makeDataSource() -> UITableViewDiffableDataSource<Section, SourceInfo2> {
+        // Use subclass of UITableViewDiffableDataSource to add tableview overrides.
         SourceCellDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
             guard
                 let self = self,
