@@ -19,6 +19,8 @@ struct MangaGridView: View {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
+            } else {
+                Image("MangaPlaceholder")
             }
         }
         .cornerRadius(5)
