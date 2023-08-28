@@ -136,27 +136,33 @@ class ReaderPageView: UIView {
             )
         }
 
-        imageTask = ImagePipeline.shared.loadImage(
-            with: request,
-            progress: { [weak self] _, completed, total in
-                guard let self else { return }
-                self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
-            },
-            completion: { [weak self] result in
-                guard let self else { return }
-                switch result {
-                case .success(let response):
-                    imageView.image = response.image
-                    fixImageSize()
-                    completion?(true)
-                case .failure:
-                    completion?(false)
-                }
-                progressView.isHidden = true
-            }
-        )
+        return await startImageTask(request)
+    }
 
-        return true
+    func startImageTask(_ request: ImageRequest) async -> Bool {
+        await withCheckedContinuation { continuation in
+            imageTask = ImagePipeline.shared.loadImage(
+                with: request,
+                progress: { [weak self] _, completed, total in
+                    guard let self else { return }
+                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+                },
+                completion: { [weak self] result in
+                    guard let self else { return }
+                    switch result {
+                    case .success(let response):
+                        imageView.image = response.image
+                        fixImageSize()
+                        completion?(true)
+                        continuation.resume(returning: true)
+                    case .failure:
+                        completion?(false)
+                        continuation.resume(returning: false)
+                    }
+                    progressView.isHidden = true
+                }
+            )
+        }
     }
 
     func setPageImage(base64: String, key: Int) async -> Bool {
