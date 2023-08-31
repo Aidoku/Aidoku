@@ -21,7 +21,6 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
         }
     }
     var ratio: CGFloat?
-    private var imageTask: ImageTask?
     private var loading = false
 
     var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
@@ -225,7 +224,31 @@ extension ReaderWebtoonImageNode {
             processors: processors
         )
 
-        _ = try? await ImagePipeline.shared.image(for: request, delegate: self)
+        _ = ImagePipeline.shared.loadImage(
+            with: request,
+            progress: { [weak self] _, completed, total in
+                guard let self else { return }
+                Task { @MainActor in
+                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+                }
+            },
+            completion: { [weak self] result in
+                guard let self else { return }
+                loading = false
+                switch result {
+                case .success(let response):
+                    image = response.image
+                    if isNodeLoaded {
+                        displayImage()
+                    }
+                case .failure:
+                    // TODO: handle failure
+                    Task { @MainActor in
+                        self.progressView.setProgress(value: 0, withAnimation: true)
+                    }
+                }
+            }
+        )
     }
 
     private func loadImage(base64: String) {
@@ -292,35 +315,5 @@ extension ReaderWebtoonImageNode {
         let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
         frame = CGRect(origin: .zero, size: size)
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
-    }
-}
-
-// MARK: - Nuke Delegate
-extension ReaderWebtoonImageNode: ImageTaskDelegate {
-
-    func imageTaskCreated(_ task: ImageTask) {
-        imageTask = task
-    }
-
-    func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {
-        loading = false
-        switch result {
-        case .success(let response):
-            image = response.image
-            if isNodeLoaded {
-                displayImage()
-            }
-        case .failure:
-            // TODO: handle failure
-            progressView.setProgress(value: 0, withAnimation: true)
-        }
-    }
-
-    func imageTaskDidCancel(_ task: ImageTask) {
-        // TODO: handle failure
-    }
-
-    func imageTask(_ task: ImageTask, didUpdateProgress progress: ImageTask.Progress) {
-        progressView.setProgress(value: Float(progress.completed) / Float(progress.total), withAnimation: false)
     }
 }

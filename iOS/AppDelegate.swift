@@ -112,6 +112,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         DataLoader.sharedUrlCache.diskCapacity = 0
 
         let pipeline = ImagePipeline {
+            let dataLoader: DataLoader = {
+                let config = URLSessionConfiguration.default
+                config.urlCache = nil
+                return DataLoader(configuration: config)
+            }()
             let dataCache = try? DataCache(name: "xyz.skitty.Aidoku.datacache") // disk cache
             let imageCache = Nuke.ImageCache() // memory cache
             dataCache?.sizeLimit = 500 * 1024 * 1024
@@ -119,6 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             imageCache.countLimit = 150
             $0.dataCache = dataCache
             $0.imageCache = imageCache
+            $0.dataLoader = dataLoader
         }
 
         ImagePipeline.shared = pipeline
