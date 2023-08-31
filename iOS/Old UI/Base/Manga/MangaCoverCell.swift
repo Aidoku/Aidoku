@@ -241,7 +241,7 @@ class MangaCoverCell: UICollectionViewCell {
         )
 
         imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
-            guard let self = self else { return }
+            guard let self else { return }
             switch result {
             case .success(let response):
                 Task { @MainActor in
