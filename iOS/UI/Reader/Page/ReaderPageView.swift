@@ -136,16 +136,33 @@ class ReaderPageView: UIView {
             )
         }
 
-        let success: Bool
+        return await startImageTask(request)
+    }
 
-        do {
-            _ = try await ImagePipeline.shared.image(for: request, delegate: self).image
-            success = true
-        } catch {
-            success = false
+    func startImageTask(_ request: ImageRequest) async -> Bool {
+        await withCheckedContinuation { continuation in
+            imageTask = ImagePipeline.shared.loadImage(
+                with: request,
+                progress: { [weak self] _, completed, total in
+                    guard let self else { return }
+                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+                },
+                completion: { [weak self] result in
+                    guard let self else { return }
+                    switch result {
+                    case .success(let response):
+                        imageView.image = response.image
+                        fixImageSize()
+                        completion?(true)
+                        continuation.resume(returning: true)
+                    case .failure:
+                        completion?(false)
+                        continuation.resume(returning: false)
+                    }
+                    progressView.isHidden = true
+                }
+            )
         }
-
-        return success
     }
 
     func setPageImage(base64: String, key: Int) async -> Bool {
@@ -222,35 +239,5 @@ class ReaderPageView: UIView {
         }
         imageWidthConstraint?.isActive = true
         imageHeightConstraint?.isActive = true
-    }
-}
-
-// MARK: - Nuke Delegate
-extension ReaderPageView: ImageTaskDelegate {
-
-    func imageTaskCreated(_ task: ImageTask) {
-        Task { @MainActor in
-            imageTask = task
-        }
-    }
-
-    func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {
-        switch result {
-        case .success(let response):
-            imageView.image = response.image
-            fixImageSize()
-            completion?(true)
-        case .failure:
-            completion?(false)
-        }
-        progressView.isHidden = true
-    }
-
-    func imageTaskDidCancel(_ task: ImageTask) {
-        completion?(false)
-    }
-
-    func imageTask(_ task: ImageTask, didUpdateProgress progress: ImageTask.Progress) {
-        progressView.setProgress(value: Float(progress.completed) / Float(progress.total), withAnimation: false)
     }
 }

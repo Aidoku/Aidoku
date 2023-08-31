@@ -417,7 +417,7 @@ class MangaDetailHeaderView: UIView {
             processors: [DownsampleProcessor(width: bounds.width)]
         )
 
-        guard let image = try? await ImagePipeline.shared.image(for: request).image else { return }
+        guard let image = try? await ImagePipeline.shared.image(for: request) else { return }
         Task { @MainActor in
             UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
                 self.coverImageView.image = image

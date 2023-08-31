@@ -268,10 +268,21 @@ class MangaGridCell: UICollectionViewCell {
         if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
             imageView.image = image.image
         } else {
-            do {
-                _ = try await ImagePipeline.shared.image(for: request, delegate: self).image
-            } catch {
-                imageTask = nil
+            imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let response):
+                    if response.request.imageId != self.url {
+                        return
+                    }
+                    Task { @MainActor in
+                        UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                            self.imageView.image = response.image
+                        }
+                    }
+                case .failure:
+                    imageTask = nil
+                }
             }
         }
     }
@@ -312,38 +323,6 @@ class MangaGridCell: UICollectionViewCell {
         UIView.animate(withDuration: animated ? 0.3 : 0) {
             self.shadowOverlayView.alpha = 1
             self.selectionView.layer.shadowOpacity = 0
-        }
-    }
-}
-
-// MARK: - Nuke Delegate
-extension MangaGridCell: ImageTaskDelegate {
-
-    func imageTask(_ task: ImageTask, didCompleteWithResult result: Result<ImageResponse, ImagePipeline.Error>) {
-        switch result {
-        case .success(let response):
-            if task.request.imageId != url {
-                return
-            }
-            Task { @MainActor in
-                UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
-                    self.imageView.image = response.image
-                }
-            }
-        case .failure:
-            break
-        }
-    }
-
-    func imageTaskCreated(_ task: ImageTask) {
-        Task { @MainActor in
-            imageTask = task
-        }
-    }
-
-    func imageTaskDidCancel(_ task: ImageTask) {
-        Task { @MainActor in
-            imageTask = nil
         }
     }
 }

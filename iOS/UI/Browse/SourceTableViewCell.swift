@@ -177,20 +177,24 @@ class SourceTableViewCell: UITableViewCell {
             url: url,
             processors: [DownsampleProcessor(width: bounds.width)]
         )
-        do {
-            let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
-            let image = try await ImagePipeline.shared.image(for: request, delegate: self).image
-            Task { @MainActor in
-                if wasCached {
-                    self.iconView.image = image
-                } else {
-                    UIView.transition(with: iconView, duration: 0.3, options: .transitionCrossDissolve) {
-                        self.iconView.image = image
+        let wasCached = ImagePipeline.shared.cache.containsCachedImage(for: request)
+
+        imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let response):
+                Task { @MainActor in
+                    if wasCached {
+                        self.iconView.image = response.image
+                    } else {
+                        UIView.transition(with: self.iconView, duration: 0.3, options: .transitionCrossDissolve) {
+                            self.iconView.image = response.image
+                        }
                     }
                 }
+            case .failure:
+                imageTask = nil
             }
-        } catch {
-            imageTask = nil
         }
     }
 
@@ -208,13 +212,5 @@ class SourceTableViewCell: UITableViewCell {
             )
             getButton.buttonState = installedSource == nil ? .fail : .get
         }
-    }
-}
-
-// MARK: - Nuke Delegate
-extension SourceTableViewCell: ImageTaskDelegate {
-
-    func imageTaskCreated(_ task: ImageTask) {
-        imageTask = task
     }
 }

@@ -14,29 +14,37 @@ struct MangaGridView: View {
     var coverUrl: URL?
 
     var body: some View {
-        LazyImage(url: coverUrl, resizingMode: .aspectFill)
+        LazyImage(url: coverUrl) { state in
+            if let image = state.image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Image("MangaPlaceholder")
+            }
+        }
+        .cornerRadius(5)
+        .foregroundColor(Color(UIColor.red))
+        .overlay(
+            LinearGradient(gradient: Gradient(colors: [
+                Color.black.opacity(0.01),
+                Color.black.opacity(0.7)
+            ]), startPoint: .top, endPoint: .bottom)
             .cornerRadius(5)
-            .foregroundColor(Color(UIColor.red))
-            .overlay(
-                LinearGradient(gradient: Gradient(colors: [
-                    Color.black.opacity(0.01),
-                    Color.black.opacity(0.7)
-                ]), startPoint: .top, endPoint: .bottom)
-                .cornerRadius(5)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .stroke(Color(UIColor.quaternarySystemFill), lineWidth: 1)
-            )
-            .overlay(
-                Text(title ?? "")
-                    .foregroundColor(.white)
-                    .font(.system(size: 15, weight: .medium))
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(2)
-                    .padding(8),
-                alignment: .bottomLeading
-            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 5)
+                .stroke(Color(UIColor.quaternarySystemFill), lineWidth: 1)
+        )
+        .overlay(
+            Text(title ?? "")
+                .foregroundColor(.white)
+                .font(.system(size: 15, weight: .medium))
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .padding(8),
+            alignment: .bottomLeading
+        )
     }
 }
 

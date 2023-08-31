@@ -116,7 +116,7 @@ class HistoryTableViewCell: UITableViewCell {
         else { return }
 
         let request = ImageRequest(url: url, processors: [DownsampleProcessor(size: bounds.size)])
-        if let image = try? await ImagePipeline.shared.image(for: request).image {
+        if let image = try? await ImagePipeline.shared.image(for: request) {
             Task { @MainActor in
                 UIView.transition(with: imageView, duration: 0.3, options: .transitionCrossDissolve) {
                     imageView.image = image
