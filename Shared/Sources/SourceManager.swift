@@ -165,7 +165,6 @@ extension SourceManager {
             pinnedList.append(source.id)
             UserDefaults.standard.set(pinnedList, forKey: key)
         }
-        // Notify Observers
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
 
@@ -177,7 +176,6 @@ extension SourceManager {
             pinnedList.remove(at: index)
             UserDefaults.standard.set(pinnedList, forKey: key)
         }
-        // Notify Observers
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
     }
 }
