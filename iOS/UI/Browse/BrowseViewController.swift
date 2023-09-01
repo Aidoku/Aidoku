@@ -86,21 +86,6 @@ class BrowseViewController: BaseTableViewController {
     }
 
     override func observe() {
-        // update pinned list
-        addObserver(forName: "updatePinnedList") { [weak self] _ in
-            guard let self = self else { return }
-            let snapshot = self.dataSource.snapshot()
-            let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
-            UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
-
-            if sourceList.isEmpty { self.stopEditing() }
-            Task { @MainActor in
-                self.viewModel.loadInstalledSources()
-                self.viewModel.loadPinnedSources()
-                self.viewModel.filterExternalSources()
-                self.updateDataSource()
-            }
-        }
         // source installed/imported/pinned
         addObserver(forName: "updateSourceList") { [weak self] _ in
             guard let self = self else { return }
@@ -134,6 +119,23 @@ class BrowseViewController: BaseTableViewController {
         addObserver(forName: "Browse.languages") { [weak self] _ in
             guard let self = self else { return }
             Task {
+                self.viewModel.filterExternalSources()
+                self.updateDataSource()
+            }
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        dataSource.onSnapShotChange = { [weak self] snapshot in
+            guard let self = self else { return }
+            let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
+            UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
+
+            if sourceList.isEmpty { self.stopEditing() }
+            Task { @MainActor in
+                self.viewModel.loadInstalledSources()
+                self.viewModel.loadPinnedSources()
                 self.viewModel.filterExternalSources()
                 self.updateDataSource()
             }
@@ -317,6 +319,8 @@ extension BrowseViewController {
     // Ability to edit tableview for a diffable data source.
     // Changing data in a diffable data source requires its seperate tableview override which can't be done with the view's tableview delegate.
     class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
+        // Used for callback when snapshot changes
+        var onSnapShotChange: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
         // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             if #available(iOS 15.0, *) {
@@ -353,12 +357,12 @@ extension BrowseViewController {
             }
             // Save the order and notify the observer to reload table.
             apply(snapshot, animatingDifferences: false)
-            NotificationCenter.default.post(name: Notification.Name("updatePinnedList"), object: nil)
+            onSnapShotChange?(snapshot)
         }
 
     }
 
-    private func makeDataSource() -> UITableViewDiffableDataSource<Section, SourceInfo2> {
+    private func makeDataSource() -> SourceCellDataSource {
         // Use subclass of UITableViewDiffableDataSource to add tableview overrides.
         SourceCellDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
             guard
