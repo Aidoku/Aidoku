@@ -93,6 +93,7 @@ class BrowseViewModel {
     }
 
     // filter external sources and updates
+    // swiftlint:disable:next cyclomatic_complexity
     func filterExternalSources() {
         guard
             let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -115,9 +116,9 @@ class BrowseViewModel {
                 }
             }
             // remove pinned sources from external list
-            if let pinnedSources = pinnedSources.first(where: { $0.sourceId == info.id }) {
+            if let pinnedSource = pinnedSources.first(where: { $0.sourceId == info.id }) {
                 // check if it's an update
-                if info.version > pinnedSources.version {
+                if info.version > pinnedSource.version {
                     update = true
                 } else {
                     return nil
