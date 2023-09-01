@@ -205,7 +205,8 @@ extension BrowseViewController {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if
-            sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
+            case let sectionId = sectionIdentifier(for: indexPath.section),
+            sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         {
@@ -243,13 +244,23 @@ extension BrowseViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
-            sectionIdentifier(for: indexPath.section) == .installed || sectionIdentifier(for: indexPath.section) == .pinned,
+            case let sectionId = sectionIdentifier(for: indexPath.section),
+            sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         else { return nil }
         if tableView.isEditing { return nil } // Hide context menu when the user is reshuffling sources.
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
+
+            let uninstallAction = UIAction(
+                title: NSLocalizedString("UNINSTALL", comment: ""),
+                image: UIImage(systemName: "trash")
+            ) { _ in
+                SourceManager.shared.remove(source: source)
+                self.viewModel.loadInstalledSources()
+                self.updateDataSource()
+            }
             switch self.sectionIdentifier(for: indexPath.section) {
             // Context menu items for a source in Installed section of the table
             case .installed:
@@ -261,14 +272,8 @@ extension BrowseViewController {
                         SourceManager.shared.pin(source: source)
                         self.viewModel.loadPinnedSources()
                         self.updateDataSource()
-                    }, UIAction(
-                        title: NSLocalizedString("UNINSTALL", comment: ""),
-                        image: UIImage(systemName: "trash")
-                    ) { _ in
-                        SourceManager.shared.remove(source: source)
-                        self.viewModel.loadInstalledSources()
-                        self.updateDataSource()
-                    }
+                    },
+                    uninstallAction
                 ]
             // Context menu items for a source in Pinned section of the table
             case .pinned:
@@ -288,16 +293,8 @@ extension BrowseViewController {
                         SourceManager.shared.unpin(source: source)
                         self.viewModel.loadPinnedSources()
                         self.updateDataSource()
-                    }, UIAction(
-                        title: NSLocalizedString("UNINSTALL", comment: ""),
-                        image: UIImage(systemName: "trash")
-                    ) { _ in
-                        // Remove the source from the installed list, pinned list and update the table
-                        SourceManager.shared.remove(source: source)
-                        self.viewModel.loadPinnedSources()
-                        self.viewModel.loadInstalledSources()
-                        self.updateDataSource()
-                    }
+                    },
+                    uninstallAction
                 ]
             default:
                 break
@@ -450,7 +447,7 @@ extension BrowseViewController {
         }
     }
 
-    /// Returns the identifier for the provided section index.
+    // Returns the identifier for the provided section index.
     private func sectionIdentifier(for section: Int) -> Section? {
         if #available(iOS 15.0, *) {
             return dataSource.sectionIdentifier(for: section)
@@ -471,7 +468,6 @@ extension BrowseViewController: UISearchResultsUpdating {
     }
 }
 
-// Updating view
 extension BrowseViewController {
     func updateNavBar() {
         if tableView.isEditing {
