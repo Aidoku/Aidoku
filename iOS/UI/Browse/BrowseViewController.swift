@@ -333,7 +333,7 @@ extension BrowseViewController {
                 let section = indexPath.section
                 guard section >= 0 else { return false }
                 let sections = self.snapshot().sectionIdentifiers
-                return ((sections.count > section ? sections[section]: Section.installed) == Section.pinned)
+                return (sections.count > section ? sections[section]: Section.installed) == Section.pinned
             }
         }
 
