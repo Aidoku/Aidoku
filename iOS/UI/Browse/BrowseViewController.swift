@@ -323,7 +323,7 @@ extension BrowseViewController {
     // Ability to edit tableview for a diffable data source.
     // Changing data in a diffable data source requires its seperate tableview override which can't be done with the view's tableview delegate.
     class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
-        // Used for callback when snapshot changes
+        // Used for callback when cells are reordered in the pinned section.
         var onReorder: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
         // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
