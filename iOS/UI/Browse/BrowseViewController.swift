@@ -267,8 +267,7 @@ extension BrowseViewController {
             switch self.sectionIdentifier(for: indexPath.section) {
             // Context menu items for a source in Installed section of the table
             case .installed:
-                actions =
-                [
+                actions = [
                     UIAction(
                         title: NSLocalizedString("PIN", comment: ""),
                         image: UIImage(systemName: "pin")
@@ -281,16 +280,17 @@ extension BrowseViewController {
                 ]
             // Context menu items for a source in Pinned section of the table
             case .pinned:
-                actions =
-                [
-                    UIMenu(title: "", options: .displayInline, children: [UIAction(
-                        title: NSLocalizedString("REORDER", comment: ""),
-                        image: UIImage(systemName: "shuffle")
-                    ) { _ in
-                        // Let user re-order sources inside the pinned section.
-                        tableView.setEditing(true, animated: true)
-                        self.updateNavbar()
-                    }]),
+                actions = [
+                    UIMenu(title: "", options: .displayInline, children: [
+                        UIAction(
+                            title: NSLocalizedString("REORDER", comment: ""),
+                            image: UIImage(systemName: "shuffle")
+                        ) { _ in
+                            // Let user re-order sources inside the pinned section.
+                            tableView.setEditing(true, animated: true)
+                            self.updateNavbar()
+                        }
+                    ]),
                     UIAction(
                         title: NSLocalizedString("UNPIN", comment: ""),
                         image: UIImage(systemName: "pin.slash")
