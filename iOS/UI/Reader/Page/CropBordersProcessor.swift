@@ -7,7 +7,7 @@
 
 import Foundation
 import Nuke
-import CoreGraphics
+import UIKit
 
 struct CropBordersProcessor: ImageProcessing {
 
@@ -17,15 +17,26 @@ struct CropBordersProcessor: ImageProcessing {
 
     private let whiteThreshold = 0xAA
     private let blackThreshold = 0x05
+    private let colorSpace = CGColorSpaceCreateDeviceRGB()
 
     func process(_ image: PlatformImage) -> PlatformImage? {
         guard let cgImage = image.cgImage else { return image }
 
         let newRect = createCropRect(cgImage)
-        if let croppedImage = cgImage.cropping(to: newRect) {
-            return PlatformImage(cgImage: croppedImage)
+        guard !newRect.isEmpty else { return image }
+
+        let newSize = CGSize(width: newRect.width, height: newRect.height)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { context in
+            // UIImage and CGContext coordinates are flipped.
+            var transform = CGAffineTransform(scaleX: 1, y: -1)
+            transform = transform.translatedBy(x: 0, y: -newRect.height)
+            context.cgContext.concatenate(transform)
+
+            if let croppedImage = cgImage.cropping(to: newRect) {
+                context.cgContext.draw(croppedImage, in: CGRect(origin: .zero, size: newSize))
+            }
         }
-        return image
     }
 
     func createCropRect(_ cgImage: CGImage) -> CGRect {
@@ -91,8 +102,6 @@ struct CropBordersProcessor: ImageProcessing {
     func createARGBBitmapContext(width: Int, height: Int) -> CGContext? {
 
         let bitmapBytesPerRow = width * 4
-
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
 
         let context = CGContext(
             data: nil,
