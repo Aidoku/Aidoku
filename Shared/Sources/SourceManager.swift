@@ -156,6 +156,28 @@ extension SourceManager {
             NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
         }
     }
+
+    // Pin a source in browse tab.
+    func pin(source: Source) {
+        let key = "Browse.pinnedList"
+        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        if !pinnedList.contains(source.id) {
+            pinnedList.append(source.id)
+            UserDefaults.standard.set(pinnedList, forKey: key)
+        }
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+    }
+
+    // Unpin a source in browse tab.
+    func unpin(source: Source) {
+        let key = "Browse.pinnedList"
+        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        if let index = pinnedList.firstIndex(of: source.id) {
+            pinnedList.remove(at: index)
+            UserDefaults.standard.set(pinnedList, forKey: key)
+        }
+        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+    }
 }
 
 // MARK: - Source List Management
