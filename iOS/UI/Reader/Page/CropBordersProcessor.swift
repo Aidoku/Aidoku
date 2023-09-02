@@ -29,12 +29,22 @@ struct CropBordersProcessor: ImageProcessing {
     }
 
     func createCropRect(_ cgImage: CGImage) -> CGRect {
-        guard let context = createARGBBitmapContextFromImage(inImage: cgImage) else {
+        let height = cgImage.height
+        let width = cgImage.width
+        let heightFloat = CGFloat(height)
+        let widthFloat = CGFloat(width)
+
+        let bitmapBytesPerRow = width * 4
+        let bitmapByteCount = bitmapBytesPerRow * height
+        let bitmapData = UnsafeMutablePointer<UInt8>.allocate(capacity: bitmapByteCount)
+        defer {
+            bitmapData.deallocate()
+        }
+
+        guard let context = createARGBBitmapContext(data: bitmapData, width: width, height: height) else {
             return CGRect.zero
         }
 
-        let height = CGFloat(cgImage.height)
-        let width = CGFloat(cgImage.width)
         let rect = CGRect(x: 0, y: 0, width: width, height: height)
         context.draw(cgImage, in: rect)
 
@@ -42,20 +52,18 @@ struct CropBordersProcessor: ImageProcessing {
             return CGRect.zero
         }
 
-        var lowX = width
-        var lowY = height
+        var lowX = widthFloat
+        var lowY = heightFloat
         var highX: CGFloat = 0
         var highY: CGFloat = 0
-        let heightInt = Int(height)
-        let widthInt = Int(width)
 
         // Filter through data and look for non-transparent pixels.
-        for y in 0 ..< heightInt {
+        for y in 0 ..< height {
             let y = CGFloat(y)
 
-            for x in 0 ..< widthInt {
+            for x in 0 ..< width {
                 let x = CGFloat(x)
-                let pixelIndex = (width * y + x) * 4 /* 4 for A, R, G, B */
+                let pixelIndex = (widthFloat * y + x) * 4 /* 4 for A, R, G, B */
 
                 // crop transparent
                 if data[Int(pixelIndex)] == 0 { continue }
@@ -89,23 +97,14 @@ struct CropBordersProcessor: ImageProcessing {
         return CGRect(x: lowX, y: lowY, width: highX - lowX, height: highY - lowY)
     }
 
-    func createARGBBitmapContextFromImage(inImage: CGImage) -> CGContext? {
-
-        let width = inImage.width
-        let height = inImage.height
+    func createARGBBitmapContext(data: UnsafeMutableRawPointer, width: Int, height: Int) -> CGContext? {
 
         let bitmapBytesPerRow = width * 4
-        let bitmapByteCount = bitmapBytesPerRow * height
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-        let bitmapData = malloc(bitmapByteCount)
-        if bitmapData == nil {
-            return nil
-        }
-
         let context = CGContext(
-            data: bitmapData,
+            data: data,
             width: width,
             height: height,
             bitsPerComponent: 8,
