@@ -34,23 +34,14 @@ struct CropBordersProcessor: ImageProcessing {
         let heightFloat = CGFloat(height)
         let widthFloat = CGFloat(width)
 
-        let bitmapBytesPerRow = width * 4
-        let bitmapByteCount = bitmapBytesPerRow * height
-        let bitmapData = UnsafeMutablePointer<UInt8>.allocate(capacity: bitmapByteCount)
-        defer {
-            bitmapData.deallocate()
-        }
-
-        guard let context = createARGBBitmapContext(data: bitmapData, width: width, height: height) else {
+        guard
+            let context = createARGBBitmapContext(width: width, height: height),
+            let data = context.data?.assumingMemoryBound(to: UInt8.self)
+        else {
             return CGRect.zero
         }
 
-        let rect = CGRect(x: 0, y: 0, width: width, height: height)
-        context.draw(cgImage, in: rect)
-
-        guard let data = context.data?.assumingMemoryBound(to: UInt8.self) else {
-            return CGRect.zero
-        }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
 
         var lowX = widthFloat
         var lowY = heightFloat
@@ -97,14 +88,14 @@ struct CropBordersProcessor: ImageProcessing {
         return CGRect(x: lowX, y: lowY, width: highX - lowX, height: highY - lowY)
     }
 
-    func createARGBBitmapContext(data: UnsafeMutableRawPointer, width: Int, height: Int) -> CGContext? {
+    func createARGBBitmapContext(width: Int, height: Int) -> CGContext? {
 
         let bitmapBytesPerRow = width * 4
 
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
         let context = CGContext(
-            data: data,
+            data: nil,
             width: width,
             height: height,
             bitsPerComponent: 8,
