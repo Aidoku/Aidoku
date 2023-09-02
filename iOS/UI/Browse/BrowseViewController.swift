@@ -343,17 +343,17 @@ extension BrowseViewController {
 
             var snapshot = self.snapshot()
 
-            if let destinationItem = destinationItem {
-                if let sourceIndex = snapshot.indexOfItem(sourceItem),
-                   let destinationIndex = snapshot.indexOfItem(destinationItem) {
+            if
+                let destinationItem = destinationItem,
+                let sourceIndex = snapshot.indexOfItem(sourceItem),
+                let destinationIndex = snapshot.indexOfItem(destinationItem)
+            {
+                snapshot.deleteItems([sourceItem])
 
-                    snapshot.deleteItems([sourceItem])
-
-                    if destinationIndex > sourceIndex {
-                        snapshot.insertItems([sourceItem], afterItem: destinationItem)
-                    } else {
-                        snapshot.insertItems([sourceItem], beforeItem: destinationItem)
-                    }
+                if destinationIndex > sourceIndex {
+                    snapshot.insertItems([sourceItem], afterItem: destinationItem)
+                } else {
+                    snapshot.insertItems([sourceItem], beforeItem: destinationItem)
                 }
             }
             // Save the order and notify the observer to reload table.
