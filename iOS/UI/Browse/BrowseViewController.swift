@@ -127,7 +127,7 @@ class BrowseViewController: BaseTableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        dataSource.onSnapShotChange = { [weak self] snapshot in
+        dataSource.onReorder = { [weak self] snapshot in
             guard let self = self else { return }
             let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
             UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
@@ -246,12 +246,13 @@ extension BrowseViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
+            !tableView.isEditing, // do not allow context menu when the sources are being reordered
             case let sectionId = sectionIdentifier(for: indexPath.section),
             sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         else { return nil }
-        if tableView.isEditing { return nil } // Hide context menu when the user is reshuffling sources.
+
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
 
@@ -320,7 +321,7 @@ extension BrowseViewController {
     // Changing data in a diffable data source requires its seperate tableview override which can't be done with the view's tableview delegate.
     class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
         // Used for callback when snapshot changes
-        var onSnapShotChange: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
+        var onReorder: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
         // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             if #available(iOS 15.0, *) {
@@ -357,7 +358,7 @@ extension BrowseViewController {
             }
             // Save the order and notify the observer to reload table.
             apply(snapshot, animatingDifferences: false)
-            onSnapShotChange?(snapshot)
+            onReorder?(snapshot)
         }
 
     }
