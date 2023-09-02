@@ -37,7 +37,7 @@ class BrowseViewController: BaseTableViewController {
         navigationItem.searchController = searchController
 
         // Initial navbar with migration and lang select buttons.
-        self.updateNavBar()
+        self.updateNavbar()
 
         // configure table view
         tableView.dataSource = dataSource
@@ -190,7 +190,7 @@ class BrowseViewController: BaseTableViewController {
 
     @objc func stopEditing() {
         tableView.setEditing(false, animated: true)
-        self.updateNavBar()
+        self.updateNavbar()
     }
 }
 
@@ -287,7 +287,7 @@ extension BrowseViewController {
                     ) { _ in
                         // Let user re-order sources inside the pinned section.
                         tableView.setEditing(true, animated: true)
-                        self.updateNavBar()
+                        self.updateNavbar()
                     }]), UIAction(
                         title: NSLocalizedString("UNPIN", comment: ""),
                         image: UIImage(systemName: "pin.slash")
@@ -476,7 +476,7 @@ extension BrowseViewController: UISearchResultsUpdating {
 }
 
 extension BrowseViewController {
-    func updateNavBar() {
+    func updateNavbar() {
         if tableView.isEditing {
             Task { @MainActor in
                 navigationItem.rightBarButtonItems = [UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(stopEditing))]
