@@ -336,8 +336,10 @@ extension BrowseViewController {
 
         // Move a selected source row from pinned section to a destination index.
         override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-            guard let sourceItem = itemIdentifier(for: sourceIndexPath) else { return }
-            guard sourceIndexPath != destinationIndexPath else { return }
+            guard
+                let sourceItem = itemIdentifier(for: sourceIndexPath),
+                sourceIndexPath != destinationIndexPath
+            else { return }
 
             let destinationItem = itemIdentifier(for: destinationIndexPath)
 
