@@ -36,8 +36,9 @@ struct CropBordersProcessor: ImageProcessing {
 
         let bitmapBytesPerRow = width * 4
         let bitmapByteCount = bitmapBytesPerRow * height
-        guard let bitmapData = malloc(bitmapByteCount) else {
-            return CGRect.zero
+        let bitmapData = UnsafeMutablePointer<UInt8>.allocate(capacity: bitmapByteCount)
+        defer {
+            bitmapData.deallocate()
         }
 
         guard let context = createARGBBitmapContext(data: bitmapData, width: width, height: height) else {
@@ -92,8 +93,6 @@ struct CropBordersProcessor: ImageProcessing {
                 highY = max(y, highY)
             }
         }
-
-        bitmapData.deallocate()
 
         return CGRect(x: lowX, y: lowY, width: highX - lowX, height: highY - lowY)
     }
