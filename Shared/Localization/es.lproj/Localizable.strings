@@ -330,3 +330,5 @@
 "PILLARBOX_AMOUNT" = "Cantidad de Pillarbox";
 "PILLARBOX" = "Efecto Pillarbox";
 "PILLARBOX_ORIENTATION_INFO" = "La orientación del Pillarbox determina en qué orientaciones debe activarse el efecto.";
+"COVER" = "Portada";
+"CROP_BORDERS" = "Límites de los bordes";

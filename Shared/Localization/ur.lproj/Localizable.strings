@@ -54,3 +54,75 @@
 "LAST_OPENED" = "آخری بار کھولا گیا";
 "CATEGORY_ADD_TEXT" = "تخلیق کرنے کے لئے نئے زمرے کا عنوان درج کریں.";
 "BROWSE_NO_SOURCES" = "کوئی ذرائع نہیں";
+"UPDATES" = "نیا بنانا";
+"INSTALLED" = "قائم کردہ";
+"EXTERNAL" = "خارجی";
+"LANGUAGE" = "زبان";
+"LANGUAGES" = "زبانیں";
+"INFO" = "معلومات";
+"VERSION" = "انداز";
+"BUILD" = "ساخت";
+"BUTTON_FILTER" = "مقطر کرنا";
+"ADDING_SOURCES_GUIDE_BUTTON" = "sذرائع گائیڈ شامل کرنا";
+"BUTTON_UPDATE" = "نیا بنانا";
+"BUTTON_GET" = "لانا";
+"BUTTON_ERROR" = "سہو";
+"UNINSTALL" = "نصب کرنہٹانا";
+
+// Source
+"SOURCE_INFO" = "ماخذ کی معلومات";
+"LIST_HEADER" = "دَرجِ فہرِست";
+"LIST_ALL" = "سب";
+
+// Manga
+"UNTITLED" = "غیر خطاب یافتہ";
+"ONGOING" = "واقعہ";
+"CANCELLED" = "منسوخ";
+"COMPLETED" = "تمام";
+"HIATUS" = "نقص";
+"SUGGESTIVE" = "اشتعال انگیز";
+"SOURCE_ORDER" = "سورس آرڈر";
+"MISSING_SOURCE" = "لاپتہ ذریعہ";
+"MISSING_SOURCE_TEXT" = "ایسا لگتا ہے کہ اس منگا کے لیے اصل ماخذ غائب ہے۔ براہ کرم اسے دوبارہ ڈاؤن لوڈ کریں یا اس عنوان کو اپنی لائبریری سے ہٹا دیں۔";
+"SELECT_ALL" = "تمام منتخب کریں";
+"DESELECT_ALL" = "سبھی کو غیر منتخب کریں۔";
+
+// Reader
+"CHAPTER" = "باب";
+"CHAPTERS" = "ابواب";
+"MARK_PREVIOUS" = "پچھلے نشان زد کریں۔";
+"MARK_READ" = "پڑھا ہوا نشان زد کریں۔";
+"MARK_UNREAD" = "اس کے اوپرنشان لگایں کہ پڑھا نیں ہوا";
+"PREVIOUS_COLON" = "پچھلا:";
+"NEXT_COLON" = "اگلے:";
+"FINISHED_COLON" = "ختم:";
+"NO_NEXT_CHAPTER" = "کوئی اگلا باب نہیں ہے۔";
+"NO_PREVIOUS_CHAPTER" = "کوئی پچھلا باب نہیں ہے۔";
+"READER_SETTINGS" = "پڑھنے کی ترتیبات";
+"READING_MODE" = "پڑھنے کا موڈ";
+"DEFAULT" = "کوتاهی";
+"LTR" = "بائیں سے دائیں";
+"RTL" = "دائیں سے بائیں";
+"VERTICAL" = "عمودی";
+"VERTICAL_SCROLL" = "عمودی طومار";
+"INFINITE_VERTICAL_SCROLL" = "عمودی سکرولنگ لامحدود";
+"CURRENT_COLON" = "موجودہ:";
+"EXPERIMENTAL" = "تجرباتی";
+"SAVE_TO_PHOTOS" = "تصاویر میں محفوظ کریں";
+"SELECT_CHAPTERS" = "ابواب منتخب کریں";
+"NO_CHAPTERS" = "کوئی باب نہیں۔";
+"MORE" = "زیادہ";
+"START_READING" = "پڑھنا شروع کرو";
+"CONTINUE_READING" = "پڑھنا جاری رکھو";
+"READ" = "پڑھیں";
+"NO_CHAPTERS_AVAILABLE" = "کوئی باب دستیاب نہیں ہے۔";
+"UNREAD" = "نہ پڑھیں";
+"MARK" = "نشان";
+"MARK_ALL" = "سب کو نشان زد کریں";
+"%@_AGO" = "پہلے";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "یہ اس باب کی تاریخ کو ہٹا دے گا۔ کیا آپ واقعی جاری رکھنا چاہتے ہیں؟";
+"PAGE_X" = "صفحہ";
+
+// History
+"HISTORY" = "تاریخ";
+"REMOVE_ALL_MANGA_HISTORY" = "منگا کی تمام تاریخ کو ہٹا دیں۔";

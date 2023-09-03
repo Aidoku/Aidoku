@@ -330,3 +330,5 @@
 "PILLARBOX" = "填充";
 "PILLARBOX_ORIENTATION" = "填充方向";
 "PILLARBOX_ORIENTATION_INFO" = "填充方向决定了哪些方向应启用填充。";
+"COVER" = "封面";
+"CROP_BORDERS" = "裁剪边框";
