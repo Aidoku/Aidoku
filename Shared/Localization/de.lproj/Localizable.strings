@@ -15,7 +15,7 @@
 "LIBRARY" = "Bibliothek";
 "LIBRARY_SEARCH" = "In der Bibliothek finden";
 "LIBRARY_EMPTY" = "Bibliothek leer";
-"CLEAR" = "Löschen / Klar";
+"CLEAR" = "Löschen";
 "DOWNLOADED" = "Heruntergeladen";
 "SHARE" = "Teilen";
 "LOADING_ELLIPSIS" = "Wird geladen…";
@@ -330,3 +330,4 @@
 "BOTH" = "Beide";
 "PILLARBOX_AMOUNT" = "Randgröße";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientierung bestimmt in welcher Orientierung ein schwarzer Rand hinzugefügt werden soll.";
+"COVER" = "Deckblatt";

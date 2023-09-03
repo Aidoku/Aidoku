@@ -259,8 +259,8 @@
 "STOP_TRACKING" = "Остановить отслеживание";
 "SCORE" = "Счёт";
 "READING" = "Читаю";
-"PLANNING" = "Планирую начать";
-"DROPPED" = "Бросил";
+"PLANNING" = "В планах";
+"DROPPED" = "Брошено";
 "MANHWA" = "Манхва";
 "NOT_PUBLISHED" = "Не опубликовано";
 "MANGA" = "Манга";
@@ -318,7 +318,7 @@
 "BOTH" = "Оба";
 "PINNED" = "Закрепленные";
 "MANHUA" = "Маньхуа";
-"LIGHT_NOVEL" = "Легка новелла";
+"LIGHT_NOVEL" = "Легкая новелла";
 "TRACK" = "Отслеживать";
 "CLEAR_TRACKED_MANGA" = "Очистить отслеживаемую мангу";
 "REMOVE_FROM_CATEGORY" = "Удалить из Категории";

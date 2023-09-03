@@ -144,7 +144,7 @@
 "UNINSTALL" = "Desinstalar";
 "INFO" = "Informação";
 "VERSION" = "Versão";
-"BUILD" = "Versão";
+"BUILD" = "Compilação";
 "CANCELLED" = "Cancelado";
 "COMPLETED" = "Completo";
 "SELECT_CHAPTERS" = "Selecionar Capítulos";
@@ -274,7 +274,7 @@
 "PLANNING" = "Planejamento";
 "DROPPED" = "Abandonado";
 "STOP_TRACKING" = "Deixar de Seguir";
-"ONESHOT" = "One-Shot";
+"ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Não Publicado";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
@@ -330,3 +330,5 @@
 "MIGRATE_%i_ITEMS?" = "Migrar elementos %i?";
 "DEFAULT_READING_MODE" = "Modo de leitura padrão";
 "PILLARBOX_AMOUNT" = "Quantidade de Pillarbox";
+"COVER" = "Capa";
+"CROP_BORDERS" = "Cortar Bordas";
