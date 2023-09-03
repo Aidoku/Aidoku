@@ -326,3 +326,8 @@
 "ALL_CHAPTERS_READ" = "Tous les chapitres lus";
 "BOTH" = "Les deux";
 "DEFAULT_READING_MODE" = "Mode de lecture par défaut";
+"COVER" = "Couverture";
+"CROP_BORDERS" = "Rogner les bordures";
+"PIN" = "Épingler";
+"REORDER" = "Réorganiser";
+"UNPIN" = "Désépingler";
