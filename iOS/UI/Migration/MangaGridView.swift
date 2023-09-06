@@ -9,7 +9,6 @@ import SwiftUI
 import NukeUI
 
 struct MangaGridView: View {
-
     var title: String?
     var coverUrl: URL?
 
@@ -18,11 +17,14 @@ struct MangaGridView: View {
             if let image = state.image {
                 image
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .aspectRatio(2/3, contentMode: .fill)
             } else {
                 Image("MangaPlaceholder")
+                    .resizable()
+                    .aspectRatio(2/3, contentMode: .fill)
             }
         }
+        .animation(.default)
         .cornerRadius(5)
         .foregroundColor(Color(UIColor.red))
         .overlay(
@@ -49,7 +51,6 @@ struct MangaGridView: View {
 }
 
 struct PlaceholderMangaGridView: View {
-
     var body: some View {
         Image("MangaPlaceholder")
             .resizable()

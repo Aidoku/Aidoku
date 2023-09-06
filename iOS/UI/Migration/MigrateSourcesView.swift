@@ -30,7 +30,9 @@ struct MigrateSourcesView: View {
                 HStack {
                     LazyImage(url: source.coverUrl) { state in
                         if let image = state.image {
-                            image // display loaded image
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
                         } else {
                             Image("MangaPlaceholder") // placeholder
                         }
