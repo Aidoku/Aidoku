@@ -18,23 +18,27 @@ struct CropBordersProcessor: ImageProcessing {
     private let whiteThreshold = 0xAA
     private let blackThreshold = 0x05
     private let colorSpace = CGColorSpaceCreateDeviceRGB()
+    private let downscale = 0.4
 
     func process(_ image: PlatformImage) -> PlatformImage? {
         guard let cgImage = image.cgImage else { return image }
 
-        let newRect = createCropRect(cgImage)
-        guard !newRect.isEmpty else { return image }
+        return autoreleasepool {
+            let downsampledImage = downsampleImage(image)
+            guard let downsampledCGImage = downsampledImage.cgImage else { return image }
+            let newRect = createCropRect(downsampledCGImage)
+            guard !newRect.isEmpty else { return image }
 
-        let newSize = CGSize(width: newRect.width, height: newRect.height)
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-        return renderer.image { context in
-            // UIImage and CGContext coordinates are flipped.
-            var transform = CGAffineTransform(scaleX: 1, y: -1)
-            transform = transform.translatedBy(x: 0, y: -newRect.height)
-            context.cgContext.concatenate(transform)
+            let renderer = UIGraphicsImageRenderer(size: newRect.size)
+            return renderer.image { context in
+                // UIImage and CGContext coordinates are flipped.
+                var transform = CGAffineTransform(scaleX: 1, y: -1)
+                transform = transform.translatedBy(x: 0, y: -newRect.height)
+                context.cgContext.concatenate(transform)
 
-            if let croppedImage = cgImage.cropping(to: newRect) {
-                context.cgContext.draw(croppedImage, in: CGRect(origin: .zero, size: newSize))
+                if let croppedImage = cgImage.cropping(to: newRect) {
+                    context.cgContext.draw(croppedImage, in: CGRect(origin: .zero, size: newRect.size))
+                }
             }
         }
     }
@@ -96,7 +100,7 @@ struct CropBordersProcessor: ImageProcessing {
             }
         }
 
-        return CGRect(x: lowX, y: lowY, width: highX - lowX, height: highY - lowY)
+        return CGRect(x: lowX / downscale, y: lowY / downscale, width: (highX - lowX) / downscale, height: (highY - lowY) / downscale)
     }
 
     func createARGBBitmapContext(width: Int, height: Int) -> CGContext? {
@@ -114,5 +118,35 @@ struct CropBordersProcessor: ImageProcessing {
         )
 
         return context
+    }
+
+    func downsampleImage(_ image: PlatformImage) -> PlatformImage {
+        guard let data = image.jpegData(compressionQuality: 0) else {
+            return image
+        }
+
+        let finalSize = CGSize(
+            width: CGFloat(round(image.size.width * downscale)),
+            height: CGFloat(round(image.size.height * downscale))
+        )
+
+        let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let imageSource = CGImageSourceCreateWithData(data as CFData, imageSourceOptions) else {
+            return image
+        }
+
+        let maxDimension = round(max(finalSize.width, finalSize.height))
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ] as [CFString: Any] as CFDictionary
+
+        guard let output = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options) else {
+            return image
+        }
+
+        return PlatformImage(cgImage: output, scale: 1, orientation: image.imageOrientation)
     }
 }
