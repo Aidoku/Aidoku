@@ -570,7 +570,7 @@ class MangaDetailHeaderView: UIView {
         menuController.menuItems = [UIMenuItem(title: NSLocalizedString("COPY", comment: ""), action: #selector(copyTitleText))]
         menuController.showMenu(from: recognizerView, rect: recognizerView.frame)
     }
-    
+
     @objc private func copyTitleText() {
         UIPasteboard.general.string = titleLabel.text
     }
