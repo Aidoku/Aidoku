@@ -9,6 +9,7 @@
 "RESET" = "Redefinir";
 "DELETE" = "Excluir";
 "RENAME" = "Renomear";
+"COPY" = "Copiar";
 
 // Library
 "LIBRARY" = "Biblioteca";

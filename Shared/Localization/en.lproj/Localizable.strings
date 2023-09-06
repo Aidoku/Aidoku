@@ -19,6 +19,7 @@
 "CLEAR" = "Clear";
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
+"COPY" = "Copy";
 
 // Downloads
 "DOWNLOAD" = "Download";

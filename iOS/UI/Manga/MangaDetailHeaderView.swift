@@ -80,8 +80,13 @@ class MangaDetailHeaderView: UIView {
     // title label
     private lazy var titleLabel: UILabel = {
         let titleLabel = UILabel()
+
+        let titleLongPress = UILongPressGestureRecognizer(target: self, action: #selector(titlePressed))
+        titleLabel.addGestureRecognizer(titleLongPress)
+
         titleLabel.numberOfLines = 3
         titleLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+        titleLabel.isUserInteractionEnabled = true
         return titleLabel
     }()
 
@@ -554,6 +559,20 @@ class MangaDetailHeaderView: UIView {
     }
     @objc private func bookmarkHoldCancelled() {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
+    }
+
+    @objc private func titlePressed(_ recognizer: UIGestureRecognizer) {
+        guard
+            recognizer.state == .began,
+            let recognizerView = recognizer.view
+        else { return }
+        let menuController = UIMenuController.shared
+        menuController.menuItems = [UIMenuItem(title: NSLocalizedString("COPY", comment: ""), action: #selector(copyTitleText))]
+        menuController.showMenu(from: recognizerView, rect: recognizerView.frame)
+    }
+    
+    @objc private func copyTitleText() {
+        UIPasteboard.general.string = titleLabel.text
     }
 }
 
