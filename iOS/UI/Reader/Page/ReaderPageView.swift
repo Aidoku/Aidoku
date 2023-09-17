@@ -123,11 +123,11 @@ class ReaderPageView: UIView {
             }
 
             var processors: [ImageProcessing] = []
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
-            }
             if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                 processors.append(CropBordersProcessor())
+            }
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
             }
 
             request = ImageRequest(
@@ -182,15 +182,15 @@ class ReaderPageView: UIView {
 
         if let data = Data(base64Encoded: base64) {
             if var image = UIImage(data: data) {
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
+                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                    let processor = CropBordersProcessor()
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
                     }
                 }
-                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                    let processor = CropBordersProcessor()
+                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
