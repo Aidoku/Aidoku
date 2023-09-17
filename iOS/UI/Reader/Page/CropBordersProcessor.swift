@@ -24,14 +24,9 @@ struct CropBordersProcessor: ImageProcessing {
         guard let cgImage = image.cgImage else { return image }
 
         return autoreleasepool {
-            var downsampledImage = image
-            var scale: CGFloat = 1
-            if !UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                downsampledImage = downsampleImage(image)
-                scale = downscale
-            }
+            let downsampledImage = downsampleImage(image)
             guard let downsampledCGImage = downsampledImage.cgImage else { return image }
-            let newRect = createCropRect(downsampledCGImage, scale: scale)
+            let newRect = createCropRect(downsampledCGImage, scale: downscale)
             guard !newRect.isEmpty else { return image }
 
             let renderer = UIGraphicsImageRenderer(size: newRect.size)
