@@ -12,39 +12,29 @@ class ExpandableTextView: UIView {
     weak var sizeChangeListener: SizeChangeListenerDelegate?
 
     var text: String? {
-        get {
-            textLabel.text
-        }
-        set {
-            textLabel.text = newValue
-            invalidateIntrinsicContentSize()
+        didSet {
+            initText()
         }
     }
-    var expanded = false {
+
+    private var expanded = false {
         didSet {
             if expanded {
-                UIView.transition(with: self, duration: 0.3, options: .transitionCrossDissolve) {
-                    self.textLabel.numberOfLines = 0
-                    self.invalidateIntrinsicContentSize()
-//                    self.host?.view.setNeedsLayout()
-                    self.moreButton.alpha = 0
-                    self.fadeView.alpha = 0
-                    self.sizeChangeListener?.sizeChanged(self.bounds.size)
-                }
+                showFullText()
             } else {
-                textLabel.numberOfLines = 4
-                invalidateIntrinsicContentSize()
-                self.sizeChangeListener?.sizeChanged(self.bounds.size)
-                moreButton.alpha = 1
-                fadeView.alpha = 1
+                initText()
             }
         }
     }
 
-    let textLabel = UILabel()
-    let moreButton = UIButton(type: .roundedRect)
-    let fadeView = UIView()
-    let fadeGradient = CAGradientLayer()
+    private let textLabel = UILabel()
+
+    private let previewLength = 200
+    private lazy var tapGestureRecognizer: UITapGestureRecognizer = {
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self,
+                                                          action: #selector(toggleExpanded))
+        return tapGestureRecognizer
+    }()
 
     override var intrinsicContentSize: CGSize {
         textLabel.intrinsicContentSize
@@ -67,58 +57,59 @@ class ExpandableTextView: UIView {
     func configureLabel() {
         textLabel.textColor = .secondaryLabel
         textLabel.font = .systemFont(ofSize: 15)
-        textLabel.numberOfLines = 4
+        textLabel.numberOfLines = 0
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(textLabel)
-
-        moreButton.setTitle(NSLocalizedString("MORE", comment: "Description expansion button"), for: .normal)
-        moreButton.addTarget(self, action: #selector(toggleExpanded), for: .touchUpInside)
-        moreButton.backgroundColor = .systemBackground
-        moreButton.titleLabel?.font = .systemFont(ofSize: 12)
-        moreButton.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(moreButton)
-
-        fadeGradient.frame = CGRect(x: 0, y: 0, width: 20, height: 18)
-        if effectiveUserInterfaceLayoutDirection == .rightToLeft {
-            fadeGradient.startPoint = CGPoint(x: 1, y: 0.5)
-            fadeGradient.endPoint = CGPoint(x: 0, y: 0.5)
-        } else {
-            fadeGradient.startPoint = CGPoint(x: 0, y: 0.5)
-            fadeGradient.endPoint = CGPoint(x: 1, y: 0.5)
-        }
-        fadeGradient.locations = [0, 1]
-        fadeGradient.colors = [
-            UIColor.systemBackground.withAlphaComponent(0).cgColor,
-            UIColor.systemBackground.cgColor
-        ]
-        fadeView.layer.insertSublayer(fadeGradient, at: 0)
-        fadeView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(fadeView)
 
         textLabel.topAnchor.constraint(equalTo: topAnchor).isActive = true
         textLabel.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
         textLabel.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
-
-        moreButton.trailingAnchor.constraint(equalTo: textLabel.trailingAnchor).isActive = true
-        moreButton.bottomAnchor.constraint(equalTo: textLabel.bottomAnchor).isActive = true
-        moreButton.heightAnchor.constraint(equalToConstant: 18).isActive = true
-
-        fadeView.trailingAnchor.constraint(equalTo: moreButton.leadingAnchor).isActive = true
-        fadeView.bottomAnchor.constraint(equalTo: moreButton.bottomAnchor).isActive = true
-        fadeView.heightAnchor.constraint(equalTo: moreButton.heightAnchor).isActive = true
-        fadeView.widthAnchor.constraint(equalToConstant: 20).isActive = true
-
         heightAnchor.constraint(equalTo: textLabel.heightAnchor).isActive = true
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            fadeGradient.colors = [
-                UIColor.systemBackground.withAlphaComponent(0).cgColor,
-                UIColor.systemBackground.cgColor
+    private func initText() {
+        if let text = text, text.count > previewLength {
+
+            let attributedString = NSMutableAttributedString(
+                string: String(text.prefix(previewLength))
+                    .trimmingCharacters(in: .whitespacesAndNewlines) + "... ")
+
+            let more = NSMutableAttributedString(
+                string: NSLocalizedString("MORE", comment: "Description expansion button"))
+
+            let attributes: [NSAttributedString.Key: Any] = [
+                .foregroundColor: UIColor.systemRed
             ]
-            setNeedsDisplay()
+
+            more.addAttributes(attributes,
+                               range: NSRange(location: 0, length: more.length))
+
+            attributedString.append(more)
+
+            textLabel.attributedText = attributedString
+            textLabel.addGestureRecognizer(tapGestureRecognizer)
+            textLabel.isUserInteractionEnabled = true
+
+        } else {
+
+            textLabel.text = text
+            textLabel.removeGestureRecognizer(tapGestureRecognizer)
+            textLabel.isUserInteractionEnabled = false
+        }
+
+        invalidateIntrinsicContentSize()
+        sizeChangeListener?.sizeChanged(bounds.size)
+    }
+
+    private func showFullText() {
+        UIView.transition(with: self,
+                          duration: 0.3,
+                          options: .transitionCrossDissolve) { [weak self] in
+
+            guard let self = self else { return }
+            self.textLabel.text = self.text
+            self.invalidateIntrinsicContentSize()
+            self.sizeChangeListener?.sizeChanged(self.bounds.size)
         }
     }
 
