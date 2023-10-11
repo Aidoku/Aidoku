@@ -29,16 +29,10 @@ struct CropBordersProcessor: ImageProcessing {
             let newRect = createCropRect(downsampledCGImage)
             guard !newRect.isEmpty else { return image }
 
-            let renderer = UIGraphicsImageRenderer(size: newRect.size)
-            return renderer.image { context in
-                // UIImage and CGContext coordinates are flipped.
-                var transform = CGAffineTransform(scaleX: 1, y: -1)
-                transform = transform.translatedBy(x: 0, y: -newRect.height)
-                context.cgContext.concatenate(transform)
-
-                if let croppedImage = cgImage.cropping(to: newRect) {
-                    context.cgContext.draw(croppedImage, in: CGRect(origin: .zero, size: newRect.size))
-                }
+            if let croppedImage = cgImage.cropping(to: newRect) {
+                return PlatformImage(cgImage: croppedImage)
+            } else {
+                return image
             }
         }
     }
