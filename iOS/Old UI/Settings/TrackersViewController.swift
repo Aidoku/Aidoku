@@ -134,7 +134,77 @@ extension TrackersViewController {
             }
             session.presentationContextProvider = self
             session.start()
+        } else if let tracker = tracker as? HostUserPassTracker {
+            let loginPopUp = UIAlertController(title: "Login to your " + tracker.name + " instance.", message: "Insert your credentials.", preferredStyle: .alert)
+                        
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            let loginAction = UIAlertAction(title: "Save", style: .default) { _ in
+
+                // this code runs when the user hits the "save" button
+                
+                let hostname = loginPopUp.textFields![0].text!
+                let username = loginPopUp.textFields![1].text!
+                let password = loginPopUp.textFields![2].text!
+                
+                Task{ @MainActor in
+                    let loadingIndicator = UIActivityIndicatorView(style: .medium)
+                    loadingIndicator.startAnimating()
+                    let res = await tracker.login(host: hostname, user: username, pass: password)
+                    
+                    if res
+                    {
+                        tableView.cellForRow(at: indexPath)?.accessoryView = nil
+                        tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+                    }
+                    else
+                    {
+                        let errorPopUp = UIAlertController(title: "Error!", message: "Error while login to " + tracker.name + ".", preferredStyle: .alert)
+                        errorPopUp.addAction(UIAlertAction(title: "Retry", style: .cancel) {_ in
+                            self.present(loginPopUp, animated: true, completion: nil)
+                        })
+                        self.present(errorPopUp, animated: true, completion: nil)
+                    }
+                }
+            }
+
+            loginPopUp.addTextField{ (textField) in
+                textField.placeholder = "Hostname"
+            }
+
+            loginPopUp.addTextField{ (textField) in
+                textField.placeholder = "Username"
+            }
+
+            loginPopUp.addTextField{ (textField) in
+                textField.placeholder = "Password"
+                textField.isSecureTextEntry = true
+            }
+            
+            loginPopUp.addAction(cancelAction)
+            loginPopUp.addAction(loginAction)
+            
+            present(loginPopUp, animated: true, completion: nil)
+//            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
+//                if let error = error {
+//                    LogManager.logger.error("Tracker authentication error: \(error.localizedDescription)")
+//                }
+//                if let callbackURL = callbackURL {
+//                    Task { @MainActor in
+//                        let loadingIndicator = UIActivityIndicatorView(style: .medium)
+//                        loadingIndicator.startAnimating()
+//                        tableView.cellForRow(at: indexPath)?.accessoryView = loadingIndicator
+//                        await tracker.handleAuthenticationCallback(url: callbackURL)
+//                        tableView.cellForRow(at: indexPath)?.accessoryView = nil
+//                        tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+//                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+//                    }
+//                }
+//            }
+//            session.presentationContextProvider = self
+//            session.start()
         }
+        
     }
 }
 

@@ -14,18 +14,7 @@ import Foundation
 #endif
 
 /// AniList tracker for Aidoku.
-class KomgaTracker: Tracker {
-    var isLoggedIn: Bool
-    var baseurl: String
-    var searchurl: String
-    var thumburl: String
-    var serieurl: String
-    var statusurl: String
-    var seriewebsurl: String
-
-    var usr: String
-    var pwd: String
-    
+class KomgaTracker: HostUserPassTracker {
     /// A unique identification string.
     let id = "komga"
     
@@ -41,20 +30,34 @@ class KomgaTracker: Tracker {
     /// The current score type for the tracker.
     var scoreType: TrackScoreType = .tenPoint
     
-    func logout() {
+    func login(host: String, user: String, pass: String) async -> Bool {
+        var res = false
+        let loginString = String(format: "%@:%@", user, pass)
+        let loginData = loginString.data(using: String.Encoding.utf8)!
+        let base64LoginString = loginData.base64EncodedString()
+
+        let url = URL(string: getSeriesUrl(host: host)!)!
         
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
+        
+        self.createRequest(request: request) { (_, response, error) in
+            if error == nil && response != nil && response?.statusCode == 200 {
+                res = true
+                self.hostname = host
+                self.username = user
+                self.password = pass
+            }
+        }
+        return res
     }
-    
+        
     init() {
-        isLoggedIn = true
-        usr = "demo@komga.org"
-        pwd = "komga-demo"
-        baseurl = "https://demo.komga.org"
-        searchurl = baseurl + "/api/v1/series"
-        thumburl = baseurl + "/api/v1/series/%@/thumbnail"
-        serieurl = baseurl + "/api/v1/series/%@"
-        statusurl = baseurl + "/api/v2/series/%@/read-progress/tachiyomi"
-        seriewebsurl = baseurl + "series/%@"
+//        isLoggedIn = true
+//        usr = "demo@komga.org"
+//        pwd = "komga-demo"
     }
     
     func option(for score: Int) -> String? {
@@ -67,11 +70,11 @@ class KomgaTracker: Tracker {
     }
 
     func update(trackId: String, update: TrackUpdate) async {
-        let loginString = String(format: "%@:%@", usr, pwd)
+        let loginString = String(format: "%@:%@", username!, password!)
         let loginData = loginString.data(using: String.Encoding.utf8)!
         let base64LoginString = loginData.base64EncodedString()
 
-        let url = URL(string: String(format: statusurl, trackId))!
+        let url = URL(string: getStatusUrl(id: trackId)!)!
         
         let json: [String: Any] = ["lastBookNumberSortRead": update.lastReadChapter ?? 0]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
@@ -83,19 +86,19 @@ class KomgaTracker: Tracker {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
         
-        self.createRequest(request: request) { (jsonString) in
-            print(jsonString)
+        self.createRequest(request: request) { (jsonString, _, _) in
+            print(jsonString!)
         }
     }
 
     func getState(trackId: String) async -> TrackState {
         var res: TrackState = TrackState()
         
-        let loginString = String(format: "%@:%@", usr, pwd)
+        let loginString = String(format: "%@:%@", username!, password!)
         let loginData = loginString.data(using: String.Encoding.utf8)!
         let base64LoginString = loginData.base64EncodedString()
 
-        let urlComponents = URLComponents(string: String(format: statusurl, trackId))!
+        let urlComponents = URLComponents(string: getStatusUrl(id: trackId)!)!
         
         if let url = urlComponents.url {
             var request = URLRequest(url: url)
@@ -103,8 +106,8 @@ class KomgaTracker: Tracker {
             request.addValue("application/json", forHTTPHeaderField: "Accept")
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
             
-            self.createRequest(request: request) { (jsonString) in
-                let jsonData = jsonString.data(using: .utf8)!
+            self.createRequest(request: request) { (jsonString, _, _) in
+                let jsonData = jsonString!.data(using: .utf8)!
                 let state: KomgaStatusResultManga = try! JSONDecoder().decode(KomgaStatusResultManga.self, from: jsonData)
 
                 res = TrackState(
@@ -123,7 +126,7 @@ class KomgaTracker: Tracker {
     }
 
     func getUrl(trackId: String) -> URL? {
-        return URL(string: String(format: seriewebsurl, trackId))
+        return URL(string: getSerieWebUrl(id: trackId)!)
     }
 
     func search(for manga: Manga) async -> [TrackSearchItem] {
@@ -143,11 +146,11 @@ class KomgaTracker: Tracker {
     func search(title: String) async -> [TrackSearchItem] {
         var res: [TrackSearchItem] = []
         
-        let loginString = String(format: "%@:%@", usr, pwd)
+        let loginString = String(format: "%@:%@", username!, password!)
         let loginData = loginString.data(using: String.Encoding.utf8)!
         let base64LoginString = loginData.base64EncodedString()
 
-        var urlComponents = URLComponents(string: searchurl)!
+        var urlComponents = URLComponents(string: getSeriesUrl()!)!
 
         urlComponents.queryItems = [
             URLQueryItem(name: "search", value: title)
@@ -159,8 +162,8 @@ class KomgaTracker: Tracker {
             request.addValue("application/json", forHTTPHeaderField: "Accept")
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
             
-            self.createRequest(request: request) { (jsonString) in
-                let jsonData = jsonString.data(using: .utf8)!
+            self.createRequest(request: request) { (jsonString, _, _) in
+                let jsonData = jsonString!.data(using: .utf8)!
                 let mangas: KomgaSearchResultManga = try! JSONDecoder().decode(KomgaSearchResultManga.self, from: jsonData)
                 for manga : KomgaSearchResultContentManga in mangas.content
                 {
@@ -168,7 +171,7 @@ class KomgaTracker: Tracker {
                         id: manga.id,
                         trackerId: self.id,
                         title: manga.metadata.title,
-                        coverUrl: String(format: self.thumburl, arguments: [manga.id]),
+                        coverUrl: self.getThumbUrl(id: manga.id),
                         description: manga.metadata.summary,
                         status: self.getPublishingStatus(statusString: manga.metadata.status),
                         type: MediaType.manga, // How should i know?
@@ -183,11 +186,11 @@ class KomgaTracker: Tracker {
     func get_serie(id: String) async -> TrackSearchItem? {
         var res: TrackSearchItem? = nil
         
-        let loginString = String(format: "%@:%@", usr, pwd)
+        let loginString = String(format: "%@:%@", username!, password!)
         let loginData = loginString.data(using: String.Encoding.utf8)!
         let base64LoginString = loginData.base64EncodedString()
 
-        let urlComponents = URLComponents(string: String(format: serieurl, id))!
+        let urlComponents = URLComponents(string: getSerieUrl(id: id)!)!
         
         if let url = urlComponents.url {
             var request = URLRequest(url: url)
@@ -195,20 +198,22 @@ class KomgaTracker: Tracker {
             request.addValue("application/json", forHTTPHeaderField: "Accept")
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
             
-            self.createRequest(request: request) { (jsonString) in
-                let jsonData = jsonString.data(using: .utf8)!
-                let manga: KomgaSearchResultContentManga = try! JSONDecoder().decode(KomgaSearchResultContentManga.self, from: jsonData)
-
-                res = TrackSearchItem(
-                    id: manga.id,
-                    trackerId: self.id,
-                    title: manga.metadata.title,
-                    coverUrl: String(format: self.thumburl, arguments: [manga.id]),
-                    description: manga.metadata.summary,
-                    status: self.getPublishingStatus(statusString: manga.metadata.status),
-                    type: MediaType.manga, // How should i know?
-                    tracked: false // How should i know?
-                )
+            self.createRequest(request: request) { (jsonString, response, error) in
+                if error == nil && response != nil && response?.statusCode == 200 {
+                    let jsonData = jsonString!.data(using: .utf8)!
+                    let manga: KomgaSearchResultContentManga = try! JSONDecoder().decode(KomgaSearchResultContentManga.self, from: jsonData)
+                    
+                    res = TrackSearchItem(
+                        id: manga.id,
+                        trackerId: self.id,
+                        title: manga.metadata.title,
+                        coverUrl: self.getThumbUrl(id: manga.id),
+                        description: manga.metadata.summary,
+                        status: self.getPublishingStatus(statusString: manga.metadata.status),
+                        type: MediaType.manga, // How should i know?
+                        tracked: false // How should i know?
+                    )
+                }
             }
         }
         return res
@@ -216,7 +221,6 @@ class KomgaTracker: Tracker {
 }
 
 private extension KomgaTracker {
-
     func getStatus(status: KomgaStatusResultManga) -> TrackStatus {
         if status.booksCount == status.booksReadCount {
                 return .completed
@@ -244,23 +248,119 @@ private extension KomgaTracker {
         return nil
     }
     
-    func createRequest(request: URLRequest, completionBlock: @escaping (String) -> Void) -> Void
+    func createRequest(request: URLRequest, completionBlock: @escaping (String?, HTTPURLResponse?, Error?) -> Void) -> Void
     {
         let semaphore = DispatchSemaphore(value: 0)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard
-                error == nil,
+            var outputStr: String? = nil
+            let response = response as? HTTPURLResponse
+            let error = error
+            if error == nil {
                 let data = data
-            else {
-                print(error ?? "Unknown error")
-                return
+                outputStr = String(data: data!, encoding: String.Encoding.utf8)
+            } else
+            {
+                outputStr = nil
             }
-            let outputStr  = String(data: data, encoding: String.Encoding.utf8)!
-            completionBlock(outputStr)
+            completionBlock(outputStr, response, error)
             semaphore.signal()
         }
         task.resume()
         _ = semaphore.wait(timeout: .distantFuture)
+    }
+    
+    func getSeriesUrl(host: String? = nil) -> String? {
+        if host != nil
+        {
+            return host! + "/api/v1/series"
+        } else if hostname != nil
+        {
+            return hostname! + "/api/v1/series"
+        }
+        else
+        {
+            return nil
+        }
+    }
+
+    func getThumbUrl(host: String? = nil, id: String? = nil) -> String? {
+        var suffix = "/api/v1/series/%@/thumbnail"
+        if id != nil
+        {
+            suffix = String(format: suffix, id!)
+        }
+
+        if host != nil
+        {
+            return host! + suffix
+        } else if hostname != nil
+        {
+            return hostname! + suffix
+        }
+        else
+        {
+            return nil
+        }
+    }
+
+    func getSerieUrl(host: String? = nil, id: String? = nil) -> String? {
+        var suffix = "/api/v1/series/%@"
+        if id != nil
+        {
+            suffix = String(format: suffix, id!)
+        }
+        
+        if host != nil
+        {
+            return host! + suffix
+        } else if hostname != nil
+        {
+            return hostname! + suffix
+        }
+        else
+        {
+            return nil
+        }
+    }
+
+    func getStatusUrl(host: String? = nil, id: String? = nil) -> String? {
+        var suffix = "/api/v2/series/%@/read-progress/tachiyomi"
+        if id != nil
+        {
+            suffix = String(format: suffix, id!)
+        }
+        
+        if host != nil
+        {
+            return host! + suffix
+        } else if hostname != nil
+        {
+            return hostname! + suffix
+        }
+        else
+        {
+            return nil
+        }
+    }
+    
+    func getSerieWebUrl(host: String? = nil, id: String? = nil) -> String? {
+        var suffix = "series/%@"
+        if id != nil
+        {
+            suffix = String(format: suffix, id!)
+        }
+        
+        if host != nil
+        {
+            return host! + suffix
+        } else if hostname != nil
+        {
+            return hostname! + suffix
+        }
+        else
+        {
+            return nil
+        }
     }
 }
 
