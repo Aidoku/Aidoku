@@ -8,7 +8,7 @@
 import Foundation
 
 protocol HostUserPassTracker: Tracker {
-    
+
     var hostname: String? { get set }
     var username: String? { get set }
     var password: String? { get set }
@@ -25,7 +25,7 @@ extension HostUserPassTracker {
             UserDefaults.standard.set(newValue, forKey: "Tracker.\(id).hostname")
         }
     }
-    
+
     var username: String? {
         get {
             UserDefaults.standard.string(forKey: "Tracker.\(id).username")
@@ -34,7 +34,7 @@ extension HostUserPassTracker {
             UserDefaults.standard.set(newValue, forKey: "Tracker.\(id).username")
         }
     }
-    
+
     var password: String? {
         get {
             UserDefaults.standard.string(forKey: "Tracker.\(id).password")
@@ -47,7 +47,7 @@ extension HostUserPassTracker {
     var isLoggedIn: Bool {
         username != nil && password != nil && hostname != nil
     }
-    
+
     func logout() {
         self.hostname = nil
         self.username = nil
