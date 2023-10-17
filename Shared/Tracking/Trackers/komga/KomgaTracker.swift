@@ -2,7 +2,7 @@
 //  KomgaTracker.swift
 //  Aidoku
 //
-//  Created by Paolo Casellati on 07/10/23.
+//  Created by Paolo7297 on 07/10/23.
 //
 
 import Foundation

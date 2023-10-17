@@ -20,6 +20,8 @@
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
 "COPY" = "Copy";
+"SAVE" = "Save";
+"RETRY" = "Retry";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -342,3 +344,6 @@
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
 "BOTH" = "Both";
+"%@_LOGIN_TRACKER" = "Login to your %@ instance.";
+"INSERT_CREDENTIALS" = "Insert your credentials.";
+"ERROR_%@" = "Error while login to %@.";

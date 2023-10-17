@@ -135,11 +135,11 @@ extension TrackersViewController {
             session.presentationContextProvider = self
             session.start()
         } else if let tracker = tracker as? HostUserPassTracker {
-            let loginPopUp = UIAlertController(title: "Login to your " + tracker.name + " instance.",
-                                               message: "Insert your credentials.", preferredStyle: .alert)
+            let loginPopUp = UIAlertController(title: String(format: NSLocalizedString("%@_LOGIN_TRACKER", comment: ""), tracker.name),
+                                               message: NSLocalizedString("INSERT_CREDENTIALS", comment: ""), preferredStyle: .alert)
 
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            let loginAction = UIAlertAction(title: "Save", style: .default) { _ in
+            let cancelAction = UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: nil)
+            let loginAction = UIAlertAction(title: NSLocalizedString("SAVE", comment: ""), style: .default) { _ in
 
                 let hostname = loginPopUp.textFields![0].text!
                 let username = loginPopUp.textFields![1].text!
@@ -157,9 +157,9 @@ extension TrackersViewController {
                         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
                     } else
                     {
-                        let errorPopUp = UIAlertController(title: "Error!", message: "Error while login to " + tracker.name + ".",
-                                                           preferredStyle: .alert)
-                        errorPopUp.addAction(UIAlertAction(title: "Retry", style: .cancel) {_ in
+                        let errorPopUp = UIAlertController(title: String(format: NSLocalizedString("ERROR_%@", comment: ""), tracker.name),
+                                                           message: nil, preferredStyle: .alert)
+                        errorPopUp.addAction(UIAlertAction(title: NSLocalizedString("RETRY", comment: ""), style: .cancel) {_ in
                             self.present(loginPopUp, animated: true, completion: nil)
                         })
                         self.present(errorPopUp, animated: true, completion: nil)
