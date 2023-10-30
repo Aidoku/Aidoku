@@ -106,7 +106,7 @@
 "UNREAD" = "未读";
 "MARK" = "标记";
 "MARK_ALL" = "标记全部";
-"MARK_PREVIOUS" = "标记上一个";
+"MARK_PREVIOUS" = "标记此前章节";
 "MARK_READ" = "标记为已读";
 "MARK_UNREAD" = "标记为未读";
 "PREVIOUS_COLON" = "上一个：";
@@ -290,7 +290,7 @@
 "%i_PAGES_LEFT" = "剩余 %i 页";
 "REMOVE_FROM_CATEGORY" = "从分类中移除";
 "ADD_TO_CATEGORY" = "添加到分类";
-"PINNED" = "已固定";
+"PINNED" = "已置顶";
 "1_CHAPTER" = "1 章";
 "%i_CHAPTERS" = "%i 章";
 "UPCOMING" = "即将上线";
@@ -332,3 +332,7 @@
 "PILLARBOX_ORIENTATION_INFO" = "填充方向决定了哪些方向应启用填充。";
 "COVER" = "封面";
 "CROP_BORDERS" = "裁剪边框";
+"REORDER" = "重新排序";
+"COPY" = "复制";
+"PIN" = "置顶";
+"UNPIN" = "取消置顶";

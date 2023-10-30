@@ -1,0 +1,118 @@
+
+
+"RESET_SETTINGS" = "Beállítások visszaállítása";
+"REMOVE_DOWNLOADS_CONFIRM" = "Eltávolítja az összes kijelölt letöltést?";
+"DELETE" = "Törlés";
+"COPY" = "Másolás";
+"VERTICAL_SCROLL" = "Függőleges görgetés";
+"REFRESH_METADATA" = "Metaadatok frissítése";
+"UPDATES" = "Frissítések";
+"DOWNLOAD_QUEUE" = "Letöltési sor";
+"PIN_MANGA_UNREAD" = "Olvasatlan";
+"READ" = "Olvasott";
+"ADD_TO_LIBRARY" = "Hozzáadás a Könyvtárhoz";
+"MARK_ALL" = "Összes megjelölése";
+"INSTALLED" = "Telepítve";
+"FILTER_BY" = "Szűrés";
+"LANGUAGE" = "Nyelv";
+"UNREAD_CHAPTERS" = "Olvasatlan Fejezetek";
+"READING_MODE" = "Olvasási mód";
+"APPEARANCE_LIGHT" = "Világos";
+"VIEW_HISTORY" = "Előzmény megtekintése";
+"SORT_BY" = "Rendezés";
+"TITLE" = "Cím";
+
+// Browse
+"BROWSE" = "Böngészés";
+"NO_PREVIOUS_CHAPTER" = "Nincs előző fejezet";
+"COVER" = "Borító";
+"BUTTON_UPDATE" = "Frissítés";
+"CONTINUE_READING" = "Olvasás Folytatása";
+"APPEARANCE" = "Megjelenítés";
+"SHARE" = "Megosztás";
+"INCOGNITO_MODE" = "Inkognító mód";
+"UNREAD" = "Olvasatlan";
+"REMOVE_DOWNLOADS" = "Letöltések törlése";
+"DATE_ADDED" = "Hozzáadás dátuma";
+// General
+"CONTINUE" = "Következő";
+"CANCEL" = "Mégse";
+"DEFAULT_CATEGORY" = "Alapértelmezett kategória";
+"CHAPTER_X" = "%g. fejezet";
+"NEVER" = "Soha";
+"EDIT_CATEGORIES" = "Kategóriák szerkesztése";
+"AUTOMATIC" = "Automatikus";
+"AVAILABLE" = "Elérhető";
+"RESET" = "Visszaállítás";
+"LOGOUT" = "Kijelentkezés";
+"EVERY_12_HOURS" = "12 óránként";
+"LAST_OPENED" = "Utoljára megnyitva";
+"SELECT_ALL" = "Összes kijelölése";
+"LANDSCAPE" = "Fekvő";
+"REMOVE_FROM_LIBRARY" = "Eltávolítás a könyvtárból";
+"REMOVE_ALL_DOWNLOADS" = "Összes letöltés törlése";
+"PAGE_X" = "%i. oldal";
+"DOWNLOADED" = "Letöltve";
+
+// Manga
+"UNTITLED" = "Névtelen";
+"LTR" = "Balról jobbra";
+
+// Library
+"LIBRARY" = "Könyvtár";
+"NOT_FOUND" = "Nem található";
+"LIBRARY_SEARCH" = "Keresés a könyvtárban";
+"MARK_PREVIOUS" = "Előző megjelölése";
+"CATEGORIES" = "Kategóriák";
+"PREVIOUS_COLON" = "Előző:";
+"UNKNOWN" = "Ismeretlen";
+"COMPLETED" = "Befejezve";
+"NEXT_COLON" = "Következő:";
+"MARK_READ" = "Megjelölés olvasottként";
+"REMOVE_DOWNLOAD" = "Letöltés törlése";
+"CATEGORY_TITLE" = "Kategória neve";
+"LANGUAGES" = "Nyelvek";
+"APPEARANCE_DARK" = "Sötét";
+"PORTRAIT" = "Álló";
+"NO_NEXT_CHAPTER" = "Nincs több fejezet";
+
+// Categories
+"ALL" = "Összes";
+
+// Downloads
+"DOWNLOAD" = "Letöltés";
+"BUTTON_FILTER" = "Szűrés";
+"CATEGORY_ADD" = "Kategória hozzáadása";
+"CANCEL_DOWNLOAD" = "Letöltés megszakítása";
+"BACKUPS" = "Biztonsági mentések";
+"EVERY_2_DAYS" = "2 naponta";
+"RESTORE" = "Visszaállítás";
+"SCORE" = "Értékelés";
+"WEEKLY" = "Hetente";
+"UNAVAILABLE" = "Nem elérhető";
+"RTL" = "Jobbról balra";
+"NO_CHAPTERS" = "Nincs fejezet";
+
+// Reader
+"CHAPTER" = "Fejezet";
+"CHAPTERS" = "Fejezetek";
+"READER" = "Olvasó";
+
+// History
+"HISTORY" = "Előzmény";
+"STATUS" = "Státusz";
+"MISSING_SOURCE" = "Hiányzó forrás";
+"DAILY" = "Naponta";
+"OK" = "OK";
+"REMOVE" = "Eltávolítás";
+"DEFAULT" = "Alapértelmezett";
+"VERTICAL" = "Függőleges";
+"LIBRARY_EMPTY" = "Üres könyvtár";
+"VERSION" = "Verzió";
+"EXPORT" = "Exportálás";
+"PIN_MANGA_UPDATED" = "";
+"MARK_UNREAD" = "Megjelölés olvasatlanként";
+"MARK" = "Megjelelölés";
+"RENAME" = "Átnevezés";
+"GENERAL" = "Általános";
+"SELECT_CHAPTERS" = "Fejezetek kijelölése";

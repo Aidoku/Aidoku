@@ -333,3 +333,6 @@
 "SYNC_WITH_TRACKER" = "Sincronizar com Rastreador";
 "COVER" = "Capa";
 "CROP_BORDERS" = "Cortar Bordas";
+"REORDER" = "Reordenar";
+"PIN" = "Fixar";
+"UNPIN" = "Desfixar";

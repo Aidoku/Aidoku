@@ -1,0 +1,77 @@
+
+
+"REMOVE_DOWNLOADS_CONFIRM" = "Премахни всички избрани изтегляния?";
+"UNINSTALL" = "Деинсталиране";
+"DELETE" = "Изтриване";
+"COPY" = "Копиране";
+"UPDATES" = "Актуализации";
+"DOWNLOAD_QUEUE" = "Опашка за изтегляне";
+"LAST_READ" = "Последно четено";
+"ADD_TO_LIBRARY" = "Добави в библиотека";
+"INSTALLED" = "Инсталиран";
+"FILTER_BY" = "Филтрирай по";
+"LANGUAGE" = "Език";
+"SORT_BY" = "Сортирай по";
+"EXTERNAL" = "Външен";
+"TITLE" = "Заглавие";
+
+// Browse
+"BROWSE" = "Брауз";
+"COVER" = "Корица";
+"LATEST_CHAPTER" = "Последна глава";
+"BUTTON_UPDATE" = "АКТУАЛИЗИРАНЕ";
+"ALWAYS_ASK" = "Питай винаги";
+"SHARE" = "Споделяне";
+"REORDER" = "Пренареждане";
+"REMOVE_DOWNLOADS" = "Премахни изтегляния";
+"DATE_ADDED" = "Дата на добавяне";
+// General
+"CONTINUE" = "Продължи";
+"CANCEL" = "Откажи";
+"DEFAULT_CATEGORY" = "Категория под разбиране";
+"BUTTON_GET" = "ВЗЕМЕТЕ";
+"NONE" = "Нито един";
+"INFO" = "Информация";
+"PIN" = "Закачи";
+"CATEGORY_ADD_TEXT" = "Въведете заглавието на новата категория, която да създадете.";
+"EDIT_CATEGORIES" = "Редактиране на категории";
+"RESET" = "Нулиране";
+"UNPIN" = "Откачи";
+"LAST_OPENED" = "Последно отворено";
+"REMOVE_FROM_LIBRARY" = "Премахни от библиотека";
+"REMOVE_ALL_DOWNLOADS" = "Премахни всички изтегляния";
+"CLEAR" = "Изчистване";
+"DOWNLOADED" = "Изтеглено";
+"BROWSE_NO_SOURCES_TEXT" = "Конфигурирайте своя списък с източници или отворете\nизточник в Aidoku, за да започнете";
+"LOADING_ELLIPSIS" = "Зареждане…";
+
+// Library
+"LIBRARY" = "Библиотека";
+"LIBRARY_SEARCH" = "Намерете в библиотеката";
+"CATEGORIES" = "Категории";
+"UNKNOWN" = "Неизвестно";
+"REMOVE_DOWNLOAD" = "Премахни изтегляне";
+"CATEGORY_TITLE" = "Заглавие на категория";
+"LANGUAGES" = "Езици";
+
+// Source
+"SOURCE_INFO" = "Информация за източника";
+
+// Categories
+"ALL" = "Всичко";
+
+// Downloads
+"DOWNLOAD" = "Изтегляне";
+"CATEGORY_ADD" = "Добавяне на категории";
+"CANCEL_DOWNLOAD" = "Откажи изтегляне";
+"MANGA_INFO" = "Информация за мангата";
+"LIBRARY_ADD_FROM_BROWSE" = "Добавете манга от раздела за браузване";
+"UNAVAILABLE" = "Недостъпен";
+"BROWSE_NO_SOURCES" = "Няма източници";
+"OK" = "ОК";
+"REMOVE" = "Премахване";
+"BUTTON_ERROR" = "ГРЕШКА";
+"LIBRARY_EMPTY" = "Библиотеката е празна";
+"VERSION" = "Версия";
+"RENAME" = "Преименуване";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Ръководство за добавяне на източници";

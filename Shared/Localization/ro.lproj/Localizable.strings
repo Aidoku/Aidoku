@@ -330,3 +330,9 @@
 "BOTH" = "Ambele";
 "PILLARBOX_ORIENTATION" = "Orientare Pillarbox";
 "PILLARBOX_ORIENTATION_INFO" = "Orientarea Pillarbox determină orientările pentru care trebuie activată pilierboxingul.";
+"COPY" = "Copiază";
+"COVER" = "Copertă";
+"REORDER" = "Reorganizează";
+"PIN" = "Fixează";
+"UNPIN" = "Anulare fixare";
+"CROP_BORDERS" = "Decupează Colțurile";
