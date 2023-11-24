@@ -74,8 +74,9 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
         displayImage()
     }
 
-    override func didExitVisibleState() {
-        super.didExitVisibleState()
+    override func didExitDisplayState() {
+        super.didExitDisplayState()
+        guard !isVisible else { return }
         // don't hide images if zooming in/out
         if let delegate, delegate.isZooming {
             return
