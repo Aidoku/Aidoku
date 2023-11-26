@@ -46,10 +46,6 @@ public class MangaObject: NSManagedObject {
             dateAdded: libraryObject?.dateAdded
         )
     }
-
-    public override func awakeFromInsert() {
-        super.awakeFromInsert()
-    }
 }
 
 extension MangaObject {
