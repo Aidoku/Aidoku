@@ -125,6 +125,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             $0.dataCache = dataCache
             $0.imageCache = imageCache
             $0.dataLoader = dataLoader
+            $0.dataCachePolicy = .automatic
+            $0.isStoringPreviewsInMemoryCache = false
         }
 
         ImagePipeline.shared = pipeline
