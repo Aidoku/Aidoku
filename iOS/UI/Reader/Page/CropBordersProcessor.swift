@@ -26,7 +26,7 @@ struct CropBordersProcessor: ImageProcessing {
         return autoreleasepool {
             let downsampledImage = downsampleImage(image)
             guard let downsampledCGImage = downsampledImage.cgImage else { return image }
-            let newRect = createCropRect(downsampledCGImage)
+            let newRect = createCropRect(downsampledCGImage, scale: downscale)
             guard !newRect.isEmpty else { return image }
 
             if let croppedImage = cgImage.cropping(to: newRect) {
@@ -37,7 +37,7 @@ struct CropBordersProcessor: ImageProcessing {
         }
     }
 
-    func createCropRect(_ cgImage: CGImage) -> CGRect {
+    func createCropRect(_ cgImage: CGImage, scale: CGFloat = 1) -> CGRect {
         let height = cgImage.height
         let width = cgImage.width
         let heightFloat = CGFloat(height)
@@ -94,7 +94,7 @@ struct CropBordersProcessor: ImageProcessing {
             }
         }
 
-        return CGRect(x: lowX / downscale, y: lowY / downscale, width: (highX - lowX) / downscale, height: (highY - lowY) / downscale)
+        return CGRect(x: lowX / scale, y: lowY / scale, width: (highX - lowX) / scale, height: (highY - lowY) / scale)
     }
 
     func createARGBBitmapContext(width: Int, height: Int) -> CGContext? {

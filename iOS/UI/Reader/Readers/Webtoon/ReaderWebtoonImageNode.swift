@@ -74,8 +74,9 @@ class ReaderWebtoonImageNode: BaseObservingCellNode {
         displayImage()
     }
 
-    override func didExitVisibleState() {
-        super.didExitVisibleState()
+    override func didExitDisplayState() {
+        super.didExitDisplayState()
+        guard !isVisible else { return }
         // don't hide images if zooming in/out
         if let delegate, delegate.isZooming {
             return
@@ -219,11 +220,11 @@ extension ReaderWebtoonImageNode {
         let shouldCropBorders = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
         let width = await UIScreen.main.bounds.width
         var processors: [ImageProcessing] = []
-        if shouldDownsample {
-            processors.append(DownsampleProcessor(width: width))
-        }
         if shouldCropBorders {
             processors.append(CropBordersProcessor())
+        }
+        if shouldDownsample {
+            processors.append(DownsampleProcessor(width: width))
         }
 
         let request = ImageRequest(
@@ -278,15 +279,15 @@ extension ReaderWebtoonImageNode {
         // load data and cache
         if let data = Data(base64Encoded: base64) {
             if var image = UIImage(data: data) {
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
+                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                    let processor = CropBordersProcessor()
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
                     }
                 }
-                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                    let processor = CropBordersProcessor()
+                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
