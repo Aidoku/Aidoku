@@ -78,7 +78,7 @@
 "MISSING_SOURCE" = "Brakujące źródło";
 "DESELECT_ALL" = "Odznacz Wszystko";
 "CHAPTERS" = "Rozdziały";
-"READ" = "Czytaj";
+"READ" = "Przeczytane";
 "MARK_READ" = "Oznacz jako przeczytane";
 "NEXT_COLON" = "Następny:";
 "NO_PREVIOUS_CHAPTER" = "Nie ma wcześniejszych rozdziałów";
@@ -123,7 +123,7 @@
 "MISSING_SOURCE_TEXT" = "Nie udało znaleźć się źródła dla tej Mangi. Pobierz je znowu, albo usuń ten tytuł ze swojej biblioteki.";
 "SELECT_ALL" = "Zaznacz Wszystko";
 "VOLUME_X" = "Tom";
-"CHAPTER_X" = "Rozdział";
+"CHAPTER_X" = "Rozdział %g";
 "VOL_X" = "Tom";
 "VOL_SPACE_X" = "Tom";
 "NO_CHAPTERS_AVAILABLE" = "Brak rozdziałów";
@@ -330,3 +330,9 @@
 "PILLARBOX_ORIENTATION_INFO" = "Orientacja pillarboxa określa, dla jakich orientacji pillarbox powinien być włączony.";
 "PILLARBOX_ORIENTATION" = "Orientacja pillarboxa";
 "PILLARBOX_AMOUNT" = "Ilość Pillarbox";
+"COPY" = "Kopiuj";
+"COVER" = "Okładka";
+"REORDER" = "Zmień kolejność";
+"PIN" = "Przypnij";
+"UNPIN" = "Odepnij";
+"CROP_BORDERS" = "Przytnij ramki";

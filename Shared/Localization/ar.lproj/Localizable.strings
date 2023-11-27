@@ -333,3 +333,9 @@
 "PILLARBOX_AMOUNT" = "عدد الأعمدة";
 "PILLARBOX_ORIENTATION" = "إتجاه الأعمدة";
 "PILLARBOX_ORIENTATION_INFO" = "إتجاه العمود يحدد الإتجاهات التي ينبغي تمكين التوجيه بها.";
+"COPY" = "نسخ";
+"COVER" = "غلاف";
+"REORDER" = "إعادة الترتيب";
+"PIN" = "ثبت";
+"UNPIN" = "إزالة التثبيت";
+"CROP_BORDERS" = "اقتصاص الحدود";
