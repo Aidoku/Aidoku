@@ -50,7 +50,12 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         collectionNode.dataSource = self
 //        collectionNode.view.prefetchDataSource = self
 //        collectionNode.isPrefetchingEnabled = true
-        collectionNode.updateCurrentRange(with: .full)
+
+        // override texture's automatic decreased preloading range
+        collectionNode.setTuningParameters(collectionNode.tuningParameters(for: .display), for: .minimum, rangeType: .display)
+        collectionNode.setTuningParameters(collectionNode.tuningParameters(for: .preload), for: .minimum, rangeType: .preload)
+        collectionNode.setTuningParameters(collectionNode.tuningParameters(for: .display), for: .lowMemory, rangeType: .display)
+        collectionNode.setTuningParameters(collectionNode.tuningParameters(for: .preload), for: .lowMemory, rangeType: .preload)
 
         scrollView.contentInset = .zero
         scrollView.showsVerticalScrollIndicator = false
@@ -315,8 +320,6 @@ extension ReaderWebtoonViewController {
         self.scrollView.contentOffset = self.collectionNode.contentOffset
         self.zoomView.adjustContentSize()
         CATransaction.commit()
-
-        collectionNode.updateCurrentRange(with: .full)
     }
 
     /// Append the next chapter's pages
@@ -357,8 +360,6 @@ extension ReaderWebtoonViewController {
         scrollView.contentOffset = self.collectionNode.contentOffset
         zoomView.adjustContentSize()
         CATransaction.commit()
-
-        collectionNode.updateCurrentRange(with: .full)
     }
 
     /// Switch current chapter to previous
