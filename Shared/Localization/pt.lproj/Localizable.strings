@@ -13,9 +13,9 @@
 "DOWNLOADED" = "Descarregado(s)";
 "DOWNLOAD_QUEUE" = "Fila de descargas";
 "CANCEL_DOWNLOAD" = "Cancelar transferência";
-"REMOVE_DOWNLOAD" = "Remover download";
-"REMOVE_ALL_DOWNLOADS" = "Remover todos os downloads";
-"REMOVE_DOWNLOADS_CONFIRM" = "Remover todas as descargas selecionadas?";
+"REMOVE_DOWNLOAD" = "Remover Transferência";
+"REMOVE_ALL_DOWNLOADS" = "Remover todas as transferências";
+"REMOVE_DOWNLOADS_CONFIRM" = "Remover todas as transferências seleccionadas?";
 
 // Library
 "LIBRARY" = "Biblioteca";
@@ -56,7 +56,7 @@
 "SOURCE_ORDER" = "Ordem da Fonte";
 "MORE" = "mais";
 "MISSING_SOURCE" = "Fonte Não Encontrada";
-"MISSING_SOURCE_TEXT" = "A fonte original parece estar ausente para esse mangá. Por favor, reinstale-o ou remova esse título da sua biblioteca.";
+"MISSING_SOURCE_TEXT" = "A fonte original parece estar em falta para esta Manga. Por favor, transfira-a novamente ou remova este título da sua biblioteca.";
 "CHAPTER_X" = "Capítulo %g";
 "VOL_X" = "Vol. %g";
 "CH_X" = "Cap. %g";
@@ -76,7 +76,7 @@
 // History
 "HISTORY" = "Histórico";
 "PAGE_X" = "Página %i";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "Isso irá remover o histórico para esse capítulo. Tem certeza que deseja continuar?";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Isto irá remover o histórico deste capítulo. Tens a certeza de que queres continuar?";
 "AUTH_TO_DISABLE" = "Autentique para desativar.";
 "ABOUT" = "Sobre";
 "GITHUB_REPO" = "Repositório GitHub";
@@ -88,15 +88,15 @@
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Nome do Backup";
 "MISSING_SOURCES_TEXT" = "O backup restaurado pode conter dados das seguintes fontes, que não estão atualmente instaladas:";
-"BACKUP_INFO" = "Aperte e segure num Backup para exportá-lo, ou arraste para a esquerda para deletá-lo.";
+"BACKUP_INFO" = "Prima sem soltar uma cópia de segurança para a exportar ou deslize para a esquerda para a eliminar.";
 "MISSING_SOURCES" = "Fontes Ausentes";
 "RESTORE_BACKUP" = "Restaurar para este Backup?";
-"RESTORE_BACKUP_TEXT" = "Todos os dados atuais serão removidos e substituídos pelos dados deste Backup.";
+"RESTORE_BACKUP_TEXT" = "Todos os dados actuais serão removidos e substituídos pelos dados desta cópia de segurança.";
 "BACKUP_IMPORT_FAIL" = "Importação Falhou";
 "BACKUP_IMPORT_FAIL_TEXT" = "Salvamento do Backup falhou. Please ensure that your backup is in the proper format.Por favor, garanta que o seu Backup está no formato apropriado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";
-"RESET_TEXT" = "Essa ação é irreversível. Todos os dados, configurações e caches serão limpos e redefinidos.";
+"RESET_TEXT" = "Esta ação é irreversível. Todos os dados, definições e caches serão limpos e repostos.";
 "CLEAR_CHAPTER_CACHE" = "Limpar Cache do Capítulo";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Essa ação é irreversível. Capítulos em cache serão limpos e reinstalados.";
 "CLEAR_MANGA_CACHE" = "Limpar Cache dos Mangás";
@@ -114,16 +114,16 @@
 "STATUS_COLON_%@" = "Status:%@";
 "VIEW_ON_WEBSITE" = "Ver no Website";
 "CLEAR_TRACKED_MANGA" = "Limpar Mangás seguidos";
-"CLEAR_TRACKED_MANGA_TEXT" = "Está ação é irreversível. O rastreio de todos os rastreadores adicionados ao mangá será removido.";
+"CLEAR_TRACKED_MANGA_TEXT" = "Esta ação é irreversível. O rastreio de todos os rastreadores adicionados à manga será removido.";
 "CACHE_SIZE_%@" = "Tamanho de Cache: %@";
 "SUPPORT_VIA_KOFI" = "Ajude-nos via Ko-Fi";
 "UNAVAILABLE" = "Indisponível";
-"RESET" = "Redefinir";
-"DELETE" = "Deletar";
+"RESET" = "Repor";
+"DELETE" = "Eliminar";
 "REMOVE" = "Remover";
 "RENAME" = "Renomear";
 "CLEAR" = "Limpar";
-"REMOVE_DOWNLOADS" = "Remover descargas";
+"REMOVE_DOWNLOADS" = "Remover transferências";
 "LIBRARY_ADD_FROM_BROWSE" = "Adicionar Mangás da Guia Explorar";
 "ADD_TO_LIBRARY" = "Adicionar para Biblioteca";
 "TITLE" = "Título";
@@ -155,8 +155,8 @@
 "CHAPTER" = "Capítulo";
 "CHAPTERS" = "Capítulos";
 "VOLUME_X" = "Volume %g";
-"NO_CHAPTERS" = "Sem Capítulos";
-"NO_CHAPTERS_AVAILABLE" = "Nenhum Capítulo Disponível";
+"NO_CHAPTERS" = "Não há capítulos";
+"NO_CHAPTERS_AVAILABLE" = "Não há capítulos disponíveis";
 "READ" = "Lido";
 "UNREAD" = "Não Lido";
 "MARK" = "Marcar";
@@ -173,7 +173,7 @@
 "RTL" = "Direita para Esquerda";
 "VERTICAL" = "Vertical";
 "%@_AGO" = "%@ atrás";
-"REMOVE_ALL_MANGA_HISTORY" = "Remover Histórico de Todos os Mangás";
+"REMOVE_ALL_MANGA_HISTORY" = "Remover todo o histórico de mangás";
 "HISTORY_LOCKED" = "Histórico está travado.";
 "VIEW_HISTORY" = "Visualizar Histórico";
 "AUTH_FOR_HISTORY" = "Autentique para visualizar histórico de leitura.";
@@ -242,12 +242,12 @@
 "EXPORT_LOGS" = "Exportar registos";
 "DISPLAY_LOGS" = "Exibir registos";
 "ADVANCED" = "Avançado";
-"CLEAR_MANGA_CACHE_TEXT" = "Essa ação é irreversível. Mangás em cache que não estão na sua biblioteca serão removidos.";
+"CLEAR_MANGA_CACHE_TEXT" = "Esta ação é irreversível. Os mangás em cache que não estiverem na sua biblioteca serão removidos.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Essa ação é irreversível. Pedidos de Rede e imagens em cache serão limpos.";
 "CLEAR_READ_HISTORY" = "Limpar Histórico de Leitura";
-"CLEAR_READ_HISTORY_TEXT" = "Essa ação é irreversível. Todo o histórico de leitura será removido.";
-"RESET_SETTINGS" = "Redefinir Configurações";
-"RESET_SETTINGS_TEXT" = "Essa ação é irreversível. Todas as configurações do apps e de fontes serão redefinidas.";
+"CLEAR_READ_HISTORY_TEXT" = "Esta ação é irreversível. Todo o histórico de leitura será removido.";
+"RESET_SETTINGS" = "Repor definições";
+"RESET_SETTINGS_TEXT" = "Esta ação é irreversível. Todas as definições da aplicação e da fonte serão repostas.";
 "PAGE_X_OF_X" = "Página %i de %i";
 "LIBRARY_LOCKED" = "Biblioteca está travada.";
 "AUTH_TO_OPEN" = "Autentique para abrir.";
@@ -279,7 +279,7 @@
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "TYPE_COLON_%@" = "Tipo: %@";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem certeza que deseja deletar todos os downloads?";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem a certeza de que pretende remover todas as transferências?";
 "MIGRATE_SOURCES" = "Migrar fontes";
 "MIGRATION" = "Migração";
 "OPTIONS" = "Opções";
@@ -332,3 +332,6 @@
 "PILLARBOX_AMOUNT" = "Quantidade de Pillarbox";
 "COVER" = "Capa";
 "CROP_BORDERS" = "Cortar Bordas";
+"REORDER" = "Reordenar";
+"PIN" = "Fixar";
+"UNPIN" = "Desfixar";

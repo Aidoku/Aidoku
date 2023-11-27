@@ -330,3 +330,9 @@
 "PILLARBOX_ORIENTATION" = "Орієнтація Pillarbox";
 "PILLARBOX_ORIENTATION_INFO" = "Орієнтація Pillarbox визначає, для яких орієнтацій слід увімкнути опорні пункти.";
 "BOTH" = "Обидва";
+"COPY" = "Копіювати";
+"COVER" = "Обкладинка";
+"REORDER" = "Змінити порядок";
+"PIN" = "Прикріпити";
+"UNPIN" = "Відкріпити";
+"CROP_BORDERS" = "Обрізати рамки";

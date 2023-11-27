@@ -332,3 +332,7 @@
 "ALL_CHAPTERS_READ" = "Sva poglavlja pročitana";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox orijentacija određuje za koje orijentacije pillarboxing-a treba biti omogućeno.";
 "BOTH" = "Oba";
+"COPY" = "Kopiraj";
+"REORDER" = "Promijeni redoslijed";
+"PIN" = "Prikvači";
+"UNPIN" = "Odkvači";
