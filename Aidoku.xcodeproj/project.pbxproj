@@ -392,6 +392,11 @@
 		FB31AD0627AC3A3300D50410 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
 		FB31AD0827ACBED700D50410 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		FB31AD0A27AE180300D50410 /* WasmHtml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmHtml.swift; sourceTree = "<group>"; };
+		FB3796A02B1416F8005E6264 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3796A12B141726005E6264 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3796A32B14180F005E6264 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3796A42B14183C005E6264 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB42750A295FB7B400131377 /* BrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewController.swift; sourceTree = "<group>"; };
 		FB42750D295FB86600131377 /* BaseTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseTableViewController.swift; sourceTree = "<group>"; };
 		FB42750F295FBAEA00131377 /* BrowseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewModel.swift; sourceTree = "<group>"; };
@@ -1420,6 +1425,11 @@
 				uk,
 				tr,
 				ro,
+				bg,
+				hu,
+				el,
+				pt,
+				sv,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -1825,6 +1835,11 @@
 				FB24530A2A2BA50600716677 /* uk */,
 				FB24530B2A2BA52100716677 /* tr */,
 				FB24530C2A2BA52600716677 /* ro */,
+				FB3796A02B1416F8005E6264 /* bg */,
+				FB3796A12B141726005E6264 /* hu */,
+				FB3796A22B1417BD005E6264 /* el */,
+				FB3796A32B14180F005E6264 /* pt */,
+				FB3796A42B14183C005E6264 /* sv */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
