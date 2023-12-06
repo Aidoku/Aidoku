@@ -103,6 +103,7 @@ class MangaViewModel {
     func languageFilterChanged(_ newValue: String?, manga: Manga) async {
         langFilter = newValue
         await loadChapterList(manga: manga)
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
     }
 
     func getSourceDefaultLanguages(sourceId: String) -> [String] {
