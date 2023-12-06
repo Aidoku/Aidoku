@@ -103,6 +103,8 @@ class MangaViewController: BaseTableViewController {
                 headerView.configure(with: manga)
             }
 
+            viewModel.langFilter = CoreDataManager.shared.getMangaLangFilter(sourceId: manga.sourceId, mangaId: manga.id)
+
             await viewModel.loadHistory(manga: manga)
             await viewModel.loadChapterList(manga: manga)
             updateDataSource()
@@ -1165,7 +1167,7 @@ extension MangaViewController: ChapterSortDelegate {
 
     func langFilterApplied(_ newValue: String?) {
         Task {
-            await viewModel.filterByLang(for: newValue, manga: manga)
+            await viewModel.languageFilterChanged(newValue, manga: manga)
             refreshDataSource()
             updateReadButton()
         }

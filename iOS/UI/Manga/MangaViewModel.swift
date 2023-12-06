@@ -40,6 +40,8 @@ class MangaViewModel {
             guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
             chapterList = (try? await source.getChapterList(manga: manga)) ?? []
         }
+
+        await filterChapterList(manga: manga)
     }
 
     func loadHistory(manga: Manga) async {
@@ -86,14 +88,21 @@ class MangaViewModel {
         }
     }
 
-    func filterByLang(for newLang: String?, manga: Manga) async {
-        if langFilter != nil { // filter previously applied, fetch the list again
-            await loadChapterList(manga: manga)
+    private func filterChapterList(manga: Manga) async {
+        await filterChaptersByLanguage(manga: manga)
+    }
+
+    private func filterChaptersByLanguage(manga: Manga) async {
+        if let langFilter {
+            chapterList = chapterList.filter { $0.lang == langFilter }
         }
-        if let newLang {
-            chapterList = chapterList.filter { $0.lang == newLang }
-        }
-        langFilter = newLang
+        manga.langFilter = langFilter
+        await CoreDataManager.shared.updateMangaDetails(manga: manga)
+    }
+
+    func languageFilterChanged(_ newValue: String?, manga: Manga) async {
+        langFilter = newValue
+        await loadChapterList(manga: manga)
     }
 
     func getSourceDefaultLanguages(sourceId: String) -> [String] {

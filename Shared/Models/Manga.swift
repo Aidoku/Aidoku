@@ -32,6 +32,8 @@ class Manga: Codable, Hashable {
     var nsfw: MangaContentRating
     var viewer: MangaViewer
 
+    var langFilter: String?
+
 //    var tintColor: CodableColor?
 
     var lastUpdated: Date?
@@ -52,6 +54,7 @@ class Manga: Codable, Hashable {
         status: PublishingStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
+        langFilter: String? = nil,
 //        tintColor: UIColor? = nil,
         lastUpdated: Date? = nil,
         lastOpened: Date? = nil,
@@ -70,6 +73,7 @@ class Manga: Codable, Hashable {
         self.status = status
         self.nsfw = nsfw
         self.viewer = viewer
+        self.langFilter = langFilter
 //        self.tintColor = tintColor != nil ? CodableColor(color: tintColor!) : nil
         self.lastUpdated = lastUpdated
         self.lastOpened = lastOpened
@@ -88,6 +92,7 @@ class Manga: Codable, Hashable {
         status = manga.status
         nsfw = manga.nsfw
         viewer = manga.viewer
+        langFilter = manga.langFilter
 //        tintColor = manga.tintColor ?? tintColor
         lastUpdated = manga.lastUpdated ?? lastUpdated
         lastOpened = manga.lastOpened ?? lastOpened
@@ -109,6 +114,7 @@ class Manga: Codable, Hashable {
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer,
+            langFilter: manga.langFilter,
             lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
             lastRead: manga.lastRead ?? lastRead,
@@ -144,6 +150,7 @@ extension Manga: KVCObject {
         case "status": return status.rawValue
         case "nsfw": return nsfw.rawValue
         case "viewer": return viewer.rawValue
+        case "langFilter": return langFilter
         default: return nil
         }
     }
