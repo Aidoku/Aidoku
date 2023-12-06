@@ -1165,7 +1165,7 @@ extension MangaViewController: ChapterSortDelegate {
         updateReadButton()
     }
 
-    func langFilterApplied(_ newValue: String?) {
+    func langFilterChanged(_ newValue: String?) {
         Task {
             await viewModel.languageFilterChanged(newValue, manga: manga)
             refreshDataSource()

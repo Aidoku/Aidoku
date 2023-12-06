@@ -24,7 +24,7 @@ enum ChapterSortOption: CaseIterable {
 protocol ChapterSortDelegate: AnyObject {
     func sortOptionChanged(_ newOption: ChapterSortOption)
     func sortAscendingChanged(_ newValue: Bool)
-    func langFilterApplied(_ newValue: String?)
+    func langFilterChanged(_ newValue: String?)
 }
 
 struct ChapterListHeaderConfiguration: UIContentConfiguration {
@@ -175,7 +175,7 @@ class ChapterListHeaderContentView: UIView, UIContentView {
 
                     let langValue = configuration.langFilter == lang ? nil : lang
                     configuration.langFilter = langValue
-                    configuration.delegate?.langFilterApplied(langValue)
+                    configuration.delegate?.langFilterChanged(langValue)
 
                     sortMenuOptionChanged(configuration: configuration)
                 }

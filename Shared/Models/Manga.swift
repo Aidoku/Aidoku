@@ -137,6 +137,7 @@ class Manga: Codable, Hashable {
 }
 
 extension Manga: KVCObject {
+    // swiftlint:disable:next cyclomatic_complexity
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id
