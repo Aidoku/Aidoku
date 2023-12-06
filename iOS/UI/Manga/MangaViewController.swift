@@ -855,6 +855,8 @@ extension MangaViewController {
         config.sortOption = viewModel.sortMethod
         config.sortAscending = viewModel.sortAscending
         config.chapterCount = viewModel.chapterList.count
+        config.langFilter = viewModel.langFilter
+        config.sourceLangs = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
         cell.contentConfiguration = config
         return cell
     }
@@ -1159,6 +1161,14 @@ extension MangaViewController: ChapterSortDelegate {
         viewModel.sortChapters(ascending: newValue)
         refreshDataSource()
         updateReadButton()
+    }
+
+    func langFilterApplied(_ newValue: String?) {
+        Task {
+            await viewModel.filterByLang(for: newValue, manga: manga)
+            refreshDataSource()
+            updateReadButton()
+        }
     }
 }
 

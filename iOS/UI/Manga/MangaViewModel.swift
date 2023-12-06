@@ -17,6 +17,8 @@ class MangaViewModel {
     var sortMethod: ChapterSortOption = .sourceOrder
     var sortAscending: Bool = false
 
+    var langFilter: String?
+
     func loadChapterList(manga: Manga) async {
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id, context: context)
@@ -82,6 +84,21 @@ class MangaViewModel {
                 chapterList.sort { $0.dateUploaded ?? now < $1.dateUploaded ?? now }
             }
         }
+    }
+
+    func filterByLang(for newLang: String?, manga: Manga) async {
+        if langFilter != nil { // filter previously applied, fetch the list again
+            await loadChapterList(manga: manga)
+        }
+        if let newLang {
+            chapterList = chapterList.filter { $0.lang == newLang }
+        }
+        langFilter = newLang
+    }
+
+    func getSourceDefaultLanguages(sourceId: String) -> [String] {
+        guard let source = SourceManager.shared.source(for: sourceId) else { return [] }
+        return source.getDefaultLanguages()
     }
 
     enum ChapterResult {
