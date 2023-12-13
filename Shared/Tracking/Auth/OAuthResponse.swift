@@ -14,6 +14,9 @@ struct OAuthResponse: Codable {
     var expiresIn: Int?
     var createdAt: Date = Date()
 
+    // indicates if we've alerted the user that they need to re-login
+    var askedForRefresh = false
+
     var expired: Bool {
         Date() > createdAt + TimeInterval(expiresIn ?? 0)
     }
@@ -23,5 +26,7 @@ struct OAuthResponse: Codable {
         case refreshToken = "refresh_token"
         case accessToken = "access_token"
         case expiresIn = "expires_in"
+
+        case askedForRefresh = "asked_for_refresh"
     }
 }

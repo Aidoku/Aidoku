@@ -28,9 +28,14 @@ class MyAnimeListApi {
 
     private func requestData(urlRequest: URLRequest) async throws -> Data {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode
+
+        if oauth.tokens == nil {
+            oauth.loadTokens()
+        }
 
         // check if token expired
-        if oauth.tokens?.expired ?? true || (response as? HTTPURLResponse)?.statusCode == 401 {
+        if oauth.tokens?.expired ?? true || statusCode == 400 || statusCode == 401 {
             // refresh access token
             guard let url = URL(string: baseApiUrl + "/token") else { return data }
             var request = oauth.authorizedRequest(for: url)
@@ -41,7 +46,7 @@ class MyAnimeListApi {
                 "grant_type": "refresh_token"
             ].percentEncoded()
             oauth.tokens = try await URLSession.shared.object(from: request)
-            UserDefaults.standard.set(try? JSONEncoder().encode(oauth.tokens), forKey: "Token.\(oauth.id).oauth")
+            oauth.saveTokens()
 
             // try request again
             if let newAuthorization = oauth.authorizedRequest(for: url).value(forHTTPHeaderField: "Authorization") {

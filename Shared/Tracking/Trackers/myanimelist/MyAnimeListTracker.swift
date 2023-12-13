@@ -29,6 +29,8 @@ class MyAnimeListTracker: OAuthTracker {
     let callbackHost = "myanimelist-auth"
     lazy var authenticationUrl = api.oauth.getAuthenticationUrl() ?? ""
 
+    var oauthClient: OAuthClient { api.oauth }
+
     func register(trackId: String, hasReadChapters: Bool) async {
         guard let id = Int(trackId) else { return }
         // set status to reading if status doesn't already exist

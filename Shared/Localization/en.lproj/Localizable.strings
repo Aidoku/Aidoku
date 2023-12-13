@@ -342,3 +342,5 @@
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
 "BOTH" = "Both";
+"ANILIST_LOGIN_NEEDED" = "AniList Login Needed";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Your AniList token has expired, so AniList will stop working until you re-login in settings.";

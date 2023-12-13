@@ -83,6 +83,27 @@ extension TrackersViewController {
         cell.accessoryType = tracker.isLoggedIn ? .checkmark : .none
         cell.imageView?.image = tracker.icon
 
+        // display warning mark if we need to re-login
+        if let tracker = tracker as? OAuthTracker {
+            if tracker.oauthClient.tokens == nil {
+                tracker.oauthClient.loadTokens()
+            }
+            if tracker.oauthClient.tokens?.askedForRefresh ?? true {
+                cell.accessoryType = .none
+                let iconView = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
+                iconView.tintColor = .systemYellow
+                iconView.tag = 10 // hack until we make this an actual table cell, so that we can remove it after we log in
+                iconView.translatesAutoresizingMaskIntoConstraints = false
+                cell.contentView.addSubview(iconView)
+                NSLayoutConstraint.activate([
+                    iconView.widthAnchor.constraint(equalToConstant: 20),
+                    iconView.heightAnchor.constraint(equalToConstant: 20),
+                    iconView.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                    iconView.trailingAnchor.constraint(equalTo: cell.contentView.layoutMarginsGuide.trailingAnchor)
+                ])
+            }
+        }
+
         cell.imageView?.clipsToBounds = true
         cell.imageView?.layer.cornerRadius = 42 * 0.225
         cell.imageView?.layer.cornerCurve = .continuous
@@ -109,7 +130,15 @@ extension TrackersViewController {
 
         let tracker = trackers[indexPath.row]
 
-        guard !tracker.isLoggedIn else {
+        // check if we need to re-login
+        var needsRelogin = false
+        if let tracker = tracker as? OAuthTracker {
+            if tracker.oauthClient.tokens?.askedForRefresh ?? true {
+                needsRelogin = true
+            }
+        }
+
+        guard needsRelogin || !tracker.isLoggedIn else {
             logout(at: indexPath)
             return
         }
@@ -124,10 +153,20 @@ extension TrackersViewController {
                     Task { @MainActor in
                         let loadingIndicator = UIActivityIndicatorView(style: .medium)
                         loadingIndicator.startAnimating()
-                        tableView.cellForRow(at: indexPath)?.accessoryView = loadingIndicator
+                        let cell = tableView.cellForRow(at: indexPath)
+                        cell?.accessoryView = loadingIndicator
                         await tracker.handleAuthenticationCallback(url: callbackURL)
-                        tableView.cellForRow(at: indexPath)?.accessoryView = nil
-                        tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+                        cell?.accessoryView = nil
+                        if tracker.isLoggedIn {
+                            cell?.accessoryType = .checkmark
+                            // remove the warning icon we might've added
+                            let iconView = cell?.contentView.subviews.first(where: { $0.tag == 10 })
+                            iconView?.removeFromSuperview()
+                            tracker.oauthClient.loadTokens()
+                        } else {
+                            cell?.accessoryType = .none
+                        }
+
                         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
                     }
                 }

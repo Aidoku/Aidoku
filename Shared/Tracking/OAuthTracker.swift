@@ -16,6 +16,8 @@ protocol OAuthTracker: Tracker {
     /// The OAuth access token for the tracker.
     var token: String? { get set }
 
+    var oauthClient: OAuthClient { get }
+
     /// A callback function called after authenticating.
     func handleAuthenticationCallback(url: URL) async
 }

@@ -144,6 +144,12 @@ struct GraphQLVariableQuery<T: Codable>: Codable {
 
 struct GraphQLResponse<T: Codable>: Codable {
     var data: T
+    var errors: [GraphQLError]?
+}
+
+struct GraphQLError: Codable {
+    var message: String?
+    var status: Int
 }
 
 struct AniListSearchVars: Codable {

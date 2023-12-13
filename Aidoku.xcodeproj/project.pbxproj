@@ -46,11 +46,8 @@
 		FB0E1CCA288AE50700B67BA9 /* OAuthTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */; };
 		FB0E1CCB288AE50700B67BA9 /* OAuthTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */; };
 		FB0E1CCE288AE9B000B67BA9 /* AniListTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CCD288AE9B000B67BA9 /* AniListTracker.swift */; };
-		FB0E1CCF288AE9B000B67BA9 /* AniListTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CCD288AE9B000B67BA9 /* AniListTracker.swift */; };
 		FB0E1CD1288AEA5B00B67BA9 /* AniListApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD0288AEA5B00B67BA9 /* AniListApi.swift */; };
-		FB0E1CD2288AEA5B00B67BA9 /* AniListApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD0288AEA5B00B67BA9 /* AniListApi.swift */; };
 		FB0E1CD4288AEA8A00B67BA9 /* AniListQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD3288AEA8A00B67BA9 /* AniListQueries.swift */; };
-		FB0E1CD5288AEA8A00B67BA9 /* AniListQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD3288AEA8A00B67BA9 /* AniListQueries.swift */; };
 		FB0E1CD8288AEAF700B67BA9 /* OAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD7288AEAF700B67BA9 /* OAuthClient.swift */; };
 		FB0E1CD9288AEAF700B67BA9 /* OAuthClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CD7288AEAF700B67BA9 /* OAuthClient.swift */; };
 		FB0E1CDB288AEB0400B67BA9 /* OAuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CDA288AEB0400B67BA9 /* OAuthResponse.swift */; };
@@ -1711,7 +1708,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FB0E1CD5288AEA8A00B67BA9 /* AniListQueries.swift in Sources */,
 				FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */,
 				FBD6A412285B7789007116C9 /* TrackItem.swift in Sources */,
 				FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */,
@@ -1760,7 +1756,6 @@
 				FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
 				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
 				FB72501027CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
-				FB0E1CD2288AEA5B00B67BA9 /* AniListApi.swift in Sources */,
 				FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
 				FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */,
@@ -1771,7 +1766,6 @@
 				FB72501427CAAC9F0037F1C9 /* Backup.swift in Sources */,
 				FB4EEBC527A34ED4005081A3 /* ChapterObject.swift in Sources */,
 				FB67EE6127F3708500C468EA /* WasmImports.swift in Sources */,
-				FB0E1CCF288AE9B000B67BA9 /* AniListTracker.swift in Sources */,
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
 				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
