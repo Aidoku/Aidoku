@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class AniListApi {
 
@@ -71,7 +72,7 @@ extension AniListApi {
         return response?.data.Viewer
     }
 
-    private func request<T: Codable, D: Encodable>(_ data: D) async -> T? {
+    private func request<T: Codable, D: Encodable>(_ data: D) async -> GraphQLResponse<T>? {
         guard let url = URL(string: "https://graphql.anilist.co") else { return nil }
         var request = oauth.authorizedRequest(for: url)
 
@@ -79,7 +80,25 @@ extension AniListApi {
         request.httpMethod = "POST"
         request.httpBody = try? encoder.encode(data)
 
-        return try? await URLSession.shared.object(from: request)
+        let response: GraphQLResponse<T>? = try? await URLSession.shared.object(from: request)
+        // check if token is invalid
+        if let response, let errors = response.errors, errors.contains(where: { $0.status == 400 }) {
+            if oauth.tokens == nil {
+                oauth.loadTokens()
+            }
+
+            if !oauth.tokens!.askedForRefresh {
+                oauth.tokens!.askedForRefresh = true
+                oauth.saveTokens()
+
+                await (UIApplication.shared.delegate as? AppDelegate)?.sendAlert(
+                    title: NSLocalizedString("ANILIST_LOGIN_NEEDED", comment: ""),
+                    message: NSLocalizedString("ANILIST_LOGIN_NEEDED_TEXT", comment: "")
+                )
+            }
+        }
+
+        return response
     }
 }
 

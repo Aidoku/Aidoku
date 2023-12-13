@@ -30,6 +30,8 @@ class AniListTracker: OAuthTracker {
     let callbackHost = "anilist-auth"
     lazy var authenticationUrl = api.oauth.getAuthenticationUrl(responseType: "token") ?? ""
 
+    var oauthClient: OAuthClient { api.oauth }
+
     init() {
         // get user score type preference
         Task {
