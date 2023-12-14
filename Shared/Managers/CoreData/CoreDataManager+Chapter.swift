@@ -174,12 +174,12 @@ extension CoreDataManager {
         let request = ChapterObject.fetchRequest()
         if let lang {
             request.predicate = NSPredicate(
-                format: "sourceId == %@ AND mangaId == %@ AND lang == %@ AND (history == nil OR history.completed == false)",
+                format: "sourceId == %@ AND mangaId == %@ AND history != nil AND lang == %@ AND history.completed == true",
                 sourceId, mangaId, lang
             )
         } else {
             request.predicate = NSPredicate(
-                format: "sourceId == %@ AND mangaId == %@ AND (history == nil OR history.completed == false)",
+                format: "sourceId == %@ AND mangaId == %@ AND history != nil AND history.completed == true",
                 sourceId, mangaId
             )
         }
