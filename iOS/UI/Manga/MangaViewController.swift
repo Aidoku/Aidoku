@@ -496,6 +496,7 @@ class MangaViewController: BaseTableViewController {
             }
             headerView.configure(with: manga)
             await viewModel.loadHistory(manga: manga)
+            await viewModel.filterChapterList(manga: manga)
             updateDataSource()
             updateReadButton()
             refreshControl?.endRefreshing()

@@ -88,7 +88,7 @@ class MangaViewModel {
         }
     }
 
-    private func filterChapterList(manga: Manga) async {
+    func filterChapterList(manga: Manga) async {
         await filterChaptersByLanguage(manga: manga)
     }
 
