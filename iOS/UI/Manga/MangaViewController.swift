@@ -49,6 +49,9 @@ class MangaViewController: BaseTableViewController {
             manga = manga.copy(from: cachedManga.toManga())
         }
 
+        // load filters before tableView init
+        viewModel.langFilter = CoreDataManager.shared.getMangaLangFilter(sourceId: manga.sourceId, mangaId: manga.id)
+
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -102,8 +105,6 @@ class MangaViewController: BaseTableViewController {
                 }
                 headerView.configure(with: manga)
             }
-
-            viewModel.langFilter = CoreDataManager.shared.getMangaLangFilter(sourceId: manga.sourceId, mangaId: manga.id)
 
             await viewModel.loadHistory(manga: manga)
             await viewModel.loadChapterList(manga: manga)
