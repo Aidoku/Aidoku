@@ -243,10 +243,9 @@ extension WasmNet {
             // iOS 17 encodes by default the url string causing double encoded characters
             if #available(iOS 17.0, *) {
                 // it seems if we pass a valid RFC 3986 url string to URL() it behaves the same as on iOS 16
-                // so we need to manually encode strange characters like [] or <>
                 let urlEncoded = request.URL?
-                    .replacingOccurrences(of: "[", with: "%5B")
-                    .replacingOccurrences(of: "]", with: "%5D")
+                    .removingPercentEncoding?
+                    .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                 url = URL(string: urlEncoded ?? "", encodingInvalidCharacters: false)
             } else {
                 url = URL(string: request.URL ?? "")
