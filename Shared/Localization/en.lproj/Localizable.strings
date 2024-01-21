@@ -30,6 +30,8 @@
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
+"NO_WIFI_ALERT_TITLE" = "No Wi-Fi"
+"NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again."
 
 // Library
 "LIBRARY" = "Library";
