@@ -994,14 +994,23 @@ extension LibraryViewController {
             }
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
-                Task {
-                    await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                    Task {
+                        await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                    }
+                } else {
+                    self.showNoWifiAlert()
                 }
             }
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
-                Task {
-                    await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                    Task {
+                        await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                    }
+                } else {
+                    self.showNoWifiAlert()
                 }
+
             }
 
             actions.append(UIMenu(
@@ -1044,6 +1053,18 @@ extension LibraryViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         self.collectionView(collectionView, contextMenuConfigurationForItemsAt: [indexPath], point: point)
+    }
+
+    func showNoWifiAlert() {
+        let alertController = UIAlertController(
+            title: "No Wi-Fi",
+            message: "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.",
+            preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(okAction)
+
+        present(alertController, animated: true, completion: nil)
     }
 }
 

@@ -470,6 +470,18 @@ class MangaViewController: BaseTableViewController {
         present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
     }
 
+    func showNoWifiAlert() {
+        let alertController = UIAlertController(
+            title: "No Wi-Fi",
+            message: "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.",
+            preferredStyle: .alert)
+
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(okAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
         guard Reachability.getConnectionType() != .none else {
             refreshControl?.endRefreshing()
@@ -558,7 +570,12 @@ class MangaViewController: BaseTableViewController {
         } ?? [])
             .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
             .sorted { $0.sourceOrder > $1.sourceOrder }
-        DownloadManager.shared.download(chapters: chapters, manga: manga)
+
+        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+            DownloadManager.shared.download(chapters: chapters, manga: manga)
+        } else {
+            showNoWifiAlert()
+        }
         setEditing(false, animated: true)
     }
 
@@ -929,7 +946,13 @@ extension MangaViewController {
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle")
                 ) { _ in
-                    DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                        DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                    } else {
+                        self.showNoWifiAlert()
+                    }
+
+//                    DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
                     self.reloadCells(for: [chapter])
                 }
             }
