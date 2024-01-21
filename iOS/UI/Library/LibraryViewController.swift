@@ -1057,11 +1057,11 @@ extension LibraryViewController {
 
     func showNoWifiAlert() {
         let alertController = UIAlertController(
-            title: "No Wi-Fi",
-            message: "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.",
+            title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""),
             preferredStyle: .alert)
 
-        let okAction = UIAlertAction(title: "OK", style: .default)
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
         alertController.addAction(okAction)
 
         present(alertController, animated: true, completion: nil)
