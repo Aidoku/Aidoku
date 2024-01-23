@@ -474,12 +474,13 @@ class MangaViewController: BaseTableViewController {
         let alertController = UIAlertController(
             title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
             message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""),
-            preferredStyle: .alert)
+            preferredStyle: .alert
+        )
 
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
         alertController.addAction(okAction)
 
-        present(alertController, animated: true, completion: nil)
+        present(alertController, animated: true)
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
@@ -952,7 +953,6 @@ extension MangaViewController {
                         self.showNoWifiAlert()
                     }
 
-//                    DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
                     self.reloadCells(for: [chapter])
                 }
             }
