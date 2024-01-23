@@ -1009,7 +1009,6 @@ extension LibraryViewController {
                 } else {
                     self.showNoWifiAlert()
                 }
-
             }
 
             actions.append(UIMenu(
@@ -1058,7 +1057,8 @@ extension LibraryViewController {
         let alertController = UIAlertController(
             title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
             message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""),
-            preferredStyle: .alert)
+            preferredStyle: .alert
+        )
 
         let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
         alertController.addAction(okAction)
