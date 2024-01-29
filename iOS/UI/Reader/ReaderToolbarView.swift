@@ -26,6 +26,7 @@ class ReaderToolbarView: UIView {
     let sliderView = ReaderSliderView()
     private let currentPageLabel = UILabel()
     private let pagesLeftLabel = UILabel()
+    private let incogniteModeLabel = UILabel()
 
     init() {
         super.init(frame: .zero)
@@ -50,6 +51,14 @@ class ReaderToolbarView: UIView {
         pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pagesLeftLabel)
 
+        incogniteModeLabel.font = .systemFont(ofSize: 10)
+        incogniteModeLabel.textColor = .secondaryLabel
+        incogniteModeLabel.textAlignment = .left
+        incogniteModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        incogniteModeLabel.text = NSLocalizedString("INCOGNITO_MODE", comment: "")
+        incogniteModeLabel.isHidden = !UserDefaults.standard.bool(forKey: "General.incognitoMode")
+        addSubview(incogniteModeLabel)
+
         sliderView.translatesAutoresizingMaskIntoConstraints = false
         sliderView.semanticContentAttribute = .playback // for rtl languages
         addSubview(sliderView)
@@ -62,6 +71,9 @@ class ReaderToolbarView: UIView {
 
             pagesLeftLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             pagesLeftLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            incogniteModeLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            incogniteModeLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
 
             sliderView.heightAnchor.constraint(equalToConstant: 12),
             sliderView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
