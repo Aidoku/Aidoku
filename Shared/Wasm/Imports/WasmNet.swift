@@ -239,7 +239,7 @@ extension WasmNet {
     var send: (Int32) -> Void {
         { descriptor in
             guard let request = self.globalStore.requests[descriptor] else { return }
-            var url: URL?
+            let url: URL?
             // iOS 17 encodes by default the url string causing double encoded characters
             if #available(iOS 17.0, *) {
                 // it seems if we pass a valid RFC 3986 url string to URL() it behaves the same as on iOS 16
