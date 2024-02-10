@@ -55,7 +55,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let tabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithOpaqueBackground()
             tabController.tabBar.scrollEdgeAppearance = tabBarAppearance
-            tabController.tabBar.scrollEdgeAppearance = nil
         }
 
         if let windowScene = scene as? UIWindowScene {
