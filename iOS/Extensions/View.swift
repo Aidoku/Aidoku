@@ -26,3 +26,14 @@ extension View {
         self.modifier(NoHitTesting())
     }
 }
+
+extension View {
+    @ViewBuilder
+    func refreshableCompat(action: @Sendable @escaping () async -> Void) -> some View {
+        if #available(iOS 15.0, *) {
+            self.refreshable(action: action)
+        } else {
+            self
+        }
+    }
+}

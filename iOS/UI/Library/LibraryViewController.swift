@@ -7,7 +7,9 @@
 
 import UIKit
 import LocalAuthentication
+import SwiftUI
 
+// swiftlint:disable:next type_body_length
 class LibraryViewController: MangaCollectionViewController {
 
     let viewModel = LibraryViewModel()
@@ -41,6 +43,13 @@ class LibraryViewController: MangaCollectionViewController {
         style: .plain,
         target: nil,
         action: nil
+    )
+
+    private lazy var mangaUpdatesButton = UIBarButtonItem(
+        image: UIImage(systemName: "bell"),
+        style: .plain,
+        target: self,
+        action: #selector(openMangaUpdates)
     )
 
     private lazy var refreshControl = UIRefreshControl()
@@ -454,6 +463,7 @@ class LibraryViewController: MangaCollectionViewController {
             if viewModel.isCategoryLocked() {
                 items.append(lockBarButton)
             }
+            items.append(mangaUpdatesButton)
             navigationItem.rightBarButtonItems = items
             navigationItem.leftBarButtonItem = nil
             Task { @MainActor in
@@ -541,6 +551,14 @@ class LibraryViewController: MangaCollectionViewController {
 
     @objc func openDownloadQueue() {
         present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
+    }
+
+    @objc func openMangaUpdates() {
+        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView())
+        // configure navigation item before displaying to fix animation
+        mangaUpdatesViewController.navigationItem.largeTitleDisplayMode = .never
+        mangaUpdatesViewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES", comment: "")
+        navigationController?.pushViewController(mangaUpdatesViewController, animated: true)
     }
 
     @objc func removeSelectedFromLibrary() {
