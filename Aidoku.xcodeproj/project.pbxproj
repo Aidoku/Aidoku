@@ -17,6 +17,7 @@
 		4824125A2B771E060096788C /* MangaUpdateItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482412592B771E060096788C /* MangaUpdateItemView.swift */; };
 		487484DB2A4112DD007DF0DF /* CropBordersProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */; };
 		489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */; };
+		48E20A272B78420E00BFFED8 /* SwiftUINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E20A262B78420E00BFFED8 /* SwiftUINavigationController.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -337,6 +338,7 @@
 		482412592B771E060096788C /* MangaUpdateItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaUpdateItemView.swift; sourceTree = "<group>"; };
 		487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropBordersProcessor.swift; sourceTree = "<group>"; };
 		489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverViewController.swift; sourceTree = "<group>"; };
+		48E20A262B78420E00BFFED8 /* SwiftUINavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUINavigationController.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -655,6 +657,7 @@
 				FB0CAA5128A68FD70024561A /* EmptyPageStackView.swift */,
 				FB0CAA5328A68FDF0024561A /* LockedPageStackView.swift */,
 				FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */,
+				48E20A262B78420E00BFFED8 /* SwiftUINavigationController.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1669,6 +1672,7 @@
 				FB55AFA728AAAFE10083EFC3 /* UINavigationItem.swift in Sources */,
 				FB11EDEF2784B0690007365D /* Volume.swift in Sources */,
 				FBED231927B8BA7C0095D0C0 /* MiniModalViewController.swift in Sources */,
+				48E20A272B78420E00BFFED8 /* SwiftUINavigationController.swift in Sources */,
 				FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */,
 				FB7B7ED1278CE670001E6EAF /* SourceManager.swift in Sources */,
 				FB4B0AD7285BC9690066A13B /* TrackStatus.swift in Sources */,
