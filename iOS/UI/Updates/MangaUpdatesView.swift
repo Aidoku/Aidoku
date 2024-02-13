@@ -68,15 +68,15 @@ struct MangaUpdatesView: View {
 
     @available(iOS 15.0, *)
     var listItemsWithSections: some View {
-        ForEach(entries.indices, id: \.self) { days in
+        ForEach(entries.indices, id: \.self) { index in
             Section {
-                ForEach(entries[days].1) { mangaUpdate in
+                ForEach(entries[index].1) { mangaUpdate in
                     NavigationLink(destination: MangaView(manga: mangaUpdate.manga)) {
                         MangaUpdateItemView(item: mangaUpdate)
                     }
                 }
             } header: {
-                Text(makeRelativeDate(days: entries[days].0))
+                Text(makeRelativeDate(days: entries[index].0))
                     .foregroundStyle(.primary)
                     .font(.system(size: 16, weight: .medium))
             }
@@ -84,12 +84,12 @@ struct MangaUpdatesView: View {
     }
 
     var listItems: some View {
-        ForEach(entries.indices, id: \.self) { days in
-            Text(makeRelativeDate(days: entries[days].0))
+        ForEach(entries.indices, id: \.self) { index in
+            Text(makeRelativeDate(days: entries[index].0))
                 .foregroundColor(.primary)
                 .font(.system(size: 16, weight: .medium))
 
-            ForEach(entries[days].1) { mangaUpdate in
+            ForEach(entries[index].1) { mangaUpdate in
                 NavigationLink(destination: MangaView(manga: mangaUpdate.manga)) {
                     MangaUpdateItemView(item: mangaUpdate)
                 }
