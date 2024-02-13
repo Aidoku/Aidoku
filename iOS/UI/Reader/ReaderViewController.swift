@@ -142,9 +142,7 @@ class ReaderViewController: BaseObservingViewController {
         setReadingMode(UserDefaults.standard.string(forKey: readingModeKey))
 
         // load chapter list
-        Task {
-            await loadCurrentChapter()
-        }
+        loadCurrentChapter()
     }
 
     override func constrain() {
@@ -221,18 +219,24 @@ class ReaderViewController: BaseObservingViewController {
             .getChapterList(manga: Manga(sourceId: chapter.sourceId, id: chapter.mangaId))) ?? []
     }
 
-    func loadCurrentChapter() async {
+    func loadCurrentChapter() {
         if chapterList.isEmpty {
-            await loadChapterList()
+            Task {
+                await loadChapterList()
+            }
         }
 
-        let startPage = CoreDataManager.shared.getProgress(
+        let (completed, startPage) = CoreDataManager.shared.getProgress(
             sourceId: chapter.sourceId,
             mangaId: chapter.mangaId,
             chapterId: chapter.id
         )
-        currentPage = startPage
-        reader?.setChapter(chapter, startPage: startPage)
+        if !completed, let startPage {
+            currentPage = startPage
+        } else {
+            currentPage = -1
+        }
+        reader?.setChapter(chapter, startPage: currentPage)
     }
 
     func loadNavbarTitle() {
@@ -251,9 +255,7 @@ class ReaderViewController: BaseObservingViewController {
         var view = ReaderChapterListView(chapterList: chapterList, chapter: chapter)
         view.chapterSet = { chapter in
             self.setChapter(chapter)
-            Task {
-                await self.loadCurrentChapter()
-            }
+            self.loadCurrentChapter()
         }
         let vc = UIHostingController(rootView: view)
         present(vc, animated: true)
