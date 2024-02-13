@@ -344,3 +344,5 @@
 "BOTH" = "Both";
 "ANILIST_LOGIN_NEEDED" = "AniList Login Needed";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Your AniList token has expired, so AniList will stop working until you re-login in settings.";
+"BACKUP_ERROR" = "Backup Restore Error";
+"BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
