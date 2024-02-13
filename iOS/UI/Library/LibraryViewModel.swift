@@ -141,6 +141,7 @@ class LibraryViewModel {
                 let unreadCount = CoreDataManager.shared.unreadCount(
                     sourceId: mangaObject.sourceId,
                     mangaId: mangaObject.id,
+                    lang: mangaObject.langFilter,
                     context: context
                 )
 
@@ -224,9 +225,15 @@ class LibraryViewModel {
                 group.addTask {
                     func getUnreadCount() async -> Int {
                         await CoreDataManager.shared.container.performBackgroundTask { context in
-                            CoreDataManager.shared.unreadCount(
+                            let mangaLang = CoreDataManager.shared.getMangaLangFilter(
                                 sourceId: item.sourceId,
                                 mangaId: item.mangaId,
+                                context: context
+                            )
+                            return CoreDataManager.shared.unreadCount(
+                                sourceId: item.sourceId,
+                                mangaId: item.mangaId,
+                                lang: mangaLang,
                                 context: context
                             )
                         }
@@ -275,9 +282,15 @@ class LibraryViewModel {
         // fetch new unread counts
         await CoreDataManager.shared.container.performBackgroundTask { context in
             for manga in currentManga {
+                let mangaLang = CoreDataManager.shared.getMangaLangFilter(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.mangaId,
+                    context: context
+                )
                 unreadCounts[manga.hashValue] = CoreDataManager.shared.unreadCount(
                     sourceId: manga.sourceId,
                     mangaId: manga.mangaId,
+                    lang: mangaLang,
                     context: context
                 )
             }

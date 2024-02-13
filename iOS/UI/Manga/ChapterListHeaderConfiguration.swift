@@ -24,6 +24,7 @@ enum ChapterSortOption: CaseIterable {
 protocol ChapterSortDelegate: AnyObject {
     func sortOptionChanged(_ newOption: ChapterSortOption)
     func sortAscendingChanged(_ newValue: Bool)
+    func langFilterChanged(_ newValue: String?)
 }
 
 struct ChapterListHeaderConfiguration: UIContentConfiguration {
@@ -33,6 +34,8 @@ struct ChapterListHeaderConfiguration: UIContentConfiguration {
     var chapterCount = 0
     var sortOption: ChapterSortOption = .sourceOrder
     var sortAscending = false
+    var langFilter: String?
+    var sourceLangs: [String] = []
 
     func makeContentView() -> UIView & UIContentView {
         ChapterListHeaderContentView(self)
@@ -112,36 +115,81 @@ class ChapterListHeaderContentView: UIView, UIContentView {
 
     private func makeSortMenu() -> UIMenu? {
         guard let configuration = configuration as? ChapterListHeaderConfiguration else { return nil }
-        return UIMenu(
-            title: "",
-            image: nil,
-            identifier: nil,
-            options: [],
-            children: ChapterSortOption.allCases.map { option in
+
+        var children: [UIMenuElement] = [
+            UIMenu(
+                title: NSLocalizedString("SORT_BY", comment: ""),
+                options: .displayInline,
+                children: sortActions(configuration: configuration)
+            )
+        ]
+        if configuration.sourceLangs.count > 1 {
+            children.append(
+                UIMenu(
+                    title: NSLocalizedString("FILTER_BY", comment: ""),
+                    options: .displayInline,
+                    children: [langsMenu(configuration: configuration)]
+                )
+            )
+        }
+
+        return UIMenu(title: "", children: children)
+    }
+
+    private func sortActions(configuration: ChapterListHeaderConfiguration) -> [UIAction] {
+        ChapterSortOption.allCases.map { option in
+            UIAction(
+                title: option.toString(),
+                image: configuration.sortOption == option
+                    ? UIImage(systemName: configuration.sortAscending ? "chevron.up" : "chevron.down")
+                    : nil
+            ) { [weak self] _ in
+                guard
+                    let self = self,
+                    var configuration = self.configuration as? ChapterListHeaderConfiguration
+                else { return }
+
+                if configuration.sortOption == option {
+                    configuration.sortAscending.toggle()
+                } else {
+                    configuration.sortAscending = false
+                    configuration.sortOption = option
+                    configuration.delegate?.sortOptionChanged(configuration.sortOption)
+                }
+                configuration.delegate?.sortAscendingChanged(configuration.sortAscending)
+
+                sortMenuOptionChanged(configuration: configuration)
+            }
+        }
+    }
+
+    private func langsMenu(configuration: ChapterListHeaderConfiguration) -> UIMenu {
+        UIMenu(
+            title: NSLocalizedString("LANGUAGE", comment: ""),
+            children: configuration.sourceLangs.map { lang in
                 UIAction(
-                    title: option.toString(),
-                    image: configuration.sortOption == option
-                        ? UIImage(systemName: configuration.sortAscending ? "chevron.up" : "chevron.down")
-                        : nil
+                    title: (Locale.current as NSLocale).displayName(forKey: .identifier, value: lang) ?? "",
+                    image: configuration.langFilter == lang
+                    ? UIImage(systemName: "checkmark")
+                    : nil
                 ) { [weak self] _ in
                     guard
                         let self = self,
                         var configuration = self.configuration as? ChapterListHeaderConfiguration
                     else { return }
 
-                    if configuration.sortOption == option {
-                        configuration.sortAscending.toggle()
-                    } else {
-                        configuration.sortAscending = false
-                        configuration.sortOption = option
-                        configuration.delegate?.sortOptionChanged(configuration.sortOption)
-                    }
-                    configuration.delegate?.sortAscendingChanged(configuration.sortAscending)
+                    let langValue = configuration.langFilter == lang ? nil : lang
+                    configuration.langFilter = langValue
+                    configuration.delegate?.langFilterChanged(langValue)
 
-                    self.configuration = configuration
-                    self.sortButton.menu = self.makeSortMenu() // refresh sort menu
+                    sortMenuOptionChanged(configuration: configuration)
                 }
             }
         )
+    }
+
+    private func sortMenuOptionChanged(configuration: ChapterListHeaderConfiguration) {
+        self.configuration = configuration
+        sortButton.menu = makeSortMenu() // refresh sort menu
     }
 }

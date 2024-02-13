@@ -49,6 +49,9 @@ class MangaViewController: BaseTableViewController {
             manga = manga.copy(from: cachedManga.toManga())
         }
 
+        // load filters before tableView init
+        viewModel.langFilter = CoreDataManager.shared.getMangaLangFilter(sourceId: manga.sourceId, mangaId: manga.id)
+
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -494,6 +497,7 @@ class MangaViewController: BaseTableViewController {
             }
             headerView.configure(with: manga)
             await viewModel.loadHistory(manga: manga)
+            await viewModel.filterChapterList(manga: manga)
             updateDataSource()
             updateReadButton()
             refreshControl?.endRefreshing()
@@ -855,6 +859,8 @@ extension MangaViewController {
         config.sortOption = viewModel.sortMethod
         config.sortAscending = viewModel.sortAscending
         config.chapterCount = viewModel.chapterList.count
+        config.langFilter = viewModel.langFilter
+        config.sourceLangs = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
         cell.contentConfiguration = config
         return cell
     }
@@ -1159,6 +1165,14 @@ extension MangaViewController: ChapterSortDelegate {
         viewModel.sortChapters(ascending: newValue)
         refreshDataSource()
         updateReadButton()
+    }
+
+    func langFilterChanged(_ newValue: String?) {
+        Task {
+            await viewModel.languageFilterChanged(newValue, manga: manga)
+            refreshDataSource()
+            updateReadButton()
+        }
     }
 }
 
