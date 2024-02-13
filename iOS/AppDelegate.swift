@@ -51,6 +51,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .visibleViewController
     }
 
+    var topViewController: UIViewController? {
+        if var topController = UIApplication.shared.windows.first?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+            return topController
+        } else {
+            return nil
+        }
+    }
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -313,6 +324,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func sendAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-        UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
+        topViewController?.present(alert, animated: true)
     }
 }
