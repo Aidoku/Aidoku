@@ -170,28 +170,16 @@ class ReaderViewController: BaseObservingViewController {
             guard let self = self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
+        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateReadPosition()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         guard currentPage >= 1 else { return }
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            Task {
-                if currentPage == 1 && !CoreDataManager.shared.hasHistory(
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id
-                ) {
-                    // don't add history if there is none and we're at the first page
-                    return
-                }
-                await HistoryManager.shared.setProgress(
-                    chapter: chapter,
-                    progress: currentPage,
-                    totalPages: toolbarView.totalPages
-                )
-            }
-        }
+        updateReadPosition()
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -199,6 +187,32 @@ class ReaderViewController: BaseObservingViewController {
 
         coordinator.animate(alongsideTransition: nil) { _ in
             self.toolbarViewWidthConstraint?.constant = size.width
+        }
+    }
+
+    func updateReadPosition() {
+        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        Task {
+            // don't add history if there is none and we're at the first page
+            if currentPage == 1 {
+                let chapter = chapter
+                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    !CoreDataManager.shared.hasHistory(
+                        sourceId: chapter.sourceId,
+                        mangaId: chapter.mangaId,
+                        chapterId: chapter.id,
+                        context: context
+                    )
+                }
+                if hasHistory {
+                    return
+                }
+            }
+            await HistoryManager.shared.setProgress(
+                chapter: chapter,
+                progress: currentPage,
+                totalPages: toolbarView.totalPages
+            )
         }
     }
 
