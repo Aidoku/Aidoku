@@ -17,6 +17,8 @@ class MangaViewModel {
     var sortMethod: ChapterSortOption = .sourceOrder
     var sortAscending: Bool = false
 
+    var langFilter: String?
+
     func loadChapterList(manga: Manga) async {
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id, context: context)
@@ -38,6 +40,8 @@ class MangaViewModel {
             guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
             chapterList = (try? await source.getChapterList(manga: manga)) ?? []
         }
+
+        await filterChapterList(manga: manga)
     }
 
     func loadHistory(manga: Manga) async {
@@ -82,6 +86,29 @@ class MangaViewModel {
                 chapterList.sort { $0.dateUploaded ?? now < $1.dateUploaded ?? now }
             }
         }
+    }
+
+    func filterChapterList(manga: Manga) async {
+        await filterChaptersByLanguage(manga: manga)
+    }
+
+    private func filterChaptersByLanguage(manga: Manga) async {
+        if let langFilter {
+            chapterList = chapterList.filter { $0.lang == langFilter }
+        }
+        manga.langFilter = langFilter
+        await CoreDataManager.shared.updateMangaDetails(manga: manga)
+    }
+
+    func languageFilterChanged(_ newValue: String?, manga: Manga) async {
+        langFilter = newValue
+        await loadChapterList(manga: manga)
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+    }
+
+    func getSourceDefaultLanguages(sourceId: String) -> [String] {
+        guard let source = SourceManager.shared.source(for: sourceId) else { return [] }
+        return source.getDefaultLanguages()
     }
 
     enum ChapterResult {

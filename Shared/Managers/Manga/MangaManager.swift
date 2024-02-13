@@ -122,6 +122,7 @@ extension MangaManager {
         if options.contains("hasUnread") && CoreDataManager.shared.unreadCount(
             sourceId: manga.sourceId,
             mangaId: manga.id,
+            lang: manga.langFilter,
             context: context
         ) > 0 {
             return true
@@ -130,6 +131,7 @@ extension MangaManager {
         if options.contains("notStarted") && CoreDataManager.shared.readCount(
             sourceId: manga.sourceId,
             mangaId: manga.id,
+            lang: manga.langFilter,
             context: context
         ) == 0 {
             return true
