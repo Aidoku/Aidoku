@@ -17,10 +17,14 @@ class BaseObservingViewController: BaseViewController {
         }
     }
 
-    func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {
+    func addObserver(forName name: NSNotification.Name, object: Any? = nil, using block: @escaping (Notification) -> Void) {
         observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name(name), object: object, queue: nil, using: block
+            forName: name, object: object, queue: nil, using: block
         ))
+    }
+
+    func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {
+        addObserver(forName: NSNotification.Name(name), object: object, using: block)
     }
 
     override func viewDidLoad() {
