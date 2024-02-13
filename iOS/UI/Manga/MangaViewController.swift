@@ -117,6 +117,8 @@ class MangaViewController: BaseTableViewController {
             updateDataSource()
             updateReadButton()
 
+            CoreDataManager.shared.setMangaUpdatesViewed(sourceId: manga.sourceId, mangaId: manga.id)
+
             // scroll to `scrollToChapter`
             if
                 let chapter = scrollToChapter,

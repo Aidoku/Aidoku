@@ -37,6 +37,7 @@ struct MangaUpdateItemView: View {
 
             VStack(alignment: .leading) {
                 Text(item.manga.title ?? "")
+                    .foregroundColor(item.viewed ? .secondary : .primary)
                     .lineLimit(2)
 
                 if let chapterTitle = item.chapter?.makeTitle() {

@@ -14,6 +14,7 @@ struct MangaUpdatesView: View {
         let date: Date
         let manga: Manga
         let chapter: Chapter?
+        let viewed: Bool
     }
 
     @State var entries: [(Int, [MangaUpdateInfo])] = []
@@ -108,7 +109,8 @@ struct MangaUpdatesView: View {
                         id: $0.id,
                         date: $0.date,
                         manga: mangaObj.toManga(),
-                        chapter: $0.chapter?.toChapter()
+                        chapter: $0.chapter?.toChapter(),
+                        viewed: $0.viewed
                     )
                 } else {
                     return nil

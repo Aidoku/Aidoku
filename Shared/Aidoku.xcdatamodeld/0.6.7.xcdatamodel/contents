@@ -66,7 +66,7 @@
         <attribute name="date" attributeType="Date" defaultDateTimeInterval="665122680" usesScalarValueType="NO"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
         <attribute name="sourceId" attributeType="String" defaultValueString=""/>
-        <attribute name="viewed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="viewed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="chapter" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Chapter" inverseName="mangaUpdate" inverseEntity="Chapter"/>
     </entity>
     <entity name="Source" representedClassName="SourceObject" syncable="YES" codeGenerationType="class">
