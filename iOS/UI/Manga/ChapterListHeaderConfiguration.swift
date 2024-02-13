@@ -116,16 +116,24 @@ class ChapterListHeaderContentView: UIView, UIContentView {
     private func makeSortMenu() -> UIMenu? {
         guard let configuration = configuration as? ChapterListHeaderConfiguration else { return nil }
 
-        var children: [UIMenuElement] = sortActions(configuration: configuration)
-        children.append(langsMenu(configuration: configuration))
+        var children: [UIMenuElement] = [
+            UIMenu(
+                title: NSLocalizedString("SORT_BY", comment: ""),
+                options: .displayInline,
+                children: sortActions(configuration: configuration)
+            )
+        ]
+        if configuration.sourceLangs.count > 1 {
+            children.append(
+                UIMenu(
+                    title: NSLocalizedString("FILTER_BY", comment: ""),
+                    options: .displayInline,
+                    children: [langsMenu(configuration: configuration)]
+                )
+            )
+        }
 
-        return UIMenu(
-            title: "",
-            image: nil,
-            identifier: nil,
-            options: [],
-            children: children
-        )
+        return UIMenu(title: "", children: children)
     }
 
     private func sortActions(configuration: ChapterListHeaderConfiguration) -> [UIAction] {
@@ -158,9 +166,6 @@ class ChapterListHeaderContentView: UIView, UIContentView {
     private func langsMenu(configuration: ChapterListHeaderConfiguration) -> UIMenu {
         UIMenu(
             title: NSLocalizedString("LANGUAGE", comment: ""),
-            image: nil,
-            identifier: nil,
-            options: [],
             children: configuration.sourceLangs.map { lang in
                 UIAction(
                     title: (Locale.current as NSLocale).displayName(forKey: .identifier, value: lang) ?? "",
