@@ -260,7 +260,9 @@ extension MangaManager {
                                     context: context
                                 )
                                 // update manga updates
-                                for chapter in newChapters {
+                                for chapter in newChapters
+                                where mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                {
                                     CoreDataManager.shared.createMangaUpdate(
                                         sourceId: manga.sourceId,
                                         mangaId: manga.id,
