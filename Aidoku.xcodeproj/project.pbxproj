@@ -1997,6 +1997,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.6.7;
+				OTHER_LDFLAGS = "-ld_classic";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2037,6 +2038,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.6.7;
+				OTHER_LDFLAGS = "-ld_classic";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
