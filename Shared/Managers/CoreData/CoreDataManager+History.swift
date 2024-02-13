@@ -214,10 +214,15 @@ extension CoreDataManager {
         }
     }
 
-    /// Get current page progress for chapter, returns -1 if not started.
-    func getProgress(sourceId: String, mangaId: String, chapterId: String, context: NSManagedObjectContext? = nil) -> Int {
+    /// Get current completion status and page progress for chapter
+    func getProgress(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> (completed: Bool, progress: Int?) {
         let historyObject = getHistory(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, context: context)
-        return Int(historyObject?.progress ?? -1)
+        return (historyObject?.completed ?? false, (historyObject?.progress).flatMap(Int.init))
     }
 
     /// Set page progress for a chapter and creates a history object if it doesn't already exist.
