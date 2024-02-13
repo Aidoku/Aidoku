@@ -138,22 +138,16 @@ extension MangaManager {
         }
 
         if !excludedCategories.isEmpty {
-            guard let libraryObject = CoreDataManager.shared.getLibraryManga(
+            // check if excluded via category
+            let categories = CoreDataManager.shared.getCategories(
                 sourceId: manga.sourceId,
                 mangaId: manga.id,
                 context: context
-            ) else {
-                return false
-            }
-
-            // check if excluded via category
-            let categories = CoreDataManager.shared.getCategories(
-                libraryManga: libraryObject
             ).compactMap { $0.title }
 
             if !categories.isEmpty {
                 if excludedCategories.contains(where: categories.contains) {
-                    return false
+                    return true
                 }
             }
         }
