@@ -336,3 +336,5 @@
 "PIN" = "Przypnij";
 "UNPIN" = "Odepnij";
 "CROP_BORDERS" = "Przytnij ramki";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Twój token AniList wygasł, więc AniList przestanie działać do czasu ponownego zalogowania się w ustawieniach.";
+"ANILIST_LOGIN_NEEDED" = "Potrzebny Login AntyListy";
