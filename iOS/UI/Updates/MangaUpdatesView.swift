@@ -17,6 +17,7 @@ struct MangaUpdatesView: View {
         let viewed: Bool
     }
 
+    private let limit = 15
     @State var entries: [(Int, [MangaUpdateInfo])] = []
     @State var offset = 0
     @State var loadingMore = false
@@ -99,7 +100,7 @@ struct MangaUpdatesView: View {
 
     private func loadNewEntries() async {
         let mangaUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getRecentMangaUpdates(limit: 15, offset: offset, context: context).compactMap {
+            CoreDataManager.shared.getRecentMangaUpdates(limit: limit, offset: offset, context: context).compactMap {
                 if let mangaObj = CoreDataManager.shared.getManga(
                     sourceId: $0.sourceId,
                     mangaId: $0.mangaId,
@@ -139,7 +140,8 @@ struct MangaUpdatesView: View {
         let finalUpdatesDict = updatesDict
         await MainActor.run {
             self.entries = finalUpdatesDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
-            self.offset += 15
+            self.reachedEnd = mangaUpdates.count < limit
+            self.offset += limit
             self.loadingMore = false
         }
     }
