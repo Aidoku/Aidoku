@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct OAuthResponse: Codable {
+struct OAuthResponse {
     var tokenType: String?
     var refreshToken: String?
     var accessToken: String?
@@ -19,6 +19,17 @@ struct OAuthResponse: Codable {
 
     var expired: Bool {
         Date() > createdAt + TimeInterval(expiresIn ?? 0)
+    }
+}
+
+extension OAuthResponse: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        tokenType = try container.decodeIfPresent(String.self, forKey: .tokenType)
+        refreshToken = try container.decodeIfPresent(String.self, forKey: .refreshToken)
+        accessToken = try container.decodeIfPresent(String.self, forKey: .accessToken)
+        expiresIn = try container.decodeIfPresent(Int.self, forKey: .expiresIn)
+        askedForRefresh = try container.decodeIfPresent(Bool.self, forKey: .askedForRefresh) ?? false
     }
 
     enum CodingKeys: String, CodingKey {
