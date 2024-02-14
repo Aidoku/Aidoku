@@ -905,6 +905,7 @@ extension LibraryViewController {
                     present(navigationController, animated: true)
                 } else {
                     // no chapter to read, open manga page
+                    let indexPath = dataSource.indexPath(for: info) ?? indexPath // get new index path in case it changed
                     super.collectionView(collectionView, didSelectItemAt: indexPath)
                 }
             }
