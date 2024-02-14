@@ -151,7 +151,12 @@ extension CoreDataManager {
     }
 
     /// Get the number of unread chapters for a manga.
-    func unreadCount(sourceId: String, mangaId: String, lang: String?, context: NSManagedObjectContext? = nil) -> Int {
+    func unreadCount(
+        sourceId: String,
+        mangaId: String,
+        lang: String?,
+        context: NSManagedObjectContext? = nil
+    ) -> Int {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         if let lang {
