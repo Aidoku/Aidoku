@@ -42,6 +42,7 @@
         <attribute name="artist" optional="YES" attributeType="String"/>
         <attribute name="author" optional="YES" attributeType="String"/>
         <attribute name="chapterCount" optional="YES" attributeType="Integer 64" derived="YES" derivationExpression="chapters.@count" usesScalarValueType="YES"/>
+        <attribute name="chapterFlags" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="cover" optional="YES" attributeType="String"/>
         <attribute name="desc" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="String" defaultValueString=""/>

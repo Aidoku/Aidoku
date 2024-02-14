@@ -50,7 +50,12 @@ class MangaViewController: BaseTableViewController {
         }
 
         // load filters before tableView init
-        viewModel.langFilter = CoreDataManager.shared.getMangaLangFilter(sourceId: manga.sourceId, mangaId: manga.id)
+        let filters = CoreDataManager.shared.getMangaChapterFilters(sourceId: manga.sourceId, mangaId: manga.id)
+        viewModel.sortMethod = .init(flags: filters.flags)
+        viewModel.sortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
+        viewModel.sortMethod = .init(flags: filters.flags)
+        viewModel.filters = ChapterFilterOption.parseOptions(flags: filters.flags)
+        viewModel.langFilter = filters.language
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -108,6 +113,7 @@ class MangaViewController: BaseTableViewController {
 
             await viewModel.loadHistory(manga: manga)
             await viewModel.loadChapterList(manga: manga)
+            viewModel.sortChapters()
             updateDataSource()
             updateReadButton()
 
@@ -856,9 +862,10 @@ extension MangaViewController {
         else { return nil }
         var config = ChapterListHeaderConfiguration()
         config.delegate = self
+        config.chapterCount = viewModel.chapterList.count
         config.sortOption = viewModel.sortMethod
         config.sortAscending = viewModel.sortAscending
-        config.chapterCount = viewModel.chapterList.count
+        config.filters = viewModel.filters
         config.langFilter = viewModel.langFilter
         config.sourceLangs = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
         cell.contentConfiguration = config
@@ -1159,12 +1166,28 @@ extension MangaViewController: ChapterSortDelegate {
         viewModel.sortChapters(method: newOption)
         refreshDataSource()
         updateReadButton()
+        Task {
+            await viewModel.saveFilters(manga: manga)
+        }
     }
 
     func sortAscendingChanged(_ newValue: Bool) {
         viewModel.sortChapters(ascending: newValue)
         refreshDataSource()
         updateReadButton()
+        Task {
+            await viewModel.saveFilters(manga: manga)
+        }
+    }
+
+    func filtersChanged(_ newFilters: [ChapterFilterOption]) {
+        Task {
+            viewModel.filters = newFilters
+            await viewModel.loadChapterList(manga: manga)
+            refreshDataSource()
+            updateReadButton()
+            await viewModel.saveFilters(manga: manga)
+        }
     }
 
     func langFilterChanged(_ newValue: String?) {

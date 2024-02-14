@@ -16,7 +16,7 @@ class MangaViewModel {
 
     var sortMethod: ChapterSortOption = .sourceOrder
     var sortAscending: Bool = false
-
+    var filters: [ChapterFilterOption] = []
     var langFilter: String?
 
     func loadChapterList(manga: Manga) async {
@@ -89,21 +89,71 @@ class MangaViewModel {
     }
 
     func filterChapterList(manga: Manga) async {
-        await filterChaptersByLanguage(manga: manga)
+        filterChaptersByLanguage(manga: manga)
+
+        for filter in filters {
+            switch filter.type {
+            case .downloaded:
+                chapterList = chapterList.filter {
+                    let downloaded = !DownloadManager.shared.isChapterDownloaded(chapter: $0)
+                    return filter.exclude ? downloaded : !downloaded
+                }
+            case .unread:
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    self.chapterList = self.chapterList.filter {
+                        let hasHistory = CoreDataManager.shared.hasHistory(
+                            sourceId: $0.sourceId,
+                            mangaId: $0.mangaId,
+                            chapterId: $0.id,
+                            context: context
+                        )
+                        return filter.exclude ? hasHistory : !hasHistory
+                    }
+                }
+            }
+        }
     }
 
-    private func filterChaptersByLanguage(manga: Manga) async {
+    private func filterChaptersByLanguage(manga: Manga) {
         if let langFilter {
             chapterList = chapterList.filter { $0.lang == langFilter }
         }
-        manga.langFilter = langFilter
-        await CoreDataManager.shared.updateMangaDetails(manga: manga)
     }
 
     func languageFilterChanged(_ newValue: String?, manga: Manga) async {
         langFilter = newValue
         await loadChapterList(manga: manga)
+        await saveFilters(manga: manga)
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+    }
+
+    func generageChapterFlags() -> Int {
+        var flags: Int = 0
+        if sortAscending {
+            flags |= ChapterFlagMask.sortAscending
+        }
+        flags |= sortMethod.rawValue << 1
+        for filter in filters {
+            switch filter.type {
+            case .downloaded:
+                flags |= ChapterFlagMask.downloadFilterEnabled
+                if filter.exclude {
+                    flags |= ChapterFlagMask.downloadFilterExcluded
+                }
+            case .unread:
+                flags |= ChapterFlagMask.unreadFilterEnabled
+                if filter.exclude {
+                    flags |= ChapterFlagMask.unreadFilterExcluded
+                }
+            }
+        }
+        return flags
+    }
+
+    func saveFilters(manga: Manga) async {
+        manga.chapterFlags = generageChapterFlags()
+        manga.langFilter = langFilter
+        await CoreDataManager.shared.updateMangaDetails(manga: manga)
     }
 
     func getSourceDefaultLanguages(sourceId: String) -> [String] {

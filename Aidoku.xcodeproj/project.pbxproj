@@ -100,6 +100,12 @@
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB31AD0E27AE18DA00D50410 /* SwiftSoup */; };
+		FB3F49E52B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */; };
+		FB3F49E62B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */; };
+		FB3F49E82B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */; };
+		FB3F49E92B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */; };
+		FB3F49EB2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */; };
+		FB3F49EC2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */; };
 		FB42750B295FB7B400131377 /* BrowseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB42750A295FB7B400131377 /* BrowseViewController.swift */; };
 		FB42750E295FB86600131377 /* BaseTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB42750D295FB86600131377 /* BaseTableViewController.swift */; };
 		FB427510295FBAEA00131377 /* BrowseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB42750F295FBAEA00131377 /* BrowseViewModel.swift */; };
@@ -394,6 +400,9 @@
 		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A32B14180F005E6264 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A42B14183C005E6264 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterSortOption.swift; sourceTree = "<group>"; };
+		FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterFilterOption.swift; sourceTree = "<group>"; };
+		FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterFlagMask.swift; sourceTree = "<group>"; };
 		FB42750A295FB7B400131377 /* BrowseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewController.swift; sourceTree = "<group>"; };
 		FB42750D295FB86600131377 /* BaseTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseTableViewController.swift; sourceTree = "<group>"; };
 		FB42750F295FBAEA00131377 /* BrowseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseViewModel.swift; sourceTree = "<group>"; };
@@ -646,6 +655,9 @@
 				FB02E1F3288D7C0C00B9E2DE /* Manga.swift */,
 				FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */,
 				FB427511295FBEC100131377 /* SourceInfo.swift */,
+				FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */,
+				FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */,
+				FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1529,6 +1541,7 @@
 				FB1B4868277CE76B0056D02C /* MangaModels.swift in Sources */,
 				FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */,
 				FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
+				FB3F49EB2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */,
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */,
 				FB2BE5E229527A6100FAD8A7 /* ZoomableScrollView.swift in Sources */,
@@ -1562,6 +1575,7 @@
 				FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */,
 				FB0CAA5628A6BF8A0024561A /* NSPersistentContainer.swift in Sources */,
 				FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */,
+				FB3F49E52B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */,
 				FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
@@ -1573,6 +1587,7 @@
 				FB78648C2849008700125DC0 /* HistoryTableViewCell.swift in Sources */,
 				FB427510295FBAEA00131377 /* BrowseViewModel.swift in Sources */,
 				FB1B486A277CE76B0056D02C /* Page.swift in Sources */,
+				FB3F49E82B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */,
 				FB0E1CC7288A5A2300B67BA9 /* TrackUpdate.swift in Sources */,
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
 				FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */,
@@ -1713,6 +1728,8 @@
 				FBD6A412285B7789007116C9 /* TrackItem.swift in Sources */,
 				FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */,
+				FB3F49E62B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */,
+				FB3F49EC2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */,
 				FB58C6B32999B4AA00A6F49F /* WasmNetWebViewHandler.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
@@ -1725,6 +1742,7 @@
 				FB4275172960D6AA00131377 /* SourceInfo.swift in Sources */,
 				FB4B0AF2285D46BF0066A13B /* Date.swift in Sources */,
 				FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */,
+				FB3F49E92B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */,
 				FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FBE7813028308DC60038C0E3 /* Download.swift in Sources */,
 				FB4B0AE4285CCC8E0066A13B /* URL.swift in Sources */,
