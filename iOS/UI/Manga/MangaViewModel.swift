@@ -101,13 +101,13 @@ class MangaViewModel {
             case .unread:
                 await CoreDataManager.shared.container.performBackgroundTask { context in
                     self.chapterList = self.chapterList.filter {
-                        let hasHistory = CoreDataManager.shared.hasHistory(
+                        let isCompleted = CoreDataManager.shared.isCompleted(
                             sourceId: $0.sourceId,
                             mangaId: $0.mangaId,
                             chapterId: $0.id,
                             context: context
                         )
-                        return filter.exclude ? hasHistory : !hasHistory
+                        return filter.exclude ? isCompleted : !isCompleted
                     }
                 }
             }

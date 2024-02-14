@@ -29,7 +29,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
             chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -55,7 +55,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
             chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -71,7 +71,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "mangaId == %@ AND sourceId == %@ ",
+            format: "mangaId == %@ AND sourceId == %@",
             mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -302,5 +302,22 @@ extension CoreDataManager {
                 LogManager.logger.error("CoreDataManager.setCompleted(chapters:): \(error.localizedDescription)")
             }
         }
+    }
+
+    /// Check if a chapter has been completely read.
+    func isCompleted(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ AND completed == true",
+            chapterId, mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
     }
 }
