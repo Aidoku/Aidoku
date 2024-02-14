@@ -3,9 +3,9 @@
 "CANCEL" = "Скасувати";
 "OK" = "Добре";
 "UNKNOWN" = "Невідомо";
-"RESET" = "Перезавантажити";
+"RESET" = "Скинути";
 "DELETE" = "Видалити";
-"REMOVE" = "Видалити";
+"REMOVE" = "Прибрати";
 "RENAME" = "Перейменувати";
 "CLEAR" = "Очистити";
 "SHARE" = "Поділитися";
@@ -325,10 +325,10 @@
 "SKIP_DUPLICATE_CHAPTERS" = "Пропустити дублікати глав";
 "MOST_CHAPTERS_SLOWER" = "Більше глав (повільніше)";
 "DEFAULT_READING_MODE" = "Режим читання за замовчуванням";
-"PILLARBOX" = "Pillarbox";
-"PILLARBOX_AMOUNT" = "Сума Pillarbox";
-"PILLARBOX_ORIENTATION" = "Орієнтація Pillarbox";
-"PILLARBOX_ORIENTATION_INFO" = "Орієнтація Pillarbox визначає, для яких орієнтацій слід увімкнути опорні пункти.";
+"PILLARBOX" = "Стовпчик";
+"PILLARBOX_AMOUNT" = "Кількість стовпчиків";
+"PILLARBOX_ORIENTATION" = "Орієнтація стовпчиків";
+"PILLARBOX_ORIENTATION_INFO" = "Орієнтація стовпчиків визначає, для яких орієнтацій слід увімкнути опорні пункти.";
 "BOTH" = "Обидва";
 "COPY" = "Копіювати";
 "COVER" = "Обкладинка";
@@ -336,3 +336,9 @@
 "PIN" = "Прикріпити";
 "UNPIN" = "Відкріпити";
 "CROP_BORDERS" = "Обрізати рамки";
+"ANILIST_LOGIN_NEEDED" = "Необхідно увійти в AniList";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Термін дії вашого токена AniList закінчився, тому трекер AniList припинить роботу, доки ви повторно не ввійдете в налаштуваннях.";
+"MAL_LOGIN_NEEDED" = "Необхідно увійти в MyAnimeList";
+"MAL_LOGIN_NEEDED_TEXT" = "Термін дії вашого токена MyAnimeList закінчився, тому трекер MyAnimeList припинить роботу, доки ви повторно не ввійдете в налаштуваннях.";
+"BACKUP_ERROR" = "Помилка відновлення резервної копії";
+"BACKUP_ERROR_TEXT" = "Під час відновлення виникла помилка: %@. Резервна копія може бути некоректною.";
