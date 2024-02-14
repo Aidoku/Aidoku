@@ -161,7 +161,7 @@
 "DISCORD_SERVER" = "Discord server";
 "APPEARANCE" = "Izgled";
 "APPEARANCE_LIGHT" = "Svijetao";
-"INCOGNITO_MODE_TEXT" = "Omogućeno pauzira povijest čitanja";
+"INCOGNITO_MODE_TEXT" = "Kada je omogućeno pauzira povijest čitanja";
 "APPEARANCE_DARK" = "Taman";
 "MANGA_PAGE" = "Manga stranica";
 "SHOW_SOURCE_LABEL" = "Prikaži oznaku izvora";
@@ -170,7 +170,7 @@
 "USE_MANGA_TINT_INFO" = "Oboji stranice na temelju boje naslovne stranice";
 "REFRESH_METADATA" = "Osvježi metapodatke";
 "EVERY_12_HOURS" = "Svakih 12 sati";
-"INCOGNITO_MODE" = "Prikriveni način";
+"INCOGNITO_MODE" = "Inkognito modus";
 "PIN_MANGA_TYPE" = "Prikvači tip";
 "PIN_MANGA_UNREAD" = "Nepročitano";
 "UPDATE_INTERVAL" = "Ažuriraj interval";
@@ -336,3 +336,5 @@
 "REORDER" = "Promijeni redoslijed";
 "PIN" = "Prikvači";
 "UNPIN" = "Odkvači";
+"ANILIST_LOGIN_NEEDED" = "Potrebna je prijava na AniList";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Tvoj AniList token je istekao, stoga će AniList prestati raditi sve dok se ne prijaviš ponovo u postavkama.";
