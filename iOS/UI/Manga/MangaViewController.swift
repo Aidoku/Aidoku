@@ -30,7 +30,7 @@ class MangaViewController: BaseTableViewController {
     init(manga: Manga, chapterList: [Chapter] = [], scrollTo: Chapter? = nil) {
         self.manga = manga
         self.scrollToChapter = scrollTo
-        viewModel.chapterList = chapterList
+        self.viewModel.fullChapterList = chapterList
         super.init()
     }
 
@@ -160,6 +160,12 @@ class MangaViewController: BaseTableViewController {
 
     // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
+        // reload chapter list (triggered on filtering)
+        addObserver(forName: "reloadChapterList") { [weak self] _ in
+            guard let self = self else { return }
+            self.updateReadButton()
+            self.updateDataSource()
+        }
         // update library status
         addObserver(forName: "addToLibrary") { [weak self] notification in
             guard
@@ -289,9 +295,13 @@ class MangaViewController: BaseTableViewController {
                 chapter = chapterCast
             }
             Task { @MainActor in
-                if let chapter = chapter {
+                if let chapter {
                     self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
                     self.reloadCells(for: [chapter])
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                        self.updateDataSource()
+                    }
                 }
                 self.updateNavbarButtons()
             }
@@ -304,11 +314,18 @@ class MangaViewController: BaseTableViewController {
                         self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
                     }
                     self.reloadCells(for: chapters)
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                        self.updateDataSource()
+                    }
                 } else if
                     let manga = notification.object as? Manga,
                     manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
                 { // all chapters
                     self.viewModel.downloadProgress = [:]
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                    }
                     self.updateDataSource()
                 }
             }
@@ -484,7 +501,7 @@ class MangaViewController: BaseTableViewController {
                         let manga = await self.manga
                         let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
                         await MainActor.run {
-                            self.viewModel.chapterList = chapterList
+                            self.viewModel.fullChapterList = chapterList
                         }
                         // update in db
                         if inLibrary {
@@ -503,7 +520,7 @@ class MangaViewController: BaseTableViewController {
             }
             headerView.configure(with: manga)
             await viewModel.loadHistory(manga: manga)
-            await viewModel.filterChapterList(manga: manga)
+            viewModel.filterChapterList()
             updateDataSource()
             updateReadButton()
             refreshControl?.endRefreshing()
