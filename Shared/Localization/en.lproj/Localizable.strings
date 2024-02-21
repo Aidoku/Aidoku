@@ -17,6 +17,8 @@
 "REMOVE" = "Remove";
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
+"PAUSE" = "Pause";
+"RESUME" = "Resume";
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
 "COPY" = "Copy";
