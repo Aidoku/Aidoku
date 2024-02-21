@@ -994,7 +994,7 @@ extension LibraryViewController {
             }
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
                         await DownloadManager.shared.downloadAll(manga: manga.toManga())
                     }
@@ -1003,7 +1003,7 @@ extension LibraryViewController {
                 }
             }
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi"){
                     Task {
                         await DownloadManager.shared.downloadUnread(manga: manga.toManga())
                     }

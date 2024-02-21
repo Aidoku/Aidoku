@@ -572,10 +572,11 @@ class MangaViewController: BaseTableViewController {
             .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
             .sorted { $0.sourceOrder > $1.sourceOrder }
 
-        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
             DownloadManager.shared.download(chapters: chapters, manga: manga)
         } else {
             showNoWifiAlert()
+            ///TODO: This one can also hang
         }
         setEditing(false, animated: true)
     }
@@ -947,7 +948,7 @@ extension MangaViewController {
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle")
                 ) { _ in
-                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi {
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                         DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
                     } else {
                         self.showNoWifiAlert()
