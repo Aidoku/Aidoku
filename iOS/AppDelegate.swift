@@ -12,6 +12,7 @@ import Nuke
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static let isSideloaded = Bundle.main.bundleIdentifier != "xyz.skitty.Aidoku"
+    var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
         let loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
@@ -150,6 +151,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
 
+        networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
+            switch connectionType {
+            case .wifi:
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    DownloadManager.shared.resumeDownloads()
+                }
+            case .cellular, .none:
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    DownloadManager.shared.pauseDownloads()
+                }
+            }
+        }
+
         return true
     }
 
@@ -164,6 +178,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
         handleUrl(url: url)
         return true
+    }
+
+    func applicationWillTerminate(_ application: UIApplication) {
+        guard let networkObserverId = networkObserverId else { return }
+        Reachability.unregisterConnectionTypeObserver(networkObserverId)
     }
 
     func migrateHistory() async {
