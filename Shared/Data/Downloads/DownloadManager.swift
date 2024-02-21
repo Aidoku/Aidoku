@@ -30,6 +30,12 @@ class DownloadManager {
     private let queue: DownloadQueue
 //    private let store: DownloadStore // TODO: store downloads so if the app exits we can resume
 
+    private var downloadsPaused = false
+
+    var areDownloadsPaused: Bool {
+        return downloadsPaused
+    }
+
     init() {
         self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
@@ -125,6 +131,22 @@ extension DownloadManager {
         NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
     }
 
+    func pauseDownloads(for chapters: [Chapter] = []) {
+        Task {
+            await queue.pause()
+        }
+        downloadsPaused = true
+        NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
+    }
+
+    func resumeDownloads(for chapters: [Chapter] = []) {
+        Task {
+            await queue.resume()
+        }
+        downloadsPaused = false
+        NotificationCenter.default.post(name: Notification.Name("downloadsResumed"), object: nil)
+    }
+
     func cancelDownload(for chapter: Chapter) {
         Task {
             await queue.cancelDownload(for: chapter)
@@ -139,6 +161,7 @@ extension DownloadManager {
                 await queue.cancelDownloads(for: chapters)
             }
         }
+        downloadsPaused = false
     }
 
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
