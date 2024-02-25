@@ -151,24 +151,43 @@ extension CoreDataManager {
     }
 
     /// Get the number of unread chapters for a manga.
-    func unreadCount(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Int {
+    func unreadCount(
+        sourceId: String,
+        mangaId: String,
+        lang: String?,
+        context: NSManagedObjectContext? = nil
+    ) -> Int {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND (history == nil OR history.completed == false)",
-            sourceId, mangaId
-        )
+        if let lang {
+            request.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND lang == %@ AND (history == nil OR history.completed == false)",
+                sourceId, mangaId, lang
+            )
+        } else {
+            request.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND (history == nil OR history.completed == false)",
+                sourceId, mangaId
+            )
+        }
         return (try? context.count(for: request)) ?? 0
     }
 
     /// Get the number of read chapters for a manga.
-    func readCount(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Int {
+    func readCount(sourceId: String, mangaId: String, lang: String?, context: NSManagedObjectContext? = nil) -> Int {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "sourceId == %@ AND mangaId == %@ AND history != nil AND history.completed == true",
-            sourceId, mangaId
-        )
+        if let lang {
+            request.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND history != nil AND lang == %@ AND history.completed == true",
+                sourceId, mangaId, lang
+            )
+        } else {
+            request.predicate = NSPredicate(
+                format: "sourceId == %@ AND mangaId == %@ AND history != nil AND history.completed == true",
+                sourceId, mangaId
+            )
+        }
         return (try? context.count(for: request)) ?? 0
     }
 }

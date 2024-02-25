@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import UIKit
 
 class MyAnimeListApi {
 
@@ -28,25 +29,44 @@ class MyAnimeListApi {
 
     private func requestData(urlRequest: URLRequest) async throws -> Data {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let statusCode = (response as? HTTPURLResponse)?.statusCode
+
+        if oauth.tokens == nil {
+            oauth.loadTokens()
+        }
 
         // check if token expired
-        if oauth.tokens?.expired ?? true || (response as? HTTPURLResponse)?.statusCode == 401 {
+        if statusCode == 400 || statusCode == 401 || statusCode == 403 || oauth.tokens!.expired {
+            // ensure we have a refresh token, otherwise we need to fully re-auth
+            guard let refreshToken = oauth.tokens?.refreshToken else {
+                if !oauth.tokens!.askedForRefresh {
+                    oauth.tokens!.askedForRefresh = true
+                    oauth.saveTokens()
+
+                    await (UIApplication.shared.delegate as? AppDelegate)?.sendAlert(
+                        title: NSLocalizedString("MAL_LOGIN_NEEDED", comment: ""),
+                        message: NSLocalizedString("MAL_LOGIN_NEEDED_TEXT", comment: "")
+                    )
+                }
+                return data
+            }
+
             // refresh access token
-            guard let url = URL(string: baseApiUrl + "/token") else { return data }
+            guard let url = URL(string: oauth.baseUrl + "/token") else { return data }
             var request = oauth.authorizedRequest(for: url)
             request.httpMethod = "POST"
             request.httpBody = [
                 "client_id": oauth.clientId,
-                "refresh_token": oauth.tokens?.refreshToken,
+                "refresh_token": refreshToken,
                 "grant_type": "refresh_token"
             ].percentEncoded()
             oauth.tokens = try await URLSession.shared.object(from: request)
-            UserDefaults.standard.set(try? JSONEncoder().encode(oauth.tokens), forKey: "Token.\(oauth.id).oauth")
+            oauth.saveTokens()
 
             // try request again
             if let newAuthorization = oauth.authorizedRequest(for: url).value(forHTTPHeaderField: "Authorization") {
                 var newRequest = urlRequest
-                newRequest.addValue(newAuthorization, forHTTPHeaderField: "Authorization")
+                newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
                 (data, _) = try await URLSession.shared.data(for: newRequest)
             }
         }

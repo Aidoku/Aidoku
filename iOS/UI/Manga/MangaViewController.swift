@@ -30,7 +30,7 @@ class MangaViewController: BaseTableViewController {
     init(manga: Manga, chapterList: [Chapter] = [], scrollTo: Chapter? = nil) {
         self.manga = manga
         self.scrollToChapter = scrollTo
-        viewModel.chapterList = chapterList
+        self.viewModel.fullChapterList = chapterList
         super.init()
     }
 
@@ -48,6 +48,14 @@ class MangaViewController: BaseTableViewController {
         if let cachedManga = CoreDataManager.shared.getManga(sourceId: manga.sourceId, mangaId: manga.id) {
             manga = manga.copy(from: cachedManga.toManga())
         }
+
+        // load filters before tableView init
+        let filters = CoreDataManager.shared.getMangaChapterFilters(sourceId: manga.sourceId, mangaId: manga.id)
+        viewModel.sortMethod = .init(flags: filters.flags)
+        viewModel.sortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
+        viewModel.sortMethod = .init(flags: filters.flags)
+        viewModel.filters = ChapterFilterOption.parseOptions(flags: filters.flags)
+        viewModel.langFilter = filters.language
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -105,6 +113,7 @@ class MangaViewController: BaseTableViewController {
 
             await viewModel.loadHistory(manga: manga)
             await viewModel.loadChapterList(manga: manga)
+            viewModel.sortChapters()
             updateDataSource()
             updateReadButton()
 
@@ -151,6 +160,12 @@ class MangaViewController: BaseTableViewController {
 
     // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
+        // reload chapter list (triggered on filtering)
+        addObserver(forName: "reloadChapterList") { [weak self] _ in
+            guard let self = self else { return }
+            self.updateReadButton()
+            self.updateDataSource()
+        }
         // update library status
         addObserver(forName: "addToLibrary") { [weak self] notification in
             guard
@@ -280,9 +295,13 @@ class MangaViewController: BaseTableViewController {
                 chapter = chapterCast
             }
             Task { @MainActor in
-                if let chapter = chapter {
+                if let chapter {
                     self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
                     self.reloadCells(for: [chapter])
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                        self.updateDataSource()
+                    }
                 }
                 self.updateNavbarButtons()
             }
@@ -295,11 +314,18 @@ class MangaViewController: BaseTableViewController {
                         self.viewModel.downloadProgress.removeValue(forKey: chapter.id)
                     }
                     self.reloadCells(for: chapters)
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                        self.updateDataSource()
+                    }
                 } else if
                     let manga = notification.object as? Manga,
                     manga.id == self.manga.id && manga.sourceId == self.manga.sourceId
                 { // all chapters
                     self.viewModel.downloadProgress = [:]
+                    if self.viewModel.hasDownloadFilter {
+                        self.viewModel.filterChapterList()
+                    }
                     self.updateDataSource()
                 }
             }
@@ -475,7 +501,7 @@ class MangaViewController: BaseTableViewController {
                         let manga = await self.manga
                         let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
                         await MainActor.run {
-                            self.viewModel.chapterList = chapterList
+                            self.viewModel.fullChapterList = chapterList
                         }
                         // update in db
                         if inLibrary {
@@ -494,6 +520,7 @@ class MangaViewController: BaseTableViewController {
             }
             headerView.configure(with: manga)
             await viewModel.loadHistory(manga: manga)
+            viewModel.filterChapterList()
             updateDataSource()
             updateReadButton()
             refreshControl?.endRefreshing()
@@ -852,9 +879,12 @@ extension MangaViewController {
         else { return nil }
         var config = ChapterListHeaderConfiguration()
         config.delegate = self
+        config.chapterCount = viewModel.chapterList.count
         config.sortOption = viewModel.sortMethod
         config.sortAscending = viewModel.sortAscending
-        config.chapterCount = viewModel.chapterList.count
+        config.filters = viewModel.filters
+        config.langFilter = viewModel.langFilter
+        config.sourceLangs = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
         cell.contentConfiguration = config
         return cell
     }
@@ -1153,12 +1183,36 @@ extension MangaViewController: ChapterSortDelegate {
         viewModel.sortChapters(method: newOption)
         refreshDataSource()
         updateReadButton()
+        Task {
+            await viewModel.saveFilters(manga: manga)
+        }
     }
 
     func sortAscendingChanged(_ newValue: Bool) {
         viewModel.sortChapters(ascending: newValue)
         refreshDataSource()
         updateReadButton()
+        Task {
+            await viewModel.saveFilters(manga: manga)
+        }
+    }
+
+    func filtersChanged(_ newFilters: [ChapterFilterOption]) {
+        Task {
+            viewModel.filters = newFilters
+            await viewModel.loadChapterList(manga: manga)
+            refreshDataSource()
+            updateReadButton()
+            await viewModel.saveFilters(manga: manga)
+        }
+    }
+
+    func langFilterChanged(_ newValue: String?) {
+        Task {
+            await viewModel.languageFilterChanged(newValue, manga: manga)
+            refreshDataSource()
+            updateReadButton()
+        }
     }
 }
 

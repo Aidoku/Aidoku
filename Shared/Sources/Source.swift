@@ -258,6 +258,10 @@ extension Source {
         return defaultFilters
     }
 
+    func getDefaultLanguages() -> [String] {
+        (UserDefaults.standard.array(forKey: "\(id).languages") as? [String]) ?? []
+    }
+
     func parseFilter(from filter: FilterInfo) -> FilterBase? {
         switch filter.type {
         case "title": return TitleFilter()

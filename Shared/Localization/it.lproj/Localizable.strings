@@ -341,3 +341,5 @@
 "%@_LOGIN_TRACKER" = "Collegati alla tua istanza di %@.";
 "INSERT_CREDENTIALS" = "Inserisci le tue credenziali.";
 "ERROR_%@" = "Errore durante il login a %@.";
+"ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, AniList non funzionerà finché non si ri-accede dalle impostazioni.";

@@ -29,18 +29,18 @@ class LibraryViewModel {
         case lastOpened
         case lastUpdated
         case dateAdded
-        case unreadChapters // ?
+        case unreadChapters
         case totalChapters
 
-        func toSortString() -> String {
+        var sortStringValue: String {
             switch self {
-            case .alphabetical: return "manga.title"
-            case .lastRead: return "lastRead"
-            case .lastOpened: return "lastOpened"
-            case .lastUpdated: return "lastUpdated"
-            case .dateAdded: return "dateAdded"
-            case .unreadChapters: return ""
-            case .totalChapters: return "manga.chapterCount"
+            case .alphabetical: "manga.title"
+            case .lastRead: "lastRead"
+            case .lastOpened: "lastOpened"
+            case .lastUpdated: "lastUpdated"
+            case .dateAdded: "dateAdded"
+            case .unreadChapters: ""
+            case .totalChapters: "manga.chapterCount"
             }
         }
     }
@@ -122,7 +122,7 @@ class LibraryViewModel {
             if self.sortMethod != .unreadChapters {
                 request.sortDescriptors = [
                     NSSortDescriptor(
-                        key: self.sortMethod.toSortString(),
+                        key: self.sortMethod.sortStringValue,
                         ascending: self.sortMethod == .alphabetical ? !self.sortAscending : self.sortAscending
                     )
                 ]
@@ -141,6 +141,7 @@ class LibraryViewModel {
                 let unreadCount = CoreDataManager.shared.unreadCount(
                     sourceId: mangaObject.sourceId,
                     mangaId: mangaObject.id,
+                    lang: mangaObject.langFilter,
                     context: context
                 )
 
@@ -224,9 +225,15 @@ class LibraryViewModel {
                 group.addTask {
                     func getUnreadCount() async -> Int {
                         await CoreDataManager.shared.container.performBackgroundTask { context in
-                            CoreDataManager.shared.unreadCount(
+                            let filters = CoreDataManager.shared.getMangaChapterFilters(
                                 sourceId: item.sourceId,
                                 mangaId: item.mangaId,
+                                context: context
+                            )
+                            return CoreDataManager.shared.unreadCount(
+                                sourceId: item.sourceId,
+                                mangaId: item.mangaId,
+                                lang: filters.language,
                                 context: context
                             )
                         }
@@ -275,9 +282,15 @@ class LibraryViewModel {
         // fetch new unread counts
         await CoreDataManager.shared.container.performBackgroundTask { context in
             for manga in currentManga {
+                let filters = CoreDataManager.shared.getMangaChapterFilters(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.mangaId,
+                    context: context
+                )
                 unreadCounts[manga.hashValue] = CoreDataManager.shared.unreadCount(
                     sourceId: manga.sourceId,
                     mangaId: manga.mangaId,
+                    lang: filters.language,
                     context: context
                 )
             }
@@ -303,20 +316,36 @@ class LibraryViewModel {
         switch sortMethod {
         case .alphabetical:
             if sortAscending {
-                pinnedManga.sort(by: { $0.title ?? "" > $1.title ?? "" })
-                manga.sort(by: { $0.title ?? "" > $1.title ?? "" })
+                pinnedManga.sort { $0.title ?? "" > $1.title ?? "" }
+                manga.sort { $0.title ?? "" > $1.title ?? "" }
             } else {
-                pinnedManga.sort(by: { $0.title ?? "" < $1.title ?? "" })
-                manga.sort(by: { $0.title ?? "" < $1.title ?? "" })
+                pinnedManga.sort { $0.title ?? "" < $1.title ?? "" }
+                manga.sort { $0.title ?? "" < $1.title ?? "" }
             }
 
         case .unreadChapters:
             if sortAscending {
-                pinnedManga.sort(by: { $0.unread < $1.unread })
-                manga.sort(by: { $0.unread < $1.unread })
+                pinnedManga.sort {
+                    if $0.unread == 0 {
+                        false
+                    } else if $1.unread == 0 {
+                        true
+                    } else {
+                        $0.unread < $1.unread
+                    }
+                }
+                manga.sort {
+                    if $0.unread == 0 {
+                        false
+                    } else if $1.unread == 0 {
+                        true
+                    } else {
+                        $0.unread < $1.unread
+                    }
+                }
             } else {
-                pinnedManga.sort(by: { $0.unread > $1.unread })
-                manga.sort(by: { $0.unread > $1.unread })
+                pinnedManga.sort { $0.unread > $1.unread }
+                manga.sort { $0.unread > $1.unread }
             }
 
         default:
