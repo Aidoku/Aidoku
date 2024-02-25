@@ -17,9 +17,11 @@ class TrackerManager {
     let anilist = AniListTracker()
     /// An instance of the MyAnimeList tracker.
     let myanimelist = MyAnimeListTracker()
+    /// An instance of the Komga tracker.
+    let komga = KomgaTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [anilist, myanimelist]
+    lazy var trackers: [Tracker] = [anilist, myanimelist, komga]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {
