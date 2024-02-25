@@ -4,6 +4,8 @@
 "CONTINUE" = "Continua";
 "CANCEL" = "Annulla";
 "UNAVAILABLE" = "Non disponibile";
+"SAVE" = "Salva";
+"RETRY" = "Riprova";
 
 // Downloads
 "DOWNLOAD" = "Scarica";
@@ -336,3 +338,6 @@
 "REORDER" = "Riordina";
 "PIN" = "Fissa";
 "UNPIN" = "Rimuovi";
+"%@_LOGIN_TRACKER" = "Collegati alla tua istanza di %@.";
+"INSERT_CREDENTIALS" = "Inserisci le tue credenziali.";
+"ERROR_%@" = "Errore durante il login a %@.";

@@ -12,6 +12,10 @@
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
 		487484DB2A4112DD007DF0DF /* CropBordersProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */; };
 		489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */; };
+		5255378E2AD18E1B0033C119 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5255378D2AD18E1B0033C119 /* KomgaTracker.swift */; };
+		5255378F2AD18E1B0033C119 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5255378D2AD18E1B0033C119 /* KomgaTracker.swift */; };
+		52F731C92AD9CB77005F2ABD /* HostUserPassTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F731C82AD9CB77005F2ABD /* HostUserPassTracker.swift */; };
+		52F731CA2AD9CB77005F2ABD /* HostUserPassTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F731C82AD9CB77005F2ABD /* HostUserPassTracker.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -324,6 +328,8 @@
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropBordersProcessor.swift; sourceTree = "<group>"; };
 		489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverViewController.swift; sourceTree = "<group>"; };
+		5255378D2AD18E1B0033C119 /* KomgaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaTracker.swift; sourceTree = "<group>"; };
+		52F731C82AD9CB77005F2ABD /* HostUserPassTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostUserPassTracker.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -601,6 +607,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5255378C2AD18DE60033C119 /* komga */ = {
+			isa = PBXGroup;
+			children = (
+				5255378D2AD18E1B0033C119 /* KomgaTracker.swift */,
+			);
+			path = komga;
+			sourceTree = "<group>";
+		};
 		FB02E1EE288D7B9D00B9E2DE /* UI */ = {
 			isa = PBXGroup;
 			children = (
@@ -1191,6 +1205,7 @@
 				FBD6A4072858D365007116C9 /* TrackerManager.swift */,
 				FBD6A40A2858D371007116C9 /* Tracker.swift */,
 				FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */,
+				52F731C82AD9CB77005F2ABD /* HostUserPassTracker.swift */,
 			);
 			path = Tracking;
 			sourceTree = "<group>";
@@ -1211,6 +1226,7 @@
 		FBD6A413285B7CAF007116C9 /* Trackers */ = {
 			isa = PBXGroup;
 			children = (
+				5255378C2AD18DE60033C119 /* komga */,
 				FB0E1CCC288AE8AD00B67BA9 /* anilist */,
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
 			);
@@ -1519,6 +1535,7 @@
 				FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */,
 				FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB4B0AE3285CCC8E0066A13B /* URL.swift in Sources */,
+				5255378E2AD18E1B0033C119 /* KomgaTracker.swift in Sources */,
 				FBE7812F28308DC60038C0E3 /* Download.swift in Sources */,
 				FB0CAA4E28A2B9F40024561A /* CoreDataManager+LibraryManga.swift in Sources */,
 				FB72501927CAACB70037F1C9 /* BackupLibraryManga.swift in Sources */,
@@ -1598,6 +1615,7 @@
 				FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */,
 				FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */,
 				FBE53F0629CB723D00899601 /* ReaderWebtoonTransitionNode.swift in Sources */,
+				52F731C92AD9CB77005F2ABD /* HostUserPassTracker.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
 				FB7B7EC32788970E001E6EAF /* WasmExtensions.swift in Sources */,
 				FB0CAA5028A55BB80024561A /* CoreDataManager+Category.swift in Sources */,
@@ -1774,6 +1792,7 @@
 				FB0E1CCF288AE9B000B67BA9 /* AniListTracker.swift in Sources */,
 				FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */,
 				FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */,
+				52F731CA2AD9CB77005F2ABD /* HostUserPassTracker.swift in Sources */,
 				FB716E00283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB0CAA5C28A998650024561A /* CoreDataManager+Category.swift in Sources */,
 				FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */,
@@ -1781,6 +1800,7 @@
 				FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
 				FB7B7EC42788970E001E6EAF /* WasmExtensions.swift in Sources */,
+				5255378F2AD18E1B0033C119 /* KomgaTracker.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB716E05283E7D4D00F1BB5D /* String.swift in Sources */,
 				FB11EDF02784B0690007365D /* Volume.swift in Sources */,
