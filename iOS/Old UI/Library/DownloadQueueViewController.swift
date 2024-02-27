@@ -209,8 +209,8 @@ class DownloadQueueViewController: UITableViewController {
         let cancelAction = UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel)
 
         self.presentAlert(
-            title: NSLocalizedString("Warning", comment: ""),
-            message: NSLocalizedString("You are not currently on Wi-Fi. Download anyway?", comment: ""),
+            title: NSLocalizedString("WARNING", comment: ""),
+            message: NSLocalizedString("DOWNLOAD_ANYWAY_MESSAGE", comment: ""),
             actions: [downloadAction, cancelAction]
         )
     }
