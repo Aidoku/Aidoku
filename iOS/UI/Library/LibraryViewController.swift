@@ -998,7 +998,7 @@ extension LibraryViewController {
                         await DownloadManager.shared.downloadAll(manga: manga.toManga())
                     }
                 } else {
-                    self.showNoWifiAlert()
+                    self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
                 }
             }
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
@@ -1007,7 +1007,7 @@ extension LibraryViewController {
                         await DownloadManager.shared.downloadUnread(manga: manga.toManga())
                     }
                 } else {
-                    self.showNoWifiAlert()
+                    self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
                 }
             }
 
@@ -1051,19 +1051,6 @@ extension LibraryViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         self.collectionView(collectionView, contextMenuConfigurationForItemsAt: [indexPath], point: point)
-    }
-
-    func showNoWifiAlert() {
-        let alertController = UIAlertController(
-            title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
-            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""),
-            preferredStyle: .alert
-        )
-
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
-        alertController.addAction(okAction)
-
-        present(alertController, animated: true, completion: nil)
     }
 }
 
