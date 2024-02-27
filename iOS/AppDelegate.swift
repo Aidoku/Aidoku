@@ -155,10 +155,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             switch connectionType {
             case .wifi:
                 if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    DownloadManager.shared.ignoreConnectionType = false
                     DownloadManager.shared.resumeDownloads()
                 }
             case .cellular, .none:
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && !DownloadManager.shared.ignoreConnectionType {
                     DownloadManager.shared.pauseDownloads()
                 }
             }
