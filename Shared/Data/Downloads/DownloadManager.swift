@@ -36,6 +36,8 @@ class DownloadManager {
         return downloadsPaused
     }
 
+    var ignoreConnectionType = false
+
     init() {
         self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
