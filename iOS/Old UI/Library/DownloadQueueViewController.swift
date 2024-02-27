@@ -165,12 +165,23 @@ class DownloadQueueViewController: UITableViewController {
             }
             actions.append(clearAction)
 
+            let downloadCondition = chapters.contains { DownloadManager.shared.getDownloadStatus(for: $0) != .finished }
+                && (UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() != .wifi)
+
             if DownloadManager.shared.areDownloadsPaused {
+                let resumeActionTitle = NSLocalizedString("RESUME", comment: "")
                 let resumeAction = UIAction(
-                    title: NSLocalizedString("RESUME", comment: ""),
+                    title: resumeActionTitle,
                     image: nil
-                ) { _ in
-                    DownloadManager.shared.resumeDownloads()
+                ) { [weak self] _ in
+                    guard let self = self else { return }
+
+                    if downloadCondition {
+                        self.presentDownloadConfirmation()
+                    } else {
+                        DownloadManager.shared.ignoreConnectionType = true
+                        DownloadManager.shared.resumeDownloads()
+                    }
                 }
                 actions.append(resumeAction)
             } else {
@@ -184,16 +195,24 @@ class DownloadQueueViewController: UITableViewController {
             }
 
             let menu = UIMenu(title: "", children: actions)
-
-            navigationItem.leftBarButtonItem = UIBarButtonItem(
-                title: nil,
-                image: UIImage(systemName: "ellipsis.circle"),
-                primaryAction: nil,
-                menu: menu
-            )
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu)
         } else {
             navigationItem.leftBarButtonItem = nil
         }
+    }
+
+    func presentDownloadConfirmation() {
+        let downloadAction = UIAlertAction(title: NSLocalizedString("DOWNLOAD", comment: ""), style: .default) { _ in
+            DownloadManager.shared.ignoreConnectionType = true
+            DownloadManager.shared.resumeDownloads()
+        }
+        let cancelAction = UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel)
+
+        self.presentAlert(
+            title: NSLocalizedString("Warning", comment: ""),
+            message: NSLocalizedString("You are not currently on Wi-Fi. Download anyway?", comment: ""),
+            actions: [downloadAction, cancelAction]
+        )
     }
 
     @objc func close() {
