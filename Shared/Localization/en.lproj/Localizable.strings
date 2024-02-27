@@ -22,6 +22,7 @@
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
 "COPY" = "Copy";
+"WARNING" = "Warning";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -34,6 +35,7 @@
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
 "NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
 
 // Library
 "LIBRARY" = "Library";
