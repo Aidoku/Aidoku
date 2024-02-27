@@ -470,19 +470,6 @@ class MangaViewController: BaseTableViewController {
         present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
     }
 
-    func showNoWifiAlert() {
-        let alertController = UIAlertController(
-            title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
-            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""),
-            preferredStyle: .alert
-        )
-
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default)
-        alertController.addAction(okAction)
-
-        present(alertController, animated: true)
-    }
-
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
         guard Reachability.getConnectionType() != .none else {
             refreshControl?.endRefreshing()
@@ -575,7 +562,7 @@ class MangaViewController: BaseTableViewController {
         if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
             DownloadManager.shared.download(chapters: chapters, manga: manga)
         } else {
-            showNoWifiAlert()
+            self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
             ///TODO: This one can also hang
         }
         setEditing(false, animated: true)
@@ -951,7 +938,7 @@ extension MangaViewController {
                     if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                         DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
                     } else {
-                        self.showNoWifiAlert()
+                        self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
                     }
 
                     self.reloadCells(for: [chapter])
