@@ -7,6 +7,7 @@
 
 import UIKit
 import AsyncDisplayKit
+import SwiftUI
 
 class BaseViewController: ASDKViewController<ASDisplayNode> {
 
@@ -88,5 +89,17 @@ extension BaseViewController {
     func hideLoadingIndicator() {
         loadingAlert.dismiss(animated: true)
         (loadingAlert.view.subviews.first(where: { $0.tag == 1 }) as? UIActivityIndicatorView)?.stopAnimating()
+    }
+}
+
+extension BaseViewController {
+    // Workaround for showing toolbar items when wrapping in SwiftUI.
+    // This occurs because SwiftUI uses its own navigation controller.
+    var rootNavigation: UIViewController {
+        if let parent, self.isWrapped {
+            return parent
+        } else {
+            return self
+        }
     }
 }
