@@ -509,13 +509,25 @@ class MangaViewController: BaseTableViewController {
                         }
                         // update in db
                         if inLibrary {
+                            let langFilter = await self.viewModel.langFilter
                             await CoreDataManager.shared.container.performBackgroundTask { context in
-                                CoreDataManager.shared.setChapters(
+                                let newChapters = CoreDataManager.shared.setChapters(
                                     chapterList,
                                     sourceId: manga.sourceId,
                                     mangaId: manga.id,
                                     context: context
                                 )
+                                // update manga updates
+                                for chapter in newChapters
+                                where langFilter != nil ? chapter.lang == langFilter : true
+                                {
+                                    CoreDataManager.shared.createMangaUpdate(
+                                        sourceId: manga.sourceId,
+                                        mangaId: manga.id,
+                                        chapterObject: chapter,
+                                        context: context
+                                    )
+                                }
                                 try? context.save()
                             }
                         }
