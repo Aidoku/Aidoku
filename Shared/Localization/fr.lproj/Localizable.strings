@@ -51,6 +51,9 @@
 "SOURCE_ORDER" = "Ordre des sources";
 "MISSING_SOURCE_TEXT" = "La source originale semble être manquante pour ce manga. Veuillez le retélécharger ou supprimer ce titre de votre bibliothèque.";
 "SELECT_ALL" = "Tout sélectionner";
+"LINK_COPIED" = "Lien Copié";
+"LINK_COPIED_TEXT" = "Le lien a été ajouté au presse-papier.";
+
 
 // Reader
 "CHAPTER" = "Chapitre";

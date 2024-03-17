@@ -94,6 +94,8 @@
 "LATEST_CHAPTER" = "Ultimo capitolo";
 "VERTICAL_SCROLL" = "Scorrimento verticale";
 "DATE_ADDED" = "Data di aggiunta";
+"LINK_COPIED" = "Link Copiato";
+"LINK_COPIED_TEXT" = "Il link è stato copiato negli appunti.";
 
 // Categories
 "ALL" = "Tutto";

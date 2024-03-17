@@ -13,6 +13,7 @@ protocol MangaDetailHeaderViewDelegate: AnyObject {
     func bookmarkHeld()
     func trackerPressed()
     func safariPressed()
+    func safariHeld()
     func readPressed()
     func coverPressed()
 }
@@ -227,6 +228,7 @@ class MangaDetailHeaderView: UIView {
         bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchCancel)
         bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchDragExit)
         safariButton.addTarget(self, action: #selector(safariPressed), for: .touchUpInside)
+        safariButton.addLongPressTarget(target: self, action: #selector(safariHeld))
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
 
@@ -532,6 +534,9 @@ class MangaDetailHeaderView: UIView {
     @objc private func safariPressed() {
         delegate?.safariPressed()
     }
+    @objc private func safariHeld() {
+        delegate?.safariHeld()
+    }
     @objc private func readPressed() {
         delegate?.readPressed()
     }
@@ -579,5 +584,13 @@ class MangaDetailHeaderView: UIView {
 extension MangaDetailHeaderView: SizeChangeListenerDelegate {
     func sizeChanged(_ newSize: CGSize) {
         sizeChangeListener?.sizeChanged(bounds.size)
+    }
+}
+
+extension UIButton {
+    func addLongPressTarget(target: Any, action: Selector) {
+        let longPressRecognizer = UILongPressGestureRecognizer(target: target, action: action)
+        longPressRecognizer.minimumPressDuration = 0.4
+        self.addGestureRecognizer(longPressRecognizer)
     }
 }

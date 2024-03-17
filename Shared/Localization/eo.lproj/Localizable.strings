@@ -128,6 +128,8 @@
 "GENERAL" = "Ĝenerala";
 "PAGE_X_OF_X" = "Paĝo %i el %i";
 "EXPERIMENTAL" = "Eksperimenta";
+"LINK_COPIED" = "Link Copiato";
+"LINK_COPIED_TEXT" = "Il link è stato copiato negli appunti.";
 
 // History
 "HISTORY" = "Historio";

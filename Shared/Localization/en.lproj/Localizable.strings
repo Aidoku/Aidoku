@@ -101,6 +101,8 @@
 "SELECT_CHAPTERS" = "Select Chapters";
 "SELECT_ALL" = "Select All";
 "DESELECT_ALL" = "Deselect All";
+"LINK_COPIED" = "Link Copied";
+"LINK_COPIED_TEXT" = "The link has been copied to the clipboard.";
 
 // Reader
 "CHAPTER" = "Chapter";
