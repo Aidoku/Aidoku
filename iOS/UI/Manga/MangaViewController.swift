@@ -1159,15 +1159,17 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
         else { return }
         present(SFSafariViewController(url: url), animated: true)
     }
-    
+
     // copy manga link when holding down the web view button
     func safariHeld() {
-        guard 
+        guard
             let url = manga.url,
             url.scheme == "https" || url.scheme == "http"
         else { return }
         UIPasteboard.general.string = url.absoluteString
-        let alert = UIAlertController(title: NSLocalizedString("LINK_COPIED", comment: ""), message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""), preferredStyle: .alert)
+        let alert =
+        UIAlertController(title: NSLocalizedString("LINK_COPIED", comment: "")
+                          , message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""), preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     present(alert, animated: true, completion: nil)
     }
