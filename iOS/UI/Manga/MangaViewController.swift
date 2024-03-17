@@ -1168,8 +1168,9 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
         else { return }
         UIPasteboard.general.string = url.absoluteString
         let alert =
-        UIAlertController(title: NSLocalizedString("LINK_COPIED", comment: "")
-                          , message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""), preferredStyle: .alert)
+        UIAlertController(title: NSLocalizedString("LINK_COPIED", comment: ""), message:
+                            NSLocalizedString("LINK_COPIED_TEXT",
+                                              comment: ""), preferredStyle: .alert)
                     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                     present(alert, animated: true, completion: nil)
     }
