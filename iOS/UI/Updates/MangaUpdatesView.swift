@@ -65,6 +65,11 @@ struct MangaUpdatesView: View {
         .refreshableCompat {
             await reload()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { _ in
+            // TODO: reload the list
+            // there is a bug when mixing UIKit navigation with SwiftUI
+            // that pops back the destination when updating a State variable
+        }
     }
 
     @available(iOS 15.0, *)

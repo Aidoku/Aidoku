@@ -86,29 +86,33 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "mangaId == %@ AND sourceId == %@ ",
+            format: "mangaId == %@ AND sourceId == %@ AND viewed == false",
             mangaId, sourceId
         )
         return (try? context.fetch(request)) ?? []
     }
 
     /// Mark all updates of a manga as viewed
+    /// - Returns: The Manga Updates marked as read
+    @discardableResult
     func setMangaUpdatesViewed(
-        _ viewed: Bool = true,
+        viewed: Bool = true,
         sourceId: String,
         mangaId: String,
         context: NSManagedObjectContext? = nil
-    ) {
+    ) -> [MangaUpdateObject] {
         let context = context ?? self.context
         let unviewedUpdates = getUnviewedMangaUpdates(sourceId: sourceId, mangaId: mangaId, context: context)
-        if unviewedUpdates.isEmpty { return }
+        if unviewedUpdates.isEmpty { return [] }
         for update in unviewedUpdates {
             update.viewed = viewed
         }
         do {
             try context.save()
+            return unviewedUpdates
         } catch {
             LogManager.logger.error("CoreDataManager.setMangaUpdatesViewed: \(error.localizedDescription)")
+            return []
         }
     }
 }

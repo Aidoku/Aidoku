@@ -119,8 +119,6 @@ class MangaViewController: BaseTableViewController {
             updateDataSource()
             updateReadButton()
 
-            CoreDataManager.shared.setMangaUpdatesViewed(sourceId: manga.sourceId, mangaId: manga.id)
-
             // scroll to `scrollToChapter`
             if
                 let chapter = scrollToChapter,
@@ -130,6 +128,8 @@ class MangaViewController: BaseTableViewController {
                 try? await Task.sleep(nanoseconds: 500 * 1000000)
                 self.tableView.deselectRow(at: indexPath, animated: true)
             }
+
+            await MangaUpdateManager.shared.viewAllUpdates(of: manga)
         }
     }
 
