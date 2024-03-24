@@ -75,3 +75,36 @@ extension Chapter: Equatable {
         lhs.hashValue == rhs.hashValue
     }
 }
+
+extension Chapter {
+    /// Returns a formatted title for this chapter.
+    /// `Vol.X Ch.X - Title`
+    func makeTitle() -> String {
+        if volumeNum == nil && title == nil, let chapterNum = chapterNum {
+            // Chapter X
+            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+        } else {
+            var components: [String] = []
+            // Vol.X
+            if let volumeNum = volumeNum {
+                components.append(
+                    String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                )
+            }
+            // Ch.X
+            if let chapterNum = chapterNum {
+                components.append(
+                    String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                )
+            }
+            // title
+            if let title = title {
+                if !components.isEmpty {
+                    components.append("-")
+                }
+                components.append(title)
+            }
+            return components.joined(separator: " ")
+        }
+    }
+}

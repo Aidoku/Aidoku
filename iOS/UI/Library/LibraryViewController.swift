@@ -7,20 +7,11 @@
 
 import UIKit
 import LocalAuthentication
+import SwiftUI
 
 class LibraryViewController: MangaCollectionViewController {
 
     let viewModel = LibraryViewModel()
-
-    private lazy var filterBarButton: UIBarButtonItem = {
-        let filterImage: UIImage?
-        if #available(iOS 15.0, *) {
-            filterImage = UIImage(systemName: "line.3.horizontal.decrease")
-        } else {
-            filterImage = UIImage(systemName: "line.horizontal.3.decrease")
-        }
-        return UIBarButtonItem(image: filterImage, style: .plain, target: self, action: nil)
-    }()
 
     private lazy var downloadBarButton = UIBarButtonItem(
         image: UIImage(systemName: "square.and.arrow.down"),
@@ -41,6 +32,13 @@ class LibraryViewController: MangaCollectionViewController {
         style: .plain,
         target: nil,
         action: nil
+    )
+
+    private lazy var mangaUpdatesButton = UIBarButtonItem(
+        image: UIImage(systemName: "bell"),
+        style: .plain,
+        target: self,
+        action: #selector(openMangaUpdates)
     )
 
     private lazy var refreshControl = UIRefreshControl()
@@ -138,9 +136,6 @@ class LibraryViewController: MangaCollectionViewController {
             header.selectedOption = self.viewModel.currentCategory != nil
                 ? (self.viewModel.categories.firstIndex(of: self.viewModel.currentCategory!) ?? -1) + 1
                 : 0
-            header.filterButton.alpha = 1
-            header.filterButton.menu = self.filterBarButton.menu
-            header.filterButton.showsMenuAsPrimaryAction = true
             header.updateMenu()
 
             // load locked icons
@@ -248,15 +243,6 @@ class LibraryViewController: MangaCollectionViewController {
                 self.updateDataSource()
                 if !self.isEditing {
                     self.updateToolbar() // show/hide add category button
-                    let index = self.navigationItem.rightBarButtonItems?.firstIndex(of: self.filterBarButton)
-                    if self.viewModel.categories.isEmpty && index == nil {
-                        self.navigationItem.rightBarButtonItems?.insert(
-                            self.filterBarButton,
-                            at: 1
-                        )
-                    } else if let index = index {
-                        self.navigationItem.rightBarButtonItems?.remove(at: index)
-                    }
                 }
                 self.updateHeaderCategories()
                 // update lock state
@@ -448,12 +434,10 @@ class LibraryViewController: MangaCollectionViewController {
             )]
         } else {
             var items: [UIBarButtonItem] = [moreBarButton]
-            if viewModel.categories.isEmpty {
-                items.append(filterBarButton)
-            }
             if viewModel.isCategoryLocked() {
                 items.append(lockBarButton)
             }
+            items.append(mangaUpdatesButton)
             navigationItem.rightBarButtonItems = items
             navigationItem.leftBarButtonItem = nil
             Task { @MainActor in
@@ -541,6 +525,14 @@ class LibraryViewController: MangaCollectionViewController {
 
     @objc func openDownloadQueue() {
         present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
+    }
+
+    @objc func openMangaUpdates() {
+        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView())
+        // configure navigation item before displaying to fix animation
+        mangaUpdatesViewController.navigationItem.largeTitleDisplayMode = .never
+        mangaUpdatesViewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES", comment: "")
+        navigationController?.pushViewController(mangaUpdatesViewController, animated: true)
     }
 
     @objc func removeSelectedFromLibrary() {
@@ -830,10 +822,16 @@ extension LibraryViewController {
                 self.toggleFilter(method: .downloaded)
             }
         ] + trackingFilter)
-        filterBarButton.menu = UIMenu(title: "", children: [sortMenu, filterMenu])
-        (collectionView.supplementaryView(
-            forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(index: 0)
-        ) as? MangaListSelectionHeader)?.filterButton.menu = filterBarButton.menu
+        let selectAction = UIAction(
+            title: NSLocalizedString("SELECT", comment: ""),
+            image: UIImage(systemName: "checkmark.circle")
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.setEditing(true, animated: true)
+        }
+        moreBarButton.menu = UIMenu(children: [
+            selectAction, sortMenu, filterMenu
+        ])
     }
 }
 

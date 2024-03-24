@@ -253,12 +253,23 @@ extension MangaManager {
 
                             // update chapter list
                             if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                                CoreDataManager.shared.setChapters(
+                                let newChapters = CoreDataManager.shared.setChapters(
                                     chapters,
                                     sourceId: manga.sourceId,
                                     mangaId: manga.id,
                                     context: context
                                 )
+                                // update manga updates
+                                for chapter in newChapters
+                                where mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                {
+                                    CoreDataManager.shared.createMangaUpdate(
+                                        sourceId: manga.sourceId,
+                                        mangaId: manga.id,
+                                        chapterObject: chapter,
+                                        context: context
+                                    )
+                                }
                                 libraryObject.lastUpdated = Date()
                                 try? context.save()
                             }

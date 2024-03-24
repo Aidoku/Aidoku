@@ -13,7 +13,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         let tabController = UITabBarController()
-        let libraryViewController = UINavigationController(rootViewController: LibraryViewController())
+        let libraryViewController = SwiftUINavigationController(rootViewController: LibraryViewController())
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
         let historyViewController = UINavigationController(rootViewController: HistoryViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
@@ -55,7 +55,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let tabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithOpaqueBackground()
             tabController.tabBar.scrollEdgeAppearance = tabBarAppearance
-            tabController.tabBar.scrollEdgeAppearance = nil
         }
 
         if let windowScene = scene as? UIWindowScene {
