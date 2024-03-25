@@ -77,7 +77,7 @@ struct TrackerView: View {
                         )
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: "ellipsis.circle")
                         .padding([.vertical, .leading]) // increase hitbox
                 }
             }

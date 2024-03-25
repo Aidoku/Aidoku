@@ -201,7 +201,7 @@ class SourceViewController: MangaCollectionViewController {
     func updateNavbarItems(showFilterButton: Bool = true, listingsHidden: Bool = false) {
         var items = [
             UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
+                image: UIImage(systemName: "ellipsis.circle"),
                 style: .plain,
                 target: self,
                 action: #selector(openInfoPage)
