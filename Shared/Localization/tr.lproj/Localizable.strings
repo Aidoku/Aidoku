@@ -330,7 +330,7 @@
 "PILLARBOX_ORIENTATION" = "Çerçeve Yönü";
 "BOTH" = "İkisi de";
 "ANILIST_LOGIN_NEEDED" = "AniList Girişi Gerekli";
-"ANILIST_LOGIN_NEEDED_TEXT" = "AniList Tokeninizin süresi doldu, bu nedenle ayarlarda yeniden oturum açana kadar AniList çalışmayı durduracaktır.";
+"ANILIST_LOGIN_NEEDED_TEXT" = "AniList Tokeninizin süresi doldu, bu nedenle ayarlardan yeniden oturum açana kadar AniList çalışmayacaktır.";
 "CROP_BORDERS" = "Kenarları Kırp";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Oryantasyonu, pillarboxing'in hangi oryantasyonlar için etkinleştirilmesi gerektiğini belirler.";
 "COPY" = "Kopyala";
@@ -338,3 +338,7 @@
 "UNPIN" = "Başa Tutturmayı Kaldır";
 "REORDER" = "Reorder";
 "COVER" = "Kapak";
+"MAL_LOGIN_NEEDED" = "MyAnimeList Girişi Gerekiyor";
+"MAL_LOGIN_NEEDED_TEXT" = "MyAnimeList Tokeninizin süresi doldu, bu nedenle ayarlardan yeniden oturum açana kadar MyAnimeList çalışmayacaktır.";
+"BACKUP_ERROR_TEXT" = "Geri yüklerken bir hata oluştu: %@. Yedek geçersiz olabilir.";
+"BACKUP_ERROR" = "Yedek Geri Yükleme Hatası";

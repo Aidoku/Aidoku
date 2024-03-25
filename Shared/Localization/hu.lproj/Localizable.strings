@@ -116,3 +116,60 @@
 "RENAME" = "Átnevezés";
 "GENERAL" = "Általános";
 "SELECT_CHAPTERS" = "Fejezetek kijelölése";
+"LIBRARY_ADD_FROM_BROWSE" = "Szerezzen mangákat a böngészés lapon";
+"CATEGORY_ADD_TEXT" = "Adja meg az új kategória címét, hogy létrejöjjön.";
+"BROWSE_NO_SOURCES_TEXT" = "Konfiguráljon saját forrás listát vagy\nnyisson meg egy forrást az Aidokuban a kezdéshez";
+"BUTTON_ERROR" = "HIBA";
+"UNPIN" = "Kitűzés visszavonása";
+"INFO" = "Infó";
+"BUILD" = "Build";
+"NSFW" = "NSFW";
+"MISSING_SOURCE_TEXT" = "Úgy tűnik, az eredeti forrásban nincs bent ez a Manga. Kérem töltse le újra vagy távolítsa el a könyvtárából.";
+"DESELECT_ALL" = "Minden Kijelölés Megszüntetése";
+"VOL_SPACE_X" = "%g.Köt.";
+"CH_SPACE_X" = "%g.Fej.";
+"CURRENT_COLON" = "Jelenleg:";
+"EXPERIMENTAL" = "Kísérletező";
+"SAVE_TO_PHOTOS" = "Mentés a Fotókba";
+
+// Search
+"SEARCH" = "Keresés";
+"LOADING_ELLIPSIS" = "Betöltés…";
+"MANGA_INFO" = "Manga Infó";
+"LAST_READ" = "Utoljára olvasott";
+"LATEST_CHAPTER" = "Legutóbbi fejezet";
+"ALWAYS_ASK" = "Mindig kérdezze meg";
+"BROWSE_NO_SOURCES" = "Nincsenek források";
+"ADDING_SOURCES_GUIDE_BUTTON" = "Útmutató a források hozzáadásához";
+"EXTERNAL" = "Külső";
+"UNINSTALL" = "Eltávolítás";
+"PIN" = "Kitűzés";
+"REORDER" = "Sorrendbe állítás";
+
+// Source
+"SOURCE_INFO" = "Forrás Infó";
+"LIST_HEADER" = "Lista";
+"LIST_ALL" = "Mind";
+"ONGOING" = "Folytatódó";
+"CANCELLED" = "Megszakított";
+"HIATUS" = "Szünet";
+"SUGGESTIVE" = "Szuggesztív";
+"MORE" = "több";
+"SOURCE_ORDER" = "Forrás Rendezése";
+"VOLUME_X" = "%g. Kötet";
+"VOL_X" = "%g. Köt.";
+"CH_X" = "%g.Fej.";
+"NO_CHAPTERS_AVAILABLE" = "Nincs Elérhető Fejezet";
+"START_READING" = "Olvasás Kezdése";
+"FINISHED_COLON" = "Befejezve:";
+"READER_SETTINGS" = "Olvasó Beállítások";
+"INFINITE_VERTICAL_SCROLL" = "Végtelen Függőleges Görgetés";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Ez eltávolítja a fejezethez tartozó előzményeket. Biztosan folytatni szeretné?";
+"REMOVE_ALL_MANGA_HISTORY" = "Minden Manga Előzmény Törlése";
+"HISTORY_LOCKED" = "Előzmény zárolva.";
+"VIEW_MORE" = "Több Megtekintése";
+"GITHUB_REPO" = "GitHub állomány";
+"DISCORD_SERVER" = "Discord szerver";
+
+// Settings
+"SETTINGS" = "Beállítások";
