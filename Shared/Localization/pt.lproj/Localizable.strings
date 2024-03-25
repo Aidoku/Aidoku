@@ -12,10 +12,10 @@
 "DOWNLOAD" = "Descarregar";
 "DOWNLOADED" = "Descarregado(s)";
 "DOWNLOAD_QUEUE" = "Fila de descargas";
-"CANCEL_DOWNLOAD" = "Cancelar transferência";
-"REMOVE_DOWNLOAD" = "Remover Transferência";
-"REMOVE_ALL_DOWNLOADS" = "Remover todas as transferências";
-"REMOVE_DOWNLOADS_CONFIRM" = "Remover todas as transferências seleccionadas?";
+"CANCEL_DOWNLOAD" = "Cancelar descarga";
+"REMOVE_DOWNLOAD" = "Remover descarga";
+"REMOVE_ALL_DOWNLOADS" = "Remover todas as descargas";
+"REMOVE_DOWNLOADS_CONFIRM" = "Remover todas as descargas seleccionadas?";
 
 // Library
 "LIBRARY" = "Biblioteca";
@@ -41,8 +41,8 @@
 
 // Source
 "SOURCE_INFO" = "Informações da Fonte";
-"LANGUAGE" = "Linguagem";
-"LANGUAGES" = "Línguas";
+"LANGUAGE" = "Idioma";
+"LANGUAGES" = "Idiomas";
 "BUTTON_FILTER" = "Filtrar";
 "LIST_HEADER" = "Lista";
 "LIST_ALL" = "Tudo";
@@ -71,7 +71,7 @@
 "VERTICAL_SCROLL" = "Rolagem Vertical";
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = "Rolagem Vertical Infinita";
-"SAVE_TO_PHOTOS" = "Gravar para Fotos";
+"SAVE_TO_PHOTOS" = "Guardar em Fotos";
 
 // History
 "HISTORY" = "Histórico";
@@ -84,18 +84,18 @@
 "SUPPPORT_DEVELOPMENT" = "Apoiar Desenvolvimento";
 "INCOGNITO_MODE" = "Modo Incógnito";
 "READER" = "Leitor";
-"SAVE_IMAGE_OPTION" = "Opção de Gravar Imagem";
+"SAVE_IMAGE_OPTION" = "Opção de Guardar Imagem";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Nome do Backup";
 "MISSING_SOURCES_TEXT" = "O backup restaurado pode conter dados das seguintes fontes, que não estão atualmente instaladas:";
-"BACKUP_INFO" = "Prima sem soltar uma cópia de segurança para a exportar ou deslize para a esquerda para a eliminar.";
+"BACKUP_INFO" = "Prima sem soltar o backup para a exportar ou deslize para a esquerda para eliminar.";
 "MISSING_SOURCES" = "Fontes Ausentes";
 "RESTORE_BACKUP" = "Restaurar para este Backup?";
-"RESTORE_BACKUP_TEXT" = "Todos os dados actuais serão removidos e substituídos pelos dados desta cópia de segurança.";
-"BACKUP_IMPORT_FAIL" = "Importação Falhou";
-"BACKUP_IMPORT_FAIL_TEXT" = "Salvamento do Backup falhou. Please ensure that your backup is in the proper format.Por favor, garanta que o seu Backup está no formato apropriado.";
+"RESTORE_BACKUP_TEXT" = "Todos os dados actuais serão removidos e substituídos pelos dados deste backup.";
+"BACKUP_IMPORT_FAIL" = "A importação falhou";
+"BACKUP_IMPORT_FAIL_TEXT" = "Falha ao guardar o backup. Certifique-se de que o seu backup está no formato correto.";
 "EXPORT" = "Exportar";
-"RESTORE" = "Restaurar";
+"RESTORE" = "Restauro";
 "RESET_TEXT" = "Esta ação é irreversível. Todos os dados, definições e caches serão limpos e repostos.";
 "CLEAR_CHAPTER_CACHE" = "Limpar Cache do Capítulo";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Essa ação é irreversível. Capítulos em cache serão limpos e reinstalados.";
@@ -123,7 +123,7 @@
 "REMOVE" = "Remover";
 "RENAME" = "Renomear";
 "CLEAR" = "Limpar";
-"REMOVE_DOWNLOADS" = "Remover transferências";
+"REMOVE_DOWNLOADS" = "Remover descargas";
 "LIBRARY_ADD_FROM_BROWSE" = "Adicionar Mangás da Guia Explorar";
 "ADD_TO_LIBRARY" = "Adicionar para Biblioteca";
 "TITLE" = "Título";
@@ -210,7 +210,7 @@
 "SKIP_TITLES" = "Pular Obras";
 "ONLY_UPDATE_ON_WIFI" = "Apenas Atualizar no Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Categorias Excluídas";
-"REFRESH_METADATA" = "Refrescar Metadados";
+"REFRESH_METADATA" = "Atualizar Metadados";
 "NEVER" = "Nunca";
 "EVERY_12_HOURS" = "A cada 12 horas";
 "DAILY" = "Diariamente";
@@ -230,12 +230,12 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "O URL da Lista de Fontes providenciado é inválido ou ja foi adicionado.";
 "LOCK_HISTORY_TAB" = "Travar Guia de Histórico";
 "DOWNSAMPLE_IMAGES" = "Comprimir Imagens";
-"RENAME_BACKUP" = "Renomear Backup";
-"RENAME_BACKUP_TEXT" = "Digite um novo nome para o seu Backup";
+"RENAME_BACKUP" = "Mudar nome de backup";
+"RENAME_BACKUP_TEXT" = "Introduza um novo nome para o seu backup";
 "CORRUPTED_BACKUP" = "Backup Corrompido";
-"CORRUPTED_BACKUP_TEXT" = "Esse Backup parece ter dados configurados errôneamente. Renomear não é possível.";
+"CORRUPTED_BACKUP_TEXT" = "Esse backup parece ter dados incorretamente configurados. Não é possível mudar o nome.";
 "BACKUP_IMPORT_SUCCESS" = "Backup Importado";
-"BACKUP_IMPORT_SUCCESS_TEXT" = "Para restaurar para este Backup, encontre-o na página de Backups nas configurações.";
+"BACKUP_IMPORT_SUCCESS_TEXT" = "Para restaurar para este backup, localize-o na página de backup nas definições.";
 "LOGS" = "Registos";
 "LOGGING" = "A registar";
 "LOG_SERVER" = "Servidor de registos";
@@ -279,7 +279,7 @@
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "TYPE_COLON_%@" = "Tipo: %@";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem a certeza de que pretende remover todas as transferências?";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem a certeza de que pretende remover todas as descargas?";
 "MIGRATE_SOURCES" = "Migrar fontes";
 "MIGRATION" = "Migração";
 "OPTIONS" = "Opções";
@@ -337,4 +337,8 @@
 "UNPIN" = "Desfixar";
 "COPY" = "Copiar";
 "ANILIST_LOGIN_NEEDED" = "Necessário iniciar sessão na AniList";
-"ANILIST_LOGIN_NEEDED_TEXT" = "O seu token AniList expirou, pelo que a AniList deixará de funcionar até voltar a iniciar sessão nas definições.";
+"ANILIST_LOGIN_NEEDED_TEXT" = "O seu token AniList expirou, pelo que o localizador AniList deixará de funcionar até voltar a iniciar sessão nas definições.";
+"MAL_LOGIN_NEEDED_TEXT" = "O teu token MyAnimeList expirou, pelo que o localizador MyAnimeList deixará de funcionar até voltares a iniciar sessão nas definições.";
+"BACKUP_ERROR" = "Erro de restauro de backup";
+"BACKUP_ERROR_TEXT" = "Foi encontrado um erro durante o restauro: %@. O backup pode ser inválido.";
+"MAL_LOGIN_NEEDED" = "MyAnimeList Necessário iniciar sessão";
