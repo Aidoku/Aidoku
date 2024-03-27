@@ -33,7 +33,7 @@ class DownloadManager {
     private var downloadsPaused = false
 
     var areDownloadsPaused: Bool {
-        return downloadsPaused
+        downloadsPaused
     }
 
     var ignoreConnectionType = false
