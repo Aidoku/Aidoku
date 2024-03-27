@@ -994,13 +994,31 @@ extension LibraryViewController {
             }
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
-                Task {
-                    await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+                    Reachability.getConnectionType() == .wifi ||
+                    !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    Task {
+                        await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                    }
+                } else {
+                    self.presentAlert(
+                        title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                        message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+                    )
                 }
             }
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
-                Task {
-                    await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+                    Reachability.getConnectionType() == .wifi ||
+                    !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    Task {
+                        await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                    }
+                } else {
+                    self.presentAlert(
+                        title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                        message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+                    )
                 }
             }
 

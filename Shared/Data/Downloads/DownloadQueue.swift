@@ -40,6 +40,13 @@ actor DownloadQueue {
         }
     }
 
+    func resume() async {
+        for task in tasks {
+            await task.value.resume()
+        }
+        running = true
+    }
+
     func pause() async {
         guard running else { return }
         for task in tasks {
