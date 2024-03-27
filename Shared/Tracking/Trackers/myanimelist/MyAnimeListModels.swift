@@ -47,24 +47,26 @@ struct MyAnimeListMangaStatus: Codable {
 
     func percentEncoded() -> Data? {
         var params: [String] = []
-        if let isRereading = isRereading { params.append("is_rereading=\(isRereading)") }
-        if let numVolumesRead = numVolumesRead { params.append("num_volumes_read=\(numVolumesRead)") }
-        if let numChaptersRead = numChaptersRead { params.append("num_chapters_read=\(numChaptersRead)") }
-        if let startDate = startDate {
-            if startDate == "1969-12-31" {
+        if let isRereading { params.append("is_rereading=\(isRereading)") }
+        if let numVolumesRead { params.append("num_volumes_read=\(numVolumesRead)") }
+        if let numChaptersRead { params.append("num_chapters_read=\(numChaptersRead)") }
+        if let startDate {
+            if startDate == "1969-12-31" || startDate == "1970-01-01" {
                 params.append("start_date=")
             } else {
                 params.append("start_date=\(startDate)")
             }
         }
-        if let finishDate = finishDate {
-            if finishDate == "1969-12-31" {
+        if let finishDate {
+            if finishDate == "1969-12-31" || finishDate == "1970-01-01" {
                 params.append("finish_date=")
             } else {
                 params.append("finish_date=\(finishDate)")
             }
         }
-        if let score = score { params.append("score=\(score)") }
+        if let status { params.append("status=\(status)") }
+        if let score { params.append("score=\(score)") }
+        if let comments { params.append("comments=\(comments)") }
         return params
             .joined(separator: "&")
             .data(using: .utf8)

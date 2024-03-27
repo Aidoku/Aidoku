@@ -55,5 +55,5 @@ line_length:
     error: 200
     ignores_comments: true
     ignores_urls: true
-file_length: 1200
+file_length: 1500
 cyclomatic_complexity: 12

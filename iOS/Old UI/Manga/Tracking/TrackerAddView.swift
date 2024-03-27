@@ -39,6 +39,7 @@ struct TrackerAddView: View {
         .padding([.top, .horizontal])
         .sheet(isPresented: $showSearchController, content: {
             TrackerSearchNavigationController(tracker: tracker, manga: manga)
+                .ignoresSafeArea()
         })
     }
 }

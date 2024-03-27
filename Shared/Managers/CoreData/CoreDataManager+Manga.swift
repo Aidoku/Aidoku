@@ -87,4 +87,18 @@ extension CoreDataManager {
         request.propertiesToFetch = ["viewer"]
         return Int((try? context.fetch(request))?.first?.viewer ?? -1)
     }
+
+    func getMangaChapterFilters(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> (flags: Int, language: String?) {
+        let context = context ?? self.context
+        let request = MangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, sourceId)
+        request.fetchLimit = 1
+        request.propertiesToFetch = ["chapterFlags", "langFilter"]
+        let object = (try? context.fetch(request))?.first
+        return (Int(object?.chapterFlags ?? 0), object?.langFilter)
+    }
 }

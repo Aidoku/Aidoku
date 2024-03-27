@@ -22,13 +22,13 @@
 "REMOVE_DOWNLOAD" = "移除下载";
 "REMOVE_ALL_DOWNLOADS" = "移除所有下载";
 "REMOVE_DOWNLOADS" = "移除所选下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "确定要移除所有选中的下载吗？";
+"REMOVE_DOWNLOADS_CONFIRM" = "删除所有选定的下载？";
 
 // Library
 "LIBRARY" = "书架";
 "LIBRARY_SEARCH" = "在书架查找";
 "LIBRARY_EMPTY" = "书架为空";
-"LIBRARY_ADD_FROM_BROWSE" = "从浏览选项卡中添加漫画";
+"LIBRARY_ADD_FROM_BROWSE" = "从浏览页添加漫画";
 "ADD_TO_LIBRARY" = "添加到书架";
 "REMOVE_FROM_LIBRARY" = "从书架删除";
 "MANGA_INFO" = "漫画信息";
@@ -70,7 +70,7 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "Build";
+"BUILD" = "编译版本";
 "BUTTON_FILTER" = "筛选";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
@@ -178,7 +178,7 @@
 "EVERY_2_DAYS" = "每 2 天";
 "WEEKLY" = "每周";
 "WITH_UNREAD_CHAPTERS" = "未读章节";
-"WITH_COMPLETED_STATUS" = "已完成";
+"WITH_COMPLETED_STATUS" = "完结状态";
 "THAT_HAVENT_BEEN_READ" = "尚未阅读";
 "SOURCE_LISTS" = "来源列表";
 "SOURCE_LIST_ADDED" = "已添加来源列表";
@@ -336,3 +336,5 @@
 "COPY" = "复制";
 "PIN" = "置顶";
 "UNPIN" = "取消置顶";
+"ANILIST_LOGIN_NEEDED" = "需要AniList登录";
+"ANILIST_LOGIN_NEEDED_TEXT" = "您的AniList令牌已过期，因此AniList将停止工作，直到您在设置中重新登录。";

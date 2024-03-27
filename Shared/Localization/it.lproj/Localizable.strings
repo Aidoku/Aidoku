@@ -336,3 +336,5 @@
 "REORDER" = "Riordina";
 "PIN" = "Fissa";
 "UNPIN" = "Rimuovi";
+"ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, AniList non funzionerà finché non si ri-accede dalle impostazioni.";

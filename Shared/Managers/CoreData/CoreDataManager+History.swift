@@ -29,7 +29,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
             chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -55,7 +55,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
             chapterId, mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -71,7 +71,7 @@ extension CoreDataManager {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
-            format: "mangaId == %@ AND sourceId == %@ ",
+            format: "mangaId == %@ AND sourceId == %@",
             mangaId, sourceId
         )
         request.fetchLimit = 1
@@ -214,10 +214,15 @@ extension CoreDataManager {
         }
     }
 
-    /// Get current page progress for chapter, returns -1 if not started.
-    func getProgress(sourceId: String, mangaId: String, chapterId: String, context: NSManagedObjectContext? = nil) -> Int {
+    /// Get current completion status and page progress for chapter
+    func getProgress(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> (completed: Bool, progress: Int?) {
         let historyObject = getHistory(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, context: context)
-        return Int(historyObject?.progress ?? -1)
+        return (historyObject?.completed ?? false, (historyObject?.progress).flatMap(Int.init))
     }
 
     /// Set page progress for a chapter and creates a history object if it doesn't already exist.
@@ -297,5 +302,22 @@ extension CoreDataManager {
                 LogManager.logger.error("CoreDataManager.setCompleted(chapters:): \(error.localizedDescription)")
             }
         }
+    }
+
+    /// Check if a chapter has been completely read.
+    func isCompleted(
+        sourceId: String,
+        mangaId: String,
+        chapterId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ AND completed == true",
+            chapterId, mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        return (try? context.count(for: request)) ?? 0 > 0
     }
 }

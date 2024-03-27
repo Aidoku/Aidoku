@@ -52,7 +52,7 @@
 "SOURCE_LIST_ADD_FAIL" = "Kunde ej lägga till källistan";
 "1_CHAPTER" = "1 kapitel";
 "CLEAR_NETWORK_CACHE_TEXT" = "Denna handling är oåterkallelig. Cachade nätverksförfrågningar och bilder kommer att rensas.";
-"DOUBLE_PAGE" = "Dubbelsida";
+"DOUBLE_PAGE" = "Dubbelsidig";
 "%i_OF_%i" = "%i av %i";
 "CATEGORY_NAME" = "Kategorinamn";
 "TITLE" = "Titel";
@@ -80,7 +80,7 @@
 "APPEARANCE" = "Utseende";
 "%@_AGO" = "%@ sen";
 "SHARE" = "Dela";
-"INCOGNITO_MODE" = "Incognito-läge";
+"INCOGNITO_MODE" = "Inkognitoläge";
 "TRACKING" = "Spårning";
 "LAST_UPDATED" = "Senast uppdaterad";
 "RESTORE_BACKUP" = "Återställ till denna säkerhetskopia?";
@@ -126,7 +126,7 @@
 "AVAILABLE" = "Tillgänglig";
 "THAT_HAVENT_BEEN_READ" = "Olästa";
 "RENAME_CATEGORY" = "Döp om kategori";
-"SINGLE_PAGE" = "Enskild sida";
+"SINGLE_PAGE" = "Enkelsidig";
 "MIGRATION" = "Överföring";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Den angivna källistans URL är ogiltig eller redan tillagd.";
 "VIEW_ON_WEBSITE" = "Visa på webbsida";
@@ -336,3 +336,5 @@
 "LIST_ALL" = "Alla";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Lägger till källguide";
 "COPY" = "Kopiera";
+"ANILIST_LOGIN_NEEDED" = "AniList inloggning krävs";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Din AniList-token har gått ut, därmed kommer AniList att sluta fungera tills du loggar in igen i inställningarna.";

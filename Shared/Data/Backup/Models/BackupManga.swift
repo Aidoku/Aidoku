@@ -20,6 +20,8 @@ struct BackupManga: Codable {
     var status: Int
     var nsfw: Int
     var viewer: Int
+    var chapterFlags: Int?
+    var langFilter: String?
 
     init(mangaObject: MangaObject) {
         id = mangaObject.id
@@ -34,6 +36,8 @@ struct BackupManga: Codable {
         status = Int(mangaObject.status)
         nsfw = Int(mangaObject.nsfw)
         viewer = Int(mangaObject.viewer)
+        chapterFlags = Int(mangaObject.chapterFlags)
+        langFilter = mangaObject.langFilter
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> MangaObject {
@@ -55,6 +59,8 @@ struct BackupManga: Codable {
         obj.status = Int16(status)
         obj.nsfw = Int16(nsfw)
         obj.viewer = Int16(viewer)
+        obj.chapterFlags = Int16(chapterFlags ?? 0)
+        obj.langFilter = langFilter
         return obj
     }
 }

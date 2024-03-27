@@ -142,9 +142,7 @@ class ReaderViewController: BaseObservingViewController {
         setReadingMode(UserDefaults.standard.string(forKey: readingModeKey))
 
         // load chapter list
-        Task {
-            await loadCurrentChapter()
-        }
+        loadCurrentChapter()
     }
 
     override func constrain() {
@@ -170,28 +168,16 @@ class ReaderViewController: BaseObservingViewController {
             guard let self = self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
+        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateReadPosition()
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         guard currentPage >= 1 else { return }
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            Task {
-                if currentPage == 1 && !CoreDataManager.shared.hasHistory(
-                    sourceId: chapter.sourceId,
-                    mangaId: chapter.mangaId,
-                    chapterId: chapter.id
-                ) {
-                    // don't add history if there is none and we're at the first page
-                    return
-                }
-                await HistoryManager.shared.setProgress(
-                    chapter: chapter,
-                    progress: currentPage,
-                    totalPages: toolbarView.totalPages
-                )
-            }
-        }
+        updateReadPosition()
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -202,23 +188,55 @@ class ReaderViewController: BaseObservingViewController {
         }
     }
 
+    func updateReadPosition() {
+        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        Task {
+            // don't add history if there is none and we're at the first page
+            if currentPage == 1 {
+                let chapter = chapter
+                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    !CoreDataManager.shared.hasHistory(
+                        sourceId: chapter.sourceId,
+                        mangaId: chapter.mangaId,
+                        chapterId: chapter.id,
+                        context: context
+                    )
+                }
+                if hasHistory {
+                    return
+                }
+            }
+            await HistoryManager.shared.setProgress(
+                chapter: chapter,
+                progress: currentPage,
+                totalPages: toolbarView.totalPages
+            )
+        }
+    }
+
     func loadChapterList() async {
         chapterList = (try? await SourceManager.shared.source(for: chapter.sourceId)?
             .getChapterList(manga: Manga(sourceId: chapter.sourceId, id: chapter.mangaId))) ?? []
     }
 
-    func loadCurrentChapter() async {
+    func loadCurrentChapter() {
         if chapterList.isEmpty {
-            await loadChapterList()
+            Task {
+                await loadChapterList()
+            }
         }
 
-        let startPage = CoreDataManager.shared.getProgress(
+        let (completed, startPage) = CoreDataManager.shared.getProgress(
             sourceId: chapter.sourceId,
             mangaId: chapter.mangaId,
             chapterId: chapter.id
         )
-        currentPage = startPage
-        reader?.setChapter(chapter, startPage: startPage)
+        if !completed, let startPage {
+            currentPage = startPage
+        } else {
+            currentPage = -1
+        }
+        reader?.setChapter(chapter, startPage: currentPage)
     }
 
     func loadNavbarTitle() {
@@ -237,9 +255,7 @@ class ReaderViewController: BaseObservingViewController {
         var view = ReaderChapterListView(chapterList: chapterList, chapter: chapter)
         view.chapterSet = { chapter in
             self.setChapter(chapter)
-            Task {
-                await self.loadCurrentChapter()
-            }
+            self.loadCurrentChapter()
         }
         let vc = UIHostingController(rootView: view)
         present(vc, animated: true)

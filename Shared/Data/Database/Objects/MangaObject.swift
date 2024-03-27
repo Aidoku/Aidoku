@@ -24,6 +24,8 @@ public class MangaObject: NSManagedObject {
         status = Int16(manga.status.rawValue)
         nsfw = Int16(manga.nsfw.rawValue)
         viewer = Int16(manga.viewer.rawValue)
+        chapterFlags = Int16(manga.chapterFlags)
+        langFilter = manga.langFilter
     }
 
     func toManga() -> Manga {
@@ -40,6 +42,8 @@ public class MangaObject: NSManagedObject {
             status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,
+            chapterFlags: Int(chapterFlags),
+            langFilter: langFilter,
             lastUpdated: libraryObject?.lastUpdated,
             lastOpened: libraryObject?.lastOpened,
             lastRead: libraryObject?.lastRead,
@@ -68,9 +72,11 @@ extension MangaObject {
     @NSManaged public var nsfw: Int16
     @NSManaged public var viewer: Int16
 
+    @NSManaged public var chapterFlags: Int16
+    @NSManaged public var langFilter: String?
+
     @NSManaged public var libraryObject: LibraryMangaObject?
     @NSManaged public var chapters: NSSet?
-
 }
 
 // MARK: Generated accessors for chapters
@@ -87,9 +93,4 @@ extension MangaObject {
 
     @objc(removeChapters:)
     @NSManaged public func removeFromChapters(_ values: NSSet)
-
-}
-
-extension MangaObject: Identifiable {
-
 }
