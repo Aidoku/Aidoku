@@ -559,7 +559,9 @@ class MangaViewController: BaseTableViewController {
             .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
             .sorted { $0.sourceOrder > $1.sourceOrder }
 
-        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+            Reachability.getConnectionType() == .wifi ||
+            !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
             DownloadManager.shared.download(chapters: chapters, manga: manga)
         } else {
             self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
@@ -934,10 +936,15 @@ extension MangaViewController {
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle")
                 ) { _ in
-                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() == .wifi || !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+                        Reachability.getConnectionType() == .wifi ||
+                        !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                         DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
                     } else {
-                        self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
+                        self.presentAlert(
+                            title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+                        )
                     }
 
                     self.reloadCells(for: [chapter])

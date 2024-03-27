@@ -195,7 +195,12 @@ class DownloadQueueViewController: UITableViewController {
             }
 
             let menu = UIMenu(title: "", children: actions)
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu)
+            navigationItem.leftBarButtonItem = UIBarButtonItem(
+                title: nil,
+                image: UIImage(systemName: "ellipsis.circle"),
+                primaryAction: nil,
+                menu: menu
+            )
         } else {
             navigationItem.leftBarButtonItem = nil
         }
