@@ -21,7 +21,7 @@ extension MangaUpdateManager {
                 mangaId: manga.id,
                 context: context
             )
-            if !updates.isEmpty || true {
+            if !updates.isEmpty {
                 NotificationCenter.default.post(name: NSNotification.Name("mangaUpdatesViewed"), object: updates)
             }
         }
