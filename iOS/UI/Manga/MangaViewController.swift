@@ -564,7 +564,10 @@ class MangaViewController: BaseTableViewController {
             !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
             DownloadManager.shared.download(chapters: chapters, manga: manga)
         } else {
-            self.presentAlert(title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""), message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: ""))
+            self.presentAlert(
+                title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+            )
         }
         setEditing(false, animated: true)
     }
