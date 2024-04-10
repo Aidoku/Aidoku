@@ -1168,11 +1168,9 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
 
     // open full manga cover view
     func coverPressed() {
-        if let coverUrl = manga.coverUrl {
-            let navigationController = UINavigationController(rootViewController: MangaCoverViewController(coverUrl: coverUrl))
-            navigationController.modalPresentationStyle = .fullScreen
-            present(navigationController, animated: true)
-        }
+        let navigationController = UINavigationController(rootViewController: MangaCoverViewController(manga: manga))
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
 }
 
