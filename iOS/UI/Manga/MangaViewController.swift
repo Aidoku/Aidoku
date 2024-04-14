@@ -471,6 +471,10 @@ class MangaViewController: BaseTableViewController {
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
+        guard Reachability.getConnectionType() != .none else {
+            refreshControl?.endRefreshing()
+            return
+        }
         Task {
             if let source = SourceManager.shared.source(for: manga.sourceId) {
                 let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
