@@ -499,20 +499,21 @@ class MangaViewController: BaseTableViewController {
                     // update chapters
                     group.addTask {
                         let manga = await self.manga
-                        let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
-                        await MainActor.run {
-                            self.viewModel.fullChapterList = chapterList
-                        }
-                        // update in db
-                        if inLibrary {
-                            await CoreDataManager.shared.container.performBackgroundTask { context in
-                                CoreDataManager.shared.setChapters(
-                                    chapterList,
-                                    sourceId: manga.sourceId,
-                                    mangaId: manga.id,
-                                    context: context
-                                )
-                                try? context.save()
+                        if let chapterList = try? await source.getChapterList(manga: manga) {
+                            await MainActor.run {
+                                self.viewModel.fullChapterList = chapterList
+                            }
+                            // update in db
+                            if inLibrary {
+                                await CoreDataManager.shared.container.performBackgroundTask { context in
+                                    CoreDataManager.shared.setChapters(
+                                        chapterList,
+                                        sourceId: manga.sourceId,
+                                        mangaId: manga.id,
+                                        context: context
+                                    )
+                                    try? context.save()
+                                }
                             }
                         }
                     }
