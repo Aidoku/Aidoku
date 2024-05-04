@@ -59,6 +59,8 @@
 "SOURCE_ORDER" = "Ordem da Fonte";
 "MISSING_SOURCE" = "Fonte Não Encontrada";
 "MISSING_SOURCE_TEXT" = "A fonte original parece estar ausente para esse mangá. Por favor, reinstale-o ou remova esse título da sua biblioteca.";
+"LINK_COPIED" = "Link Copiado";
+"LINK_COPIED_TEXT" = "O link foi copiado para a área de transferência.";
 
 // Reader
 "CHAPTER" = "Capítulo";

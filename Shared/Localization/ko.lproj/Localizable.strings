@@ -75,6 +75,8 @@
 "SOURCE_ORDER" = "소스 순서";
 "SELECT_CHAPTERS" = "챕터 선택";
 "SELECT_ALL" = "모두 선택";
+"LINK_COPIED" = "링크가 복사되었습니다";
+"LINK_COPIED_TEXT" = "링크가 클립 보드에 복사되었습니다.";
 
 // Reader
 "CHAPTER" = "챕터";

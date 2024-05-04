@@ -115,6 +115,8 @@
 "CH_SPACE_X" = "Kap. %g";
 "VOL_SPACE_X" = "Band %g";
 "NO_CHAPTERS" = "Keine Kapitel";
+"LINK_COPIED" = "Link kopiert";
+"LINK_COPIED_TEXT" = "Der Link wurde in die Zwischenablage kopiert.";
 
 // Reader
 "CHAPTER" = "Kapitel";

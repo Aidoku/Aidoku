@@ -90,6 +90,8 @@
 "SELECT_CHAPTERS" = "选择章节";
 "SELECT_ALL" = "全选";
 "DESELECT_ALL" = "取消全选";
+"LINK_COPIED" = "链接已复制";
+"LINK_COPIED_TEXT" = "链接已复制到剪贴板。";
 
 // Reader
 "CHAPTER" = "章节";
