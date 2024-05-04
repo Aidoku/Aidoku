@@ -1,5 +1,4 @@
 {
-  "originHash" : "add92b052d51a8944df0320b7e22c8c1bbab7632fecc92d14cc3f0bd6b2a9241",
   "pins" : [
     {
       "identity" : "nuke",
@@ -56,5 +55,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
