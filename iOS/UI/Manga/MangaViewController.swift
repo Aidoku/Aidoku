@@ -1162,17 +1162,15 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
 
     // copy manga link when holding down the web view button
     func safariHeld() {
-        guard
-            let url = manga.url
-        else { return }
+        guard let url = manga.url else { return }
         UIPasteboard.general.string = url.absoluteString
         let alert = UIAlertController(
-                   title: NSLocalizedString("LINK_COPIED", comment: ""),
-                   message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""),
-                   preferredStyle: .alert
-               )
-               alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-               present(alert, animated: true)
+            title: NSLocalizedString("LINK_COPIED", comment: ""),
+            message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
     }
 
     // open reader to next chapter
