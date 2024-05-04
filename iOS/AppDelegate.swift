@@ -12,7 +12,7 @@ import Nuke
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static let isSideloaded = Bundle.main.bundleIdentifier != "xyz.skitty.Aidoku"
-    var networkObserverId: UUID?
+    private var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
         let loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
@@ -182,7 +182,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        guard let networkObserverId = networkObserverId else { return }
+        guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)
     }
 

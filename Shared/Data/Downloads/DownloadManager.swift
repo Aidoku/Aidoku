@@ -30,11 +30,7 @@ class DownloadManager {
     private let queue: DownloadQueue
 //    private let store: DownloadStore // TODO: store downloads so if the app exits we can resume
 
-    private var downloadsPaused = false
-
-    var areDownloadsPaused: Bool {
-        downloadsPaused
-    }
+    private(set) var downloadsPaused = false
 
     var ignoreConnectionType = false
 

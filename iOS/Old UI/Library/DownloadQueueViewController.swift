@@ -168,7 +168,7 @@ class DownloadQueueViewController: UITableViewController {
             let downloadCondition = chapters.contains { DownloadManager.shared.getDownloadStatus(for: $0) != .finished }
                 && (UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() != .wifi)
 
-            if DownloadManager.shared.areDownloadsPaused {
+            if DownloadManager.shared.downloadsPaused {
                 let resumeActionTitle = NSLocalizedString("RESUME", comment: "")
                 let resumeAction = UIAction(
                     title: resumeActionTitle,
