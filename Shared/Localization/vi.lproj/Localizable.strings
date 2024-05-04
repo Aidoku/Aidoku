@@ -90,6 +90,8 @@
 "SELECT_CHAPTERS" = "Lựa chọn chương";
 "SELECT_ALL" = "Chọn tất cả";
 "DESELECT_ALL" = "Huỷ chọn tất cả";
+"LINK_COPIED" = "Liên kết đã được sao chép";
+"LINK_COPIED_TEXT" = "Liên kết đã được sao chép vào bảng ghi tạm.";
 
 // Reader
 "CHAPTER" = "Chương";
