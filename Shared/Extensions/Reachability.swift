@@ -17,7 +17,7 @@ enum NetworkDataType {
 
 class Reachability {
     static func getConnectionType() -> NetworkDataType {
-        guard let reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.google.com") else {
+        guard let reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.apple.com/library/test/success.html") else {
             return .none
         }
 
