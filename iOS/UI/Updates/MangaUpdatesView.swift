@@ -82,7 +82,7 @@ struct MangaUpdatesView: View {
                     }
                 }
             } header: {
-                Text(makeRelativeDate(days: entries[index].0))
+                Text(Date.makeRelativeDate(days: entries[index].0))
                     .foregroundStyle(.primary)
                     .font(.system(size: 16, weight: .medium))
             }
@@ -91,7 +91,7 @@ struct MangaUpdatesView: View {
 
     var listItems: some View {
         ForEach(entries.indices, id: \.self) { index in
-            Text(makeRelativeDate(days: entries[index].0))
+            Text(Date.makeRelativeDate(days: entries[index].0))
                 .foregroundColor(.primary)
                 .font(.system(size: 16, weight: .medium))
 

@@ -486,7 +486,7 @@ extension HistoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard section < filteredSearchEntries.count else { return nil }
         let days = filteredSearchEntries[section].0
-        return makeRelativeDate(days: days)
+        return Date.makeRelativeDate(days: days)
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
