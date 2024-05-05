@@ -47,6 +47,6 @@ struct MangaUpdateItemView: View {
                         .lineLimit(2)
                 }
             }
-        }// :HStack
+        }
     }
 }

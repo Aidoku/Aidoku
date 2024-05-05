@@ -56,10 +56,10 @@ struct MangaUpdatesView: View {
                             }
                         }
                     }
-                }// :List
+                }
                 .listStyle(.plain)
             }
-        }// :Group
+        }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("MANGA_UPDATES")
         .refreshableCompat {
