@@ -7,7 +7,6 @@
 
 import UIKit
 import AsyncDisplayKit
-import SwiftUI
 
 class BaseViewController: ASDKViewController<ASDisplayNode> {
 
