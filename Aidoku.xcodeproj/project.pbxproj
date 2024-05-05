@@ -339,6 +339,7 @@
 		48177B912B75C67300AD41B4 /* MangaUpdateObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaUpdateObject.swift; sourceTree = "<group>"; };
 		48177B932B75F5E700AD41B4 /* MangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaView.swift; sourceTree = "<group>"; };
 		482412592B771E060096788C /* MangaUpdateItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaUpdateItemView.swift; sourceTree = "<group>"; };
+		483235DA2BE7963F003E7B1F /* 0.6.8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.8.xcdatamodel; sourceTree = "<group>"; };
 		487046982B7B13F000333F13 /* Dates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dates.swift; sourceTree = "<group>"; };
 		487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropBordersProcessor.swift; sourceTree = "<group>"; };
 		4875B8242BA6F2C3001E39CA /* MangaUpdateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaUpdateManager.swift; sourceTree = "<group>"; };
@@ -2295,12 +2296,13 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				483235DA2BE7963F003E7B1F /* 0.6.8.xcdatamodel */,
 				FB6F1E782B7AF63D006FAA2E /* 0.6.7.xcdatamodel */,
 				FBE578F0289021BD00F9F1B5 /* 0.6.xcdatamodel */,
 				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = FB6F1E782B7AF63D006FAA2E /* 0.6.7.xcdatamodel */;
+			currentVersion = 483235DA2BE7963F003E7B1F /* 0.6.8.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
