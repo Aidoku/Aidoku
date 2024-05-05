@@ -48,8 +48,8 @@ class DownloadQueueViewController: UITableViewController {
 
         tableView.register(DownloadTableViewCell.self, forCellReuseIdentifier: "DownloadTableViewCell")
 
-        NotificationCenter.default.addObserver(self, selector: #selector(updateUIMenu), name: Notification.Name("downloadsPaused"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(updateUIMenu), name: Notification.Name("downloadsResumed"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateNavbarButtons), name: Notification.Name("downloadsPaused"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateNavbarButtons), name: Notification.Name("downloadsResumed"), object: nil)
 
         // add download to queue list
         observers.append(NotificationCenter.default.addObserver(
@@ -133,7 +133,7 @@ class DownloadQueueViewController: UITableViewController {
                 self.queue.removeAll()
                 Task { @MainActor in
                     self.tableView.deleteSections(IndexSet(integersIn: 0..<self.tableView.numberOfSections), with: .fade)
-                    self.updateUIMenu()
+                    self.updateNavbarButtons()
                 }
             }
         })
@@ -148,61 +148,60 @@ class DownloadQueueViewController: UITableViewController {
             await MainActor.run {
                 self.queue = queue
                 self.tableView.reloadData()
-                self.updateUIMenu()
+                self.updateNavbarButtons()
             }
         }
     }
 
-    @objc func updateUIMenu() {
-        if !queue.isEmpty {
-            var actions = [UIAction]()
+    @objc func updateNavbarButtons() {
+        var items = [UIBarButtonItem]()
 
-            let clearAction = UIAction(
-                title: NSLocalizedString("CLEAR", comment: ""),
-                image: nil
-            ) { _ in
-                DownloadManager.shared.cancelDownloads()
-            }
-            actions.append(clearAction)
+        let clearAction = UIBarButtonItem(
+            title: NSLocalizedString("CLEAR", comment: ""),
+            style: .plain,
+            target: self,
+            action: #selector(clearDownloads)
+        )
+        items.append(clearAction)
 
-            let downloadCondition = chapters.contains { DownloadManager.shared.getDownloadStatus(for: $0) != .finished }
-                && (UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() != .wifi)
-
-            if DownloadManager.shared.downloadsPaused {
-                let resumeActionTitle = NSLocalizedString("RESUME", comment: "")
-                let resumeAction = UIAction(
-                    title: resumeActionTitle,
-                    image: nil
-                ) { [weak self] _ in
-                    guard let self = self else { return }
-
-                    if downloadCondition {
-                        self.presentDownloadConfirmation()
-                    } else {
-                        DownloadManager.shared.ignoreConnectionType = true
-                        DownloadManager.shared.resumeDownloads()
-                    }
-                }
-                actions.append(resumeAction)
-            } else {
-                let pauseAction = UIAction(
-                    title: NSLocalizedString("PAUSE", comment: ""),
-                    image: nil
-                ) { _ in
-                    DownloadManager.shared.pauseDownloads()
-                }
-                actions.append(pauseAction)
-            }
-
-            let menu = UIMenu(title: "", children: actions)
-            navigationItem.leftBarButtonItem = UIBarButtonItem(
-                title: nil,
-                image: UIImage(systemName: "ellipsis.circle"),
-                primaryAction: nil,
-                menu: menu
+        if DownloadManager.shared.downloadsPaused {
+            let resumeAction = UIBarButtonItem(
+                title: NSLocalizedString("RESUME", comment: ""),
+                style: .plain,
+                target: self,
+                action: #selector(resumeDownloads)
             )
+            items.append(resumeAction)
         } else {
-            navigationItem.leftBarButtonItem = nil
+            let pauseAction = UIBarButtonItem(
+                title: NSLocalizedString("PAUSE", comment: ""),
+                style: .plain,
+                target: self,
+                action: #selector(pauseDownloads)
+            )
+            items.append(pauseAction)
+        }
+
+        navigationItem.leftBarButtonItems = items
+    }
+
+    @objc func clearDownloads() {
+        DownloadManager.shared.cancelDownloads()
+    }
+
+    @objc func pauseDownloads() {
+        DownloadManager.shared.pauseDownloads()
+    }
+
+    @objc func resumeDownloads() {
+        let downloadCondition = chapters.contains { DownloadManager.shared.getDownloadStatus(for: $0) != .finished }
+            && (UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() != .wifi)
+
+        if downloadCondition {
+            self.presentDownloadConfirmation()
+        } else {
+            DownloadManager.shared.ignoreConnectionType = true
+            DownloadManager.shared.resumeDownloads()
         }
     }
 
