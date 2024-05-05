@@ -107,13 +107,13 @@ struct MangaUpdatesView: View {
         let mangaUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getRecentMangaUpdates(limit: limit, offset: offset, context: context).compactMap {
                 if let mangaObj = CoreDataManager.shared.getManga(
-                    sourceId: $0.sourceId,
-                    mangaId: $0.mangaId,
+                    sourceId: $0.sourceId ?? "",
+                    mangaId: $0.mangaId ?? "",
                     context: context
                 ) {
                     return MangaUpdateInfo(
                         id: $0.id,
-                        date: $0.date,
+                        date: $0.date ?? Date(),
                         manga: mangaObj.toManga(),
                         chapter: $0.chapter?.toChapter(),
                         viewed: $0.viewed

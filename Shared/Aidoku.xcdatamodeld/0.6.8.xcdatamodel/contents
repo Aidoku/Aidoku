@@ -61,7 +61,7 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="Chapter" predicateString="$FETCH_SOURCE.sourceId == sourceId AND $FETCH_SOURCE.id == mangaId AND (history == nil OR history.completed == false)"/>
         </fetchedProperty>
     </entity>
-    <entity name="MangaUpdate" representedClassName="MangaUpdateObject" syncable="YES">
+    <entity name="MangaUpdate" representedClassName="MangaUpdateObject" syncable="YES" codeGenerationType="class">
         <attribute name="chapterId" optional="YES" attributeType="String"/>
         <attribute name="date" attributeType="Date" defaultDateTimeInterval="665122680" usesScalarValueType="NO"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
