@@ -35,25 +35,30 @@ class AniListTracker: OAuthTracker {
     init() {
         // get user score type preference
         Task {
-            let user = await api.getUser()
-            anilistScoreType = user?.mediaListOptions?.scoreFormat
-            switch user?.mediaListOptions?.scoreFormat {
-            case "POINT_100": scoreType = .hundredPoint
-            case "POINT_10_DECIMAL": scoreType = .tenPointDecimal
-            case "POINT_10": scoreType = .tenPoint
-            case "POINT_5":
-                scoreType = .optionList
-                scoreOptions = Array(0...5).map { ("\($0) ★", $0 == 0 ? 0 : $0 * 20 - 10) }
-            case "POINT_3":
-                scoreType = .optionList
-                scoreOptions = [
-                    ("-", 0),
-                    ("😦", 35),
-                    ("😐", 60),
-                    ("😊", 85)
-                ]
-            default: break
-            }
+            await getScoreType()
+        }
+    }
+
+    func getScoreType() async {
+        guard isLoggedIn else { return }
+        let user = await api.getUser()
+        anilistScoreType = user?.mediaListOptions?.scoreFormat
+        switch user?.mediaListOptions?.scoreFormat {
+        case "POINT_100": scoreType = .hundredPoint
+        case "POINT_10_DECIMAL": scoreType = .tenPointDecimal
+        case "POINT_10": scoreType = .tenPoint
+        case "POINT_5":
+            scoreType = .optionList
+            scoreOptions = Array(0...5).map { ("\($0) ★", $0 == 0 ? 0 : $0 * 20 - 10) }
+        case "POINT_3":
+            scoreType = .optionList
+            scoreOptions = [
+                ("-", 0),
+                ("😦", 35),
+                ("😐", 60),
+                ("😊", 85)
+            ]
+        default: break
         }
     }
 
@@ -194,6 +199,8 @@ class AniListTracker: OAuthTracker {
 
         token = oauth.accessToken
         UserDefaults.standard.set(try? JSONEncoder().encode(oauth), forKey: "Token.\(id).oauth")
+
+        await getScoreType()
     }
 }
 
