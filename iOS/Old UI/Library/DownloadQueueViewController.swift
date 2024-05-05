@@ -48,8 +48,18 @@ class DownloadQueueViewController: UITableViewController {
 
         tableView.register(DownloadTableViewCell.self, forCellReuseIdentifier: "DownloadTableViewCell")
 
-        NotificationCenter.default.addObserver(self, selector: #selector(updateNavbarButtons), name: Notification.Name("downloadsPaused"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(updateNavbarButtons), name: Notification.Name("downloadsResumed"), object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateNavbarButtons),
+            name: Notification.Name("downloadsPaused"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateNavbarButtons),
+            name: Notification.Name("downloadsResumed"),
+            object: nil
+        )
 
         // add download to queue list
         observers.append(NotificationCenter.default.addObserver(
