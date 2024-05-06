@@ -14,11 +14,21 @@ struct MangaUpdateItemView: View {
     private let coverHeight: CGFloat = 56
     private let cornerRadius: CGFloat = 5
 
-    let item: MangaUpdatesView.MangaUpdateInfo
+    var manga: Manga?
+    let updates: [MangaUpdatesView.MangaUpdateInfo]
+    let count: Int
+    let viewed: Bool
+
+    init(updates: [MangaUpdatesView.MangaUpdateInfo]) {
+        self.updates = updates
+        self.count = updates.count
+        self.manga = updates.first?.manga
+        self.viewed = updates.first?.viewed == true
+    }
 
     var body: some View {
-        HStack {
-            LazyImage(url: item.manga.coverUrl) { state in
+        HStack(alignment: count == 1 ? .center : .top) {
+            LazyImage(url: manga?.coverUrl) { state in
                 if let image = state.image {
                     image
                         .resizable()
@@ -36,15 +46,17 @@ struct MangaUpdateItemView: View {
             .padding(.trailing, 6)
 
             VStack(alignment: .leading) {
-                Text(item.manga.title ?? "")
-                    .foregroundColor(item.viewed ? .secondary : .primary)
+                Text(manga?.title ?? "")
+                    .foregroundColor(viewed ? .secondary : .primary)
                     .lineLimit(2)
 
-                if let chapterTitle = item.chapter?.makeTitle() {
-                    Text(chapterTitle)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
+                ForEach(updates) { item in
+                    if let chapterTitle = item.chapter?.makeTitle() {
+                        Text(chapterTitle)
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
