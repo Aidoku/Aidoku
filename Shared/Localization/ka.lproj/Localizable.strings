@@ -64,7 +64,7 @@
 // Reader
 "CHAPTER" = "თავი";
 "CH_X" = "თავი.%g";
-"CH_SPACE_X" = "თავი.%g";
+"CH_SPACE_X" = "თავი. %g";
 "NO_CHAPTERS" = "არ არის თავები";
 "UNREAD" = "წაუკითხავი";
 "NEXT_COLON" = "შემდეგი:";

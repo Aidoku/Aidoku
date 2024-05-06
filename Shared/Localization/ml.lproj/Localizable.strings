@@ -1,0 +1,16 @@
+
+
+"UNKNOWN" = "അജ്ഞാതം";
+"DOWNLOAD_QUEUE" = "ഡൗൺലോഡ് ക്യൂ";
+// General
+"CONTINUE" = "തുടരുക";
+"CANCEL" = "റദ്ദാക്കുക";
+"UNAVAILABLE" = "ലഭ്യമല്ല";
+"RESET" = "പുനഃസജ്ജമാക്കുക";
+"RENAME" = "പേരുമാറ്റുക";
+"DELETE" = "ഇല്ലാതാക്കുക";
+"REMOVE" = "നീക്കം ചെയ്യുക";
+
+// Downloads
+"DOWNLOAD" = "ഡൗൺലോഡ്";
+"DOWNLOADED" = "ഡൗൺലോഡ് ചെയ്തു";
