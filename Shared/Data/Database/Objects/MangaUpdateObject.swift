@@ -1,5 +1,5 @@
 //
-//  UpdateObject.swift
+//  MangaUpdateObject.swift
 //  Aidoku (iOS)
 //
 //  Created by axiel7 on 09/02/2024.
