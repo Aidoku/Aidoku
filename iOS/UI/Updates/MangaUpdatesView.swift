@@ -76,7 +76,7 @@ struct MangaUpdatesView: View {
     var listItemsWithSections: some View {
         ForEach(entries.indices, id: \.self) { index in
             Section {
-                ForEach(Array(entries[index].1.keys), id: \.self) { key in
+                ForEach(Array(entries[index].1.keys).sorted(), id: \.self) { key in
                     if let updates = entries[index].1[key],
                        let manga = updates.first?.manga
                     {
@@ -99,7 +99,7 @@ struct MangaUpdatesView: View {
                 .foregroundColor(.primary)
                 .font(.system(size: 16, weight: .medium))
 
-            ForEach(Array(entries[index].1.keys), id: \.self) { key in
+            ForEach(Array(entries[index].1.keys).sorted(), id: \.self) { key in
                 if let updates = entries[index].1[key],
                    let manga = updates.first?.manga
                 {
