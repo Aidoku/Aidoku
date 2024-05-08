@@ -141,17 +141,19 @@ struct MangaUpdatesView: View {
         let updatesGrouped = Dictionary(grouping: mangaUpdates, by: \.manga.id)
         var updatesDict: [Int: [String: [MangaUpdateInfo]]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
         for obj in updatesGrouped {
-            guard let date = obj.value.first?.date else { continue }
-            let day = Calendar.autoupdatingCurrent.dateComponents(
-                Set([Calendar.Component.day]),
-                from: date,
-                to: Date()
-            ).day ?? 0
+            for info in obj.value {
+                let day = Calendar.autoupdatingCurrent.dateComponents(
+                    Set([Calendar.Component.day]),
+                    from: info.date,
+                    to: Date()
+                ).day ?? 0
 
-            var updatesOfTheDay = updatesDict[day] ?? [:]
-            let newValue = (updatesOfTheDay[obj.key] ?? []) + obj.value
-            updatesOfTheDay.updateValue(newValue, forKey: obj.key)
-            updatesDict[day] = updatesOfTheDay
+                var updatesOfTheDay = updatesDict[day] ?? [:]
+                var newValue = updatesOfTheDay[obj.key] ?? []
+                newValue.append(info)
+                updatesOfTheDay[obj.key] = newValue
+                updatesDict[day] = updatesOfTheDay
+            }
         }
         let finalUpdatesDict = updatesDict
         await MainActor.run {
