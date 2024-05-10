@@ -263,6 +263,10 @@
 "PAGED" = "Paged";
 "PAGE_LAYOUT" = "Page Layout";
 "DOUBLE_PAGE" = "Double Page";
+"PAGE_BG_COLOR" = "Page Background Color";
+"PAGE_BG_COLOR_SYSTEM" = "System";
+"PAGE_BG_COLOR_LIGHT" = "Light";
+"PAGE_BG_COLOR_DARK" = "Dark";
 "MULTI_LANGUAGE" = "Multi-Language";
 "TRACKERS" = "Trackers";
 "LOGOUT" = "Log out";
