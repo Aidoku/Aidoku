@@ -18,7 +18,7 @@ struct MangaUpdatesView: View {
     }
 
     private let limit = 25
-    @State var entries: [(Int, [String: [MangaUpdateInfo]])] = []
+    @State var entries: [(Int, [(String, [MangaUpdateInfo])])] = []
     @State var offset = 0
     @State var loadingMore = false
     @State var reachedEnd = false
@@ -76,10 +76,10 @@ struct MangaUpdatesView: View {
     var listItemsWithSections: some View {
         ForEach(entries.indices, id: \.self) { index in
             Section {
-                ForEach(Array(entries[index].1.keys).sorted(), id: \.self) { key in
-                    if let updates = entries[index].1[key],
-                       let manga = updates.first?.manga
-                    {
+                let mangas = entries[index].1
+                ForEach(mangas.indices, id: \.self) { mangaIndex in
+                    let updates = mangas[mangaIndex].1
+                    if let manga = updates.first?.manga {
                         NavigationLink(destination: MangaView(manga: manga)) {
                             MangaUpdateItemView(updates: updates)
                         }
@@ -99,10 +99,10 @@ struct MangaUpdatesView: View {
                 .foregroundColor(.primary)
                 .font(.system(size: 16, weight: .medium))
 
-            ForEach(Array(entries[index].1.keys).sorted(), id: \.self) { key in
-                if let updates = entries[index].1[key],
-                   let manga = updates.first?.manga
-                {
+            let mangas = entries[index].1
+            ForEach(mangas.indices, id: \.self) { mangaIndex in
+                let updates = mangas[mangaIndex].1
+                if let manga = updates.first?.manga {
                     NavigationLink(destination: MangaView(manga: manga)) {
                         MangaUpdateItemView(updates: updates)
                     }
@@ -139,9 +139,10 @@ struct MangaUpdatesView: View {
             return
         }
         let updatesGrouped = Dictionary(grouping: mangaUpdates, by: \.manga.id)
-        var updatesDict: [Int: [String: [MangaUpdateInfo]]] = entries.reduce(into: [:]) { $0[$1.0] = $1.1 }
+        var updatesDict: [Int: [String: [MangaUpdateInfo]]] = entries
+            .reduce(into: [:]) { $0[$1.0] = $1.1.reduce(into: [:]) { $0[$1.0] = $1.1 } }
         for obj in updatesGrouped {
-            for info in obj.value {
+            for info in obj.value.sorted(by: { $0.date < $1.date }) {
                 let day = Calendar.autoupdatingCurrent.dateComponents(
                     Set([Calendar.Component.day]),
                     from: info.date,
@@ -157,7 +158,15 @@ struct MangaUpdatesView: View {
         }
         let finalUpdatesDict = updatesDict
         await MainActor.run {
-            self.entries = finalUpdatesDict.map { ($0.key, $0.value) }.sorted { $0.0 < $1.0 }
+            self.entries = finalUpdatesDict
+                .map {
+                    ($0.key,
+                     $0.value
+                        .map { ($0.key, $0.value) }
+                        .sorted { ($0.1.first?.date ?? Date()) > ($1.1.first?.date ?? Date()) }
+                    )
+                }
+                .sorted { $0.0 < $1.0 }
             self.reachedEnd = mangaUpdates.count < limit
             self.offset += limit
             self.loadingMore = false
