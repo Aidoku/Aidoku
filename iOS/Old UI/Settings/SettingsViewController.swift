@@ -190,6 +190,11 @@ class SettingsViewController: SettingsTableViewController {
                 ),
                 SettingItem(
                     type: "switch",
+                    key: "Library.downloadOnlyOnWifi",
+                    title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
                     key: "Library.refreshMetadata",
                     title: NSLocalizedString("REFRESH_METADATA", comment: "")
                 )
