@@ -12,7 +12,6 @@
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
 		487484DB2A4112DD007DF0DF /* CropBordersProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */; };
 		489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */; };
-		870BE8AC2BE8BE40006E4C6E /* UIViewController+Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 870BE8AB2BE8BE40006E4C6E /* UIViewController+Alerts.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -328,7 +327,6 @@
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		487484DA2A4112DD007DF0DF /* CropBordersProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropBordersProcessor.swift; sourceTree = "<group>"; };
 		489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverViewController.swift; sourceTree = "<group>"; };
-		870BE8AB2BE8BE40006E4C6E /* UIViewController+Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Alerts.swift"; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -754,6 +752,7 @@
 				FB1B483C277CE1920056D02C /* macOS */,
 				FB1B4836277CE1920056D02C /* Products */,
 				FB1B4875277CE7FE0056D02C /* Frameworks */,
+				FB82E9632BF07649006A9314 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1164,6 +1163,13 @@
 			path = Browse;
 			sourceTree = "<group>";
 		};
+		FB82E9632BF07649006A9314 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		FB9A483C2967E47500FFC414 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -1392,7 +1398,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1320;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1530;
 				TargetAttributes = {
 					FB1B4834277CE1920056D02C = {
 						CreatedOnToolsVersion = 13.2.1;
@@ -1679,7 +1685,6 @@
 				FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */,
 				FB716E0B283FF85400F1BB5D /* UIView.swift in Sources */,
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
-				870BE8AC2BE8BE40006E4C6E /* UIViewController+Alerts.swift in Sources */,
 				FBED231327B816D50095D0C0 /* SettingsViewController.swift in Sources */,
 				FB0CAA5828A83F020024561A /* CoreDataManager+Chapter.swift in Sources */,
 				FB30D582296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
@@ -1876,6 +1881,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1938,6 +1944,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -1998,7 +2005,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2017,7 +2024,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.7;
+				MARKETING_VERSION = 0.6.8;
 				OTHER_LDFLAGS = "-ld_classic";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
@@ -2039,7 +2046,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RUJJBSYLD9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2058,7 +2065,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.7;
+				MARKETING_VERSION = 0.6.8;
 				OTHER_LDFLAGS = "-ld_classic";
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;

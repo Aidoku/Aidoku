@@ -23,4 +23,20 @@ extension UIViewController {
         view.removeFromSuperview()
         removeFromParent()
     }
+
+    func presentAlert(title: String, message: String, actions: [UIAlertAction] = [], completion: (() -> Void)? = nil) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        // If no actions are provided, add a default 'OK' action
+        if actions.isEmpty {
+            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
+            alertController.addAction(okAction)
+        } else {
+            for action in actions {
+                alertController.addAction(action)
+            }
+        }
+
+        self.present(alertController, animated: true, completion: completion)
+    }
 }
