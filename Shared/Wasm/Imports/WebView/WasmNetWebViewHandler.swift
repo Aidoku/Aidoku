@@ -106,7 +106,8 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
                     guard !self.done else { return }
                     // check if captcha or verify button is shown
                     webView.evaluateJavaScript("""
-                    document.querySelector('.hcaptcha-box iframe') !== null
+                    document.querySelector('#challenge-stage iframe') !== null
+                        || document.querySelector('.hcaptcha-box iframe') !== null
                         || document.querySelector('#challenge-stage input[type=button]') !== null
                     """
                     ) { html, _ in
