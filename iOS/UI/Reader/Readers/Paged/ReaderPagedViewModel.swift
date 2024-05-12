@@ -35,17 +35,6 @@ class ReaderPagedViewModel {
                     NSLocalizedString("DOUBLE_PAGE", comment: ""),
                     NSLocalizedString("AUTOMATIC", comment: "")
                 ]
-            ),
-            SettingItem(
-                type: "select",
-                key: "Reader.pageBackgroundColor",
-                title: NSLocalizedString("PAGE_BG_COLOR", comment: ""),
-                values: ["system", "light", "dark"],
-                titles: [
-                    NSLocalizedString("PAGE_BG_COLOR_SYSTEM", comment: ""),
-                    NSLocalizedString("PAGE_BG_COLOR_LIGHT", comment: ""),
-                    NSLocalizedString("PAGE_BG_COLOR_DARK", comment: "")
-                ]
             )
         ])
     }

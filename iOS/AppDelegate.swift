@@ -111,7 +111,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.downsampleImages": true,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
-                "Reader.pageBackgroundColor": "dark",
+                "Reader.backgroundColor": "black",
                 "Reader.pagesToPreload": 2,
                 "Reader.pagedPageLayout": "auto",
                 "Reader.verticalInfiniteScroll": true,

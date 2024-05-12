@@ -469,10 +469,10 @@ extension ReaderViewController {
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 navigationController.navigationBar.alpha = 0
                 navigationController.toolbar.alpha = 0
-                self.view.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.pageBackgroundColor") {
+                self.view.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
                 case "system":
                     .systemBackground
-                case "light":
+                case "white":
                     .white
                 default:
                     .black
