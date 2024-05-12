@@ -308,7 +308,7 @@
 "START_TRACKING" = "Tracking starten";
 "FINISHED" = "Abgeschlossen";
 "PLANNING" = "Geplant";
-"ONESHOT" = "sofortig / ein Schuss";
+"ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Nicht veröffentlicht";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
@@ -334,3 +334,13 @@
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientierung bestimmt in welcher Orientierung ein schwarzer Rand hinzugefügt werden soll.";
 "COVER" = "Deckblatt";
 "COPY" = "Kopieren";
+"ANILIST_LOGIN_NEEDED" = "AniList Login wird benötigt";
+"CROP_BORDERS" = "Ränder bearbeiten";
+"PIN" = "Fixieren";
+"UNPIN" = "Lösen";
+"REORDER" = "Neu anordnen";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Dein AniList-Token ist abgelaufen, sodass der AniList-Tracker nicht mehr funktioniert, bis du dich erneut in den Einstellungen anmeldet hast.";
+"MAL_LOGIN_NEEDED" = "MyAnimeList-Anmeldung ist erforderlich";
+"MAL_LOGIN_NEEDED_TEXT" = "Dein MyAnimeList-Token ist abgelaufen, sodass der MyAnimeList-Tracker nicht mehr funktioniert, bis du dich erneut in den Einstellungen angemeldet hast.";
+"BACKUP_ERROR" = "Fehler bei der Backup-Wiederherstellung";
+"BACKUP_ERROR_TEXT" = "Beim Wiederherstellen ist ein Fehler aufgetreten: %@. Das Backup ist möglicherweise ungültig.";

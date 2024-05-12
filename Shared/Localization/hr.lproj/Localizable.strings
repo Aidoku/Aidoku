@@ -337,4 +337,10 @@
 "PIN" = "Prikvači";
 "UNPIN" = "Odkvači";
 "ANILIST_LOGIN_NEEDED" = "Potrebna je prijava na AniList";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Tvoj AniList token je istekao, stoga će AniList prestati raditi sve dok se ne prijaviš ponovo u postavkama.";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Tvoj AniList token je istekao, stoga će AniList praćenje prestati raditi sve dok se ne prijaviš ponovo u postavkama.";
+"MAL_LOGIN_NEEDED" = "Potrebna je prijava na MyAnimeList";
+"BACKUP_ERROR" = "Greška obnavljanja sigurnosne kopije";
+"BACKUP_ERROR_TEXT" = "Došlo je do greške tijekom obnavljanja: %@. Sigurnosna kopija je možda neispravna.";
+"MAL_LOGIN_NEEDED_TEXT" = "Tvoj MyAnimeList token je istekao, stoga će MyAnimeList praćenje prestati raditi dok se ne prijaviš ponovo u postavkama.";
+"LINK_COPIED" = "Poveznica kopirana";
+"LINK_COPIED_TEXT" = "Poveznica je kopirana u međuspremnik.";
