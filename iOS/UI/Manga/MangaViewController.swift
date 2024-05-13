@@ -129,7 +129,9 @@ class MangaViewController: BaseTableViewController {
                 self.tableView.deselectRow(at: indexPath, animated: true)
             }
 
-            await MangaUpdateManager.shared.viewAllUpdates(of: manga)
+            if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                await MangaUpdateManager.shared.viewAllUpdates(of: manga)
+            }
         }
     }
 
