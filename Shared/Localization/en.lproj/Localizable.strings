@@ -219,6 +219,10 @@
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "SAVE_IMAGE_OPTION" = "Save Image Option";
+"READER_BG_COLOR" = "Background Color";
+"READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_WHITE" = "White";
+"READER_BG_COLOR_BLACK" = "Black";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";
