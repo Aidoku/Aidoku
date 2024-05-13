@@ -119,7 +119,7 @@ class Manga: Codable, Hashable {
             nsfw: manga.nsfw,
             viewer: manga.viewer,
             chapterFlags: manga.chapterFlags,
-            langFilter: manga.langFilter,
+            langFilter: manga.langFilter ?? langFilter,
             lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
             lastRead: manga.lastRead ?? lastRead,

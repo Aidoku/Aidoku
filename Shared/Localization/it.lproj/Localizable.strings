@@ -94,6 +94,8 @@
 "LATEST_CHAPTER" = "Ultimo capitolo";
 "VERTICAL_SCROLL" = "Scorrimento verticale";
 "DATE_ADDED" = "Data di aggiunta";
+"LINK_COPIED" = "Link Copiato";
+"LINK_COPIED_TEXT" = "Il link è stato copiato negli appunti.";
 
 // Categories
 "ALL" = "Tutto";
@@ -338,3 +340,4 @@
 "UNPIN" = "Rimuovi";
 "ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, AniList non funzionerà finché non si ri-accede dalle impostazioni.";
+"MAL_LOGIN_NEEDED" = "MyAnimeList è necessario fare login";

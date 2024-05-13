@@ -48,6 +48,19 @@ class DownloadQueueViewController: UITableViewController {
 
         tableView.register(DownloadTableViewCell.self, forCellReuseIdentifier: "DownloadTableViewCell")
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateNavbarButtons),
+            name: Notification.Name("downloadsPaused"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateNavbarButtons),
+            name: Notification.Name("downloadsResumed"),
+            object: nil
+        )
+
         // add download to queue list
         observers.append(NotificationCenter.default.addObserver(
             forName: NSNotification.Name("downloadsQueued"), object: nil, queue: nil
@@ -82,7 +95,6 @@ class DownloadQueueViewController: UITableViewController {
                             self.tableView.insertRows(at: newRows, with: .automatic)
                         }
                     }
-                    self.updateClearButton()
                 }
 
             }
@@ -102,7 +114,6 @@ class DownloadQueueViewController: UITableViewController {
                         self.tableView.performBatchUpdates {
                             self.tableView.deleteSections(IndexSet(integer: index), with: .fade)
                         }
-                        self.updateClearButton()
                     }
                 } else {
                     self.queue[index].downloads = downloads
@@ -110,7 +121,6 @@ class DownloadQueueViewController: UITableViewController {
                         self.tableView.performBatchUpdates {
                             self.tableView.deleteRows(at: [IndexPath(row: indexToRemove, section: index)], with: .automatic)
                         }
-                        self.updateClearButton()
                     }
                 }
             }
@@ -133,7 +143,7 @@ class DownloadQueueViewController: UITableViewController {
                 self.queue.removeAll()
                 Task { @MainActor in
                     self.tableView.deleteSections(IndexSet(integersIn: 0..<self.tableView.numberOfSections), with: .fade)
-                    self.updateClearButton()
+                    self.updateNavbarButtons()
                 }
             }
         })
@@ -148,26 +158,75 @@ class DownloadQueueViewController: UITableViewController {
             await MainActor.run {
                 self.queue = queue
                 self.tableView.reloadData()
-                self.updateClearButton()
+                self.updateNavbarButtons()
             }
         }
     }
 
-    func updateClearButton() {
-        if !queue.isEmpty {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(
-                title: NSLocalizedString("CLEAR", comment: ""),
+    @objc func updateNavbarButtons() {
+        var items = [UIBarButtonItem]()
+
+        let clearAction = UIBarButtonItem(
+            title: NSLocalizedString("CLEAR", comment: ""),
+            style: .plain,
+            target: self,
+            action: #selector(clearDownloads)
+        )
+        items.append(clearAction)
+
+        if DownloadManager.shared.downloadsPaused {
+            let resumeAction = UIBarButtonItem(
+                title: NSLocalizedString("RESUME", comment: ""),
                 style: .plain,
                 target: self,
-                action: #selector(clearQueue)
+                action: #selector(resumeDownloads)
             )
+            items.append(resumeAction)
         } else {
-            navigationItem.leftBarButtonItem = nil
+            let pauseAction = UIBarButtonItem(
+                title: NSLocalizedString("PAUSE", comment: ""),
+                style: .plain,
+                target: self,
+                action: #selector(pauseDownloads)
+            )
+            items.append(pauseAction)
+        }
+
+        navigationItem.leftBarButtonItems = items
+    }
+
+    @objc func clearDownloads() {
+        DownloadManager.shared.cancelDownloads()
+    }
+
+    @objc func pauseDownloads() {
+        DownloadManager.shared.pauseDownloads()
+    }
+
+    @objc func resumeDownloads() {
+        let downloadCondition = chapters.contains { DownloadManager.shared.getDownloadStatus(for: $0) != .finished }
+            && (UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && Reachability.getConnectionType() != .wifi)
+
+        if downloadCondition {
+            self.presentDownloadConfirmation()
+        } else {
+            DownloadManager.shared.ignoreConnectionType = true
+            DownloadManager.shared.resumeDownloads()
         }
     }
 
-    @objc func clearQueue() {
-        DownloadManager.shared.cancelDownloads()
+    func presentDownloadConfirmation() {
+        let downloadAction = UIAlertAction(title: NSLocalizedString("DOWNLOAD", comment: ""), style: .default) { _ in
+            DownloadManager.shared.ignoreConnectionType = true
+            DownloadManager.shared.resumeDownloads()
+        }
+        let cancelAction = UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel)
+
+        self.presentAlert(
+            title: NSLocalizedString("WARNING", comment: ""),
+            message: NSLocalizedString("DOWNLOAD_ANYWAY_MESSAGE", comment: ""),
+            actions: [downloadAction, cancelAction]
+        )
     }
 
     @objc func close() {

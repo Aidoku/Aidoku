@@ -10,7 +10,7 @@ import Nuke
 
 class MangaCoverViewController: BaseViewController {
 
-    var coverUrl: URL
+    private var manga: Manga
 
     // main stack view (containing everything)
     lazy var stackView: UIStackView = {
@@ -41,8 +41,8 @@ class MangaCoverViewController: BaseViewController {
     private var imageWidthConstraint: NSLayoutConstraint?
     private var imageHeightConstraint: NSLayoutConstraint?
 
-    init(coverUrl: URL) {
-        self.coverUrl = coverUrl
+    init(manga: Manga) {
+        self.manga = manga
         super.init()
     }
 
@@ -103,13 +103,29 @@ class MangaCoverViewController: BaseViewController {
             }
         }
 
-        let request = ImageRequest(urlRequest: URLRequest(url: coverUrl))
+        if let coverUrl = manga.coverUrl {
+            var urlRequest = URLRequest(url: coverUrl)
 
-        guard let image = try? await ImagePipeline.shared.image(for: request) else { return }
-        Task { @MainActor in
-            UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
-                self.coverImageView.image = image
-                self.fixImageSize()
+            if
+                let source = SourceManager.shared.source(for: manga.sourceId),
+                source.handlesImageRequests,
+                let request = try? await source.getImageRequest(url: coverUrl.absoluteString)
+            {
+                urlRequest.url = URL(string: request.URL ?? "")
+                for (key, value) in request.headers {
+                    urlRequest.setValue(value, forHTTPHeaderField: key)
+                }
+                if let body = request.body { urlRequest.httpBody = body }
+            }
+
+            let request = ImageRequest(urlRequest: urlRequest)
+
+            guard let image = try? await ImagePipeline.shared.image(for: request) else { return }
+            Task { @MainActor in
+                UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
+                    self.coverImageView.image = image
+                    self.fixImageSize()
+                }
             }
         }
     }

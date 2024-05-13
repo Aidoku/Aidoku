@@ -17,9 +17,12 @@
 "REMOVE" = "Remove";
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
+"PAUSE" = "Pause";
+"RESUME" = "Resume";
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
 "COPY" = "Copy";
+"WARNING" = "Warning";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -30,6 +33,9 @@
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
+"NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
+"NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
 
 // Library
 "LIBRARY" = "Library";
@@ -101,6 +107,8 @@
 "SELECT_CHAPTERS" = "Select Chapters";
 "SELECT_ALL" = "Select All";
 "DESELECT_ALL" = "Deselect All";
+"LINK_COPIED" = "Link Copied";
+"LINK_COPIED_TEXT" = "The link has been copied to the clipboard.";
 
 // Reader
 "CHAPTER" = "Chapter";
@@ -191,6 +199,7 @@
 "UPDATE_INTERVAL" = "Update Interval";
 "SKIP_TITLES" = "Skip Titles";
 "ONLY_UPDATE_ON_WIFI" = "Only Update on Wi-Fi";
+"ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
 "NEVER" = "Never";
@@ -214,6 +223,10 @@
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "SAVE_IMAGE_OPTION" = "Save Image Option";
+"READER_BG_COLOR" = "Background Color";
+"READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_WHITE" = "White";
+"READER_BG_COLOR_BLACK" = "Black";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";

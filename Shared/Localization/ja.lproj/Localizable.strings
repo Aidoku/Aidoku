@@ -110,6 +110,8 @@
 "SELECT_CHAPTERS" = "一括操作";
 "SELECT_ALL" = "全選択";
 "DESELECT_ALL" = "全解除";
+"LINK_COPIED" = "リンクがコピーされました";
+"LINK_COPIED_TEXT" = "リンクがクリップボードにコピーされました。";
 
 // Reader
 "CHAPTER" = "章";
@@ -334,3 +336,8 @@
 "PIN" = "ピン留め";
 "UNPIN" = "ピン留めを解除";
 "CROP_BORDERS" = "クロップボーダー";
+"ANILIST_LOGIN_NEEDED" = "AniListへのログインが必要です";
+"BACKUP_ERROR" = "バックアップ復元エラー";
+"ANILIST_LOGIN_NEEDED_TEXT" = "AniListトークンの有効期限が切れたため、設定で再ログインするまでAniListトラッカーは動作しません。";
+"MAL_LOGIN_NEEDED" = "MyAnimeListへのログインが必要です";
+"MAL_LOGIN_NEEDED_TEXT" = "MyAnimeListトークンの有効期限が切れたため、設定で再ログインするまでMyAnimeListトラッカーは動作しません。";

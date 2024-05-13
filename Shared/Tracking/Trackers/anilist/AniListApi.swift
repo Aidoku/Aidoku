@@ -87,7 +87,9 @@ extension AniListApi {
                 oauth.loadTokens()
             }
 
-            if !oauth.tokens!.askedForRefresh {
+            // don't show the relogin alert if we're not logged in in the first place
+            let isLoggedIn = UserDefaults.standard.string(forKey: "Tracker.anilist.token") != nil
+            if isLoggedIn && !oauth.tokens!.askedForRefresh {
                 oauth.tokens!.askedForRefresh = true
                 oauth.saveTokens()
 

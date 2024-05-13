@@ -477,6 +477,10 @@ class MangaViewController: BaseTableViewController {
     }
 
     @objc func refresh(_ refreshControl: UIRefreshControl? = nil) {
+        guard Reachability.getConnectionType() != .none else {
+            refreshControl?.endRefreshing()
+            return
+        }
         Task {
             if let source = SourceManager.shared.source(for: manga.sourceId) {
                 let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -505,32 +509,33 @@ class MangaViewController: BaseTableViewController {
                     // update chapters
                     group.addTask {
                         let manga = await self.manga
-                        let chapterList = (try? await source.getChapterList(manga: manga)) ?? []
-                        await MainActor.run {
-                            self.viewModel.fullChapterList = chapterList
-                        }
-                        // update in db
-                        if inLibrary {
-                            let langFilter = await self.viewModel.langFilter
-                            await CoreDataManager.shared.container.performBackgroundTask { context in
-                                let newChapters = CoreDataManager.shared.setChapters(
-                                    chapterList,
-                                    sourceId: manga.sourceId,
-                                    mangaId: manga.id,
-                                    context: context
-                                )
-                                // update manga updates
-                                for chapter in newChapters
-                                where langFilter != nil ? chapter.lang == langFilter : true
-                                {
-                                    CoreDataManager.shared.createMangaUpdate(
+                        if let chapterList = try? await source.getChapterList(manga: manga) {
+                            await MainActor.run {
+                                self.viewModel.fullChapterList = chapterList
+                            }
+                            // update in db
+                            if inLibrary {
+                                let langFilter = await self.viewModel.langFilter
+                                await CoreDataManager.shared.container.performBackgroundTask { context in
+                                    let newChapters = CoreDataManager.shared.setChapters(
+                                        chapterList,
                                         sourceId: manga.sourceId,
                                         mangaId: manga.id,
-                                        chapterObject: chapter,
                                         context: context
                                     )
+                                    // update manga updates
+                                    for chapter in newChapters
+                                    where langFilter != nil ? chapter.lang == langFilter : true
+                                    {
+                                        CoreDataManager.shared.createMangaUpdate(
+                                            sourceId: manga.sourceId,
+                                            mangaId: manga.id,
+                                            chapterObject: chapter,
+                                            context: context
+                                        )
+                                    }
+                                    try? context.save()
                                 }
-                                try? context.save()
                             }
                         }
                     }
@@ -571,7 +576,17 @@ class MangaViewController: BaseTableViewController {
         } ?? [])
             .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
             .sorted { $0.sourceOrder > $1.sourceOrder }
-        DownloadManager.shared.download(chapters: chapters, manga: manga)
+
+        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+            Reachability.getConnectionType() == .wifi ||
+            !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+            DownloadManager.shared.download(chapters: chapters, manga: manga)
+        } else {
+            self.presentAlert(
+                title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+            )
+        }
         setEditing(false, animated: true)
     }
 
@@ -946,7 +961,17 @@ extension MangaViewController {
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle")
                 ) { _ in
-                    DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
+                        Reachability.getConnectionType() == .wifi ||
+                        !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                    } else {
+                        self.presentAlert(
+                            title: NSLocalizedString("NO_WIFI_ALERT_TITLE", comment: ""),
+                            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE", comment: "")
+                        )
+                    }
+
                     self.reloadCells(for: [chapter])
                 }
             }
@@ -1182,6 +1207,19 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
         present(SFSafariViewController(url: url), animated: true)
     }
 
+    // copy manga link when holding down the web view button
+    func safariHeld() {
+        guard let url = manga.url else { return }
+        UIPasteboard.general.string = url.absoluteString
+        let alert = UIAlertController(
+            title: NSLocalizedString("LINK_COPIED", comment: ""),
+            message: NSLocalizedString("LINK_COPIED_TEXT", comment: ""),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
     // open reader to next chapter
     func readPressed() {
         guard let chapter = headerView.nextChapter else { return }
@@ -1190,11 +1228,9 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
 
     // open full manga cover view
     func coverPressed() {
-        if let coverUrl = manga.coverUrl {
-            let navigationController = UINavigationController(rootViewController: MangaCoverViewController(coverUrl: coverUrl))
-            navigationController.modalPresentationStyle = .fullScreen
-            present(navigationController, animated: true)
-        }
+        let navigationController = UINavigationController(rootViewController: MangaCoverViewController(manga: manga))
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
 }
 

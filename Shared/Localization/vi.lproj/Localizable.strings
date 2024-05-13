@@ -90,6 +90,8 @@
 "SELECT_CHAPTERS" = "Lựa chọn chương";
 "SELECT_ALL" = "Chọn tất cả";
 "DESELECT_ALL" = "Huỷ chọn tất cả";
+"LINK_COPIED" = "Liên kết đã được sao chép";
+"LINK_COPIED_TEXT" = "Liên kết đã được sao chép vào bảng ghi tạm.";
 
 // Reader
 "CHAPTER" = "Chương";
@@ -211,7 +213,7 @@
 "BACKUP_IMPORT_FAIL" = "Không thể thêm bản sao lưu";
 "BACKUP_IMPORT_FAIL_TEXT" = "Hãy đảm bảo bản sao lưu có định dạng phù hợp.";
 "EXPORT" = "Xuất";
-"RESTORE" = "Phục hồi";
+"RESTORE" = "Khôi phục";
 "LOGS" = "Nhật kí";
 "LOGGING" = "Nhật kí";
 "LOG_SERVER" = "Máy chủ nhật kí";
@@ -296,7 +298,7 @@
 "FAILED_CHAPTER_LOAD" = "Tải chương thất bại";
 "TOTAL_CHAPTERS" = "Tổng số chương";
 "WEBTOON" = "Webtoon";
-"PINNED" = "Đã đánh dấu";
+"PINNED" = "Đã ghim";
 "REMOVE_FROM_CATEGORY" = "Xoá khỏi phân loại";
 "%i_CHAPTERS" = "%i chương";
 "1_CHAPTER" = "1 Chương";
@@ -306,3 +308,20 @@
 "MIGRATE_SOURCES" = "Chuyển nguồn";
 "ADD_TO_CATEGORIES" = "Thêm vào thư viện";
 "LAST_UPDATED" = "Lần cuối cập nhật";
+"PIN" = "Ghim";
+"COVER" = "Bìa";
+"SYNC_WITH_TRACKER_INFO" = "Dường như chương mới nhất được đặt trong tracker (%g) cao hơn chương bạn đã đọc gần đây nhất. Bạn có muốn cập nhật lịch sử cục bộ của mình để khớp không?";
+"OPTIONS" = "Tùy chọn";
+"TITLES" = "Tiêu đề";
+"COPY" = "Sao chép";
+"UNPIN" = "Bỏ ghim";
+"REORDER" = "Sắp xếp lại";
+"SYNC_LOCAL_HISTORY" = "Đồng bộ lịch sử cục bộ";
+"SELECTED" = "Đã chọn";
+"NOT_FOUND" = "Không tìm thấy";
+"DEFAULT_READING_MODE" = "Chế độ đọc mặc định";
+"BACKUP_ERROR_TEXT" = "Đã gặp lỗi khi khôi phục: %@. Bản sao lưu có thể không hợp lệ.";
+"START_MATCHING" = "Bắt đầu hợp nhất";
+"MIGRATE" = "Chuyển đổi";
+"CROP_BORDERS" = "Xoá viền";
+"MIGRATION" = "Sự chuyển đổi";
