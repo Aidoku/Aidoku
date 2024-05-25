@@ -415,17 +415,8 @@ class MangaViewController: BaseTableViewController {
         updateToolbar()
     }
 
-    func updateReadButton() {
-        let nextChapter = viewModel.getNextChapter()
-        switch nextChapter {
-        case .none:
-            return
-        case .allRead:
-            headerView.updateReadButtonTitle(allRead: true)
-        case .chapter(let nextChapter):
-            let continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
-            headerView.updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
-        }
+    @objc func stopEditing() {
+        setEditing(false, animated: true)
     }
 
     func openReaderView(chapter: Chapter) {
@@ -549,10 +540,9 @@ class MangaViewController: BaseTableViewController {
             refreshControl?.endRefreshing()
         }
     }
+}
 
-    @objc func stopEditing() {
-        setEditing(false, animated: true)
-    }
+extension MangaViewController {
 
     @objc func selectAllRows() {
         for row in 0..<tableView.numberOfRows(inSection: 0) {
@@ -608,6 +598,19 @@ class MangaViewController: BaseTableViewController {
 
 // MARK: View Updating
 extension MangaViewController {
+
+    private func updateReadButton() {
+        let nextChapter = viewModel.getNextChapter()
+        switch nextChapter {
+        case .none:
+            return
+        case .allRead:
+            headerView.updateReadButtonTitle(allRead: true)
+        case .chapter(let nextChapter):
+            let continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
+            headerView.updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
+        }
+    }
 
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
