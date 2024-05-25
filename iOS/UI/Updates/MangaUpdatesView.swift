@@ -14,7 +14,7 @@ struct MangaUpdatesView: View {
         let date: Date
         let manga: Manga
         let chapter: Chapter?
-        let viewed: Bool
+        var viewed: Bool
     }
 
     private let limit = 25
@@ -64,10 +64,19 @@ struct MangaUpdatesView: View {
         .refreshableCompat {
             await reload()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { _ in
-            // TODO: reload the list
-            // there is a bug when mixing UIKit navigation with SwiftUI
-            // that pops back the destination when updating a State variable
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { notification in
+            guard let objects = notification.object as? [MangaUpdateItem] else { return }
+
+            for section in 0..<entries.count {
+                for item in 0..<entries[section].1.count {
+                    guard let manga = entries[section].1[item].1.first?.manga else { continue }
+                    if objects.contains(where: { $0.sourceId == manga.sourceId && $0.mangaId == manga.id }) {
+                        for i in 0..<entries[section].1[item].1.count {
+                            entries[section].1[item].1[i].viewed = true
+                        }
+                    }
+                }
+            }
         }
     }
 
