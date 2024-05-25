@@ -13,6 +13,7 @@ struct MangaUpdateItemView: View {
     private let coverWidth: CGFloat = 56
     private let coverHeight: CGFloat = 56
     private let cornerRadius: CGFloat = 5
+    private let chaptersLimit = 5
 
     var manga: Manga?
     let updates: [MangaUpdatesView.MangaUpdateInfo]
@@ -50,7 +51,7 @@ struct MangaUpdateItemView: View {
                     .foregroundColor(viewed ? .secondary : .primary)
                     .lineLimit(2)
 
-                ForEach(updates.prefix(5)) { item in
+                ForEach(updates.prefix(chaptersLimit)) { item in
                     if let chapterTitle = item.chapter?.makeTitle() {
                         Text(chapterTitle)
                             .font(.footnote)
@@ -58,8 +59,8 @@ struct MangaUpdateItemView: View {
                             .lineLimit(1)
                     }
                 }
-                if count > 5 {
-                    Text("\(count)_PLUS_MORE")
+                if count > chaptersLimit {
+                    Text("\(count - chaptersLimit)_PLUS_MORE")
                         .font(.footnote)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
