@@ -50,13 +50,19 @@ struct MangaUpdateItemView: View {
                     .foregroundColor(viewed ? .secondary : .primary)
                     .lineLimit(2)
 
-                ForEach(updates) { item in
+                ForEach(updates.prefix(5)) { item in
                     if let chapterTitle = item.chapter?.makeTitle() {
                         Text(chapterTitle)
                             .font(.footnote)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
+                }
+                if count > 5 {
+                    Text("\(count)_PLUS_MORE")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
             }
         }

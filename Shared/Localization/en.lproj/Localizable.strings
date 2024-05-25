@@ -160,6 +160,7 @@
 // Manga Updates
 "MANGA_UPDATES" = "Updates";
 "NO_UPDATES" = "No updates";
+"%lld_PLUS_MORE" = "+%lld more";
 
 // Search
 "SEARCH" = "Search";
