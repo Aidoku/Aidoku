@@ -42,19 +42,18 @@ struct MangaUpdatesView: View {
                     }
 
                     if !reachedEnd {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
-                        }
-                        .onAppear {
-                            if !loadingMore {
-                                loadingMore = true
-                                loadingTask = Task {
-                                    await loadNewEntries()
+                        loadingView
+                            .onAppear {
+                                if !loadingMore {
+                                    reachedEnd = true
+                                    loadingMore = true
+                                    loadingTask = Task {
+                                        await loadNewEntries()
+                                    }
                                 }
                             }
-                        }
+                    } else if loadingMore {
+                        loadingView
                     }
                 }
                 .listStyle(.plain)
@@ -108,6 +107,14 @@ struct MangaUpdatesView: View {
                     }
                 }
             }
+        }
+    }
+
+    var loadingView: some View {
+        HStack {
+            Spacer()
+            ProgressView()
+            Spacer()
         }
     }
 
