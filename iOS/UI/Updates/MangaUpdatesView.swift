@@ -35,11 +35,7 @@ struct MangaUpdatesView: View {
                 }
             } else {
                 List {
-                    if #available(iOS 15.0, *) {
-                        listItemsWithSections
-                    } else {
-                        listItems
-                    }
+                    listItemsWithSections
 
                     if !reachedEnd {
                         loadingView
@@ -80,7 +76,6 @@ struct MangaUpdatesView: View {
         }
     }
 
-    @available(iOS 15.0, *)
     var listItemsWithSections: some View {
         ForEach(entries.indices, id: \.self) { index in
             Section {
@@ -91,31 +86,15 @@ struct MangaUpdatesView: View {
                         NavigationLink(destination: MangaView(manga: manga)) {
                             MangaUpdateItemView(updates: updates)
                         }
+                        .offsetListSeparator()
                     }
                 }
             } header: {
                 Text(Date.makeRelativeDate(days: entries[index].0))
-                    .foregroundStyle(.primary)
+                    .foregroundColor(.primary)
                     .font(.system(size: 16, weight: .medium))
             }
-        }
-    }
-
-    var listItems: some View {
-        ForEach(entries.indices, id: \.self) { index in
-            Text(Date.makeRelativeDate(days: entries[index].0))
-                .foregroundColor(.primary)
-                .font(.system(size: 16, weight: .medium))
-
-            let mangas = entries[index].1
-            ForEach(mangas.indices, id: \.self) { mangaIndex in
-                let updates = mangas[mangaIndex].1
-                if let manga = updates.first?.manga {
-                    NavigationLink(destination: MangaView(manga: manga)) {
-                        MangaUpdateItemView(updates: updates)
-                    }
-                }
-            }
+            .hideListSectionSeparator()
         }
     }
 
