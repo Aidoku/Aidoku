@@ -178,7 +178,7 @@ struct MangaUpdatesView: View {
         loadingMore = true
         entries = []
         offset = 0
-        reachedEnd = false
+        reachedEnd = true
         await loadNewEntries()
     }
 }
