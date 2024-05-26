@@ -123,8 +123,10 @@ struct MangaUpdatesView: View {
         HStack {
             Spacer()
             ProgressView()
+                .id(UUID()) // fixes progress view being invisible
             Spacer()
         }
+        .hideListRowSeparator()
     }
 
     private func loadNewEntries() async {

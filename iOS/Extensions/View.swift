@@ -36,4 +36,13 @@ extension View {
             self
         }
     }
+
+    @ViewBuilder
+    func hideListRowSeparator() -> some View {
+        if #available(iOS 15.0, *) {
+            self.listRowSeparator(.hidden)
+        } else {
+            self
+        }
+    }
 }
