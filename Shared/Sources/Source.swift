@@ -361,6 +361,14 @@ extension Source {
         return await actor.getPageList(chapter: chapter)
     }
 
+    func getPageListWithoutContents(chapter: Chapter) async throws -> [Page] {
+        if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+            return await DownloadManager.shared.getDownloadedPagesWithoutContents(for: chapter)
+        }
+
+        return await actor.getPageList(chapter: chapter)
+    }
+
     func getImageRequest(url: String) async throws -> WasmRequestObject {
         try await actor.getImageRequest(url: url)
     }
