@@ -171,7 +171,7 @@
 "LIBRARY_UPDATING" = "书架更新";
 "UPDATE_INTERVAL" = "更新间隔";
 "SKIP_TITLES" = "跳过标题";
-"ONLY_UPDATE_ON_WIFI" = "仅在 Wi-Fi 下更新";
+"ONLY_UPDATE_ON_WIFI" = "仅在 Wi-Fi 更新";
 "EXCLUDED_CATEGORIES" = "排除类别";
 "REFRESH_METADATA" = "刷新元数据";
 "NEVER" = "从不";
@@ -216,7 +216,7 @@
 "LOG_SERVER" = "日志服务器";
 "EXPORT_LOGS" = "导出日志";
 "DISPLAY_LOGS" = "显示日志";
-"ADVANCED" = "高级设置";
+"ADVANCED" = "高级";
 "RESET_TEXT" = "此操作不可逆。所有数据、设置和缓存将被清除和重置。";
 "CLEAR_CHAPTER_CACHE" = "清除章节缓存";
 "CLEAR_CHAPTER_CACHE_TEXT" = "此操作不可逆。缓存的章节将被清除并重新下载。";
@@ -344,3 +344,14 @@
 "MAL_LOGIN_NEEDED" = "MyAnimeList 需要登录";
 "MAL_LOGIN_NEEDED_TEXT" = "您的 MyAnimeList 令牌已过期，因此 MyAnimeList 跟踪器将停止工作，直到您在设置中重新登录。";
 "BACKUP_ERROR_TEXT" = "恢复 %@ 时遇到错误。备份可能无效。";
+"PAUSE" = "暂停";
+"RESUME" = "继续";
+"WARNING" = "警告";
+"NO_WIFI_ALERT_TITLE" = "没有Wi-Fi";
+"NO_WIFI_ALERT_MESSAGE" = "您需要连接Wi-Fi才能下载此内容。请连接Wi-Fi后重试。";
+"DOWNLOAD_ANYWAY_MESSAGE" = "您当前未连接Wi-Fi。是否下载？";
+"READER_BG_COLOR_SYSTEM" = "系统";
+"READER_BG_COLOR_BLACK" = "黑色";
+"READER_BG_COLOR" = "背景颜色";
+"ONLY_DOWNLOAD_ON_WIFI" = "仅在 Wi-Fi 下载";
+"READER_BG_COLOR_WHITE" = "白色";

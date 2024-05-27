@@ -344,3 +344,14 @@
 "BACKUP_ERROR_TEXT" = "Se ha producido un error al restaurar: %@. La copia de seguridad puede no ser válida.";
 "MAL_LOGIN_NEEDED" = "Se necesita iniciar sesión en MyAnimeList";
 "MAL_LOGIN_NEEDED_TEXT" = "Tu token de MyAnimeList ha caducado, por lo que el rastreador de MyAnimeList dejará de funcionar hasta que vuelvas a iniciar sesión en ajustes.";
+"PAUSE" = "Pausa";
+"ONLY_DOWNLOAD_ON_WIFI" = "Descargar sólo en Wi-Fi";
+"WARNING" = "Advertencia";
+"NO_WIFI_ALERT_TITLE" = "Sin WiFi";
+"RESUME" = "Resumen";
+"NO_WIFI_ALERT_MESSAGE" = "Necesitas estar conectado a Wi-Fi para descargar este contenido. Por favor, conéctate a una red Wi-Fi e inténtalo de nuevo.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "En este momento no tienes conexión Wi-Fi. ¿Descargar de todos modos?";
+"READER_BG_COLOR" = "Color de fondo";
+"READER_BG_COLOR_SYSTEM" = "Sistema";
+"READER_BG_COLOR_WHITE" = "Blanco";
+"READER_BG_COLOR_BLACK" = "Negro";

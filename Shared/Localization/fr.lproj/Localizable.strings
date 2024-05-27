@@ -341,3 +341,14 @@
 "BACKUP_ERROR_TEXT" = "Une erreur s'est produite lors de la restauration : %@. La sauvegarde n'est peut-être pas valide.";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Votre jeton AniList a expiré, le tracker AniList cessera donc de fonctionner jusqu'à ce que vous vous reconnectiez dans les paramètres.";
 "MAL_LOGIN_NEEDED" = "Connexion à MyAnimeList nécessaire";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Vous n'êtes actuellement pas connecté au Wi-Fi. Voulez-vous quand même télécharger ?";
+"READER_BG_COLOR_WHITE" = "Blanc";
+"READER_BG_COLOR_BLACK" = "Noir";
+"READER_BG_COLOR" = "Couleur de fond";
+"READER_BG_COLOR_SYSTEM" = "Système";
+"WARNING" = "Avertissement";
+"NO_WIFI_ALERT_MESSAGE" = "Vous devez être connecté au Wi-Fi pour télécharger ce contenu. Veuillez vous connecter au Wi-Fi et réessayer.";
+"PAUSE" = "Pause";
+"RESUME" = "Reprendre";
+"NO_WIFI_ALERT_TITLE" = "Pas de Wi-Fi";
+"ONLY_DOWNLOAD_ON_WIFI" = "Télécharger uniquement en Wi-Fi";
