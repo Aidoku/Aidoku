@@ -62,7 +62,7 @@ extension ChapterObject {
 
     @NSManaged public var manga: MangaObject?
     @NSManaged public var history: HistoryObject?
-
+    @NSManaged public var mangaUpdate: MangaUpdateObject?
 }
 
 extension ChapterObject: Identifiable {

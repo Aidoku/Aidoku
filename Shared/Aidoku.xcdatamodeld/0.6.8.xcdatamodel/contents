@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22222" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22757" systemVersion="23E224" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Category" representedClassName="CategoryObject" syncable="YES" codeGenerationType="class">
         <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="title" attributeType="String" defaultValueString=""/>
@@ -19,6 +19,7 @@
         <attribute name="volume" optional="YES" attributeType="Float" defaultValueString="-1" usesScalarValueType="YES"/>
         <relationship name="history" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="History" inverseName="chapter" inverseEntity="History"/>
         <relationship name="manga" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Manga" inverseName="chapters" inverseEntity="Manga"/>
+        <relationship name="mangaUpdate" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MangaUpdate" inverseName="chapter" inverseEntity="MangaUpdate"/>
     </entity>
     <entity name="History" representedClassName="HistoryObject" syncable="YES">
         <attribute name="chapterId" attributeType="String" defaultValueString=""/>
@@ -60,6 +61,14 @@
             <fetchRequest name="fetchedPropertyFetchRequest" entity="Chapter" predicateString="$FETCH_SOURCE.sourceId == sourceId AND $FETCH_SOURCE.id == mangaId AND (history == nil OR history.completed == false)"/>
         </fetchedProperty>
     </entity>
+    <entity name="MangaUpdate" representedClassName="MangaUpdateObject" syncable="YES" codeGenerationType="class">
+        <attribute name="chapterId" optional="YES" attributeType="String"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="665122680" usesScalarValueType="NO"/>
+        <attribute name="mangaId" attributeType="String" defaultValueString=""/>
+        <attribute name="sourceId" attributeType="String" defaultValueString=""/>
+        <attribute name="viewed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="chapter" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Chapter" inverseName="mangaUpdate" inverseEntity="Chapter"/>
+    </entity>
     <entity name="Source" representedClassName="SourceObject" syncable="YES" codeGenerationType="class">
         <attribute name="id" attributeType="String" defaultValueString=""/>
         <attribute name="lang" optional="YES" attributeType="String"/>
@@ -83,6 +92,7 @@
         <memberEntity name="LibraryManga"/>
         <memberEntity name="Manga"/>
         <memberEntity name="Track"/>
+        <memberEntity name="MangaUpdate"/>
     </configuration>
     <configuration name="Local">
         <memberEntity name="Source"/>
