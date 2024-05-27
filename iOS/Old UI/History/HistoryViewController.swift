@@ -486,29 +486,7 @@ extension HistoryViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard section < filteredSearchEntries.count else { return nil }
         let days = filteredSearchEntries[section].0
-        let now = Date()
-        let date = now.addingTimeInterval(-86400 * Double(days))
-        let difference = Calendar.autoupdatingCurrent.dateComponents(Set([Calendar.Component.day]), from: date, to: now)
-
-        // today or yesterday
-        if days < 2 {
-            let formatter = DateFormatter()
-            formatter.locale = Locale.autoupdatingCurrent
-            formatter.dateStyle = .medium
-            formatter.doesRelativeDateFormatting = true
-            return formatter.string(from: date)
-        } else if days < 8 { // n days ago
-            let formatter = DateComponentsFormatter()
-            formatter.unitsStyle = .short
-            formatter.allowedUnits = .day
-            guard let timePhrase = formatter.string(from: difference) else { return "" }
-            return String(format: NSLocalizedString("%@_AGO", comment: ""), timePhrase)
-        } else { // mm/dd/yy
-            let formatter = DateFormatter()
-            formatter.locale = Locale.autoupdatingCurrent
-            formatter.dateStyle = .short
-            return formatter.string(from: date)
-        }
+        return Date.makeRelativeDate(days: days)
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

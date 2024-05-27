@@ -157,6 +157,11 @@
 "VIEW_HISTORY" = "View History";
 "AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
 
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "No updates";
+"%lld_PLUS_MORE" = "+%lld more";
+
 // Search
 "SEARCH" = "Search";
 "VIEW_MORE" = "View More";
