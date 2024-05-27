@@ -23,10 +23,11 @@ struct MangaUpdatesView: View {
     @State var loadingMore = false
     @State var reachedEnd = false
     @State var loadingTask: Task<(), Never>?
+    @State var isRefreshing = false
 
     var body: some View {
         Group {
-            if reachedEnd && entries.isEmpty {
+            if reachedEnd && !loadingMore && entries.isEmpty {
                 VStack(alignment: .center) {
                     Spacer()
                     Text("NO_UPDATES")
@@ -48,7 +49,7 @@ struct MangaUpdatesView: View {
                                     }
                                 }
                             }
-                    } else if loadingMore {
+                    } else if loadingMore && !isRefreshing {
                         loadingView
                     }
                 }
@@ -130,8 +131,10 @@ struct MangaUpdatesView: View {
         }
         if mangaUpdates.isEmpty {
             await MainActor.run {
-                self.reachedEnd = true
-                self.loadingMore = false
+                withAnimation {
+                    self.reachedEnd = true
+                    self.loadingMore = false
+                }
             }
             return
         }
@@ -155,18 +158,20 @@ struct MangaUpdatesView: View {
         }
         let finalUpdatesDict = updatesDict
         await MainActor.run {
-            self.entries = finalUpdatesDict
-                .map {
-                    ($0.key,
-                     $0.value
-                        .map { ($0.key, $0.value) }
-                        .sorted { ($0.1.first?.date ?? Date()) > ($1.1.first?.date ?? Date()) }
-                    )
-                }
-                .sorted { $0.0 < $1.0 }
-            self.reachedEnd = mangaUpdates.count < limit
-            self.offset += limit
-            self.loadingMore = false
+            withAnimation {
+                self.entries = finalUpdatesDict
+                    .map {
+                        ($0.key,
+                         $0.value
+                            .map { ($0.key, $0.value) }
+                            .sorted { ($0.1.first?.date ?? Date()) > ($1.1.first?.date ?? Date()) }
+                        )
+                    }
+                    .sorted { $0.0 < $1.0 }
+                self.reachedEnd = mangaUpdates.count < limit
+                self.offset += limit
+                self.loadingMore = false
+            }
         }
     }
 
@@ -175,10 +180,16 @@ struct MangaUpdatesView: View {
             loadingTask?.cancel()
             loadingTask = nil
         }
-        loadingMore = true
-        entries = []
-        offset = 0
-        reachedEnd = true
+        withAnimation {
+            isRefreshing = true
+            loadingMore = true
+            entries = []
+            offset = 0
+            reachedEnd = true
+        }
         await loadNewEntries()
+        withAnimation {
+            isRefreshing = false
+        }
     }
 }
