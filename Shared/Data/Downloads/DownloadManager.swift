@@ -66,6 +66,19 @@ class DownloadManager {
         return pages.sorted { $0.index < $1.index }
     }
 
+    func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
+        cache.directory(for: chapter).contents
+            .compactMap { url in
+                Page(
+                    sourceId: chapter.sourceId,
+                    chapterId: chapter.id,
+                    index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
+                    imageURL: url.absoluteString
+                )
+            }
+            .sorted { $0.index < $1.index }
+    }
+
     func isChapterDownloaded(chapter: Chapter) -> Bool {
         cache.isChapterDownloaded(chapter: chapter)
     }

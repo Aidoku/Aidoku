@@ -50,14 +50,14 @@ class ReaderPagedViewModel {
                 preloadedPages = pages
             }
             self.chapter = chapter
-            pages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
+            pages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageListWithoutContents(chapter: chapter)) ?? []
         }
     }
 
     func preload(chapter: Chapter) async {
         guard preloadedChapter != chapter else { return }
         preloadedChapter = nil
-        preloadedPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageList(chapter: chapter)) ?? []
+        preloadedPages = (try? await SourceManager.shared.source(for: chapter.sourceId)?.getPageListWithoutContents(chapter: chapter)) ?? []
         preloadedChapter = chapter
     }
 }
