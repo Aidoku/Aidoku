@@ -344,3 +344,14 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Seu token MyAnimeList expirou, então o rastreamento do MyAnimeList irá parar de funcionar até que você faça login novamente nas configurações.";
 "BACKUP_ERROR" = "Erro ao restaurar o backup";
 "BACKUP_ERROR_TEXT" = "Um erro foi encontrado ao restaurar:%@. O backup pode ser inválido.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Você não está no Wi-Fi. Fazer download mesmo assim?";
+"READER_BG_COLOR" = "Cor de Fundo";
+"READER_BG_COLOR_WHITE" = "Branco";
+"READER_BG_COLOR_SYSTEM" = "Sistema";
+"PAUSE" = "Pausar";
+"RESUME" = "Retornar";
+"WARNING" = "Aviso";
+"NO_WIFI_ALERT_TITLE" = "Sem Wi-Fi";
+"NO_WIFI_ALERT_MESSAGE" = "Você precisa estar conectado ao Wi-Fi para fazer o download desse conteúdo. Por favor conecte-se ao Wi-Fi e tente novamente.";
+"ONLY_DOWNLOAD_ON_WIFI" = "Só Download no Wi-Fi";
+"READER_BG_COLOR_BLACK" = "Preto";

@@ -344,3 +344,14 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Tvoj MyAnimeList token je istekao, stoga će MyAnimeList praćenje prestati raditi dok se ne prijaviš ponovo u postavkama.";
 "LINK_COPIED" = "Poveznica kopirana";
 "LINK_COPIED_TEXT" = "Poveznica je kopirana u međuspremnik.";
+"READER_BG_COLOR" = "Boja pozadine";
+"PAUSE" = "Pauza";
+"RESUME" = "Nastavi";
+"WARNING" = "Upozorenje";
+"NO_WIFI_ALERT_TITLE" = "Nema Wi-Fi";
+"NO_WIFI_ALERT_MESSAGE" = "Morate biti povezani na Wi-Fi da biste preuzeli ovaj sadržaj. Povežite se na Wi-Fi i pokušajte ponovno.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Trenutno niste na Wi-Fi mreži. Svejedno preuzeti?";
+"ONLY_DOWNLOAD_ON_WIFI" = "Preuzmi samo putem Wi-Fi";
+"READER_BG_COLOR_SYSTEM" = "Sustav";
+"READER_BG_COLOR_WHITE" = "Bijela";
+"READER_BG_COLOR_BLACK" = "Crna";
