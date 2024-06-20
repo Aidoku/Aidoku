@@ -203,6 +203,7 @@
 "ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
+"DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_12_HOURS" = "Every 12 hours";
 "DAILY" = "Daily";

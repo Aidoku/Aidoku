@@ -425,6 +425,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 await HistoryManager.shared.addHistory(chapters: [chapter])
             }
         }
+        if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
+            DownloadManager.shared.delete(chapters: [chapter])
+        }
     }
 }
 

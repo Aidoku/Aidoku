@@ -197,6 +197,11 @@ class SettingsViewController: SettingsTableViewController {
                     type: "switch",
                     key: "Library.refreshMetadata",
                     title: NSLocalizedString("REFRESH_METADATA", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Library.deleteDownloadAfterReading",
+                    title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING", comment: "")
                 )
             ]),
             // MARK: Browse
