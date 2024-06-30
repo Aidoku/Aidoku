@@ -104,7 +104,7 @@
 "NO_CHAPTERS_AVAILABLE" = "暂无章节";
 "START_READING" = "开始阅读";
 "CONTINUE_READING" = "继续阅读";
-"READ" = "阅读";
+"READ" = "已读";
 "UNREAD" = "未读";
 "MARK" = "标记";
 "MARK_ALL" = "标记全部";
@@ -157,13 +157,13 @@
 "MANGA_PAGE" = "漫画页面";
 "SHOW_SOURCE_LABEL" = "显示来源标签";
 "USE_MANGA_TINT" = "使用漫画色调";
-"USE_MANGA_TINT_INFO" = "根据封面图片颜色为漫画页面着色";
+"USE_MANGA_TINT_INFO" = "基于封面图像颜色为漫画页面着色";
 "MANGA_PER_ROW" = "每行漫画";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
 "READER" = "阅读";
 "OPEN_READER_VIEW" = "打开阅读界面";
-"UNREAD_CHAPTER_BADGES" = "未读章徽章";
+"UNREAD_CHAPTER_BADGES" = "未读章节徽章";
 "PIN_MANGA" = "置顶漫画";
 "PIN_MANGA_TYPE" = "置顶类型";
 "PIN_MANGA_UNREAD" = "未读";
@@ -322,7 +322,7 @@
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
 "SYNC_WITH_TRACKER" = "与追踪器同步";
-"SYNC_WITH_TRACKER_INFO" = "看起来追踪器中设置的最新章节（%g）比您的最新阅读章节高。您想将本地阅读记录更新为匹配吗？";
+"SYNC_WITH_TRACKER_INFO" = "看起来追踪器中的最新章节 (%g) 高于您最近阅读的章节。您是否希望更新本地记录以匹配？";
 "UPLOAD_DATE" = "上传日期";
 "TRACKING" = "跟踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
@@ -331,7 +331,7 @@
 "BOTH" = "全部";
 "PILLARBOX" = "填充";
 "PILLARBOX_ORIENTATION" = "填充方向";
-"PILLARBOX_ORIENTATION_INFO" = "填充方向决定了哪些方向应启用填充。";
+"PILLARBOX_ORIENTATION_INFO" = "填充方向决定哪些方向添加填充。";
 "COVER" = "封面";
 "CROP_BORDERS" = "裁剪边框";
 "REORDER" = "重新排序";
@@ -355,3 +355,8 @@
 "READER_BG_COLOR" = "背景颜色";
 "ONLY_DOWNLOAD_ON_WIFI" = "仅在 Wi-Fi 下载";
 "READER_BG_COLOR_WHITE" = "白色";
+
+// Manga Updates
+"MANGA_UPDATES" = "更新";
+"NO_UPDATES" = "没有更新";
+"%lld_PLUS_MORE" = "+%lld 更多";

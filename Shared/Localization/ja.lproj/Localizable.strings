@@ -157,7 +157,7 @@
 "GENERAL" = "一般";
 "ICLOUD_SYNC" = "iCloud同期";
 "INCOGNITO_MODE" = "シークレットモード";
-"INCOGNITO_MODE_TEXT" = "有効にすると、読書履歴が一時停止します";
+"INCOGNITO_MODE_TEXT" = "有効にしている間、読書履歴が一時的に記録されません";
 "APPEARANCE" = "外観";
 "APPEARANCE_LIGHT" = "ライト";
 "APPEARANCE_DARK" = "ダーク";
@@ -353,3 +353,8 @@
 "READER_BG_COLOR_SYSTEM" = "システム";
 "READER_BG_COLOR_WHITE" = "白";
 "READER_BG_COLOR_BLACK" = "黒";
+
+// Manga Updates
+"MANGA_UPDATES" = "更新";
+"NO_UPDATES" = "更新なし";
+"%lld_PLUS_MORE" = "+%lld個";
