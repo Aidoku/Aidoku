@@ -355,3 +355,7 @@
 "READER_BG_COLOR" = "Colore Sfondo";
 "READER_BG_COLOR_BLACK" = "Nero";
 "BACKUP_ERROR_TEXT" = "Errore durante il ripristino di: %@. Il backup potrebbe non essere valido.";
+
+// Manga Updates
+"MANGA_UPDATES" = "Aggiornamenti";
+"NO_UPDATES" = "Nessun aggiornamento";

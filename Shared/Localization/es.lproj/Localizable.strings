@@ -355,3 +355,8 @@
 "READER_BG_COLOR_SYSTEM" = "Sistema";
 "READER_BG_COLOR_WHITE" = "Blanco";
 "READER_BG_COLOR_BLACK" = "Negro";
+
+// Manga Updates
+"MANGA_UPDATES" = "Actualizaciones";
+"%lld_PLUS_MORE" = "+%lld más";
+"NO_UPDATES" = "Sin actualizaciones";
