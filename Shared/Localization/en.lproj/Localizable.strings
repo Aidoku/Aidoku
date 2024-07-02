@@ -17,6 +17,7 @@
 "REMOVE" = "Remove";
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
+"CLEAR_EXCLUDING_LIBRARY" = "Clear Excluding Library";
 "PAUSE" = "Pause";
 "RESUME" = "Resume";
 "LOADING_ELLIPSIS" = "Loading…";
