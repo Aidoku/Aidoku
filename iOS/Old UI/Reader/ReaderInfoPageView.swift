@@ -32,6 +32,7 @@ class ReaderInfoPageView: UIView {
     }
 
     let noChapterLabel = UILabel()
+    let skippingChaptersView = UIStackView()
     let skippingChaptersLabel = UILabel()
 
     let stackView = UIStackView()
@@ -63,6 +64,20 @@ class ReaderInfoPageView: UIView {
         topChapterTitleLabel.font = .systemFont(ofSize: 16)
         topChapterTitleLabel.numberOfLines = 0
 
+        skippingChaptersView.distribution = .equalSpacing
+        skippingChaptersView.axis = .horizontal
+        skippingChaptersView.spacing = 8
+        skippingChaptersLabel.textColor = .secondaryLabel
+        skippingChaptersLabel.textAlignment = .left
+        skippingChaptersLabel.font = .systemFont(ofSize: 16)
+        skippingChaptersLabel.numberOfLines = 0
+        skippingChaptersLabel.preferredMaxLayoutWidth = 200
+        skippingChaptersLabel.translatesAutoresizingMaskIntoConstraints = false
+        let warningIconView = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
+        warningIconView.tintColor = .systemYellow
+        warningIconView.translatesAutoresizingMaskIntoConstraints = false
+        warningIconView.contentMode = .center
+
         let bottomStackView = UIStackView()
         bottomStackView.distribution = .equalSpacing
         bottomStackView.axis = .vertical
@@ -75,10 +90,13 @@ class ReaderInfoPageView: UIView {
 
         topStackView.addArrangedSubview(topChapterLabel)
         topStackView.addArrangedSubview(topChapterTitleLabel)
+        skippingChaptersView.addArrangedSubview(warningIconView)
+        skippingChaptersView.addArrangedSubview(skippingChaptersLabel)
         bottomStackView.addArrangedSubview(bottomChapterLabel)
         bottomStackView.addArrangedSubview(bottomChapterTitleLabel)
 
         stackView.addArrangedSubview(topStackView)
+        stackView.addArrangedSubview(skippingChaptersView)
         stackView.addArrangedSubview(bottomStackView)
 
         addSubview(stackView)
@@ -92,19 +110,6 @@ class ReaderInfoPageView: UIView {
         noChapterLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         noChapterLabel.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
 
-        skippingChaptersLabel.textColor = .secondaryLabel
-        skippingChaptersLabel.textAlignment = .center
-        skippingChaptersLabel.font = .systemFont(ofSize: 14)
-        skippingChaptersLabel.numberOfLines = 0
-        skippingChaptersLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        addSubview(skippingChaptersLabel)
-
-        skippingChaptersLabel.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        skippingChaptersLabel.topAnchor.constraint(equalTo: bottomStackView.bottomAnchor, constant: 20).isActive = true
-        skippingChaptersLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20).isActive = true
-        skippingChaptersLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20).isActive = true
-
         stackView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         stackView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         stackView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor, multiplier: 1, constant: -64).isActive = true
@@ -116,8 +121,8 @@ class ReaderInfoPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func areChaptersSkipped(higherChapterNumber: Float, lowerChapterNumber: Float ) -> Bool {
-        floor(higherChapterNumber) - floor(lowerChapterNumber) > 1
+    func chapterDifference(higherChapterNumber: Float, lowerChapterNumber: Float ) -> Int {
+        Int(floor(higherChapterNumber) - floor(lowerChapterNumber)) - 1
     }
 
     func updateLabelText() {
@@ -149,13 +154,14 @@ class ReaderInfoPageView: UIView {
             }
             if let currChapterNum = currentChapter.chapterNum,
                let prevChapterNum = previousChapter.chapterNum {
-                let shouldSkipChapters = areChaptersSkipped(higherChapterNumber: currChapterNum, lowerChapterNumber: prevChapterNum)
-                skippingChaptersLabel.isHidden = !shouldSkipChapters
+                let chapterDifference = chapterDifference(higherChapterNumber: currChapterNum, lowerChapterNumber: prevChapterNum)
+                let shouldSkipChapters = chapterDifference > 1
+                skippingChaptersView.isHidden = !shouldSkipChapters
                 if shouldSkipChapters {
-                    skippingChaptersLabel.text = NSLocalizedString("SKIPPING_CHAPTERS", comment: "")
+                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS", comment: ""), chapterDifference)
                 }
             } else {
-                skippingChaptersLabel.isHidden = true
+                skippingChaptersView.isHidden = true
             }
             noChapterLabel.isHidden = true
             stackView.isHidden = false
@@ -186,13 +192,14 @@ class ReaderInfoPageView: UIView {
             }
             if let currChapterNum = currentChapter.chapterNum,
                let nextChapterNum = nextChapter.chapterNum {
-                let shouldSkipChapters = areChaptersSkipped(higherChapterNumber: nextChapterNum, lowerChapterNumber: currChapterNum)
-                skippingChaptersLabel.isHidden = !shouldSkipChapters
+                let chapterDifference = chapterDifference(higherChapterNumber: nextChapterNum, lowerChapterNumber: currChapterNum)
+                let shouldSkipChapters = chapterDifference > 1
+                skippingChaptersView.isHidden = !shouldSkipChapters
                 if shouldSkipChapters {
-                    skippingChaptersLabel.text = NSLocalizedString("SKIPPING_CHAPTERS", comment: "")
+                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS", comment: ""), chapterDifference)
                 }
             } else {
-                skippingChaptersLabel.isHidden = true
+                skippingChaptersView.isHidden = true
             }
             noChapterLabel.isHidden = true
             stackView.isHidden = false
@@ -201,7 +208,7 @@ class ReaderInfoPageView: UIView {
                 : NSLocalizedString("NO_NEXT_CHAPTER", comment: "")
             stackView.isHidden = true
             noChapterLabel.isHidden = false
-            skippingChaptersLabel.isHidden = true
+            skippingChaptersView.isHidden = true
         }
     }
 }
