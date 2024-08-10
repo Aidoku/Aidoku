@@ -546,7 +546,7 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 ? self.delegate?.getPreviousChapter()
                 : self.delegate?.getNextChapter()
             return {
-                ReaderWebtoonTransitionNode(transition: Transition(
+                ReaderWebtoonTransitionNode(transition: .init(
                     type: page.type == .prevInfoPage ? .prev : .next,
                     from: chapter,
                     to: to

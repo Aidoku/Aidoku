@@ -274,7 +274,7 @@ class SourceViewController: MangaCollectionViewController {
         // save current filters to compare with when done
         Task {
             await viewModel.saveSelectedFilters()
-            let vc = FilterModalViewController(filters: await viewModel.filters, selectedFilters: viewModel.selectedFilters)
+            let vc = await FilterModalViewController(filters: viewModel.filters, selectedFilters: viewModel.selectedFilters)
             vc.delegate = self
             vc.resetButton.addTarget(self, action: #selector(resetSelectedFilters), for: .touchUpInside)
             vc.modalPresentationStyle = .overFullScreen
