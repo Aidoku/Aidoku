@@ -75,13 +75,13 @@
 "MARK_UNREAD" = "Marcar como no leído";
 "READER_SETTINGS" = "Lector";
 "READING_MODE" = "Modo de lectura";
-"DEFAULT" = "Por Defecto";
-"LTR" = "Izquierda a Derecha";
-"RTL" = "Derecha a Izquierda";
+"DEFAULT" = "Por defecto";
+"LTR" = "Izquierda a derecha";
+"RTL" = "Derecha a izquierda";
 "VERTICAL" = "Vertical";
-"VERTICAL_SCROLL" = "Desplazamiento Vertical";
+"VERTICAL_SCROLL" = "Desplazamiento vertical";
 "EXPERIMENTAL" = "Experimental";
-"INFINITE_VERTICAL_SCROLL" = "Desplazamiento Vertical Infinito";
+"INFINITE_VERTICAL_SCROLL" = "Desplazamiento vertical infinito";
 "SAVE_TO_PHOTOS" = "Guardar en Fotos";
 
 // Search
@@ -90,10 +90,10 @@
 
 // Settings
 "SETTINGS" = "Configuración";
-"ABOUT" = "Acerca";
+"ABOUT" = "Acerca de";
 "GITHUB_REPO" = "Repositorio de GitHub";
 "DISCORD_SERVER" = "Servidor de Discord";
-"SUPPPORT_DEVELOPMENT" = "Apoya el Desarrollo";
+"SUPPPORT_DEVELOPMENT" = "Apoya el desarrollo";
 "GENERAL" = "General";
 "ICLOUD_SYNC" = "Sincronización con iCloud";
 "APPEARANCE" = "Apariencia";
@@ -171,7 +171,7 @@
 "HISTORY" = "Historial";
 "PAGE_X" = "Página %i";
 "VIEW_HISTORY" = "Ver historial";
-"INCOGNITO_MODE" = "Modo Incógnito";
+"INCOGNITO_MODE" = "Modo incógnito";
 "INCOGNITO_MODE_TEXT" = "Pausa el historial de lectura cuando está habilitado";
 "LIBRARY_UPDATING" = "Actualización de biblioteca";
 "UPDATE_INTERVAL" = "Intervalo de actualización";
@@ -211,7 +211,7 @@
 "ALL" = "Todas";
 "NONE" = "Ninguna";
 "BUILD" = "Compilación";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "Esto eliminará el historial de este capítulo. Estás seguro de que quieres continuar?";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Esto eliminará el historial de este capítulo. ¿Seguro que quieres continuar?";
 "USE_MANGA_TINT_INFO" = "Tinta las páginas del manga basado en el color de la imagen de portada";
 "WITH_UNREAD_CHAPTERS" = "Con capítulos no leídos";
 "WITH_COMPLETED_STATUS" = "Con estado completado";
@@ -355,3 +355,8 @@
 "READER_BG_COLOR_SYSTEM" = "Sistema";
 "READER_BG_COLOR_WHITE" = "Blanco";
 "READER_BG_COLOR_BLACK" = "Negro";
+
+// Manga Updates
+"MANGA_UPDATES" = "Actualizaciones";
+"%lld_PLUS_MORE" = "+%lld más";
+"NO_UPDATES" = "Sin actualizaciones";

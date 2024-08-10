@@ -344,3 +344,19 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Dein MyAnimeList-Token ist abgelaufen, sodass der MyAnimeList-Tracker nicht mehr funktioniert, bis du dich erneut in den Einstellungen angemeldet hast.";
 "BACKUP_ERROR" = "Fehler bei der Backup-Wiederherstellung";
 "BACKUP_ERROR_TEXT" = "Beim Wiederherstellen ist ein Fehler aufgetreten: %@. Das Backup ist möglicherweise ungültig.";
+"PAUSE" = "Pausieren";
+"RESUME" = "Fortfahren";
+"WARNING" = "Warnung";
+
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "Keine Updates";
+"NO_WIFI_ALERT_TITLE" = "Kein WLAN";
+"NO_WIFI_ALERT_MESSAGE" = "Du musst mit dem Internet verbunden sein, um diesen Inhalt herunterladen zu können. Bitte verbinde dich mit dem Internet und versuche es erneut.";
+"%lld_PLUS_MORE" = "+%lld mehr";
+"ONLY_DOWNLOAD_ON_WIFI" = "Download nur, wenn Wi-Fi verbunden ist";
+"READER_BG_COLOR" = "Hintergrundfarbe";
+"READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_WHITE" = "Weiß";
+"READER_BG_COLOR_BLACK" = "Schwarz";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Sie haben derzeit kein WLAN. Trotzdem herunterladen?";
