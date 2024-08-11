@@ -3,7 +3,7 @@
 "CANCEL" = "Отмена";
 "OK" = "OK";
 "UNKNOWN" = "Неизвестно";
-"UNAVAILABLE" = "Недоступен";
+"UNAVAILABLE" = "Недоступно";
 "RESET" = "Сбросить все";
 "RENAME" = "Переименовать";
 "CLEAR" = "Очистить";
@@ -11,8 +11,8 @@
 
 // Downloads
 "DOWNLOAD" = "Скачать";
-"DOWNLOADED" = "Скачано";
-"DOWNLOAD_QUEUE" = "Очередь загрузки";
+"DOWNLOADED" = "Скачан";
+"DOWNLOAD_QUEUE" = "Очередь загрузок";
 "CANCEL_DOWNLOAD" = "Отменить Загрузку";
 "REMOVE" = "Удалить";
 "REMOVE_ALL_DOWNLOADS" = "Удалить все загрузки";
@@ -20,14 +20,14 @@
 
 // Library
 "LIBRARY" = "Библиотека";
-"LIBRARY_SEARCH" = "Найти в библиотеке";
-"LIBRARY_EMPTY" = "Библиотека Пуста";
-"LIBRARY_ADD_FROM_BROWSE" = "Добавьте мангу во вкладке обзор";
+"LIBRARY_SEARCH" = "Поиск в библиотеке";
+"LIBRARY_EMPTY" = "Библиотека Пустая";
+"LIBRARY_ADD_FROM_BROWSE" = "Добавьте свою любимую мангу во вкладке Обзор";
 "SORT_BY" = "Сортировать по";
 "FILTER_BY" = "Фильтровать По";
 "TITLE" = "Название";
-"LAST_OPENED" = "Последний Открытый";
-"LAST_READ" = "Последнее прочтённое";
+"LAST_OPENED" = "Последний открытый";
+"LAST_READ" = "Последнее прочитанное";
 "LATEST_CHAPTER" = "Последняя глава";
 "DATE_ADDED" = "Дата Добавления";
 
@@ -41,7 +41,7 @@
 "ALWAYS_ASK" = "Всегда спрашивать";
 
 // Browse
-"BROWSE" = "Просмотр";
+"BROWSE" = "Обзор";
 "BROWSE_NO_SOURCES" = "Нет источников";
 "BROWSE_NO_SOURCES_TEXT" = "Сделайте свой список источников или откройте ссылку на\nисточник в Aidoku, чтобы начать";
 
@@ -63,7 +63,7 @@
 "MORE" = "больше";
 "SOURCE_ORDER" = "Исходный порядок";
 "MISSING_SOURCE" = "Отсутствует источник";
-"SELECT_CHAPTERS" = "Выбор главы";
+"SELECT_CHAPTERS" = "Выбор глав";
 "SELECT_ALL" = "Выбрать всё";
 "DESELECT_ALL" = "Отменить выбор всего";
 
@@ -72,7 +72,7 @@
 "CHAPTERS" = "Главы";
 "CHAPTER_X" = "Глава %g";
 "NO_CHAPTERS" = "Нет Глав";
-"NO_CHAPTERS_AVAILABLE" = "Нет Доступных Глав";
+"NO_CHAPTERS_AVAILABLE" = "Нет доступных глав";
 "START_READING" = "Начать читать";
 "CONTINUE_READING" = "Продолжить чтение";
 "READ" = "Читать";
@@ -85,7 +85,7 @@
 "NEXT_COLON" = "Следующая:";
 "FINISHED_COLON" = "Завершена:";
 "CURRENT_COLON" = "Текущая:";
-"NO_PREVIOUS_CHAPTER" = "Предыдущей главы нет";
+"NO_PREVIOUS_CHAPTER" = "Нет прерыдущей главы";
 "READER_SETTINGS" = "Настройки Чтения";
 "READING_MODE" = "Режим чтения";
 "DEFAULT" = "По умолчанию";
@@ -102,7 +102,7 @@
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Это приведет к удалению истории для этой главы. Вы уверены, что хотите продолжить?";
 "HISTORY_LOCKED" = "История заблокирована.";
 "VIEW_HISTORY" = "Просмотр истории";
-"AUTH_FOR_HISTORY" = "Аутентифицируйтесь, чтобы просмотреть историю чтения.";
+"AUTH_FOR_HISTORY" = "Необходимо авторизоваться для просмотра списка прочитанных.";
 "VIEW_MORE" = "Посмотреть Больше";
 
 // Settings
@@ -116,16 +116,16 @@
 "APPEARANCE" = "Тема";
 "APPEARANCE_LIGHT" = "Светлая";
 "APPEARANCE_DARK" = "Темная";
-"USE_SYSTEM_APPEARANCE" = "Использовать системную тему";
+"USE_SYSTEM_APPEARANCE" = "Как в системе";
 "MANGA_PAGE" = "Страница Манги";
 "SHOW_SOURCE_LABEL" = "Показывать Метку Источника";
 "USE_MANGA_TINT" = "Используйте Оттенок Манги";
 "USE_MANGA_TINT_INFO" = "Подкрашивать страницы манги в соответствии с цветом изображения на обложке";
-"PORTRAIT" = "Портретная ориент.";
-"LANDSCAPE" = "Альбомная ориент.";
+"PORTRAIT" = "Портретный";
+"LANDSCAPE" = "Горизонтальный";
 "READER" = "Читалка";
-"OPEN_READER_VIEW" = "Открыть просмотр чтения";
-"UNREAD_CHAPTER_BADGES" = "Значки Непрочитанных глав";
+"OPEN_READER_VIEW" = "Сразу открывать главу";
+"UNREAD_CHAPTER_BADGES" = "Кол-во непрочитанных глав";
 "PIN_MANGA" = "Закрепить мангу";
 "PIN_MANGA_TYPE" = "Закрепить";
 "PIN_MANGA_UPDATED" = "Обновленное";
@@ -142,7 +142,7 @@
 "SOURCE_LIST_ADDED_TEXT" = "Теперь вы можете просматривать внешние источники во вкладке Обзор.";
 "LOCK_HISTORY_TAB" = "Вкладка Истории блокировок";
 "DOWNSAMPLE_IMAGES" = "Изображения с пониженной выборкой";
-"SAVE_IMAGE_OPTION" = "Опция Сохранения изображения";
+"SAVE_IMAGE_OPTION" = "Сохранять изображения";
 "BACKUPS" = "Резервные копии";
 "BACKUP_NAME" = "Имя резервной копии";
 "RENAME_BACKUP" = "Переименовать резервную копию";
@@ -161,12 +161,12 @@
 "LOGGING" = "Сервер";
 "LOG_SERVER" = "Сервер журналов";
 "EXPORT_LOGS" = "Экспортировать логи";
-"DISPLAY_LOGS" = "Показать логи";
+"DISPLAY_LOGS" = "Отобразить логи";
 "ADVANCED" = "Дополнительно";
 "CLEAR_CHAPTER_CACHE" = "Очистить кэш глав";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Это действие необратимо. Кэшированные главы будут очищены и загружены заново.";
+"CLEAR_CHAPTER_CACHE_TEXT" = "Данное действие необратимо. Кэшированные главы будут удалены и загружены заново.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Это действие необратимо. Кэшированные сетевые запросы и изображения будут удалены.";
-"CLEAR_READ_HISTORY" = "Очистить Историю чтения";
+"CLEAR_READ_HISTORY" = "Очистить историю чтения";
 "CLEAR_READ_HISTORY_TEXT" = "Это действие необратимо. Вся история чтения будет удалена.";
 "RESET_SETTINGS" = "Сброс настроек";
 "RESET_SETTINGS_TEXT" = "Это действие необратимо. Все настройки приложения и источника будут сброшены.";
@@ -221,38 +221,38 @@
 // History
 "HISTORY" = "История";
 "INCOGNITO_MODE" = "Режим инкогнито";
-"ONLY_UPDATE_ON_WIFI" = "Обновление только по Wi-Fi";
+"ONLY_UPDATE_ON_WIFI" = "Обновлять только по Wi-Fi";
 "PIN_MANGA_UNREAD" = "Непрочитанное";
 "SOURCE_LIST_ADD" = "Добавить список источников";
 "REMOVE_ALL_MANGA_HISTORY" = "Удалить Всю Историю Манги";
 "MARK_PREVIOUS" = "Отметить Предыдущие";
-"NO_NEXT_CHAPTER" = "Следующей главы нет";
+"NO_NEXT_CHAPTER" = "Нет следующей главы";
 "RTL" = "Справа налево";
 "VERTICAL_SCROLL" = "Вертикальная прокрутка";
-"INFINITE_VERTICAL_SCROLL" = "Бесконечная Вертикальная Прокрутка";
+"INFINITE_VERTICAL_SCROLL" = "Бесконечный верт. скроллинг";
 
 // Search
 "SEARCH" = "Поиск";
 "AUTH_TO_DISABLE" = "Аутентификация для отключения.";
 "INCOGNITO_MODE_TEXT" = "Приостанавливает запись истории, если включено";
 "MANGA_PER_ROW" = "Манга в строке";
-"UPDATE_INTERVAL" = "Интервал обновления";
+"UPDATE_INTERVAL" = "Интервал обновлений";
 "WITH_COMPLETED_STATUS" = "С завершенным статусом";
-"SHOW_NSFW_SOURCES" = "Показать источники NSFW";
+"SHOW_NSFW_SOURCES" = "Показывать источники NSFW";
 "SOURCE_LIST_URL" = "URL-адрес списка источников";
 "SOURCE_LIST_ADD_FAIL" = "Не удалось добавить список источников";
 "LIBRARY_UPDATING" = "Обновление библиотеки";
 "SKIP_TITLES" = "Пропускать Тайтлы";
-"THAT_HAVENT_BEEN_READ" = "Которые не были прочитаны";
-"SOURCE_LISTS" = "Списки источников";
+"THAT_HAVENT_BEEN_READ" = "Непрочитанные";
+"SOURCE_LISTS" = "Список источников";
 "BACKUP_IMPORT_FAIL_TEXT" = "Не удалось сохранить резервную копию. Пожалуйста, убедитесь, что ваша резервная копия имеет надлежащий формат.";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Указанный URL-адрес списка источников является недопустимым или уже был добавлен.";
-"BACKUP_INFO" = "Длительное нажатие на резервную копию, чтобы экспортировать ее, или проведите пальцем влево, чтобы удалить.";
+"BACKUP_INFO" = "Зажмите на резервную копию, чтобы экспортировать ее, или проведите пальцем влево, чтобы удалить.";
 "RESTORE_BACKUP_TEXT" = "Все текущие данные будут удалены и заменены данными из этой резервной копии.";
 "RESET_TEXT" = "Это действие необратимо. Все данные, настройки и кэши будут очищены и сброшены.";
 "CLEAR_MANGA_CACHE_TEXT" = "Это действие необратимо. Кэшированная манга, которой нет в вашей библиотеке, будет удалена.";
-"CLEAR_MANGA_CACHE" = "Очистить кэш Манги";
-"CLEAR_NETWORK_CACHE" = "Очистить Сетевой кэш";
+"CLEAR_MANGA_CACHE" = "Очистить кэш манги";
+"CLEAR_NETWORK_CACHE" = "Очистить cетевой кэш";
 "STARTED" = "Начал читать";
 "STATUS" = "Статус";
 "START_TRACKING" = "Начать отслеживать";
@@ -276,8 +276,8 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Вы уверены что хотите удалить все загрузки?";
 "CACHE_SIZE_%@" = "Размер кеша: %@";
 "SUPPORT_VIA_KOFI" = "Поддержать через Ko-Fi";
-"MIGRATE_SOURCES" = "Переместить Источники";
-"MIGRATE_ONE_ITEM?" = "Переместить 1 штуку?";
+"MIGRATE_SOURCES" = "Мигрировать источники";
+"MIGRATE_ONE_ITEM?" = "Мигрировать 1 штуку?";
 "ALL_CHAPTERS_READ" = "Все главы прочитаны";
 "UPLOAD_DATE" = "Дата загрузки";
 "SELECT" = "Выбрать";
@@ -286,23 +286,23 @@
 "%i_PAGES_LEFT" = "%i страниц осталось";
 "%i_OF_%i" = "%i из %i";
 "ONE_PAGE_LEFT" = "1 страница осталась";
-"LAST_UPDATED" = "Последние обновленные";
-"TOTAL_CHAPTERS" = "Всего глав";
+"LAST_UPDATED" = "Последний обновленный";
+"TOTAL_CHAPTERS" = "Количеству глав";
 "START_MATCHING" = "Начать поиск соответствий";
-"SYNC_WITH_TRACKER_INFO" = "Похоже, что последняя глава, установленная в трекере (%g), выше, чем ваша последняя прочитанная глава. Не хотите ли вы обновить свою локальную историю, чтобы она соответствовала?";
+"SYNC_WITH_TRACKER_INFO" = "Похоже, что последняя глава, установленная в трекере (%g), выше, чем ваша последняя прочитанная глава. Хотите ли вы обновить свою локальную историю для соответствия?";
 "RENAME_CATEGORY_INFO" = "Введите новое название для категории.";
 "RENAME_CATEGORY_FAIL" = "Не удалось переименовать Категорию";
 "SKIP_DUPLICATE_CHAPTERS" = "Пропустить дублирующиеся главы";
 "RENAME_CATEGORY" = "Переименовать Категорию";
 "CATEGORY_NAME" = "Название Категории";
-"FAILED_CHAPTER_LOAD_INFO" = "Вы можете быть оффлайн или у источника могут неполадки.";
+"FAILED_CHAPTER_LOAD_INFO" = "Возможно у вас нет интернета, или у источника могут быть технические шоколадки.";
 "UNREAD_CHAPTERS" = "Непрочитанные главы";
 "RELOAD" = "Обновить";
 "FAILED_CHAPTER_LOAD" = "Не удалось загрузить главу";
-"WEBTOON" = "Webtoon";
-"MOST_CHAPTERS_SLOWER" = "Наибольшее кол-во глав (медленнее)";
+"WEBTOON" = "Вебтун";
+"MOST_CHAPTERS_SLOWER" = "Больше глав (медленнее)";
 "SYNC_LOCAL_HISTORY" = "Синхронизировать локальную историю";
-"MIGRATE" = "Переместить";
+"MIGRATE" = "Мигрировать";
 "MIGRATION" = "Перемещение";
 "DESTINATION" = "Цель";
 "OPTIONS" = "Настройки";
@@ -311,10 +311,10 @@
 "NOT_FOUND" = "Не найден";
 "FIRST_ALTERNATIVE" = "Первая альтернатива";
 "TRACKING" = "Отслеживаемые";
-"MIGRATE_%i_ITEMS?" = "Переместить %i штук?";
+"MIGRATE_%i_ITEMS?" = "Мигрировать %i штук?";
 "AVAILABLE" = "Доступен";
 "DEFAULT_READING_MODE" = "Режим чтения по-умолчанию";
-"PILLARBOX" = "Каше";
+"PILLARBOX" = "Pillarbox";
 "BOTH" = "Оба";
 "PINNED" = "Закрепленные";
 "MANHUA" = "Маньхуа";
@@ -342,3 +342,21 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Ваш токен в MyAnimeList был просрочен, поэтому трекинг в MyAnimeList не будет работать пока вы не перелогинитесь в настройках.";
 "BACKUP_ERROR" = "Ошибка восстановления резервной копии";
 "BACKUP_ERROR_TEXT" = "При восстановлении произошла ошибка: %@. Возможно эта копия повреждена.";
+"RESUME" = "Возобновить";
+"NO_WIFI_ALERT_MESSAGE" = "Вам необходимо быть подключенным к Wi-Fi, чтобы скачать. Пожалуйста подключитесь к Wi-Fi и попробуйте снова.";
+"LINK_COPIED_TEXT" = "Эта ссылка скопирована в буфер обмена.";
+
+// Manga Updates
+"MANGA_UPDATES" = "Обновления";
+"NO_UPDATES" = "Нет обновлений";
+"%lld_PLUS_MORE" = "более +%lld";
+"ONLY_DOWNLOAD_ON_WIFI" = "Скачивать только при Wi-Fi";
+"READER_BG_COLOR" = "Фоновый цвет";
+"READER_BG_COLOR_SYSTEM" = "Системный";
+"READER_BG_COLOR_WHITE" = "Белый";
+"READER_BG_COLOR_BLACK" = "Чёрный";
+"PAUSE" = "Пауза";
+"WARNING" = "Предупреждение";
+"NO_WIFI_ALERT_TITLE" = "Нет соединения к Wi-Fi";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Вы не подключены к Wi-Fi. Все равно скачать?";
+"LINK_COPIED" = "Ссылка скопирована";

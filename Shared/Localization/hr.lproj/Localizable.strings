@@ -355,3 +355,8 @@
 "READER_BG_COLOR_SYSTEM" = "Sustav";
 "READER_BG_COLOR_WHITE" = "Bijela";
 "READER_BG_COLOR_BLACK" = "Crna";
+
+// Manga Updates
+"MANGA_UPDATES" = "Ažuriranja";
+"NO_UPDATES" = "Nema ažuriranja";
+"%lld_PLUS_MORE" = "+%lld više";

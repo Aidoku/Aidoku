@@ -123,13 +123,13 @@
 "START_READING" = "読み始める";
 "CH_SPACE_X" = "第%g話";
 "CONTINUE_READING" = "読み続ける";
-"READ" = "既読";
-"UNREAD" = "未読";
-"MARK" = "マーク";
+"READ" = "既読にする";
+"UNREAD" = "未読にする";
+"MARK" = "操作";
 "PREVIOUS_COLON" = "前の章：";
 "FINISHED_COLON" = "ただいま読んでいた章：";
-"MARK_ALL" = "全てマーク";
-"MARK_UNREAD" = "未読としてマーク";
+"MARK_ALL" = "全てを操作";
+"MARK_UNREAD" = "未読にする";
 "CURRENT_COLON" = "今読んでいる章：";
 "NO_NEXT_CHAPTER" = "次の章はありません";
 "NO_PREVIOUS_CHAPTER" = "前の章はありません";
@@ -157,7 +157,7 @@
 "GENERAL" = "一般";
 "ICLOUD_SYNC" = "iCloud同期";
 "INCOGNITO_MODE" = "シークレットモード";
-"INCOGNITO_MODE_TEXT" = "有効にすると、読書履歴が一時停止します";
+"INCOGNITO_MODE_TEXT" = "有効にしている間、読書履歴が一時的に記録されません";
 "APPEARANCE" = "外観";
 "APPEARANCE_LIGHT" = "ライト";
 "APPEARANCE_DARK" = "ダーク";
@@ -207,7 +207,7 @@
 "SOURCE_LIST_ADD_FAIL" = "ソースリストの追加に失敗しました";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "提供されたソースリストのURLが無効であるか、すでに追加されています。";
 "OPEN_READER_VIEW" = "リーダービューを開く";
-"MARK_READ" = "既読としてマーク";
+"MARK_READ" = "既読にする";
 "VOL_SPACE_X" = "%g巻";
 "PIN_MANGA_TYPE" = "固定の漫画";
 "EXCLUDED_CATEGORIES" = "除外された本棚";
@@ -228,9 +228,9 @@
 "LIBRARY_LOCKED" = "ライブラリはロックされています。";
 "CATEGORY_LOCKED" = "本棚はロックされています。";
 "TRACKING" = "追跡";
-"SET_AS_WIDE_PAGE" = "ワイドページとして設定";
+"SET_AS_WIDE_PAGE" = "ワイドページにする";
 "AUTOMATIC" = "自動";
-"SET_AS_NORMAL_PAGE" = "通常ページとして設定";
+"SET_AS_NORMAL_PAGE" = "通常ページにする";
 "SINGLE_PAGE" = "シングルページ";
 "STOP_TRACKING" = "追跡停止";
 "READING" = "読書中";
@@ -327,9 +327,9 @@
 "MANHWA" = "漫画（韓国）";
 "MANHUA" = "漫画（中国）";
 "UPCOMING" = "今後";
-"MARK_PREVIOUS" = "ここまでの章をマーク";
+"MARK_PREVIOUS" = "ここまでを操作";
 "WITH_UNREAD_CHAPTERS" = "未読の章あり";
-"FINISHED" = "既読";
+"FINISHED" = "完了済み";
 "COPY" = "コピー";
 "COVER" = "表紙";
 "REORDER" = "再配列";
@@ -353,3 +353,8 @@
 "READER_BG_COLOR_SYSTEM" = "システム";
 "READER_BG_COLOR_WHITE" = "白";
 "READER_BG_COLOR_BLACK" = "黒";
+
+// Manga Updates
+"MANGA_UPDATES" = "更新";
+"NO_UPDATES" = "更新なし";
+"%lld_PLUS_MORE" = "+%lld個";

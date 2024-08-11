@@ -355,3 +355,8 @@
 "ALL_CHAPTERS_READ" = "Sva poglavlja pročitana";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox orijentacija određuje za koje orijentacije treba omogućiti pillarboxing.";
 "BACKUP_ERROR_TEXT" = "Došlo je do greške prilikom vraćanja: %@. Rezervna kopija je možda nevažeća.";
+
+// Manga Updates
+"MANGA_UPDATES" = "Ažuriranja";
+"NO_UPDATES" = "Nema ažuriranja";
+"%lld_PLUS_MORE" = "+%lld više";
