@@ -14,13 +14,13 @@ extension Date {
         let difference = Calendar.autoupdatingCurrent.dateComponents(Set([Calendar.Component.day]), from: date, to: now)
 
         // today or yesterday
-        if days < 2 {
+        if days <= 1 {
             let formatter = DateFormatter()
             formatter.locale = Locale.autoupdatingCurrent
             formatter.dateStyle = .medium
             formatter.doesRelativeDateFormatting = true
             return formatter.string(from: date)
-        } else if days < 8 { // n days ago
+        } else if days <= 7 { // n days ago
             let formatter = DateComponentsFormatter()
             formatter.unitsStyle = .short
             formatter.allowedUnits = .day
@@ -32,5 +32,13 @@ extension Date {
             formatter.dateStyle = .short
             return formatter.string(from: date)
         }
+    }
+}
+
+extension Date {
+    static func endOfDay() -> Date {
+        let calendar = Calendar.autoupdatingCurrent
+        let start = calendar.startOfDay(for: Date())
+        return calendar.date(byAdding: .day, value: 1, to: start)!
     }
 }

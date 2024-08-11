@@ -302,7 +302,7 @@ class HistoryViewController: UIViewController {
                 let days = Calendar.autoupdatingCurrent.dateComponents(
                     Set([Calendar.Component.day]),
                     from: obj.dateRead ?? Date.distantPast,
-                    to: Date()
+                    to: Date.endOfDay()
                 ).day ?? 0
                 var arr = historyDict[days] ?? []
 

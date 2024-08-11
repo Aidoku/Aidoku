@@ -143,7 +143,7 @@ struct MangaUpdatesView: View {
                 let day = Calendar.autoupdatingCurrent.dateComponents(
                     Set([Calendar.Component.day]),
                     from: info.date,
-                    to: Date()
+                    to: Date.endOfDay()
                 ).day ?? 0
 
                 var updatesOfTheDay = updatesDict[day] ?? [:]
