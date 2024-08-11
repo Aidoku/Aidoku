@@ -136,6 +136,7 @@
 "CURRENT_COLON" = "Current:";
 "NO_NEXT_CHAPTER" = "There is no next chapter";
 "NO_PREVIOUS_CHAPTER" = "There is no previous chapter";
+"SKIPPING_CHAPTERS" = "Skipping %i chapters, either the source is missing them or they have been filtered out";
 "READER_SETTINGS" = "Reader Settings";
 "READING_MODE" = "Reading Mode";
 "DEFAULT" = "Default";
