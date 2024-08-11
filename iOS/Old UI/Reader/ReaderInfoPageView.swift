@@ -71,7 +71,6 @@ class ReaderInfoPageView: UIView {
         skippingChaptersLabel.textAlignment = .left
         skippingChaptersLabel.font = .systemFont(ofSize: 16)
         skippingChaptersLabel.numberOfLines = 0
-        skippingChaptersLabel.preferredMaxLayoutWidth = 200
         skippingChaptersLabel.translatesAutoresizingMaskIntoConstraints = false
         let warningIconView = UIImageView(image: UIImage(systemName: "exclamationmark.triangle.fill"))
         warningIconView.tintColor = .systemYellow
@@ -121,13 +120,13 @@ class ReaderInfoPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func chapterDifference(higherChapterNumber: Float, lowerChapterNumber: Float ) -> Int {
-        Int(floor(higherChapterNumber) - floor(lowerChapterNumber)) - 1
+    func chapterDifference(higherChapterNumber: Float, lowerChapterNumber: Float) -> Int {
+        Int(floor(higherChapterNumber) - floor(lowerChapterNumber))
     }
 
     func updateLabelText() {
-        guard let currentChapter = currentChapter else { return }
-        if let previousChapter = previousChapter {
+        guard let currentChapter else { return }
+        if let previousChapter {
             topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
             if let previousTitle = previousChapter.title {
                 topChapterTitleLabel.text = String(
@@ -165,7 +164,7 @@ class ReaderInfoPageView: UIView {
             }
             noChapterLabel.isHidden = true
             stackView.isHidden = false
-        } else if let nextChapter = nextChapter {
+        } else if let nextChapter {
             topChapterLabel.text = NSLocalizedString("FINISHED_COLON", comment: "")
             if let currentTitle = currentChapter.title {
                 topChapterTitleLabel.text = String(
