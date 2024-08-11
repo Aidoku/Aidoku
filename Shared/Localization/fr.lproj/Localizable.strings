@@ -352,3 +352,8 @@
 "RESUME" = "Reprendre";
 "NO_WIFI_ALERT_TITLE" = "Pas de Wi-Fi";
 "ONLY_DOWNLOAD_ON_WIFI" = "Télécharger uniquement en Wi-Fi";
+"%lld_PLUS_MORE" = "+%lld autres";
+
+// Manga Updates
+"MANGA_UPDATES" = "Mises à jour";
+"NO_UPDATES" = "Pas de mises à jour";

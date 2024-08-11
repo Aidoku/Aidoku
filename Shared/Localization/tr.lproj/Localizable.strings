@@ -96,7 +96,7 @@
 "CONTINUE_READING" = "Devam Et";
 "UNREAD" = "Okunmamış";
 "MARK" = "İşaretle";
-"MARK_ALL" = "Hepsini İşaretle";
+"MARK_ALL" = "Hepsini işaretle";
 "MARK_UNREAD" = "Okunmamış olarak İşaretle";
 "MARK_READ" = "Okunmuş olarak İşaretle";
 "FINISHED_COLON" = "Tamamlanmış:";
@@ -324,7 +324,7 @@
 "UPLOAD_DATE" = "Yükleme Zamanı";
 "ALL_CHAPTERS_READ" = "Bütün Bölümleri Oku";
 "DEFAULT_READING_MODE" = "Varsayılan Okuma Modu";
-"TRACKING" = "İzleme";
+"TRACKING" = "Takip Ediliyor";
 "PILLARBOX" = "Çerçeve";
 "PILLARBOX_AMOUNT" = "Çerçeve Boyutu";
 "PILLARBOX_ORIENTATION" = "Çerçeve Yönü";
@@ -336,9 +336,27 @@
 "COPY" = "Kopyala";
 "PIN" = "Başa tuttur";
 "UNPIN" = "Başa Tutturmayı Kaldır";
-"REORDER" = "Reorder";
+"REORDER" = "Yeniden sırala";
 "COVER" = "Kapak";
 "MAL_LOGIN_NEEDED" = "MyAnimeList Girişi Gerekiyor";
 "MAL_LOGIN_NEEDED_TEXT" = "MyAnimeList Tokeninizin süresi doldu, bu nedenle ayarlardan yeniden oturum açana kadar MyAnimeList çalışmayacaktır.";
-"BACKUP_ERROR_TEXT" = "Geri yüklerken bir hata oluştu: %@. Yedek geçersiz olabilir.";
+"BACKUP_ERROR_TEXT" = "%@ Geri yüklerken bir hata oluştu. Yedek geçersiz olabilir.";
 "BACKUP_ERROR" = "Yedek Geri Yükleme Hatası";
+
+// Manga Updates
+"MANGA_UPDATES" = "Güncellemeler";
+"NO_UPDATES" = "Güncelleme yok";
+"%lld_PLUS_MORE" = "+% daha";
+"ONLY_DOWNLOAD_ON_WIFI" = "Sadece Wi-Fi üzerinden indir";
+"READER_BG_COLOR" = "Arka Plan Rengi";
+"READER_BG_COLOR_SYSTEM" = "Sistem";
+"READER_BG_COLOR_WHITE" = "Beyaz";
+"READER_BG_COLOR_BLACK" = "Siyah";
+"LINK_COPIED_TEXT" = "Bağlantı panoya kopyalandı.";
+"PAUSE" = "Durdur";
+"RESUME" = "Devam Ettir";
+"WARNING" = "Uyarı";
+"NO_WIFI_ALERT_TITLE" = "Wi-Fi Yok";
+"NO_WIFI_ALERT_MESSAGE" = "Bu içeriği indirmek için Wi-Fi'a bağlı olmalısınız. Lütfen Wi-Fi'a bağlanın ve tekrar deneyin.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Wi-Fi kullanılmıyor. Yine de devam et?";
+"LINK_COPIED" = "Bağlantı Kopyalandı";
