@@ -115,6 +115,8 @@
 "CH_SPACE_X" = "Kap. %g";
 "VOL_SPACE_X" = "Band %g";
 "NO_CHAPTERS" = "Keine Kapitel";
+"LINK_COPIED" = "Link kopiert";
+"LINK_COPIED_TEXT" = "Der Link wurde in die Zwischenablage kopiert.";
 
 // Reader
 "CHAPTER" = "Kapitel";
@@ -306,7 +308,7 @@
 "START_TRACKING" = "Tracking starten";
 "FINISHED" = "Abgeschlossen";
 "PLANNING" = "Geplant";
-"ONESHOT" = "sofortig / ein Schuss";
+"ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Nicht veröffentlicht";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
@@ -332,3 +334,29 @@
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientierung bestimmt in welcher Orientierung ein schwarzer Rand hinzugefügt werden soll.";
 "COVER" = "Deckblatt";
 "COPY" = "Kopieren";
+"ANILIST_LOGIN_NEEDED" = "AniList Login wird benötigt";
+"CROP_BORDERS" = "Ränder bearbeiten";
+"PIN" = "Fixieren";
+"UNPIN" = "Lösen";
+"REORDER" = "Neu anordnen";
+"ANILIST_LOGIN_NEEDED_TEXT" = "Dein AniList-Token ist abgelaufen, sodass der AniList-Tracker nicht mehr funktioniert, bis du dich erneut in den Einstellungen anmeldet hast.";
+"MAL_LOGIN_NEEDED" = "MyAnimeList-Anmeldung ist erforderlich";
+"MAL_LOGIN_NEEDED_TEXT" = "Dein MyAnimeList-Token ist abgelaufen, sodass der MyAnimeList-Tracker nicht mehr funktioniert, bis du dich erneut in den Einstellungen angemeldet hast.";
+"BACKUP_ERROR" = "Fehler bei der Backup-Wiederherstellung";
+"BACKUP_ERROR_TEXT" = "Beim Wiederherstellen ist ein Fehler aufgetreten: %@. Das Backup ist möglicherweise ungültig.";
+"PAUSE" = "Pausieren";
+"RESUME" = "Fortfahren";
+"WARNING" = "Warnung";
+
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "Keine Updates";
+"NO_WIFI_ALERT_TITLE" = "Kein WLAN";
+"NO_WIFI_ALERT_MESSAGE" = "Du musst mit dem Internet verbunden sein, um diesen Inhalt herunterladen zu können. Bitte verbinde dich mit dem Internet und versuche es erneut.";
+"%lld_PLUS_MORE" = "+%lld mehr";
+"ONLY_DOWNLOAD_ON_WIFI" = "Download nur, wenn Wi-Fi verbunden ist";
+"READER_BG_COLOR" = "Hintergrundfarbe";
+"READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_WHITE" = "Weiß";
+"READER_BG_COLOR_BLACK" = "Schwarz";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Sie haben derzeit kein WLAN. Trotzdem herunterladen?";

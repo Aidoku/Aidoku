@@ -16,7 +16,7 @@
 "TITLE" = "Заглавие";
 
 // Browse
-"BROWSE" = "Брауз";
+"BROWSE" = "Разглеждане";
 "COVER" = "Корица";
 "LATEST_CHAPTER" = "Последна глава";
 "BUTTON_UPDATE" = "АКТУАЛИЗИРАНЕ";
@@ -27,10 +27,10 @@
 "DATE_ADDED" = "Дата на добавяне";
 // General
 "CONTINUE" = "Продължи";
-"CANCEL" = "Откажи";
+"CANCEL" = "Отказ";
 "DEFAULT_CATEGORY" = "Категория под разбиране";
-"BUTTON_GET" = "ВЗЕМЕТЕ";
-"NONE" = "Нито един";
+"BUTTON_GET" = "ИЗТЕГЛЯНЕ";
+"NONE" = "Празно";
 "INFO" = "Информация";
 "PIN" = "Закачи";
 "CATEGORY_ADD_TEXT" = "Въведете заглавието на новата категория, която да създадете.";
@@ -47,7 +47,7 @@
 
 // Library
 "LIBRARY" = "Библиотека";
-"LIBRARY_SEARCH" = "Намерете в библиотеката";
+"LIBRARY_SEARCH" = "Търсене в библиотеката";
 "CATEGORIES" = "Категории";
 "UNKNOWN" = "Неизвестно";
 "REMOVE_DOWNLOAD" = "Премахни изтегляне";
@@ -75,3 +75,137 @@
 "VERSION" = "Версия";
 "RENAME" = "Преименуване";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Ръководство за добавяне на източници";
+"BUTTON_FILTER" = "Филтър";
+"CANCELLED" = "Отказан";
+"ONGOING" = "Текущо";
+"COMPLETED" = "Приключен";
+"HIATUS" = "Неактивен";
+"MORE" = "още";
+"SOURCE_ORDER" = "Ред на източник";
+"NSFW" = "NSFW";
+"SUGGESTIVE" = "Подсказващи";
+"BUILD" = "Build";
+"READ" = "Прочетен";
+"MARK_ALL" = "Маркиране на всички";
+"MARK" = "Маркиране";
+"MARK_READ" = "Маркиране като прочетено";
+"MARK_UNREAD" = "Маркиране като непрочетено";
+"NEXT_COLON" = "Следващ:";
+"FINISHED_COLON" = "Завършен:";
+"CURRENT_COLON" = "Текущ:";
+"CH_X" = "Гл.%g";
+"VOL_SPACE_X" = "Том %g";
+"CH_SPACE_X" = "Гл. %g";
+"VOL_X" = "Том%g";
+"START_READING" = "Начално на четенето";
+"CONTINUE_READING" = "Продължаване на четенето";
+"MISSING_SOURCE" = "Липсващ източник";
+"CHAPTERS" = "Глави";
+"DESELECT_ALL" = "Премахване на избор за всички";
+"VOLUME_X" = "Том %g";
+"CHAPTER_X" = "Глава %g";
+"NO_CHAPTERS" = "Без глави";
+"NO_CHAPTERS_AVAILABLE" = "Няма налични глави";
+"NO_NEXT_CHAPTER" = "Няма следваща глава";
+"NO_PREVIOUS_CHAPTER" = "Няма предишна глава";
+"READER_SETTINGS" = "Настройки за четеца";
+"DEFAULT" = "Подразбиране";
+"LTR" = "Ляво към дясно";
+"EXPERIMENTAL" = "Експериментално";
+"INFINITE_VERTICAL_SCROLL" = "Безкрайно вертикално скролиране";
+"SAVE_TO_PHOTOS" = "Запазване към Снимки";
+"%@_AGO" = "Преди %@";
+"REMOVE_ALL_MANGA_HISTORY" = "Премахване на историята за всички манги";
+"HISTORY_LOCKED" = "Историята е заключена.";
+"VIEW_HISTORY" = "Преглед на историята";
+"AUTH_FOR_HISTORY" = "Автентикация за преглед на историята.";
+"VIEW_MORE" = "Преглед на още";
+"AUTH_TO_ENABLE" = "Автентикация за да се включи.";
+"AUTH_TO_DISABLE" = "Автентикация за да се изключи.";
+"GITHUB_REPO" = "GitHub хранилище";
+"SUPPPORT_DEVELOPMENT" = "Подкрепа на развитие";
+"GENERAL" = "Общи";
+"ICLOUD_SYNC" = "iCloud синхронизация";
+"INCOGNITO_MODE" = "Режим \"Инкогнито\"";
+"APPEARANCE" = "Изглед";
+"APPEARANCE_LIGHT" = "Светъл";
+"APPEARANCE_DARK" = "Тъмен";
+"USE_SYSTEM_APPEARANCE" = "Системен изглед";
+"MANGA_PAGE" = "Манга страница";
+"SHOW_SOURCE_LABEL" = "Показване на етикет за източника";
+"USE_MANGA_TINT" = "Използване на оттенък за манга";
+"MANGA_PER_ROW" = "Манги на един ред";
+"PORTRAIT" = "Портрет";
+"LANDSCAPE" = "Пейзаж";
+"READER" = "Четец";
+"OPEN_READER_VIEW" = "Отваряне на изглед за четене";
+"UNREAD_CHAPTER_BADGES" = "Значки за непрочетени глави";
+"PIN_MANGA" = "Закачи манга";
+"PIN_MANGA_TYPE" = "Вид значка";
+"PIN_MANGA_UPDATED" = "Обновени";
+"LIBRARY_UPDATING" = "Обновяване на библиотеката";
+"UPDATE_INTERVAL" = "Интервал на обновяване";
+"SKIP_TITLES" = "Пропускане на заглавията";
+"EXCLUDED_CATEGORIES" = "Изключени категории";
+"NEVER" = "Никога";
+"EVERY_12_HOURS" = "Всеки 12 часа";
+"WITH_COMPLETED_STATUS" = "Със статус на приключен";
+"THAT_HAVENT_BEEN_READ" = "Които не са били четени";
+"SOURCE_LISTS" = "Списъци с източници";
+"SOURCE_LIST_ADDED" = "Списък с източници е добавен";
+"SOURCE_LIST_ADDED_TEXT" = "Сега можете да преглеждате външни източници в раздела Преглед.";
+"SHOW_NSFW_SOURCES" = "Покажи NSFW източници";
+"SOURCE_LIST_URL" = "URL на списъка с източници";
+"SOURCE_LIST_ADD_FAIL" = "Неуспешно добавяне на списък с източници";
+"BACKUPS" = "Резервни копия";
+"BACKUP_NAME" = "Име на резервно копие";
+"RENAME_BACKUP" = "Преименуване на резервно копие";
+"SAVE_IMAGE_OPTION" = "Опция за запазване на изображение";
+"DOWNSAMPLE_IMAGES" = "Намаляване на извадката на изображенията";
+"LOCK_HISTORY_TAB" = "Заключване на раздела за История";
+
+// Manga
+"UNTITLED" = "Неозаглавен";
+
+// Reader
+"CHAPTER" = "Глава";
+
+// History
+"HISTORY" = "Истори";
+
+// Search
+"SEARCH" = "Търсене";
+
+// Settings
+"SETTINGS" = "Настройки";
+"UNREAD" = "Нечетен";
+"MARK_PREVIOUS" = "Маркиране на предишните";
+"PREVIOUS_COLON" = "Предишен:";
+"SELECT_CHAPTERS" = "Избор на глави";
+"SELECT_ALL" = "Изобр на всички";
+"LIST_HEADER" = "Списък";
+"LIST_ALL" = "Всички";
+"READING_MODE" = "Режим на четене";
+"RTL" = "Дясно към ляво";
+"VERTICAL" = "Верикално";
+"VERTICAL_SCROLL" = "Вертикален скрол";
+"PAGE_X" = "Страница %i";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Това ще премахне историята за тази глава. Сигурни ли сте че искате да продължите?";
+"ABOUT" = "Относно";
+"DISCORD_SERVER" = "Дискорд сървър";
+"MISSING_SOURCE_TEXT" = "Изглежда, че оригиналният източник липсва за тази манга. Моля, изтеглете я отново или премахнете това заглавие от библиотеката си.";
+"INCOGNITO_MODE_TEXT" = "Паузиране на исторята на четене когато е включено";
+"USE_MANGA_TINT_INFO" = "Оцветяване на страниците на мангата в зависимост от цвета на изображението на корицата";
+"PIN_MANGA_UNREAD" = "Нечетени";
+"ONLY_UPDATE_ON_WIFI" = "Обновяване само през Wi-Fi";
+"DAILY" = "Ежедневно";
+"REFRESH_METADATA" = "Обновяване на метаданни";
+"EVERY_2_DAYS" = "Всеки 2 дни";
+"WEEKLY" = "Седмично";
+"WITH_UNREAD_CHAPTERS" = "С непрочетени глави";
+"SOURCE_LIST_ADD" = "Добавяне на списък източници";
+"CROP_BORDERS" = "Изрязване на рамктие";
+"SOURCE_LIST_ADD_TEXT" = "Въведете URL адреса на списъка с източници";
+"SOURCE_LIST_ADD_FAIL_TEXT" = "Предоставеният URL адрес на списъка с източници е невалиден или вече е бил добавен.";
+"RENAME_BACKUP_TEXT" = "Въведете ново име за резервно копие";
+"CORRUPTED_BACKUP" = "Повредено резервно копие";

@@ -166,7 +166,7 @@ struct MigrateMangaView: View {
             for manga in manga {
                 group.addTask {
                     // check sources until a manga is found
-                    for source in selectedSources {
+                    for source in await selectedSources {
                         guard
                             let title = manga.title,
                             let source = SourceManager.shared.source(for: source.sourceId)
@@ -175,16 +175,20 @@ struct MigrateMangaView: View {
                         if let newManga = search?.manga.first {
                             // if we need to check chapters
 //                            let chapters = try? await source.getChapterList(manga: newManga)
-                            withAnimation {
-                                migratedManga[manga.hashValue] = newManga
-//                                newChapters[manga.hashValue] = chapters
-                                states[manga.hashValue] = .done
+                            await MainActor.run {
+                                withAnimation {
+                                    migratedManga[manga.hashValue] = newManga
+//                                    newChapters[manga.hashValue] = chapters
+                                    states[manga.hashValue] = .done
+                                }
                             }
                             return
                         }
                     }
                     // didn't find a manga in any of the sources
-                    states[manga.hashValue] = .failed
+                    await MainActor.run {
+                        states[manga.hashValue] = .failed
+                    }
                 }
             }
         }
@@ -202,7 +206,7 @@ struct MigrateMangaView: View {
             for oldManga in manga {
                 group.addTask {
                     guard
-                        let newManga = migratedManga[oldManga.hashValue],
+                        let newManga = await migratedManga[oldManga.hashValue],
                         let newManga = newManga,
                         let source = SourceManager.shared.source(for: newManga.sourceId)
                     else { return nil }
@@ -210,7 +214,7 @@ struct MigrateMangaView: View {
                     let mangaDetails = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
 
                     let chapters: [Chapter]
-                    if let newChapters = newChapters[oldManga.hashValue] {
+                    if let newChapters = await newChapters[oldManga.hashValue] {
                         chapters = newChapters
                     } else {
                         chapters = (try? await source.getChapterList(manga: mangaDetails)) ?? []

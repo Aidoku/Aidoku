@@ -7,7 +7,7 @@
 
 import Foundation
 import SystemConfiguration
-import CoreTelephony
+import Network
 
 enum NetworkDataType {
     case none
@@ -15,9 +15,12 @@ enum NetworkDataType {
     case wifi
 }
 
-class Reachability {
+final class Reachability {
+    private static var observers: [UUID: NWPathMonitor] = [:]
+    private static let queue = DispatchQueue(label: "ReachabilityMonitorQueue")
+
     static func getConnectionType() -> NetworkDataType {
-        guard let reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.google.com") else {
+        guard let reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.apple.com/library/test/success.html") else {
             return .none
         }
 
@@ -31,5 +34,37 @@ class Reachability {
         #else
             return flags.contains(.isWWAN) ? .cellular : .wifi
         #endif
+    }
+
+    static func registerConnectionTypeObserver(
+        _ handle: @escaping (NetworkDataType) -> Void,
+        queue: DispatchQueue = .main
+    ) -> UUID {
+        let monitor = NWPathMonitor()
+
+        monitor.pathUpdateHandler = { path in
+            let connectionType: NetworkDataType
+            if path.usesInterfaceType(.wifi) || path.usesInterfaceType(.wiredEthernet) {
+                connectionType = .wifi
+            } else if path.usesInterfaceType(.cellular) {
+                connectionType = .cellular
+            } else {
+                connectionType = .none
+            }
+            queue.async {
+                handle(connectionType)
+            }
+        }
+
+        monitor.start(queue: self.queue)
+
+        let id = UUID()
+        observers[id] = monitor
+        return id
+    }
+
+    static func unregisterConnectionTypeObserver(_ id: UUID) {
+        observers[id]?.cancel()
+        observers.removeValue(forKey: id)
     }
 }

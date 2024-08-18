@@ -7,6 +7,7 @@
 
 import Foundation
 import WasmInterpreter
+import CWasm3
 
 struct SourceInfo: Codable {
     let id: String
@@ -156,7 +157,10 @@ class Source: Identifiable {
             let message = self.globalStore.readString(offset: msg, length: Int32(messageLength))
             let file = self.globalStore.readString(offset: fileName, length: Int32(fileLength))
 
-            LogManager.logger.error("[Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
+            LogManager.logger.error("[\(self.id)] [Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
+
+            // break out of the current wasm execution to prevent unreachable from being called (prevents a crash)
+            set_should_yield_next()
         }
     }
 }
@@ -354,6 +358,14 @@ extension Source {
                 return await DownloadManager.shared.getDownloadedPages(for: chapter)
             }
         }
+        return await actor.getPageList(chapter: chapter)
+    }
+
+    func getPageListWithoutContents(chapter: Chapter) async throws -> [Page] {
+        if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
+            return await DownloadManager.shared.getDownloadedPagesWithoutContents(for: chapter)
+        }
+
         return await actor.getPageList(chapter: chapter)
     }
 

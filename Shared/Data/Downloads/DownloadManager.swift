@@ -30,6 +30,10 @@ class DownloadManager {
     private let queue: DownloadQueue
 //    private let store: DownloadStore // TODO: store downloads so if the app exits we can resume
 
+    private(set) var downloadsPaused = false
+
+    var ignoreConnectionType = false
+
     init() {
         self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
@@ -53,13 +57,26 @@ class DownloadManager {
                         chapterId: chapter.id,
                         index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
                         imageURL: nil,
-                        base64: page.pathExtension == "txt" ? String(data: data, encoding: .utf8) : data.base64EncodedString(),
+                        base64: page.pathExtension == "txt" ? String(decoding: data, as: UTF8.self) : data.base64EncodedString(),
                         text: nil
                     )
                 )
             }
         }
         return pages.sorted { $0.index < $1.index }
+    }
+
+    func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
+        cache.directory(for: chapter).contents
+            .compactMap { url in
+                Page(
+                    sourceId: chapter.sourceId,
+                    chapterId: chapter.id,
+                    index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
+                    imageURL: url.absoluteString
+                )
+            }
+            .sorted { $0.index < $1.index }
     }
 
     func isChapterDownloaded(chapter: Chapter) -> Bool {
@@ -125,6 +142,22 @@ extension DownloadManager {
         NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
     }
 
+    func pauseDownloads(for chapters: [Chapter] = []) {
+        Task {
+            await queue.pause()
+        }
+        downloadsPaused = true
+        NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
+    }
+
+    func resumeDownloads(for chapters: [Chapter] = []) {
+        Task {
+            await queue.resume()
+        }
+        downloadsPaused = false
+        NotificationCenter.default.post(name: Notification.Name("downloadsResumed"), object: nil)
+    }
+
     func cancelDownload(for chapter: Chapter) {
         Task {
             await queue.cancelDownload(for: chapter)
@@ -139,6 +172,7 @@ extension DownloadManager {
                 await queue.cancelDownloads(for: chapters)
             }
         }
+        downloadsPaused = false
     }
 
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {

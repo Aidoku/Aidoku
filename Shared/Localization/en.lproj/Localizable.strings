@@ -17,11 +17,14 @@
 "REMOVE" = "Remove";
 "RENAME" = "Rename";
 "CLEAR" = "Clear";
+"PAUSE" = "Pause";
+"RESUME" = "Resume";
 "LOADING_ELLIPSIS" = "Loading…";
 "SHARE" = "Share";
 "COPY" = "Copy";
 "SAVE" = "Save";
 "RETRY" = "Retry";
+"WARNING" = "Warning";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -32,6 +35,9 @@
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
+"NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
+"NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
 
 // Library
 "LIBRARY" = "Library";
@@ -103,6 +109,8 @@
 "SELECT_CHAPTERS" = "Select Chapters";
 "SELECT_ALL" = "Select All";
 "DESELECT_ALL" = "Deselect All";
+"LINK_COPIED" = "Link Copied";
+"LINK_COPIED_TEXT" = "The link has been copied to the clipboard.";
 
 // Reader
 "CHAPTER" = "Chapter";
@@ -130,6 +138,7 @@
 "CURRENT_COLON" = "Current:";
 "NO_NEXT_CHAPTER" = "There is no next chapter";
 "NO_PREVIOUS_CHAPTER" = "There is no previous chapter";
+"SKIPPING_CHAPTERS" = "Skipping %i chapters, either the source is missing them or they have been filtered out";
 "READER_SETTINGS" = "Reader Settings";
 "READING_MODE" = "Reading Mode";
 "DEFAULT" = "Default";
@@ -150,6 +159,11 @@
 "HISTORY_LOCKED" = "History is locked.";
 "VIEW_HISTORY" = "View History";
 "AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
+
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "No updates";
+"%lld_PLUS_MORE" = "+%lld more";
 
 // Search
 "SEARCH" = "Search";
@@ -189,8 +203,10 @@
 "UPDATE_INTERVAL" = "Update Interval";
 "SKIP_TITLES" = "Skip Titles";
 "ONLY_UPDATE_ON_WIFI" = "Only Update on Wi-Fi";
+"ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
+"DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_12_HOURS" = "Every 12 hours";
 "DAILY" = "Daily";
@@ -212,6 +228,10 @@
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "SAVE_IMAGE_OPTION" = "Save Image Option";
+"READER_BG_COLOR" = "Background Color";
+"READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_WHITE" = "White";
+"READER_BG_COLOR_BLACK" = "Black";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";

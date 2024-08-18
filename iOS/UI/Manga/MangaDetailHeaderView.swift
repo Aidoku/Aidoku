@@ -13,6 +13,7 @@ protocol MangaDetailHeaderViewDelegate: AnyObject {
     func bookmarkHeld()
     func trackerPressed()
     func safariPressed()
+    func safariHeld()
     func readPressed()
     func coverPressed()
 }
@@ -28,7 +29,7 @@ class MangaDetailHeaderView: UIView {
     weak var sizeChangeListener: SizeChangeListenerDelegate?
 
     private var cancelBookmarkPress = false
-
+    private var cancelSafariButtonPress = false
     // MARK: Start View Configuration
 
     // main stack view (containing everything)
@@ -227,6 +228,8 @@ class MangaDetailHeaderView: UIView {
         bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchCancel)
         bookmarkButton.addTarget(self, action: #selector(bookmarkHoldCancelled), for: .touchDragExit)
         safariButton.addTarget(self, action: #selector(safariPressed), for: .touchUpInside)
+        safariButton.addTarget(self, action: #selector(safariHoldBegan), for: .touchDown)
+        safariButton.addTarget(self, action: #selector(safariHoldCancelled), for: [.touchCancel, .touchDragExit])
         trackerButton.addTarget(self, action: #selector(trackerPressed), for: .touchUpInside)
         readButton.addTarget(self, action: #selector(readPressed), for: .touchUpInside)
 
@@ -532,6 +535,10 @@ class MangaDetailHeaderView: UIView {
     @objc private func safariPressed() {
         delegate?.safariPressed()
     }
+    @objc private func safariHeld() {
+        cancelSafariButtonPress = true
+        delegate?.safariHeld()
+    }
     @objc private func readPressed() {
         delegate?.readPressed()
     }
@@ -573,6 +580,15 @@ class MangaDetailHeaderView: UIView {
 
     @objc private func copyTitleText() {
         UIPasteboard.general.string = titleLabel.text
+    }
+
+    @objc private func safariHoldBegan() {
+        cancelSafariButtonPress = false
+        perform(#selector(safariHeld), with: nil, afterDelay: 0.6)
+    }
+
+    @objc private func safariHoldCancelled() {
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
     }
 }
 

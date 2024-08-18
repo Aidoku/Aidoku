@@ -128,6 +128,8 @@
 "GENERAL" = "Ĝenerala";
 "PAGE_X_OF_X" = "Paĝo %i el %i";
 "EXPERIMENTAL" = "Eksperimenta";
+"LINK_COPIED" = "Link Copiato";
+"LINK_COPIED_TEXT" = "Il link è stato copiato negli appunti.";
 
 // History
 "HISTORY" = "Historio";
@@ -156,3 +158,23 @@
 "RENAME_BACKUP" = "Ŝanĝi nomon de savkopio";
 "BACKUP_NAME" = "Nomo de savkopio";
 "RENAME_BACKUP_TEXT" = "Tajpu novan nomon por via savkopio";
+"MANHWA" = "Korea komikso";
+"1_CHAPTER" = "1 ĉapitro";
+"DESTINATION" = "Celo";
+"COPY" = "Kopii";
+"PIN" = "Alpingli";
+"REORDER" = "Reordigi";
+"UNPIN" = "Depingli";
+"AUTOMATIC" = "Aŭtomate";
+"VOLUMES" = "Volumoj";
+"MANGA" = "Japana komikso";
+"MANHUA" = "Ĉina komikso";
+"TYPE_COLON_%@" = "Speco: %@";
+"LOGOUT" = "Adiaŭi";
+"STATUS" = "Stato";
+"%i_OF_%i" = "%1 de %1";
+"STATUS_COLON_%@" = "Stato: %@";
+"LIGHT_NOVEL" = "Leĝera romano";
+"OPTIONS" = "Opcioj";
+"TITLES" = "Titoloj";
+"%i_CHAPTERS" = "%i ĉapitroj";

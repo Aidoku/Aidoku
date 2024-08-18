@@ -425,6 +425,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 await HistoryManager.shared.addHistory(chapters: [chapter])
             }
         }
+        if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
+            DownloadManager.shared.delete(chapters: [chapter])
+        }
     }
 }
 
@@ -469,7 +472,14 @@ extension ReaderViewController {
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 navigationController.navigationBar.alpha = 0
                 navigationController.toolbar.alpha = 0
-                self.view.backgroundColor = .black
+                self.view.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
+                case "system":
+                    .systemBackground
+                case "white":
+                    .white
+                default:
+                    .black
+                }
             } completion: { _ in
                 navigationController.toolbar.isHidden = true
             }

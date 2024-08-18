@@ -116,11 +116,18 @@ extension CoreDataManager {
     }
 
     /// Set a list of chapters for a manga.
-    func setChapters(_ chapters: [Chapter], sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+    /// - Returns: New created chapters
+    @discardableResult
+    func setChapters(
+        _ chapters: [Chapter],
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> [ChapterObject] {
         let context = context ?? self.context
         var newChapters = chapters
 
-        guard let manga = self.getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
+        guard let manga = self.getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return [] }
 
         // update existing chapter objects
         let chapterObjects = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
@@ -140,14 +147,18 @@ extension CoreDataManager {
         }
 
         // create new chapter objects
+        var newChaptersCreated = [ChapterObject]()
         for chapter in newChapters where !hasChapter(
             sourceId: sourceId,
             mangaId: mangaId,
             chapterId: chapter.id,
             context: context
         ) {
-            createChapter(chapter, mangaObject: manga, context: context)
+            if let chapterObject = createChapter(chapter, mangaObject: manga, context: context) {
+                newChaptersCreated.append(chapterObject)
+            }
         }
+        return newChaptersCreated
     }
 
     /// Get the number of unread chapters for a manga.

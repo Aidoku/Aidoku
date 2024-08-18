@@ -11,6 +11,8 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: 'latest'
+      - name: Patch Xcode 15.3
+        uses: 2sem/patch-package-resolved@v2
       - name: Get commit SHA
         id: commitinfo
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"

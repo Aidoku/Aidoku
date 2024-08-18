@@ -190,8 +190,18 @@ class SettingsViewController: SettingsTableViewController {
                 ),
                 SettingItem(
                     type: "switch",
+                    key: "Library.downloadOnlyOnWifi",
+                    title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
                     key: "Library.refreshMetadata",
                     title: NSLocalizedString("REFRESH_METADATA", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Library.deleteDownloadAfterReading",
+                    title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING", comment: "")
                 )
             ]),
             // MARK: Browse
@@ -236,7 +246,18 @@ class SettingsViewController: SettingsTableViewController {
                 ),
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
                 SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
-                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: ""))
+                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.backgroundColor",
+                    title: NSLocalizedString("READER_BG_COLOR", comment: ""),
+                    values: ["system", "white", "black"],
+                    titles: [
+                        NSLocalizedString("READER_BG_COLOR_SYSTEM", comment: ""),
+                        NSLocalizedString("READER_BG_COLOR_WHITE", comment: ""),
+                        NSLocalizedString("READER_BG_COLOR_BLACK", comment: "")
+                    ]
+                )
             ]),
             ReaderPagedViewModel.settings,
             ReaderWebtoonViewModel.settings,

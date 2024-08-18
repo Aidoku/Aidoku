@@ -40,6 +40,13 @@ actor DownloadQueue {
         }
     }
 
+    func resume() async {
+        for task in tasks {
+            await task.value.resume()
+        }
+        running = true
+    }
+
     func pause() async {
         guard running else { return }
         for task in tasks {
@@ -56,6 +63,9 @@ actor DownloadQueue {
     func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
         var downloads: [Download] = []
         for chapter in chapters {
+            if await cache.isChapterDownloaded(chapter: chapter) {
+                continue
+            }
             // create tmp directory so we know it's queued
             await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
                 .appendingSafePathComponent(".tmp_\(chapter.id)")
