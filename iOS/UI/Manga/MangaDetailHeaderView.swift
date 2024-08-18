@@ -237,7 +237,7 @@ class MangaDetailHeaderView: UIView {
         coverImageView.addGestureRecognizer(coverImageLongPress)
         coverImageView.addOverlay(color: .black)
 
-        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
+        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers(manga: nil)
 
         addSubview(stackView)
         stackView.addArrangedSubview(coverStackView)
@@ -294,6 +294,7 @@ class MangaDetailHeaderView: UIView {
 
     func configure(with manga: Manga) {
         self.manga = manga
+        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers(manga: manga)
 
         titleLabel.text = manga.title ?? NSLocalizedString("UNTITLED", comment: "")
         authorLabel.text = manga.author
@@ -483,7 +484,7 @@ class MangaDetailHeaderView: UIView {
             trackerButton.tintColor = isTracking ? .white : tintColor
             trackerButton.backgroundColor = isTracking ? tintColor : .secondarySystemFill
         }
-        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers
+        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers(manga: manga)
     }
 
     func updateReadButtonTitle(

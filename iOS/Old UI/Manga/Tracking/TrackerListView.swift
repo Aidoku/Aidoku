@@ -17,7 +17,7 @@ struct TrackerListView: View {
     var body: some View {
         VStack {
             ForEach(TrackerManager.shared.trackers, id: \.id) { tracker in
-                if tracker.isLoggedIn {
+                if tracker.isLoggedIn && (tracker.restrictSources == nil || tracker.restrictSources!.contains(manga.sourceId) ){
                     if let item = CoreDataManager.shared.getTrack(
                         trackerId: tracker.id,
                         sourceId: manga.sourceId,

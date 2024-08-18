@@ -32,6 +32,8 @@ class AniListTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
+    var restrictSources: [String]? { nil }
+
     init() {
         // get user score type preference
         Task {

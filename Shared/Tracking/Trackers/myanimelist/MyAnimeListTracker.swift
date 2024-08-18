@@ -31,6 +31,8 @@ class MyAnimeListTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
+    var restrictSources: [String]? { nil }
+
     func register(trackId: String, hasReadChapters: Bool) async {
         guard let id = Int(trackId) else { return }
         // set status to reading if status doesn't already exist
