@@ -7,10 +7,10 @@
 
 import Foundation
 
-#if os(OSX)
-    import AppKit
+#if os(macOS)
+import AppKit
 #else
-    import UIKit
+import UIKit
 #endif
 
 /// Komga tracker for Aidoku.
@@ -71,7 +71,7 @@ class KomgaTracker: HostUserPassTracker {
     }
 
     func getUrl(trackId: String) -> URL? {
-        URL(string: getSerieWebUrl(id: trackId)!)
+        URL(string: getSerieWebUrl(id: trackId) ?? "")
     }
 
     func search(for manga: Manga) async -> [TrackSearchItem] {
@@ -128,8 +128,8 @@ extension KomgaTracker {
             request.addValue("application/json", forHTTPHeaderField: "Accept")
             request.setValue("Basic \(base64LoginString)", forHTTPHeaderField: "Authorization")
 
-            self.createRequest(request: request) { _, response, error in
-                if error == nil && response != nil && response?.statusCode == 200 {
+            await self.createRequest(urlRequest: request) { _, response, error in
+                if error == false && response != nil && response?.statusCode == 200 {
                     res = true
                 }
             }
@@ -148,8 +148,8 @@ extension KomgaTracker {
             var request = generateURLRequest(url: url, method: "PUT")
             request.httpBody = jsonData
 
-            self.createRequest(request: request) { _, _, error in
-                if error == nil {
+            await self.createRequest(urlRequest: request) { _, _, error in
+                if error == false {
                     res = true
                 }
             }
@@ -164,7 +164,7 @@ extension KomgaTracker {
 
             let request = generateURLRequest(url: url, method: "GET")
 
-            self.createRequest(request: request) { jsonString, _, _ in
+            await self.createRequest(urlRequest: request) { jsonString, _, _ in
                 let jsonData = jsonString!.data(using: .utf8)!
                 do {
                     let state: KomgaStatusResultManga = try JSONDecoder().decode(KomgaStatusResultManga.self, from: jsonData)
@@ -187,7 +187,7 @@ extension KomgaTracker {
         if let url = urlComponents.url {
             let request = generateURLRequest(url: url, method: "GET")
 
-            self.createRequest(request: request) { jsonString, _, _ in
+            await self.createRequest(urlRequest: request) { jsonString, _, _ in
                 let jsonData = jsonString!.data(using: .utf8)!
                 do {
                     let mangas: KomgaSearchResultManga = try JSONDecoder().decode(KomgaSearchResultManga.self, from: jsonData)
@@ -205,8 +205,8 @@ extension KomgaTracker {
 
             let request = generateURLRequest(url: url, method: "GET")
 
-            self.createRequest(request: request) { jsonString, response, error in
-                if error == nil && response != nil && response?.statusCode == 200 {
+            await self.createRequest(urlRequest: request) { jsonString, response, error in
+                if error == false && response != nil && response?.statusCode == 200 {
                     let jsonData = jsonString!.data(using: .utf8)!
                     do {
                         let manga: KomgaSearchResultContentManga = try JSONDecoder().decode(KomgaSearchResultContentManga.self, from: jsonData)
@@ -259,25 +259,16 @@ private extension KomgaTracker {
         return nil
     }
 
-    func createRequest(request: URLRequest, completionBlock: @escaping (String?, HTTPURLResponse?, Error?) -> Void)
+    func createRequest(urlRequest: URLRequest, completionBlock: @escaping (String?, HTTPURLResponse?, Bool) -> Void) async
     {
-        let semaphore = DispatchSemaphore(value: 0)
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            var outputStr: String?
-            let response = response as? HTTPURLResponse
-            let error = error
-            if error == nil {
-                let data = data
-                outputStr = String(data: data!, encoding: String.Encoding.utf8)
-            } else
-            {
-                outputStr = nil
-            }
-            completionBlock(outputStr, response, error)
-            semaphore.signal()
+        var outputStr: String?
+
+        if let (data, response) = try? await URLSession.shared.data(for: urlRequest), let response = response as? HTTPURLResponse {
+            outputStr = String(decoding: data, as: UTF8.self)
+            completionBlock(outputStr, response, false)
+        } else {
+            completionBlock(nil, nil, true)
         }
-        task.resume()
-        _ = semaphore.wait(timeout: .distantFuture)
     }
 
     func getSeriesUrl(host: String? = nil) -> String? {

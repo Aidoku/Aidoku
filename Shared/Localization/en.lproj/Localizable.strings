@@ -364,9 +364,9 @@
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
 "BOTH" = "Both";
-"%@_LOGIN_TRACKER" = "Login to your %@ instance.";
-"INSERT_CREDENTIALS" = "Insert your credentials.";
-"ERROR_%@" = "Error while login to %@.";
+"TRACKER_LOGIN_%@" = "Log in to %@";
+"ENTER_CREDENTIALS" = "Enter your credentials.";
+"TRACKER_LOGIN_ERROR_%@" = "Error while logging in to %@.";
 "ANILIST_LOGIN_NEEDED" = "AniList Login Needed";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Your AniList token has expired, so the AniList tracker will stop working until you re-login in settings.";
 "MAL_LOGIN_NEEDED" = "MyAnimeList Login Needed";

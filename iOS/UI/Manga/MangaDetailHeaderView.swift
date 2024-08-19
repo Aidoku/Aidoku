@@ -237,7 +237,7 @@ class MangaDetailHeaderView: UIView {
         coverImageView.addGestureRecognizer(coverImageLongPress)
         coverImageView.addOverlay(color: .black)
 
-        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers(manga: nil)
+        trackerButton.isHidden = !TrackerManager.shared.hasAvailableTrackers()
 
         addSubview(stackView)
         stackView.addArrangedSubview(coverStackView)

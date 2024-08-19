@@ -340,9 +340,9 @@
 "REORDER" = "Riordina";
 "PIN" = "Fissa";
 "UNPIN" = "Rimuovi";
-"%@_LOGIN_TRACKER" = "Collegati alla tua istanza di %@.";
-"INSERT_CREDENTIALS" = "Inserisci le tue credenziali.";
-"ERROR_%@" = "Errore durante il login a %@.";
+"TRACKER_LOGIN_%@" = "Collegati a %@.";
+"ENTER_CREDENTIALS" = "Inserisci le tue credenziali.";
+"TRACKER_LOGIN_ERROR_%@" = "Errore durante il login a %@.";
 "ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, il tracker di AniList non funzionerà finché non si ri-accede dalle impostazioni.";
 "MAL_LOGIN_NEEDED" = "MyAnimeList è necessario fare login";

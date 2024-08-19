@@ -24,8 +24,14 @@ class TrackerManager {
     lazy var trackers: [Tracker] = [anilist, myanimelist, komga]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
-    func hasAvailableTrackers (manga: Manga?) -> Bool {
-        trackers.contains { $0.isLoggedIn && (manga == nil || $0.restrictSources == nil || $0.restrictSources!.contains(manga!.sourceId) ) }
+    func hasAvailableTrackers(manga: Manga? = nil) -> Bool {
+        trackers.contains {
+            if let restrictSources = $0.restrictSources, let manga = manga {
+                return $0.isLoggedIn && restrictSources.contains(manga.sourceId)
+            } else {
+                return $0.isLoggedIn
+            }
+        }
     }
 
     /// Get the instance of the tracker with the specified id.
