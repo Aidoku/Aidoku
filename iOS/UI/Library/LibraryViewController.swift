@@ -28,7 +28,7 @@ class LibraryViewController: MangaCollectionViewController {
     )
 
     private lazy var moreBarButton = UIBarButtonItem(
-        image: UIImage(systemName: "ellipsis"),
+        image: UIImage(systemName: "ellipsis.circle"),
         style: .plain,
         target: nil,
         action: nil

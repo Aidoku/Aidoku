@@ -779,7 +779,7 @@ extension MangaViewController {
             }
 
             let moreButton = UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
+                image: UIImage(systemName: "ellipsis.circle"),
                 style: .plain,
                 target: self,
                 action: nil
