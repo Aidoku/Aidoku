@@ -975,6 +975,31 @@ extension LibraryViewController {
                 })
             }
 
+            actions.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: nil, children: [
+                // read chapters
+                UIAction(title: NSLocalizedString("READ", comment: ""), image: UIImage(systemName: "eye")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        let manga = manga.toManga()
+                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                        await HistoryManager.shared.addHistory(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                },
+                // unread chapters
+                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: UIImage(systemName: "eye.slash")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        let manga = manga.toManga()
+                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                        await HistoryManager.shared.removeHistory(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                }
+            ]))
+
             if let url = manga.url {
                 actions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),
