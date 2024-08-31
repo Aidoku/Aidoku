@@ -698,22 +698,41 @@ extension MangaViewController {
 
         // add remove all downloads button if downloads exist
         if DownloadManager.shared.hasDownloadedChapter(sourceId: manga.sourceId, mangaId: manga.id) {
-            menus.append(UIMenu(title: "", options: .displayInline, children: [
-                UIAction(
-                    title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
-                    image: UIImage(systemName: "trash"),
-                    attributes: .destructive
-                ) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.confirmAction(
-                        title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
-                        message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
-                        continueActionName: NSLocalizedString("REMOVE", comment: "")
-                    ) {
-                        DownloadManager.shared.deleteChapters(for: self.manga)
-                        self.reloadCells(for: self.viewModel.chapterList)
-                        self.updateNavbarButtons()
-                    }
+            menus.append(UIMenu(title: NSLocalizedString("REMOVE_DOWNLOADS", comment: ""), image: nil, children: [
+                // All chapters
+                UIAction(title: NSLocalizedString("ALL", comment: ""),
+                         image: UIImage(systemName: "trash"),
+                         attributes: .destructive
+                        ) { [weak self] _ in
+                            guard let self = self else { return }
+                            self.confirmAction(
+                                title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                                message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
+                                continueActionName: NSLocalizedString("REMOVE", comment: "")
+                            ) {
+                                DownloadManager.shared.deleteChapters(for: self.manga)
+                                self.reloadCells(for: self.viewModel.chapterList)
+                                self.updateNavbarButtons()
+                            }
+                },
+
+                // Read chapters
+                UIAction(title: NSLocalizedString("READ", comment: ""),
+                         image: UIImage(systemName: "eye"),
+                         attributes: .destructive
+                        ) { [weak self] _ in
+                            guard let self = self else { return }
+                            self.confirmAction(
+                                title: NSLocalizedString("REMOVE_READ_DOWNLOADS", comment: ""),
+                                message: NSLocalizedString("REMOVE_READ_DOWNLOADS_CONFIRM", comment: ""),
+                                continueActionName: NSLocalizedString("REMOVE", comment: "")
+                            ) {
+                                DownloadManager.shared.delete(chapters: self.viewModel.fullChapterList
+                                    .filter { ((self.viewModel.readingHistory[$0.id]?.page) != nil) })
+
+                                self.reloadCells(for: self.viewModel.chapterList)
+                                self.updateNavbarButtons()
+                            }
                 }
             ]))
         }

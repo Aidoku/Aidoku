@@ -1026,6 +1026,47 @@ extension LibraryViewController {
                 children: [downloadAllAction, downloadUnreadAction]
             ))
 
+            if DownloadManager.shared.hasDownloadedChapter(sourceId: manga.sourceId, mangaId: manga.toManga().id) {
+                actions.append(UIMenu(title: NSLocalizedString("REMOVE_DOWNLOADS", comment: ""), image: nil, children: [
+                    // All chapters
+                    UIAction(title: NSLocalizedString("ALL", comment: ""),
+                             image: UIImage(systemName: "trash"),
+                             attributes: .destructive
+                            ) { [weak self] _ in
+                                guard let self = self else { return }
+                                self.confirmAction(
+                                    title: NSLocalizedString("REMOVE_ALL_DOWNLOADS", comment: ""),
+                                    message: NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM", comment: ""),
+                                    continueActionName: NSLocalizedString("REMOVE", comment: "")
+                                ) {
+                                    DownloadManager.shared.deleteChapters(for: manga.toManga())
+                                }
+                    },
+                    // Read chapters
+                    UIAction(title: NSLocalizedString("READ", comment: ""),
+                             image: UIImage(systemName: "eye"),
+                             attributes: .destructive
+                            ) { [weak self] _ in
+                                guard let self = self else { return }
+                                self.confirmAction(
+                                    title: NSLocalizedString("REMOVE_READ_DOWNLOADS", comment: ""),
+                                    message: NSLocalizedString("REMOVE_READ_DOWNLOADS_CONFIRM", comment: ""),
+                                    continueActionName: NSLocalizedString("REMOVE", comment: "")
+                                ) {
+                                    Task {
+                                        let manga = manga.toManga()
+
+                                        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
+                                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+                                            .filter { ((readingHistory[$0.id]?.page) != nil) }
+
+                                        DownloadManager.shared.delete(chapters: chapters)
+                                    }
+                                }
+                    }
+                ]))
+            }
+
             if self.viewModel.currentCategory != nil {
                 actions.append(UIAction(
                     title: NSLocalizedString("REMOVE_FROM_CATEGORY", comment: ""),

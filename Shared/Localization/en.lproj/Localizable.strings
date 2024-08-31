@@ -31,6 +31,8 @@
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
+"REMOVE_READ_DOWNLOADS" = "Remove Read Downloads";
+"REMOVE_READ_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove read downloads?";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
 "NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
