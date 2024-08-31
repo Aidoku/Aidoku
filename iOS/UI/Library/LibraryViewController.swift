@@ -1056,8 +1056,12 @@ extension LibraryViewController {
                                     Task {
                                         let manga = manga.toManga()
 
-                                        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-                                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+                                        let readingHistory = await CoreDataManager.shared.getReadingHistory(
+                                            sourceId: manga.sourceId,
+                                            mangaId: manga.id)
+                                        let chapters = await CoreDataManager.shared.getChapters(
+                                            sourceId: manga.sourceId,
+                                            mangaId: manga.id)
                                             .filter { ((readingHistory[$0.id]?.page) != nil) }
 
                                         DownloadManager.shared.delete(chapters: chapters)
