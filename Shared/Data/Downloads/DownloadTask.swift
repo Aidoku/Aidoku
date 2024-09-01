@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UniformTypeIdentifiers
 
 protocol DownloadTaskDelegate: AnyObject {
     func taskCancelled(task: DownloadTask) async
@@ -113,8 +114,14 @@ actor DownloadTask: Identifiable {
                     }
                     if let body = request.body { urlRequest.httpBody = body }
                 }
-                if let (data, _) = try? await URLSession.shared.data(for: urlRequest) {
-                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
+                if let (data, res) = try? await URLSession.shared.data(for: urlRequest) {
+                    // See if we can guess the file extension
+                    var fileExtenion = "png"
+                    if let mimeType = res.mimeType, let type = UTType(mimeType: mimeType) {
+                        fileExtenion = type.preferredFilenameExtension ?? fileExtenion
+                    }
+
+                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension(fileExtenion))
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
