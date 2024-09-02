@@ -116,12 +116,8 @@ actor DownloadTask: Identifiable {
                 }
                 if let (data, res) = try? await URLSession.shared.data(for: urlRequest) {
                     // See if we can guess the file extension
-                    var fileExtenion = "png"
-                    if let mimeType = res.mimeType, let type = UTType(mimeType: mimeType) {
-                        fileExtenion = type.preferredFilenameExtension ?? fileExtenion
-                    }
-
-                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension(fileExtenion))
+                    let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
+                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension(fileExtention))
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
@@ -218,5 +214,19 @@ actor DownloadTask: Identifiable {
         if !running && autostart {
             resume()
         }
+    }
+
+    // MARK: Utility
+    private func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
+        if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
+            return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
+        }
+
+        guard let mimeType = response.mimeType,
+              let type = UTType(mimeType: mimeType) else {
+            return defaultValue
+        }
+
+        return type.preferredFilenameExtension ?? defaultValue
     }
 }
