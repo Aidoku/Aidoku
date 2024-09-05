@@ -438,17 +438,6 @@ class HistoryViewController: UIViewController {
         }
         alertView.addAction(action)
 
-        let action2 = UIAlertAction(title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY", comment: ""), style: .destructive) { _ in
-            Task { @MainActor in
-                await CoreDataManager.shared.container.performBackgroundTask { context in
-                    CoreDataManager.shared.clearHistoryExcludingLibrary(context: context)
-                    try? context.save()
-                }
-                self.reloadHistory()
-            }
-        }
-        alertView.addAction(action2)
-
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
         present(alertView, animated: true)
     }
