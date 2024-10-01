@@ -68,7 +68,7 @@ class DownloadManager {
 
     func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
         cache.directory(for: chapter).contents
-            .compactMap { url in
+            .map { url in
                 Page(
                     sourceId: chapter.sourceId,
                     chapterId: chapter.id,

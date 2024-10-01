@@ -943,15 +943,25 @@ extension LibraryViewController {
         super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
+    private func mangaInfo(at path: IndexPath) -> MangaInfo {
+        let manga: [MangaInfo] = if path.section == 0 && !viewModel.pinnedManga.isEmpty {
+            viewModel.pinnedManga
+        } else {
+            viewModel.manga
+        }
+        
+        return manga[path.row]
+    }
+    
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let indexPath = indexPaths.first else { return nil }
-        let manga = indexPath.section == 0 && !viewModel.pinnedManga.isEmpty
-            ? viewModel.pinnedManga[indexPath.row]
-            : viewModel.manga[indexPath.row]
+        let manga = mangaInfo(at: indexPath)
+        let mangaInfo = indexPaths.map(mangaInfo(at:))
+
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
 
@@ -998,7 +1008,9 @@ extension LibraryViewController {
                     Reachability.getConnectionType() == .wifi ||
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
-                        await DownloadManager.shared.downloadAll(manga: manga.toManga())
+                        for mangaInfo in mangaInfo {
+                            await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga())
+                        }
                     }
                 } else {
                     self.presentAlert(
