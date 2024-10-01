@@ -91,7 +91,9 @@ class MangaViewController: BaseTableViewController {
             tableView.tableHeaderView!.addSubview(headerView)
         }
 
-        updateNavbarButtons()
+        DispatchQueue.main.async {
+            self.updateNavbarButtons()
+        }
         updateDataSource() // set "no chapters" header
 
         Task {
@@ -125,6 +127,10 @@ class MangaViewController: BaseTableViewController {
                 tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
                 try? await Task.sleep(nanoseconds: 500 * 1000000)
                 self.tableView.deselectRow(at: indexPath, animated: true)
+            }
+
+            if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                await MangaUpdateManager.shared.viewAllUpdates(of: manga)
             }
         }
     }
@@ -409,17 +415,8 @@ class MangaViewController: BaseTableViewController {
         updateToolbar()
     }
 
-    func updateReadButton() {
-        let nextChapter = viewModel.getNextChapter()
-        switch nextChapter {
-        case .none:
-            return
-        case .allRead:
-            headerView.updateReadButtonTitle(allRead: true)
-        case .chapter(let nextChapter):
-            let continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
-            headerView.updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
-        }
+    @objc func stopEditing() {
+        setEditing(false, animated: true)
     }
 
     func openReaderView(chapter: Chapter) {
@@ -509,13 +506,25 @@ class MangaViewController: BaseTableViewController {
                             }
                             // update in db
                             if inLibrary {
+                                let langFilter = await self.viewModel.langFilter
                                 await CoreDataManager.shared.container.performBackgroundTask { context in
-                                    CoreDataManager.shared.setChapters(
+                                    let newChapters = CoreDataManager.shared.setChapters(
                                         chapterList,
                                         sourceId: manga.sourceId,
                                         mangaId: manga.id,
                                         context: context
                                     )
+                                    // update manga updates
+                                    for chapter in newChapters
+                                    where langFilter != nil ? chapter.lang == langFilter : true
+                                    {
+                                        CoreDataManager.shared.createMangaUpdate(
+                                            sourceId: manga.sourceId,
+                                            mangaId: manga.id,
+                                            chapterObject: chapter,
+                                            context: context
+                                        )
+                                    }
                                     try? context.save()
                                 }
                             }
@@ -531,10 +540,9 @@ class MangaViewController: BaseTableViewController {
             refreshControl?.endRefreshing()
         }
     }
+}
 
-    @objc func stopEditing() {
-        setEditing(false, animated: true)
-    }
+extension MangaViewController {
 
     @objc func selectAllRows() {
         for row in 0..<tableView.numberOfRows(inSection: 0) {
@@ -590,6 +598,19 @@ class MangaViewController: BaseTableViewController {
 
 // MARK: View Updating
 extension MangaViewController {
+
+    private func updateReadButton() {
+        let nextChapter = viewModel.getNextChapter()
+        switch nextChapter {
+        case .none:
+            return
+        case .allRead:
+            headerView.updateReadButtonTitle(allRead: true)
+        case .chapter(let nextChapter):
+            let continueReading = viewModel.readingHistory[nextChapter.id]?.date ?? 0 > 0
+            headerView.updateReadButtonTitle(nextChapter: nextChapter, continueReading: continueReading)
+        }
+    }
 
     private func makeMenu() async -> [UIMenuElement] {
         var menus = [UIMenu]()
@@ -703,31 +724,35 @@ extension MangaViewController {
     func updateNavbarButtons() {
         if tableView.isEditing {
             Task { @MainActor in
-                navigationItem.hidesBackButton = true
+                rootNavigation.navigationItem.hidesBackButton = true
                 if tableView.indexPathsForSelectedRows?.count ?? 0 == tableView.numberOfRows(inSection: 0) {
-                    navigationItem.leftBarButtonItem = UIBarButtonItem(
+                    rootNavigation.navigationItem.leftBarButtonItem = UIBarButtonItem(
                         title: NSLocalizedString("DESELECT_ALL", comment: ""),
                         style: .plain,
                         target: self,
                         action: #selector(deselectAllRows)
                     )
                 } else {
-                    navigationItem.leftBarButtonItem = UIBarButtonItem(
+                    rootNavigation.navigationItem.leftBarButtonItem = UIBarButtonItem(
                         title: NSLocalizedString("SELECT_ALL", comment: ""),
                         style: .plain,
                         target: self,
                         action: #selector(selectAllRows)
                     )
                 }
-                navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(stopEditing))
+                rootNavigation.navigationItem.rightBarButtonItem = UIBarButtonItem(
+                    barButtonSystemItem: .done,
+                    target: self,
+                    action: #selector(stopEditing)
+                )
             }
         } else {
-            navigationItem.hidesBackButton = false
-            navigationItem.leftBarButtonItem = nil
+            rootNavigation.navigationItem.hidesBackButton = false
+            rootNavigation.navigationItem.leftBarButtonItem = nil
 
             let menu: UIMenu
             if #available(iOS 15.0, *) { // make menu dynamic on ios 15
-                if navigationItem.rightBarButtonItem?.menu != nil { return }
+                if rootNavigation.navigationItem.rightBarButtonItem?.menu != nil { return }
                 menu = UIMenu(title: "", children: [
                     UIDeferredMenuElement.uncached { [weak self] completion in
                         guard let self = self else {
@@ -762,7 +787,7 @@ extension MangaViewController {
             moreButton.menu = menu
 
             Task { @MainActor in
-                navigationItem.rightBarButtonItem = moreButton
+                rootNavigation.navigationItem.rightBarButtonItem = moreButton
             }
         }
     }
@@ -771,10 +796,10 @@ extension MangaViewController {
     func updateToolbar() {
         if tableView.isEditing {
             // show toolbar
-            if navigationController?.isToolbarHidden ?? false {
+            if rootNavigation.navigationController?.isToolbarHidden ?? false {
                 UIView.animate(withDuration: 0.3) {
-                    self.navigationController?.isToolbarHidden = false
-                    self.navigationController?.toolbar.alpha = 1
+                    self.rootNavigation.navigationController?.isToolbarHidden = false
+                    self.rootNavigation.navigationController?.toolbar.alpha = 1
                 }
             }
 
@@ -846,17 +871,17 @@ extension MangaViewController {
             markButton.isEnabled = !selectedRows.isEmpty
             downloadButton.isEnabled = !selectedRows.isEmpty
 
-            toolbarItems = [
+            rootNavigation.toolbarItems = [
                 markButton,
                 UIBarButtonItem(systemItem: .flexibleSpace),
                 downloadButton
             ]
-        } else if !(self.navigationController?.isToolbarHidden ?? true) {
+        } else if !(self.rootNavigation.navigationController?.isToolbarHidden ?? true) {
             // fade out toolbar
             UIView.animate(withDuration: 0.3) {
-                self.navigationController?.toolbar.alpha = 0
+                self.rootNavigation.navigationController?.toolbar.alpha = 0
             } completion: { _ in
-                self.navigationController?.isToolbarHidden = true
+                self.rootNavigation.navigationController?.isToolbarHidden = true
             }
         }
     }
