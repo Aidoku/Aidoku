@@ -57,7 +57,7 @@ class DownloadManager {
                         chapterId: chapter.id,
                         index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
                         imageURL: nil,
-                        base64: page.pathExtension == "txt" ? String(data: data, encoding: .utf8) : data.base64EncodedString(),
+                        base64: page.pathExtension == "txt" ? String(decoding: data, as: UTF8.self) : data.base64EncodedString(),
                         text: nil
                     )
                 )

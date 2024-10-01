@@ -111,7 +111,7 @@ class ChapterCellContentView: UIView, UIContentView {
 
     func configure() {
         guard let configuration = configuration as? ChapterCellConfiguration else { return }
-        titleLabel.text = makeTitle(chapter: configuration.chapter)
+        titleLabel.text = configuration.chapter.makeTitle()
         titleLabel.textColor = configuration.read ? .secondaryLabel : .label
         subtitleLabel.text = makeSubtitle(chapter: configuration.chapter, page: configuration.currentPage)
         subtitleLabel.isHidden = subtitleLabel.text == nil
@@ -124,37 +124,6 @@ class ChapterCellContentView: UIView, UIContentView {
             accessoryViewTrailingConstraint.constant = -12 + 15
         } else {
             accessoryViewTrailingConstraint.constant = -12
-        }
-    }
-
-    /// Returns a formatted title for provided chapter.
-    /// `Vol.X Ch.X - Title`
-    private func makeTitle(chapter: Chapter) -> String {
-        if chapter.volumeNum == nil && chapter.title == nil, let chapterNum = chapter.chapterNum {
-            // Chapter X
-            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
-        } else {
-            var components: [String] = []
-            // Vol.X
-            if let volumeNum = chapter.volumeNum {
-                components.append(
-                    String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
-                )
-            }
-            // Ch.X
-            if let chapterNum = chapter.chapterNum {
-                components.append(
-                    String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
-                )
-            }
-            // title
-            if let title = chapter.title {
-                if !components.isEmpty {
-                    components.append("-")
-                }
-                components.append(title)
-            }
-            return components.joined(separator: " ")
         }
     }
 

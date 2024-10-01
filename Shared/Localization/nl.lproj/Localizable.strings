@@ -342,3 +342,21 @@
 "PILLARBOX_AMOUNT" = "Pillarbox-grote";
 "PILLARBOX_ORIENTATION" = "Pillarbox-oriëntatie";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox-oriëntatie bepaalt voor welke oriëntaties Pillerboxing moet worden ingeschakeld.";
+"NO_WIFI_ALERT_MESSAGE" = "Je moet verbonden zijn met het internet om deze content te kunnen downloaden. Maak verbinding met wifi en probeer het opnieuw.";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Je hebt momenteel geen wifi-verbinding. Toch downloaden?";
+"LINK_COPIED" = "Link gekopieerd";
+"LINK_COPIED_TEXT" = "De link is gekopieerd naar het klembord.";
+"WARNING" = "Waarschuwing";
+"NO_WIFI_ALERT_TITLE" = "Geen wifi";
+
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "Geen updates";
+"%lld_PLUS_MORE" = "+%lld meer";
+"ONLY_DOWNLOAD_ON_WIFI" = "Alleen downloaden wanneer verbonden met wifi";
+"READER_BG_COLOR" = "Achtergrondkleur";
+"READER_BG_COLOR_SYSTEM" = "Systeem";
+"READER_BG_COLOR_WHITE" = "Wit";
+"READER_BG_COLOR_BLACK" = "Zwart";
+"PAUSE" = "Pauzeren";
+"RESUME" = "Hervatten";

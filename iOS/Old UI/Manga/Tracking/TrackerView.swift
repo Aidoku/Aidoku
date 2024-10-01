@@ -130,7 +130,7 @@ struct TrackerView: View {
             stateUpdated = true
         }
         .onChange(of: scoreOption) { newValue in
-            let new = tracker.scoreOptions.enumerated().first { $0.offset == newValue }?.element.1
+            let new = newValue.flatMap { tracker.scoreOptions[safe: $0]?.1 }
             guard state?.score != new else { return }
             state?.score = new
             update.score = new
@@ -181,9 +181,23 @@ struct TrackerView: View {
                     score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
                     if tracker.scoreType == .optionList {
                         let option = tracker.option(for: Int(state.score ?? 0))
-                        scoreOption = tracker.scoreOptions.enumerated().first { $0.element.0 == option }?.offset
+                        scoreOption = tracker.scoreOptions
+                            .firstIndex { $0.0 == option }
+                            .flatMap {
+                                tracker.supportedStatuses.distance(
+                                    from: tracker.supportedStatuses.startIndex,
+                                    to: $0
+                                )
+                            }
                     }
-                    statusOption = tracker.supportedStatuses.enumerated().first { $0.1.rawValue == state.status?.rawValue }?.0 ?? 0
+                    statusOption = tracker.supportedStatuses
+                        .firstIndex { $0.rawValue == state.status?.rawValue }
+                        .flatMap {
+                            tracker.supportedStatuses.distance(
+                                from: tracker.supportedStatuses.startIndex,
+                                to: $0
+                            )
+                        } ?? 0
                     lastReadChapter = state.lastReadChapter != nil ? Float(state.lastReadChapter!) : nil
                     lastReadVolume = state.lastReadVolume != nil ? Float(state.lastReadVolume!) : nil
                     startReadDate = state.startReadDate

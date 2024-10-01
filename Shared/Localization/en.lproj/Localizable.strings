@@ -136,6 +136,7 @@
 "CURRENT_COLON" = "Current:";
 "NO_NEXT_CHAPTER" = "There is no next chapter";
 "NO_PREVIOUS_CHAPTER" = "There is no previous chapter";
+"SKIPPING_CHAPTERS" = "Skipping %i chapters, either the source is missing them or they have been filtered out";
 "READER_SETTINGS" = "Reader Settings";
 "READING_MODE" = "Reading Mode";
 "DEFAULT" = "Default";
@@ -156,6 +157,11 @@
 "HISTORY_LOCKED" = "History is locked.";
 "VIEW_HISTORY" = "View History";
 "AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
+
+// Manga Updates
+"MANGA_UPDATES" = "Updates";
+"NO_UPDATES" = "No updates";
+"%lld_PLUS_MORE" = "+%lld more";
 
 // Search
 "SEARCH" = "Search";
@@ -198,6 +204,7 @@
 "ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
+"DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_12_HOURS" = "Every 12 hours";
 "DAILY" = "Daily";
