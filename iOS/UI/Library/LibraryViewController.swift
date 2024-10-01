@@ -947,10 +947,10 @@ extension LibraryViewController {
         } else {
             viewModel.manga
         }
-        
+
         return manga[path.row]
     }
-    
+
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
