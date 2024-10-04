@@ -12,31 +12,31 @@
 // Downloads
 "DOWNLOAD" = "Скачать";
 "DOWNLOADED" = "Скачан";
-"DOWNLOAD_QUEUE" = "Очередь загрузок";
-"CANCEL_DOWNLOAD" = "Отменить Загрузку";
+"DOWNLOAD_QUEUE" = "Очередь загрузки";
+"CANCEL_DOWNLOAD" = "Отменить загрузку";
 "REMOVE" = "Удалить";
 "REMOVE_ALL_DOWNLOADS" = "Удалить все загрузки";
-"REMOVE_DOWNLOADS" = "Удаление Загрузок";
+"REMOVE_DOWNLOADS" = "Удаление загрузок";
 
 // Library
 "LIBRARY" = "Библиотека";
 "LIBRARY_SEARCH" = "Поиск в библиотеке";
-"LIBRARY_EMPTY" = "Библиотека Пустая";
-"LIBRARY_ADD_FROM_BROWSE" = "Добавьте свою любимую мангу во вкладке Обзор";
+"LIBRARY_EMPTY" = "Библиотека пуста";
+"LIBRARY_ADD_FROM_BROWSE" = "Добавьте мангу через вкладку обзор";
 "SORT_BY" = "Сортировать по";
-"FILTER_BY" = "Фильтровать По";
+"FILTER_BY" = "Фильтровать по";
 "TITLE" = "Название";
-"LAST_OPENED" = "Последний открытый";
+"LAST_OPENED" = "последнему разу";
 "LAST_READ" = "Последнее прочитанное";
-"LATEST_CHAPTER" = "Последняя глава";
-"DATE_ADDED" = "Дата Добавления";
+"LATEST_CHAPTER" = "последнему главу";
+"DATE_ADDED" = "Дата добавления";
 
 // Categories
 "ALL" = "Все";
 "NONE" = "Ничего";
 "CATEGORIES" = "Категории";
 "EDIT_CATEGORIES" = "Редактировать категории";
-"CATEGORY_ADD_TEXT" = "Введите название новой категории для создания.";
+"CATEGORY_ADD_TEXT" = "Введите название новой категории.";
 "CATEGORY_TITLE" = "Название категории";
 "ALWAYS_ASK" = "Всегда спрашивать";
 
@@ -65,7 +65,7 @@
 "MISSING_SOURCE" = "Отсутствует источник";
 "SELECT_CHAPTERS" = "Выбор глав";
 "SELECT_ALL" = "Выбрать всё";
-"DESELECT_ALL" = "Отменить выбор всего";
+"DESELECT_ALL" = "Отменить выбор всех";
 
 // Reader
 "CHAPTER" = "Глава";
@@ -91,7 +91,7 @@
 "DEFAULT" = "По умолчанию";
 "LTR" = "Слева направо";
 "VERTICAL" = "Вертикально";
-"VOLUME_X" = "Объем, %g";
+"VOLUME_X" = "Том, %g";
 "VOL_X" = "Том%g";
 "CH_X" = "Гл.%g";
 "VOL_SPACE_X" = "Том %g";
@@ -197,11 +197,11 @@
 "LOADING_ELLIPSIS" = "Загрузка…";
 "ADD_TO_LIBRARY" = "Добавить в библиотеку";
 "REMOVE_FROM_LIBRARY" = "Удалить из библиотеки";
-"MANGA_INFO" = "Информация о Манге";
+"MANGA_INFO" = "Информация о манге";
 "CATEGORY_ADD" = "Добавить категорию";
 "LIST_ALL" = "Все";
-"REMOVE_DOWNLOAD" = "Удалить Загрузку";
-"REMOVE_DOWNLOADS_CONFIRM" = "Удалить все выбранные загрузки?";
+"REMOVE_DOWNLOAD" = "Удалить загрузку";
+"REMOVE_DOWNLOADS_CONFIRM" = "Удалить выбранные?";
 "DEFAULT_CATEGORY" = "Категория по умолчанию";
 "UPDATES" = "Обновления";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Руководство по добавлению источников";
@@ -343,7 +343,7 @@
 "BACKUP_ERROR" = "Ошибка восстановления резервной копии";
 "BACKUP_ERROR_TEXT" = "При восстановлении произошла ошибка: %@. Возможно эта копия повреждена.";
 "RESUME" = "Возобновить";
-"NO_WIFI_ALERT_MESSAGE" = "Вам необходимо быть подключенным к Wi-Fi, чтобы скачать. Пожалуйста подключитесь к Wi-Fi и попробуйте снова.";
+"NO_WIFI_ALERT_MESSAGE" = "Подключитесь к Wi-Fi, чтобы скачать содержимое и попробуйте снова.";
 "LINK_COPIED_TEXT" = "Эта ссылка скопирована в буфер обмена.";
 
 // Manga Updates
@@ -357,6 +357,8 @@
 "READER_BG_COLOR_BLACK" = "Чёрный";
 "PAUSE" = "Пауза";
 "WARNING" = "Предупреждение";
-"NO_WIFI_ALERT_TITLE" = "Нет соединения к Wi-Fi";
-"DOWNLOAD_ANYWAY_MESSAGE" = "Вы не подключены к Wi-Fi. Все равно скачать?";
+"NO_WIFI_ALERT_TITLE" = "Нет соединения с Wi-Fi";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Вы не подключены к Wi-Fi. Продолжить скачивание?";
 "LINK_COPIED" = "Ссылка скопирована";
+"SKIPPING_CHAPTERS" = "Пропуск %i глав потому что в источнике их нет, либо не попали под параметры фильтра";
+"DELETE_DOWNLOAD_AFTER_READING" = "Удалить после прочтения";
