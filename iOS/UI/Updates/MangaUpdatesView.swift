@@ -29,7 +29,7 @@ struct MangaUpdatesView: View {
             if reachedEnd && entries.isEmpty {
                 VStack(alignment: .center) {
                     Spacer()
-                    Text("NO_UPDATES")
+                    Text(NSLocalizedString("NO_UPDATES", comment: ""))
                         .foregroundColor(.secondary)
                     Spacer()
                 }
@@ -56,7 +56,7 @@ struct MangaUpdatesView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle("MANGA_UPDATES")
+        .navigationTitle(NSLocalizedString("MANGA_UPDATES", comment: ""))
         .refreshableCompat {
             await reload()
         }
