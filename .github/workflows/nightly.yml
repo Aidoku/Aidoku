@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -24,7 +24,7 @@ jobs:
           cp -r build/Aidoku.xcarchive/Products/Applications/Aidoku.app Payload
           zip -r Aidoku-iOS_nightly-${{ steps.commitinfo.outputs.sha_short }}.ipa Payload
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Aidoku-iOS_nightly-${{ steps.commitinfo.outputs.sha_short }}.ipa
           path: Aidoku-iOS_nightly-${{ steps.commitinfo.outputs.sha_short }}.ipa
