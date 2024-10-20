@@ -56,6 +56,7 @@ class MangaViewController: BaseTableViewController {
         viewModel.sortMethod = .init(flags: filters.flags)
         viewModel.filters = ChapterFilterOption.parseOptions(flags: filters.flags)
         viewModel.langFilter = filters.language
+        viewModel.scanlatorFilter = filters.scanlators ?? []
 
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
@@ -507,6 +508,7 @@ class MangaViewController: BaseTableViewController {
                             // update in db
                             if inLibrary {
                                 let langFilter = await self.viewModel.langFilter
+                                let scanlatorFilter = await self.viewModel.scanlatorFilter
                                 await CoreDataManager.shared.container.performBackgroundTask { context in
                                     let newChapters = CoreDataManager.shared.setChapters(
                                         chapterList,
@@ -516,7 +518,9 @@ class MangaViewController: BaseTableViewController {
                                     )
                                     // update manga updates
                                     for chapter in newChapters
-                                    where langFilter != nil ? chapter.lang == langFilter : true
+                                    where
+                                        langFilter != nil ? chapter.lang == langFilter : true
+                                        && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                                     {
                                         CoreDataManager.shared.createMangaUpdate(
                                             sourceId: manga.sourceId,
@@ -924,7 +928,9 @@ extension MangaViewController {
         config.sortAscending = viewModel.sortAscending
         config.filters = viewModel.filters
         config.langFilter = viewModel.langFilter
-        config.sourceLangs = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
+        config.scanlatorFilter = viewModel.scanlatorFilter
+        config.sourceLanguages = viewModel.getSourceDefaultLanguages(sourceId: manga.sourceId)
+        config.chapterScanlators = viewModel.getScanlators()
         cell.contentConfiguration = config
         return cell
     }
@@ -1271,6 +1277,14 @@ extension MangaViewController: ChapterSortDelegate {
     func langFilterChanged(_ newValue: String?) {
         Task {
             await viewModel.languageFilterChanged(newValue, manga: manga)
+            refreshDataSource()
+            updateReadButton()
+        }
+    }
+
+    func scanlatorFilterChanged(_ newValue: [String]) {
+        Task {
+            await viewModel.scanlatorFilterChanged(newValue, manga: manga)
             refreshDataSource()
             updateReadButton()
         }
