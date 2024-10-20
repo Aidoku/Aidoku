@@ -28,17 +28,17 @@
 "REMOVE_DOWNLOADS" = "Rimuovi gli scaricamenti";
 "REMOVE_ALL_DOWNLOADS" = "Rimuovi tutti gli scaricamenti";
 "LIBRARY_ADD_FROM_BROWSE" = "Aggiungi manga dalla scheda Sfoglia";
-"REMOVE_FROM_LIBRARY" = "Rimuovi dalla raccolta";
-"ADD_TO_LIBRARY" = "Aggiungi alla raccolta";
+"REMOVE_FROM_LIBRARY" = "Rimuovi dalla Raccolta";
+"ADD_TO_LIBRARY" = "Aggiungi alla Raccolta";
 "MANGA_INFO" = "Informazioni sul manga";
 "OK" = "OK";
 "UNKNOWN" = "Sconosciuto";
 "FILTER_BY" = "Filtra per";
 "TITLE" = "Titolo";
-"EDIT_CATEGORIES" = "Modifica le categorie";
-"CATEGORY_ADD" = "Aggiungi una categoria";
+"EDIT_CATEGORIES" = "Modifica Categorie";
+"CATEGORY_ADD" = "Aggiungi Categoria";
 "CATEGORY_ADD_TEXT" = "Inserisci il titolo della nuova categoria da creare.";
-"CATEGORY_TITLE" = "Titolo della categoria";
+"CATEGORY_TITLE" = "Titolo Categoria";
 "DEFAULT_CATEGORY" = "Categoria predefinita";
 "SOURCE_ORDER" = "Ordine delle fonti";
 "MARK_READ" = "Contrassegna come letto";
@@ -51,7 +51,7 @@
 "HISTORY" = "Cronologia";
 "DISCORD_SERVER" = "Server Discord";
 "%@_AGO" = "%@ fa";
-"SELECT_CHAPTERS" = "Seleziona i capitoli";
+"SELECT_CHAPTERS" = "Seleziona capitoli";
 "NO_CHAPTERS" = "Nessun capitolo";
 "NO_NEXT_CHAPTER" = "Non c'è un capitolo successivo";
 "DEFAULT" = "Predefinito";
@@ -326,7 +326,7 @@
 "SYNC_WITH_TRACKER_INFO" = "Sembra che l'ultimo capitolo presente nel tracker sia più recente del capitolo che hai letto. Vuoi correggere la tua cronologia di lettura?";
 "ALL_CHAPTERS_READ" = "Tutti i capitoli letti";
 "TRACKING" = "Tracciamento";
-"DEFAULT_READING_MODE" = "Modalità di lettura di Default";
+"DEFAULT_READING_MODE" = "Modalità di lettura predefinita";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Totale Pillarbox";
 "PILLARBOX_ORIENTATION" = "Orientamento Pillarbox";
@@ -340,11 +340,11 @@
 "UNPIN" = "Rimuovi";
 "ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, il tracker di AniList non funzionerà finché non si ri-accede dalle impostazioni.";
-"MAL_LOGIN_NEEDED" = "MyAnimeList è necessario fare login";
+"MAL_LOGIN_NEEDED" = "Login MyAnimeList necessario";
 "NO_WIFI_ALERT_MESSAGE" = "Devi essere connesso al Wi-Fi per scaricare questo contenuto. Connettiti prima al Wi-Fi e riprova.";
 "READER_BG_COLOR_SYSTEM" = "Sistema";
 "READER_BG_COLOR_WHITE" = "Bianco";
-"MAL_LOGIN_NEEDED_TEXT" = "Il token di MyAnimeList è scaduto, il tracker di MuAnimeList non funzionerà finché non si ri-accede dalle impostazioni.";
+"MAL_LOGIN_NEEDED_TEXT" = "Il token di MyAnimeList è scaduto, il tracker di MyAnimeList non funzionerà finché non si ri-accede dalle impostazioni.";
 "BACKUP_ERROR" = "Errore Ripristino Backup";
 "PAUSE" = "Pausa";
 "RESUME" = "Riprendi";
@@ -359,3 +359,6 @@
 // Manga Updates
 "MANGA_UPDATES" = "Aggiornamenti";
 "NO_UPDATES" = "Nessun aggiornamento";
+"DELETE_DOWNLOAD_AFTER_READING" = "Rimuovi il file scaricato a capitolo finito";
+"%lld_PLUS_MORE" = "+%lld altri";
+"SKIPPING_CHAPTERS" = "Salto %i capitoli, o mancano dalla fonte o sono stati filtrati";

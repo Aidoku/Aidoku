@@ -357,3 +357,5 @@
 // Manga Updates
 "MANGA_UPDATES" = "Mises à jour";
 "NO_UPDATES" = "Pas de mises à jour";
+"SKIPPING_CHAPTERS" = "%i chapitres ignorés, soit la source manque, soit ils ont été filtrés";
+"DELETE_DOWNLOAD_AFTER_READING" = "Supprimer le téléchargement après lecture";

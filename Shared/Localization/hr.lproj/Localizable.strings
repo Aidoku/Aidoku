@@ -176,7 +176,7 @@
 "UPDATE_INTERVAL" = "Ažuriraj interval";
 "ONLY_UPDATE_ON_WIFI" = "Ažuriraj samo na Wi-Fi vezi";
 "EXCLUDED_CATEGORIES" = "Isključene kategorije";
-"NEVER" = "Nikad";
+"NEVER" = "Nikada";
 "DAILY" = "Dnevno";
 "EVERY_2_DAYS" = "Svaka 2 dana";
 "PIN_MANGA" = "Prikvači mangu";
@@ -360,3 +360,5 @@
 "MANGA_UPDATES" = "Ažuriranja";
 "NO_UPDATES" = "Nema ažuriranja";
 "%lld_PLUS_MORE" = "+%lld više";
+"SKIPPING_CHAPTERS" = "Preskakaču se %i poglavlja, nedostaju u izvoru ili su izdvojena filtrom";
+"DELETE_DOWNLOAD_AFTER_READING" = "Izbriši preuzimanje nakon čitanja";
