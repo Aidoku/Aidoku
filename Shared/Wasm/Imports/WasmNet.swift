@@ -343,7 +343,7 @@ extension WasmNet {
     var html: (Int32) -> Int32 {
         { descriptor in
             if let request = self.globalStore.requests[descriptor], let data = request.response?.data {
-                var content = String(decoding: data, as: UTF8.self)
+                var content = String(data: data, encoding: .utf8) ?? ""
                 if content.isEmpty {
                     content = String(data: data, encoding: .ascii) ?? content
                 }
