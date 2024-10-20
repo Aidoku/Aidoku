@@ -360,3 +360,5 @@
 "NO_WIFI_ALERT_MESSAGE" = "Bu içeriği indirmek için Wi-Fi'a bağlı olmalısınız. Lütfen Wi-Fi'a bağlanın ve tekrar deneyin.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "Wi-Fi kullanılmıyor. Yine de devam et?";
 "LINK_COPIED" = "Bağlantı Kopyalandı";
+"SKIPPING_CHAPTERS" = "%i bölümleri atlanıyor, ya kaynakta eksikler var ya da filtrelenmişler";
+"DELETE_DOWNLOAD_AFTER_READING" = "Okuduktan Sonra İndirmeyi Sil";

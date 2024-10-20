@@ -360,3 +360,7 @@
 "MANGA_UPDATES" = "Actualizaciones";
 "%lld_PLUS_MORE" = "+%lld más";
 "NO_UPDATES" = "Sin actualizaciones";
+"SKIPPING_CHAPTERS" = "Se omiten %i capítulos, ya sea que falten en la fuente o se hayan filtrado";
+"DELETE_DOWNLOAD_AFTER_READING" = "Eliminar la descarga después de leerla";
+"NO_SCANLATOR" = "Sin scanlator";
+"SCANLATOR" = "Scanlator";

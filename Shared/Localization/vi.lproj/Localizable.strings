@@ -360,3 +360,5 @@
 "BACKUP_ERROR" = "Phục hồi Backup Lỗi";
 "ONLY_DOWNLOAD_ON_WIFI" = "Chỉ tải về bằng Wi-Fi";
 "BOTH" = "Cả hai";
+"DELETE_DOWNLOAD_AFTER_READING" = "Xóa tải về sau khi đọc xong";
+"SKIPPING_CHAPTERS" = "Bỏ qua %i chương vì nguồn bị thiếu hoặc đã bị lọc bỏ";
