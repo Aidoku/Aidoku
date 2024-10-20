@@ -559,6 +559,8 @@
 		FBD6A415285B7CC3007116C9 /* MyAnimeListTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAnimeListTracker.swift; sourceTree = "<group>"; };
 		FBD6A418285B8EBC007116C9 /* TrackState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackState.swift; sourceTree = "<group>"; };
 		FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.10.xcdatamodel; sourceTree = "<group>"; };
+		FBD8A6042CC5AA6F00B1F7D2 /* ne */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ne; path = ne.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FBD8A6052CC5AA8A00B1F7D2 /* sq */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sq; path = sq.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBE40E21288DC01F00CCA4DC /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBE40E22288DC04100CCA4DC /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBE40E23288DC07200CCA4DC /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1495,6 +1497,8 @@
 				km,
 				sw,
 				th,
+				ne,
+				sq,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -1923,6 +1927,8 @@
 				FB40CD062C6845A20018AE3C /* km */,
 				FB40CD072C6845D70018AE3C /* sw */,
 				FB40CD082C6845F30018AE3C /* th */,
+				FBD8A6042CC5AA6F00B1F7D2 /* ne */,
+				FBD8A6052CC5AA8A00B1F7D2 /* sq */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
