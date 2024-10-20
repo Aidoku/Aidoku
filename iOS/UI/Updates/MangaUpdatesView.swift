@@ -83,7 +83,12 @@ struct MangaUpdatesView: View {
                 ForEach(mangas.indices, id: \.self) { mangaIndex in
                     let updates = mangas[mangaIndex].1
                     if let manga = updates.first?.manga {
-                        NavigationLink(destination: MangaView(manga: manga)) {
+                        NavigationLink(
+                            destination: MangaView(manga: manga)
+                                .onAppear {
+                                    setOpened(manga: manga)
+                                }
+                        ) {
                             MangaUpdateItemView(updates: updates)
                         }
                         .offsetListSeparator()
@@ -180,5 +185,14 @@ struct MangaUpdatesView: View {
         offset = 0
         reachedEnd = true
         await loadNewEntries()
+    }
+
+    private func setOpened(manga: Manga) {
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            Task {
+                await CoreDataManager.shared.setOpened(sourceId: manga.sourceId, mangaId: manga.id)
+                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+            }
+        }
     }
 }
