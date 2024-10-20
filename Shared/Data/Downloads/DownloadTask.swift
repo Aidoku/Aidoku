@@ -103,7 +103,7 @@ actor DownloadTask: Identifiable {
             downloads[downloadIndex].progress = currentPage + 1
             let page = pages[currentPage]
             await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
-            let pageNumber = String(format: "%03d", page.index + 1) // XXX.png
+            let pageNumber = String(format: "%03d", currentPage + 1) // XXX.png
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 var urlRequest = URLRequest(url: url)
                 // let source modify image request
