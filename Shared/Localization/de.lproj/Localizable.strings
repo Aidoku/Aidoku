@@ -15,7 +15,7 @@
 "LIBRARY" = "Bibliothek";
 "LIBRARY_SEARCH" = "In der Bibliothek finden";
 "LIBRARY_EMPTY" = "Bibliothek leer";
-"CLEAR" = "Löschen";
+"CLEAR" = "Leeren";
 "DOWNLOADED" = "Heruntergeladen";
 "SHARE" = "Teilen";
 "LOADING_ELLIPSIS" = "Wird geladen…";
@@ -23,7 +23,7 @@
 // Downloads
 "DOWNLOAD" = "Herunterladen";
 "DOWNLOAD_QUEUE" = "Download-Warteschlange";
-"CANCEL_DOWNLOAD" = "Herunterladen abbrechen";
+"CANCEL_DOWNLOAD" = "Download abbrechen";
 "LIBRARY_ADD_FROM_BROWSE" = "Füge Manga von der „Durchsuchen“-Seite hinzu";
 "ADD_TO_LIBRARY" = "Zu Bibliothek hinzufügen";
 "REMOVE_FROM_LIBRARY" = "Aus Bibliothek entfernen";
@@ -352,7 +352,7 @@
 "MANGA_UPDATES" = "Updates";
 "NO_UPDATES" = "Keine Updates";
 "NO_WIFI_ALERT_TITLE" = "Kein WLAN";
-"NO_WIFI_ALERT_MESSAGE" = "Du musst mit dem Internet verbunden sein, um diesen Inhalt herunterladen zu können. Bitte verbinde dich mit dem Internet und versuche es erneut.";
+"NO_WIFI_ALERT_MESSAGE" = "Du musst mit dem WLAN verbunden sein, um diesen Inhalt herunterladen zu können. Bitte verbinde dich mit dem WLAN und versuche es erneut.";
 "%lld_PLUS_MORE" = "+%lld mehr";
 "ONLY_DOWNLOAD_ON_WIFI" = "Download nur, wenn Wi-Fi verbunden ist";
 "READER_BG_COLOR" = "Hintergrundfarbe";
@@ -360,3 +360,5 @@
 "READER_BG_COLOR_WHITE" = "Weiß";
 "READER_BG_COLOR_BLACK" = "Schwarz";
 "DOWNLOAD_ANYWAY_MESSAGE" = "Sie haben derzeit kein WLAN. Trotzdem herunterladen?";
+"SKIPPING_CHAPTERS" = "%i Kapitel werden übersprungen, entweder fehlen sie in der Quelle oder sie wurden herausgefiltert";
+"DELETE_DOWNLOAD_AFTER_READING" = "Download nach dem Lesen löschen";

@@ -338,7 +338,7 @@
 "PIN" = "고정";
 "UNPIN" = "고정 해제";
 "CROP_BORDERS" = "테두리 자르기";
-"ANILIST_LOGIN_NEEDED" = "AniList 로그인이 필요합니다.";
+"ANILIST_LOGIN_NEEDED" = "AniList 로그인이 필요합니다";
 "MAL_LOGIN_NEEDED_TEXT" = "MyAnimeList 토큰이 만료되었으므로 설정에서 다시 로그인할 때까지 MyAnimeList 추적기 작동이 중지됩니다.";
 "ANILIST_LOGIN_NEEDED_TEXT" = "AniList 토큰이 만료되었으므로 설정에 다시 로그인할 때까지 AniList 추적기가 작동하지 않습니다.";
 "MAL_LOGIN_NEEDED" = "MyAnimeList 로그인이 필요합니다";
@@ -355,3 +355,8 @@
 "READER_BG_COLOR_SYSTEM" = "시스템";
 "READER_BG_COLOR_WHITE" = "화이트";
 "READER_BG_COLOR_BLACK" = "블랙";
+"SKIPPING_CHAPTERS" = "%i 챕터를 건너뛰는 중, 소스가 누락되었거나 필터링되었습니다";
+"DELETE_DOWNLOAD_AFTER_READING" = "읽은 후 다운로드 삭제";
+"MANGA_UPDATES" = "업데이트";
+"NO_UPDATES" = "업데이트 없음";
+"%lld_PLUS_MORE" = "+%lld 더보기";

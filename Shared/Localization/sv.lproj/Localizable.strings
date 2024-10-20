@@ -338,3 +338,7 @@
 "COPY" = "Kopiera";
 "ANILIST_LOGIN_NEEDED" = "AniList inloggning krävs";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Din AniList-token har gått ut, därmed kommer AniList att sluta fungera tills du loggar in igen i inställningarna.";
+"WARNING" = "Varning";
+"NO_WIFI_ALERT_TITLE" = "Ingen Wi-Fi";
+"PAUSE" = "Paus";
+"RESUME" = "Återuppta";
