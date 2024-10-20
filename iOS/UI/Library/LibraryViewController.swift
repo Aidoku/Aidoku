@@ -1000,6 +1000,15 @@ extension LibraryViewController {
                 }
             ]))
 
+            actions.append(UIAction(
+                title: NSLocalizedString("MIGRATE", comment: ""),
+                image: UIImage(systemName: "arrow.left.arrow.right")
+            ) { [weak self] _ in
+                let manga = manga.toManga()
+                let migrateView = MigrateMangaView(manga: [manga])
+                self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
+            })
+
             if let url = manga.url {
                 actions.append(UIAction(
                     title: NSLocalizedString("SHARE", comment: ""),

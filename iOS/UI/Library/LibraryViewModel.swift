@@ -142,6 +142,7 @@ class LibraryViewModel {
                     sourceId: mangaObject.sourceId,
                     mangaId: mangaObject.id,
                     lang: mangaObject.langFilter,
+                    scanlators: mangaObject.scanlatorFilter,
                     context: context
                 )
 
@@ -234,6 +235,7 @@ class LibraryViewModel {
                                 sourceId: item.sourceId,
                                 mangaId: item.mangaId,
                                 lang: filters.language,
+                                scanlators: filters.scanlators,
                                 context: context
                             )
                         }
@@ -291,6 +293,7 @@ class LibraryViewModel {
                     sourceId: manga.sourceId,
                     mangaId: manga.mangaId,
                     lang: filters.language,
+                    scanlators: filters.scanlators,
                     context: context
                 )
             }
