@@ -12,6 +12,7 @@ protocol ChapterSortDelegate: AnyObject {
     func sortAscendingChanged(_ newValue: Bool)
     func filtersChanged(_ newFilters: [ChapterFilterOption])
     func langFilterChanged(_ newValue: String?)
+    func scanlatorFilterChanged(_ newValue: [String])
 }
 
 struct ChapterListHeaderConfiguration: UIContentConfiguration {
@@ -23,7 +24,9 @@ struct ChapterListHeaderConfiguration: UIContentConfiguration {
     var sortAscending = false
     var filters: [ChapterFilterOption] = []
     var langFilter: String?
-    var sourceLangs: [String] = []
+    var scanlatorFilter: [String] = []
+    var sourceLanguages: [String] = []
+    var chapterScanlators: [String] = []
 
     func makeContentView() -> UIView & UIContentView {
         ChapterListHeaderContentView(self)
@@ -105,8 +108,11 @@ class ChapterListHeaderContentView: UIView, UIContentView {
         guard let configuration = configuration as? ChapterListHeaderConfiguration else { return nil }
 
         var filterChildren: [UIMenuElement] = filterOptions(configuration: configuration)
-        if configuration.sourceLangs.count > 1 {
+        if configuration.sourceLanguages.count > 1 {
             filterChildren.append(languageFilterMenu(configuration: configuration))
+        }
+        if configuration.chapterScanlators.count > 1 {
+            filterChildren.append(scanlatorFilterMenu(configuration: configuration))
         }
 
         return UIMenu(
@@ -186,7 +192,7 @@ class ChapterListHeaderContentView: UIView, UIContentView {
     private func languageFilterMenu(configuration: ChapterListHeaderConfiguration) -> UIMenu {
         UIMenu(
             title: NSLocalizedString("LANGUAGE", comment: ""),
-            children: configuration.sourceLangs.map { lang in
+            children: configuration.sourceLanguages.map { lang in
                 UIAction(
                     title: (Locale.current as NSLocale).displayName(forKey: .identifier, value: lang) ?? "",
                     image: configuration.langFilter == lang
@@ -201,6 +207,36 @@ class ChapterListHeaderContentView: UIView, UIContentView {
                     let langValue = configuration.langFilter == lang ? nil : lang
                     configuration.langFilter = langValue
                     configuration.delegate?.langFilterChanged(langValue)
+
+                    menuOptionChanged(configuration: configuration)
+                }
+            }
+        )
+    }
+
+    private func scanlatorFilterMenu(configuration: ChapterListHeaderConfiguration) -> UIMenu {
+        UIMenu(
+            title: NSLocalizedString("SCANLATOR", comment: ""),
+            children: configuration.chapterScanlators.map { scanlator in
+                let filterIndex = configuration.scanlatorFilter.firstIndex(of: scanlator)
+                return UIAction(
+                    title: scanlator.isEmpty ? NSLocalizedString("NO_SCANLATOR", comment: "") : scanlator,
+                    image: filterIndex != nil
+                        ? UIImage(systemName: "checkmark")
+                        : nil
+                ) { [weak self] _ in
+                    guard
+                        let self = self,
+                        var configuration = self.configuration as? ChapterListHeaderConfiguration
+                    else { return }
+
+                    if let filterIndex {
+                        configuration.scanlatorFilter.remove(at: filterIndex)
+                    } else {
+                        configuration.scanlatorFilter.append(scanlator)
+                    }
+
+                    configuration.delegate?.scanlatorFilterChanged(configuration.scanlatorFilter)
 
                     menuOptionChanged(configuration: configuration)
                 }

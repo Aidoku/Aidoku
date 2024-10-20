@@ -34,8 +34,7 @@ class Manga: Codable, Hashable {
 
     var chapterFlags: Int
     var langFilter: String?
-
-//    var tintColor: CodableColor?
+    var scanlatorFilter: [String]?
 
     var lastUpdated: Date?
     var lastOpened: Date?
@@ -57,7 +56,7 @@ class Manga: Codable, Hashable {
         viewer: MangaViewer = .defaultViewer,
         chapterFlags: Int = 0,
         langFilter: String? = nil,
-//        tintColor: UIColor? = nil,
+        scanlatorFilter: [String]? = nil,
         lastUpdated: Date? = nil,
         lastOpened: Date? = nil,
         lastRead: Date? = nil,
@@ -77,7 +76,7 @@ class Manga: Codable, Hashable {
         self.viewer = viewer
         self.chapterFlags = chapterFlags
         self.langFilter = langFilter
-//        self.tintColor = tintColor != nil ? CodableColor(color: tintColor!) : nil
+        self.scanlatorFilter = scanlatorFilter
         self.lastUpdated = lastUpdated
         self.lastOpened = lastOpened
         self.lastRead = lastRead
@@ -96,8 +95,8 @@ class Manga: Codable, Hashable {
         nsfw = manga.nsfw
         viewer = manga.viewer
         chapterFlags = manga.chapterFlags
-        langFilter = manga.langFilter
-//        tintColor = manga.tintColor ?? tintColor
+        langFilter = manga.langFilter ?? langFilter
+        scanlatorFilter = manga.scanlatorFilter ?? scanlatorFilter
         lastUpdated = manga.lastUpdated ?? lastUpdated
         lastOpened = manga.lastOpened ?? lastOpened
         lastRead = manga.lastRead ?? lastRead
@@ -120,6 +119,7 @@ class Manga: Codable, Hashable {
             viewer: manga.viewer,
             chapterFlags: manga.chapterFlags,
             langFilter: manga.langFilter ?? langFilter,
+            scanlatorFilter: manga.scanlatorFilter ?? scanlatorFilter,
             lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
             lastRead: manga.lastRead ?? lastRead,
@@ -128,7 +128,13 @@ class Manga: Codable, Hashable {
     }
 
     func toInfo() -> MangaInfo {
-        MangaInfo(mangaId: id, sourceId: sourceId, coverUrl: coverUrl, title: title, author: author)
+        MangaInfo(
+            mangaId: id,
+            sourceId: sourceId,
+            coverUrl: coverUrl,
+            title: title,
+            author: author
+        )
     }
 
     static func == (lhs: Manga, rhs: Manga) -> Bool {
@@ -158,6 +164,7 @@ extension Manga: KVCObject {
         case "viewer": return viewer.rawValue
         case "chapterFlags": return chapterFlags
         case "langFilter": return langFilter
+        case "scanlatorFilter": return scanlatorFilter
         default: return nil
         }
     }

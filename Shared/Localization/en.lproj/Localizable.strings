@@ -368,3 +368,5 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Your MyAnimeList token has expired, so the MyAnimeList tracker will stop working until you re-login in settings.";
 "BACKUP_ERROR" = "Backup Restore Error";
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
+"SCANLATOR" = "Scanlator";
+"NO_SCANLATOR" = "No scanlator";

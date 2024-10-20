@@ -558,6 +558,7 @@
 		FBD6A410285B7789007116C9 /* TrackItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackItem.swift; sourceTree = "<group>"; };
 		FBD6A415285B7CC3007116C9 /* MyAnimeListTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAnimeListTracker.swift; sourceTree = "<group>"; };
 		FBD6A418285B8EBC007116C9 /* TrackState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackState.swift; sourceTree = "<group>"; };
+		FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.10.xcdatamodel; sourceTree = "<group>"; };
 		FBE40E21288DC01F00CCA4DC /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBE40E22288DC04100CCA4DC /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBE40E23288DC07200CCA4DC /* hi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -2085,7 +2086,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.9;
+				MARKETING_VERSION = 0.6.10;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2125,7 +2126,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.9;
+				MARKETING_VERSION = 0.6.10;
 				PRODUCT_BUNDLE_IDENTIFIER = xyz.skitty.Aidoku;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2322,13 +2323,14 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */,
 				483235DA2BE7963F003E7B1F /* 0.6.8.xcdatamodel */,
 				FB6F1E782B7AF63D006FAA2E /* 0.6.7.xcdatamodel */,
 				FBE578F0289021BD00F9F1B5 /* 0.6.xcdatamodel */,
 				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = 483235DA2BE7963F003E7B1F /* 0.6.8.xcdatamodel */;
+			currentVersion = FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
