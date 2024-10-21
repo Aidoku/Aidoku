@@ -26,8 +26,8 @@ class TrackerManager {
     /// A boolean indicating if there is a tracker that is currently logged in.
     func hasAvailableTrackers(manga: Manga? = nil) -> Bool {
         trackers.contains {
-            if let restrictSources = $0.restrictSources, let manga = manga {
-                return $0.isLoggedIn && restrictSources.contains(manga.sourceId)
+            if !$0.restrictSources.isEmpty, let manga = manga {
+                return $0.isLoggedIn && $0.restrictSources.contains(manga.sourceId)
             } else {
                 return $0.isLoggedIn
             }

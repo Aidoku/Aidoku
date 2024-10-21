@@ -22,7 +22,7 @@ class KomgaTracker: HostUserPassTracker {
 
     let supportedStatuses = TrackStatus.defaultStatuses
 
-    var restrictSources: [String]? { ["multi.komga"] }
+    var restrictSources: [String] { ["multi.komga"] }
 
     var scoreType: TrackScoreType = .tenPoint
 
