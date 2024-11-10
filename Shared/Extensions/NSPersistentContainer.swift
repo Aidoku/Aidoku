@@ -8,7 +8,7 @@
 import CoreData
 
 extension NSPersistentContainer {
-    func performBackgroundTask<T>(_ block: @escaping (NSManagedObjectContext) -> T) async -> T {
+    func performBackgroundTask<T: Sendable>(_ block: @escaping (NSManagedObjectContext) -> T) async -> T {
         await withCheckedContinuation({ continuation in
             self.performBackgroundTask { context in
                 let result = block(context)

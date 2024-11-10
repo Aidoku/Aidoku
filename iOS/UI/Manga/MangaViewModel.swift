@@ -55,6 +55,11 @@ class MangaViewModel {
             fullChapterList = (try? await source.getChapterList(manga: manga)) ?? []
         }
 
+        // get unique chapters without changing the order
+        // workaround for diffable data source crashing for non-unique chapter ids
+        var uniqueChapters = Set<Chapter>()
+        fullChapterList = fullChapterList.filter { uniqueChapters.insert($0).inserted }
+
         filterChapterList()
     }
 

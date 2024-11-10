@@ -182,7 +182,7 @@ class LibraryViewController: MangaCollectionViewController {
         // load data
         Task {
             // load categories
-            viewModel.categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+            viewModel.categories = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
             }
             // refresh header
@@ -837,25 +837,25 @@ extension LibraryViewController {
 
 // MARK: - Listing Header Delegate
 extension LibraryViewController: MangaListSelectionHeaderDelegate {
+    nonisolated func optionSelected(_ index: Int) {
+        Task { @MainActor in
+            guard !ignoreOptionChange else {
+                ignoreOptionChange = false
+                return
+            }
+            if index == 0 {
+                viewModel.currentCategory = nil
+            } else {
+                viewModel.currentCategory = viewModel.categories[index - 1]
+            }
+            updateLockStackViewText()
+            locked = viewModel.isCategoryLocked()
+            updateNavbarLock()
+            updateLockState()
+            deselectAllItems()
+            updateToolbar()
+            updateNavbarItems()
 
-    func optionSelected(_ index: Int) {
-        guard !ignoreOptionChange else {
-            ignoreOptionChange = false
-            return
-        }
-        if index == 0 {
-            viewModel.currentCategory = nil
-        } else {
-            viewModel.currentCategory = viewModel.categories[index - 1]
-        }
-        updateLockStackViewText()
-        locked = viewModel.isCategoryLocked()
-        updateNavbarLock()
-        updateLockState()
-        deselectAllItems()
-        updateToolbar()
-        updateNavbarItems()
-        Task {
             await viewModel.loadLibrary()
             updateDataSource()
         }
@@ -870,7 +870,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Collection View Delegate
 extension LibraryViewController {
-
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard
             let info = dataSource.itemIdentifier(for: indexPath)

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MangaInfo: Hashable {
+struct MangaInfo: Hashable, Sendable {
     let mangaId: String
     let sourceId: String
 
