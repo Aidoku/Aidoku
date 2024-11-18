@@ -956,17 +956,22 @@ extension LibraryViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let indexPath = indexPaths.first else { return nil }
+
         let manga = mangaInfo(at: indexPath)
         let mangaInfo = indexPaths.map(mangaInfo(at:))
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
+            let singleAttributes = mangaInfo.count > 1
+            ? .disabled
+            : UIMenuElement.Attributes()
 
             if let url = manga.url {
                 actions.append(UIMenu(identifier: .share, options: .displayInline, children: [
                     UIAction(
                         title: NSLocalizedString("SHARE", comment: ""),
-                        image: UIImage(systemName: "square.and.arrow.up")
+                        image: UIImage(systemName: "square.and.arrow.up"),
+                        attributes: singleAttributes
                     ) { _ in
                         let activityViewController = UIActivityViewController(
                             activityItems: [url],
@@ -983,7 +988,8 @@ extension LibraryViewController {
             if self.opensReaderView {
                 actions.append(UIAction(
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
-                    image: UIImage(systemName: "info.circle")
+                    image: UIImage(systemName: "info.circle"),
+                    attributes: singleAttributes
                 ) { _ in
                     super.collectionView(collectionView, didSelectItemAt: indexPath) // open info view
                 })
@@ -992,7 +998,8 @@ extension LibraryViewController {
             if !self.viewModel.categories.isEmpty {
                 actions.append(UIAction(
                     title: NSLocalizedString("EDIT_CATEGORIES", comment: ""),
-                    image: UIImage(systemName: "folder.badge.gearshape")
+                    image: UIImage(systemName: "folder.badge.gearshape"),
+                    attributes: singleAttributes
                 ) { _ in
                     let manga = manga.toManga()
                     self.present(
@@ -1004,7 +1011,8 @@ extension LibraryViewController {
 
             actions.append(UIAction(
                 title: NSLocalizedString("MIGRATE", comment: ""),
-                image: UIImage(systemName: "arrow.left.arrow.right")
+                image: UIImage(systemName: "arrow.left.arrow.right"),
+                attributes: singleAttributes
             ) { [weak self] _ in
                 let manga = manga.toManga()
                 let migrateView = MigrateMangaView(manga: [manga])
@@ -1017,22 +1025,30 @@ extension LibraryViewController {
                 // read chapters
                 UIAction(title: NSLocalizedString("READ", comment: ""), image: UIImage(systemName: "eye")) { _ in
                     self.showLoadingIndicator()
-                    Task {
-                        let manga = manga.toManga()
-                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
 
-                        await HistoryManager.shared.addHistory(chapters: chapters)
+                    Task {
+                        for manga in mangaInfo {
+                            let manga = manga.toManga()
+                            let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                            await HistoryManager.shared.addHistory(chapters: chapters)
+                        }
+
                         self.hideLoadingIndicator()
                     }
                 },
                 // unread chapters
                 UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: UIImage(systemName: "eye.slash")) { _ in
                     self.showLoadingIndicator()
-                    Task {
-                        let manga = manga.toManga()
-                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
 
-                        await HistoryManager.shared.removeHistory(chapters: chapters)
+                    Task {
+                        for manga in mangaInfo {
+                            let manga = manga.toManga()
+                            let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                            await HistoryManager.shared.removeHistory(chapters: chapters)
+                        }
+
                         self.hideLoadingIndicator()
                     }
                 }
@@ -1054,12 +1070,15 @@ extension LibraryViewController {
                     )
                 }
             }
+
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD", comment: "")) { _ in
                 if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
                     Reachability.getConnectionType() == .wifi ||
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
-                        await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                        for manga in mangaInfo {
+                            await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                        }
                     }
                 } else {
                     self.presentAlert(
@@ -1082,7 +1101,10 @@ extension LibraryViewController {
                     attributes: .destructive
                 ) { _ in
                     Task {
-                        await self.viewModel.removeFromCurrentCategory(manga: manga)
+                        for manga in mangaInfo {
+                            await self.viewModel.removeFromCurrentCategory(manga: manga)
+                        }
+
                         self.updateDataSource()
                     }
                 })
@@ -1094,7 +1116,10 @@ extension LibraryViewController {
                 attributes: .destructive
             ) { _ in
                 Task {
-                    await self.viewModel.removeFromLibrary(manga: manga)
+                    for manga in mangaInfo {
+                        await self.viewModel.removeFromLibrary(manga: manga)
+                    }
+
                     self.updateDataSource()
                 }
             })
