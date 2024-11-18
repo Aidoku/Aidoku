@@ -22,6 +22,9 @@ class MangaViewModel {
     var sortAscending: Bool = false
     var filters: [ChapterFilterOption] = []
     var langFilter: String?
+    var scanlatorFilter: [String] = []
+
+    var savedScanlatorList: [String]?
 
     var hasUnreadFilter: Bool {
         filters.contains(where: { $0.type == .unread })
@@ -51,6 +54,11 @@ class MangaViewModel {
             guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
             fullChapterList = (try? await source.getChapterList(manga: manga)) ?? []
         }
+
+        // get unique chapters without changing the order
+        // workaround for diffable data source crashing for non-unique chapter ids
+        var uniqueChapters = Set<Chapter>()
+        fullChapterList = fullChapterList.filter { uniqueChapters.insert($0).inserted }
 
         filterChapterList()
     }
@@ -113,7 +121,22 @@ class MangaViewModel {
         filteredChapterList = fullChapterList
         sortChapters(method: sortMethod, ascending: sortAscending)
 
-        filterChaptersByLanguage()
+        // filter by language and scanlators
+        if langFilter != nil || !scanlatorFilter.isEmpty {
+            filteredChapterList = filteredChapterList.filter {
+                let cond1 = if let langFilter {
+                    $0.lang == langFilter
+                } else {
+                    true
+                }
+                let cond2 = if !scanlatorFilter.isEmpty  {
+                    scanlatorFilter.contains($0.scanlator ?? "")
+                } else {
+                    true
+                }
+                return cond1 && cond2
+            }
+        }
 
         for filter in filters {
             switch filter.type {
@@ -131,14 +154,15 @@ class MangaViewModel {
         }
     }
 
-    private func filterChaptersByLanguage() {
-        if let langFilter {
-            filteredChapterList = filteredChapterList.filter { $0.lang == langFilter }
-        }
-    }
-
     func languageFilterChanged(_ newValue: String?, manga: Manga) async {
         langFilter = newValue
+        filterChapterList()
+        await saveFilters(manga: manga)
+        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
+    }
+
+    func scanlatorFilterChanged(_ newValue: [String], manga: Manga) async {
+        scanlatorFilter = newValue
         filterChapterList()
         await saveFilters(manga: manga)
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
@@ -170,12 +194,29 @@ class MangaViewModel {
     func saveFilters(manga: Manga) async {
         manga.chapterFlags = generageChapterFlags()
         manga.langFilter = langFilter
+        manga.scanlatorFilter = scanlatorFilter
         await CoreDataManager.shared.updateMangaDetails(manga: manga)
     }
 
     func getSourceDefaultLanguages(sourceId: String) -> [String] {
         guard let source = SourceManager.shared.source(for: sourceId) else { return [] }
         return source.getDefaultLanguages()
+    }
+
+    func getScanlators() -> [String] {
+        if let savedScanlatorList {
+            return savedScanlatorList
+        }
+        guard !fullChapterList.isEmpty else {
+            return []
+        }
+        var scanlators: Set<String> = []
+        for chapter in fullChapterList {
+            scanlators.insert(chapter.scanlator ?? "")
+        }
+        let result = scanlators.sorted()
+        savedScanlatorList = result
+        return result
     }
 
     enum ChapterResult {

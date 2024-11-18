@@ -123,6 +123,7 @@ extension MangaManager {
             sourceId: manga.sourceId,
             mangaId: manga.id,
             lang: manga.langFilter,
+            scanlators: manga.scanlatorFilter,
             context: context
         ) > 0 {
             return true
@@ -132,6 +133,7 @@ extension MangaManager {
             sourceId: manga.sourceId,
             mangaId: manga.id,
             lang: manga.langFilter,
+            scanlators: manga.scanlatorFilter,
             context: context
         ) == 0 {
             return true
@@ -260,8 +262,11 @@ extension MangaManager {
                                     context: context
                                 )
                                 // update manga updates
+                                let scanlatorFilter = mangaObject.scanlatorFilter ?? []
                                 for chapter in newChapters
-                                where mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                where
+                                    mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                    && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                                 {
                                     CoreDataManager.shared.createMangaUpdate(
                                         sourceId: manga.sourceId,

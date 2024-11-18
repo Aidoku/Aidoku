@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 
+@MainActor
 class LibraryViewModel {
 
     var manga: [MangaInfo] = []
@@ -95,7 +96,7 @@ class LibraryViewModel {
     }
 
     func refreshCategories() async {
-        categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+        categories = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
         }
         if currentCategory != nil && !categories.contains(currentCategory!) {
@@ -106,28 +107,41 @@ class LibraryViewModel {
 
     // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
-        var pinnedManga: [MangaInfo] = []
-        var manga: [MangaInfo] = []
+        let currentCategory = self.currentCategory
+        let sortMethod = self.sortMethod
+        let sortAscending = self.sortAscending
+        let filters = self.filters
+        let pinType = self.pinType
 
-        var checkDownloads = false
-        var excludeDownloads = false
+        var (
+            success,
+            pinnedManga,
+            manga,
+            checkDownloads,
+            excludeDownloads
+        ) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+            var pinnedManga: [MangaInfo] = []
+            var manga: [MangaInfo] = []
+            var checkDownloads = false
+            var excludeDownloads = false
 
-        await CoreDataManager.shared.container.performBackgroundTask { context in
             let request = LibraryMangaObject.fetchRequest()
-            if let currentCategory = self.currentCategory {
+            if let currentCategory {
                 request.predicate = NSPredicate(format: "manga != nil AND ANY categories.title == %@", currentCategory)
             } else {
                 request.predicate = NSPredicate(format: "manga != nil")
             }
-            if self.sortMethod != .unreadChapters {
+            if sortMethod != .unreadChapters {
                 request.sortDescriptors = [
                     NSSortDescriptor(
-                        key: self.sortMethod.sortStringValue,
-                        ascending: self.sortMethod == .alphabetical ? !self.sortAscending : self.sortAscending
+                        key: sortMethod.sortStringValue,
+                        ascending: sortMethod == .alphabetical ? !sortAscending : sortAscending
                     )
                 ]
             }
-            guard let libraryObjects = try? context.fetch(request) else { return }
+            guard let libraryObjects = try? context.fetch(request) else {
+                return (false, pinnedManga, manga, checkDownloads, excludeDownloads)
+            }
 
             var ids = Set<String>()
 
@@ -142,6 +156,7 @@ class LibraryViewModel {
                     sourceId: mangaObject.sourceId,
                     mangaId: mangaObject.id,
                     lang: mangaObject.langFilter,
+                    scanlators: mangaObject.scanlatorFilter,
                     context: context
                 )
 
@@ -156,7 +171,7 @@ class LibraryViewModel {
                 )
 
                 // process filters
-                for filter in self.filters {
+                for filter in filters {
                     let condition: Bool
                     switch filter.type {
                     case .downloaded:
@@ -172,7 +187,7 @@ class LibraryViewModel {
                     }
                 }
 
-                switch self.pinType {
+                switch pinType {
                 case .none:
                     manga.append(info)
                 case .unread:
@@ -189,7 +204,11 @@ class LibraryViewModel {
                     }
                 }
             }
+
+            return (true, pinnedManga, manga, checkDownloads, excludeDownloads)
         }
+
+        guard success else { return }
 
         if checkDownloads {
             let pinnedMangaCopy = pinnedManga
@@ -234,6 +253,7 @@ class LibraryViewModel {
                                 sourceId: item.sourceId,
                                 mangaId: item.mangaId,
                                 lang: filters.language,
+                                scanlators: filters.scanlators,
                                 context: context
                             )
                         }
@@ -254,18 +274,20 @@ class LibraryViewModel {
             }
             return ret
         }
-        for count in unreadCounts {
-            if let pinnedIndex = pinnedManga.firstIndex(where: { $0.hashValue == count.key }) {
-                pinnedManga[pinnedIndex].unread = count.value
-                if read && sortMethod == .lastRead && pinnedIndex != 0 {
-                    let manga = pinnedManga.remove(at: pinnedIndex)
-                    pinnedManga.insert(manga, at: 0)
-                }
-            } else if let mangaIndex = self.manga.firstIndex(where: { $0.hashValue == count.key }) {
-                self.manga[mangaIndex].unread = count.value
-                if read && sortMethod == .lastRead && mangaIndex != 0 {
-                    let manga = self.manga.remove(at: mangaIndex)
-                    self.manga.insert(manga, at: 0)
+        await MainActor.run {
+            for count in unreadCounts {
+                if let pinnedIndex = pinnedManga.firstIndex(where: { $0.hashValue == count.key }) {
+                    pinnedManga[pinnedIndex].unread = count.value
+                    if read && sortMethod == .lastRead && pinnedIndex != 0 {
+                        let manga = pinnedManga.remove(at: pinnedIndex)
+                        pinnedManga.insert(manga, at: 0)
+                    }
+                } else if let mangaIndex = self.manga.firstIndex(where: { $0.hashValue == count.key }) {
+                    self.manga[mangaIndex].unread = count.value
+                    if read && sortMethod == .lastRead && mangaIndex != 0 {
+                        let manga = self.manga.remove(at: mangaIndex)
+                        self.manga.insert(manga, at: 0)
+                    }
                 }
             }
         }
@@ -277,10 +299,10 @@ class LibraryViewModel {
     }
 
     func fetchUnreads() async {
-        var unreadCounts: [Int: Int] = [:]
         let currentManga = self.manga + self.pinnedManga
         // fetch new unread counts
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        let unreadCounts = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+            var unreadCounts: [Int: Int] = [:]
             for manga in currentManga {
                 let filters = CoreDataManager.shared.getMangaChapterFilters(
                     sourceId: manga.sourceId,
@@ -291,9 +313,11 @@ class LibraryViewModel {
                     sourceId: manga.sourceId,
                     mangaId: manga.mangaId,
                     lang: filters.language,
+                    scanlators: filters.scanlators,
                     context: context
                 )
             }
+            return unreadCounts
         }
         // set unread counts
         for (i, manga) in self.manga.enumerated() {
@@ -312,6 +336,7 @@ class LibraryViewModel {
         }
     }
 
+    @MainActor
     func sortLibrary() async {
         switch sortMethod {
         case .alphabetical:

@@ -182,7 +182,7 @@ class LibraryViewController: MangaCollectionViewController {
         // load data
         Task {
             // load categories
-            viewModel.categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+            viewModel.categories = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
             }
             // refresh header
@@ -837,25 +837,25 @@ extension LibraryViewController {
 
 // MARK: - Listing Header Delegate
 extension LibraryViewController: MangaListSelectionHeaderDelegate {
+    nonisolated func optionSelected(_ index: Int) {
+        Task { @MainActor in
+            guard !ignoreOptionChange else {
+                ignoreOptionChange = false
+                return
+            }
+            if index == 0 {
+                viewModel.currentCategory = nil
+            } else {
+                viewModel.currentCategory = viewModel.categories[index - 1]
+            }
+            updateLockStackViewText()
+            locked = viewModel.isCategoryLocked()
+            updateNavbarLock()
+            updateLockState()
+            deselectAllItems()
+            updateToolbar()
+            updateNavbarItems()
 
-    func optionSelected(_ index: Int) {
-        guard !ignoreOptionChange else {
-            ignoreOptionChange = false
-            return
-        }
-        if index == 0 {
-            viewModel.currentCategory = nil
-        } else {
-            viewModel.currentCategory = viewModel.categories[index - 1]
-        }
-        updateLockStackViewText()
-        locked = viewModel.isCategoryLocked()
-        updateNavbarLock()
-        updateLockState()
-        deselectAllItems()
-        updateToolbar()
-        updateNavbarItems()
-        Task {
             await viewModel.loadLibrary()
             updateDataSource()
         }
@@ -870,7 +870,6 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Collection View Delegate
 extension LibraryViewController {
-
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard
             let info = dataSource.itemIdentifier(for: indexPath)
@@ -963,6 +962,24 @@ extension LibraryViewController {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
 
+            if let url = manga.url {
+                actions.append(UIMenu(identifier: .share, options: .displayInline, children: [
+                    UIAction(
+                        title: NSLocalizedString("SHARE", comment: ""),
+                        image: UIImage(systemName: "square.and.arrow.up")
+                    ) { _ in
+                        let activityViewController = UIActivityViewController(
+                            activityItems: [url],
+                            applicationActivities: nil
+                        )
+                        activityViewController.popoverPresentationController?.sourceView = self.view
+                        activityViewController.popoverPresentationController?.sourceRect = collectionView.cellForItem(at: indexPath)?.frame ?? .zero
+
+                        self.present(activityViewController, animated: true)
+                    }
+                ]))
+            }
+
             if self.opensReaderView {
                 actions.append(UIAction(
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
@@ -985,21 +1002,41 @@ extension LibraryViewController {
                 })
             }
 
-            if let url = manga.url {
-                actions.append(UIAction(
-                    title: NSLocalizedString("SHARE", comment: ""),
-                    image: UIImage(systemName: "square.and.arrow.up")
-                ) { _ in
-                    let activityViewController = UIActivityViewController(
-                        activityItems: [url],
-                        applicationActivities: nil
-                    )
-                    activityViewController.popoverPresentationController?.sourceView = self.view
-                    activityViewController.popoverPresentationController?.sourceRect = collectionView.cellForItem(at: indexPath)?.frame ?? .zero
+            actions.append(UIAction(
+                title: NSLocalizedString("MIGRATE", comment: ""),
+                image: UIImage(systemName: "arrow.left.arrow.right")
+            ) { [weak self] _ in
+                let manga = manga.toManga()
+                let migrateView = MigrateMangaView(manga: [manga])
+                self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
+            })
 
-                    self.present(activityViewController, animated: true)
-                })
-            }
+            var bottomMenuChildren: [UIMenuElement] = []
+
+            bottomMenuChildren.append(UIMenu(title: NSLocalizedString("MARK_ALL", comment: ""), image: nil, children: [
+                // read chapters
+                UIAction(title: NSLocalizedString("READ", comment: ""), image: UIImage(systemName: "eye")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        let manga = manga.toManga()
+                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                        await HistoryManager.shared.addHistory(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                },
+                // unread chapters
+                UIAction(title: NSLocalizedString("UNREAD", comment: ""), image: UIImage(systemName: "eye.slash")) { _ in
+                    self.showLoadingIndicator()
+                    Task {
+                        let manga = manga.toManga()
+                        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+
+                        await HistoryManager.shared.removeHistory(chapters: chapters)
+                        self.hideLoadingIndicator()
+                    }
+                }
+            ]))
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL", comment: "")) { _ in
                 if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
@@ -1032,14 +1069,14 @@ extension LibraryViewController {
                 }
             }
 
-            actions.append(UIMenu(
+            bottomMenuChildren.append(UIMenu(
                 title: NSLocalizedString("DOWNLOAD", comment: ""),
                 image: UIImage(systemName: "arrow.down.circle"),
                 children: [downloadAllAction, downloadUnreadAction]
             ))
 
             if self.viewModel.currentCategory != nil {
-                actions.append(UIAction(
+                bottomMenuChildren.append(UIAction(
                     title: NSLocalizedString("REMOVE_FROM_CATEGORY", comment: ""),
                     image: UIImage(systemName: "folder.badge.minus"),
                     attributes: .destructive
@@ -1051,7 +1088,7 @@ extension LibraryViewController {
                 })
             }
 
-            actions.append(UIAction(
+            bottomMenuChildren.append(UIAction(
                 title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
@@ -1061,6 +1098,8 @@ extension LibraryViewController {
                     self.updateDataSource()
                 }
             })
+
+            actions.append(UIMenu(options: .displayInline, children: bottomMenuChildren))
 
             return UIMenu(title: "", children: actions)
         }

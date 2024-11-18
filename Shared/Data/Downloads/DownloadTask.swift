@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UniformTypeIdentifiers
 
 protocol DownloadTaskDelegate: AnyObject {
     func taskCancelled(task: DownloadTask) async
@@ -103,7 +104,7 @@ actor DownloadTask: Identifiable {
             downloads[downloadIndex].progress = currentPage + 1
             let page = pages[currentPage]
             await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
-            let pageNumber = String(format: "%03d", page.index + 1) // XXX.png
+            let pageNumber = String(format: "%03d", currentPage + 1) // XXX.png
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 var urlRequest = URLRequest(url: url)
                 // let source modify image request
@@ -113,8 +114,10 @@ actor DownloadTask: Identifiable {
                     }
                     if let body = request.body { urlRequest.httpBody = body }
                 }
-                if let (data, _) = try? await URLSession.shared.data(for: urlRequest) {
-                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
+                if let (data, res) = try? await URLSession.shared.data(for: urlRequest) {
+                    // See if we can guess the file extension
+                    let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
+                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension(fileExtention))
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
@@ -211,5 +214,19 @@ actor DownloadTask: Identifiable {
         if !running && autostart {
             resume()
         }
+    }
+
+    // MARK: Utility
+    private func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
+        if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
+            return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
+        }
+
+        guard let mimeType = response.mimeType,
+              let type = UTType(mimeType: mimeType) else {
+            return defaultValue
+        }
+
+        return type.preferredFilenameExtension ?? defaultValue
     }
 }
