@@ -24,6 +24,7 @@ actor DownloadQueue {
 
     init(cache: DownloadCache) {
         self.cache = cache
+        loadQueueState()
     }
 
     func start() async {
@@ -83,6 +84,7 @@ actor DownloadQueue {
         if autoStart {
             await start()
         }
+        saveQueueState()
         return downloads
     }
 
@@ -96,6 +98,7 @@ actor DownloadQueue {
                 .appendingSafePathComponent(".tmp_\(chapter.id)")
                 .removeItem()
         }
+        saveQueueState()
     }
 
     func cancelDownloads(for chapters: [Chapter]) async {
@@ -109,6 +112,7 @@ actor DownloadQueue {
             }
         }
         NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: chapters)
+        saveQueueState()
     }
 
     func cancelAll() async {
@@ -116,6 +120,7 @@ actor DownloadQueue {
             await task.value.cancel()
         }
         NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: nil)
+        saveQueueState()
     }
 
     // register callback for download progress change
@@ -125,6 +130,44 @@ actor DownloadQueue {
 
     func removeProgressBlock(for chapter: Chapter) {
         progressBlocks.removeValue(forKey: chapter)
+    }
+
+    private func saveQueueState() {
+        let queueState = queue.mapValues { downloads in
+            downloads.map { download in
+                [
+                    "sourceId": download.sourceId,
+                    "mangaId": download.mangaId,
+                    "chapterId": download.chapterId,
+                    "status": download.status.rawValue,
+                    "progress": download.progress,
+                    "total": download.total
+                ]
+            }
+        }
+        UserDefaults.standard.set(queueState, forKey: "downloadQueueState")
+    }
+
+    private func loadQueueState() {
+        guard let queueState = UserDefaults.standard.dictionary(forKey: "downloadQueueState") as? [String: [[String: Any]]] else {
+            return
+        }
+        for (sourceId, downloads) in queueState {
+            var downloadList: [Download] = []
+            for downloadDict in downloads {
+                if let sourceId = downloadDict["sourceId"] as? String,
+                   let mangaId = downloadDict["mangaId"] as? String,
+                   let chapterId = downloadDict["chapterId"] as? String,
+                   let statusRawValue = downloadDict["status"] as? Int,
+                   let status = DownloadStatus(rawValue: statusRawValue),
+                   let progress = downloadDict["progress"] as? Int,
+                   let total = downloadDict["total"] as? Int {
+                    let download = Download(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, status: status, progress: progress, total: total)
+                    downloadList.append(download)
+                }
+            }
+            queue[sourceId] = downloadList
+        }
     }
 }
 

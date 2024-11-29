@@ -40,6 +40,7 @@ class DownloadManager {
         if !Self.directory.exists {
             Self.directory.createDirectory()
         }
+        loadQueueState()
     }
 
     func getDownloadQueue() async -> [String: [Download]] {
@@ -103,6 +104,10 @@ class DownloadManager {
 
     func hasQueuedDownloads() async -> Bool {
         await queue.hasQueuedDownloads()
+    }
+
+    private func loadQueueState() {
+        queue.loadQueueState()
     }
 }
 
