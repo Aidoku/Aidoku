@@ -301,7 +301,7 @@ extension DownloadQueueViewController {
                     self.queue[queueIndex].downloads[downloadIndex].total = total
 
                     Task { @MainActor in
-                        if let cell = tableView.cellForRow(at: IndexPath(row: queueIndex, section: downloadIndex)) as? DownloadTableViewCell {
+                        if let cell = tableView.cellForRow(at: IndexPath(row: downloadIndex, section: queueIndex)) as? DownloadTableViewCell {
                             if total != cell.total { cell.total = total }
                             cell.progress = progress
                         }

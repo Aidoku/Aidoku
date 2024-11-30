@@ -64,8 +64,18 @@ class LibraryViewController: MangaCollectionViewController {
             navigationItem.hidesSearchBarWhenScrolling = true
         }
 
+        // run background library refresh if we need to
         if viewModel.shouldUpdateLibrary() {
             updateLibraryRefresh()
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // load stored download queue state on first load
+        Task.detached {
+            await DownloadManager.shared.loadQueueState()
         }
     }
 

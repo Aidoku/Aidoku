@@ -24,7 +24,6 @@ actor DownloadQueue {
 
     init(cache: DownloadCache) {
         self.cache = cache
-        loadQueueState()
     }
 
     func start() async {
@@ -54,10 +53,6 @@ actor DownloadQueue {
             await task.value.pause()
         }
         running = false
-    }
-
-    func refreshQueue() {
-        guard running else { return }
     }
 
     @discardableResult
@@ -110,6 +105,11 @@ actor DownloadQueue {
                     .appendingSafePathComponent(".tmp_\(chapter.id)")
                     .removeItem()
             }
+            if let queueItem = queue[chapter.sourceId]?.firstIndex(where: {
+                $0.chapterId == chapter.id && $0.mangaId == chapter.mangaId
+            }) {
+                queue[chapter.sourceId]?.remove(at: queueItem)
+            }
         }
         NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: chapters)
         saveQueueState()
@@ -119,6 +119,7 @@ actor DownloadQueue {
         for task in tasks {
             await task.value.cancel()
         }
+        queue = [:]
         NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: nil)
         saveQueueState()
     }
@@ -132,41 +133,21 @@ actor DownloadQueue {
         progressBlocks.removeValue(forKey: chapter)
     }
 
-    private func saveQueueState() {
-        let queueState = queue.mapValues { downloads in
-            downloads.map { download in
-                [
-                    "sourceId": download.sourceId,
-                    "mangaId": download.mangaId,
-                    "chapterId": download.chapterId,
-                    "status": download.status.rawValue,
-                    "progress": download.progress,
-                    "total": download.total
-                ]
-            }
-        }
-        UserDefaults.standard.set(queueState, forKey: "downloadQueueState")
+    func saveQueueState() {
+        let queueData = try? JSONEncoder().encode(queue)
+        UserDefaults.standard.set(queueData, forKey: "downloadQueueState")
     }
 
-    private func loadQueueState() {
-        guard let queueState = UserDefaults.standard.dictionary(forKey: "downloadQueueState") as? [String: [[String: Any]]] else {
+    func loadQueueState() async {
+        guard
+            let queueData = UserDefaults.standard.data(forKey: "downloadQueueState"),
+            let queueState = try? JSONDecoder().decode([String: [Download]].self, from: queueData)
+        else {
             return
         }
-        for (sourceId, downloads) in queueState {
-            var downloadList: [Download] = []
-            for downloadDict in downloads {
-                if let sourceId = downloadDict["sourceId"] as? String,
-                   let mangaId = downloadDict["mangaId"] as? String,
-                   let chapterId = downloadDict["chapterId"] as? String,
-                   let statusRawValue = downloadDict["status"] as? Int,
-                   let status = DownloadStatus(rawValue: statusRawValue),
-                   let progress = downloadDict["progress"] as? Int,
-                   let total = downloadDict["total"] as? Int {
-                    let download = Download(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, status: status, progress: progress, total: total)
-                    downloadList.append(download)
-                }
-            }
-            queue[sourceId] = downloadList
+        queue = queueState
+        if !queue.isEmpty {
+            await start()
         }
     }
 }
@@ -189,20 +170,16 @@ extension DownloadQueue {
 extension DownloadQueue: DownloadTaskDelegate {
 
     func taskCancelled(task: DownloadTask) async {
-        tasks.removeValue(forKey: task.id)
-        queue.removeValue(forKey: task.id)
+        await taskFinished(task: task)
     }
 
-    func taskPaused(task: DownloadTask) async {
-    }
+    func taskPaused(task: DownloadTask) async {}
 
     func taskFinished(task: DownloadTask) async {
         tasks.removeValue(forKey: task.id)
         queue.removeValue(forKey: task.id)
-        self.running = !tasks.isEmpty
-        if !running {
-            // all downloads finished
-        }
+        running = !tasks.isEmpty
+        saveQueueState()
     }
 
     func downloadFinished(download: Download) async {
@@ -218,8 +195,9 @@ extension DownloadQueue: DownloadTaskDelegate {
         } else {
             queue[download.sourceId] = sourceDownloads
         }
+        saveQueueState()
         if let chapter = download.chapter {
-            progressBlocks[chapter] = nil
+            progressBlocks.removeValue(forKey: chapter)
         }
         if sendCancelNotification {
             sendCancelNotification = false
