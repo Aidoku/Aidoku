@@ -31,6 +31,9 @@ protocol Tracker: AnyObject {
     /// A boolean indicating if the tracker is currently logged in.
     var isLoggedIn: Bool { get }
 
+    /// An array of sources that this tracker can be used with
+    var restrictSources: [String] { get }
+
     /// Register a new tracked title.
     ///
     /// Called when a tracker is linked with a title, indicating that the title should be added to the
@@ -103,6 +106,7 @@ extension Tracker {
     func option(for score: Int) -> String? {
         scoreOptions.first { $0.1 == score }?.0
     }
+    var restrictSources: [String] { [] }
 }
 
 extension Tracker {
