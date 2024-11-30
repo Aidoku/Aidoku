@@ -21,14 +21,12 @@ import Foundation
 // global class to manage downloads
 @MainActor
 class DownloadManager {
-
     static let shared = DownloadManager()
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Downloads", isDirectory: true)
 
     private let cache: DownloadCache
     private let queue: DownloadQueue
-//    private let store: DownloadStore // TODO: store downloads so if the app exits we can resume
 
     private(set) var downloadsPaused = false
 
@@ -103,6 +101,16 @@ class DownloadManager {
 
     func hasQueuedDownloads() async -> Bool {
         await queue.hasQueuedDownloads()
+    }
+
+    func loadQueueState() async {
+        await queue.loadQueueState()
+
+        // fetch loaded downloads to notify ui about
+        let downloads = await queue.queue.flatMap(\.value)
+        if !downloads.isEmpty {
+            NotificationCenter.default.post(name: NSNotification.Name("downloadsQueued"), object: downloads)
+        }
     }
 }
 

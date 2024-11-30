@@ -57,18 +57,26 @@ actor DownloadTask: Identifiable {
         if let download = downloads.first,
            let source = SourceManager.shared.source(for: download.sourceId) {
 
-            let chapter = Chapter(sourceId: download.sourceId, id: download.chapterId, mangaId: download.mangaId, title: nil, sourceOrder: -1)
+            let chapter = Chapter(
+                sourceId: download.sourceId,
+                id: download.chapterId,
+                mangaId: download.mangaId,
+                title: nil,
+                sourceOrder: -1
+            )
 
             // if directory exists (chapter already downloaded) return
             let directory = await cache.directory(for: chapter)
             guard !directory.exists else {
                 downloads.removeFirst()
+                await delegate?.downloadFinished(download: download)
                 return await next()
             }
 
             // download has been cancelled or failed, move to next
             if download.status != .queued && download.status != .downloading && download.status != .paused {
                 downloads.removeFirst()
+                await delegate?.downloadCancelled(download: download)
                 return await next()
             }
 
