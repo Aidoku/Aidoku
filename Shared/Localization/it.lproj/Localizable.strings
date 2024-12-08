@@ -362,3 +362,5 @@
 "DELETE_DOWNLOAD_AFTER_READING" = "Rimuovi il file scaricato a capitolo finito";
 "%lld_PLUS_MORE" = "+%lld altri";
 "SKIPPING_CHAPTERS" = "Salto %i capitoli, o mancano dalla fonte o sono stati filtrati";
+"SCANLATOR" = "Scanlator";
+"NO_SCANLATOR" = "Nessuno scanlator";

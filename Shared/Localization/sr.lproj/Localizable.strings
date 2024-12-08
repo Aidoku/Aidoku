@@ -362,3 +362,5 @@
 "%lld_PLUS_MORE" = "+%lld више";
 "SKIPPING_CHAPTERS" = "Прескакање %i поглавља, или их извор нема или су филтрирана";
 "DELETE_DOWNLOAD_AFTER_READING" = "Izbriši preuzeto nakon čitanja";
+"NO_SCANLATOR" = "Нема скен-преводиоца";
+"SCANLATOR" = "Скен-преводилац";
