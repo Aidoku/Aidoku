@@ -27,7 +27,7 @@
 "PIN" = "पिन";
 "CATEGORIES" = "वर्गहरू";
 "EDIT_CATEGORIES" = "वर्ग सम्पादन गर्नुहोस्";
-"DEFAULT_CATEGORY" = "पुर्वनिर्धारित वर्ग";
+"DEFAULT_CATEGORY" = "पूर्वनिर्धारित वर्ग";
 "LIST_ALL" = "सबै";
 "LIST_HEADER" = "सूची";
 "HISTORY_LOCKED" = "इतिहास लक्ड छ।";
@@ -36,7 +36,7 @@
 "ABOUT" = "बारेमा";
 "GITHUB_REPO" = "GitHub रिपोजेटोरी";
 "READER_SETTINGS" = "रिडर सेटिंग्स";
-"DEFAULT" = "पुर्वनिर्धारित";
+"DEFAULT" = "पूर्वनिर्धारित";
 "RTL" = "दायाँ देखि बायाँ";
 "VERTICAL" = "ठाडो";
 "PAGE_X" = "पृष्ठ %i";
@@ -192,7 +192,7 @@
 "UNINSTALL" = "अनइन्स्टल";
 "UNPIN" = "अनपिन";
 "REORDER" = "पुन: क्रमबद्ध गर्नुहोस्";
-"SOURCE_INFO" = "श्रोत जानकारी";
+"SOURCE_INFO" = "स्रोत जानकारी";
 "LANGUAGE" = "भाषा";
 "INFO" = "जानकारी";
 "BUTTON_FILTER" = "फिल्टर";
@@ -203,8 +203,8 @@
 "HIATUS" = "अन्तरालमा";
 "SUGGESTIVE" = "सुझावात्मक";
 "NSFW" = "NSFW";
-"MORE" = "अझै";
-"SOURCE_ORDER" = "श्रोत क्रम";
+"MORE" = "थप";
+"SOURCE_ORDER" = "स्रोत क्रम";
 "BACKUP_INFO" = "ब्याकअपलाई निर्यात गर्न फाइलमा लामो प्रेस गर्नुहोस्, वा मेटाउन बायाँ स्वाइप गर्नुहोस्।";
 "MISSING_SOURCES_TEXT" = "रिस्टोर गरेको ब्याकअपमा निम्न स्रोतहरूबाट डाटा समावेश हुन सक्छ, जुन हाल स्थापित छैन:";
 "RESTORE" = "रिस्टोर गर्नुहोस्";
@@ -339,3 +339,5 @@
 "MAL_LOGIN_NEEDED" = "MyAnimeList लगइन आवश्यक छ";
 "MAL_LOGIN_NEEDED_TEXT" = "तपाइँको MyAnimeList टोकनको म्याद सकिएको छ, त्यसैले तपाइँ सेटिङ्समा पुन: लगइन नगरेसम्म MyAnimeList ट्र्याकरले काम गर्न छोड्नेछ।";
 "BACKUP_ERROR" = "ब्याकअप रिस्टोर त्रुटि";
+"NO_SCANLATOR" = "कुनै स्क्यानलेटर हैन";
+"SCANLATOR" = "सक्यानलेटर";

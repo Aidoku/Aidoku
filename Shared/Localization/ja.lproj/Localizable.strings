@@ -358,3 +358,7 @@
 "MANGA_UPDATES" = "更新";
 "NO_UPDATES" = "更新なし";
 "%lld_PLUS_MORE" = "+%lld個";
+"SKIPPING_CHAPTERS" = "ソースが欠落しているか、フィルターによって、%i章がスキップされます";
+"NO_SCANLATOR" = "スキャンレーターなし";
+"SCANLATOR" = "スキャンレーター";
+"DELETE_DOWNLOAD_AFTER_READING" = "読み終わったらダウンロードを削除する";
