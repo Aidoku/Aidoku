@@ -814,7 +814,7 @@ extension LibraryViewController {
             }
         }
         let trackingFilter: [UIAction]
-        if TrackerManager.shared.hasAvailableTrackers {
+        if TrackerManager.shared.hasAvailableTrackers() {
             trackingFilter = [UIAction(
                 title: NSLocalizedString("TRACKING", comment: ""),
                 image: filterImage(for: .tracking)
