@@ -433,6 +433,7 @@
 		FB4275182961203100131377 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		FB43BE0729453E6D004E5AE4 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB43BE0829453E9D004E5AE4 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB4436B52D1658480042741B /* ta */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ta; path = ta.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListsViewController.swift; sourceTree = "<group>"; };
 		FB4ADC74281206AD00F6D7FB /* UIStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIStepper.swift; sourceTree = "<group>"; };
 		FB4ADC9E2814DAA200F6D7FB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1499,6 +1500,7 @@
 				th,
 				ne,
 				sq,
+				ta,
 			);
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
@@ -1929,6 +1931,7 @@
 				FB40CD082C6845F30018AE3C /* th */,
 				FBD8A6042CC5AA6F00B1F7D2 /* ne */,
 				FBD8A6052CC5AA8A00B1F7D2 /* sq */,
+				FB4436B52D1658480042741B /* ta */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
