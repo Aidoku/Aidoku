@@ -193,12 +193,14 @@ class ReaderViewController: BaseObservingViewController {
         Task {
             // don't add history if there is none and we're at the first page
             if currentPage == 1 {
-                let chapter = chapter
-                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let sourceId = chapter.sourceId
+                let mangaId = chapter.mangaId
+                let chapterId = chapter.id
+                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                     !CoreDataManager.shared.hasHistory(
-                        sourceId: chapter.sourceId,
-                        mangaId: chapter.mangaId,
-                        chapterId: chapter.id,
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        chapterId: chapterId,
                         context: context
                     )
                 }
