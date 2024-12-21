@@ -16,10 +16,13 @@
 "DOWNLOADED" = "ഡൗൺലോഡ് ചെയ്തു";
 "OK" = "ശരി";
 "SHARE" = "പങ്കിടുക";
-"LOADING_ELLIPSIS" = "ലോഡിംഗ്…";
+"LOADING_ELLIPSIS" = "ലോഡുചെയ്യുന്നു…";
 "PAUSE" = "വിരാമം";
 "RESUME" = "പുനരാരംഭിക്കുക";
 "COPY" = "പകർത്തുക";
 "WARNING" = "മുന്നറിയിപ്പ്";
 "CANCEL_DOWNLOAD" = "ഡൗൺലോഡ് റദ്ദാക്കുക";
 "REMOVE_DOWNLOAD" = "ഡൗൺലോഡ് നീക്കം ചെയ്യുക";
+"CLEAR" = "നീക്കുക";
+"REMOVE_ALL_DOWNLOADS" = "എല്ലാ ഡൗൺലോഡുകളും നീക്കുക";
+"REMOVE_DOWNLOADS" = "ഡൗൺലോഡുകൾ നീക്കുക";

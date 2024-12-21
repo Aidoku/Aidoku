@@ -22,7 +22,7 @@
 "REMOVE_DOWNLOAD" = "移除下载";
 "REMOVE_ALL_DOWNLOADS" = "移除所有下载";
 "REMOVE_DOWNLOADS" = "移除所选下载";
-"REMOVE_DOWNLOADS_CONFIRM" = "删除所有选定的下载？";
+"REMOVE_DOWNLOADS_CONFIRM" = "删除所有选定下载？";
 
 // Library
 "LIBRARY" = "书架";
@@ -46,15 +46,15 @@
 "CATEGORIES" = "分类";
 "EDIT_CATEGORIES" = "编辑分类";
 "CATEGORY_ADD" = "添加分类";
-"CATEGORY_ADD_TEXT" = "输入新分类的标题以创建。";
+"CATEGORY_ADD_TEXT" = "请输入要创建的新类别标题。";
 "CATEGORY_TITLE" = "分类标题";
 "DEFAULT_CATEGORY" = "默认分类";
-"ALWAYS_ASK" = "总是询问";
+"ALWAYS_ASK" = "始终询问";
 
 // Browse
 "BROWSE" = "浏览";
-"BROWSE_NO_SOURCES" = "无来源";
-"BROWSE_NO_SOURCES_TEXT" = "配置您的来源列表或在 Aidoku 中打开\n一个来源以开始使用";
+"BROWSE_NO_SOURCES" = "没有来源";
+"BROWSE_NO_SOURCES_TEXT" = "配置你的来源列表或\n在Aidoku中打开来源";
 "ADDING_SOURCES_GUIDE_BUTTON" = "添加来源指南";
 "UPDATES" = "更新";
 "INSTALLED" = "已安装";
@@ -81,12 +81,12 @@
 "CANCELLED" = "已取消";
 "COMPLETED" = "已完结";
 "HIATUS" = "暂停";
-"SUGGESTIVE" = "暗示性内容";
-"NSFW" = "18+";
+"SUGGESTIVE" = "建议";
+"NSFW" = "NSFW";
 "MORE" = "更多";
 "SOURCE_ORDER" = "来源顺序";
 "MISSING_SOURCE" = "缺少来源";
-"MISSING_SOURCE_TEXT" = "此漫画的原始来源似乎已经丢失。请重新下载或从您的库中删除此标题。";
+"MISSING_SOURCE_TEXT" = "此漫画来源不可用。请重新下载或从您的库中删除。";
 "SELECT_CHAPTERS" = "选择章节";
 "SELECT_ALL" = "全选";
 "DESELECT_ALL" = "取消全选";
@@ -96,7 +96,7 @@
 // Reader
 "CHAPTER" = "章节";
 "CHAPTERS" = "章节";
-"VOLUME_X" = "第 %g 卷";
+"VOLUME_X" = "第 %g 冊";
 "CHAPTER_X" = "第 %g 章";
 "VOL_X" = "第 %g 卷";
 "CH_X" = "第 %g 章";
@@ -151,8 +151,8 @@
 "INCOGNITO_MODE" = "隐身模式";
 "INCOGNITO_MODE_TEXT" = "启用时暂停阅读历史记录";
 "APPEARANCE" = "外观";
-"APPEARANCE_LIGHT" = "明亮";
-"APPEARANCE_DARK" = "暗黑";
+"APPEARANCE_LIGHT" = "浅色";
+"APPEARANCE_DARK" = "深色";
 "USE_SYSTEM_APPEARANCE" = "使用系统外观";
 "MANGA_PAGE" = "漫画页面";
 "SHOW_SOURCE_LABEL" = "显示来源标签";
@@ -186,20 +186,20 @@
 "SOURCE_LIST_ADDED" = "已添加来源列表";
 "SOURCE_LIST_ADDED_TEXT" = "你可在浏览页中查看外部来源。";
 "SHOW_NSFW_SOURCES" = "显示 NSFW 来源";
-"SOURCE_LIST_URL" = "源列表网址";
+"SOURCE_LIST_URL" = "来源列表网址";
 "SOURCE_LIST_ADD" = "添加来源列表";
 "SOURCE_LIST_ADD_TEXT" = "输入来源列表网址";
 "SOURCE_LIST_ADD_FAIL" = "添加来源列表失败";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "提供来源列表网址无效或已被添加。";
 "LOCK_HISTORY_TAB" = "锁定历史标签";
-"DOWNSAMPLE_IMAGES" = "降低图像分辨率";
+"DOWNSAMPLE_IMAGES" = "降低图像质量";
 "SAVE_IMAGE_OPTION" = "保存图像选项";
 "BACKUPS" = "备份";
 "BACKUP_NAME" = "备份名称";
 "RENAME_BACKUP" = "重命名备份";
 "RENAME_BACKUP_TEXT" = "为备份输入新名称";
 "CORRUPTED_BACKUP" = "备份已损坏";
-"CORRUPTED_BACKUP_TEXT" = "此备份似乎具有配置不正确的数据。无法重命名。";
+"CORRUPTED_BACKUP_TEXT" = "该备份有配置错误的数据。无法重新命名。";
 "BACKUP_INFO" = "长按备份以导出它，或向左滑动以删除。";
 "MISSING_SOURCES" = "缺失来源";
 "MISSING_SOURCES_TEXT" = "恢复的备份可能包含来自以下未安装来源的数据：";
@@ -228,7 +228,7 @@
 "CLEAR_READ_HISTORY_TEXT" = "此操作不可逆。所有阅读历史记录将被删除。";
 "RESET_SETTINGS" = "重置设置";
 "RESET_SETTINGS_TEXT" = "此操作不可逆。所有应用程序和源设置将被重置。";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除该章节的历史记录。确定要继续吗？";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除该章节的历史记录。您确定要继续吗？";
 "PAGE_X" = "第%i页";
 "AUTH_TO_ENABLE" = "需要认证才能启用。";
 "VOL_SPACE_X" = "第 %g 卷";
@@ -245,9 +245,9 @@
 "LOCK_LIBRARY" = "锁定书架";
 "PAGES_TO_PRELOAD" = "预加载页数";
 "PAGE_LAYOUT" = "页面布局";
-"SET_AS_WIDE_PAGE" = "设置为宽幅页";
+"SET_AS_WIDE_PAGE" = "设置为宽幅页面";
 "AUTOMATIC" = "自动";
-"SET_AS_NORMAL_PAGE" = "设置为普通页";
+"SET_AS_NORMAL_PAGE" = "设置为标准页面";
 "SINGLE_PAGE" = "单页";
 "PAGED" = "分页";
 "DOUBLE_PAGE" = "双页";
@@ -257,15 +257,15 @@
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";
 "STARTED" = "开始";
-"PLANNING" = "计划中";
+"PLANNING" = "计划";
 "START_TRACKING" = "开始追踪";
 "STOP_TRACKING" = "停止追踪";
 "DROPPED" = "放弃";
 "SCORE" = "评分";
 "PAUSED" = "暂停";
-"FINISHED" = "已完结";
-"READING" = "阅读中";
-"REREADING" = "重读中";
+"FINISHED" = "完结";
+"READING" = "阅读";
+"REREADING" = "重读";
 "ONESHOT" = "短篇";
 "NOT_PUBLISHED" = "未出版";
 "MANHWA" = "韩国漫画";
@@ -309,16 +309,16 @@
 "SELECTED" = "已选择";
 "NOT_FOUND" = "未找到";
 "TITLES" = "标题";
-"MOST_CHAPTERS_SLOWER" = "章节最多（速度较慢）";
+"MOST_CHAPTERS_SLOWER" = "最多章节（较慢）";
 "MIGRATE_%i_ITEMS?" = "迁移%i个项目？";
-"RENAME_CATEGORY_INFO" = "输入此分类的新名称。";
+"RENAME_CATEGORY_INFO" = "为此类别输入新名称。";
 "RENAME_CATEGORY_FAIL" = "重命名分类失败";
 "SKIP_DUPLICATE_CHAPTERS" = "跳过重复章节";
 "RENAME_CATEGORY" = "重命名分类";
 "CATEGORY_NAME" = "分类名称";
 "%i_OF_%i" = "%i / %i";
 "WEBTOON" = "网络漫画";
-"AVAILABLE" = "可用的";
+"AVAILABLE" = "可用";
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
 "SYNC_WITH_TRACKER" = "与追踪器同步";
@@ -333,7 +333,7 @@
 "PILLARBOX_ORIENTATION" = "填充方向";
 "PILLARBOX_ORIENTATION_INFO" = "填充方向决定哪些方向添加填充。";
 "COVER" = "封面";
-"CROP_BORDERS" = "裁剪边框";
+"CROP_BORDERS" = "裁剪边缘";
 "REORDER" = "重新排序";
 "COPY" = "复制";
 "PIN" = "置顶";
@@ -361,4 +361,6 @@
 "NO_UPDATES" = "没有更新";
 "%lld_PLUS_MORE" = "+%lld 更多";
 "DELETE_DOWNLOAD_AFTER_READING" = "阅读后删除下载";
-"SKIPPING_CHAPTERS" = "跳过 %i 章，可能是来源缺失或已被过滤掉";
+"SKIPPING_CHAPTERS" = "跳过%i章，可能是因为来源缺失或已被过滤掉";
+"SCANLATOR" = "翻译组";
+"NO_SCANLATOR" = "没有翻译组";

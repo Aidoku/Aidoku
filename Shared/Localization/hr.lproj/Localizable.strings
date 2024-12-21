@@ -362,3 +362,5 @@
 "%lld_PLUS_MORE" = "+%lld više";
 "SKIPPING_CHAPTERS" = "Preskakaču se %i poglavlja, nedostaju u izvoru ili su izdvojena filtrom";
 "DELETE_DOWNLOAD_AFTER_READING" = "Izbriši preuzimanje nakon čitanja";
+"SCANLATOR" = "Prevoditelj";
+"NO_SCANLATOR" = "Nema prevoditelja";
