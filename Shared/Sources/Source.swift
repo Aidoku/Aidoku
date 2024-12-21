@@ -369,8 +369,23 @@ extension Source {
         return await actor.getPageList(chapter: chapter)
     }
 
-    func getImageRequest(url: String) async throws -> WasmRequestObject {
-        try await actor.getImageRequest(url: url)
+    struct ImageRequest: Sendable {
+        let id: Int32
+        let url: String?
+        let method: HttpMethod?
+        let headers: [String: String?]
+        let body: Data?
+    }
+
+    func getImageRequest(url: String) async throws -> ImageRequest {
+        let wasmRequest = try await actor.getImageRequest(url: url)
+        return .init(
+            id: wasmRequest.id,
+            url: wasmRequest.URL,
+            method: wasmRequest.method,
+            headers: wasmRequest.headers,
+            body: wasmRequest.body
+        )
     }
 
     func modifyUrlRequest(request: URLRequest) -> URLRequest? {

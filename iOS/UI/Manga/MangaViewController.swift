@@ -427,7 +427,12 @@ class MangaViewController: BaseTableViewController {
             defaultReadingMode: ReadingMode(rawValue: manga.viewer.rawValue)
         )
         let navigationController = ReaderNavigationController(rootViewController: readerController)
-        navigationController.modalPresentationStyle = .fullScreen
+        // bug: using fullScreen on macOS crashes for some reason
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            navigationController.modalPresentationStyle = .overFullScreen
+        } else {
+            navigationController.modalPresentationStyle = .fullScreen
+        }
         present(navigationController, animated: true)
     }
 

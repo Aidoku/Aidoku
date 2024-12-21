@@ -111,7 +111,7 @@ class MangaCoverViewController: BaseViewController {
                 source.handlesImageRequests,
                 let request = try? await source.getImageRequest(url: coverUrl.absoluteString)
             {
-                urlRequest.url = URL(string: request.URL ?? "")
+                urlRequest.url = URL(string: request.url ?? "")
                 for (key, value) in request.headers {
                     urlRequest.setValue(value, forHTTPHeaderField: key)
                 }

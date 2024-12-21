@@ -343,10 +343,12 @@ class MangaDetailHeaderView: UIView {
         }
 
         Task {
-            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+            let sourceId = manga.sourceId
+            let mangaId = manga.id
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.hasLibraryManga(
-                    sourceId: manga.sourceId,
-                    mangaId: manga.id,
+                    sourceId: sourceId,
+                    mangaId: mangaId,
                     context: context
                 )
             }
@@ -413,7 +415,7 @@ class MangaDetailHeaderView: UIView {
             source.handlesImageRequests,
             let request = try? await source.getImageRequest(url: url.absoluteString)
         {
-            urlRequest.url = URL(string: request.URL ?? "")
+            urlRequest.url = URL(string: request.url ?? "")
             for (key, value) in request.headers {
                 urlRequest.setValue(value, forHTTPHeaderField: key)
             }
