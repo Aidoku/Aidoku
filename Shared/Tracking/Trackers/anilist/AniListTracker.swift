@@ -93,7 +93,6 @@ class AniListTracker: OAuthTracker {
         if state?.mediaListEntry?.status == nil {
             await api.update(media: id, update: TrackUpdate(status: hasReadChapters ? .reading : .planning))
         }
-
         return nil
     }
 

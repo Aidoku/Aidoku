@@ -14,14 +14,14 @@ import Foundation
 #endif
 
 class ShikimoriTracker: OAuthTracker {
-    var api = ShikimoriApi()
+    let api = ShikimoriApi()
     let callbackHost = "shikimori-auth"
     var oauthClient: OAuthClient { api.oauth }
     lazy var authenticationUrl: String = api.getAuthenticationUrl() ?? ""
 
-    var id: String = "shikimori"
-    var name: String = "Shikimori"
-    var icon: UIImage? = UIImage(named: "shikimori")
+    var id = "shikimori"
+    var name = "Shikimori"
+    var icon = UIImage(named: "shikimori")
 
     let supportedStatuses = TrackStatus.defaultStatuses
     var scoreType: TrackScoreType = .tenPoint
@@ -35,11 +35,11 @@ class ShikimoriTracker: OAuthTracker {
     }
 
     func register(trackId: String, hasReadChapters: Bool) async -> String? {
-        await api.register(trackId, hasReadChapters)
+        await api.register(trackId: trackId, hasReadChapters: hasReadChapters)
     }
 
     func update(trackId: String, update: TrackUpdate) async {
-        await api.update(trackId, update)
+        await api.update(trackId: trackId, update: update)
     }
 
     func getState(trackId: String) async -> TrackState {

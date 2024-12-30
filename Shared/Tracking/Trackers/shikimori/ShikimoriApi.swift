@@ -13,11 +13,11 @@ class ShikimoriApi {
     private let useragent = "Aidoku"
     private let dateformat = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
 
-    // Registered under vlapsk1y's Shikimori account
+    // Registered under <username>'s Shikimori account
     var oauth = OAuthClient(
         id: "shikimori",
-        clientId: "O9LOQF35DlUZhnPmzO2WNOGZK_caeaJ0joXUTQAo9J4",
-        clientSecret: "C6-Mz-u-yx_Bka3PLCz2NJKdDsKcSGa6KqoXaMfic-8",
+        clientId: "",
+        clientSecret: "",
         baseUrl: "https://shikimori.one/"
     )
 }
@@ -69,7 +69,7 @@ extension ShikimoriApi {
         )
     }
 
-    func register(_ trackId: String, _ hasReadChapters: Bool) async -> String? {
+    func register(trackId: String, hasReadChapters: Bool) async -> String? {
         var query: [String: String] = [:]
         query["user_rate[user_id]"] = await getUser()
         query["user_rate[target_id]"] = trackId
@@ -87,7 +87,7 @@ extension ShikimoriApi {
         return String(rate.id)
     }
 
-    func update(_ trackId: String, _ update: TrackUpdate) async {
+    func update(trackId: String, update: TrackUpdate) async {
         var query: [String: String] = [:]
         if let status = update.status {
             query["user_rate[status]"] = getStatusFromTrack(status: status)
