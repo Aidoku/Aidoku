@@ -19,12 +19,12 @@ class ShikimoriTracker: OAuthTracker {
     var oauthClient: OAuthClient { api.oauth }
     lazy var authenticationUrl: String = api.getAuthenticationUrl() ?? ""
 
-    var id = "shikimori"
-    var name = "Shikimori"
-    var icon = UIImage(named: "shikimori")
+    let id = "shikimori"
+    let name = "Shikimori"
+    let icon = UIImage(named: "shikimori")
 
     let supportedStatuses = TrackStatus.defaultStatuses
-    var scoreType: TrackScoreType = .tenPoint
+    let scoreType: TrackScoreType = .tenPoint
 
     func handleAuthenticationCallback(url: URL) async {
         if let authCode = url.queryParameters?["code"] {
