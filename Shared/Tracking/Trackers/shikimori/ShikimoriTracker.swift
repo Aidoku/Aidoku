@@ -14,11 +14,11 @@ import Foundation
 #endif
 
 class ShikimoriTracker: OAuthTracker {
-    
+
     let id = "shikimori"
     let name = "Shikimori"
     let icon = UIImage(named: "shikimori")
-    
+
     let api = ShikimoriApi()
     let callbackHost = "shikimori-auth"
     var oauthClient: OAuthClient { api.oauth }
