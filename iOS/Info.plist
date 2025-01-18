@@ -11,7 +11,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>xyz.skitty.Aidoku.aix</string>
+				<string>app.aidoku.Aidoku.aix</string>
 			</array>
 		</dict>
 		<dict>
@@ -21,7 +21,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>xyz.skitty.Aidoku.aib</string>
+				<string>app.aidoku.Aidoku.aib</string>
 			</array>
 		</dict>
 		<dict>
@@ -88,7 +88,7 @@
 			<key>UTTypeIconFiles</key>
 			<array/>
 			<key>UTTypeIdentifier</key>
-			<string>xyz.skitty.Aidoku.aix</string>
+			<string>app.aidoku.Aidoku.aix</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -108,7 +108,7 @@
 			<key>UTTypeIconFiles</key>
 			<array/>
 			<key>UTTypeIdentifier</key>
-			<string>xyz.skitty.Aidoku.aib</string>
+			<string>app.aidoku.Aidoku.aib</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
