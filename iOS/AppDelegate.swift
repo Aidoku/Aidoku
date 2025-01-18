@@ -11,7 +11,7 @@ import Nuke
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    static let isSideloaded = Bundle.main.bundleIdentifier != "xyz.skitty.Aidoku"
+    static let isSideloaded = Bundle.main.bundleIdentifier != "app.aidoku.Aidoku"
     private var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
@@ -131,7 +131,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 config.urlCache = nil
                 return DataLoader(configuration: config)
             }()
-            let dataCache = try? DataCache(name: "xyz.skitty.Aidoku.datacache") // disk cache
+            let dataCache = try? DataCache(name: "app.aidoku.Aidoku.datacache") // disk cache
             let imageCache = Nuke.ImageCache() // memory cache
             dataCache?.sizeLimit = 500 * 1024 * 1024
             imageCache.costLimit = 100 * 1024 * 1024
