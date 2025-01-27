@@ -82,6 +82,8 @@ def update_json_file(json_file, repo):
         print(".ipa file is not found in assets")
         raise
     
+    data["featuredApps"] = [bundle_id]
+    app["bundleIdentifier"] = bundle_id
     tag = latest_release["tag_name"]
     full_version = tag.lstrip('v')
     version = re.search(r"(\d+\.\d+\.\d+)", full_version).group(1)
