@@ -14,24 +14,6 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Setup Git user
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            
-      - name: Create or switch to 'altstore'
-        run: |
-          if git ls-remote --exit-code --heads origin altstore; then
-            git checkout altstore
-          else
-            git checkout -b altstore
-          fi
-          
-      - name: Rebase on 'main'
-        run: |
-          git fetch origin main
-          git rebase --no-interactive origin/main || git rebase --abort
-          
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -49,25 +31,18 @@ jobs:
       - name: Update AltStore source
         id: update_source
         run: |
-          python .github/workflows/supporting/update_json.py
+          python .github/workflows/supporting/update_altstore_json.py
           
-      - name: Commit changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git add .
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            if git rev-parse --verify HEAD; then
-              git commit --amend --no-edit
-            else
-              git commit -m "Update files via GitHub Actions"
-            fi
-          fi
-          
-      - name: Push changes
-        run: git push origin altstore --force
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.7.2
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          branch: altstore
+          folder: .github/workflows/supporting/altstore
+          git-config-name: GitHub Actions
+          git-config-email: github-actions[bot]@users.noreply.github.com
+          commit-message: Update AltStore Source
+          single-commit: true
         
       - name: Calculate job duration
         id: duration
@@ -94,7 +69,3 @@ jobs:
           echo "🕐 Execution Time" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "This job took ${{ steps.duration.outputs.duration }} to complete." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📆 Next Scheduled Run" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The next scheduled run will be tomorrow at midnight UTC." >> $GITHUB_STEP_SUMMARY

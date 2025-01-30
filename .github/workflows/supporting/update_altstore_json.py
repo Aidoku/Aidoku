@@ -6,7 +6,7 @@ from datetime import datetime
 
 bundle_id = "app.aidoku.Aidoku"
 minimum_ios_version = "14.0"
-json_file_name = "apps.json"
+json_file_name = ".github/workflows/supporting/altstore/apps.json"
 github_repo = "Aidoku/Aidoku"
 
 def fetch_latest_release(repo):
