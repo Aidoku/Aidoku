@@ -475,6 +475,7 @@ extension SettingsViewController {
                             CoreDataManager.shared.clearHistory(context: context)
                             try? context.save()
                         }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                     }
                 }
             case "Advanced.clearExcludingLibrary":
@@ -487,6 +488,7 @@ extension SettingsViewController {
                             CoreDataManager.shared.clearHistoryExcludingLibrary(context: context)
                             try? context.save()
                         }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                     }
                 }
             case "Advanced.migrateHistory":

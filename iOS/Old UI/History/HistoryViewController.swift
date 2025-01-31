@@ -149,6 +149,7 @@ class HistoryViewController: UIViewController {
         ) { [weak self] _ in
             Task { @MainActor in
                 self?.queueRefresh = true
+                self?.reloadHistory()
             }
         })
         observers.append(NotificationCenter.default.addObserver(
