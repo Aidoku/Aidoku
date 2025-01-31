@@ -362,3 +362,5 @@
 "LINK_COPIED" = "Bağlantı Kopyalandı";
 "SKIPPING_CHAPTERS" = "%i bölümleri atlanıyor, ya kaynakta eksikler var ya da filtrelenmişler";
 "DELETE_DOWNLOAD_AFTER_READING" = "Okuduktan Sonra İndirmeyi Sil";
+"SCANLATOR" = "Tarayıcı";
+"NO_SCANLATOR" = "Tarayıcı yok";
