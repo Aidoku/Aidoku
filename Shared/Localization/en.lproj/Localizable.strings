@@ -262,6 +262,8 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
 "CLEAR_READ_HISTORY" = "Clear Read History";
 "CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
+"CLEAR_EXCLUDING_LIBRARY" = "Clear Read History Excluding Library";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "This action is irreversible. All read history excluding the library will be removed.";
 "RESET_SETTINGS" = "Reset Settings";
 "RESET_SETTINGS_TEXT" = "This action is irreversible. All app and source settings will be reset.";
 "PAGE_X_OF_X" = "Page %i of %i";
