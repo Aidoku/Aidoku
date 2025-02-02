@@ -1,0 +1,28 @@
+{
+  "apps": [
+    {
+      "beta": false,
+      "bundleIdentifier": "xyz.skitty.Aidoku",
+      "developerName": "Skitty",
+      "downloadURL": "https://github.com/Aidoku/Aidoku/releases/download/v0.6.10/Aidoku.ipa",
+      "iconURL": "https://aidoku.app/images/aidoku.svg",
+      "localizedDescription": "Features:\n- Ad free\n- Robust WASM source system\n- Online reading through external sources\n- iCloud sync support\n- Downloads\n- Tracker support",
+      "name": "Aidoku",
+      "screenshotURLs": [
+        "https://aidoku.app/images/library.png",
+        "https://aidoku.app/images/source.png",
+        "https://aidoku.app/images/reader.png"
+      ],
+      "size": 3354421,
+      "subtitle": "A free and open source manga reading application for iOS and iPadOS.",
+      "tintColor": "ff2f52",
+      "version": "0.6.10",
+      "versionDate": "2024-11-08T12:08:00+01:00",
+      "versionDescription": "- Added scanlator filter option for chapters\n- Fixed reload button showing incorrectly on double page reader\n- Fixed manga not being marked as opened from updates tab\n- Various other small fixes\n"
+    }
+  ],
+  "identifier": "xyz.skitty",
+  "name": "Aidoku",
+  "news": [],
+  "userInfo": {}
+}
