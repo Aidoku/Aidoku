@@ -537,6 +537,22 @@ class MangaViewController: BaseTableViewController {
                                     try? context.save()
                                 }
                             }
+                        } else {
+                            // If chapter list update fails, preserve existing chapters
+                            await MainActor.run {
+                                // Keep existing chapter list
+                                if self.viewModel.fullChapterList.isEmpty {
+                                    // Only load from DB if we don't have chapters in memory
+                                    Task {
+                                        self.viewModel.fullChapterList = await CoreDataManager.shared.getChapters(
+                                            sourceId: manga.sourceId,
+                                            mangaId: manga.id
+                                        )
+                                        self.viewModel.filterChapterList()
+                                        self.updateDataSource()
+                                    }
+                                }
+                            }
                         }
                     }
                 }
