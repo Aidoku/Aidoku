@@ -109,6 +109,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
                     document.querySelector('#challenge-stage iframe') !== null
                         || document.querySelector('.hcaptcha-box iframe') !== null
                         || document.querySelector('#challenge-stage input[type=button]') !== null
+                        || document.body.textContent.includes('Verify you are human by completing')
                     """
                     ) { html, _ in
                         if html as? Int == 1 {
