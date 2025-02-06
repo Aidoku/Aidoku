@@ -337,14 +337,14 @@
 "UNPIN" = "Odepnij";
 "CROP_BORDERS" = "Przytnij ramki";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Twój token AniList wygasł, więc moduł śledzący AniList przestanie działać do momentu ponownego zalogowania w ustawieniach.";
-"ANILIST_LOGIN_NEEDED" = "Potrzebny Login AntyListy";
+"ANILIST_LOGIN_NEEDED" = "Potrzebny Login AniListy";
 "DELETE_DOWNLOAD_AFTER_READING" = "Usuń plik po przeczytaniu";
 "MAL_LOGIN_NEEDED_TEXT" = "Twój token MyAnimeList wygasł, więc moduł śledzący MyAnimeList przestanie działać do momentu ponownego zalogowania w ustawieniach.";
 "LINK_COPIED" = "Link skopiowany";
 "LINK_COPIED_TEXT" = "Link został skopiowany do schowka.";
 "%lld_PLUS_MORE" = "+%lld więcej";
 "DOWNLOAD_ANYWAY_MESSAGE" = "Obecnie nie masz połączenia Wi-Fi. Czy mimo to chcesz pobrać plik?";
-"SKIPPING_CHAPTERS" = "Pomijanie %i rozdziałów, albo źródło ich nie zawiera albo zostały odfiltrowane.";
+"SKIPPING_CHAPTERS" = "Pomijanie %i rozdziałów, albo źródło ich nie zawiera albo zostały odfiltrowane";
 "MANGA_UPDATES" = "Aktualizacje";
 "NO_UPDATES" = "Brak aktualizacji";
 "ONLY_DOWNLOAD_ON_WIFI" = "Pobieraj tylko przez Wi-Fi";
@@ -358,3 +358,7 @@
 "WARNING" = "Ostrzeżenie";
 "NO_WIFI_ALERT_TITLE" = "Brak Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "Musisz być połączony do Wi-Fi, aby pobrać tę zawartość. Połącz się do Wi-Fi i spróbuj ponownie.";
+"SCANLATOR" = "Scanlator";
+"NO_SCANLATOR" = "Brak Scanlatora";
+"BACKUP_ERROR" = "Błąd Odzyskiwania Backupu";
+"BACKUP_ERROR_TEXT" = "Wystąpił błąd podczas odzyskiwania: %@. Backup może być nieprawidłowy.";
