@@ -173,6 +173,60 @@ extension TrackersViewController {
             }
             session.presentationContextProvider = self
             session.start()
+        } else if let tracker = tracker as? HostUserPassTracker {
+            let loginAlert = UIAlertController(
+                title: String(format: NSLocalizedString("TRACKER_LOGIN_%@", comment: ""), tracker.name),
+                message: NSLocalizedString("ENTER_CREDENTIALS", comment: ""),
+                preferredStyle: .alert
+            )
+
+            let cancelAction = UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: nil)
+            let loginAction = UIAlertAction(title: NSLocalizedString("SAVE", comment: ""), style: .default) { _ in
+
+                let hostname = loginAlert.textFields![0].text!
+                let username = loginAlert.textFields![1].text!
+                let password = loginAlert.textFields![2].text!
+
+                Task { @MainActor in
+                    let loadingIndicator = UIActivityIndicatorView(style: .medium)
+                    loadingIndicator.startAnimating()
+                    let res = await tracker.login(host: hostname, user: username, pass: password)
+
+                    if res {
+                        tableView.cellForRow(at: indexPath)?.accessoryView = nil
+                        tableView.cellForRow(at: indexPath)?.accessoryType = tracker.isLoggedIn ? .checkmark : .none
+                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+                    } else {
+                        let errorAlert = UIAlertController(
+                            title: String(format: NSLocalizedString("TRACKER_LOGIN_ERROR_%@", comment: ""), tracker.name),
+                            message: nil,
+                            preferredStyle: .alert
+                        )
+                        errorAlert.addAction(UIAlertAction(title: NSLocalizedString("RETRY", comment: ""), style: .cancel) {_ in
+                            self.present(loginAlert, animated: true, completion: nil)
+                        })
+                        self.present(errorAlert, animated: true, completion: nil)
+                    }
+                }
+            }
+
+            loginAlert.addTextField{ textField in
+                textField.placeholder = "Hostname"
+            }
+
+            loginAlert.addTextField{ textField in
+                textField.placeholder = "Username"
+            }
+
+            loginAlert.addTextField{ textField in
+                textField.placeholder = "Password"
+                textField.isSecureTextEntry = true
+            }
+
+            loginAlert.addAction(cancelAction)
+            loginAlert.addAction(loginAction)
+
+            present(loginAlert, animated: true, completion: nil)
         }
     }
 }
