@@ -9,7 +9,7 @@
 "RENAME" = "이름 바꾸기";
 "CLEAR" = "지우기";
 "SHARE" = "공유";
-"REMOVE_DOWNLOAD" = "다운로드 제거";
+"REMOVE_DOWNLOAD" = "내려받기 제거";
 "REMOVE_DOWNLOADS_CONFIRM" = "선택한 다운로드를 모두 제거하겠습니까?";
 
 // Library
@@ -29,17 +29,17 @@
 "NONE" = "없음";
 "DEFAULT_CATEGORY" = "기본 카테고리";
 "UNKNOWN" = "알 수 없음";
-"UNAVAILABLE" = "사용할 수 없음";
+"UNAVAILABLE" = "사용 불가능";
 "REMOVE" = "제거";
 "LOADING_ELLIPSIS" = "불러오기 중…";
 
 // Downloads
-"DOWNLOAD" = "다운로드";
-"DOWNLOADED" = "다운로드 됨";
-"REMOVE_ALL_DOWNLOADS" = "모든 다운로드 제거";
-"DOWNLOAD_QUEUE" = "다운로드 대기열";
+"DOWNLOAD" = "내려받기";
+"DOWNLOADED" = "내려받음";
+"REMOVE_ALL_DOWNLOADS" = "모든 내려받기 제거";
+"DOWNLOAD_QUEUE" = "내려받기 대기열";
 "REMOVE_DOWNLOADS" = "다운로드 제거";
-"CANCEL_DOWNLOAD" = "다운로드 취소";
+"CANCEL_DOWNLOAD" = "내려받기 취소";
 "FILTER_BY" = "필터";
 "SORT_BY" = "정렬";
 "REMOVE_FROM_LIBRARY" = "라이브러리에서 제거";
@@ -296,17 +296,17 @@
 "MIGRATE_SOURCES" = "소스 마이그레이션";
 "START_MATCHING" = "매칭 시작";
 "SYNC_LOCAL_HISTORY" = "로컬 기록 동기화";
-"MIGRATE" = "마이그레이션";
-"MIGRATION" = "마이그레이션";
+"MIGRATE" = "이동하다";
+"MIGRATION" = "이동";
 "OPTIONS" = "옵션";
-"TITLES" = "타이틀";
+"TITLES" = "제목";
 "DESTINATION" = "목적지";
 "SELECTED" = "선택됨";
 "NOT_FOUND" = "찾을 수 없음";
 "MOST_CHAPTERS_SLOWER" = "대부분의 장 (느림)";
 "MIGRATE_%i_ITEMS?" = "%i개 항목을 마이그레이션하겠습니까?";
 "MIGRATE_ONE_ITEM?" = "항목 1개를 마이그레이션하겠습니까?";
-"UPLOAD_DATE" = "업로드 날짜";
+"UPLOAD_DATE" = "올린 날짜";
 "SELECT" = "선택";
 "ADD_TO_CATEGORY" = "범주에 추가";
 "ADD_TO_CATEGORIES" = "범주에 추가";
@@ -360,3 +360,5 @@
 "MANGA_UPDATES" = "업데이트";
 "NO_UPDATES" = "업데이트 없음";
 "%lld_PLUS_MORE" = "+%lld 더보기";
+"SCANLATOR" = "번역";
+"NO_SCANLATOR" = "번역 없음";
