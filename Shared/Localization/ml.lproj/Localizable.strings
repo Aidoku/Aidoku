@@ -26,3 +26,5 @@
 "CLEAR" = "നീക്കുക";
 "REMOVE_ALL_DOWNLOADS" = "എല്ലാ ഡൗൺലോഡുകളും നീക്കുക";
 "REMOVE_DOWNLOADS" = "ഡൗൺലോഡുകൾ നീക്കുക";
+"REMOVE_DOWNLOADS_CONFIRM" = "എല്ലാ തിരഞ്ഞെടുക്കപ്പെട്ട ഡൗൺലോഡുകളും നീക്കണമോ?";
+"NO_WIFI_ALERT_TITLE" = "വൈ-ഫൈ ഇല്ല";
