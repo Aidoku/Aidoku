@@ -14,6 +14,20 @@ extension CoreDataManager {
         clear(request: HistoryObject.fetchRequest(), context: context)
     }
 
+    /// Remove all history objects from manga not in library
+    func clearHistoryExcludingLibrary(context: NSManagedObjectContext? = nil) {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        let libraryMangaIds = self.getLibraryManga(context: context).compactMap {
+            $0.manga?.toManga().id
+        }
+        request.predicate = NSPredicate(
+            format: "NOT (mangaId IN %@)",
+            libraryMangaIds
+        )
+        clear(request: request, context: context)
+    }
+
     /// Gets all history objects.
     func getHistory(context: NSManagedObjectContext? = nil) -> [HistoryObject] {
         (try? (context ?? self.context).fetch(HistoryObject.fetchRequest())) ?? []

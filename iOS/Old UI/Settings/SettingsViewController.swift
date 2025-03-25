@@ -290,6 +290,7 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "button", key: "Advanced.clearTrackedManga", title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearExcludingLibrary", title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY", comment: "")),
                 SettingItem(type: "button", key: "Advanced.migrateHistory", title: "Migrate Chapter History"),
                 SettingItem(type: "button", key: "Advanced.resetSettings", title: NSLocalizedString("RESET_SETTINGS", comment: "")),
                 SettingItem(type: "button", key: "Advanced.reset", title: NSLocalizedString("RESET", comment: ""), destructive: true)
@@ -474,6 +475,20 @@ extension SettingsViewController {
                             CoreDataManager.shared.clearHistory(context: context)
                             try? context.save()
                         }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+                    }
+                }
+            case "Advanced.clearExcludingLibrary":
+                confirmAction(
+                    title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY", comment: ""),
+                    message: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY_TEXT", comment: "")
+                ) {
+                    Task {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.clearHistoryExcludingLibrary(context: context)
+                            try? context.save()
+                        }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                     }
                 }
             case "Advanced.migrateHistory":
