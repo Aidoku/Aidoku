@@ -27,6 +27,10 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 
     var done = false
 
+    var popupShown: Bool {
+        popup?.presentingViewController != nil
+    }
+
     init(netModule: WasmNet, request: URLRequest) {
         self.netModule = netModule
         self.request = request
@@ -58,6 +62,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
     func openWebViewPopup() {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         webView.removeFromSuperview()
+        popup?.dismiss(animated: true)
 
         #if os(OSX)
         // todo
@@ -103,29 +108,23 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
             #if !os(OSX)
             if self.popup == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    guard !self.done else { return }
-                    // check if captcha or verify button is shown
-                    webView.evaluateJavaScript("""
-                    document.querySelector('#challenge-stage iframe') !== null
-                        || document.querySelector('.hcaptcha-box iframe') !== null
-                        || document.querySelector('#challenge-stage input[type=button]') !== null
-                        || document.body.textContent.includes('Verify you are human by completing')
-                    """
-                    ) { html, _ in
-                        if html as? Int == 1 {
-                            self.openWebViewPopup()
-                        }
-                    }
+                    self.checkForCaptcha()
+                }
+                // try again in 5s if the first check didn't catch the captcha (dumb hack)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                    self.checkForCaptcha()
                 }
             }
             #endif
 
             // check for clearance cookie
             guard webViewCookies.contains(where: {
-                $0.domain.contains(url.host ?? "") &&
                 $0.name == "cf_clearance" &&
-                $0.value != oldCookie?.value ?? ""
-            }) else { return }
+                $0.value != oldCookie?.value ?? "" &&
+                ($0.domain.contains(url.host ?? "") || (url.host?.contains($0.domain) ?? false))
+            }) else {
+                return
+            }
 
             webView.removeFromSuperview()
             self.done = true
@@ -145,6 +144,25 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
                 self.netModule.incrementRequest()
                 self.netModule.semaphore.signal()
             }.resume()
+        }
+    }
+
+    @MainActor
+    func checkForCaptcha() {
+        guard !done, !popupShown else { return }
+        // check if captcha or verify button is shown
+        webView.evaluateJavaScript("""
+        document.querySelector('#challenge-stage iframe') !== null
+            || document.querySelector('.hcaptcha-box iframe') !== null
+            || document.querySelector('#challenge-stage input[type=button]') !== null
+            || document.body.textContent.includes('Verify you are human by completing')
+        """
+        ) { html, _ in
+            if html as? Int == 1 {
+                if !self.popupShown {
+                    self.openWebViewPopup()
+                }
+            }
         }
     }
 }
