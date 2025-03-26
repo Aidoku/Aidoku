@@ -37,11 +37,11 @@
 // Reader
 "CHAPTER" = "章節";
 "CHAPTERS" = "章節";
-"CHAPTER_X" = "%g章節";
+"CHAPTER_X" = "第 %g 章";
 "VOL_X" = "%g冊";
 "CH_X" = "%g章";
 "VOL_SPACE_X" = "%g冊";
-"CH_SPACE_X" = "%g章";
+"CH_SPACE_X" = "%g 章";
 "START_READING" = "開始閱讀";
 "CONTINUE_READING" = "繼續閱讀";
 "DEFAULT" = "預設";
@@ -126,9 +126,9 @@
 "ONLY_UPDATE_ON_WIFI" = "只在使用 Wi-Fi 時更新";
 "NEVER" = "永不";
 "LIBRARY_UPDATING" = "書櫃更新";
-"EVERY_12_HOURS" = "每 12 小時";
-"DAILY" = "每天";
-"WEEKLY" = "每週";
+"EVERY_12_HOURS" = "每半天";
+"DAILY" = "每一天";
+"WEEKLY" = "每禮拜";
 "SHOW_NSFW_SOURCES" = "顯示成人來源";
 "SOURCE_LIST_URL" = "來源清單網址";
 "SOURCE_LIST_ADDED" = "來源清單已新增";
@@ -191,7 +191,7 @@
 "PIN_MANGA_TYPE" = "釘選類型";
 "PIN_MANGA_UNREAD" = "未讀";
 "PIN_MANGA_UPDATED" = "更新";
-"SKIP_TITLES" = "跳過標題";
+"SKIP_TITLES" = "跳過類型";
 "EXCLUDED_CATEGORIES" = "排除類別";
 "REFRESH_METADATA" = "重新整理中繼資料";
 "WITH_UNREAD_CHAPTERS" = "未讀章節";
@@ -212,7 +212,7 @@
 "INCOGNITO_MODE_TEXT" = "開啟時停止記錄閱讀歷史";
 "SOURCE_LIST_ADD_TEXT" = "輸入來源列表連結";
 "OPEN_READER_VIEW" = "默認打開閱讀介面";
-"UNREAD_CHAPTER_BADGES" = "標注未讀章節";
+"UNREAD_CHAPTER_BADGES" = "顯示未讀章節數";
 "THAT_HAVENT_BEEN_READ" = "尚未閱讀";
 "SOURCE_LIST_ADD_FAIL" = "新增來源列表失敗";
 "DOWNSAMPLE_IMAGES" = "降採樣圖像";
@@ -236,7 +236,7 @@
 "MISSING_SOURCES_TEXT" = "復原的備份可能包含來自以下未安裝來源的資料:";
 "ALL_CHAPTERS_READ" = "全部閱讀完成";
 "NOT_PUBLISHED" = "未發行";
-"MANGA" = "日漫";
+"MANGA" = "漫畫";
 "LOCKED_CATEGORIES" = "已上鎖類別";
 "TOTAL_CHAPTERS" = "總章節";
 "NOT_FOUND" = "未尋找到";
@@ -262,7 +262,7 @@
 "STATUS_COLON_%@" = "狀態: %@";
 "START_TRACKING" = "新增閱讀歷程";
 "STOP_TRACKING" = "停止追蹤";
-"SKIPPING_CHAPTERS" = "跳過 %i章，可能是因為來源缺少這些章節或它們已被過濾掉";
+"SKIPPING_CHAPTERS" = "跳過%i章，可能是因為來源缺少這些章節或它們已被過濾掉";
 "NO_UPDATES" = "沒有更新";
 "%lld_PLUS_MORE" = "+%lld 更多";
 "DELETE_DOWNLOAD_AFTER_READING" = "閱讀完刪除下載";
@@ -310,7 +310,7 @@
 "%i_OF_%i" = "%i 的 %i";
 "%i_PAGES_LEFT" = "剩餘 %i 頁";
 "WEBTOON" = "條漫";
-"%i_CHAPTERS" = "%i章節";
+"%i_CHAPTERS" = "%i章";
 "REMOVE_FROM_CATEGORY" = "從類別中移除";
 "PINNED" = "已釘選";
 "SELECT" = "選擇";
@@ -334,7 +334,7 @@
 "SCANLATOR" = "掃譯者";
 "NO_SCANLATOR" = "沒有掃譯者";
 "MANGA_UPDATES" = "更新";
-"ONLY_DOWNLOAD_ON_WIFI" = "僅在 Wi-Fi 下載";
+"ONLY_DOWNLOAD_ON_WIFI" = "只在使用 Wi-Fi 時下載";
 "READER_BG_COLOR_SYSTEM" = "系統";
 "RENAME_CATEGORY_FAIL" = "無法重新命名類別";
 "SKIP_DUPLICATE_CHAPTERS" = "跳過重複章節";
