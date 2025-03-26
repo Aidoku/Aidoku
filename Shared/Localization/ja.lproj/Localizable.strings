@@ -332,7 +332,7 @@
 "FINISHED" = "完了済み";
 "COPY" = "コピー";
 "COVER" = "表紙";
-"REORDER" = "再配列";
+"REORDER" = "整理し直す";
 "PIN" = "ピン留め";
 "UNPIN" = "ピン留めを解除";
 "CROP_BORDERS" = "クロップボーダー";
