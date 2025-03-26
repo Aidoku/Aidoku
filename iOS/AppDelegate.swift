@@ -41,6 +41,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return progressView
     }()
 
+    var indicatorProgress: Float {
+        get { progressView.progress }
+        set { progressView.progress = newValue }
+    }
+
     var navigationController: UINavigationController? {
         (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
             .selectedViewController as? UINavigationController
@@ -193,7 +198,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         try? await Task.sleep(nanoseconds: 500 * 1000000)
         await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
             Task { @MainActor in
-                self.progressView.progress = progress
+                self.indicatorProgress = progress
             }
         })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
@@ -212,6 +217,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             loadingIndicator.isHidden = false
             progressView.isHidden = true
         case .progress:
+            progressView.progress = 0
             loadingIndicator.isHidden = true
             progressView.isHidden = false
         }
