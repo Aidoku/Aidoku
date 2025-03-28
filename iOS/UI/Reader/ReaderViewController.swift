@@ -20,6 +20,7 @@ class ReaderViewController: BaseObservingViewController {
     var defaultReadingMode: ReadingMode?
 
     var chapterList: [Chapter] = []
+    var chaptersToMark: [Chapter] = []
     var currentPage = 1
 
     weak var reader: ReaderReaderDelegate?
@@ -56,6 +57,7 @@ class ReaderViewController: BaseObservingViewController {
     init(chapter: Chapter, chapterList: [Chapter] = [], defaultReadingMode: ReadingMode? = nil) {
         self.chapter = chapter
         self.chapterList = chapterList
+        self.chaptersToMark = [chapter]
         self.defaultReadingMode = defaultReadingMode
         super.init()
     }
@@ -374,6 +376,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
             if !skipDuplicates || (new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum) {
                 return new
             }
+            if skipDuplicates {
+                chaptersToMark.append(new)
+            }
             index -= 1
         }
         return nil
@@ -424,7 +429,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setCompleted() {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await HistoryManager.shared.addHistory(chapters: [chapter])
+                await HistoryManager.shared.addHistory(chapters: chaptersToMark)
             }
         }
         if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
