@@ -362,3 +362,5 @@
 "READER_BG_COLOR_WHITE" = "白色";
 "READER_BG_COLOR_BLACK" = "黑色";
 "AUTH_TO_OPEN" = "驗證以打開。";
+"CLEAR_EXCLUDING_LIBRARY" = "清除不在書櫃的閱讀歷史";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作是不可逆的。所有閲讀歷史包含書櫃裡的將被刪除。";
