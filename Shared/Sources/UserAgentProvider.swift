@@ -45,7 +45,7 @@ class UserAgentProvider {
             return userAgent
         }
         return BlockingTask {
-            await self.task?.value ?? ""
+            await self.getUserAgent()
         }.get()
     }
 }
