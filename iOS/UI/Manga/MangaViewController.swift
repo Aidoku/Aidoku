@@ -1108,7 +1108,7 @@ extension MangaViewController {
         // refresh chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
         snapshot.appendSections(current.sectionIdentifiers)
-        snapshot.appendItems(viewModel.chapterList)
+        snapshot.appendItems(viewModel.chapterList.unique()) // // ensure unique elements for data source
         dataSource.apply(
             snapshot,
             // skip animation if chapters are the same (needed when chapter is a class)
@@ -1122,7 +1122,7 @@ extension MangaViewController {
         // re-sort chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
         snapshot.appendSections(dataSource.snapshot().sectionIdentifiers)
-        snapshot.appendItems(viewModel.chapterList)
+        snapshot.appendItems(viewModel.chapterList.unique())
         dataSource.apply(snapshot, animatingDifferences: false)
 
         // refresh chapters for fade animation
