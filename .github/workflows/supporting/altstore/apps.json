@@ -1,5 +1,7 @@
 {
   "name": "Aidoku Source",
+  "identifier": "app.aidoku.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/altstore/apps.json",
   "subtitle": "Home of Aidoku, free and open source manga reader for iOS and iPadOS",
   "description": "This is the AltStore Source for Aidoku, free and open source manga reader for iOS and iPadOS.\n\nFor full details on what's included, check the website: https://aidoku.app/",
   "website": "https://aidoku.app/",
