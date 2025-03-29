@@ -370,13 +370,14 @@ extension ReaderViewController: ReaderHoldingDelegate {
             return nil
         }
         let skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
+        let markSkipped = UserDefaults.standard.bool(forKey: "Reader.markSkippedChapters")
         index -= 1
         while index >= 0 {
             let new = chapterList[index]
             if !skipDuplicates || (new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum) {
                 return new
             }
-            if skipDuplicates {
+            if skipDuplicates && markSkipped {
                 chaptersToMark.append(new)
             }
             index -= 1
