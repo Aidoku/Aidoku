@@ -389,7 +389,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
-            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum {
+            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum || (new.chapterNum == nil && new.volumeNum == nil) {
                 return new
             }
             index += 1
