@@ -13,29 +13,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests
-          
-      - name: Record job start time
-        id: job_start_time
-        run: echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
-        
+
       - name: Update AltStore source
         id: update_source
         run: |
           python .github/workflows/supporting/update_altstore_json.py
-          
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.7.2
-        if: ${{ github.ref == 'refs/heads/main' }}
         with:
           branch: altstore
           folder: .github/workflows/supporting/altstore
@@ -43,29 +38,3 @@ jobs:
           git-config-email: github-actions[bot]@users.noreply.github.com
           commit-message: Update AltStore Source
           single-commit: true
-        
-      - name: Calculate job duration
-        id: duration
-        if: always()
-        run: |
-          end_time=$(date +%s)
-          duration=$((end_time - ${{ steps.job_start_time.outputs.start_time}}))
-          echo "duration=$duration seconds" >> $GITHUB_OUTPUT
-          
-      - name: Create job summary
-        run: |
-          if [[ "${{ steps.update_source.outputs.changes }}" == "true" ]]; then
-            echo "## Update Altstore Source Summary 🚀" >> $GITHUB_STEP_SUMMARY
-            echo "✅ Changes Detected and Applied" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The apps.json file has been updated with the latest release information." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## Update Altstore Source Summary 🚀" >> $GITHUB_STEP_SUMMARY
-            echo "🔍 No Changes Detected" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The apps.json file is up to date. No changes were necessary." >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🕐 Execution Time" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "This job took ${{ steps.duration.outputs.duration }} to complete." >> $GITHUB_STEP_SUMMARY
