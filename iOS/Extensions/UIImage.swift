@@ -16,6 +16,14 @@ extension UIImage {
         return CGSize(width: pageSize.width, height: scaledHeight)
     }
 
+    func saveToAlbum(_ name: String? = nil) {
+        let albumName = name ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Aidoku"
+        guard let album = fetchAlbum(albumName) else {
+            UIImageWriteToSavedPhotosAlbum(self, nil, nil, nil)
+            return
+        }
+    }
+
     private func fetchAlbum(_ name: String) -> PHAssetCollection? {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "title == %@", name)
