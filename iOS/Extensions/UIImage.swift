@@ -22,6 +22,13 @@ extension UIImage {
             UIImageWriteToSavedPhotosAlbum(self, nil, nil, nil)
             return
         }
+
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetChangeRequest.creationRequestForAsset(from: self)
+            guard let placeholder = request.placeholderForCreatedAsset else { return }
+            guard let albumChangeRequest = PHAssetCollectionChangeRequest(for: album) else { return }
+            albumChangeRequest.addAssets([placeholder] as NSFastEnumeration)
+        }
     }
 
     private func fetchAlbum(_ name: String) -> PHAssetCollection? {
