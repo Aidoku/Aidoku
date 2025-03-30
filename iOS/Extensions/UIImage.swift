@@ -22,7 +22,15 @@ extension UIImage {
         if let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: options).firstObject {
             return album
         }
-        
-        return nil
+
+        var placeholder: PHObjectPlaceholder?
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: name)
+                placeholder = request.placeholderForCreatedAssetCollection
+            }
+        } catch { return nil }
+        guard let album = placeholder else { return nil }
+        return PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [album.localIdentifier], options: nil).firstObject
     }
 }
