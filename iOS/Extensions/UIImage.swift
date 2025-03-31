@@ -16,10 +16,16 @@ extension UIImage {
         return CGSize(width: pageSize.width, height: scaledHeight)
     }
 
-    func saveToAlbum(_ name: String? = nil) {
+    func saveToAlbum(_ name: String? = nil, viewController: BaseViewController) {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         if status == .restricted || status == .denied {
-            ()
+            viewController.confirmAction(
+                title: NSLocalizedString("ENABLE_PERMISSION", comment: ""),
+                message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT", comment: ""),
+                continueActionName: NSLocalizedString("SETTINGS", comment: "")
+            ) {
+                ()
+            }
         }
 
         let albumName =

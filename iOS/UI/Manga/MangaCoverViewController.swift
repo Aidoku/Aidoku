@@ -180,7 +180,7 @@ extension MangaCoverViewController: UIContextMenuInteractionDelegate {
                 image: UIImage(systemName: "photo")
             ) { _ in
                 if let image = self?.coverImageView.image {
-                    image.saveToAlbum()
+                    image.saveToAlbum(viewController: self!)
                 }
             }
 
