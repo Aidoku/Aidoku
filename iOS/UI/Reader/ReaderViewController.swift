@@ -249,10 +249,16 @@ class ReaderViewController: BaseObservingViewController {
                 nil
             }
 
-        navigationItem.setTitle(
-            upper: volume,
-            lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
-        )
+        let title =
+            if let chapterNum = chapter.chapterNum {
+                String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+            } else if let volumeNum = chapter.volumeNum {
+                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            } else {
+                chapter.title ?? ""
+            }
+
+        navigationItem.setTitle(upper: volume, lower: title)
     }
 
     @objc func openReaderSettings() {
