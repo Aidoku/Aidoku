@@ -115,6 +115,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Reader.readingMode": "auto",
                 "Reader.skipDuplicateChapters": true,
+                "Reader.markSkippedChapters": true,
                 "Reader.downsampleImages": true,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
