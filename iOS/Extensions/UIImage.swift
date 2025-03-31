@@ -24,7 +24,9 @@ extension UIImage {
                 message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT", comment: ""),
                 continueActionName: NSLocalizedString("SETTINGS", comment: "")
             ) {
-                ()
+                if let settings = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(settings)
+                }
             }
         }
 
