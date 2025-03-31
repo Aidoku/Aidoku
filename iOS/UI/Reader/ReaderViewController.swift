@@ -242,8 +242,15 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     func loadNavbarTitle() {
+        let volume: String? =
+            if chapter.chapterNum != nil, let volumeNum = chapter.volumeNum {
+                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            } else {
+                nil
+            }
+
         navigationItem.setTitle(
-            upper: chapter.volumeNum ?? 0 != 0 ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum!) : nil,
+            upper: volume,
             lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
         )
     }
