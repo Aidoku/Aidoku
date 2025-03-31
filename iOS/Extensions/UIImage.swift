@@ -5,8 +5,8 @@
 //  Created by Skitty on 6/13/22.
 //
 
-import UIKit
 import Photos
+import UIKit
 
 extension UIImage {
     func sizeToFit(_ pageSize: CGSize) -> CGSize {
@@ -17,7 +17,9 @@ extension UIImage {
     }
 
     func saveToAlbum(_ name: String? = nil) {
-        let albumName = name ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Aidoku"
+        let albumName =
+            name ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? "Aidoku"
         guard let album = fetchAlbum(albumName) else {
             UIImageWriteToSavedPhotosAlbum(self, nil, nil, nil)
             return
@@ -26,26 +28,33 @@ extension UIImage {
         PHPhotoLibrary.shared().performChanges {
             let request = PHAssetChangeRequest.creationRequestForAsset(from: self)
             guard let placeholder = request.placeholderForCreatedAsset else { return }
-            guard let albumChangeRequest = PHAssetCollectionChangeRequest(for: album) else { return }
+            guard let albumChangeRequest = PHAssetCollectionChangeRequest(for: album) else {
+                return
+            }
             albumChangeRequest.addAssets([placeholder] as NSFastEnumeration)
         }
     }
+}
 
-    private func fetchAlbum(_ name: String) -> PHAssetCollection? {
-        let options = PHFetchOptions()
-        options.predicate = NSPredicate(format: "title == %@", name)
-        if let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: options).firstObject {
-            return album
-        }
-
-        var placeholder: PHObjectPlaceholder?
-        do {
-            try PHPhotoLibrary.shared().performChangesAndWait {
-                let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: name)
-                placeholder = request.placeholderForCreatedAssetCollection
-            }
-        } catch { return nil }
-        guard let album = placeholder else { return nil }
-        return PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [album.localIdentifier], options: nil).firstObject
+private func fetchAlbum(_ name: String) -> PHAssetCollection? {
+    let options = PHFetchOptions()
+    options.predicate = NSPredicate(format: "title == %@", name)
+    if let album = PHAssetCollection.fetchAssetCollections(
+        with: .album, subtype: .any, options: options
+    ).firstObject {
+        return album
     }
+
+    var placeholder: PHObjectPlaceholder?
+    do {
+        try PHPhotoLibrary.shared().performChangesAndWait {
+            let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(
+                withTitle: name)
+            placeholder = request.placeholderForCreatedAssetCollection
+        }
+    } catch { return nil }
+    guard let album = placeholder else { return nil }
+    return PHAssetCollection.fetchAssetCollections(
+        withLocalIdentifiers: [album.localIdentifier], options: nil
+    ).firstObject
 }
