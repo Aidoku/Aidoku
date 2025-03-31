@@ -20,8 +20,7 @@ To join the TestFlight, you will need to join the [Aidoku Discord](https://disco
 
 ### AltStore
 
-- [Add to AltStore](altstore://source/?url=https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json).
-- Copy [source direct URL](https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json) and paste to AltStore.
+We have an AltStore repo that contains the latest releases ipa. You can copy the [direct source URL](https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json) and paste it into AltStore.
 
 ### Manual
 
