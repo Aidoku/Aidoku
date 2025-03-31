@@ -17,6 +17,11 @@ extension UIImage {
     }
 
     func saveToAlbum(_ name: String? = nil) {
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        if status == .restricted || status == .denied {
+            ()
+        }
+
         let albumName =
             name ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? "Aidoku"
