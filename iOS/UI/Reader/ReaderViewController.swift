@@ -382,16 +382,27 @@ extension ReaderViewController: ReaderHoldingDelegate {
         else {
             return nil
         }
+
         let skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
-        let markSkipped = UserDefaults.standard.bool(forKey: "Reader.markSkippedChapters")
+        let markDuplicates = UserDefaults.standard.bool(forKey: "Reader.markDuplicateChapters")
+
         index -= 1
+        var nextChapterInList: Chapter?
+
         while index >= 0 {
             let new = chapterList[index]
-            if !skipDuplicates || (new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum) {
-                return new
+            let isDuplicate = new.chapterNum == chapter.chapterNum && new.volumeNum == chapter.volumeNum
+
+            if nextChapterInList == nil {
+                nextChapterInList = new
             }
-            if skipDuplicates && markSkipped {
+            if markDuplicates && isDuplicate {
                 chaptersToMark.append(new)
+            }
+            if !isDuplicate {
+                return skipDuplicates ? new : nextChapterInList
+            } else if !skipDuplicates && !markDuplicates {
+                return new
             }
             index -= 1
         }
@@ -405,11 +416,16 @@ extension ReaderViewController: ReaderHoldingDelegate {
             return nil
         }
         // find previous non-duplicate chapter
+        let markDuplicates = UserDefaults.standard.bool(forKey: "Reader.markDuplicateChapters")
+
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
             if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum || (new.chapterNum == nil && new.volumeNum == nil) {
                 return new
+            }
+            if markDuplicates {
+                chaptersToMark.append(new)
             }
             index += 1
         }
@@ -418,6 +434,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     func setChapter(_ chapter: Chapter) {
         self.chapter = chapter
+        self.chaptersToMark = [chapter]
         loadNavbarTitle()
     }
 

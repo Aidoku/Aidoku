@@ -246,9 +246,8 @@ class SettingsViewController: SettingsTableViewController {
                 ),
                 SettingItem(
                     type: "switch",
-                    key: "Reader.markSkippedChapters",
-                    title: NSLocalizedString("MARK_SKIPPED_CHAPTERS", comment: ""),
-                    requires: "Reader.skipDuplicateChapters"
+                    key: "Reader.markDuplicateChapters",
+                    title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS", comment: "")
                 ),
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
                 SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
