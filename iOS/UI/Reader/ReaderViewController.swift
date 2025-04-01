@@ -86,7 +86,7 @@ class ReaderViewController: BaseObservingViewController {
         ]
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
+                image: UIImage(systemName: "ellipsis.circle"),
                 style: .plain,
                 target: nil,
                 action: nil
