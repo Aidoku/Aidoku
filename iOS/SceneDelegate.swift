@@ -82,13 +82,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    let blurEffectView: UIVisualEffectView = {
+        let blurEffect = UIBlurEffect(style: .light)
+        let view = UIVisualEffectView(effect: blurEffect)
+        view.frame = UIScreen.main.bounds
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        return view
+    }()
+
     func sceneWillEnterForeground(_ scene: UIScene) {
+        blurEffectView.removeFromSuperview()
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        blurEffectView.removeFromSuperview()
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
+        if UserDefaults.standard.bool(forKey: "General.incognitoMode"),
+        let window = (scene as? UIWindowScene)?.windows.first {
+            window.addSubview(blurEffectView)
+        }
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
