@@ -366,3 +366,4 @@
 "NO_SCANLATOR" = "没有翻译组";
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "清除不包括书架阅读历史记录此操作不可逆。除书架外的所有阅读历史记录都将被删除。";
 "CLEAR_EXCLUDING_LIBRARY" = "清除不包括书架的阅读历史记录";
+"MARK_SKIPPED_CHAPTERS" = "将跳过的章节标记为已读";
