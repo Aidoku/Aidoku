@@ -451,6 +451,8 @@ class MangaViewController: BaseTableViewController {
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel) { _ in })
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
+            var chapterList = self.viewModel.chapterList
+            chapterList.sort { $0.sourceOrder < $1.sourceOrder }
             let chapters = self.viewModel.chapterList.filter {
                 floor($0.chapterNum ?? -1) <= chapterNum
             }
