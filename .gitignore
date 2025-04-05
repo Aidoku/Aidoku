@@ -13,3 +13,6 @@
 
 # Other
 .DS_Store
+
+# Zed
+.zed

@@ -147,6 +147,7 @@
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = "Infinite Vertical Scrolling";
 "SAVE_TO_PHOTOS" = "Save to Photos";
+"OPEN_WEBSITE" = "Open Website";
 
 // History
 "HISTORY" = "History";
