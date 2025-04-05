@@ -112,7 +112,7 @@ actor SourceActor {
            let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
             request.headers["Cookie"] = cookies
         }
-        source.globalStore.requests[source.globalStore.requestsPointer] = request
+        source.globalStore.requests[request.id] = request
 
         try? source.globalStore.vm.call("modify_image_request", Int32(request.id))
 
