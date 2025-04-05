@@ -25,6 +25,13 @@ class ReaderViewController: BaseObservingViewController {
 
     weak var reader: ReaderReaderDelegate?
 
+    private let moreButton = UIBarButtonItem(
+        image: UIImage(systemName: "ellipsis"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
+
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
@@ -85,12 +92,7 @@ class ReaderViewController: BaseObservingViewController {
             )
         ]
         navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
-                style: .plain,
-                target: nil,
-                action: nil
-            ),
+            moreButton,
             UIBarButtonItem(
                 image: UIImage(systemName: "textformat.size"),
                 style: .plain,
