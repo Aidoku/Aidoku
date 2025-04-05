@@ -451,9 +451,12 @@ class MangaViewController: BaseTableViewController {
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel) { _ in })
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
-            let chapters = self.viewModel.chapterList.filter {
-                floor($0.chapterNum ?? -1) <= chapterNum
-            }
+            var chapterList = self.viewModel.chapterList
+            chapterList.sort { $0.sourceOrder < $1.sourceOrder }
+            guard let lastReadChapter = chapterList.firstIndex(where: {
+                $0.chapterNum != nil && floor($0.chapterNum!) <= chapterNum
+            }) else { return }
+            let chapters = Array(chapterList[lastReadChapter...])
             Task {
                 await self.markRead(chapters: chapters)
             }
