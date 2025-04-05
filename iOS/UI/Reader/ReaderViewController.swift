@@ -101,7 +101,7 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openReaderSettings)
             )
         ]
-        navigationItem.rightBarButtonItems?.first?.isEnabled = false
+        updateMoreButton()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -439,6 +439,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setChapter(_ chapter: Chapter) {
         self.chapter = chapter
         loadNavbarTitle()
+        updateMoreButton()
     }
 
     func setCurrentPage(_ page: Int) {
