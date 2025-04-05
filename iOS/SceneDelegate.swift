@@ -82,13 +82,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    let contentHideView: UIView = {
+        let view = UIView(frame: UIScreen.main.bounds)
+        view.backgroundColor = .systemBackground
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        return view
+    }()
+
     func sceneWillEnterForeground(_ scene: UIScene) {
+        contentHideView.removeFromSuperview()
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
+        contentHideView.removeFromSuperview()
     }
 
-    func sceneWillResignActive(_ scene: UIScene) {
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        let incognitoEnabled = UserDefaults.standard.bool(forKey: "General.incognitoMode")
+        if incognitoEnabled {
+            (scene as? UIWindowScene)?.windows.first?.addSubview(contentHideView)
+        }
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
