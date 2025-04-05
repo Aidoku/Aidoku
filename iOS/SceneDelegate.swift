@@ -82,26 +82,25 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
-    let blurEffectView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .light)
-        let view = UIVisualEffectView(effect: blurEffect)
-        view.frame = UIScreen.main.bounds
+    let contentHideView: UIView = {
+        let view = UIView(frame: UIScreen.main.bounds)
+        view.backgroundColor = .systemBackground
         view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         return view
     }()
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        blurEffectView.removeFromSuperview()
+        contentHideView.removeFromSuperview()
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        blurEffectView.removeFromSuperview()
+        contentHideView.removeFromSuperview()
     }
 
-    func sceneWillResignActive(_ scene: UIScene) {
-        if UserDefaults.standard.bool(forKey: "General.incognitoMode"),
-        let window = (scene as? UIWindowScene)?.windows.first {
-            window.addSubview(blurEffectView)
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        let incognitoEnabled = UserDefaults.standard.bool(forKey: "General.incognitoMode")
+        if incognitoEnabled {
+            (scene as? UIWindowScene)?.windows.first?.addSubview(contentHideView)
         }
     }
 
