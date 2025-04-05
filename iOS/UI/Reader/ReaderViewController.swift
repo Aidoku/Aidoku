@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 import SwiftUI
 
 class ReaderViewController: BaseObservingViewController {
@@ -263,6 +264,23 @@ class ReaderViewController: BaseObservingViewController {
             }
 
         navigationItem.setTitle(upper: volume, lower: title)
+    }
+
+    func updateMoreButton() {
+        let webViewActionTitle = NSLocalizedString("OPEN_IN_WEB_VIEW", comment: "")
+        let webViewActionImage = UIImage(systemName: "safari")
+        let webViewAction =
+            if let url = chapter.url, let chapterURL = URL(string: url) {
+                UIAction(title: webViewActionTitle, image: webViewActionImage) { _ in
+                    self.present(SFSafariViewController(url: chapterURL), animated: true)
+                }
+            } else {
+                UIAction(
+                    title: webViewActionTitle, image: webViewActionImage, attributes: .disabled
+                ) { _ in }
+            }
+
+        moreButton.menu = UIMenu(children: [webViewAction])
     }
 
     @objc func openReaderSettings() {
