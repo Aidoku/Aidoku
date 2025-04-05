@@ -267,7 +267,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     func updateMoreButton() {
-        let webViewActionTitle = NSLocalizedString("OPEN_IN_WEB_VIEW", comment: "")
+        let webViewActionTitle = NSLocalizedString("OPEN_WEBSITE", comment: "")
         let webViewActionImage = UIImage(systemName: "safari")
         let webViewAction =
             if let url = chapter.url, let chapterURL = URL(string: url) {
