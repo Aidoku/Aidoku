@@ -16,3 +16,6 @@
 
 # Zed
 .zed
+
+# Xcode-Build-Server
+buildServer.json
