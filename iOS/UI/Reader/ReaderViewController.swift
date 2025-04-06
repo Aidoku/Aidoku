@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 import SwiftUI
 
 class ReaderViewController: BaseObservingViewController {
@@ -24,6 +25,13 @@ class ReaderViewController: BaseObservingViewController {
     var currentPage = 1
 
     weak var reader: ReaderReaderDelegate?
+
+    private let moreButton = UIBarButtonItem(
+        image: UIImage(systemName: "ellipsis"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
 
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var toolbarView = ReaderToolbarView()
@@ -85,12 +93,7 @@ class ReaderViewController: BaseObservingViewController {
             )
         ]
         navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
-                style: .plain,
-                target: nil,
-                action: nil
-            ),
+            moreButton,
             UIBarButtonItem(
                 image: UIImage(systemName: "textformat.size"),
                 style: .plain,
@@ -98,7 +101,7 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openReaderSettings)
             )
         ]
-        navigationItem.rightBarButtonItems?.first?.isEnabled = false
+        updateMoreButton()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -263,6 +266,23 @@ class ReaderViewController: BaseObservingViewController {
         navigationItem.setTitle(upper: volume, lower: title)
     }
 
+    func updateMoreButton() {
+        let webViewActionTitle = NSLocalizedString("OPEN_WEBSITE", comment: "")
+        let webViewActionImage = UIImage(systemName: "safari")
+        let webViewAction =
+            if let url = chapter.url, let chapterURL = URL(string: url) {
+                UIAction(title: webViewActionTitle, image: webViewActionImage) { _ in
+                    self.present(SFSafariViewController(url: chapterURL), animated: true)
+                }
+            } else {
+                UIAction(
+                    title: webViewActionTitle, image: webViewActionImage, attributes: .disabled
+                ) { _ in }
+            }
+
+        moreButton.menu = UIMenu(children: [webViewAction])
+    }
+
     @objc func openReaderSettings() {
         let vc = UINavigationController(rootViewController: ReaderSettingsViewController(mangaId: chapter.mangaId))
         present(vc, animated: true)
@@ -419,6 +439,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setChapter(_ chapter: Chapter) {
         self.chapter = chapter
         loadNavbarTitle()
+        updateMoreButton()
     }
 
     func setCurrentPage(_ page: Int) {
