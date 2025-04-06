@@ -338,7 +338,7 @@
 "RENAME_CATEGORY_INFO" = "Enter a new name for this category.";
 "RENAME_CATEGORY_FAIL" = "Failed to Rename Category";
 "SKIP_DUPLICATE_CHAPTERS" = "Skip Duplicate Chapters";
-"MARK_SKIPPED_CHAPTERS" = "Mark Skipped Chapters as Read";
+"MARK_DUPLICATE_CHAPTERS" = "Mark Duplicate Chapters as Read";
 "RENAME_CATEGORY" = "Rename Category";
 "RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
 "CATEGORY_NAME" = "Category Name";
