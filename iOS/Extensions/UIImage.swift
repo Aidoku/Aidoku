@@ -18,7 +18,7 @@ extension UIImage {
 
     func saveToAlbum(_ name: String? = nil, viewController: BaseViewController) {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
-        if status == .restricted || status == .denied {
+        guard status != .restricted && status != .denied else {
             viewController.confirmAction(
                 title: NSLocalizedString("ENABLE_PERMISSION", comment: ""),
                 message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT", comment: ""),
@@ -28,6 +28,7 @@ extension UIImage {
                     UIApplication.shared.open(settings)
                 }
             }
+            return
         }
 
         let albumName =
