@@ -31,8 +31,8 @@ class MyAnimeListTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
-    func register(trackId: String, hasReadChapters: Bool) async {
-        guard let id = Int(trackId) else { return }
+    func register(trackId: String, hasReadChapters: Bool) async -> String? {
+        guard let id = Int(trackId) else { return nil }
         // set status to reading if status doesn't already exist
         let status = await api.getMangaStatus(id: id)
         if status == nil {
@@ -41,6 +41,7 @@ class MyAnimeListTracker: OAuthTracker {
                 status: MyAnimeListMangaStatus(status: hasReadChapters ? "reading" : "plan_to_read")
             )
         }
+        return nil
     }
 
     func update(trackId: String, update: TrackUpdate) async {
