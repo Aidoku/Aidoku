@@ -1038,7 +1038,7 @@ extension MangaViewController {
     /// Returns a "Mark Previous" submenu for the chapter cell at the specified index path.
     private func markPreviousSubmenu(at indexPath: IndexPath) -> UIMenu {
         func getChaptersToIndex() -> [Chapter] {
-            let chapterList = viewModel.sortAscending ? self.viewModel.chapterList : self.viewModel.chapterList.reversed()
+            let chapterList = viewModel.sortAscending ? viewModel.chapterList : viewModel.chapterList.reversed()
             guard let selectedChapter = self.dataSource.itemIdentifier(for: indexPath),
                   let index = chapterList.firstIndex(of: selectedChapter) else {
                 return []
@@ -1050,18 +1050,16 @@ extension MangaViewController {
                 title: NSLocalizedString("READ", comment: ""),
                 image: UIImage(systemName: "eye")
             ) { _ in
-                let chapters = getChaptersToIndex()
                 Task {
-                    await self.markRead(chapters: chapters)
+                    await self.markRead(chapters: getChaptersToIndex())
                 }
             },
             UIAction(
                 title: NSLocalizedString("UNREAD", comment: ""),
                 image: UIImage(systemName: "eye.slash")
             ) { _ in
-                let chapters = getChaptersToIndex()
                 Task {
-                    await self.markUnread(chapters: chapters)
+                    await self.markUnread(chapters: getChaptersToIndex())
                 }
             }
         ])

@@ -245,8 +245,6 @@ class MangaViewModel {
     }
 
     func getOrderedChapterList() -> [Chapter] {
-        (sortAscending && sortMethod == .sourceOrder) || (!sortAscending && sortMethod != .sourceOrder)
-            ? filteredChapterList.reversed()
-            : filteredChapterList
+        sortAscending ? filteredChapterList.reversed() : filteredChapterList
     }
 }
