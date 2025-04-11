@@ -1039,10 +1039,9 @@ extension MangaViewController {
     private func markPreviousSubmenu(at indexPath: IndexPath) -> UIMenu {
         func getChaptersToIndex() -> [Chapter] {
             let chapterList = self.viewModel.chapterList
-            let row = indexPath.row
             return viewModel.sortAscending
-                ? Array(chapterList[0..<row])
-                : Array(chapterList[row+1..<chapterList.count])
+                ? Array(chapterList[0..<indexPath.row])
+                : Array(chapterList[indexPath.row+1..<chapterList.count])
         }
         return UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
             UIAction(
