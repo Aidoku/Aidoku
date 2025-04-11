@@ -54,7 +54,8 @@ class ReaderSettingsViewController: SettingsTableViewController {
                     NSLocalizedString("FOLLOW_DEVICE", comment: ""),
                     NSLocalizedString("PORTRAIT", comment: ""),
                     NSLocalizedString("LANDSCAPE", comment: "")
-                ]
+                ],
+                notification: "Reader.orientation"
             )
         ])])
     }
