@@ -103,16 +103,16 @@ class MangaViewModel {
             }
         case .chapter:
             if ascending {
-                filteredChapterList.sort { $0.chapterNum ?? 0 > $1.chapterNum ?? 0 }
-            } else {
                 filteredChapterList.sort { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }
+            } else {
+                filteredChapterList.sort { $0.chapterNum ?? 0 > $1.chapterNum ?? 0 }
             }
         case .uploadDate:
             let now = Date()
             if ascending {
-                filteredChapterList.sort { $0.dateUploaded ?? now > $1.dateUploaded ?? now }
-            } else {
                 filteredChapterList.sort { $0.dateUploaded ?? now < $1.dateUploaded ?? now }
+            } else {
+                filteredChapterList.sort { $0.dateUploaded ?? now > $1.dateUploaded ?? now }
             }
         }
     }
@@ -245,8 +245,6 @@ class MangaViewModel {
     }
 
     func getOrderedChapterList() -> [Chapter] {
-        (sortAscending && sortMethod == .sourceOrder) || (!sortAscending && sortMethod != .sourceOrder)
-            ? filteredChapterList.reversed()
-            : filteredChapterList
+        sortAscending ? filteredChapterList.reversed() : filteredChapterList
     }
 }
