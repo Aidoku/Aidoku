@@ -44,6 +44,18 @@ class ReaderSettingsViewController: SettingsTableViewController {
                     NSLocalizedString("READER_BG_COLOR_WHITE", comment: ""),
                     NSLocalizedString("READER_BG_COLOR_BLACK", comment: "")
                 ]
+            ),
+            SettingItem(
+                type: "select",
+                key: "Reader.orientation",
+                title: NSLocalizedString("READER_ORIENTATION", comment: ""),
+                values: ["device", "portrait", "landscape"],
+                titles: [
+                    NSLocalizedString("FOLLOW_DEVICE", comment: ""),
+                    NSLocalizedString("PORTRAIT", comment: ""),
+                    NSLocalizedString("LANDSCAPE", comment: "")
+                ],
+                notification: "Reader.orientation"
             )
         ])])
     }

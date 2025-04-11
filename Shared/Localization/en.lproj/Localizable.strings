@@ -376,3 +376,5 @@
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "No scanlator";
+"READER_ORIENTATION" = "Orientation";
+"FOLLOW_DEVICE" = "Follow Device";
