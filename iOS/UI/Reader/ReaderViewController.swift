@@ -391,7 +391,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
         while index >= 0 {
             let new = chapterList[index]
-            let isDuplicate = new.chapterNum == chapter.chapterNum && new.volumeNum == chapter.volumeNum
+            let isDuplicate =
+                new.chapterNum == chapter.chapterNum
+                && new.volumeNum == chapter.volumeNum
+                && (!(new.chapterNum == nil && new.volumeNum == nil) || new.title == chapter.title)
 
             if nextChapterInList == nil {
                 nextChapterInList = new
@@ -421,7 +424,11 @@ extension ReaderViewController: ReaderHoldingDelegate {
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
-            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum || (new.chapterNum == nil && new.volumeNum == nil) {
+            let isDuplicate =
+                new.chapterNum == chapter.chapterNum
+                && new.volumeNum == chapter.volumeNum
+                && (!(new.chapterNum == nil && new.volumeNum == nil) || new.title == chapter.title)
+            if !isDuplicate {
                 return new
             }
             if markDuplicates {
