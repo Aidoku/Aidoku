@@ -80,9 +80,6 @@ class WasmNet: WasmImports {
 
     var storedResponse: WasmResponseObject?
 
-    // macOS 10.15 firefox user agent
-    static let defaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0"
-
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
     }
@@ -118,7 +115,10 @@ extension WasmNet {
 
         // ensure a user-agent is passed
         if request.value(forHTTPHeaderField: "User-Agent") == nil {
-            request.setValue(Self.defaultUserAgent, forHTTPHeaderField: "User-Agent")
+            request.setValue(
+                UserAgentProvider.shared.getUserAgentBlocking(),
+                forHTTPHeaderField: "User-Agent"
+            )
         }
 
         // add stored cookies

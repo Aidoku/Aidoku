@@ -7,8 +7,7 @@
 
 import CoreData
 
-class HistoryManager {
-
+final class HistoryManager: Sendable {
     static let shared = HistoryManager()
 }
 

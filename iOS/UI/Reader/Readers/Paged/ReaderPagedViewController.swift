@@ -483,7 +483,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 image: UIImage(systemName: "photo")
             ) { _ in
                 if let image = pageView.image {
-                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                    image.saveToAlbum(viewController: self)
                 }
             }
 

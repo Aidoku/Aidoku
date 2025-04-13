@@ -32,7 +32,7 @@ final class CoreDataManager {
         ) { [weak self] _ in
             guard let cloudDescription = self?.container.persistentStoreDescriptions.first else { return }
             if UserDefaults.standard.bool(forKey: "General.icloudSync") {
-                cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.xyz.skitty.Aidoku")
+                cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.app.aidoku.Aidoku")
             } else {
                 cloudDescription.cloudKitContainerOptions = nil
             }
@@ -59,7 +59,7 @@ final class CoreDataManager {
 
         if UserDefaults.standard.bool(forKey: "General.icloudSync") {
             cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-                containerIdentifier: "iCloud.xyz.skitty.Aidoku")
+                containerIdentifier: "iCloud.app.aidoku.Aidoku")
         } else {
             cloudDescription.cloudKitContainerOptions = nil
         }

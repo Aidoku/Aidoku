@@ -11,7 +11,7 @@ import Nuke
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    static let isSideloaded = Bundle.main.bundleIdentifier != "xyz.skitty.Aidoku"
+    static let isSideloaded = Bundle.main.bundleIdentifier != "app.aidoku.Aidoku"
     private var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
@@ -40,6 +40,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         progressView.translatesAutoresizingMaskIntoConstraints = false
         return progressView
     }()
+
+    var indicatorProgress: Float {
+        get { progressView.progress }
+        set { progressView.progress = newValue }
+    }
 
     var navigationController: UINavigationController? {
         (UIApplication.shared.windows.first?.rootViewController as? UITabBarController)?
@@ -110,6 +115,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Reader.readingMode": "auto",
                 "Reader.skipDuplicateChapters": true,
+                "Reader.markDuplicateChapters": true,
                 "Reader.downsampleImages": true,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
@@ -119,7 +125,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.verticalInfiniteScroll": true,
                 "Reader.pillarbox": false,
                 "Reader.pillarboxAmount": 15,
-                "Reader.pillarboxOrientation": "both"
+                "Reader.pillarboxOrientation": "both",
+                "Reader.orientation": "device"
             ]
         )
 
@@ -131,7 +138,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 config.urlCache = nil
                 return DataLoader(configuration: config)
             }()
-            let dataCache = try? DataCache(name: "xyz.skitty.Aidoku.datacache") // disk cache
+            let dataCache = try? DataCache(name: "app.aidoku.Aidoku.datacache") // disk cache
             let imageCache = Nuke.ImageCache() // memory cache
             dataCache?.sizeLimit = 500 * 1024 * 1024
             imageCache.costLimit = 100 * 1024 * 1024
@@ -193,7 +200,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         try? await Task.sleep(nanoseconds: 500 * 1000000)
         await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
             Task { @MainActor in
-                self.progressView.progress = progress
+                self.indicatorProgress = progress
             }
         })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
@@ -212,6 +219,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             loadingIndicator.isHidden = false
             progressView.isHidden = true
         case .progress:
+            progressView.progress = 0
             loadingIndicator.isHidden = true
             progressView.isHidden = false
         }

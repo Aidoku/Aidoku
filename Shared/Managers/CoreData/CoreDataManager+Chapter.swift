@@ -169,6 +169,11 @@ extension CoreDataManager {
         scanlators: [String]?,
         context: NSManagedObjectContext? = nil
     ) -> Int {
+        let scanlators: [String]? = if scanlators?.isEmpty ?? true {
+            nil
+        } else {
+            scanlators
+        }
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         if let scanlators, let lang {

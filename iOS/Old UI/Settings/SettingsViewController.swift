@@ -244,6 +244,11 @@ class SettingsViewController: SettingsTableViewController {
                     key: "Reader.skipDuplicateChapters",
                     title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
                 ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.markDuplicateChapters",
+                    title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS", comment: "")
+                ),
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
                 SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
                 SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
@@ -256,6 +261,17 @@ class SettingsViewController: SettingsTableViewController {
                         NSLocalizedString("READER_BG_COLOR_SYSTEM", comment: ""),
                         NSLocalizedString("READER_BG_COLOR_WHITE", comment: ""),
                         NSLocalizedString("READER_BG_COLOR_BLACK", comment: "")
+                    ]
+                ),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.orientation",
+                    title: NSLocalizedString("READER_ORIENTATION", comment: ""),
+                    values: ["device", "portrait", "landscape"],
+                    titles: [
+                        NSLocalizedString("FOLLOW_DEVICE", comment: ""),
+                        NSLocalizedString("PORTRAIT", comment: ""),
+                        NSLocalizedString("LANDSCAPE", comment: "")
                     ]
                 )
             ]),
@@ -290,6 +306,7 @@ class SettingsViewController: SettingsTableViewController {
                 SettingItem(type: "button", key: "Advanced.clearTrackedManga", title: NSLocalizedString("CLEAR_TRACKED_MANGA", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearNetworkCache", title: NSLocalizedString("CLEAR_NETWORK_CACHE", comment: "")),
                 SettingItem(type: "button", key: "Advanced.clearReadHistory", title: NSLocalizedString("CLEAR_READ_HISTORY", comment: "")),
+                SettingItem(type: "button", key: "Advanced.clearExcludingLibrary", title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY", comment: "")),
                 SettingItem(type: "button", key: "Advanced.migrateHistory", title: "Migrate Chapter History"),
                 SettingItem(type: "button", key: "Advanced.resetSettings", title: NSLocalizedString("RESET_SETTINGS", comment: "")),
                 SettingItem(type: "button", key: "Advanced.reset", title: NSLocalizedString("RESET", comment: ""), destructive: true)
@@ -474,6 +491,20 @@ extension SettingsViewController {
                             CoreDataManager.shared.clearHistory(context: context)
                             try? context.save()
                         }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+                    }
+                }
+            case "Advanced.clearExcludingLibrary":
+                confirmAction(
+                    title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY", comment: ""),
+                    message: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY_TEXT", comment: "")
+                ) {
+                    Task {
+                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                            CoreDataManager.shared.clearHistoryExcludingLibrary(context: context)
+                            try? context.save()
+                        }
+                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                     }
                 }
             case "Advanced.migrateHistory":

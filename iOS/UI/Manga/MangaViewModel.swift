@@ -55,6 +55,11 @@ class MangaViewModel {
             fullChapterList = (try? await source.getChapterList(manga: manga)) ?? []
         }
 
+        // get unique chapters without changing the order
+        // workaround for diffable data source crashing for non-unique chapter ids
+        var uniqueChapters = Set<Chapter>()
+        fullChapterList = fullChapterList.filter { uniqueChapters.insert($0).inserted }
+
         filterChapterList()
     }
 
@@ -98,16 +103,16 @@ class MangaViewModel {
             }
         case .chapter:
             if ascending {
-                filteredChapterList.sort { $0.chapterNum ?? 0 > $1.chapterNum ?? 0 }
-            } else {
                 filteredChapterList.sort { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }
+            } else {
+                filteredChapterList.sort { $0.chapterNum ?? 0 > $1.chapterNum ?? 0 }
             }
         case .uploadDate:
             let now = Date()
             if ascending {
-                filteredChapterList.sort { $0.dateUploaded ?? now > $1.dateUploaded ?? now }
-            } else {
                 filteredChapterList.sort { $0.dateUploaded ?? now < $1.dateUploaded ?? now }
+            } else {
+                filteredChapterList.sort { $0.dateUploaded ?? now > $1.dateUploaded ?? now }
             }
         }
     }
@@ -240,8 +245,6 @@ class MangaViewModel {
     }
 
     func getOrderedChapterList() -> [Chapter] {
-        (sortAscending && sortMethod == .sourceOrder) || (!sortAscending && sortMethod != .sourceOrder)
-            ? filteredChapterList.reversed()
-            : filteredChapterList
+        sortAscending ? filteredChapterList.reversed() : filteredChapterList
     }
 }

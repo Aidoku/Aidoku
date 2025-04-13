@@ -117,7 +117,7 @@ class ReaderPageView: UIView {
                 source.handlesImageRequests,
                 let request = try? await source.getImageRequest(url: url.absoluteString)
             {
-                urlRequest.url = URL(string: request.URL ?? "")
+                urlRequest.url = URL(string: request.url ?? "")
                 for (key, value) in request.headers {
                     urlRequest.setValue(value, forHTTPHeaderField: key)
                 }

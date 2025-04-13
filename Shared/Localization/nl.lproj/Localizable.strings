@@ -360,3 +360,7 @@
 "READER_BG_COLOR_BLACK" = "Zwart";
 "PAUSE" = "Pauzeren";
 "RESUME" = "Hervatten";
+"DELETE_DOWNLOAD_AFTER_READING" = "Verwijder download na lezen";
+"SKIPPING_CHAPTERS" = "%i Hoofdstukken worden overgeslagen, omdat de bron deze mist, of omdat deze eruit gefilterd worden";
+"SCANLATOR" = "Scanlator";
+"NO_SCANLATOR" = "Geen scanlator";

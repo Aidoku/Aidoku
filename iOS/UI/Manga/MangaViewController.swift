@@ -451,9 +451,12 @@ class MangaViewController: BaseTableViewController {
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel) { _ in })
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
-            let chapters = self.viewModel.chapterList.filter {
-                floor($0.chapterNum ?? -1) <= chapterNum
-            }
+            var chapterList = self.viewModel.chapterList
+            chapterList.sort { $0.sourceOrder < $1.sourceOrder }
+            guard let lastReadChapter = chapterList.firstIndex(where: {
+                $0.chapterNum != nil && floor($0.chapterNum!) <= chapterNum
+            }) else { return }
+            let chapters = Array(chapterList[lastReadChapter...])
             Task {
                 await self.markRead(chapters: chapters)
             }
@@ -1034,27 +1037,29 @@ extension MangaViewController {
 
     /// Returns a "Mark Previous" submenu for the chapter cell at the specified index path.
     private func markPreviousSubmenu(at indexPath: IndexPath) -> UIMenu {
-        UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
+        func getChaptersToIndex() -> [Chapter] {
+            let chapterList = viewModel.sortAscending ? viewModel.chapterList : viewModel.chapterList.reversed()
+            guard let selectedChapter = self.dataSource.itemIdentifier(for: indexPath),
+                  let index = chapterList.firstIndex(of: selectedChapter) else {
+                return []
+            }
+            return Array(chapterList[..<index])
+        }
+        return UIMenu(title: NSLocalizedString("MARK_PREVIOUS", comment: ""), children: [
             UIAction(
                 title: NSLocalizedString("READ", comment: ""),
                 image: UIImage(systemName: "eye")
             ) { _ in
-                let chapters = [Chapter](self.viewModel.chapterList[
-                    indexPath.row..<self.viewModel.chapterList.count
-                ])
                 Task {
-                    await self.markRead(chapters: chapters)
+                    await self.markRead(chapters: getChaptersToIndex())
                 }
             },
             UIAction(
                 title: NSLocalizedString("UNREAD", comment: ""),
                 image: UIImage(systemName: "eye.slash")
             ) { _ in
-                let chapters = [Chapter](self.viewModel.chapterList[
-                    indexPath.row..<self.viewModel.chapterList.count
-                ])
                 Task {
-                    await self.markUnread(chapters: chapters)
+                    await self.markUnread(chapters: getChaptersToIndex())
                 }
             }
         ])
@@ -1108,7 +1113,7 @@ extension MangaViewController {
         // refresh chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
         snapshot.appendSections(current.sectionIdentifiers)
-        snapshot.appendItems(viewModel.chapterList)
+        snapshot.appendItems(viewModel.chapterList.unique()) // // ensure unique elements for data source
         dataSource.apply(
             snapshot,
             // skip animation if chapters are the same (needed when chapter is a class)
@@ -1122,7 +1127,7 @@ extension MangaViewController {
         // re-sort chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
         snapshot.appendSections(dataSource.snapshot().sectionIdentifiers)
-        snapshot.appendItems(viewModel.chapterList)
+        snapshot.appendItems(viewModel.chapterList.unique())
         dataSource.apply(snapshot, animatingDifferences: false)
 
         // refresh chapters for fade animation

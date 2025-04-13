@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 import SwiftUI
 
 class ReaderViewController: BaseObservingViewController {
@@ -20,9 +21,17 @@ class ReaderViewController: BaseObservingViewController {
     var defaultReadingMode: ReadingMode?
 
     var chapterList: [Chapter] = []
+    var chaptersToMark: [Chapter] = []
     var currentPage = 1
 
     weak var reader: ReaderReaderDelegate?
+
+    private let moreButton = UIBarButtonItem(
+        image: UIImage(systemName: "ellipsis"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
 
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var toolbarView = ReaderToolbarView()
@@ -56,6 +65,7 @@ class ReaderViewController: BaseObservingViewController {
     init(chapter: Chapter, chapterList: [Chapter] = [], defaultReadingMode: ReadingMode? = nil) {
         self.chapter = chapter
         self.chapterList = chapterList
+        self.chaptersToMark = [chapter]
         self.defaultReadingMode = defaultReadingMode
         super.init()
     }
@@ -83,12 +93,7 @@ class ReaderViewController: BaseObservingViewController {
             )
         ]
         navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(
-                image: UIImage(systemName: "ellipsis"),
-                style: .plain,
-                target: nil,
-                action: nil
-            ),
+            moreButton,
             UIBarButtonItem(
                 image: UIImage(systemName: "textformat.size"),
                 style: .plain,
@@ -96,7 +101,7 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openReaderSettings)
             )
         ]
-        navigationItem.rightBarButtonItems?.first?.isEnabled = false
+        updateMoreButton()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -193,12 +198,14 @@ class ReaderViewController: BaseObservingViewController {
         Task {
             // don't add history if there is none and we're at the first page
             if currentPage == 1 {
-                let chapter = chapter
-                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let sourceId = chapter.sourceId
+                let mangaId = chapter.mangaId
+                let chapterId = chapter.id
+                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                     !CoreDataManager.shared.hasHistory(
-                        sourceId: chapter.sourceId,
-                        mangaId: chapter.mangaId,
-                        chapterId: chapter.id,
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        chapterId: chapterId,
                         context: context
                     )
                 }
@@ -240,10 +247,40 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     func loadNavbarTitle() {
-        navigationItem.setTitle(
-            upper: chapter.volumeNum ?? 0 != 0 ? String(format: NSLocalizedString("VOLUME_X", comment: ""), chapter.volumeNum!) : nil,
-            lower: String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapter.chapterNum ?? 0)
-        )
+        let volume: String? =
+            if chapter.chapterNum != nil, let volumeNum = chapter.volumeNum {
+                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            } else {
+                nil
+            }
+
+        let title =
+            if let chapterNum = chapter.chapterNum {
+                String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+            } else if let volumeNum = chapter.volumeNum {
+                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            } else {
+                chapter.title ?? ""
+            }
+
+        navigationItem.setTitle(upper: volume, lower: title)
+    }
+
+    func updateMoreButton() {
+        let webViewActionTitle = NSLocalizedString("OPEN_WEBSITE", comment: "")
+        let webViewActionImage = UIImage(systemName: "safari")
+        let webViewAction =
+            if let url = chapter.url, let chapterURL = URL(string: url) {
+                UIAction(title: webViewActionTitle, image: webViewActionImage) { _ in
+                    self.present(SFSafariViewController(url: chapterURL), animated: true)
+                }
+            } else {
+                UIAction(
+                    title: webViewActionTitle, image: webViewActionImage, attributes: .disabled
+                ) { _ in }
+            }
+
+        moreButton.menu = UIMenu(children: [webViewAction])
     }
 
     @objc func openReaderSettings() {
@@ -365,11 +402,29 @@ extension ReaderViewController: ReaderHoldingDelegate {
         else {
             return nil
         }
+
         let skipDuplicates = UserDefaults.standard.bool(forKey: "Reader.skipDuplicateChapters")
+        let markDuplicates = UserDefaults.standard.bool(forKey: "Reader.markDuplicateChapters")
+
         index -= 1
+        var nextChapterInList: Chapter?
+
         while index >= 0 {
             let new = chapterList[index]
-            if !skipDuplicates || (new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum) {
+            let isDuplicate =
+                new.chapterNum == chapter.chapterNum
+                && new.volumeNum == chapter.volumeNum
+                && (!(new.chapterNum == nil && new.volumeNum == nil) || new.title == chapter.title)
+
+            if nextChapterInList == nil {
+                nextChapterInList = new
+            }
+            if markDuplicates && isDuplicate {
+                chaptersToMark.append(new)
+            }
+            if !isDuplicate {
+                return skipDuplicates ? new : nextChapterInList
+            } else if !skipDuplicates && !markDuplicates {
                 return new
             }
             index -= 1
@@ -384,11 +439,20 @@ extension ReaderViewController: ReaderHoldingDelegate {
             return nil
         }
         // find previous non-duplicate chapter
+        let markDuplicates = UserDefaults.standard.bool(forKey: "Reader.markDuplicateChapters")
+
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
-            if new.chapterNum != chapter.chapterNum || new.volumeNum != chapter.volumeNum {
+            let isDuplicate =
+                new.chapterNum == chapter.chapterNum
+                && new.volumeNum == chapter.volumeNum
+                && (!(new.chapterNum == nil && new.volumeNum == nil) || new.title == chapter.title)
+            if !isDuplicate {
                 return new
+            }
+            if markDuplicates {
+                chaptersToMark.append(new)
             }
             index += 1
         }
@@ -397,7 +461,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     func setChapter(_ chapter: Chapter) {
         self.chapter = chapter
+        self.chaptersToMark = [chapter]
         loadNavbarTitle()
+        updateMoreButton()
     }
 
     func setCurrentPage(_ page: Int) {
@@ -422,7 +488,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setCompleted() {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await HistoryManager.shared.addHistory(chapters: [chapter])
+                await HistoryManager.shared.addHistory(chapters: chaptersToMark)
             }
         }
         if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {

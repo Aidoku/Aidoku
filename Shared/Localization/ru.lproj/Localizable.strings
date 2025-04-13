@@ -26,10 +26,10 @@
 "SORT_BY" = "Сортировать по";
 "FILTER_BY" = "Фильтровать по";
 "TITLE" = "Название";
-"LAST_OPENED" = "последнему разу";
-"LAST_READ" = "Последнее прочитанное";
-"LATEST_CHAPTER" = "последнему главу";
-"DATE_ADDED" = "Дата добавления";
+"LAST_OPENED" = "последнему открытому";
+"LAST_READ" = "Последнему прочитанному";
+"LATEST_CHAPTER" = "последней главе";
+"DATE_ADDED" = "дате добавления";
 
 // Categories
 "ALL" = "Все";
@@ -46,7 +46,7 @@
 "BROWSE_NO_SOURCES_TEXT" = "Сделайте свой список источников или откройте ссылку на\nисточник в Aidoku, чтобы начать";
 
 // Source
-"SOURCE_INFO" = "Информация об Источнике";
+"SOURCE_INFO" = "Информация об источнике";
 "LANGUAGE" = "Язык";
 "LANGUAGES" = "Языки";
 "INFO" = "Информация";
@@ -76,7 +76,7 @@
 "START_READING" = "Начать читать";
 "CONTINUE_READING" = "Продолжить чтение";
 "READ" = "Читать";
-"UNREAD" = "Непрочитанное";
+"UNREAD" = "непрочитан";
 "MARK" = "Отметить";
 "MARK_ALL" = "Отметить все";
 "MARK_READ" = "Отметить как Прочитанные";
@@ -118,7 +118,7 @@
 "APPEARANCE_DARK" = "Темная";
 "USE_SYSTEM_APPEARANCE" = "Как в системе";
 "MANGA_PAGE" = "Страница Манги";
-"SHOW_SOURCE_LABEL" = "Показывать Метку Источника";
+"SHOW_SOURCE_LABEL" = "Показывать источник";
 "USE_MANGA_TINT" = "Используйте Оттенок Манги";
 "USE_MANGA_TINT_INFO" = "Подкрашивать страницы манги в соответствии с цветом изображения на обложке";
 "PORTRAIT" = "Портретный";
@@ -140,7 +140,7 @@
 "ABOUT" = "О приложении";
 "SOURCE_LIST_ADDED" = "Добавлен список источников";
 "SOURCE_LIST_ADDED_TEXT" = "Теперь вы можете просматривать внешние источники во вкладке Обзор.";
-"LOCK_HISTORY_TAB" = "Вкладка Истории блокировок";
+"LOCK_HISTORY_TAB" = "Заблокировать вкладку \"история\"";
 "DOWNSAMPLE_IMAGES" = "Изображения с пониженной выборкой";
 "SAVE_IMAGE_OPTION" = "Сохранять изображения";
 "BACKUPS" = "Резервные копии";
@@ -161,7 +161,7 @@
 "LOGGING" = "Сервер";
 "LOG_SERVER" = "Сервер журналов";
 "EXPORT_LOGS" = "Экспортировать логи";
-"DISPLAY_LOGS" = "Отобразить логи";
+"DISPLAY_LOGS" = "Показать логи";
 "ADVANCED" = "Дополнительно";
 "CLEAR_CHAPTER_CACHE" = "Очистить кэш глав";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Данное действие необратимо. Кэшированные главы будут удалены и загружены заново.";
@@ -182,7 +182,7 @@
 "AUTH_FOR_LIBRARY" = "Аутентификация для просмотра библиотеки.";
 "LOCK_LIBRARY" = "Заблокировать библиотеку";
 "SET_AS_WIDE_PAGE" = "Установить как Широкую страницу";
-"AUTOMATIC" = "Автоматически";
+"AUTOMATIC" = "Автоматический";
 "SET_AS_NORMAL_PAGE" = "Установить как Обычную страницу";
 "PAGES_TO_PRELOAD" = "Страницы для предварительной загрузки";
 "SINGLE_PAGE" = "Одностраничный";
@@ -201,7 +201,7 @@
 "CATEGORY_ADD" = "Добавить категорию";
 "LIST_ALL" = "Все";
 "REMOVE_DOWNLOAD" = "Удалить загрузку";
-"REMOVE_DOWNLOADS_CONFIRM" = "Удалить выбранные?";
+"REMOVE_DOWNLOADS_CONFIRM" = "Удалить выбранное?";
 "DEFAULT_CATEGORY" = "Категория по умолчанию";
 "UPDATES" = "Обновления";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Руководство по добавлению источников";
@@ -242,7 +242,7 @@
 "SOURCE_LIST_URL" = "URL-адрес списка источников";
 "SOURCE_LIST_ADD_FAIL" = "Не удалось добавить список источников";
 "LIBRARY_UPDATING" = "Обновление библиотеки";
-"SKIP_TITLES" = "Пропускать Тайтлы";
+"SKIP_TITLES" = "Пропускать тайтлы";
 "THAT_HAVENT_BEEN_READ" = "Непрочитанные";
 "SOURCE_LISTS" = "Список источников";
 "BACKUP_IMPORT_FAIL_TEXT" = "Не удалось сохранить резервную копию. Пожалуйста, убедитесь, что ваша резервная копия имеет надлежащий формат.";
@@ -313,7 +313,7 @@
 "TRACKING" = "Отслеживаемые";
 "MIGRATE_%i_ITEMS?" = "Мигрировать %i штук?";
 "AVAILABLE" = "Доступен";
-"DEFAULT_READING_MODE" = "Режим чтения по-умолчанию";
+"DEFAULT_READING_MODE" = "Режим чтения по умолчанию";
 "PILLARBOX" = "Pillarbox";
 "BOTH" = "Оба";
 "PINNED" = "Закрепленные";
@@ -335,7 +335,7 @@
 "CROP_BORDERS" = "Обрезывать границы";
 "ANILIST_LOGIN_NEEDED" = "Необходимо авторизоваться в AniList";
 "ANILIST_LOGIN_NEEDED_TEXT" = "Ваш токен в AniList был просрочен, поэтому трекер AniList не будет работать пока вы не перелогинитесь в настройках.";
-"PILLARBOX_AMOUNT" = "Кол-во каше";
+"PILLARBOX_AMOUNT" = "";
 "PILLARBOX_ORIENTATION" = "Ориентация каше";
 "PILLARBOX_ORIENTATION_INFO" = "Ориентация каше определяет в какой ориентации экрана будет включаться кашерование.";
 "MAL_LOGIN_NEEDED" = "Необходимо авторизоваться в MyAnimeList";
@@ -358,7 +358,7 @@
 "PAUSE" = "Пауза";
 "WARNING" = "Предупреждение";
 "NO_WIFI_ALERT_TITLE" = "Нет соединения с Wi-Fi";
-"DOWNLOAD_ANYWAY_MESSAGE" = "Вы не подключены к Wi-Fi. Продолжить скачивание?";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Вы не подключены к Wi-Fi. Все равно продолжить?";
 "LINK_COPIED" = "Ссылка скопирована";
 "SKIPPING_CHAPTERS" = "Пропуск %i глав потому что в источнике их нет, либо не попали под параметры фильтра";
 "DELETE_DOWNLOAD_AFTER_READING" = "Удалить после прочтения";

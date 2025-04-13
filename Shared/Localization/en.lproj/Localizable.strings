@@ -23,6 +23,8 @@
 "SHARE" = "Share";
 "COPY" = "Copy";
 "WARNING" = "Warning";
+"ENABLE_PERMISSION" = "Enable Permission";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Aidoku access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -147,6 +149,7 @@
 "EXPERIMENTAL" = "Experimental";
 "INFINITE_VERTICAL_SCROLL" = "Infinite Vertical Scrolling";
 "SAVE_TO_PHOTOS" = "Save to Photos";
+"OPEN_WEBSITE" = "Open Website";
 
 // History
 "HISTORY" = "History";
@@ -262,6 +265,8 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
 "CLEAR_READ_HISTORY" = "Clear Read History";
 "CLEAR_READ_HISTORY_TEXT" = "This action is irreversible. All read history will be removed.";
+"CLEAR_EXCLUDING_LIBRARY" = "Clear Read History Excluding Library";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "This action is irreversible. All read history excluding the library will be removed.";
 "RESET_SETTINGS" = "Reset Settings";
 "RESET_SETTINGS_TEXT" = "This action is irreversible. All app and source settings will be reset.";
 "PAGE_X_OF_X" = "Page %i of %i";
@@ -333,6 +338,7 @@
 "RENAME_CATEGORY_INFO" = "Enter a new name for this category.";
 "RENAME_CATEGORY_FAIL" = "Failed to Rename Category";
 "SKIP_DUPLICATE_CHAPTERS" = "Skip Duplicate Chapters";
+"MARK_DUPLICATE_CHAPTERS" = "Mark Duplicate Chapters as Read";
 "RENAME_CATEGORY" = "Rename Category";
 "RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
 "CATEGORY_NAME" = "Category Name";
@@ -370,3 +376,5 @@
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "No scanlator";
+"READER_ORIENTATION" = "Orientation";
+"FOLLOW_DEVICE" = "Follow Device";
