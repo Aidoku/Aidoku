@@ -55,6 +55,8 @@ class SettingSelectViewController: UITableViewController {
         return indexes
     }
 
+    var observers: [NSObjectProtocol] = []
+
     init(source: Source? = nil, item: SettingItem, style: UITableView.Style = .insetGrouped) {
         self.source = source
         self.item = item
@@ -81,6 +83,26 @@ class SettingSelectViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = false
+
+        observers.append(
+            NotificationCenter.default.addObserver(
+                forName: NSNotification.Name("Reader.orientation"), object: nil, queue: nil
+            ) { _ in
+                guard #available(iOS 16.0, *) else {
+                    UIViewController.attemptRotationToDeviceOrientation()
+                    return
+                }
+
+                self.setNeedsUpdateOfSupportedInterfaceOrientations()
+            })
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 }
 
