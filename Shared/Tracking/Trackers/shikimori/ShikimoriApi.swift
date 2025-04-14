@@ -13,11 +13,11 @@ class ShikimoriApi {
     private let useragent = "Aidoku"
     private let dateformat = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
 
-    // Registered under <username>'s Shikimori account
+    // Registered under skitty's Shikimori account
     var oauth = OAuthClient(
         id: "shikimori",
-        clientId: "",
-        clientSecret: "",
+        clientId: "0pRPZsB87w9mp0gQe1HZbSiGt7FfVzJohPGhJKjayW4",
+        clientSecret: "42vg9aoyPBnrvFoH1ey2GxbO24eVufOe8D0B6P756e8",
         baseUrl: "https://shikimori.one/"
     )
 }
