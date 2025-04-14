@@ -36,8 +36,10 @@ protocol Tracker: AnyObject {
     /// Called when a tracker is linked with a title, indicating that the title should be added to the
     /// user's database on the tracker
     ///
+    /// - Returns: The id of tracker item, if it changes.
+    ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func register(trackId: String, hasReadChapters: Bool) async
+    func register(trackId: String, hasReadChapters: Bool) async -> String?
 
     /// Update the state of a tracked title.
     ///
