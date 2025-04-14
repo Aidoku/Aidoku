@@ -38,6 +38,7 @@
       "appPermissions": {
         "entitlements": [
           "aps-environment",
+          "com.apple.developer.icloud-container-environment",
           "com.apple.developer.icloud-container-identifiers",
           "com.apple.developer.icloud-services",
           "com.apple.developer.ubiquity-kvstore-identifier"
