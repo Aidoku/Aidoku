@@ -651,9 +651,9 @@
 		04B48CF62CD6835700F719D0 /* shikimori */ = {
 			isa = PBXGroup;
 			children = (
-				04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */,
-				04B48CFA2CD6838600F719D0 /* ShikimoriApi.swift */,
 				04B48CF72CD6835D00F719D0 /* ShikimoriTracker.swift */,
+				04B48CFA2CD6838600F719D0 /* ShikimoriApi.swift */,
+				04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */,
 			);
 			path = shikimori;
 			sourceTree = "<group>";
@@ -1295,9 +1295,9 @@
 		FBD6A413285B7CAF007116C9 /* Trackers */ = {
 			isa = PBXGroup;
 			children = (
-				04B48CF62CD6835700F719D0 /* shikimori */,
 				FB0E1CCC288AE8AD00B67BA9 /* anilist */,
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
+				04B48CF62CD6835700F719D0 /* shikimori */,
 			);
 			path = Trackers;
 			sourceTree = "<group>";

@@ -10,23 +10,21 @@ import Foundation
 class ShikimoriApi {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
-    private let useragent = "Aidoku"
-    private let dateformat = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
+    private let userAgent = "Aidoku"
+    private let dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
 
-    // Registered under skitty's Shikimori account
+    // Registered under Skitty's Shikimori account
     var oauth = OAuthClient(
         id: "shikimori",
         clientId: "0pRPZsB87w9mp0gQe1HZbSiGt7FfVzJohPGhJKjayW4",
         clientSecret: "42vg9aoyPBnrvFoH1ey2GxbO24eVufOe8D0B6P756e8",
-        baseUrl: "https://shikimori.one/"
+        baseUrl: "https://shikimori.one"
     )
 }
 
 extension ShikimoriApi {
-    // MARK: custom OAuth
-
     func getAuthenticationUrl() -> String? {
-        guard let url = URL(string: oauth.baseUrl + "oauth/authorize") else { return nil }
+        guard let url = URL(string: oauth.baseUrl + "/oauth/authorize") else { return nil }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         let queryItems = [
             URLQueryItem(name: "client_id", value: oauth.clientId),
@@ -39,13 +37,13 @@ extension ShikimoriApi {
     }
 
     func getAccessToken(authCode: String) async -> OAuthResponse? {
-        guard let url = URL(string: oauth.baseUrl + "oauth/token") else { return nil }
+        guard let url = URL(string: oauth.baseUrl + "/oauth/token") else { return nil }
         let boundary = "--" + String(UUID().hashValue)
         var request = URLRequest(url: url)
 
         request.httpMethod = "POST"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue(useragent, forHTTPHeaderField: "User-Agent")
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
         request.httpBody = multipart(params: [
             "grant_type": "authorization_code",
             "client_id": oauth.clientId,
@@ -61,11 +59,15 @@ extension ShikimoriApi {
 
     // MARK: API Methods - Data
 
-    func search(query: String) async -> GraphQLResponse<ShikimoriMangas>? {
+    func search(query: String, censored: Bool = false) async -> GraphQLResponse<ShikimoriMangas>? {
         await requestGraphQL(
             GraphQLVariableQuery(
-            query: ShikimoriQueries.searchQuery,
-            variables: ShikimoriSearchVars(search: query))
+                query: ShikimoriQueries.searchQuery,
+                variables: ShikimoriSearchVars(
+                    search: query,
+                    censored: censored
+                )
+            )
         )
     }
 
@@ -75,13 +77,15 @@ extension ShikimoriApi {
         query["user_rate[target_id]"] = trackId
         query["user_rate[target_type]"] = "Manga"
         query["user_rate[status]"] = hasReadChapters ? "watching" : "planned"
-        guard var url = URL(string: oauth.baseUrl + "api/v2/user_rates") else { return nil }
+
+        guard var url = URL(string: oauth.baseUrl + "/api/v2/user_rates") else { return nil }
         url.queryParameters = query
-        var request = await authorizedRequest(for: url)
+        var request = authorizedRequest(for: url)
         request.httpMethod = "POST"
 
-        guard let data = try? await requestData(urlRequest: request),
-              let rate = try? decoder.decode(ShikimoriUserRate.self, from: data)
+        guard
+            let data = try? await requestData(urlRequest: request),
+            let rate = try? decoder.decode(ShikimoriUserRate.self, from: data)
         else { return nil }
 
         return String(rate.id)
@@ -101,43 +105,53 @@ extension ShikimoriApi {
         if let lastReadVolume = update.lastReadVolume {
             query["user_rate[volumes]"] = String(lastReadVolume)
         }
-        guard var url = URL(string: oauth.baseUrl + "api/v2/user_rates/\(trackId)") else { return }
+
+        guard var url = URL(string: oauth.baseUrl + "/api/v2/user_rates/\(trackId)") else { return }
         url.queryParameters = query
-        var request = await authorizedRequest(for: url)
+        var request = authorizedRequest(for: url)
         request.httpMethod = "PATCH"
 
-        _ = try? await requestData(urlRequest: request)
+        do {
+            try await requestData(urlRequest: request)
+        } catch {
+            LogManager.logger.error("Shikimori Tracker: error updating tracker for \(trackId)")
+        }
     }
 
     func getState(_ trackId: String) async -> TrackState {
-        let request = await authorizedRequest(for: URL(string: oauth.baseUrl + "api/v2/user_rates/\(trackId)")!)
-        guard let data = try? await requestData(urlRequest: request),
-              let rate = try? decoder.decode(ShikimoriUserRate.self, from: data) else { return TrackState() }
+        guard
+            let url = URL(string: oauth.baseUrl + "/api/v2/user_rates/\(trackId)"),
+            let data = try? await requestData(urlRequest: authorizedRequest(for: url)),
+            let rate = try? decoder.decode(ShikimoriUserRate.self, from: data)
+        else {
+            return TrackState()
+        }
         return TrackState(
             score: rate.score,
             status: getStatusFromString(status: rate.status),
             lastReadChapter: Float(rate.chapters),
             lastReadVolume: rate.volumes,
-            startReadDate: rate.createdAt.date(format: dateformat),
-            finishReadDate: getStatusFromString(status: rate.status) == .completed ?
-            rate.updatedAt.date(format: dateformat) : nil
+            startReadDate: rate.createdAt.date(format: dateFormat),
+            finishReadDate: getStatusFromString(status: rate.status) == .completed
+                ? rate.updatedAt.date(format: dateFormat)
+                : nil
         )
     }
 
     func getMangaIdByRate(trackId: String) async -> String? {
-        guard let url = URL(string: oauth.baseUrl + "api/v2/user_rates/\(trackId)") else { return nil }
-        let request = await authorizedRequest(for: url)
-        guard let data = try? await requestData(urlRequest: request),
-              let rate = try? decoder.decode(ShikimoriUserRate.self, from: data)
-        else { return nil }
-
+        guard
+            let url = URL(string: oauth.baseUrl + "/api/v2/user_rates/\(trackId)"),
+            let data = try? await requestData(urlRequest: authorizedRequest(for: url)),
+            let rate = try? decoder.decode(ShikimoriUserRate.self, from: data)
+        else {
+            return nil
+        }
         return String(rate.targetId)
     }
 }
 
 private extension ShikimoriApi {
-
-    func multipart(params: [String: String], boundary: String) -> Data {
+    func multipart(params: [String: String], boundary: String) -> Data? {
         var body = ""
         params.forEach {
             body += "--\(boundary)\r\n"
@@ -146,16 +160,15 @@ private extension ShikimoriApi {
             body += $0.value
             body += "\r\n"
         }
-
         body += "--\(boundary)--"
-        return body.data(using: .utf8)!
+        return body.data(using: .utf8)
     }
 
     func getStatusFromTrack(status: TrackStatus) -> String {
         switch status {
         case .completed: return "completed"
         case .dropped: return "dropped"
-        case .paused: return "hold_on"
+        case .paused: return "on_hold"
         case .planning: return "planned"
         case .reading: return "watching"
         case .rereading: return "rewatching"
@@ -179,20 +192,21 @@ private extension ShikimoriApi {
     func getUser() async -> String? {
         let key: String = "Tracker.\(oauth.id).user_id"
         if UserDefaults.standard.string(forKey: key) == nil {
-            guard let url = URL(string: oauth.baseUrl + "api/users/whoami") else { return nil }
-            let request = await authorizedRequest(for: url)
-            guard let data = try? await requestData(urlRequest: request),
-                  let resp = try? decoder.decode(ShikimoriUser.self, from: data)
-            else { return nil }
+            guard
+                let url = URL(string: oauth.baseUrl + "/api/users/whoami"),
+                let data = try? await requestData(urlRequest: authorizedRequest(for: url)),
+                let resp = try? decoder.decode(ShikimoriUser.self, from: data)
+            else {
+                return nil
+            }
             UserDefaults.standard.set(String(resp.userId), forKey: key)
             return String(resp.userId)
         }
-
         return UserDefaults.standard.string(forKey: key)
     }
 
     private func requestGraphQL<T: Codable, D: Encodable>(_ data: D) async -> GraphQLResponse<T>? {
-        guard let url = URL(string: oauth.baseUrl + "api/graphql") else { return nil }
+        guard let url = URL(string: oauth.baseUrl + "/api/graphql") else { return nil }
         var request = URLRequest(url: url)
 
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -202,17 +216,18 @@ private extension ShikimoriApi {
         return try? await URLSession.shared.object(from: request)
     }
 
-    func authorizedRequest(for url: URL) async -> URLRequest {
+    func authorizedRequest(for url: URL) -> URLRequest {
         if oauth.tokens == nil { oauth.loadTokens() }
         var request = URLRequest(url: url)
         request.addValue(
             "Bearer \(oauth.tokens?.accessToken ?? "")",
             forHTTPHeaderField: "Authorization"
         )
-        request.addValue(useragent, forHTTPHeaderField: "User-Agent")
+        request.addValue(userAgent, forHTTPHeaderField: "User-Agent")
         return request
     }
 
+    @discardableResult
     func requestData(urlRequest: URLRequest) async throws -> Data {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
         let statusCode = (response as? HTTPURLResponse)?.statusCode
@@ -224,11 +239,11 @@ private extension ShikimoriApi {
         // check if token expired
         if statusCode == 401 || oauth.tokens!.expired {
             // refresh access token
-            guard let url = URL(string: oauth.baseUrl + "oauth/token") else { return data }
+            guard let url = URL(string: oauth.baseUrl + "/oauth/token") else { return data }
             var request = URLRequest(url: url)
             let boundary = "--" + String(UUID().hashValue)
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            request.setValue(useragent, forHTTPHeaderField: "User-Agent")
+            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
             request.httpMethod = "POST"
             request.httpBody = multipart(params: [
                 "client_id": oauth.clientId,
@@ -243,7 +258,7 @@ private extension ShikimoriApi {
             if let newAuthorization = URLRequest(url: url).value(forHTTPHeaderField: "Authorization") {
                 var newRequest = urlRequest
                 newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
-                newRequest.setValue(useragent, forHTTPHeaderField: "User-Agent")
+                newRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
                 (data, _) = try await URLSession.shared.data(for: newRequest)
             }
         }

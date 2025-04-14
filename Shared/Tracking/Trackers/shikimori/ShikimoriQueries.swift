@@ -1,5 +1,5 @@
 //
-//  ShikimoriModels.swift
+//  ShikimoriQueries.swift
 //  Aidoku
 //
 //  Created by Vova Lapskiy on 02.11.2024.
@@ -10,14 +10,12 @@ import Foundation
 // https://shikimori.one/api/doc
 
 struct ShikimoriQueries {
-
     static let searchQuery = """
-    query($search: String) {
-      mangas(search: $search, limit: 25) {
+    query($search: String, $censored: Boolean) {
+      mangas(search: $search, limit: 25, censored: $censored) {
         id
         name
         russian
-        english
         status
         kind
         poster {
@@ -30,6 +28,7 @@ struct ShikimoriQueries {
 
 struct ShikimoriSearchVars: Codable {
     var search: String
+    var censored: Bool
 }
 
 struct ShikimoriUser: Codable {
@@ -51,7 +50,7 @@ struct ShikimoriMangas: Codable {
 struct ShikimoriManga: Codable {
     var id: String
     var name: String
-    var russian: String
+    var russian: String?
     var status: String
     var kind: String
     var poster: ShikimoriPoster
