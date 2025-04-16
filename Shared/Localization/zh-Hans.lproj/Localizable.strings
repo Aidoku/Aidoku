@@ -131,10 +131,10 @@
 // History
 "HISTORY" = "历史";
 "%@_AGO" = "%@前";
-"REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史记录";
-"HISTORY_LOCKED" = "历史记录已锁定。";
-"VIEW_HISTORY" = "查看历史记录";
-"AUTH_FOR_HISTORY" = "需要认证才能查看阅读历史记录。";
+"REMOVE_ALL_MANGA_HISTORY" = "删除所有漫画历史";
+"HISTORY_LOCKED" = "历史已锁定。";
+"VIEW_HISTORY" = "查看历史";
+"AUTH_FOR_HISTORY" = "需要认证才能查看阅读历史。";
 
 // Search
 "SEARCH" = "搜索";
@@ -149,7 +149,7 @@
 "GENERAL" = "通用";
 "ICLOUD_SYNC" = "iCloud 同步";
 "INCOGNITO_MODE" = "隐身模式";
-"INCOGNITO_MODE_TEXT" = "启用时暂停阅读历史记录";
+"INCOGNITO_MODE_TEXT" = "启用时暂停记录阅读历史";
 "APPEARANCE" = "外观";
 "APPEARANCE_LIGHT" = "浅色";
 "APPEARANCE_DARK" = "深色";
@@ -212,23 +212,23 @@
 "EXPORT" = "导出";
 "RESTORE" = "恢复";
 "LOGS" = "日志";
-"LOGGING" = "记录";
+"LOGGING" = "日志记录";
 "LOG_SERVER" = "日志服务器";
 "EXPORT_LOGS" = "导出日志";
 "DISPLAY_LOGS" = "显示日志";
 "ADVANCED" = "高级";
-"RESET_TEXT" = "此操作不可逆。所有数据、设置和缓存将被清除和重置。";
+"RESET_TEXT" = "此操作无法撤销。所有数据，设置和缓存将被清除和重置。";
 "CLEAR_CHAPTER_CACHE" = "清除章节缓存";
-"CLEAR_CHAPTER_CACHE_TEXT" = "此操作不可逆。缓存的章节将被清除并重新下载。";
+"CLEAR_CHAPTER_CACHE_TEXT" = "此操作无法撤销。缓存的章节将被清除并重新下载。";
 "CLEAR_MANGA_CACHE" = "清除漫画缓存";
-"CLEAR_MANGA_CACHE_TEXT" = "此操作不可逆。不在你书库中的缓存漫画将被删除。";
+"CLEAR_MANGA_CACHE_TEXT" = "此操作无法撤销。不在你书库中的缓存漫画将被删除。";
 "CLEAR_NETWORK_CACHE" = "清除网络缓存";
-"CLEAR_NETWORK_CACHE_TEXT" = "此操作不可逆。缓存的网络请求和图像将被清除。";
+"CLEAR_NETWORK_CACHE_TEXT" = "此操作无法撤销。缓存的网络请求和图像将被清除。";
 "CLEAR_READ_HISTORY" = "清除阅读历史";
-"CLEAR_READ_HISTORY_TEXT" = "此操作不可逆。所有阅读历史记录将被删除。";
+"CLEAR_READ_HISTORY_TEXT" = "此操作无法撤销。所有阅读历史将被删除。";
 "RESET_SETTINGS" = "重置设置";
-"RESET_SETTINGS_TEXT" = "此操作不可逆。所有应用程序和来源设置将被重置。";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除该章节的历史记录。您确定要继续吗？";
+"RESET_SETTINGS_TEXT" = "此操作无法撤销。所有应用程序和来源设置将被重置。";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节的历史记录。您确定要继续吗？";
 "PAGE_X" = "第%i页";
 "AUTH_TO_ENABLE" = "需要认证才能启用。";
 "VOL_SPACE_X" = "%g 卷";
@@ -276,8 +276,8 @@
 "TYPE_COLON_%@" = "类型：%@";
 "STATUS_COLON_%@" = "状态：%@";
 "CLEAR_TRACKED_MANGA" = "清除追踪漫画";
-"CLEAR_TRACKED_MANGA_TEXT" = "此操作不可逆，追踪器漫画数据将被彻底清除。";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "确定要删除所有下载吗？";
+"CLEAR_TRACKED_MANGA_TEXT" = "此操作无法撤销。所有添加到漫画的追踪记录都将被删除。";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "你确定要删除所有下载吗？";
 "CACHE_SIZE_%@" = "缓存大小：%@";
 "SUPPORT_VIA_KOFI" = "通过 Ko-Fi 支持";
 "VOLUMES" = "卷数";
@@ -303,7 +303,7 @@
 "MIGRATE_SOURCES" = "迁移来源";
 "MIGRATE" = "迁移";
 "START_MATCHING" = "开始匹配";
-"SYNC_LOCAL_HISTORY" = "同步本地历史记录";
+"SYNC_LOCAL_HISTORY" = "同步本机历史";
 "MIGRATION" = "迁移";
 "OPTIONS" = "选项";
 "SELECTED" = "已选择";
@@ -322,7 +322,7 @@
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
 "SYNC_WITH_TRACKER" = "与追踪器同步";
-"SYNC_WITH_TRACKER_INFO" = "看起来追踪器中的最新章节 (%g) 高于您最近阅读的章节。您是否希望更新本地记录以匹配？";
+"SYNC_WITH_TRACKER_INFO" = "追踪器中的最新章节（%g）高于您已读的最新章节。是否同步本机历史？";
 "UPLOAD_DATE" = "上传日期";
 "TRACKING" = "跟踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
@@ -364,7 +364,7 @@
 "SKIPPING_CHAPTERS" = "跳过第%i章，可能因为来源缺失或被过滤";
 "SCANLATOR" = "翻译组";
 "NO_SCANLATOR" = "没有翻译组";
-"CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作不可逆。除书架外的所有阅读历史都被删除。";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作无法撤销。除书架外的所有阅读历史都被删除。";
 "CLEAR_EXCLUDING_LIBRARY" = "清除不在书架的阅读历史";
 "ENABLE_PERMISSION" = "启用权限";
 "PHOTOS_ACCESS_DENIED_TEXT" = "此前访问被拒绝。请授予Aidoku访问照片权限，以便将图片保存到您的照片。您可以在隐私设置中开启此权限。";
