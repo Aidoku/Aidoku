@@ -212,7 +212,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
                 title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
                 image: UIImage(systemName: "photo")
             ) { _ in
-                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                image.saveToAlbum(viewController: self)
             }
             let shareAction = UIAction(
                 title: NSLocalizedString("SHARE", comment: ""),
