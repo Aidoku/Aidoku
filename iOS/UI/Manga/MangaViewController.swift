@@ -1113,11 +1113,12 @@ extension MangaViewController {
         // refresh chapters
         var snapshot = NSDiffableDataSourceSnapshot<Section, Chapter>()
         snapshot.appendSections(current.sectionIdentifiers)
-        snapshot.appendItems(viewModel.chapterList.unique()) // // ensure unique elements for data source
+        let newChapters = viewModel.chapterList.unique() // ensure unique elements for data source
+        snapshot.appendItems(newChapters)
         dataSource.apply(
             snapshot,
             // skip animation if chapters are the same (needed when chapter is a class)
-            animatingDifferences: current.itemIdentifiers != viewModel.chapterList
+            animatingDifferences: current.itemIdentifiers != newChapters
         )
     }
 
@@ -1140,7 +1141,7 @@ extension MangaViewController {
         var snapshot = dataSource.snapshot()
         guard !snapshot.itemIdentifiers.isEmpty else { return }
         // swap chapters with chapters in data store (not doing this results in "invalid item identifier" crash)
-        let chapters = chapters.compactMap { chapter in
+        let chapters = chapters.unique().compactMap { chapter in
             snapshot.itemIdentifiers.first(where: { $0 == chapter })
         }
         if #available(iOS 15.0, *) {
