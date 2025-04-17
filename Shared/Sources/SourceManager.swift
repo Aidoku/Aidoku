@@ -21,7 +21,7 @@ class SourceManager {
         "multi", "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
     ]
 
-    private var sourceListsStrings: [String] {
+    var sourceListsStrings: [String] {
         sourceLists.map { $0.absoluteString }
     }
 

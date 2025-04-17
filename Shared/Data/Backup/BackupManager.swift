@@ -90,6 +90,7 @@ class BackupManager {
             let sources = CoreDataManager.shared.getSources(context: context).compactMap {
                 $0.id
             }
+            let sourceLists = SourceManager.shared.sourceListsStrings
 
             return Backup(
                 library: library,
@@ -99,6 +100,7 @@ class BackupManager {
                 trackItems: trackItems,
                 categories: categories,
                 sources: sources,
+                sourceLists: sourceLists,
                 date: Date(),
                 version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
             )
@@ -138,6 +140,15 @@ class BackupManager {
 
     // swiftlint:disable:next cyclomatic_complexity
     func restore(from backup: Backup) async throws {
+        Task {
+            SourceManager.shared.clearSourceLists()
+            guard let sourceLists = backup.sourceLists else { return }
+            for sourceList in sourceLists {
+                guard let sourceListURL = URL(string: sourceList) else { continue }
+                _ = await SourceManager.shared.addSourceList(url: sourceListURL)
+            }
+        }
+
         let mangaTask = Task {
             if let backupManga = backup.manga {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
