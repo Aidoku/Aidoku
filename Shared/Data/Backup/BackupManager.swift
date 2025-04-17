@@ -90,6 +90,7 @@ class BackupManager {
             let sources = CoreDataManager.shared.getSources(context: context).compactMap {
                 $0.id
             }
+            let sourceLists = SourceManager.shared.sourceListsStrings
 
             return Backup(
                 library: library,
@@ -99,6 +100,7 @@ class BackupManager {
                 trackItems: trackItems,
                 categories: categories,
                 sources: sources,
+                sourceLists: sourceLists,
                 date: Date(),
                 version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
             )
