@@ -364,3 +364,9 @@
 "AUTH_TO_OPEN" = "驗證以打開。";
 "CLEAR_EXCLUDING_LIBRARY" = "清除不在書櫃的閱讀歷史";
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作是不可逆的。所有閲讀歷史包含書櫃裡的將被刪除。";
+"ENABLE_PERMISSION" = "啟用權限";
+"PHOTOS_ACCESS_DENIED_TEXT" = "先前已拒絕存取。請允許 Aidoku 存取您的相片，以便將圖片儲存到您的相機膠卷。您可以在隱私設定中啟用存取權限。";
+"OPEN_WEBSITE" = "打開網站";
+"READER_ORIENTATION" = "方向";
+"FOLLOW_DEVICE" = "跟隨裝置";
+"MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
