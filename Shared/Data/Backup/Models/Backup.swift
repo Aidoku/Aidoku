@@ -15,6 +15,7 @@ struct Backup: Codable {
     var trackItems: [BackupTrackItem]?
     var categories: [String]?
     var sources: [String]?
+    var sourceLists: [String]?
     var date: Date
     var name: String?
     var version: String?
