@@ -478,6 +478,15 @@ class LibraryViewModel {
         await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
     }
 
+    func addToCurrentCategory(manga: MangaInfo) async {
+        guard let currentCategory = currentCategory else { return }
+        await CoreDataManager.shared.addCategoriesToManga(
+            sourceId: manga.sourceId,
+            mangaId: manga.mangaId,
+            categories: [currentCategory]
+        )
+    }
+
     func removeFromCurrentCategory(manga: MangaInfo) async {
         guard let currentCategory = currentCategory else { return }
         pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }

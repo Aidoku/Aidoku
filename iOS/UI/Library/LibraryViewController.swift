@@ -562,10 +562,7 @@ class LibraryViewController: MangaCollectionViewController {
                 ) { _ in
                     Task {
                         let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
-                        for manga in identifiers {
-                            await self.viewModel.removeFromCurrentCategory(manga: manga)
-                        }
-                        self.updateDataSource()
+                        await self.removeFromCategory(mangaInfo: identifiers).value
                         self.updateNavbarItems()
                         self.updateToolbar()
                     }
@@ -1117,13 +1114,7 @@ extension LibraryViewController {
                     image: UIImage(systemName: "folder.badge.minus"),
                     attributes: .destructive
                 ) { _ in
-                    Task {
-                        for manga in mangaInfo {
-                            await self.viewModel.removeFromCurrentCategory(manga: manga)
-                        }
-
-                        self.updateDataSource()
-                    }
+                    self.removeFromCategory(mangaInfo: mangaInfo)
                 })
             }
 
@@ -1164,6 +1155,36 @@ extension LibraryViewController: UISearchResultsUpdating {
         lastSearch = searchController.searchBar.text
         Task {
             await viewModel.search(query: searchController.searchBar.text ?? "")
+            updateDataSource()
+        }
+    }
+}
+
+// MARK: - Undoable Methods
+extension LibraryViewController {
+    @discardableResult
+    func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never> {
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoManager.registerUndo(withTarget: target) { redoTarget in
+                redoTarget.removeFromCategory(mangaInfo: mangaInfo)
+            }
+
+            Task {
+                for manga in mangaInfo {
+                    await target.viewModel.addToCurrentCategory(manga: manga)
+                }
+
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("updateMangaCategories"),
+                    object: nil)
+            }
+        }
+
+        return Task {
+            for manga in mangaInfo {
+                await viewModel.removeFromCurrentCategory(manga: manga)
+            }
+
             updateDataSource()
         }
     }
