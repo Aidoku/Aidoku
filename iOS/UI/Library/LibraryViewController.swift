@@ -53,6 +53,10 @@ class LibraryViewController: MangaCollectionViewController {
     private var ignoreOptionChange = false
     private var lastSearch: String?
 
+    private let libraryUndoManager = UndoManager()
+    override var undoManager: UndoManager { libraryUndoManager }
+    override var canBecomeFirstResponder: Bool { true }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
@@ -68,6 +72,8 @@ class LibraryViewController: MangaCollectionViewController {
         if viewModel.shouldUpdateLibrary() {
             updateLibraryRefresh()
         }
+
+        becomeFirstResponder()
     }
 
     override func viewDidLoad() {
