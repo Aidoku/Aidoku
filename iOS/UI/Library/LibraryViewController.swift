@@ -1164,6 +1164,16 @@ extension LibraryViewController: UISearchResultsUpdating {
 extension LibraryViewController {
     @discardableResult
     func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never> {
+        let mangaCount = mangaInfo.count
+        let actionName =
+            mangaCount > 1
+            ? String(
+                format: NSLocalizedString("REMOVING_%i_MANGA_FROM_CATEGORY_%@", comment: ""),
+                mangaCount, viewModel.currentCategory!)
+            : String(
+                format: NSLocalizedString("REMOVING_(ONE)_MANGA_FROM_CATEGORY_%@", comment: ""),
+                viewModel.currentCategory!)
+        undoManager.setActionName(actionName)
         undoManager.registerUndo(withTarget: self) { target in
             target.undoManager.registerUndo(withTarget: target) { redoTarget in
                 redoTarget.removeFromCategory(mangaInfo: mangaInfo)
