@@ -562,7 +562,7 @@ class LibraryViewController: MangaCollectionViewController {
                 ) { _ in
                     Task {
                         let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
-                        await self.removeFromCategory(mangaInfo: identifiers).value
+                        await self.removeFromCategory(mangaInfo: identifiers)?.value
                         self.updateNavbarItems()
                         self.updateToolbar()
                     }
@@ -1162,16 +1162,17 @@ extension LibraryViewController: UISearchResultsUpdating {
 // MARK: - Undoable Methods
 extension LibraryViewController {
     @discardableResult
-    func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never> {
+    func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
+        guard let currentCategory = viewModel.currentCategory else { return nil }
         let mangaCount = mangaInfo.count
         let actionName =
             mangaCount > 1
             ? String(
                 format: NSLocalizedString("REMOVING_%i_MANGA_FROM_CATEGORY_%@", comment: ""),
-                mangaCount, viewModel.currentCategory!)
+                mangaCount, currentCategory)
             : String(
                 format: NSLocalizedString("REMOVING_(ONE)_MANGA_FROM_CATEGORY_%@", comment: ""),
-                viewModel.currentCategory!)
+                currentCategory)
         undoManager.setActionName(actionName)
         undoManager.registerUndo(withTarget: self) { target in
             target.undoManager.registerUndo(withTarget: target) { redoTarget in
