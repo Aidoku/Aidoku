@@ -1174,6 +1174,7 @@ extension LibraryViewController {
                 format: NSLocalizedString("REMOVING_(ONE)_MANGA_FROM_CATEGORY_%@", comment: ""),
                 currentCategory)
         undoManager.setActionName(actionName)
+
         undoManager.registerUndo(withTarget: self) { target in
             target.undoManager.registerUndo(withTarget: target) { redoTarget in
                 redoTarget.removeFromCategory(mangaInfo: mangaInfo)
