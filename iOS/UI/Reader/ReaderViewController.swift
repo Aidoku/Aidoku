@@ -271,8 +271,8 @@ class ReaderViewController: BaseObservingViewController {
         let webViewActionImage = UIImage(systemName: "safari")
         let webViewAction =
             if let url = chapter.url, let chapterURL = URL(string: url) {
-                UIAction(title: webViewActionTitle, image: webViewActionImage) { _ in
-                    self.present(SFSafariViewController(url: chapterURL), animated: true)
+                UIAction(title: webViewActionTitle, image: webViewActionImage) { [weak self] _ in
+                    self?.present(SFSafariViewController(url: chapterURL), animated: true)
                 }
             } else {
                 UIAction(
