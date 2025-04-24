@@ -87,13 +87,13 @@ class SettingSelectViewController: UITableViewController {
         observers.append(
             NotificationCenter.default.addObserver(
                 forName: NSNotification.Name("Reader.orientation"), object: nil, queue: nil
-            ) { _ in
+            ) { [weak self] _ in
                 guard #available(iOS 16.0, *) else {
                     UIViewController.attemptRotationToDeviceOrientation()
                     return
                 }
 
-                self.setNeedsUpdateOfSupportedInterfaceOrientations()
+                self?.setNeedsUpdateOfSupportedInterfaceOrientations()
             })
     }
 
