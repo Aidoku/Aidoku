@@ -17,7 +17,10 @@ class MangaManager {
 // MARK: - Library Managing
 extension MangaManager {
 
-    func addToLibrary(manga: Manga, chapters: [Chapter] = [], fetchMangaDetails: Bool = false) async {
+    func addToLibrary(
+        manga: Manga, chapters: [Chapter] = [], fetchMangaDetails: Bool = false,
+        categories: [String]? = nil
+    ) async {
         var manga = manga
         var chapters = chapters
         // update manga or chapters
@@ -33,8 +36,22 @@ extension MangaManager {
         }
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
-            // add to default category
-            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+            if let categories = categories {
+                for category in categories {
+                    let hasCategory = CoreDataManager.shared.hasCategory(
+                        title: category, context: context)
+                    if !hasCategory {
+                        CoreDataManager.shared.createCategory(title: category, context: context)
+                    }
+                }
+                CoreDataManager.shared.addCategoriesToManga(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
+                    categories: categories,
+                    context: context
+                )
+            } else if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+                // add to default category
                 let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
                 if hasCategory {
                     CoreDataManager.shared.addCategoriesToManga(
