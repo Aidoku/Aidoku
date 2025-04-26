@@ -55,8 +55,8 @@
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
 "COVER" = "Cover";
-"REMOVING_(ONE)_MANGA_FROM_CATEGORY_%@" = "Removing Manga from Category %@";
-"REMOVING_%i_MANGA_FROM_CATEGORY_%@" = "Removing %i Manga from Category %@";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
 
 // Categories
 "ALL" = "All";

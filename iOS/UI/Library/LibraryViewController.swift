@@ -1168,10 +1168,10 @@ extension LibraryViewController {
         let actionName =
             mangaCount > 1
             ? String(
-                format: NSLocalizedString("REMOVING_%i_MANGA_FROM_CATEGORY_%@", comment: ""),
+                format: NSLocalizedString("REMOVING_%i_ITEMS_FROM_CATEGORY_%@", comment: ""),
                 mangaCount, currentCategory)
             : String(
-                format: NSLocalizedString("REMOVING_(ONE)_MANGA_FROM_CATEGORY_%@", comment: ""),
+                format: NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@", comment: ""),
                 currentCategory)
         undoManager.setActionName(actionName)
 
