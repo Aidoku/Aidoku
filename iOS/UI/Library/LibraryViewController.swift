@@ -1156,6 +1156,17 @@ extension LibraryViewController {
             ) : NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_LIBRARY", comment: "")
         undoManager.setActionName(actionName)
 
+        let removedManga = mangaInfo.map {
+            let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId)?
+                .toManga()
+
+            let categories = CoreDataManager.shared.getCategories(
+                sourceId: $0.sourceId, mangaId: $0.mangaId
+            ).compactMap { $0.title }
+
+            return (manga, categories)
+        }
+
         return Task {
             for manga in mangaInfo {
                 await viewModel.removeFromLibrary(manga: manga)
