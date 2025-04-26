@@ -69,6 +69,9 @@ extension MangaManager {
             }
         }
         NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
+
+        let isRestoring = categories != nil
+        if isRestoring { return }
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 

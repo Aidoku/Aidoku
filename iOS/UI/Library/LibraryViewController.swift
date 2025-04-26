@@ -1177,6 +1177,9 @@ extension LibraryViewController {
                     guard let manga = manga else { continue }
                     await MangaManager.shared.addToLibrary(manga: manga, categories: categories)
                 }
+
+                NotificationCenter.default.post(
+                    name: Notification.Name("updateLibrary"), object: nil)
             }
         }
 
