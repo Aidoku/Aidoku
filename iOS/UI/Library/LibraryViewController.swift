@@ -1148,6 +1148,14 @@ extension LibraryViewController: UISearchResultsUpdating {
 extension LibraryViewController {
     @discardableResult
     func removeFromLibrary(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
+        let mangaCount = mangaInfo.count
+        let actionName =
+            mangaCount > 1
+            ? String(
+                format: NSLocalizedString("REMOVING_%i_ITEMS_FROM_LIBRARY", comment: ""), mangaCount
+            ) : NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_LIBRARY", comment: "")
+        undoManager.setActionName(actionName)
+
         return Task {
             for manga in mangaInfo {
                 await viewModel.removeFromLibrary(manga: manga)
