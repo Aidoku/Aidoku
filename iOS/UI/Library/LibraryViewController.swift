@@ -572,16 +572,7 @@ class LibraryViewController: MangaCollectionViewController {
         ) {
             Task {
                 let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
-                for manga in identifiers {
-                    await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
-                }
-                self.viewModel.pinnedManga = self.viewModel.pinnedManga.filter { item in
-                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
-                }
-                self.viewModel.manga = self.viewModel.pinnedManga.filter { item in
-                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
-                }
-                self.updateDataSource()
+                await self.removeFromLibrary(mangaInfo: identifiers)?.value
                 self.updateNavbarItems()
                 self.updateToolbar()
             }
@@ -1122,13 +1113,7 @@ extension LibraryViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                Task {
-                    for manga in mangaInfo {
-                        await self.viewModel.removeFromLibrary(manga: manga)
-                    }
-
-                    self.updateDataSource()
-                }
+                self.removeFromLibrary(mangaInfo: mangaInfo)
             })
 
             actions.append(UIMenu(options: .displayInline, children: bottomMenuChildren))
@@ -1161,6 +1146,17 @@ extension LibraryViewController: UISearchResultsUpdating {
 
 // MARK: - Undoable Methods
 extension LibraryViewController {
+    @discardableResult
+    func removeFromLibrary(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
+        return Task {
+            for manga in mangaInfo {
+                await viewModel.removeFromLibrary(manga: manga)
+            }
+
+            updateDataSource()
+        }
+    }
+
     @discardableResult
     func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
         guard let currentCategory = viewModel.currentCategory else { return nil }
