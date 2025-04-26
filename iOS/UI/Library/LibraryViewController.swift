@@ -1167,6 +1167,19 @@ extension LibraryViewController {
             return (manga, categories)
         }
 
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoManager.registerUndo(withTarget: target) { redoTarget in
+                redoTarget.removeFromLibrary(mangaInfo: mangaInfo)
+            }
+
+            Task {
+                for (manga, categories) in removedManga {
+                    guard let manga = manga else { continue }
+                    await MangaManager.shared.addToLibrary(manga: manga, categories: categories)
+                }
+            }
+        }
+
         return Task {
             for manga in mangaInfo {
                 await viewModel.removeFromLibrary(manga: manga)
