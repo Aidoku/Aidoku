@@ -963,6 +963,7 @@ extension LibraryViewController {
         return manga[path.row]
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
