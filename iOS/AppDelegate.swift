@@ -174,6 +174,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
 
+        application.applicationSupportsShakeToEdit = true
+
         return true
     }
 

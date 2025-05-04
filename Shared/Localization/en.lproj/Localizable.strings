@@ -1,9 +1,9 @@
-/* 
+/*
   Localizable.strings
   Aidoku
 
   Created by Skitty on 4/23/22.
-  
+
 */
 
 // General
@@ -55,6 +55,8 @@
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
 "COVER" = "Cover";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
 
 // Categories
 "ALL" = "All";
