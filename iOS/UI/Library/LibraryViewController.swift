@@ -53,6 +53,10 @@ class LibraryViewController: MangaCollectionViewController {
     private var ignoreOptionChange = false
     private var lastSearch: String?
 
+    private let libraryUndoManager = UndoManager()
+    override var undoManager: UndoManager { libraryUndoManager }
+    override var canBecomeFirstResponder: Bool { true }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
@@ -68,6 +72,8 @@ class LibraryViewController: MangaCollectionViewController {
         if viewModel.shouldUpdateLibrary() {
             updateLibraryRefresh()
         }
+
+        becomeFirstResponder()
     }
 
     override func viewDidLoad() {
@@ -556,10 +562,7 @@ class LibraryViewController: MangaCollectionViewController {
                 ) { _ in
                     Task {
                         let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
-                        for manga in identifiers {
-                            await self.viewModel.removeFromCurrentCategory(manga: manga)
-                        }
-                        self.updateDataSource()
+                        await self.removeFromCategory(mangaInfo: identifiers)?.value
                         self.updateNavbarItems()
                         self.updateToolbar()
                     }
@@ -960,7 +963,6 @@ extension LibraryViewController {
         return manga[path.row]
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func collectionView(
         _ collectionView: UICollectionView,
         contextMenuConfigurationForItemsAt indexPaths: [IndexPath],
@@ -1111,13 +1113,7 @@ extension LibraryViewController {
                     image: UIImage(systemName: "folder.badge.minus"),
                     attributes: .destructive
                 ) { _ in
-                    Task {
-                        for manga in mangaInfo {
-                            await self.viewModel.removeFromCurrentCategory(manga: manga)
-                        }
-
-                        self.updateDataSource()
-                    }
+                    self.removeFromCategory(mangaInfo: mangaInfo)
                 })
             }
 
@@ -1158,6 +1154,48 @@ extension LibraryViewController: UISearchResultsUpdating {
         lastSearch = searchController.searchBar.text
         Task {
             await viewModel.search(query: searchController.searchBar.text ?? "")
+            updateDataSource()
+        }
+    }
+}
+
+// MARK: - Undoable Methods
+extension LibraryViewController {
+    @discardableResult
+    func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
+        guard let currentCategory = viewModel.currentCategory else { return nil }
+        let mangaCount = mangaInfo.count
+        let actionName =
+            mangaCount > 1
+            ? String(
+                format: NSLocalizedString("REMOVING_%i_ITEMS_FROM_CATEGORY_%@", comment: ""),
+                mangaCount, currentCategory)
+            : String(
+                format: NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@", comment: ""),
+                currentCategory)
+        undoManager.setActionName(actionName)
+
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoManager.registerUndo(withTarget: target) { redoTarget in
+                redoTarget.removeFromCategory(mangaInfo: mangaInfo)
+            }
+
+            Task {
+                for manga in mangaInfo {
+                    await target.viewModel.addToCurrentCategory(manga: manga)
+                }
+
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("updateMangaCategories"),
+                    object: nil)
+            }
+        }
+
+        return Task {
+            for manga in mangaInfo {
+                await viewModel.removeFromCurrentCategory(manga: manga)
+            }
+
             updateDataSource()
         }
     }
