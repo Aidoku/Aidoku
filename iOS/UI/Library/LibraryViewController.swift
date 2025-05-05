@@ -1184,7 +1184,8 @@ extension LibraryViewController {
                 for (manga, chapters, trackItems, categories) in removedManga {
                     guard let manga = manga else { continue }
                     await MangaManager.shared.addToLibrary(
-                        manga: manga, chapters: chapters, categories: categories)
+                        manga: manga, chapters: chapters, trackItems: trackItems,
+                        categories: categories)
                 }
 
                 NotificationCenter.default.post(
