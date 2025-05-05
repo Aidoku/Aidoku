@@ -1164,11 +1164,15 @@ extension LibraryViewController {
                 sourceId: $0.sourceId, mangaId: $0.mangaId
             ).map { $0.toChapter() }
 
+            let trackItems = CoreDataManager.shared.getTracks(
+                sourceId: $0.sourceId, mangaId: $0.mangaId
+            ).map { $0.toItem() }
+
             let categories = CoreDataManager.shared.getCategories(
                 sourceId: $0.sourceId, mangaId: $0.mangaId
             ).compactMap { $0.title }
 
-            return (manga, chapters, categories)
+            return (manga, chapters, trackItems, categories)
         }
 
         undoManager.registerUndo(withTarget: self) { target in
@@ -1177,7 +1181,7 @@ extension LibraryViewController {
             }
 
             Task {
-                for (manga, chapters, categories) in removedManga {
+                for (manga, chapters, trackItems, categories) in removedManga {
                     guard let manga = manga else { continue }
                     await MangaManager.shared.addToLibrary(
                         manga: manga, chapters: chapters, categories: categories)
