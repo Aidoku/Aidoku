@@ -86,6 +86,41 @@ extension MangaManager {
         }
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
+
+    func restoreToLibrary(
+        manga: Manga, chapters: [Chapter], trackItems: [TrackItem], categories: [String]
+    ) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
+
+            for item in trackItems {
+                CoreDataManager.shared.createTrack(
+                    id: item.id, trackerId: item.trackerId, sourceId: item.sourceId,
+                    mangaId: item.mangaId, title: item.title, context: context)
+            }
+
+            for category in categories {
+                let hasCategory = CoreDataManager.shared.hasCategory(
+                    title: category, context: context)
+                if !hasCategory {
+                    CoreDataManager.shared.createCategory(title: category, context: context)
+                }
+            }
+            CoreDataManager.shared.addCategoriesToManga(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                categories: categories,
+                context: context
+            )
+
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error(
+                    "MangaManager.restoreToLibrary: \(error.localizedDescription)")
+            }
+        }
+    }
 }
 
 // MARK: - Category Managing
