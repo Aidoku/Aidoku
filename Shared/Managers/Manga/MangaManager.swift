@@ -35,8 +35,7 @@ extension MangaManager {
             CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
             // add to default category
             if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
-                let hasCategory = CoreDataManager.shared.hasCategory(
-                    title: defaultCategory, context: context)
+                let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
                 if hasCategory {
                     CoreDataManager.shared.addCategoriesToManga(
                         sourceId: manga.sourceId,
