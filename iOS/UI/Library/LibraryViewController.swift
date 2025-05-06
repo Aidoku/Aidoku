@@ -1183,7 +1183,7 @@ extension LibraryViewController {
             Task {
                 for (manga, chapters, trackItems, categories) in removedManga {
                     guard let manga = manga else { continue }
-                    await MangaManager.shared.addToLibrary(
+                    await MangaManager.shared.restoreToLibrary(
                         manga: manga, chapters: chapters, trackItems: trackItems,
                         categories: categories)
                 }

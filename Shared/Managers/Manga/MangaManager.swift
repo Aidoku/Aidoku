@@ -17,10 +17,7 @@ class MangaManager {
 // MARK: - Library Managing
 extension MangaManager {
 
-    func addToLibrary(
-        manga: Manga, chapters: [Chapter] = [], fetchMangaDetails: Bool = false,
-        trackItems: [TrackItem]? = nil, categories: [String]? = nil
-    ) async {
+    func addToLibrary(manga: Manga, chapters: [Chapter] = [], fetchMangaDetails: Bool = false) async {
         var manga = manga
         var chapters = chapters
         // update manga or chapters
@@ -36,30 +33,10 @@ extension MangaManager {
         }
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
-            if let trackItems = trackItems {
-                for item in trackItems {
-                    CoreDataManager.shared.createTrack(
-                        id: item.id, trackerId: item.trackerId, sourceId: item.sourceId,
-                        mangaId: item.mangaId, title: item.title, context: context)
-                }
-            }
-            if let categories = categories {
-                for category in categories {
-                    let hasCategory = CoreDataManager.shared.hasCategory(
-                        title: category, context: context)
-                    if !hasCategory {
-                        CoreDataManager.shared.createCategory(title: category, context: context)
-                    }
-                }
-                CoreDataManager.shared.addCategoriesToManga(
-                    sourceId: manga.sourceId,
-                    mangaId: manga.id,
-                    categories: categories,
-                    context: context
-                )
-            } else if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
-                // add to default category
-                let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
+            // add to default category
+            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+                let hasCategory = CoreDataManager.shared.hasCategory(
+                    title: defaultCategory, context: context)
                 if hasCategory {
                     CoreDataManager.shared.addCategoriesToManga(
                         sourceId: manga.sourceId,
@@ -76,9 +53,6 @@ extension MangaManager {
             }
         }
         NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
-
-        let isRestoring = categories != nil
-        if isRestoring { return }
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 
@@ -112,6 +86,41 @@ extension MangaManager {
             }
         }
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+    }
+
+    func restoreToLibrary(
+        manga: Manga, chapters: [Chapter], trackItems: [TrackItem], categories: [String]
+    ) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
+
+            for item in trackItems {
+                CoreDataManager.shared.createTrack(
+                    id: item.id, trackerId: item.trackerId, sourceId: item.sourceId,
+                    mangaId: item.mangaId, title: item.title, context: context)
+            }
+
+            for category in categories {
+                let hasCategory = CoreDataManager.shared.hasCategory(
+                    title: category, context: context)
+                if !hasCategory {
+                    CoreDataManager.shared.createCategory(title: category, context: context)
+                }
+            }
+            CoreDataManager.shared.addCategoriesToManga(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                categories: categories,
+                context: context
+            )
+
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error(
+                    "MangaManager.restoreToLibrary: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
