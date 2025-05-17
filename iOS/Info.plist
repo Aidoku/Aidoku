@@ -46,8 +46,8 @@
 			</array>
 		</dict>
 	</array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
+	<key>ICLOUD_CONTAINER_ID</key>
+	<string>$(ICLOUD_CONTAINER_ID)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

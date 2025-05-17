@@ -1,0 +1,14 @@
+//
+//  Aidoku-MACOS.xcconfig
+//  Aidoku
+//
+//  Created by Nikolai Schumacher on 17.05.25.
+//
+
+#include "../Shared/Aidoku.xcconfig"
+
+
+APP_ID_PREFIX               = xyz.skitty
+APP_ID_SUFFIX               = Aidoku
+
+PRODUCT_BUNDLE_IDENTIFIER   = $(APP_ID_PREFIX).$(APP_ID_SUFFIX)
