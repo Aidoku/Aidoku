@@ -31,6 +31,7 @@
 		91D7BEFA2DD7E49300898539 /* Aidoku-MACOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEF92DD7E48400898539 /* Aidoku-MACOS.xcconfig */; };
 		91D7BEFC2DD7E4C500898539 /* Aidoku.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */; };
 		91D7BEFD2DD7E4C500898539 /* Aidoku.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */; };
+		91D7BF002DD8881300898539 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFF2DD8881300898539 /* Info.plist */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -363,7 +364,7 @@
 		91D7BEF72DD7E46800898539 /* Aidoku-IOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Aidoku-IOS.xcconfig"; sourceTree = "<group>"; };
 		91D7BEF92DD7E48400898539 /* Aidoku-MACOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Aidoku-MACOS.xcconfig"; sourceTree = "<group>"; };
 		91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Aidoku.xcconfig; sourceTree = "<group>"; };
-		91D7BEFE2DD7ED7F00898539 /* Aidoku--macOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Aidoku--macOS--Info.plist"; sourceTree = "<group>"; };
+		91D7BEFF2DD8881300898539 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -818,7 +819,6 @@
 		FB1B4825277CE18D0056D02C = {
 			isa = PBXGroup;
 			children = (
-				91D7BEFE2DD7ED7F00898539 /* Aidoku--macOS--Info.plist */,
 				FB1B482A277CE18D0056D02C /* Shared */,
 				FB1B4858277CE55B0056D02C /* iOS */,
 				FB1B483C277CE1920056D02C /* macOS */,
@@ -865,6 +865,7 @@
 				FB1B482D277CE18D0056D02C /* AidokuApp.swift */,
 				FB1B48B1277CF78E0056D02C /* Views */,
 				FB1B483D277CE1920056D02C /* macOS.entitlements */,
+				91D7BEFF2DD8881300898539 /* Info.plist */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -1573,6 +1574,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91D7BF002DD8881300898539 /* Info.plist in Resources */,
 				91D7BEFC2DD7E4C500898539 /* Aidoku.xcconfig in Resources */,
 				FB1B4847277CE1920056D02C /* Assets.xcassets in Resources */,
 				91D7BEFA2DD7E49300898539 /* Aidoku-MACOS.xcconfig in Resources */,
