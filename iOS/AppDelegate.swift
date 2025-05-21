@@ -10,12 +10,12 @@ import Nuke
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    #if CANONICAL_BUILD          // true only for App-Store scheme
-        static let canonicalID = "app.aidoku.Aidoku"
-    #else
-        static let canonicalID = Bundle.main.bundleIdentifier ?? ""
-    #endif
-    
+#if CANONICAL_BUILD          // true only for App-Store scheme
+    static let canonicalID = "app.aidoku.Aidoku"
+#else
+    static let canonicalID = Bundle.main.bundleIdentifier ?? ""
+#endif
+
     static let isSideloaded = Bundle.main.bundleIdentifier != canonicalID
     private var networkObserverId: UUID?
 
