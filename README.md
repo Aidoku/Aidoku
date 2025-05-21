@@ -18,11 +18,19 @@ To join the TestFlight, you will need to join the [Aidoku Discord](https://disco
 
 ### AltStore
 
-We have an AltStore repo that contains the latest releases ipa. You can copy the [direct source URL](https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json) and paste it into AltStore. Note that AltStore PAL is not supported.
+We have an AltStore repo that contains the latest releases ipa. You can copy the [direct source URL](https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json) and paste it into AltStore. **Note that AltStore PAL is not supported.**
+
+<a href="https://intradeus.github.io/http-protocol-redirector?r=altstore://source?url=https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json"><img src="./images/add_to_altstore.png" alt="Add to AltStore" height="60"></a>
+&nbsp;
+<a href="https://intradeus.github.io/http-protocol-redirector?r=sidestore://source?url=https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json"><img src="./images/add_to_sidestore.png" alt="Add to SideStore" height="60"></a>
+&nbsp;
+<a href="https://intradeus.github.io/http-protocol-redirector?r=feather://source/https://raw.githubusercontent.com/Aidoku/Aidoku/altstore/apps.json"><img src="./images/add_to_feather.png" alt="Add to Feather" height="60"></a>
 
 ### Manual Installation
 
 The latest ipa file will always be available from the [releases page](https://github.com/Aidoku/Aidoku/releases).
+
+<a href="https://github.com/Aidoku/Aidoku/releases/latest"><img src="./images/download_from_github.png" alt="Download from GitHub" height="60"></a>
 
 ## Contributing
 Aidoku is still in a beta phase, and there are a lot of planned features and fixes. If you're interested in contributing, I'd first recommend checking with me on [Discord](https://discord.gg/kh2PYT8V8d) in the app development channel.
