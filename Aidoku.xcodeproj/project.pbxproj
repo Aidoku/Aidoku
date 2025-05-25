@@ -2132,7 +2132,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Aidoku;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Aidoku needs FaceID permissions for user-defined settings";
@@ -2173,7 +2173,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Aidoku;
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Aidoku needs FaceID permissions for user-defined settings";
