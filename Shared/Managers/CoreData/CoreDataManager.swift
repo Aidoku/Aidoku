@@ -9,6 +9,9 @@ import CoreData
 
 final class CoreDataManager {
 
+    static let containerID = Bundle.main
+        .infoDictionary?["ICLOUD_CONTAINER_ID"] as? String ?? "iCloud.\(Bundle.main.bundleIdentifier!)"
+
     static let shared = CoreDataManager()
 
     private var observers: [NSObjectProtocol] = []
@@ -32,7 +35,7 @@ final class CoreDataManager {
         ) { [weak self] _ in
             guard let cloudDescription = self?.container.persistentStoreDescriptions.first else { return }
             if UserDefaults.standard.bool(forKey: "General.icloudSync") {
-                cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.app.aidoku.Aidoku")
+                cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: CoreDataManager.containerID)
             } else {
                 cloudDescription.cloudKitContainerOptions = nil
             }
@@ -59,7 +62,7 @@ final class CoreDataManager {
 
         if UserDefaults.standard.bool(forKey: "General.icloudSync") {
             cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-                containerIdentifier: "iCloud.app.aidoku.Aidoku")
+                containerIdentifier: CoreDataManager.containerID)
         } else {
             cloudDescription.cloudKitContainerOptions = nil
         }
