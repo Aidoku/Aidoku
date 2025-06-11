@@ -59,7 +59,7 @@ actor DownloadQueue {
     func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
         var downloads: [Download] = []
         for chapter in chapters {
-            if await cache.isChapterDownloaded(chapter: chapter) {
+            if await cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id) {
                 continue
             }
             // create tmp directory so we know it's queued

@@ -84,7 +84,7 @@ struct MangaUpdatesView: View {
                     let updates = mangas[mangaIndex].1
                     if let manga = updates.first?.manga {
                         NavigationLink(
-                            destination: MangaView(manga: manga)
+                            destination: MangaViewOld(manga: manga)
                                 .onAppear {
                                     setOpened(manga: manga)
                                 }

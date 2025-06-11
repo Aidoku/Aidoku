@@ -7,7 +7,10 @@
 
 import Foundation
 import CryptoKit
+
+#if canImport(UIKit)
 import UIKit
+#endif
 
 class MyAnimeListApi {
 
@@ -43,10 +46,12 @@ class MyAnimeListApi {
                     oauth.tokens!.askedForRefresh = true
                     oauth.saveTokens()
 
-                    await (UIApplication.shared.delegate as? AppDelegate)?.sendAlert(
+#if !os(macOS)
+                    await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
                         title: NSLocalizedString("MAL_LOGIN_NEEDED", comment: ""),
                         message: NSLocalizedString("MAL_LOGIN_NEEDED_TEXT", comment: "")
                     )
+#endif
                 }
                 return data
             }

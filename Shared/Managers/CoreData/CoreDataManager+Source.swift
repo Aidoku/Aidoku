@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import AidokuRunner
 
 extension CoreDataManager {
 
@@ -37,9 +38,17 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
-    /// Creates a new track item.
+    /// Creates a new source item.
     @discardableResult
     func createSource(source: Source, context: NSManagedObjectContext? = nil) -> SourceObject {
+        let context = context ?? self.context
+        let object = SourceObject(context: context)
+        object.load(from: source)
+        return object
+    }
+
+    @discardableResult
+    func createSource(source: AidokuRunner.Source, context: NSManagedObjectContext? = nil) -> SourceObject {
         let context = context ?? self.context
         let object = SourceObject(context: context)
         object.load(from: source)
@@ -75,6 +84,29 @@ extension CoreDataManager {
             } else {
                 return nil
             }
+        }
+    }
+
+    func setCustomSourceConfig(sourceId: String, config: CustomSourceConfig?) async {
+        await container.performBackgroundTask { context in
+            guard let source = self.getSource(id: sourceId, context: context)
+            else { return }
+            source.customSource = config.flatMap { $0.encode() as NSObject }
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("CoreDataManager.setCustomSourceConfig: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func getCustomSourceConfig(sourceId: String) async -> CustomSourceConfig? {
+        await container.performBackgroundTask { context in
+            guard
+                let source = self.getSource(id: sourceId, context: context),
+                let data = source.customSource as? Data
+            else { return nil }
+            return try? CustomSourceConfig(from: data)
         }
     }
 }

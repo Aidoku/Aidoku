@@ -8,7 +8,6 @@
 import Foundation
 
 extension String {
-
     func take(first: Int) -> String {
         first < count ? String(self[self.startIndex..<self.index(self.startIndex, offsetBy: first)]) : self
     }
@@ -43,5 +42,15 @@ extension String {
             if rem.isEmpty { return true }
         }
         return false
+    }
+}
+
+extension String {
+    func removingExtension() -> String {
+        if let idx = lastIndex(of: ".") {
+            String(self[..<idx])
+        } else {
+            self
+        }
     }
 }

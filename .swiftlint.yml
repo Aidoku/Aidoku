@@ -2,6 +2,9 @@ disabled_rules:
   - todo
   - identifier_name
   - opening_brace
+  - switch_case_alignment
+  - nesting
+  - nslocalizedstring_key
 opt_in_rules:
   - closure_end_indentation
   - closure_spacing
@@ -56,4 +59,4 @@ line_length:
     ignores_comments: true
     ignores_urls: true
 file_length: 1500
-cyclomatic_complexity: 12
+cyclomatic_complexity: 30

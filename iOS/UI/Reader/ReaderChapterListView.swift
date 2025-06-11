@@ -6,26 +6,14 @@
 //
 
 import SwiftUI
-
-// UIKit close button for SwiftUI
-private struct CloseButton: UIViewRepresentable {
-    private let action: () -> Void
-
-    init(action: @escaping () -> Void) { self.action = action }
-
-    func makeUIView(context: Context) -> UIButton {
-        UIButton(type: .close, primaryAction: UIAction { _ in action() })
-    }
-
-    func updateUIView(_ uiView: UIButton, context: Context) {}
-}
+import AidokuRunner
 
 struct ReaderChapterListView: View {
     @Environment(\.presentationMode) var presentationMode
 
-    var chapterList: [Chapter]
-    @State var chapter: Chapter
-    var chapterSet: ((Chapter) -> Void)?
+    var chapterList: [AidokuRunner.Chapter]
+    @State var chapter: AidokuRunner.Chapter
+    var chapterSet: ((AidokuRunner.Chapter) -> Void)?
 
     var body: some View {
         NavigationView {
@@ -73,11 +61,11 @@ struct ReaderChapterListView: View {
         .navigationViewStyle(StackNavigationViewStyle())
     }
 
-    func displayString(for chapter: Chapter) -> String {
+    func displayString(for chapter: AidokuRunner.Chapter) -> String {
         let str: String
 
-        if let chapterNum = chapter.chapterNum {
-            if let volumeNum = chapter.volumeNum {
+        if let chapterNum = chapter.chapterNumber {
+            if let volumeNum = chapter.volumeNumber {
                 str = String(
                     format: NSLocalizedString("VOL_X", comment: "") + " " + NSLocalizedString("CH_X", comment: ""),
                     volumeNum,
@@ -86,7 +74,7 @@ struct ReaderChapterListView: View {
             } else {
                 str = String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
             }
-        } else if let volumeNum = chapter.volumeNum {
+        } else if let volumeNum = chapter.volumeNumber {
             str = String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
         } else {
             str = ""

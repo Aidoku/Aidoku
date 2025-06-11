@@ -28,7 +28,11 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
     var done = false
 
     var popupShown: Bool {
+#if !os(macOS)
         popup?.presentingViewController != nil
+#else
+        false
+#endif
     }
 
     init(netModule: WasmNet, request: URLRequest) {
@@ -37,7 +41,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
     }
 
     func load() {
-        #if os(OSX)
+        #if os(macOS)
         let view = NSApplication.shared.windows.first?.contentView
         #else
         let view = (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.view
@@ -62,13 +66,13 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
     func openWebViewPopup() {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         webView.removeFromSuperview()
-        popup?.dismiss(animated: true)
 
-        #if os(OSX)
+#if os(macOS)
         // todo
         timeout()
         return
-        #else
+#else
+        popup?.dismiss(animated: true)
         popup = WebViewViewController()
         popup!.handler = self
         popup!.view.addSubview(webView)
@@ -83,7 +87,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 
         let vc = (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController
         vc?.present(popup!, animated: true)
-        #endif
+#endif
     }
 
     @objc func timeout() {
@@ -105,7 +109,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
             }
 
             // delay captcha check by 3s (so it loads in)
-            #if !os(OSX)
+#if !os(macOS)
             if self.popup == nil {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                     self.checkForCaptcha()
@@ -115,7 +119,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
                     self.checkForCaptcha()
                 }
             }
-            #endif
+#endif
 
             // check for clearance cookie
             guard webViewCookies.contains(where: {
@@ -128,9 +132,9 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
 
             webView.removeFromSuperview()
             self.done = true
-            #if !os(OSX)
+#if !os(macOS)
             self.popup?.dismiss(animated: true)
-            #endif
+#endif
 
             // save cookies for future requests
             HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)

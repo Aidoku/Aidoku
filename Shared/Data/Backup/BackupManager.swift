@@ -138,7 +138,6 @@ class BackupManager {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func restore(from backup: Backup) async throws {
         Task {
             SourceManager.shared.clearSourceLists()

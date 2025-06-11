@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AidokuRunner
 
 #if os(OSX)
     import AppKit
@@ -30,6 +31,17 @@ enum PublishingStatus: Int, Codable {
         case .cancelled: return NSLocalizedString("CANCELLED", comment: "")
         case .hiatus: return NSLocalizedString("HIATUS", comment: "")
         case .notPublished: return NSLocalizedString("NOT_PUBLISHED", comment: "")
+        }
+    }
+
+    func toNew() -> AidokuRunner.MangaStatus {
+        switch self {
+            case .unknown: .unknown
+            case .ongoing: .ongoing
+            case .completed: .completed
+            case .cancelled: .cancelled
+            case .hiatus: .hiatus
+            case .notPublished: .unknown
         }
     }
 }
@@ -64,6 +76,14 @@ enum MangaContentRating: Int, Codable {
     case safe = 0
     case suggestive = 1
     case nsfw = 2
+
+    func toNew() -> AidokuRunner.MangaContentRating {
+        switch self {
+            case .safe: .safe
+            case .suggestive: .suggestive
+            case .nsfw: .nsfw
+        }
+    }
 }
 
 enum MangaViewer: Int, Codable {
@@ -72,17 +92,27 @@ enum MangaViewer: Int, Codable {
     case ltr = 2
     case vertical = 3
     case scroll = 4
+
+    func toNew() -> AidokuRunner.Viewer {
+        switch self {
+            case .defaultViewer: .unknown
+            case .ltr: .leftToRight
+            case .rtl: .rightToLeft
+            case .vertical: .vertical
+            case .scroll: .webtoon
+        }
+    }
 }
 
 struct CodableColor {
-    var color: UIColor
+    var color: PlatformColor
 }
 
 extension CodableColor: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
-        guard let newColor = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) else {
+        guard let newColor = try NSKeyedUnarchiver.unarchivedObject(ofClass: PlatformColor.self, from: data) else {
             throw DecodingError.dataCorruptedError(
                 in: container,
                 debugDescription: "Invalid color"
@@ -101,4 +131,8 @@ extension CodableColor: Codable {
 struct MangaPageResult {
     let manga: [Manga]
     let hasNextPage: Bool
+
+    func toNew() -> AidokuRunner.MangaPageResult {
+        AidokuRunner.MangaPageResult(entries: manga.map { $0.toNew() }, hasNextPage: hasNextPage)
+    }
 }

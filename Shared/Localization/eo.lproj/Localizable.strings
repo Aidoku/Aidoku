@@ -103,7 +103,7 @@
 "EXPORT_LOGS" = "Elporti protokolojn";
 "DISPLAY_LOGS" = "Montri protokolojn";
 "CLEAR_CHAPTER_CACHE" = "Forviŝi kaŝmemoron de ĉapitroj";
-"BACKUP_IMPORT_FAIL" = "Enporto malsukcesis";
+"IMPORT_FAIL" = "Enporto malsukcesis";
 "RENAME" = "Ŝanĝi nomon";
 "TITLE" = "Titolo";
 "LIBRARY_LOCKED" = "Biblioteko estas ŝlosita.";

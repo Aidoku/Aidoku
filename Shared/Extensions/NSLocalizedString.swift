@@ -7,20 +7,18 @@
 
 import Foundation
 
+let fallbackBundle = Bundle.main.path(forResource: "en", ofType: "lproj")
+    .flatMap { Bundle(path: $0) }
+
 // falls back to english for localized strings
 public func NSLocalizedString(
     _ key: String,
     tableName: String? = nil,
     bundle: Bundle = Bundle.main,
     value: String = "",
-    comment: String
+    comment: String = ""
 ) -> String {
-    guard
-        let fallbackBundlePath = Bundle.main.path(forResource: "en", ofType: "lproj"),
-        let fallbackBundle = Bundle(path: fallbackBundlePath)
-    else {
-        return key
-    }
+    guard let fallbackBundle else { return key }
     let fallbackString = fallbackBundle.localizedString(forKey: key, value: comment, table: nil)
     return Bundle.main.localizedString(forKey: key, value: fallbackString, table: nil)
 }

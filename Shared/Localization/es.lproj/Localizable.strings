@@ -126,7 +126,7 @@
 "RESTORE_BACKUP_TEXT" = "Todos los datos actuales serán eliminados y reemplazados por los datos de esta copia de seguridad.";
 "BACKUP_IMPORT_SUCCESS" = "Copia de seguridad importada";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Para restaurar esta copia de seguridad, búscala en la página de copias de seguridad en la configuración.";
-"BACKUP_IMPORT_FAIL" = "Importación Fallida";
+"IMPORT_FAIL" = "Importación Fallida";
 "BACKUP_IMPORT_FAIL_TEXT" = "No se pudo guardar la copia de seguridad. Revisa que la copia de seguridad esté en el formato adecuado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";

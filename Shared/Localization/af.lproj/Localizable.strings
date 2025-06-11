@@ -220,6 +220,6 @@
 "RESTORE_BACKUP_TEXT" = "Alle huidige data sal verwyder en vervang word deur die data van hierdie rugsteun.";
 "MISSING_SOURCES_TEXT" = "Die herstelde rugsteun kan data van die volgende bronne bevat, wat nie tans geïnstalleer is nie:";
 "RESTORE_BACKUP" = "Herstel na hierdie rugsteun?";
-"BACKUP_IMPORT_FAIL" = "Invoer Misluk";
+"IMPORT_FAIL" = "Invoer Misluk";
 "BACKUP_IMPORT_SUCCESS" = "Rugsteun Ingevoer";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Om na hierdie rugsteun te herstel, vind dit in die rugsteunbladsy in instellings.";

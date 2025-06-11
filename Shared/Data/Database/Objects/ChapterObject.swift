@@ -7,10 +7,10 @@
 
 import Foundation
 import CoreData
+import AidokuRunner
 
 @objc(ChapterObject)
 public class ChapterObject: NSManagedObject {
-
     func load(from chapter: Chapter) {
         sourceId = chapter.sourceId
         mangaId = chapter.mangaId
@@ -22,7 +22,32 @@ public class ChapterObject: NSManagedObject {
         self.chapter = chapter.chapterNum != nil ? NSNumber(value: chapter.chapterNum ?? -1) : nil
         volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
         dateUploaded = chapter.dateUploaded
+        thumbnail = chapter.thumbnail
+        locked = chapter.locked
         sourceOrder = Int16(chapter.sourceOrder)
+    }
+
+    func load(
+        from chapter: AidokuRunner.Chapter,
+        sourceId: String,
+        mangaId: String,
+        sourceOrder: Int? = nil
+    ) {
+        self.sourceId = sourceId
+        self.mangaId = mangaId
+        id = chapter.key
+        title = chapter.title
+        scanlator = chapter.scanlators?.joined(separator: ", ")
+        url = chapter.url?.absoluteString
+        lang = chapter.language ?? "en"
+        self.chapter = chapter.chapterNumber != nil ? NSNumber(value: chapter.chapterNumber ?? -1) : nil
+        volume = chapter.volumeNumber != nil ? NSNumber(value: chapter.volumeNumber ?? -1) : nil
+        dateUploaded = chapter.dateUploaded
+        thumbnail = chapter.thumbnail
+        locked = chapter.locked
+        if let sourceOrder {
+            self.sourceOrder = Int16(sourceOrder)
+        }
     }
 
     func toChapter() -> Chapter {
@@ -37,7 +62,24 @@ public class ChapterObject: NSManagedObject {
             chapterNum: chapter == -1 ? nil : chapter?.floatValue,
             volumeNum: volume == -1 ? nil : volume?.floatValue,
             dateUploaded: dateUploaded,
+            thumbnail: thumbnail,
+            locked: locked,
             sourceOrder: Int(sourceOrder)
+        )
+    }
+
+    func toNewChapter() -> AidokuRunner.Chapter {
+        .init(
+            key: id,
+            title: title,
+            chapterNumber: chapter == -1 ? nil : chapter?.floatValue,
+            volumeNumber: volume == -1 ? nil : volume?.floatValue,
+            dateUploaded: dateUploaded,
+            scanlators: scanlator?.components(separatedBy: ", "),
+            url: url.flatMap({ URL(string: $0) }),
+            language: lang,
+            thumbnail: thumbnail,
+            locked: locked
         )
     }
 }
@@ -58,11 +100,14 @@ extension ChapterObject {
     @NSManaged public var chapter: NSNumber?
     @NSManaged public var volume: NSNumber?
     @NSManaged public var dateUploaded: Date?
+    @NSManaged public var thumbnail: String?
+    @NSManaged public var locked: Bool
     @NSManaged public var sourceOrder: Int16
 
     @NSManaged public var manga: MangaObject?
     @NSManaged public var history: HistoryObject?
     @NSManaged public var mangaUpdate: MangaUpdateObject?
+    @NSManaged public var fileInfo: LocalFileInfoObject?
 }
 
 extension ChapterObject: Identifiable {

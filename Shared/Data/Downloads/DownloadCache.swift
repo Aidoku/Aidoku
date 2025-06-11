@@ -82,11 +82,11 @@ class DownloadCache {
 
 extension DownloadCache {
     // check if a chapter has a download directory
-    func isChapterDownloaded(chapter: Chapter) -> Bool {
+    func isChapterDownloaded(sourceId: String, mangaId: String, chapterId: String) -> Bool {
         if !loaded { load() }
-        if let sourceDirectory = rootDirectory.subdirectories[chapter.sourceId.directoryName],
-           let mangaDirectory = sourceDirectory.subdirectories[chapter.mangaId.directoryName] {
-            return mangaDirectory.subdirectories[chapter.id.directoryName] != nil
+        if let sourceDirectory = rootDirectory.subdirectories[sourceId.directoryName],
+           let mangaDirectory = sourceDirectory.subdirectories[mangaId.directoryName] {
+            return mangaDirectory.subdirectories[chapterId.directoryName] != nil
         }
         return false
     }

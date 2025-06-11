@@ -364,7 +364,11 @@ extension SourceViewController {
                             image: UIImage(systemName: "books.vertical.fill")
                         ) { _ in
                             Task {
-                                await MangaManager.shared.addToLibrary(manga: mangaInfo.toManga(), fetchMangaDetails: true)
+                                await MangaManager.shared.addToLibrary(
+                                    sourceId: mangaInfo.sourceId,
+                                    manga: mangaInfo.toManga().toNew(),
+                                    fetchMangaDetails: true
+                                )
                                 self.refreshCells(for: [mangaInfo])
                             }
                         }])
@@ -433,7 +437,7 @@ extension SourceViewController {
         snapshot.appendSections([.regular])
         snapshot.appendItems(manga)
 
-        dataSource.apply(snapshot)
+        await dataSource.apply(snapshot)
     }
 
     func insert(items: [MangaInfo]) {
