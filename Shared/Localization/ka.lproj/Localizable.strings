@@ -197,7 +197,7 @@
 "WEEKLY" = "ყოველკვირეული";
 "EVERY_2_DAYS" = "ყოველ 2 დღეში";
 "WITH_COMPLETED_STATUS" = "დასრულებულის სტატუსით";
-"BACKUP_IMPORT_FAIL" = "იმპორტი ვერ მოხერხდა";
+"IMPORT_FAIL" = "იმპორტი ვერ მოხერხდა";
 "RESTORE" = "აღდგენა";
 "SOURCE_LIST_ADDED" = "დამატებულია წყაროების სია";
 "SAVE_IMAGE_OPTION" = "სურათის შენახვის არჩევანი";

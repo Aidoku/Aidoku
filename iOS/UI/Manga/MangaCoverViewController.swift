@@ -104,18 +104,14 @@ class MangaCoverViewController: BaseViewController {
         }
 
         if let coverUrl = manga.coverUrl {
-            var urlRequest = URLRequest(url: coverUrl)
-
-            if
+            let urlRequest = if
                 let source = SourceManager.shared.source(for: manga.sourceId),
-                source.handlesImageRequests,
-                let request = try? await source.getImageRequest(url: coverUrl.absoluteString)
+                source.features.providesImageRequests,
+                let request = try? await source.getImageRequest(url: coverUrl.absoluteString, context: nil)
             {
-                urlRequest.url = URL(string: request.url ?? "")
-                for (key, value) in request.headers {
-                    urlRequest.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { urlRequest.httpBody = body }
+                request
+            } else {
+                URLRequest(url: coverUrl)
             }
 
             let request = ImageRequest(urlRequest: urlRequest)

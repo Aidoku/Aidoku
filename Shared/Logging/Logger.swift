@@ -73,7 +73,8 @@ class Logger {
 
     func log(level: LogType = .default, _ message: String) {
         if printLogs {
-            print("\(level != .default ? "[\(level.toString())] " : "")\(message)")
+            let prefix = level != .default ? "[\(level.toString())] " : ""
+            print("\(prefix)\(message)")
         }
         store.addEntry(level: level, message: message)
     }

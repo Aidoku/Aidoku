@@ -198,7 +198,7 @@
 "RENAME_BACKUP_TEXT" = "Unesite novi naziv sigurnosne kopije";
 "CORRUPTED_BACKUP" = "Oštećena sigurnosna kopija";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Za vraćanje na ovu sigurnosnu kopiju, pronađite je na stranici sigurnosnih kopija u postavkama.";
-"BACKUP_IMPORT_FAIL" = "Uvoz neuspješan";
+"IMPORT_FAIL" = "Uvoz neuspješan";
 "BACKUP_IMPORT_FAIL_TEXT" = "Spremanje sigurnosne kopije nije uspjelo. Provjeri format sigurnosne kopije.";
 "EXPORT" = "Izvedi";
 "RESTORE" = "Vrati";

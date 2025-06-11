@@ -1,5 +1,5 @@
 //
-//  MangaView.swift
+//  MangaViewOld.swift
 //  Aidoku (iOS)
 //
 //  Created by axiel7 on 09/02/2024.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MangaView: UIViewControllerRepresentable {
+struct MangaViewOld: UIViewControllerRepresentable {
 
     let manga: Manga
     var chapterList: [Chapter] = []

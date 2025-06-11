@@ -6,8 +6,7 @@
 //
 
 import Foundation
-import WasmInterpreter
-import CWasm3
+import Wasm3
 
 struct SourceInfo: Codable {
     let id: String
@@ -101,13 +100,17 @@ class Source: Identifiable {
 
     var actor: SourceActor!
 
+    let apiVersion = "0.6"
+
     init(from url: URL) throws {
         self.url = url
         let data = try Data(contentsOf: url.appendingPathComponent("source.json"))
         manifest = try JSONDecoder().decode(SourceManifest.self, from: data)
 
         let bytes = try Data(contentsOf: url.appendingPathComponent("main.wasm"))
-        let vm = try WasmInterpreter(stackSize: 512 * 1024, module: [UInt8](bytes))
+        let env = try Environment()
+        let runtime = try env.createRuntime(stackSize: 512 * 1024)
+        let vm = try runtime.parseAndLoadModule(bytes: [UInt8](bytes))
         globalStore = WasmGlobalStore(id: manifest.info.id, vm: vm)
         netModule = WasmNet(globalStore: globalStore)
         actor = SourceActor(source: self)
@@ -115,7 +118,7 @@ class Source: Identifiable {
         exportFunctions()
         loadSettings()
 
-        handlesImageRequests = (try? vm.function(named: "modify_image_request")) != nil
+        handlesImageRequests = (try? vm.findFunction(name: "modify_image_request")) != nil
         initialize()
     }
 
@@ -124,15 +127,15 @@ class Source: Identifiable {
             sourceId: manifest.info.id,
             iconUrl: url.appendingPathComponent("Icon.png"),
             name: manifest.info.name,
-            lang: manifest.info.lang,
+            languages: [manifest.info.lang],
             version: manifest.info.version,
-            contentRating: SourceInfo2.ContentRating(rawValue: manifest.info.nsfw ?? 0) ?? .safe
+            contentRating: .init(rawValue: manifest.info.nsfw ?? 0) ?? .safe
         )
     }
 
     func exportFunctions() {
-        try? globalStore.vm.addImportHandler(named: "print", namespace: "env", block: self.printFunction)
-        try? globalStore.vm.addImportHandler(named: "abort", namespace: "env", block: self.abort)
+        try? globalStore.vm.linkFunction(name: "print", namespace: "env", function: self.printFunction)
+        try? globalStore.vm.linkFunction(name: "abort", namespace: "env", function: self.abort)
 
         WasmAidoku(globalStore: globalStore).export()
         WasmStd(globalStore: globalStore).export()
@@ -160,7 +163,7 @@ class Source: Identifiable {
             LogManager.logger.error("[\(self.id)] [Abort] \(message ?? "") \(file ?? ""):\(line):\(column)")
 
             // break out of the current wasm execution to prevent unreachable from being called (prevents a crash)
-            set_should_yield_next()
+            Wasm3.yieldNext()
         }
     }
 }
@@ -168,7 +171,6 @@ class Source: Identifiable {
 // MARK: - Settings
 extension Source {
 
-    // swiftlint:disable:next cyclomatic_complexity
     func loadSettings() {
         var defaultLanguages: [String] = []
 
@@ -355,7 +357,7 @@ extension Source {
     func getPageList(chapter: Chapter, skipDownloadedCheck: Bool = false) async throws -> [Page] {
         if !skipDownloadedCheck {
             if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
-                return await DownloadManager.shared.getDownloadedPages(for: chapter)
+                return await DownloadManager.shared.getDownloadedPagesWithoutContents(for: chapter)
             }
         }
         return await actor.getPageList(chapter: chapter)

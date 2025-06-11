@@ -249,7 +249,7 @@
 "RESTORE_BACKUP_TEXT" = "目前資料將被刪除並取代至此備份中的資料。";
 "BACKUP_IMPORT_SUCCESS" = "備份已成功匯入";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "如需用此備份復原，請到設定的備份頁面。";
-"BACKUP_IMPORT_FAIL" = "匯入備份失敗";
+"IMPORT_FAIL" = "匯入備份失敗";
 "CLEAR_MANGA_CACHE_TEXT" = "不可逆的操作，快取中的漫畫會被清除。";
 "CLEAR_NETWORK_CACHE_TEXT" = "不可逆的操作，快取中的網路請求和圖片將被清除。";
 "RESET_TEXT" = "不可逆的操作，所有資料、設定和快取將被清除及重設。";

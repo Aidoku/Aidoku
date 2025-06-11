@@ -59,14 +59,18 @@ class SegmentTableViewCell: UITableViewCell {
             observers.append(NotificationCenter.default.addObserver(
                 forName: NSNotification.Name(requires), object: nil, queue: nil
             ) { [weak self] _ in
-                self?.segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    self?.segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                }
             })
         } else if let requires = item?.requiresFalse {
             segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
             observers.append(NotificationCenter.default.addObserver(
                 forName: NSNotification.Name(requires), object: nil, queue: nil
             ) { [weak self] _ in
-                self?.segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    self?.segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                }
             })
         }
 

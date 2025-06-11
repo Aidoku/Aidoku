@@ -216,23 +216,19 @@ class MangaCoverCell: UICollectionViewCell {
             return
         }
 
-        var urlRequest = URLRequest(url: url)
-
         Task { @MainActor in
             imageView.image = UIImage(named: "MangaPlaceholder")
         }
 
-        if
+        let urlRequest = if
             let sourceId = manga?.sourceId,
             let source = SourceManager.shared.source(for: sourceId),
-            source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString)
+            source.features.providesImageRequests,
+            let request = try? await source.getImageRequest(url: url.absoluteString, context: nil)
         {
-            urlRequest.url = URL(string: request.url ?? "")
-            for (key, value) in request.headers {
-                urlRequest.setValue(value, forHTTPHeaderField: key)
-            }
-            if let body = request.body { urlRequest.httpBody = body }
+            request
+        } else {
+            URLRequest(url: url)
         }
 
         let request = ImageRequest(

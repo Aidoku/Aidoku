@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension Sequence {
-    func concurrentMap<T>(
+extension Sequence where Element: Sendable {
+    func concurrentMap<T: Sendable>(
         _ transform: @escaping (Element) async throws -> T
     ) async rethrows -> [T] {
         let tasks = map { element in
@@ -29,6 +29,21 @@ extension Sequence {
 
         for element in self {
             try await values.append(transform(element))
+        }
+
+        return values
+    }
+
+    func asyncCompactMap<T>(
+        _ transform: (Element) async throws -> T?
+    ) async rethrows -> [T] {
+        var values = [T]()
+
+        for element in self {
+            let result = try await transform(element)
+            if let result {
+                values.append(result)
+            }
         }
 
         return values

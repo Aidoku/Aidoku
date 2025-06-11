@@ -8,7 +8,6 @@
 import UIKit
 
 struct ChapterCellConfiguration: UIContentConfiguration {
-
     var chapter: Chapter
     var currentPage: Int?
     var read = false
@@ -25,8 +24,7 @@ struct ChapterCellConfiguration: UIContentConfiguration {
     }
 }
 
-class ChapterCellContentView: UIView, UIContentView {
-
+private class ChapterCellContentView: UIView, UIContentView {
     var configuration: UIContentConfiguration {
         didSet {
             configure()
@@ -66,6 +64,13 @@ class ChapterCellContentView: UIView, UIContentView {
         return downloadedView
     }()
 
+    private lazy var lockedView: UIImageView = {
+        let downloadedView = UIImageView(image: UIImage(systemName: "lock.fill"))
+        downloadedView.frame = CGRect(x: 0, y: 0, width: 15, height: 15)
+        downloadedView.tintColor = .label
+        return downloadedView
+    }()
+
     private lazy var accessoryViewTrailingConstraint: NSLayoutConstraint =
         accessoryView.trailingAnchor.constraint(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor, constant: -12)
 
@@ -77,6 +82,7 @@ class ChapterCellContentView: UIView, UIContentView {
         addSubview(subtitleLabel)
         accessoryView.addSubview(progressView)
         accessoryView.addSubview(downloadedView)
+        accessoryView.addSubview(lockedView)
         accessoryView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(accessoryView)
 
@@ -112,15 +118,17 @@ class ChapterCellContentView: UIView, UIContentView {
     func configure() {
         guard let configuration = configuration as? ChapterCellConfiguration else { return }
         titleLabel.text = configuration.chapter.makeTitle()
-        titleLabel.textColor = configuration.read ? .secondaryLabel : .label
+        let isGray = configuration.read || (configuration.chapter.locked && !configuration.downloaded)
+        titleLabel.textColor = isGray ? .secondaryLabel : .label
         subtitleLabel.text = makeSubtitle(chapter: configuration.chapter, page: configuration.currentPage)
         subtitleLabel.isHidden = subtitleLabel.text == nil
         downloadedView.isHidden = !configuration.downloaded
+        lockedView.isHidden = !configuration.chapter.locked || configuration.downloaded
         progressView.isHidden = !configuration.downloading
         progressView.setProgress(value: configuration.downloadProgress, withAnimation: false)
 
         // move accessoryView out of the way if it's hidden
-        if downloadedView.isHidden && progressView.isHidden {
+        if downloadedView.isHidden && progressView.isHidden && lockedView.isHidden {
             accessoryViewTrailingConstraint.constant = -12 + 15
         } else {
             accessoryViewTrailingConstraint.constant = -12

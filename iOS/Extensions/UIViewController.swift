@@ -9,9 +9,13 @@ import UIKit
 
 extension UIViewController {
 
-    func add(child: UIViewController) {
+    func add(child: UIViewController, below: UIView? = nil) {
         addChild(child)
-        view.addSubview(child.view)
+        if let below {
+            view.insertSubview(child.view, belowSubview: below)
+        } else {
+            view.addSubview(child.view)
+        }
         child.didMove(toParent: self)
     }
 

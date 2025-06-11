@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import AidokuRunner
 
 extension CoreDataManager {
 
@@ -17,6 +18,14 @@ extension CoreDataManager {
     /// Gets all chapter objects.
     func getChapters(context: NSManagedObjectContext? = nil) -> [ChapterObject] {
         (try? (context ?? self.context).fetch(ChapterObject.fetchRequest())) ?? []
+    }
+
+    /// Gets all chapter objects for a source.
+    func getChapters(sourceId: String, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
+        let context = context ?? self.context
+        let request = ChapterObject.fetchRequest()
+        request.predicate = NSPredicate(format: "sourceId == %@", sourceId)
+        return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular chapter object.
@@ -58,24 +67,32 @@ extension CoreDataManager {
     /// Create a chapter object.
     @discardableResult
     func createChapter(
-        _ chapter: Chapter,
+        _ chapter: AidokuRunner.Chapter,
+        sourceId: String,
+        mangaId: String,
+        sourceOrder: Int,
         mangaObject: MangaObject? = nil,
         context: NSManagedObjectContext? = nil
     ) -> ChapterObject? {
         let context = context ?? self.context
         guard let mangaObject = mangaObject ?? getManga(
-            sourceId: chapter.sourceId,
-            mangaId: chapter.mangaId,
+            sourceId: sourceId,
+            mangaId: mangaId,
             context: context
         ) else {
             return nil
         }
         let object = ChapterObject(context: context)
-        object.load(from: chapter)
+        object.load(
+            from: chapter,
+            sourceId: sourceId,
+            mangaId: mangaId,
+            sourceOrder: sourceOrder
+        )
         object.manga = mangaObject
         object.history = getHistory(
-            sourceId: chapter.sourceId,
-            mangaId: chapter.mangaId,
+            sourceId: sourceId,
+            mangaId: mangaId,
             chapterId: chapter.id,
             context: context
         )
@@ -110,7 +127,7 @@ extension CoreDataManager {
     func removeChapters(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
         let context = context ?? self.context
         let chapters = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
-        for chapter in chapters {
+        for chapter in chapters where chapter.fileInfo == nil {
             context.delete(chapter)
         }
     }
@@ -119,13 +136,13 @@ extension CoreDataManager {
     /// - Returns: New created chapters
     @discardableResult
     func setChapters(
-        _ chapters: [Chapter],
+        _ chapters: [AidokuRunner.Chapter],
         sourceId: String,
         mangaId: String,
         context: NSManagedObjectContext? = nil
     ) -> [ChapterObject] {
         let context = context ?? self.context
-        var newChapters = chapters
+        var newChapters = Array(chapters.enumerated())
 
         guard let manga = self.getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return [] }
 
@@ -133,14 +150,19 @@ extension CoreDataManager {
         let chapterObjects = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
         var chapterIds: Set<String> = Set()
         for object in chapterObjects {
-            if let newChapter = chapters.first(where: { $0.id == object.id }) {
+            if let newChapter = newChapters.first(where: { $0.element.id == object.id }) {
                 let (inserted, _) = chapterIds.insert(object.id)
                 if !inserted {
                     context.delete(object) // remove duplicates
                 }
-                object.load(from: newChapter)
+                object.load(
+                    from: newChapter.element,
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    sourceOrder: newChapter.offset
+                )
                 object.manga = manga
-                newChapters.removeAll { $0.id == object.id }
+                newChapters.removeAll { $0.element.id == object.id }
             } else {
                 context.delete(object)
             }
@@ -148,13 +170,20 @@ extension CoreDataManager {
 
         // create new chapter objects
         var newChaptersCreated = [ChapterObject]()
-        for chapter in newChapters where !hasChapter(
+        for (offset, chapter) in newChapters where !hasChapter(
             sourceId: sourceId,
             mangaId: mangaId,
             chapterId: chapter.id,
             context: context
         ) {
-            if let chapterObject = createChapter(chapter, mangaObject: manga, context: context) {
+            if let chapterObject = createChapter(
+                chapter,
+                sourceId: sourceId,
+                mangaId: mangaId,
+                sourceOrder: offset,
+                mangaObject: manga,
+                context: context
+            ) {
                 newChaptersCreated.append(chapterObject)
             }
         }

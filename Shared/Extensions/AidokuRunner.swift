@@ -1,0 +1,218 @@
+//
+//  AidokuRunner.swift
+//  Aidoku
+//
+//  Created by Skitty on 8/24/23.
+//
+
+import AidokuRunner
+import Foundation
+
+extension AidokuRunner.Source {
+    static func defaultPrintHandler(sourceId: String, _ message: String) {
+        LogManager.logger.log("[\(sourceId)] \(message)")
+    }
+
+    convenience init(id: String, url: URL) async throws {
+        try await self.init(
+            url: url,
+            printFunction: {
+                AidokuRunner.Source.defaultPrintHandler(sourceId: id, $0)
+            }
+        )
+    }
+
+    func toInfo() -> SourceInfo2 {
+        SourceInfo2(
+            sourceId: key,
+            iconUrl: imageUrl,
+            name: name,
+            languages: languages,
+            version: version,
+            contentRating: contentRating
+        )
+    }
+}
+
+extension AidokuRunner.Manga {
+    func toOld() -> Manga {
+        Manga(
+            sourceId: sourceKey,
+            id: key,
+            title: title,
+            author: authors?.joined(separator: ", "),
+            artist: artists?.joined(separator: ", "),
+            description: description,
+            tags: tags,
+            coverUrl: cover.flatMap({ URL(string: $0) }),
+            url: url,
+            status: {
+                switch status {
+                    case .unknown: .unknown
+                    case .ongoing: .ongoing
+                    case .completed: .completed
+                    case .cancelled: .cancelled
+                    case .hiatus: .hiatus
+                }
+            }(),
+            nsfw: {
+                switch contentRating {
+                    case .unknown: .safe
+                    case .safe: .safe
+                    case .suggestive: .suggestive
+                    case .nsfw: .nsfw
+                }
+            }(),
+            viewer: {
+                switch viewer {
+                    case .unknown: .defaultViewer
+                    case .rightToLeft: .rtl
+                    case .leftToRight: .ltr
+                    case .vertical: .vertical
+                    case .webtoon: .scroll
+                }
+            }(),
+            updateStrategy: updateStrategy,
+            nextUpdateTime: nextUpdateTime.flatMap { Date(timeIntervalSince1970: TimeInterval($0)) },
+        )
+    }
+}
+
+extension AidokuRunner.MangaStatus {
+    var title: String {
+        switch self {
+            case .unknown: NSLocalizedString("UNKNOWN")
+            case .ongoing: NSLocalizedString("ONGOING")
+            case .completed: NSLocalizedString("COMPLETED")
+            case .cancelled: NSLocalizedString("CANCELLED")
+            case .hiatus: NSLocalizedString("HIATUS")
+        }
+    }
+}
+
+extension AidokuRunner.MangaContentRating {
+    var title: String {
+        switch self {
+            case .unknown: NSLocalizedString("UNKNOWN")
+            case .safe: NSLocalizedString("SAFE")
+            case .suggestive: NSLocalizedString("SUGGESTIVE")
+            case .nsfw: NSLocalizedString("NSFW")
+        }
+    }
+}
+
+extension AidokuRunner.Chapter {
+    func formattedTitle() -> String {
+        if volumeNumber == nil && (title?.isEmpty ?? true) {
+            // Chapter X
+            return if let chapterNumber {
+                String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)
+            } else {
+                NSLocalizedString("UNTITLED")
+            }
+        } else if let volumeNumber, chapterNumber == nil && title == nil {
+            return String(format: NSLocalizedString("VOLUME_X"), volumeNumber)
+        } else {
+            var components: [String] = []
+            // Vol.X
+            if let volumeNumber {
+                components.append(
+                    String(format: NSLocalizedString("VOL_X"), volumeNumber)
+                )
+            }
+            // Ch.X
+            if let chapterNumber {
+                components.append(
+                    String(format: NSLocalizedString("CH_X"), chapterNumber)
+                )
+            }
+            // title
+            if let title, !title.isEmpty {
+                if !components.isEmpty {
+                    components.append("-")
+                }
+                components.append(title)
+            }
+            return components.joined(separator: " ")
+        }
+    }
+
+    func formattedSubtitle(page: Int?, sourceKey: String) -> String? {
+        var components: [String] = []
+        // date
+        if let dateUploaded {
+            components.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
+        }
+        // page (if reading in progress)
+        if let page, page > 0 {
+            components.append(String(format: NSLocalizedString("PAGE_X"), page))
+        }
+        // scanlator
+        if let scanlators, !scanlators.isEmpty {
+            components.append(scanlators.joined(separator: ", "))
+        }
+        // language (if source has multiple enabled)
+        if
+            let language,
+            let languageCount = UserDefaults.standard.array(forKey: "\(sourceKey).languages")?.count,
+            languageCount > 1
+        {
+            components.append(language)
+        }
+        return components.isEmpty ? nil : components.joined(separator: " • ")
+    }
+
+    func toOld(
+        sourceId: String,
+        mangaId: String,
+        sourceOrder: Int? = nil
+    ) -> Chapter {
+        Chapter(
+            sourceId: sourceId,
+            id: key,
+            mangaId: mangaId,
+            title: title,
+            scanlator: scanlators?.joined(separator: ", "),
+            url: url?.absoluteString,
+            lang: language ?? "en",
+            chapterNum: chapterNumber,
+            volumeNum: volumeNumber,
+            dateUploaded: dateUploaded,
+            locked: locked,
+            sourceOrder: sourceOrder ?? 0
+        )
+    }
+}
+
+extension AidokuRunner.Page {
+    func toOld(sourceId: String, chapterId: String) -> Page {
+        switch content {
+            case let .url(url, context):
+                Page(
+                    sourceId: sourceId,
+                    chapterId: chapterId,
+                    imageURL: url.absoluteString,
+                    context: context,
+                    hasDescription: hasDescription,
+                    description: description
+                )
+            case let .text(text):
+                Page(
+                    sourceId: sourceId,
+                    chapterId: chapterId,
+                    text: text,
+                    hasDescription: hasDescription,
+                    description: description
+                )
+            case let .zipFile(url, filePath):
+                Page(
+                    sourceId: sourceId,
+                    chapterId: chapterId,
+                    imageURL: filePath,
+                    zipURL: url.absoluteString,
+                    hasDescription: hasDescription,
+                    description: description
+                )
+        }
+    }
+}

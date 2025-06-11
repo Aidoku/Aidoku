@@ -7,6 +7,7 @@
 
 import UIKit
 import LocalAuthentication
+import AidokuRunner
 
 struct HistoryEntry {
     var manga: Manga
@@ -283,7 +284,6 @@ class HistoryViewController: UIViewController {
         let completed: Bool
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func fetchNewEntries() {
         guard !loadingMore, !reachedEnd else { return }
         loadingMore = true
@@ -339,14 +339,16 @@ class HistoryViewController: UIViewController {
                     )
                 }
                 if manga == nil || chapter == nil {
-                    let source = SourceManager.shared.source(for: obj.sourceId)
-                    let tempManga = Manga(sourceId: obj.sourceId, id: obj.mangaId)
-                    if manga == nil {
-                        manga = try? await source?.getMangaDetails(manga: tempManga)
-                    }
-                    if chapter == nil {
-                        chapter = (try? await source?.getChapterList(manga: tempManga))?.first { $0.id == obj.chapterId }
-                    }
+                    guard let source = SourceManager.shared.source(for: obj.sourceId) else { continue }
+                    let tempManga = AidokuRunner.Manga(sourceKey: obj.sourceId, key: obj.mangaId, title: "")
+                    let newManga = try? await source.getMangaUpdate(
+                        manga: tempManga,
+                        needsDetails: manga == nil,
+                        needsChapters: chapter == nil
+                    )
+                    manga = newManga?.toOld()
+                    guard let mangaId = manga?.id else { continue }
+                    chapter = newManga?.chapters?.first { $0.id == obj.chapterId }?.toOld(sourceId: source.key, mangaId: mangaId)
                 }
                 guard let manga = manga, let chapter = chapter else { continue }
 
