@@ -1,6 +1,24 @@
 {
-  "originHash" : "add92b052d51a8944df0320b7e22c8c1bbab7632fecc92d14cc3f0bd6b2a9241",
+  "originHash" : "f21c41a0b2c7f3269a159e8b8bd39bda9749d81698fa976784b400f4cb1d3963",
   "pins" : [
+    {
+      "identity" : "aidokurunner",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Aidoku/AidokuRunner",
+      "state" : {
+        "branch" : "main",
+        "revision" : "0932e068667abcf7f7ffcc3d781c9b9a80d5df2a"
+      }
+    },
+    {
+      "identity" : "networkimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/NetworkImage",
+      "state" : {
+        "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
+        "version" : "6.0.1"
+      }
+    },
     {
       "identity" : "nuke",
       "kind" : "remoteSourceControl",
@@ -11,21 +29,39 @@
       }
     },
     {
+      "identity" : "swift-cmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-cmark",
+      "state" : {
+        "revision" : "b022b08312decdc46585e0b3440d97f6f22ef703",
+        "version" : "0.6.0"
+      }
+    },
+    {
+      "identity" : "swift-markdown-ui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/swift-markdown-ui",
+      "state" : {
+        "revision" : "5f613358148239d0292c0cef674a3c2314737f9e",
+        "version" : "2.4.1"
+      }
+    },
+    {
+      "identity" : "swiftlintplugins",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SimplyDanny/SwiftLintPlugins",
+      "state" : {
+        "revision" : "8545ddf4de043e6f2051c5cf204f39ef778ebf6b",
+        "version" : "0.59.1"
+      }
+    },
+    {
       "identity" : "swiftsoup",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "32f5aea5af25d4229f3b1a72d6ed0edb3a12a03b",
-        "version" : "2.7.4"
-      }
-    },
-    {
-      "identity" : "synchronized",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/shareup/synchronized.git",
-      "state" : {
-        "revision" : "85653e23270ec88ae19f8d494157769487e34aed",
-        "version" : "4.0.1"
+        "revision" : "6b4930da67b462d3f200472c902dd016d37a554d",
+        "version" : "2.7.7"
       }
     },
     {
@@ -38,12 +74,12 @@
       }
     },
     {
-      "identity" : "wasm-interpreter-apple",
+      "identity" : "wasm3",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Skittyblock/wasm-interpreter-apple.git",
+      "location" : "https://github.com/Skittyblock/Wasm3",
       "state" : {
         "branch" : "main",
-        "revision" : "f6103d81509202d87cf7e71aed8f7dcc5f927d57"
+        "revision" : "42b044199dee4ee3e69215bfba1ecf35724e1911"
       }
     },
     {

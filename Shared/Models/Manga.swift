@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AidokuRunner
 
 // TODO: refactor
 
@@ -32,6 +33,9 @@ class Manga: Codable, Hashable {
     var nsfw: MangaContentRating
     var viewer: MangaViewer
 
+    var updateStrategy: UpdateStrategy
+    var nextUpdateTime: Date?
+
     var chapterFlags: Int
     var langFilter: String?
     var scanlatorFilter: [String]?
@@ -54,6 +58,8 @@ class Manga: Codable, Hashable {
         status: PublishingStatus = .unknown,
         nsfw: MangaContentRating = .safe,
         viewer: MangaViewer = .defaultViewer,
+        updateStrategy: UpdateStrategy = .always,
+        nextUpdateTime: Date? = nil,
         chapterFlags: Int = 0,
         langFilter: String? = nil,
         scanlatorFilter: [String]? = nil,
@@ -74,6 +80,8 @@ class Manga: Codable, Hashable {
         self.status = status
         self.nsfw = nsfw
         self.viewer = viewer
+        self.updateStrategy = updateStrategy
+        self.nextUpdateTime = nextUpdateTime
         self.chapterFlags = chapterFlags
         self.langFilter = langFilter
         self.scanlatorFilter = scanlatorFilter
@@ -94,6 +102,8 @@ class Manga: Codable, Hashable {
         status = manga.status
         nsfw = manga.nsfw
         viewer = manga.viewer
+        updateStrategy = manga.updateStrategy
+        nextUpdateTime = manga.nextUpdateTime ?? nextUpdateTime
         chapterFlags = manga.chapterFlags
         langFilter = manga.langFilter ?? langFilter
         scanlatorFilter = manga.scanlatorFilter ?? scanlatorFilter
@@ -117,6 +127,8 @@ class Manga: Codable, Hashable {
             status: manga.status,
             nsfw: manga.nsfw,
             viewer: manga.viewer,
+            updateStrategy: manga.updateStrategy,
+            nextUpdateTime: manga.nextUpdateTime ?? nextUpdateTime,
             chapterFlags: manga.chapterFlags,
             langFilter: manga.langFilter ?? langFilter,
             scanlatorFilter: manga.scanlatorFilter ?? scanlatorFilter,
@@ -148,7 +160,6 @@ class Manga: Codable, Hashable {
 }
 
 extension Manga: KVCObject {
-    // swiftlint:disable:next cyclomatic_complexity
     func valueByPropertyName(name: String) -> Any? {
         switch name {
         case "id": return id
@@ -167,5 +178,27 @@ extension Manga: KVCObject {
         case "scanlatorFilter": return scanlatorFilter
         default: return nil
         }
+    }
+}
+
+extension Manga {
+    func toNew(chapters: [AidokuRunner.Chapter]? = nil) -> AidokuRunner.Manga {
+        AidokuRunner.Manga(
+            sourceKey: sourceId,
+            key: id,
+            title: title ?? "",
+            cover: coverUrl?.absoluteString,
+            artists: artist?.components(separatedBy: ", "),
+            authors: author?.components(separatedBy: ", "),
+            description: description,
+            url: url,
+            tags: tags,
+            status: status.toNew(),
+            contentRating: nsfw.toNew(),
+            viewer: viewer.toNew(),
+            updateStrategy: updateStrategy,
+            nextUpdateTime: nextUpdateTime.flatMap { Int($0.timeIntervalSince1970) },
+            chapters: chapters
+        )
     }
 }

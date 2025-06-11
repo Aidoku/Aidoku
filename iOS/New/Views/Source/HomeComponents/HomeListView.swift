@@ -1,0 +1,287 @@
+//
+//  HomeListView.swift
+//  Aidoku
+//
+//  Created by Skitty on 10/13/23.
+//
+
+import AidokuRunner
+import SafariServices
+import SwiftUI
+
+struct HomeListView: View {
+    let source: AidokuRunner.Source
+    let component: HomeComponent
+    let partial: Bool
+    var loadMore: (() async -> Void)?
+    var onSelect: ((AidokuRunner.Manga) -> Void)?
+
+    private let ranking: Bool
+    private let pageSize: Int?
+    private let entries: [HomeComponent.Value.Link]
+    private let listing: AidokuRunner.Listing?
+
+    @State private var loadingMore = false
+    @State private var bookmarkedItems: Set<String> = .init()
+    @State private var loadedBookmarks = false
+
+    @EnvironmentObject private var path: NavigationCoordinator
+
+    init(
+        source: AidokuRunner.Source,
+        component: HomeComponent,
+        partial: Bool = false,
+        loadMore: (() async -> Void)? = nil,
+        onSelect: ((AidokuRunner.Manga) -> Void)? = nil
+    ) {
+        self.source = source
+        self.component = component
+        self.partial = partial
+        self.loadMore = loadMore
+        self.onSelect = onSelect
+
+        guard case let .mangaList(ranking, pageSize, entries, listing) = component.value else {
+            fatalError("invalid component type")
+        }
+        self.ranking = ranking
+        self.pageSize = pageSize
+        self.entries = entries
+        self.listing = listing
+    }
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            if let title = component.title {
+                TitleView(
+                    title: title,
+                    subtitle: component.subtitle,
+                    onTitleClick: listing == nil ? nil : {
+                        if let listing {
+                            path.push(SourceListingViewController(source: source, listing: listing))
+                        }
+                    }
+                )
+            }
+
+            if partial && entries.isEmpty {
+                PlaceholderMangaHomeList.mainView(itemCount: 6)
+                    .redacted(reason: .placeholder)
+                    .shimmering()
+            } else {
+                Group {
+                    if let pageSize {
+#if !os(macOS)
+                        let (getSection, height) = CollectionView.mangaListLayout(
+                            itemsPerPage: pageSize,
+                            totalItems: entries.count
+                        )
+
+                        CollectionView(
+                            sections: [
+                                CollectionViewSection(
+                                    items: entries.indices.map { offset in
+                                        AnyView(view(
+                                            for: entries[offset],
+                                            position: offset
+                                        ).ignoresSafeArea())
+                                    }
+                                )
+                            ],
+                            layout: UICollectionViewCompositionalLayout { _, layoutEnvironment in
+                                getSection(layoutEnvironment)
+                            }
+                        )
+                        .frame(height: height)
+#else
+                        LazyVStack {
+                            ForEach(entries.indices, id: \.self) { offset in
+                                view(
+                                    for: entries[offset],
+                                    position: offset,
+                                    last: offset == entries.count - 1
+                                )
+                            }
+                        }
+#endif
+                    } else {
+                        LazyVStack {
+                            ForEach(entries.indices, id: \.self) { offset in
+                                view(
+                                    for: entries[offset],
+                                    position: offset
+                                )
+                            }
+                            loadMoreView
+                        }
+                    }
+                }
+                .task {
+                    if !loadedBookmarks {
+                        await loadBookmarked()
+                    }
+                }
+                .onChange(of: entries) { _ in
+                    loadingMore = false
+                    Task {
+                        if !loadedBookmarks {
+                            await loadBookmarked()
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    var loadMoreView: some View {
+        if loadingMore {
+            EmptyView()
+        } else {
+            Spacer()
+                .onAppear {
+                    loadingMore = true
+                    Task {
+                        await loadMore?()
+                    }
+                }
+        }
+    }
+
+    @ViewBuilder
+    func view(for entry: HomeComponent.Value.Link, position: Int) -> some View {
+        let label = HStack(spacing: 12) {
+            let mangaKey: String? = switch entry.value {
+                case .manga(let manga): manga.key
+                default: nil
+            }
+            MangaCoverView(
+                source: source,
+                coverImage: entry.imageUrl ?? "",
+                width: 100 * 2/3,
+                height: 100,
+                downsampleWidth: 200,
+                bookmarked: mangaKey.flatMap { bookmarkedItems.contains($0) } ?? false
+            )
+
+            let titleStack = VStack(alignment: .leading, spacing: 4) {
+                Text(entry.title)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+
+                if let subtitle = entry.subtitle {
+                    Text(subtitle)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            if ranking {
+                HStack(alignment: .top) {
+                    Text("\(position + 1)")
+                        .bold()
+                        .padding(.horizontal, 2)
+
+                    titleStack
+                }
+            } else {
+                titleStack
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal)
+        if let value = entry.value {
+            Button {
+                switch value {
+                    case .url(let urlString):
+                        guard let url = URL(string: urlString) else { return }
+                        path.present(SFSafariViewController(url: url))
+                    case .listing(let listing):
+                        path.push(SourceListingViewController(source: source, listing: listing))
+                    case .manga(let manga):
+                        if let onSelect {
+                            onSelect(manga)
+                        } else {
+                            let hostingController = UIHostingController(
+                                rootView: MangaView(source: source, manga: manga)
+                                    .environmentObject(path)
+                            )
+                            hostingController.navigationItem.largeTitleDisplayMode = .never
+                            path.push(hostingController)
+                        }
+                }
+            } label: {
+                label
+            }
+            .foregroundStyle(.primary)
+            .buttonStyle(.borderless)
+        }
+    }
+
+    func loadBookmarked() async {
+        guard !entries.isEmpty else { return }
+        bookmarkedItems = await CoreDataManager.shared.container.performBackgroundTask { context in
+            var keys: Set<String> = .init()
+            for entry in entries {
+                let mangaKey: String? = switch entry.value {
+                    case .manga(let manga): manga.key
+                    default: nil
+                }
+                if let mangaKey {
+                    if CoreDataManager.shared.hasLibraryManga(
+                        sourceId: source.key,
+                        mangaId: mangaKey,
+                        context: context
+                    ) {
+                        keys.insert(mangaKey)
+                    }
+                }
+            }
+            return keys
+        }
+        loadedBookmarks = true
+    }
+}
+
+struct PlaceholderMangaHomeList: View {
+    var showTitle = true
+    var itemCount = 5
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            if showTitle {
+                Text("Loading")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal)
+            }
+
+            Self.mainView(itemCount: itemCount)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .redacted(reason: .placeholder)
+        .shimmering()
+    }
+
+    static func mainView(itemCount: Int) -> some View {
+        LazyVStack {
+            ForEach(0..<itemCount, id: \.self) { _ in
+                HStack {
+                    Rectangle()
+                        .fill(Color(.secondarySystemFill))
+                        .frame(width: 100 * 2/3, height: 100)
+                        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Loading Title")
+                        Text("Loading")
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+}

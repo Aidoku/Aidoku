@@ -104,10 +104,11 @@ final class CoreDataManager {
         }
     }
 
-    func remove(_ object: NSManagedObject) {
+    func remove(_ objectID: NSManagedObjectID) {
         container.performBackgroundTask { context in
-            let object = context.object(with: object.objectID)
+            let object = context.object(with: objectID)
             context.delete(object)
+            try? context.save()
         }
     }
 

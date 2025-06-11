@@ -354,7 +354,7 @@ class MangaDetailHeaderView: UIView {
             }
             let showSourceLabel = inLibrary && UserDefaults.standard.bool(forKey: "General.showSourceLabel")
             if showSourceLabel, let source = SourceManager.shared.source(for: manga.sourceId) {
-                sourceLabelView.text = source.manifest.info.name
+                sourceLabelView.text = source.name
                 sourceLabelView.isHidden = false
             } else {
                 sourceLabelView.isHidden = true
@@ -407,19 +407,15 @@ class MangaDetailHeaderView: UIView {
             }
         }
 
-        var urlRequest = URLRequest(url: url)
-
-        if
-            let sourceId = sourceId,
+        let urlRequest = if
+            let sourceId,
             let source = SourceManager.shared.source(for: sourceId),
-            source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString)
+            source.features.providesImageRequests,
+            let request = try? await source.getImageRequest(url: url.absoluteString, context: nil)
         {
-            urlRequest.url = URL(string: request.url ?? "")
-            for (key, value) in request.headers {
-                urlRequest.setValue(value, forHTTPHeaderField: key)
-            }
-            if let body = request.body { urlRequest.httpBody = body }
+            request
+        } else {
+            URLRequest(url: url)
         }
 
         let request = ImageRequest(

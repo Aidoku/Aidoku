@@ -6,11 +6,11 @@
 //
 
 import Foundation
-import WasmInterpreter
+import Wasm3
 
 class WasmGlobalStore {
     var id: String
-    var vm: WasmInterpreter
+    var vm: Module
 
     var chapterCounter = 0
     var currentManga = ""
@@ -24,7 +24,7 @@ class WasmGlobalStore {
     var requestsPointer: Int32 = -1
     var requests: [Int32: WasmRequestObject] = [:]
 
-    init(id: String, vm: WasmInterpreter) {
+    init(id: String, vm: Module) {
         self.id = id
         self.vm = vm
     }
@@ -63,38 +63,34 @@ class WasmGlobalStore {
 extension WasmGlobalStore {
 
     func readString(offset: Int, length: Int) -> String? {
-        try? vm.stringFromHeap(byteOffset: offset, length: length)
+        try? vm.runtime.memory().readString(offset: UInt32(offset), length: UInt32(length))
     }
 
     func readString(offset: Int32, length: Int32) -> String? {
-        try? vm.stringFromHeap(byteOffset: Int(offset), length: Int(length))
+        try? vm.runtime.memory().readString(offset: UInt32(offset), length: UInt32(length))
     }
 
     func readData(offset: Int32, length: Int32) -> Data? {
-        try? vm.dataFromHeap(byteOffset: Int(offset), length: Int(length))
+        try? vm.runtime.memory().readData(offset: UInt32(offset), length: UInt32(length))
     }
 
-    func readValue<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> T? {
-        try? vm.valueFromHeap(byteOffset: Int(offset))
-    }
-
-    func readValues<T: WasmTypeProtocol>(offset: Int32, length: Int32) -> [T]? {
-        try? vm.valuesFromHeap(byteOffset: Int(offset), length: Int(length))
+    func readValues<T: WasmType>(offset: Int32, length: Int32) -> [T]? {
+        try? vm.runtime.memory().readValues(offset: UInt32(offset), length: UInt32(length))
     }
 
     func readBytes(offset: Int32, length: Int32) -> [UInt8]? {
-        try? vm.bytesFromHeap(byteOffset: Int(offset), length: Int(length))
+        try? vm.runtime.memory().readBytes(offset: UInt32(offset), length: UInt32(length))
     }
 
-    func write<T: WasmTypeProtocol>(value: T, offset: Int32) {
-        try? vm.writeToHeap(value: value, byteOffset: Int(offset))
+    func write<T: WasmType & FixedWidthInteger>(value: T, offset: Int32) {
+        try? vm.runtime.memory().write(values: [value], offset: UInt32(offset))
     }
 
     func write(bytes: [UInt8], offset: Int32) {
-        try? vm.writeToHeap(bytes: bytes, byteOffset: Int(offset))
+        try? vm.runtime.memory().write(bytes: bytes, offset: UInt32(offset))
     }
 
     func write(data: Data, offset: Int32) {
-        try? vm.writeToHeap(data: data, byteOffset: Int(offset))
+        try? vm.runtime.memory().write(data: data, offset: UInt32(offset))
     }
 }

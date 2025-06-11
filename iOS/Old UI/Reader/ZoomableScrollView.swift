@@ -39,6 +39,8 @@ class ZoomableScrollView: UIScrollView {
         bouncesZoom = true
         showsVerticalScrollIndicator = false
         showsHorizontalScrollIndicator = false
+        insetsLayoutMarginsFromSafeArea = false
+        contentInsetAdjustmentBehavior = .never
     }
 
     required init?(coder aDecoder: NSCoder) {

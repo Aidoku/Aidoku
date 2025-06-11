@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 import SwiftSoup
 
 class WasmHtml {
@@ -18,42 +17,42 @@ class WasmHtml {
     }
 
     func export(into namespace: String = "html") {
-        try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
-        try? globalStore.vm.addImportHandler(named: "parse_fragment", namespace: namespace, block: self.parseFragment)
-        try? globalStore.vm.addImportHandler(named: "parse_with_uri", namespace: namespace, block: self.parseWithUri)
-        try? globalStore.vm.addImportHandler(named: "parse_fragment_with_uri", namespace: namespace, block: self.parseFragmentWithUri)
+        try? globalStore.vm.linkFunction(name: "parse", namespace: namespace, function: self.parse)
+        try? globalStore.vm.linkFunction(name: "parse_fragment", namespace: namespace, function: self.parseFragment)
+        try? globalStore.vm.linkFunction(name: "parse_with_uri", namespace: namespace, function: self.parseWithUri)
+        try? globalStore.vm.linkFunction(name: "parse_fragment_with_uri", namespace: namespace, function: self.parseFragmentWithUri)
 
-        try? globalStore.vm.addImportHandler(named: "select", namespace: namespace, block: self.select)
-        try? globalStore.vm.addImportHandler(named: "attr", namespace: namespace, block: self.attr)
+        try? globalStore.vm.linkFunction(name: "select", namespace: namespace, function: self.select)
+        try? globalStore.vm.linkFunction(name: "attr", namespace: namespace, function: self.attr)
 
-        try? globalStore.vm.addImportHandler(named: "set_text", namespace: namespace, block: self.setText)
-        try? globalStore.vm.addImportHandler(named: "set_html", namespace: namespace, block: self.setHtml)
-        try? globalStore.vm.addImportHandler(named: "prepend", namespace: namespace, block: self.prepend)
-        try? globalStore.vm.addImportHandler(named: "append", namespace: namespace, block: self.append)
+        try? globalStore.vm.linkFunction(name: "set_text", namespace: namespace, function: self.setText)
+        try? globalStore.vm.linkFunction(name: "set_html", namespace: namespace, function: self.setHtml)
+        try? globalStore.vm.linkFunction(name: "prepend", namespace: namespace, function: self.prepend)
+        try? globalStore.vm.linkFunction(name: "append", namespace: namespace, function: self.append)
 
-        try? globalStore.vm.addImportHandler(named: "first", namespace: namespace, block: self.first)
-        try? globalStore.vm.addImportHandler(named: "last", namespace: namespace, block: self.last)
-        try? globalStore.vm.addImportHandler(named: "next", namespace: namespace, block: self.next)
-        try? globalStore.vm.addImportHandler(named: "previous", namespace: namespace, block: self.previous)
+        try? globalStore.vm.linkFunction(name: "first", namespace: namespace, function: self.first)
+        try? globalStore.vm.linkFunction(name: "last", namespace: namespace, function: self.last)
+        try? globalStore.vm.linkFunction(name: "next", namespace: namespace, function: self.next)
+        try? globalStore.vm.linkFunction(name: "previous", namespace: namespace, function: self.previous)
 
-        try? globalStore.vm.addImportHandler(named: "base_uri", namespace: namespace, block: self.baseUri)
-        try? globalStore.vm.addImportHandler(named: "body", namespace: namespace, block: self.select)
-        try? globalStore.vm.addImportHandler(named: "text", namespace: namespace, block: self.text)
-        try? globalStore.vm.addImportHandler(named: "untrimmed_text", namespace: namespace, block: self.untrimmedText)
-        try? globalStore.vm.addImportHandler(named: "own_text", namespace: namespace, block: self.ownText)
-        try? globalStore.vm.addImportHandler(named: "data", namespace: namespace, block: self.data)
-        try? globalStore.vm.addImportHandler(named: "array", namespace: namespace, block: self.array)
-        try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
-        try? globalStore.vm.addImportHandler(named: "outer_html", namespace: namespace, block: self.outerHtml)
+        try? globalStore.vm.linkFunction(name: "base_uri", namespace: namespace, function: self.baseUri)
+        try? globalStore.vm.linkFunction(name: "body", namespace: namespace, function: self.select)
+        try? globalStore.vm.linkFunction(name: "text", namespace: namespace, function: self.text)
+        try? globalStore.vm.linkFunction(name: "untrimmed_text", namespace: namespace, function: self.untrimmedText)
+        try? globalStore.vm.linkFunction(name: "own_text", namespace: namespace, function: self.ownText)
+        try? globalStore.vm.linkFunction(name: "data", namespace: namespace, function: self.data)
+        try? globalStore.vm.linkFunction(name: "array", namespace: namespace, function: self.array)
+        try? globalStore.vm.linkFunction(name: "html", namespace: namespace, function: self.html)
+        try? globalStore.vm.linkFunction(name: "outer_html", namespace: namespace, function: self.outerHtml)
 
-        try? globalStore.vm.addImportHandler(named: "escape", namespace: namespace, block: self.escape)
-        try? globalStore.vm.addImportHandler(named: "unescape", namespace: namespace, block: self.unescape)
+        try? globalStore.vm.linkFunction(name: "escape", namespace: namespace, function: self.escape)
+        try? globalStore.vm.linkFunction(name: "unescape", namespace: namespace, function: self.unescape)
 
-        try? globalStore.vm.addImportHandler(named: "id", namespace: namespace, block: self.id)
-        try? globalStore.vm.addImportHandler(named: "tag_name", namespace: namespace, block: self.tagName)
-        try? globalStore.vm.addImportHandler(named: "class_name", namespace: namespace, block: self.className)
-        try? globalStore.vm.addImportHandler(named: "has_class", namespace: namespace, block: self.hasClass)
-        try? globalStore.vm.addImportHandler(named: "has_attr", namespace: namespace, block: self.hasAttr)
+        try? globalStore.vm.linkFunction(name: "id", namespace: namespace, function: self.id)
+        try? globalStore.vm.linkFunction(name: "tag_name", namespace: namespace, function: self.tagName)
+        try? globalStore.vm.linkFunction(name: "class_name", namespace: namespace, function: self.className)
+        try? globalStore.vm.linkFunction(name: "has_class", namespace: namespace, function: self.hasClass)
+        try? globalStore.vm.linkFunction(name: "has_attr", namespace: namespace, function: self.hasAttr)
     }
 }
 

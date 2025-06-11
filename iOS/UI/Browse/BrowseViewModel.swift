@@ -6,16 +6,16 @@
 //
 
 import Foundation
+import AidokuRunner
 
 class BrowseViewModel {
 
-    // TODO: source pinning
     var updatesSources: [SourceInfo2] = []
     var pinnedSources: [SourceInfo2] = []
     var installedSources: [SourceInfo2] = []
     var externalSources: [SourceInfo2] = []
 
-    private var unfilteredExternalSources: [ExternalSourceInfo] = []
+    var unfilteredExternalSources: [ExternalSourceInfo] = []
 
     // stored sources when searching
     private var query: String?
@@ -24,9 +24,13 @@ class BrowseViewModel {
     private var storedInstalledSources: [SourceInfo2]?
     private var storedExternalSources: [SourceInfo2]?
 
+    private func getInstalledSources() -> [SourceInfo2] {
+        SourceManager.shared.sources.map { $0.toInfo() }
+    }
+
     // load installed sources
     func loadInstalledSources() {
-        let installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+        let installedSources = getInstalledSources()
         if storedInstalledSources != nil {
             storedInstalledSources = installedSources
             search(query: query)
@@ -36,7 +40,7 @@ class BrowseViewModel {
     }
 
     func loadPinnedSources() {
-        let installedSources = SourceManager.shared.sources.map { sourceToInfo(source: $0) }
+        let installedSources = getInstalledSources()
         let defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
 
         var pinnedSources: [SourceInfo2] = []
@@ -67,33 +71,19 @@ class BrowseViewModel {
 
     // load external source lists
     func loadExternalSources() async {
-        unfilteredExternalSources = await withTaskGroup(of: [ExternalSourceInfo]?.self) { group in
-            for url in SourceManager.shared.sourceLists {
-                // load sources from list
-                let url = url.pathExtension.isEmpty ? url : url.deletingLastPathComponent()
-                group.addTask {
-                    guard var sources = await SourceManager.shared.loadSourceList(url: url) else { return nil }
-                    // set source url in external infos
-                    for index in sources.indices {
-                        sources[index].sourceUrl = url
-                    }
-                    return sources
-                }
-            }
-            var ids = Set<String>() // ensure external sources have unique ids
-            var results: [ExternalSourceInfo] = []
-            for await result in group {
-                guard let result = result else { continue }
-                results += result.filter { ids.insert($0.id).inserted }
-            }
-            return results
+        await SourceManager.shared.loadSourceLists()
+
+        var ids = Set<String>() // ensure external sources have unique ids
+        var results: [ExternalSourceInfo] = []
+        for sourceList in SourceManager.shared.sourceLists {
+            results += sourceList.sources.filter { ids.insert($0.id).inserted }
         }
+        unfilteredExternalSources = results
 
         filterExternalSources()
     }
 
     // filter external sources and updates
-    // swiftlint:disable:next cyclomatic_complexity
     func filterExternalSources() {
         guard
             let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
@@ -104,7 +94,7 @@ class BrowseViewModel {
 
         var updatesSources: [SourceInfo2] = []
 
-        var externalSources: [SourceInfo2] = unfilteredExternalSources.compactMap { info in
+        var externalSources: [SourceInfo2] = unfilteredExternalSources.compactMap { info -> SourceInfo2? in
             var update = false
             // strip installed sources from external list
             if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
@@ -139,26 +129,28 @@ class BrowseViewModel {
             }
             // add to updates after checking version
             if update {
-                updatesSources.append(externalSourceToInfo(info: info))
+                updatesSources.append(info.toInfo())
                 return nil
             }
             // hide nsfw sources
-            let contentRating = SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe
-            if !showNsfw && contentRating == .nsfw {
+            let contentRating = info.contentRating ?? AidokuRunner.SourceContentRating(rawValue: info.nsfw ?? 0) ?? .safe
+            if !showNsfw && contentRating == .primarilyNsfw {
                 return nil
             }
             // hide unselected languages
-            if !selectedLanguages.contains(info.lang) {
+            if !selectedLanguages.contains(where: { info.languages?.contains($0) ?? (info.lang == $0) }) {
                 return nil
             }
-            return externalSourceToInfo(info: info)
+            return info.toInfo()
         }
 
         // sort first by name, then by language
         externalSources.sort { $0.name < $1.name }
         externalSources.sort {
-            let lhs = SourceManager.languageCodes.firstIndex(of: $0.lang) ?? 0
-            let rhs = SourceManager.languageCodes.firstIndex(of: $1.lang) ?? 0
+            let lhsLang = $0.languages.count == 1 ? $0.languages[0] : "multi"
+            let rhsLang = $1.languages.count == 1 ? $1.languages[0] : "multi"
+            let lhs = SourceManager.languageCodes.firstIndex(of: lhsLang) ?? 0
+            let rhs = SourceManager.languageCodes.firstIndex(of: rhsLang) ?? 0
             return lhs < rhs
         }
 
@@ -178,24 +170,9 @@ class BrowseViewModel {
             sourceId: source.manifest.info.id,
             iconUrl: source.url.appendingPathComponent("Icon.png"),
             name: source.manifest.info.name,
-            lang: source.manifest.info.lang,
+            languages: [source.manifest.info.lang],
             version: source.manifest.info.version,
-            contentRating: SourceInfo2.ContentRating(rawValue: source.manifest.info.nsfw ?? 0) ?? .safe
-        )
-    }
-
-    // convert ExternalSourceInfo to SourceInfo
-    private func externalSourceToInfo(info: ExternalSourceInfo) -> SourceInfo2 {
-        SourceInfo2(
-            sourceId: info.id,
-            iconUrl: info.sourceUrl?
-                .appendingPathComponent("icons")
-                .appendingPathComponent(info.icon),
-            name: info.name,
-            lang: info.lang,
-            version: info.version,
-            contentRating: SourceInfo2.ContentRating(rawValue: info.nsfw ?? 0) ?? .safe,
-            externalInfo: info
+            contentRating: .init(rawValue: source.manifest.info.nsfw ?? 0) ?? .safe
         )
     }
 

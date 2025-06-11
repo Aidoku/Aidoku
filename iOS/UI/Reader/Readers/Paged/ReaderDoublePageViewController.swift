@@ -80,14 +80,16 @@ class ReaderDoublePageViewController: BaseViewController {
         firstReloadButton.isHidden = true
         firstReloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
         firstReloadButton.addTarget(self, action: #selector(reload(_:)), for: .touchUpInside)
-        firstReloadButton.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
+        firstReloadButton.configuration = .borderless()
+        firstReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
         firstReloadButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(firstReloadButton)
 
         secondReloadButton.isHidden = true
         secondReloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
         secondReloadButton.addTarget(self, action: #selector(reload(_:)), for: .touchUpInside)
-        secondReloadButton.contentEdgeInsets = UIEdgeInsets(top: 15, left: 15, bottom: 15, right: 15)
+        secondReloadButton.configuration = .borderless()
+        secondReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
         secondReloadButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(secondReloadButton)
     }

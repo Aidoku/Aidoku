@@ -44,45 +44,86 @@ class DownloadManager {
         await queue.queue
     }
 
-    func getDownloadedPages(for chapter: Chapter) -> [Page] {
-        var pages: [Page] = []
-        let pageUrls = cache.directory(for: chapter).contents
-        for page in pageUrls {
-            if let data = try? Data(contentsOf: page) {
-                pages.append(
-                    Page(
-                        sourceId: chapter.sourceId,
-                        chapterId: chapter.id,
-                        index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-                        imageURL: nil,
-                        base64: page.pathExtension == "txt" ? String(data: data, encoding: .utf8) : data.base64EncodedString(),
-                        text: nil
-                    )
-                )
-            }
-        }
-        return pages.sorted { $0.index < $1.index }
-    }
+//    func getDownloadedPages(for chapter: Chapter) -> [Page] {
+//        var pages: [Page] = []
+//        let pageUrls = cache.directory(for: chapter).contents
+//        for page in pageUrls {
+//            if let data = try? Data(contentsOf: page) {
+//                pages.append(
+//                    Page(
+//                        sourceId: chapter.sourceId,
+//                        chapterId: chapter.id,
+//                        index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
+//                        imageURL: nil,
+//                        base64: page.pathExtension == "txt" ? String(data: data, encoding: .utf8) : data.base64EncodedString(),
+//                        text: nil
+//                    )
+//                )
+//            }
+//        }
+//        return pages.sorted { $0.index < $1.index }
+//    }
 
     func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
-        cache.directory(for: chapter).contents
-            .map { url in
-                Page(
+        var descriptionFiles: [URL] = []
+
+        var pages = cache.directory(for: chapter).contents
+            .compactMap { url -> Page? in
+                let imageURL: String?
+                let text: String?
+                if url.pathExtension == "txt" {
+                    // add description file to list
+                    if url.lastPathComponent.hasSuffix("desc.txt") {
+                        descriptionFiles.append(url)
+                        return nil
+                    }
+                    // otherwise, load file as text
+                    imageURL = nil
+                    text = try? String(contentsOf: url)
+                } else {
+                    // load file as image
+                    imageURL = url.absoluteString
+                    text = nil
+                }
+                return Page(
                     sourceId: chapter.sourceId,
                     chapterId: chapter.id,
                     index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-                    imageURL: url.absoluteString
+                    imageURL: imageURL,
+                    text: text,
                 )
             }
             .sorted { $0.index < $1.index }
+
+        // load descriptions from files
+        for descriptionFile in descriptionFiles {
+            guard
+                let index = descriptionFile
+                    .deletingPathExtension()
+                    .lastPathComponent
+                    .split(separator: ".")
+                    .first
+                    .flatMap({ Int($0) }),
+                index > 0,
+                index <= pages.count
+            else { break }
+            pages[index - 1].hasDescription = true
+            pages[index - 1].description = try? String(contentsOf: descriptionFile)
+        }
+
+        return pages
     }
 
     func isChapterDownloaded(chapter: Chapter) -> Bool {
-        cache.isChapterDownloaded(chapter: chapter)
+        cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id)
+    }
+
+    func isChapterDownloaded(sourceId: String, mangaId: String, chapterId: String) -> Bool {
+        cache.isChapterDownloaded(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId)
     }
 
     func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
-        if cache.isChapterDownloaded(chapter: chapter) {
+        if isChapterDownloaded(chapter: chapter) {
             return .finished
         } else {
             let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
@@ -118,21 +159,30 @@ extension DownloadManager {
 
     func downloadAll(manga: Manga) async {
         let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+            .filter {
+                // filter out chapters that are locked and already downloaded
+                !$0.locked && !isChapterDownloaded(chapter: $0)
+            }
         download(chapters: chapters.reversed(), manga: manga)
     }
 
     func downloadUnread(manga: Manga) async {
         let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id).filter {
-            readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1
-        }
+        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+            .filter {
+                (readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1)
+                    && !$0.locked && !isChapterDownloaded(chapter: $0)
+            }
         download(chapters: chapters.reversed(), manga: manga)
     }
 
     func download(chapters: [Chapter], manga: Manga? = nil) {
         Task {
             let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
-            NotificationCenter.default.post(name: NSNotification.Name("downloadsQueued"), object: downloads)
+            NotificationCenter.default.post(
+                name: NSNotification.Name("downloadsQueued"),
+                object: downloads
+            )
         }
     }
 

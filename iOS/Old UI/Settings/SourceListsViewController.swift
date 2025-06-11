@@ -9,7 +9,7 @@ import UIKit
 
 class SourceListsViewController: UITableViewController {
 
-    var sourceLists: [URL] = SourceManager.shared.sourceLists
+    var sourceLists: [URL] = SourceManager.shared.sourceListURLs
 
     var observers: [NSObjectProtocol] = []
 
@@ -44,7 +44,7 @@ class SourceListsViewController: UITableViewController {
             guard let self = self else { return }
             Task { @MainActor in
                 let previousLists = self.sourceLists
-                self.sourceLists = SourceManager.shared.sourceLists
+                self.sourceLists = SourceManager.shared.sourceListURLs
                 if previousLists.count == self.sourceLists.count {
                     self.tableView.reloadData()
                 } else {

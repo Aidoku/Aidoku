@@ -237,7 +237,7 @@
 "LOCK_HISTORY_TAB" = "Kunci Tab Riwayat";
 "SAVE_IMAGE_OPTION" = "Simpan Opsi Gambar";
 "RENAME_BACKUP" = "Ganti nama Cadangan";
-"BACKUP_IMPORT_FAIL" = "Impor Gagal";
+"IMPORT_FAIL" = "Impor Gagal";
 "EXPORT" = "Ekspor";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "URL daftar sumber yang diberikan tidak valid atau telah ditambahkan.";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Tindakan ini tidak dapat diubah. Chapter yang di-cache akan dihapus dan diunduh ulang.";
