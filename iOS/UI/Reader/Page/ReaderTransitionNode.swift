@@ -33,7 +33,7 @@ class ReaderTransitionNode: ASDisplayNode {
             return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
         case (nil, nil, .some(let chapterTitle)): return chapterTitle
         default:
-            var arr = Array<String>()
+            var arr = [String]()
             if let volumeNum = chapter.volumeNum {
                 arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
             }
