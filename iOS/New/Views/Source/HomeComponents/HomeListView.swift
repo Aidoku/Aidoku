@@ -70,12 +70,10 @@ struct HomeListView: View {
             } else {
                 Group {
                     if let pageSize {
-#if !os(macOS)
                         let (getSection, height) = CollectionView.mangaListLayout(
                             itemsPerPage: pageSize,
                             totalItems: entries.count
                         )
-
                         CollectionView(
                             sections: [
                                 CollectionViewSection(
@@ -92,17 +90,6 @@ struct HomeListView: View {
                             }
                         )
                         .frame(height: height)
-#else
-                        LazyVStack {
-                            ForEach(entries.indices, id: \.self) { offset in
-                                view(
-                                    for: entries[offset],
-                                    position: offset,
-                                    last: offset == entries.count - 1
-                                )
-                            }
-                        }
-#endif
                     } else {
                         LazyVStack {
                             ForEach(entries.indices, id: \.self) { offset in
