@@ -119,8 +119,8 @@ final class LegacySourceRunner: AidokuRunner.Runner {
         let result = try await source.handleUrl(url: url)
         guard let mangaId = result.manga?.id else { return nil }
         return DeepLinkResult(
-            mangaId: mangaId,
-            chapterId: result.chapter?.id
+            mangaKey: mangaId,
+            chapterKey: result.chapter?.id
         )
     }
 
