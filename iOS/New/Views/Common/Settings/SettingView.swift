@@ -643,7 +643,7 @@ extension SettingView {
                         do {
                             let success = try await source.handleWebLogin(key: setting.key, cookies: newValue)
                             if success {
-                                showLoginAlert = false
+                                showLoginWebView = false
                                 commit()
                             }
                         } catch {
