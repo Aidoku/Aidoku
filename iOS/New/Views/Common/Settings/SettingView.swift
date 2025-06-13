@@ -47,8 +47,6 @@ struct SettingView: View {
     // empty view controller to support login view presentation
     private static var loginShimController = LoginShimViewController()
 
-    @Environment(\.dismiss) private var dismiss
-
     init(source: AidokuRunner.Source?, setting: Setting, namespace: String? = nil, hidden: Binding<Bool> = .constant(false)) {
         self.source = source
 
@@ -608,7 +606,7 @@ extension SettingView {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        showLoginWebView = false
                     } label: {
                         Text(NSLocalizedString("CANCEL")).bold()
                     }
