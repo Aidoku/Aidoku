@@ -39,6 +39,7 @@ struct SettingView: View {
     @State private var listAddItem = ""
     @State private var skippedFirst = false
     @State private var loginLoading = false
+    @State private var loginReload = false
     @State private var session: ASWebAuthenticationSession?
 
     @StateObject private var userDefaultsObserver: UserDefaultsObserver // causes view to refresh when setting changes (e.g. when resetting)
@@ -600,7 +601,8 @@ extension SettingView {
         PlatformNavigationStack {
             Group {
                 if let url = value.url.flatMap({ URL(string: $0) }) {
-                    WebView(url, cookies: $loginCookies)
+                    WebView(url, cookies: $loginCookies, reloadToggle: $loginReload)
+                        .edgesIgnoringSafeArea(.bottom)
                 }
             }
             .toolbar {
@@ -609,6 +611,13 @@ extension SettingView {
                         showLoginWebView = false
                     } label: {
                         Text(NSLocalizedString("CANCEL")).bold()
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        loginReload = true
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
                 }
             }
