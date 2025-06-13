@@ -332,30 +332,36 @@ extension SourceManager {
 extension SourceManager {
 
     func addSourceList(url: URL) async -> Bool {
-        guard !sourceListURLs.contains(url) else { return false }
+        guard !sourceListURLs.contains(url) else {
+            print("already added")
+            return false
+        }
 
         let result = await loadSourceList(url: url)
         guard let result else {
+            print("not a valid source")
             return false
         }
 
         sourceLists.append(result)
         sourceListURLs.append(url)
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
-        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceLists, object: nil)
         return true
     }
 
     func removeSourceList(url: URL) {
+        sourceLists.removeAll { $0.url == url }
         sourceListURLs.removeAll { $0 == url }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
-        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 
     func clearSourceLists() {
+        sourceLists = []
         sourceListURLs = []
         UserDefaults.standard.set([URL](), forKey: "Browse.sourceLists")
-        NotificationCenter.default.post(name: Notification.Name("updateSourceLists"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 
     func loadSourceList(url: URL) async -> SourceList? {

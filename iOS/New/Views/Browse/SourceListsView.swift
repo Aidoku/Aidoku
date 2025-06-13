@@ -29,9 +29,9 @@ struct SourceListsView: View {
                         listItem(url: url)
                     }
                 } header: {
-                    Text("Unavailable Source Lists")
+                    Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS"))
                 } footer: {
-                    Text("An error occured while fetching the above source lists.")
+                    Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS_TEXT"))
                 }
             }
         }
@@ -60,11 +60,14 @@ struct SourceListsView: View {
                 .textInputAutocapitalization(.never)
                 .submitLabel(.done)
 
-            Button(NSLocalizedString("CANCEL"), role: .cancel) {}
+            Button(NSLocalizedString("CANCEL"), role: .cancel) {
+                sourceListToAdd = ""
+            }
 
             let is15Or16 = UIDevice.current.systemVersion.hasPrefix("15.") || UIDevice.current.systemVersion.hasPrefix("16.")
             Button(NSLocalizedString("OK")) {
                 addSourceList(url: sourceListToAdd)
+                sourceListToAdd = ""
             }
             .disabled(!is15Or16 && sourceListToAdd.isEmpty)
         } message: {
@@ -127,7 +130,6 @@ struct SourceListsView: View {
 
     func delete(at offsets: IndexSet) {
         let urls = offsets.map { sourceLists[$0].url }
-        sourceLists.remove(atOffsets: offsets)
         for url in urls {
             SourceManager.shared.removeSourceList(url: url)
         }
