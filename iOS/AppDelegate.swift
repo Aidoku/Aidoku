@@ -382,7 +382,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             do {
                 let link = try await targetSource.handleDeepLink(url: finalUrl)
 
-                if let mangaId = link?.mangaId {
+                if let mangaId = link?.mangaKey {
                     // open manga view and scroll to chapter if given
                     guard let manga = try? await targetSource.getMangaUpdate(
                         manga: AidokuRunner.Manga(
@@ -394,7 +394,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         needsChapters: false
                     ) else { return false }
 
-                    let chapter: Chapter? = if let chapterId = link?.chapterId {
+                    let chapter: Chapter? = if let chapterId = link?.chapterKey {
                         Chapter(
                             sourceId: targetSource.id,
                             id: chapterId,
