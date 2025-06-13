@@ -28,8 +28,9 @@ struct CodableSourceList: Codable {
             url: url,
             name: name,
             feedbackURL: feedbackURL.flatMap { URL(string: $0) },
-            sources: sources
+            sources: sources.map {
+                $0.with(sourceUrl: url)
+            }
         )
     }
 }
-

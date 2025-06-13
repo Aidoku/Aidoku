@@ -45,6 +45,12 @@ struct ExternalSourceInfo: Codable, Hashable {
 }
 
 extension ExternalSourceInfo {
+    func with(sourceUrl: URL) -> ExternalSourceInfo {
+        var copy = self
+        copy.sourceUrl = sourceUrl
+        return copy
+    }
+
     func toInfo() -> SourceInfo2 {
         let iconUrl: URL? = sourceUrl.flatMap { sourceUrl in
             if let iconURL {
