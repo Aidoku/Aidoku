@@ -345,6 +345,8 @@
 "WITH_UNREAD_CHAPTERS" = "With unread chapters";
 "WITH_COMPLETED_STATUS" = "With completed status";
 "THAT_HAVENT_BEEN_READ" = "That haven't been read";
+
+// Source Lists
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";
 "SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";
@@ -354,7 +356,10 @@
 "SOURCE_LIST_ADD_TEXT" = "Enter the source list URL";
 "SOURCE_LIST_ADD_FAIL" = "Failed to Add Source List";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
+"UNAVAILABLE_SOURCE_LISTS" = "Unavailable Source Lists";
+"UNAVAILABLE_SOURCE_LISTS_TEXT" = "An error occured while fetching the above source lists.";
 "COPY_URL" = "Copy URL";
+
 "LOCK_HISTORY_TAB" = "Lock History Tab";
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";

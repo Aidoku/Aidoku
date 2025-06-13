@@ -145,7 +145,6 @@
 		FB4275192961203100131377 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4275182961203100131377 /* SemanticVersion.swift */; };
 		FB42751A2961216E00131377 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4275182961203100131377 /* SemanticVersion.swift */; };
 		FB42751B29612A3000131377 /* SourceSectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */; };
-		FB4ADC6C2810ECD000F6D7FB /* SourceListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */; };
 		FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADC74281206AD00F6D7FB /* UIStepper.swift */; };
 		FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FB4ADC9F2814DAA200F6D7FB /* Localizable.strings */; };
 		FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */; };
@@ -557,7 +556,6 @@
 		FB43BE0729453E6D004E5AE4 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		FB43BE0829453E9D004E5AE4 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4436B52D1658480042741B /* ta */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ta; path = ta.lproj/Localizable.strings; sourceTree = "<group>"; };
-		FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListsViewController.swift; sourceTree = "<group>"; };
 		FB4ADC74281206AD00F6D7FB /* UIStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIStepper.swift; sourceTree = "<group>"; };
 		FB4ADC9E2814DAA200F6D7FB /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4ADCA02814DAE200F6D7FB /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1162,7 +1160,6 @@
 				FBED231227B816D50095D0C0 /* SettingsViewController.swift */,
 				FBED231427B838980095D0C0 /* SettingsAboutViewController.swift */,
 				FB716E06283EEF3500F1BB5D /* CategoriesViewController.swift */,
-				FB4ADC6B2810ECD000F6D7FB /* SourceListsViewController.swift */,
 				FB72500A27CA8DED0037F1C9 /* BackupsViewController.swift */,
 				FB4B0AE5285CDD3F0066A13B /* TrackersViewController.swift */,
 				FB716E01283DD6BE00F1BB5D /* LogViewController.swift */,
@@ -2296,7 +2293,6 @@
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
 				FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,
-				FB4ADC6C2810ECD000F6D7FB /* SourceListsViewController.swift in Sources */,
 				FB55C0B32DF244580019A551 /* LocalSource.swift in Sources */,
 				FBD6A4052857AF2C007116C9 /* UIImage.swift in Sources */,
 				FB72500B27CA8DED0037F1C9 /* BackupsViewController.swift in Sources */,
