@@ -58,51 +58,31 @@ struct HomeChapterListView: View {
                     .redacted(reason: .placeholder)
                     .shimmering()
             } else {
-                LazyVStack {
-                    ForEach(entries.indices, id: \.self) { offset in
-                        let entry = entries[offset]
-                        Button {
-#if !os(macOS)
-                            let hostingController = UIHostingController(
-                                rootView: MangaView(source: source, manga: entry.manga)
-                                    .environmentObject(path)
-                            )
-                            hostingController.navigationItem.largeTitleDisplayMode = .never
-                            path.push(hostingController)
-#endif
-                        } label: {
-                            HStack(spacing: 12) {
-                                MangaCoverView(
-                                    source: source,
-                                    coverImage: entry.manga.cover ?? "",
-                                    width: 100 * 2/3,
-                                    height: 100,
-                                    downsampleWidth: 200,
-                                    bookmarked: bookmarkedItems.contains(entry.manga.key)
-                                )
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(entry.manga.title)
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
-
-                                    Text(entry.chapter.formattedTitle())
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-
-                                    if let date = entry.chapter.dateUploaded {
-                                        Label(relativeTimeString(for: date), systemImage: "clock")
-                                            .foregroundStyle(.secondary)
-                                            .font(.subheadline)
+                Group {
+                    if let pageSize {
+                        let (getSection, height) = CollectionView.mangaListLayout(
+                            itemsPerPage: pageSize,
+                            totalItems: entries.count
+                        )
+                        CollectionView(
+                            sections: [
+                                CollectionViewSection(
+                                    items: entries.indices.map { offset in
+                                        AnyView(view(for: entries[offset]).ignoresSafeArea())
                                     }
-                                }
-                                Spacer()
+                                )
+                            ],
+                            layout: UICollectionViewCompositionalLayout { _, layoutEnvironment in
+                                getSection(layoutEnvironment)
                             }
-                            .padding(.horizontal)
+                        )
+                        .frame(height: height)
+                    } else {
+                        LazyVStack {
+                            ForEach(entries.indices, id: \.self) { offset in
+                                view(for: entries[offset])
+                            }
                         }
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .buttonStyle(.borderless)
                     }
                 }
                 .task {
@@ -120,6 +100,52 @@ struct HomeChapterListView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    func view(for entry: MangaWithChapter) -> some View {
+        Button {
+#if !os(macOS)
+            let hostingController = UIHostingController(
+                rootView: MangaView(source: source, manga: entry.manga)
+                    .environmentObject(path)
+            )
+            hostingController.navigationItem.largeTitleDisplayMode = .never
+            path.push(hostingController)
+#endif
+        } label: {
+            HStack(spacing: 12) {
+                MangaCoverView(
+                    source: source,
+                    coverImage: entry.manga.cover ?? "",
+                    width: 100 * 2/3,
+                    height: 100,
+                    downsampleWidth: 200,
+                    bookmarked: bookmarkedItems.contains(entry.manga.key)
+                )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(entry.manga.title)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+
+                    Text(entry.chapter.formattedTitle())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+
+                    if let date = entry.chapter.dateUploaded {
+                        Label(relativeTimeString(for: date), systemImage: "clock")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
+                }
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+        .foregroundStyle(.primary)
+        .multilineTextAlignment(.leading)
+        .buttonStyle(.borderless)
     }
 
     func loadBookmarked() async {
