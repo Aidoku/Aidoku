@@ -216,7 +216,7 @@ class ReaderViewController: BaseObservingViewController {
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             self.updateReadPosition()
         }
     }
@@ -327,8 +327,8 @@ class ReaderViewController: BaseObservingViewController {
         let webViewActionImage = UIImage(systemName: "safari")
         let webViewAction =
             if let url = chapter.url {
-                UIAction(title: webViewActionTitle, image: webViewActionImage) { _ in
-                    self.present(SFSafariViewController(url: url), animated: true)
+                UIAction(title: webViewActionTitle, image: webViewActionImage) { [weak self] _ in
+                    self?.present(SFSafariViewController(url: url), animated: true)
                 }
             } else {
                 UIAction(
