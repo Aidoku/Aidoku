@@ -13,23 +13,19 @@ struct SelectFilterView: View {
 
     @Binding var enabledFilters: [FilterValue]
 
-    private let usesTagStyle: Bool
-    private let options: [String]
-    private let defaultValue: Int?
+    private let selectFilter: AidokuRunner.SelectFilter
 
     @State private var showingSheet = false
-    @State private var selectedOption: Int
+    @State private var selectedOption: String
 
     init(filter: AidokuRunner.Filter, enabledFilters: Binding<[FilterValue]>) {
         self.filter = filter
         self._enabledFilters = enabledFilters
 
-        guard case let .select(_, usesTagStyle, options, defaultValue) = filter.value else {
+        guard case let .select(value) = filter.value else {
             fatalError("invalid filter type")
         }
-        self.usesTagStyle = usesTagStyle
-        self.options = options
-        self.defaultValue = defaultValue
+        self.selectFilter = value
 
         let initialValue = if
             let enabledFilter = enabledFilters.wrappedValue.first(where: { $0.id == filter.id }),
@@ -37,7 +33,7 @@ struct SelectFilterView: View {
         {
             value
         } else {
-            defaultValue ?? 0
+            value.resolvedDefaultValue
         }
         self._selectedOption = State(initialValue: initialValue)
     }
@@ -46,18 +42,20 @@ struct SelectFilterView: View {
         Group {
             let label = FilterLabelView(
                 name: filter.title ?? "",
-                active: selectedOption != defaultValue ?? 0,
+                active: selectedOption != selectFilter.resolvedDefaultValue,
                 chevron: true
             )
             Menu {
-                ForEach(Array(options.enumerated()), id: \.offset) { offset, option in
+                ForEach(selectFilter.options.indices, id: \.self) { offset in
+                    let option = selectFilter.options[offset]
+                    let value = selectFilter.ids?[safe: offset] ?? option
                     Button {
-                        selectedOption = offset
+                        selectedOption = value
                     } label: {
                         HStack {
                             Text(option)
                             Spacer()
-                            if selectedOption == offset {
+                            if selectedOption == value {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.tint)
                             }
@@ -91,14 +89,14 @@ struct SelectFilterView: View {
                     selectedOption = value
                 }
             } else {
-                selectedOption = defaultValue ?? 0
+                selectedOption = selectFilter.resolvedDefaultValue
             }
         }
     }
 
     func updateFilter() {
         let value = selectedOption
-        let isDefault = value == (defaultValue ?? 0)
+        let isDefault = value == selectFilter.resolvedDefaultValue
         let filterValue = FilterValue.select(id: filter.id, value: value)
 
         if let index = enabledFilters.firstIndex(where: { $0.id == filter.id }) {
@@ -116,27 +114,23 @@ struct SelectFilterView: View {
 struct SelectFilterGroupView: View {
     let filter: AidokuRunner.Filter
 
-    @Binding var selectedOption: Int
+    @Binding var selectedOption: String
 
-    private let usesTagStyle: Bool
-    private let options: [String]
-    private let defaultValue: Int?
+    private let selectFilter: AidokuRunner.SelectFilter
 
-    init(filter: AidokuRunner.Filter, selectedOption: Binding<Int>) {
+    init(filter: AidokuRunner.Filter, selectedOption: Binding<String>) {
         self.filter = filter
         self._selectedOption = selectedOption
 
-        guard case let .select(_, usesTagStyle, options, defaultValue) = filter.value else {
+        guard case let .select(value) = filter.value else {
             fatalError("invalid filter type")
         }
-        self.usesTagStyle = usesTagStyle
-        self.options = options
-        self.defaultValue = defaultValue
+        self.selectFilter = value
     }
 
     var body: some View {
         Group {
-            if usesTagStyle {
+            if selectFilter.usesTagStyle {
                 tagBody
             } else {
                 listBody
@@ -145,18 +139,17 @@ struct SelectFilterGroupView: View {
     }
 
     var tagBody: some View {
-        WrappingHStack(
-            Array(options.enumerated()),
-            id: \.offset
-        ) { offset, option in
+        WrappingHStack(selectFilter.options.indices, id: \.self) { offset in
+            let option = selectFilter.options[offset]
+            let value = selectFilter.ids?[safe: offset] ?? option
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    selectedOption = offset
+                    selectedOption = value
                 }
             } label: {
                 Text(option)
             }
-            .buttonStyle(SelectButtonStyle(selected: selectedOption == offset))
+            .buttonStyle(SelectButtonStyle(selected: selectedOption == value))
             .padding([.trailing, .bottom], 8)
         }
         .padding(.horizontal)
@@ -165,13 +158,15 @@ struct SelectFilterGroupView: View {
 
     var listBody: some View {
         VStack(spacing: 0) {
-            ForEach(Array(options.enumerated()), id: \.offset) { offset, option in
+            ForEach(selectFilter.options.indices, id: \.self) { offset in
+                let option = selectFilter.options[offset]
+                let value = selectFilter.ids?[safe: offset] ?? option
                 Button {
-                    selectedOption = offset
+                    selectedOption = value
                 } label: {
                     HStack {
                         ZStack {
-                            let selected = selectedOption == offset
+                            let selected = selectedOption == value
                             RoundedRectangle(cornerRadius: 5)
                                 .fill(selected ? Color.accentColor : Color(uiColor: .secondarySystemFill))
                                 .aspectRatio(1, contentMode: .fill)
