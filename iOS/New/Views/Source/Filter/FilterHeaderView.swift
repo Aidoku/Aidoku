@@ -190,18 +190,22 @@ struct FilterHeaderView: View {
                 id: "select",
                 title: "Select",
                 value: .select(
-                    usesTagStyle: false,
-                    options: ["Option 1", "Option 2"],
-                    defaultValue: nil
+                    .init(
+                        usesTagStyle: false,
+                        options: ["Option 1", "Option 2"],
+                        defaultValue: nil
+                    )
                 )
             ),
             .init(
                 id: "select2",
                 title: "Select 2",
                 value: .select(
-                    usesTagStyle: true,
-                    options: ["Option 1", "Option 2"],
-                    defaultValue: nil
+                    .init(
+                        usesTagStyle: true,
+                        options: ["Option 1", "Option 2"],
+                        defaultValue: nil
+                    )
                 )
             ),
             .init(

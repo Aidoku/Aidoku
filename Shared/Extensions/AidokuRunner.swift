@@ -216,3 +216,9 @@ extension AidokuRunner.Page {
         }
     }
 }
+
+extension AidokuRunner.SelectFilter {
+    var resolvedDefaultValue: String {
+        defaultValue ?? ids?.first ?? options.first ?? ""
+    }
+}

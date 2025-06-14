@@ -98,7 +98,8 @@ private struct FilterListView: View {
     @State private var text: [String: String]
     @State private var includedOptions: [String: [String]]
     @State private var excludedOptions: [String: [String]]
-    @State private var selectedOptions: [String: Int]
+    @State private var selectedOptions: [String: String]
+    @State private var selectedIndexes: [String: Int]
     @State private var ascending: [String: Bool]
 
     init(filters: [AidokuRunner.Filter], showTitles: Bool = true, enabledFilters: Binding<[FilterValue]>) {
@@ -109,17 +110,18 @@ private struct FilterListView: View {
         var text: [String: String] = [:]
         var includedOptions: [String: [String]] = [:]
         var excludedOptions: [String: [String]] = [:]
-        var selectedOptions: [String: Int] = [:]
+        var selectedOptions: [String: String] = [:]
+        var selectedIndexes: [String: Int] = [:]
         var ascending: [String: Bool] = [:]
         for filter in enabledFilters.wrappedValue {
             switch filter {
                 case let .text(id, value):
                     text[id] = value
                 case .sort(let value):
-                    selectedOptions[value.id] = Int(value.index)
+                    selectedIndexes[value.id] = Int(value.index)
                     ascending[value.id] = value.ascending
                 case let .check(id, value):
-                    selectedOptions[id] = value
+                    selectedIndexes[id] = value
                 case let .select(id, value):
                     selectedOptions[id] = value
                 case let .multiselect(id, included, excluded):
@@ -131,6 +133,7 @@ private struct FilterListView: View {
         self._includedOptions = State(initialValue: includedOptions)
         self._excludedOptions = State(initialValue: excludedOptions)
         self._selectedOptions = State(initialValue: selectedOptions)
+        self._selectedIndexes = State(initialValue: selectedIndexes)
         self._ascending = State(initialValue: ascending)
     }
 
@@ -166,7 +169,7 @@ private struct FilterListView: View {
                             }
                             SortFilterGroupView(
                                 filter: filter,
-                                selectedOption: selectedOptionBinding(
+                                selectedOption: selectedIndexBinding(
                                     for: filter.id,
                                     default: defaultValue?.index ?? 0
                                 ),
@@ -183,13 +186,13 @@ private struct FilterListView: View {
                             }
                             CheckFilterGroupView(
                                 filter: filter,
-                                state: selectedOptionBinding(
+                                state: selectedIndexBinding(
                                     for: filter.id,
                                     default: defaultValue.map({ $0 ? 1 : 2 }) ?? 0
                                 )
                             )
 
-                        case let .select(_, _, _, defaultValue):
+                        case let .select(value):
                             if showTitles {
                                 titleView(filter.title)
                             }
@@ -197,7 +200,7 @@ private struct FilterListView: View {
                                 filter: filter,
                                 selectedOption: selectedOptionBinding(
                                     for: filter.id,
-                                    default: defaultValue ?? 0
+                                    default: value.resolvedDefaultValue
                                 )
                             )
 
@@ -226,9 +229,11 @@ private struct FilterListView: View {
         .onChange(of: excludedOptions) { _ in
             updateMultiSelectFilters()
         }
-        .onChange(of: selectedOptions) { _ in
+        .onChange(of: selectedIndexes) { _ in
             updateSortFilters()
             updateCheckFilters()
+        }
+        .onChange(of: selectedOptions) { _ in
             updateSelectFilters()
         }
         .onChange(of: ascending) { _ in
@@ -274,13 +279,13 @@ private struct FilterListView: View {
     }
 
     private func updateSortFilters() {
-        let ids = Set(Array(selectedOptions.keys) + Array(ascending.keys))
+        let ids = Set(Array(selectedIndexes.keys) + Array(ascending.keys))
         for id in ids {
             guard
                 let filter = filters.first(where: { $0.id == id }),
                 case let .sort(_, _, defaultValue) = filter.value
             else { continue }
-            let index = selectedOptions[id] ?? defaultValue?.index
+            let index = selectedIndexes[id] ?? defaultValue?.index
             let ascending = ascending[id]
             let isDefault = index == defaultValue?.index && ascending == defaultValue?.ascending
             if let filterIndex = enabledFilters.firstIndex(where: { $0.id == id }) {
@@ -323,7 +328,7 @@ private struct FilterListView: View {
     }
 
     private func updateCheckFilters() {
-        let ids = selectedOptions.keys
+        let ids = selectedIndexes.keys
         for id in ids {
             guard
                 let filter = filters.first(where: { $0.id == id }),
@@ -331,7 +336,7 @@ private struct FilterListView: View {
             else { continue }
 
             let defaultIndex = defaultValue.map({ $0 ? 1 : 2 }) ?? 0
-            let value = selectedOptions[id, default: defaultIndex]
+            let value = selectedIndexes[id, default: defaultIndex]
             let isDefault = value == defaultIndex
             let filterValue = FilterValue.check(id: id, value: value)
 
@@ -348,15 +353,15 @@ private struct FilterListView: View {
     }
 
     private func updateSelectFilters() {
-        let ids = selectedOptions.keys
+        let ids = selectedIndexes.keys
         for id in ids {
             guard
                 let filter = filters.first(where: { $0.id == id }),
-                case let .select(_, _, _, defaultValue) = filter.value
+                case let .select(selectFilter) = filter.value
             else { continue }
 
-            let value = selectedOptions[id, default: defaultValue ?? 0]
-            let isDefault = value == (defaultValue ?? 0)
+            let value = selectedOptions[id, default: selectFilter.resolvedDefaultValue]
+            let isDefault = value == selectFilter.resolvedDefaultValue
             let filterValue = FilterValue.select(id: filter.id, value: value)
 
             if let index = enabledFilters.firstIndex(where: { $0.id == filter.id }) {
@@ -392,10 +397,17 @@ private struct FilterListView: View {
         )
     }
 
-    private func selectedOptionBinding(for id: String, default def: Int) -> Binding<Int> {
+    private func selectedOptionBinding(for id: String, default def: String) -> Binding<String> {
         Binding(
             get: { selectedOptions[id, default: def] },
             set: { selectedOptions[id] = $0 }
+        )
+    }
+
+    private func selectedIndexBinding(for id: String, default def: Int) -> Binding<Int> {
+        Binding(
+            get: { selectedIndexes[id, default: def] },
+            set: { selectedIndexes[id] = $0 }
         )
     }
 
