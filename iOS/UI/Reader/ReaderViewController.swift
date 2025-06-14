@@ -31,13 +31,6 @@ class ReaderViewController: BaseObservingViewController {
 
     weak var reader: ReaderReaderDelegate?
 
-    private let moreButton = UIBarButtonItem(
-        image: UIImage(systemName: "ellipsis"),
-        style: .plain,
-        target: nil,
-        action: nil
-    )
-
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
@@ -129,6 +122,13 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openChapterList)
             )
         ]
+        let moreButton = UIBarButtonItem(
+            image: UIImage(systemName: "safari"),
+            style: .plain,
+            target: self,
+            action: #selector(openWebView)
+        )
+        moreButton.isEnabled = chapter.url != nil
         navigationItem.rightBarButtonItems = [
             moreButton,
             UIBarButtonItem(
@@ -138,7 +138,6 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openReaderSettings)
             )
         ]
-        updateMoreButton()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -322,23 +321,6 @@ class ReaderViewController: BaseObservingViewController {
         navigationItem.setTitle(upper: volume, lower: title)
     }
 
-    func updateMoreButton() {
-        let webViewActionTitle = NSLocalizedString("OPEN_WEBSITE", comment: "")
-        let webViewActionImage = UIImage(systemName: "safari")
-        let webViewAction =
-            if let url = chapter.url {
-                UIAction(title: webViewActionTitle, image: webViewActionImage) { [weak self] _ in
-                    self?.present(SFSafariViewController(url: url), animated: true)
-                }
-            } else {
-                UIAction(
-                    title: webViewActionTitle, image: webViewActionImage, attributes: .disabled
-                ) { _ in }
-            }
-
-        moreButton.menu = UIMenu(children: [webViewAction])
-    }
-
     func showLoadFailAlert() {
         let alert = UIAlertController(
             title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
@@ -354,6 +336,11 @@ class ReaderViewController: BaseObservingViewController {
             rootViewController: ReaderSettingsViewController(mangaId: manga.key)
         )
         present(vc, animated: true)
+    }
+
+    @objc func openWebView() {
+        guard let url = chapter.url else { return }
+        present(SFSafariViewController(url: url), animated: true)
     }
 
     @objc func openChapterList() {
@@ -557,7 +544,6 @@ extension ReaderViewController: ReaderHoldingDelegate {
         self.chapter = chapter
         self.chaptersToMark = [chapter]
         loadNavbarTitle()
-        updateMoreButton()
     }
 
     func setCurrentPage(_ page: Int) {
