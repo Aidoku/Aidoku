@@ -71,7 +71,8 @@ struct MangaCoverPageView: View {
             error = nil
         }
         do {
-            alternateCovers = try await source.getAlternateCovers(manga: manga)
+            let result = try await source.getAlternateCovers(manga: manga)
+            alternateCovers = result.unique()
         } catch {
             withAnimation {
                 self.error = error
@@ -80,36 +81,36 @@ struct MangaCoverPageView: View {
     }
 
     func view(coverImage: String) -> some View {
-            VStack(alignment: .center) {
-                Spacer()
-                MangaCoverView(source: source, coverImage: coverImage, contentMode: .fit)
-                    .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    .contextMenu {
-                        if let url = URL(string: coverImage) {
-                            Button {
-                                if let viewController = UIApplication.shared.firstKeyWindow?.rootViewController {
-                                    Task {
-                                        let image = try await loadImage(url: url)
-                                        image.saveToAlbum(viewController: viewController)
-                                    }
+        VStack(alignment: .center) {
+            Spacer()
+            MangaCoverView(source: source, coverImage: coverImage, contentMode: .fit)
+                .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .contextMenu {
+                    if let url = URL(string: coverImage) {
+                        Button {
+                            if let viewController = UIApplication.shared.firstKeyWindow?.rootViewController {
+                                Task {
+                                    let image = try await loadImage(url: url)
+                                    image.saveToAlbum(viewController: viewController)
                                 }
-                            } label: {
-                                Label(NSLocalizedString("SAVE_TO_PHOTOS"), systemImage: "photo")
                             }
-                            // todo: share sheet doesn't work on ipads
-//                            Button {
-//                                Task {
-//                                    let image = try await loadImage(url: url)
-//                                    showShareSheet(image: image)
-//                                }
-//                            } label: {
-//                                Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
-//                            }
+                        } label: {
+                            Label(NSLocalizedString("SAVE_TO_PHOTOS"), systemImage: "photo")
                         }
+                        // todo: share sheet doesn't work on ipads
+//                        Button {
+//                            Task {
+//                                let image = try await loadImage(url: url)
+//                                showShareSheet(image: image)
+//                            }
+//                        } label: {
+//                            Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
+//                        }
                     }
-                    .padding(16)
-                Spacer()
-            }
+                }
+                .padding(16)
+            Spacer()
+        }
     }
 
     func loadImage(url: URL) async throws -> UIImage {
