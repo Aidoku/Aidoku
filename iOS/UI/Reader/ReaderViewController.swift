@@ -243,7 +243,10 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     func updateReadPosition() {
-        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        guard
+            !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
+            (toolbarView.totalPages ?? 0) > 0
+        else { return }
         Task {
             // don't add history if there is none and we're at the first page
             let sourceId = source?.key ?? manga.sourceKey
