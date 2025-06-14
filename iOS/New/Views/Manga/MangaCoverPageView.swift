@@ -22,6 +22,15 @@ struct MangaCoverPageView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, coverImage: String) {
+        self.source = source
+        self.manga = manga
+        self.coverImage = coverImage
+
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(.primary)
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor(.secondary)
+    }
+
     var body: some View {
         PlatformNavigationStack {
             TabView {
