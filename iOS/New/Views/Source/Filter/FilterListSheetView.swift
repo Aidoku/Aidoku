@@ -353,7 +353,7 @@ private struct FilterListView: View {
     }
 
     private func updateSelectFilters() {
-        let ids = selectedIndexes.keys
+        let ids = selectedOptions.keys
         for id in ids {
             guard
                 let filter = filters.first(where: { $0.id == id }),
