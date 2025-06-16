@@ -308,6 +308,8 @@
 		FB792F762DC90C84001EC616 /* UserDefaultsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */; };
 		FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */; };
 		FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */; };
+		FB7983A12E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */; };
+		FB7983A22E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */; };
 		FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
@@ -693,6 +695,7 @@
 		FB792D9A2961FE9D00666074 /* MangaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewModel.swift; sourceTree = "<group>"; };
 		FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsObserver.swift; sourceTree = "<group>"; };
 		FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareHandler.swift; sourceTree = "<group>"; };
+		FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWebViewHandler.swift; sourceTree = "<group>"; };
 		FB7B7E942787740A001E6EAF /* WasmJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmJson.swift; sourceTree = "<group>"; };
 		FB7B7E9727877416001E6EAF /* WasmNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNet.swift; sourceTree = "<group>"; };
 		FB7B7ED0278CE670001E6EAF /* SourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceManager.swift; sourceTree = "<group>"; };
@@ -1005,6 +1008,7 @@
 				FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */,
 				FB82A5C82DF8786B00366BC8 /* ObjectActorSerialExecutor.swift */,
 				FBF8C5852DCD02020066F53D /* PageInterceptorProcessor.swift */,
+				FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */,
 				FB4275182961203100131377 /* SemanticVersion.swift */,
 				FB14B1252DF4CFDC0067E4D4 /* UIKitShim.swift */,
 			);
@@ -2134,6 +2138,7 @@
 				FB662EEA2DA81A5C00007514 /* MangaView.swift in Sources */,
 				FB662EEB2DA81A5C00007514 /* CollectionView.swift in Sources */,
 				FB662EEC2DA81A5C00007514 /* Carousel.swift in Sources */,
+				FB7983A12E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */,
 				FB8E48DF2DC117A2002A3621 /* MangaView+ViewModel.swift in Sources */,
 				FB662EED2DA81A5C00007514 /* PressableView.swift in Sources */,
 				FB662EEE2DA81A5C00007514 /* ChapterTableCell.swift in Sources */,
@@ -2361,6 +2366,7 @@
 				FB72501D27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB14B12C2DF4D27E0067E4D4 /* CoreDataManager+MangaUpdates.swift in Sources */,
 				FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
+				FB7983A22E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */,
 				FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */,
 				FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */,
