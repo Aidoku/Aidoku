@@ -104,12 +104,8 @@ class MangaCoverViewController: BaseViewController {
         }
 
         if let coverUrl = manga.coverUrl {
-            let urlRequest = if
-                let source = SourceManager.shared.source(for: manga.sourceId),
-                source.features.providesImageRequests,
-                let request = try? await source.getImageRequest(url: coverUrl.absoluteString, context: nil)
-            {
-                request
+            let urlRequest = if let source = SourceManager.shared.source(for: manga.sourceId) {
+                await source.getModifiedImageRequest(url: coverUrl, context: nil)
             } else {
                 URLRequest(url: coverUrl)
             }

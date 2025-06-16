@@ -59,20 +59,13 @@ struct SourceImageView: View {
     }
 
     func loadImageRequest(url: String) async {
-        defer {
-            if imageRequest == nil {
-                imageRequest = ImageRequest(url: URL(string: url))
-            }
-        }
-        guard let source else {
+        guard
+            let source,
+            let url = URL(string: url)
+        else {
+            imageRequest = ImageRequest(url: URL(string: url))
             return
         }
-        if source.features.providesImageRequests {
-            do {
-                imageRequest = ImageRequest(urlRequest: try await source.getImageRequest(url: url, context: nil))
-            } catch {
-                LogManager.logger.error("Failed to load source image: \(error.localizedDescription)")
-            }
-        }
+        imageRequest = ImageRequest(urlRequest: await source.getModifiedImageRequest(url: url, context: nil))
     }
 }
