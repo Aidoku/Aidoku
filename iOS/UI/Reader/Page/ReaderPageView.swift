@@ -80,7 +80,11 @@ class ReaderPageView: UIView {
             self.sourceId = sourceId
         }
 
-        if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
+        if let image = page.image {
+            imageView.image = image
+            fixImageSize()
+            return true
+        } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
             return await setPageImage(url: url, context: page.context, sourceId: self.sourceId)

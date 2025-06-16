@@ -228,7 +228,12 @@ extension ReaderWebtoonPageNode {
         progressNode.isHidden = false
         progressNode.isUserInteractionEnabled = false
 
-        if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
+        if let image = page.image {
+            self.image = image
+            if isNodeLoaded {
+                displayPage()
+            }
+        } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             await loadImage(zipURL: url, filePath: filePath)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
             await loadImage(url: url, context: page.context)

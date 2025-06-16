@@ -23,6 +23,7 @@ struct Page: Hashable {
     var imageURL: String?
     var base64: String?
     var text: String?
+    var image: PlatformImage?
     var zipURL: String?
 
     var context: PageContext?
@@ -42,9 +43,17 @@ struct Page: Hashable {
 extension Page {
     func toNew() -> AidokuRunner.Page {
         let content: AidokuRunner.PageContent = if let imageURL, let url = URL(string: imageURL) {
-            .url(url: url, context: nil)
+            .url(url: url, context: context)
         } else if let text {
             .text(text)
+        } else if let image {
+#if os(macOS)
+            .image(AidokuRunner.PlatformImage(image))
+#else
+            .image(image)
+#endif
+        } else if let zipURL, let url = URL(string: zipURL), let imageURL {
+            .zipFile(url: url, filePath: imageURL)
         } else {
             .text("Invalid URL")
         }
