@@ -36,7 +36,7 @@ actor CloudflareHandler: NSObject {
 
 #if os(macOS)
     @MainActor
-    private var parent: NSViewController? {
+    private var parent: NSWindow? {
         NSApplication.shared.windows.first
     }
 
@@ -89,8 +89,8 @@ actor CloudflareHandler: NSObject {
             webView.removeFromSuperview()
 #if !os(macOS)
             popupController?.dismiss(animated: true)
-#endif
             popupController = nil
+#endif
         }
 
         continuation.resume()
@@ -139,7 +139,7 @@ actor CloudflareHandler: NSObject {
 
 #if os(macOS)
         // todo
-        finish()
+        await finish(for: request)
 #else
         popupController?.dismiss(animated: true)
         let popup = WebViewViewController(request: request, handler: await proxy(for: request))

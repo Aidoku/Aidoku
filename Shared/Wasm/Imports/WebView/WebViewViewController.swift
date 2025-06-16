@@ -8,12 +8,6 @@
 import UIKit
 import WebKit
 
-@MainActor
-protocol PopupWebViewHandler {
-    func navigated(webView: WKWebView, for request: URLRequest)
-    func canceled(request: URLRequest)
-}
-
 class WebViewViewController: BaseViewController, WKNavigationDelegate {
     let request: URLRequest
     var handler: PopupWebViewHandler?
