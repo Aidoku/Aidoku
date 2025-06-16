@@ -275,6 +275,14 @@ extension AidokuRunner.Page {
                     hasDescription: hasDescription,
                     description: description
                 )
+            case let .image(image):
+                Page(
+                    sourceId: sourceId,
+                    chapterId: chapterId,
+                    image: image.image,
+                    hasDescription: hasDescription,
+                    description: description
+                )
             case let .zipFile(url, filePath):
                 Page(
                     sourceId: sourceId,
