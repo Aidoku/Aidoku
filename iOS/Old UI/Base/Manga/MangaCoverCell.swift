@@ -220,13 +220,8 @@ class MangaCoverCell: UICollectionViewCell {
             imageView.image = UIImage(named: "MangaPlaceholder")
         }
 
-        let urlRequest = if
-            let sourceId = manga?.sourceId,
-            let source = SourceManager.shared.source(for: sourceId),
-            source.features.providesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString, context: nil)
-        {
-            request
+        let urlRequest = if let sourceId = manga?.sourceId, let source = SourceManager.shared.source(for: sourceId) {
+            await source.getModifiedImageRequest(url: url, context: nil)
         } else {
             URLRequest(url: url)
         }

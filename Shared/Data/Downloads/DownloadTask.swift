@@ -125,14 +125,10 @@ actor DownloadTask: Identifiable {
 
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 // let source modify image request
-                let urlRequest = if let request = try? await source.getImageRequest(
-                    url: urlString,
+                let urlRequest = await source.getModifiedImageRequest(
+                    url: url,
                     context: page.context
-                ) {
-                    request
-                } else {
-                    URLRequest(url: url)
-                }
+                )
 
                 let result = try? await URLSession.shared.data(for: urlRequest)
 

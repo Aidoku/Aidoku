@@ -306,6 +306,8 @@
 		FB792D992961F0AF00666074 /* MangaDetailHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB792D982961F0AF00666074 /* MangaDetailHeaderView.swift */; };
 		FB792D9B2961FE9D00666074 /* MangaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB792D9A2961FE9D00666074 /* MangaViewModel.swift */; };
 		FB792F762DC90C84001EC616 /* UserDefaultsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */; };
+		FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */; };
+		FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */; };
 		FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
@@ -690,6 +692,7 @@
 		FB792D982961F0AF00666074 /* MangaDetailHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaDetailHeaderView.swift; sourceTree = "<group>"; };
 		FB792D9A2961FE9D00666074 /* MangaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewModel.swift; sourceTree = "<group>"; };
 		FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsObserver.swift; sourceTree = "<group>"; };
+		FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareHandler.swift; sourceTree = "<group>"; };
 		FB7B7E942787740A001E6EAF /* WasmJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmJson.swift; sourceTree = "<group>"; };
 		FB7B7E9727877416001E6EAF /* WasmNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNet.swift; sourceTree = "<group>"; };
 		FB7B7ED0278CE670001E6EAF /* SourceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceManager.swift; sourceTree = "<group>"; };
@@ -999,6 +1002,7 @@
 			isa = PBXGroup;
 			children = (
 				FBF8C5832DCD01E10066F53D /* BlockingTask.swift */,
+				FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */,
 				FB82A5C82DF8786B00366BC8 /* ObjectActorSerialExecutor.swift */,
 				FBF8C5852DCD02020066F53D /* PageInterceptorProcessor.swift */,
 				FB4275182961203100131377 /* SemanticVersion.swift */,
@@ -2167,6 +2171,7 @@
 				FB9A48372967E44200FFC414 /* MigrateSearchMatchView.swift in Sources */,
 				FB31AD0727AC3A3300D50410 /* ExpandableTextView.swift in Sources */,
 				FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */,
+				FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FBE53F0629CB723D00899601 /* ReaderWebtoonTransitionNode.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
 				FB0CAA5028A55BB80024561A /* CoreDataManager+Category.swift in Sources */,
@@ -2357,6 +2362,7 @@
 				FB14B12C2DF4D27E0067E4D4 /* CoreDataManager+MangaUpdates.swift in Sources */,
 				FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */,
+				FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FB4275172960D6AA00131377 /* SourceInfo.swift in Sources */,
 				FB4B0AF2285D46BF0066A13B /* Date.swift in Sources */,

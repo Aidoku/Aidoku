@@ -8,17 +8,53 @@
 import AidokuRunner
 import Foundation
 
-extension AidokuRunner.Source {
-    static func defaultPrintHandler(sourceId: String, _ message: String) {
-        LogManager.logger.log("[\(sourceId)] \(message)")
-    }
+extension InterpreterConfiguration {
+    static func defaultConfig(for sourceId: String) -> Self {
+        .init(
+            printHandler: { message in
+                LogManager.logger.log("[\(sourceId)] \(message)")
+            },
+            requestHandler: { originalRequest in
+                let request = if let url = originalRequest.url {
+                    await AidokuRunner.Source.modify(url: url, request: originalRequest)
+                } else {
+                    originalRequest
+                }
 
+                do {
+                    let (data, response) = try await URLSession.shared.data(for: request)
+
+                    let isCloudflare = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Server") == "cloudflare"
+                    let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+
+                    // check if cloudflare blocked the request
+                    if isCloudflare && (code == 503 || code == 403 || code == 429) {
+                        // handle cloudflare
+                        await CloudflareHandler.shared.handle(request: request)
+
+                        // retry request
+                        let newRequest = if let url = originalRequest.url {
+                            await AidokuRunner.Source.modify(url: url, request: originalRequest)
+                        } else {
+                            originalRequest
+                        }
+                        return try await URLSession.shared.data(for: newRequest)
+                    }
+
+                    return (data, response)
+                } catch {
+                    throw error
+                }
+            }
+        )
+    }
+}
+
+extension AidokuRunner.Source {
     convenience init(id: String, url: URL) async throws {
         try await self.init(
             url: url,
-            printFunction: {
-                AidokuRunner.Source.defaultPrintHandler(sourceId: id, $0)
-            }
+            interpreterConfig: .defaultConfig(for: id)
         )
     }
 
@@ -31,6 +67,41 @@ extension AidokuRunner.Source {
             version: version,
             contentRating: contentRating
         )
+    }
+
+    func getModifiedImageRequest(url: URL, context: PageContext?) async -> URLRequest {
+        var result: URLRequest
+        do {
+            result = try await getImageRequest(url: url.absoluteString, context: context)
+        } catch {
+            result = .init(url: url)
+        }
+        return await Self.modify(url: url, request: result)
+    }
+
+    static func modify(url: URL, request: URLRequest) async -> URLRequest {
+        var request = request
+        // add user-agent and stored cookies if not provided (for cloudflare)
+        if request.value(forHTTPHeaderField: "User-Agent") == nil {
+            request.setValue(
+                await UserAgentProvider.shared.getUserAgent(),
+                forHTTPHeaderField: "User-Agent"
+            )
+        }
+        let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])
+        for (key, value) in cookies {
+            if key == "Cookie" {
+                var cookieString = value
+                // keep cookies in original request
+                if let oldCookie = request.value(forHTTPHeaderField: "Cookie") {
+                    cookieString += "; " + oldCookie
+                }
+                request.setValue(cookieString, forHTTPHeaderField: "Cookie")
+            } else {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
+        return request
     }
 }
 

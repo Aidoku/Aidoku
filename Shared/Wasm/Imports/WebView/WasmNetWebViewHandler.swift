@@ -7,7 +7,7 @@
 
 import WebKit
 
-class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
+class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler {
 
     var netModule: WasmNet
     var request: URLRequest
@@ -21,9 +21,9 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
         return webView
     }()
 
-    #if !os(macOS)
+#if !os(macOS)
     var popup: WebViewViewController?
-    #endif
+#endif
 
     var done = false
 
@@ -41,11 +41,11 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
     }
 
     func load() {
-        #if os(macOS)
+#if os(macOS)
         let view = NSApplication.shared.windows.first?.contentView
-        #else
+#else
         let view = (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.view
-        #endif
+#endif
         guard let view = view else {
             netModule.semaphore.signal()
             return
@@ -73,8 +73,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
         return
 #else
         popup?.dismiss(animated: true)
-        popup = WebViewViewController()
-        popup!.handler = self
+        popup = WebViewViewController(request: request, handler: self)
         popup!.view.addSubview(webView)
         webView.navigationDelegate = popup
 
@@ -98,7 +97,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
         }
     }
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    func navigated(webView: WKWebView, for request: URLRequest) {
         WKWebsiteDataStore.default().httpCookieStore.getAllCookies { webViewCookies in
             guard let url = self.request.url else { return }
 
@@ -148,6 +147,14 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate {
                 self.netModule.incrementRequest()
                 self.netModule.semaphore.signal()
             }.resume()
+        }
+    }
+
+    func canceled(request: URLRequest) {
+        // if user dismissed the view without it succeeding
+        if !done {
+            webView.removeFromSuperview()
+            netModule.semaphore.signal()
         }
     }
 
