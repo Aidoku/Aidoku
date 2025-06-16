@@ -278,7 +278,7 @@ extension ReaderWebtoonPageNode {
             userInfo: [.contextKey: context ?? [:], .processesKey: true]
         )
 
-        _ = ImagePipeline.shared.loadImage(
+        let imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak self] _, completed, total in
                 guard let self else { return }
@@ -286,23 +286,43 @@ extension ReaderWebtoonPageNode {
                     self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
                 }
             },
-            completion: { [weak self] result in
-                guard let self else { return }
-                loading = false
-                switch result {
-                case .success(let response):
-                    image = response.image
-                    if isNodeLoaded {
-                        displayPage()
-                    }
-                case .failure:
-                    // TODO: handle failure
-                    Task { @MainActor in
-                        self.progressView.setProgress(value: 0, withAnimation: true)
-                    }
-                }
-            }
+            completion: { _ in }
         )
+        do {
+            let response = try await imageTask.response
+            image = response.image
+            if isNodeLoaded {
+                displayPage()
+            }
+        } catch {
+            let error = error as? ImagePipeline.Error
+            Task {
+                switch error {
+                    case .dataLoadingFailed, .dataIsEmpty:
+                        // we can still send to image processor even if the request failed
+                        if request.userInfo[.processesKey] as? Bool == true {
+                            let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
+                            if let processor {
+                                let result = await Task.detached {
+                                    try? processor.processWithoutImage(request: request)
+                                }.value
+                                if let result {
+                                    self.image = result.image
+                                    if self.isNodeLoaded {
+                                        self.displayPage()
+                                    }
+                                    return
+                                }
+                            }
+                        }
+                    default:
+                        break
+                }
+
+                // TODO: handle failure
+                await self.progressView.setProgress(value: 0, withAnimation: true)
+            }
+        }
     }
 
     private func loadImage(base64: String) async {
