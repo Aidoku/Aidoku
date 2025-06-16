@@ -52,7 +52,7 @@ struct SortFilterView: View {
             ForEach(Array(options.enumerated()), id: \.offset) { index, option in
                 Button {
                     withAnimation {
-                        if selectedOption == index {
+                        if selectedOption == index && canAscend {
                             ascending.toggle()
                         } else {
                             selectedOption = index
@@ -150,11 +150,10 @@ struct SortFilterGroupView: View {
             options.indices,
             id: \.self
         ) { offset in
-//        ForEach(filter.options.indices, id: \.self) { offset in
             let option = options[offset]
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    if selectedOption == offset {
+                    if selectedOption == offset && canAscend {
                         ascending.toggle()
                     } else {
                         selectedOption = offset
