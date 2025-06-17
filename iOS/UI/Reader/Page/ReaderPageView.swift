@@ -180,6 +180,7 @@ class ReaderPageView: UIView {
         // hide progress view when task completes
         defer {
             progressView.isHidden = true
+            imageTask = nil
         }
         do {
             let response = try await imageTask?.response

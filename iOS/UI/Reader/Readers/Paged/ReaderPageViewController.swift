@@ -24,7 +24,17 @@ class ReaderPageViewController: BaseViewController {
     private var infoView: ReaderInfoPageView?
     private var zoomView: ZoomableScrollView?
     var pageView: ReaderPageView?
-    lazy var reloadButton = UIButton(type: .roundedRect)
+
+    private lazy var reloadButton = {
+        let reloadButton = UIButton(type: .roundedRect)
+        reloadButton.isHidden = true
+        reloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
+        reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
+        reloadButton.configuration = .borderless()
+        reloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
+        reloadButton.translatesAutoresizingMaskIntoConstraints = false
+        return reloadButton
+    }()
 
     var currentChapter: Chapter? {
         get { infoView?.currentChapter }
@@ -41,6 +51,7 @@ class ReaderPageViewController: BaseViewController {
 
     private var pageSet = false
     private var page: Page?
+    private var sourceId: String?
 
     init(type: PageType) {
         self.type = type
@@ -61,47 +72,39 @@ class ReaderPageViewController: BaseViewController {
 
     override func configure() {
         switch type {
-        case .info:
-            // info view
-            guard let infoView = infoView else { return }
-            infoView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(infoView)
+            case .info:
+                // info view
+                guard let infoView else { return }
+                infoView.translatesAutoresizingMaskIntoConstraints = false
+                view.addSubview(infoView)
 
-        case .page:
-            // zoom view
-            let zoomView = ZoomableScrollView(frame: view.bounds)
-            zoomView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(zoomView)
+            case .page:
+                // zoom view
+                let zoomView = ZoomableScrollView(frame: view.bounds)
+                zoomView.translatesAutoresizingMaskIntoConstraints = false
+                view.addSubview(zoomView)
 
-            // page view
-            guard let pageView = pageView else { return }
-            pageView.translatesAutoresizingMaskIntoConstraints = false
-            zoomView.addSubview(pageView)
-            zoomView.zoomView = pageView
+                // page view
+                guard let pageView else { return }
+                pageView.translatesAutoresizingMaskIntoConstraints = false
+                zoomView.addSubview(pageView)
+                zoomView.zoomView = pageView
 
-            reloadButton.isHidden = true
-            reloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
-            reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
-            reloadButton.configuration = .borderless()
-            reloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
-            reloadButton.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(reloadButton)
+                view.addSubview(reloadButton)
 
-            self.zoomView = zoomView
-            self.pageView = pageView
-            self.reloadButton = reloadButton
+                self.zoomView = zoomView
         }
     }
 
     override func constrain() {
-        if let infoView = infoView {
+        if let infoView {
             NSLayoutConstraint.activate([
                 infoView.topAnchor.constraint(equalTo: view.topAnchor),
                 infoView.leftAnchor.constraint(equalTo: view.leftAnchor),
                 infoView.rightAnchor.constraint(equalTo: view.rightAnchor),
                 infoView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
-        } else if let zoomView = zoomView, let pageView = pageView {
+        } else if let zoomView, let pageView {
             NSLayoutConstraint.activate([
                 zoomView.topAnchor.constraint(equalTo: view.topAnchor),
                 zoomView.leftAnchor.constraint(equalTo: view.leftAnchor),
@@ -121,26 +124,22 @@ class ReaderPageViewController: BaseViewController {
         guard !pageSet, let pageView else { return }
         pageSet = true
         self.page = page
+        self.sourceId = sourceId
+        reloadButton.isHidden = true
         zoomView?.zoomEnabled = false
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
             zoomView?.zoomEnabled = result
-            if !result {
-                pageSet = false
-                pageView.progressView.isHidden = true
-                reloadButton.isHidden = false
-            } else {
-                reloadButton.isHidden = true
-            }
+            reloadButton.isHidden = result
         }
     }
 
     @objc func reload() {
+        guard let page else { return }
+        pageSet = false
         reloadButton.isHidden = true
         pageView?.progressView.setProgress(value: 0, withAnimation: false)
         pageView?.progressView.isHidden = false
-        if let page {
-            setPage(page)
-        }
+        setPage(page, sourceId: sourceId)
     }
 }
