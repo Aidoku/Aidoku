@@ -344,6 +344,8 @@ extension MangaView.ViewModel {
                 self.error = error
             }
         }
+
+        updateReadButton()
     }
 
     private func loadDownloadStatus() async {
