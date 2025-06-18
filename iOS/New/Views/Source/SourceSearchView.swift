@@ -106,8 +106,9 @@ struct SourceSearchView: View {
         }
     }
 
+    @ViewBuilder
     private func contentView(scrollProxy: ScrollViewProxy?) -> some View {
-        Group {
+        let group = Group {
             if let error = viewModel.error {
                 ErrorView(error: error) {
                     viewModel.loadManga(
@@ -129,6 +130,11 @@ struct SourceSearchView: View {
                 }
                 .environmentObject(path)
             }
+        }
+        if #available(iOS 26.0, *) {
+            group.padding(.top, 4)
+        } else {
+            group
         }
     }
 }

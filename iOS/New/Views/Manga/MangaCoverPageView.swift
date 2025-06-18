@@ -48,6 +48,7 @@ struct MangaCoverPageView: View {
                 }
             }
             .tabViewStyle(.page)
+            .background(Color(uiColor: .systemBackground)) // ios 26 has no background color
             .navigationTitle(NSLocalizedString("COVER"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

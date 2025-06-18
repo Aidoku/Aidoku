@@ -26,7 +26,7 @@ struct FilterLabelView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        let label = HStack(spacing: 4) {
             if let badgeCount, hasBadge {
                 FilterBadgeView(count: badgeCount)
             }
@@ -52,16 +52,26 @@ struct FilterLabelView: View {
         .padding(.horizontal, 9)
         .padding(.vertical, hasBadge ? 6 : 8)
         .font(.caption.weight(.medium))
-        .background(
-            RoundedRectangle(cornerRadius: 100) // enough to make it fully rounded
-                .foregroundColor(
-                    highlighted ? .accentColor : .init(uiColor: .secondarySystemFill)
+
+        if #available(iOS 26.0, *) {
+            label
+                .glassEffect(
+                    highlighted ? .regular.tint(.accentColor.opacity(highlighted && colorScheme == .light ? 0.1 : 1)) : .regular,
+                    in: .capsule
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 100)
-                        .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
+        } else {
+            label
+                .background(
+                    RoundedRectangle(cornerRadius: 100) // enough to make it fully rounded
+                        .foregroundColor(
+                            highlighted ? .accentColor : .init(uiColor: .secondarySystemFill)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 100)
+                                .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
+                        )
+                        .opacity(highlighted && colorScheme == .light ? 0.1 : 1)
                 )
-                .opacity(highlighted && colorScheme == .light ? 0.1 : 1)
-        )
+        }
     }
 }

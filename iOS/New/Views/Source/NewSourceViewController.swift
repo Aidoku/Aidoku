@@ -272,6 +272,7 @@ class NewSourceViewController: UIViewController {
             let containerView = searchController.searchBar.value(forKey: "_scopeBarContainerView") as? UIView,
             !containerView.subviews.contains(where: { String(describing: $0.classForCoder).contains("UIHostingView") })
         {
+            containerView.clipsToBounds = false
             containerView.addSubview(searchFilterController.view)
 
             NSLayoutConstraint.activate([
@@ -673,6 +674,11 @@ extension NewSourceViewController {
 
     // toggles the navigation bar background to opaque or transparent
     private func setNavigationBarOpaque(_ opaque: Bool) {
+        if #available(iOS 26.0, *) {
+            // navigation bar should remain clear on ios 26
+            return
+        }
+
         guard let navigationBar = navigationController?.navigationBar else { return }
 
         if originalNavbarAppearance == nil {

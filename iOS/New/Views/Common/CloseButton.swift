@@ -7,7 +7,24 @@
 
 import SwiftUI
 
-struct CloseButton: UIViewRepresentable {
+struct CloseButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            // ios 26 doesn't have a special close button style
+            Button {
+                action()
+            } label: {
+                Image(systemName: "xmark")
+            }
+        } else {
+            CloseButton(action: action)
+        }
+    }
+}
+
+struct CloseButtonUIKit: UIViewRepresentable {
     private let action: () -> Void
 
     init(action: @escaping () -> Void) { self.action = action }

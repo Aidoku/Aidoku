@@ -143,7 +143,7 @@
 "CHAPTER_TITLE" = "Chapter Title";
 "SERIES_TITLE" = "Series Title";
 "DESCRIPTION" = "Description";
-"SERIES" = "SERIES";
+"SERIES" = "Series";
 "NEW_SERIES" = "New Series";
 "NEW_SERIES_TEXT" = "Create a new series for this file";
 "SELECT_SERIES" = "Select Series";
@@ -227,7 +227,7 @@
 "LOCKED" = "Locked";
 
 // Reader
-"VOLUME" = "VOLUME";
+"VOLUME" = "Volume";
 "CHAPTER" = "Chapter";
 "CHAPTERS" = "Chapters";
 "VOLUME_X" = "Volume %g";
