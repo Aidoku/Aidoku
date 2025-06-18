@@ -33,41 +33,12 @@ struct FilterListSheetView: View {
 
     var body: some View {
         PlatformNavigationStack {
-            ScrollView(.vertical) {
+            let scrollView = ScrollView(.vertical) {
                 FilterListView(filters: filters, enabledFilters: $newEnabledFilters)
             }
             .navigationTitle(NSLocalizedString("FILTERS"))
 #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("CANCEL")) {
-                        if newEnabledFilters == enabledFilters {
-                            dismiss()
-                        } else {
-                            showConfirm = true
-                        }
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("APPLY")) {
-                        dismiss()
-                    }
-                    .font(.body.weight(.medium))
-                }
-
-                ToolbarItemGroup(placement: .bottomBar) {
-                    if showResetButton {
-                        HStack {
-                            Button(NSLocalizedString("RESET")) {
-                                newEnabledFilters = []
-                                dismiss()
-                            }
-                            Spacer()
-                        }
-                    }
-                }
-            }
 #endif
             .confirmationDialog(
                 NSLocalizedString("CANCEL_CONFIRM"),
@@ -85,7 +56,65 @@ struct FilterListSheetView: View {
                 guard !discardChanges, newEnabledFilters != enabledFilters else { return }
                 enabledFilters = newEnabledFilters
             }
+
+            if #available(iOS 26.0, *) {
+                scrollView
+                    .toolbar {
+                        toolbarContentiOS26
+                    }
+            } else {
+                scrollView
+                    .toolbar {
+                        toolbarContent
+                    }
+            }
         }
+    }
+
+    @ToolbarContentBuilder
+    var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button(NSLocalizedString("CANCEL")) {
+                if newEnabledFilters == enabledFilters {
+                    dismiss()
+                } else {
+                    showConfirm = true
+                }
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button(NSLocalizedString("APPLY")) {
+                dismiss()
+            }
+            .font(.body.weight(.medium))
+        }
+
+        ToolbarItem(placement: .bottomBar) {
+            if showResetButton {
+                if #available(iOS 26.0, *) {
+                    Button(NSLocalizedString("RESET")) {
+                        newEnabledFilters = []
+                        dismiss()
+                    }
+                } else {
+                    HStack {
+                        Button(NSLocalizedString("RESET")) {
+                            newEnabledFilters = []
+                            dismiss()
+                        }
+                        Spacer()
+                    }
+                }
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    var toolbarContentiOS26: some ToolbarContent {
+        toolbarContent
+
+        ToolbarSpacer(.flexible, placement: .bottomBar)
     }
 }
 

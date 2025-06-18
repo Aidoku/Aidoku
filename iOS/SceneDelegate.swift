@@ -18,34 +18,70 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let historyViewController = UINavigationController(rootViewController: HistoryViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
         let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
-        libraryViewController.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("LIBRARY", comment: ""),
-            image: UIImage(systemName: "books.vertical.fill"),
-            tag: 0
-        )
-        browseViewController.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("BROWSE", comment: ""),
-            image: UIImage(systemName: "globe"),
-            tag: 1
-        )
-        historyViewController.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("HISTORY", comment: ""),
-            image: UIImage(systemName: "clock.fill"),
-            tag: 2
-        )
-        searchViewController.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("SEARCH", comment: ""),
-            image: UIImage(systemName: "magnifyingglass"),
-            tag: 3
-        )
-        settingsViewController.tabBarItem = UITabBarItem(
-            title: NSLocalizedString("SETTINGS", comment: ""),
-            image: UIImage(systemName: "gear"),
-            tag: 4
-        )
-        tabController.viewControllers = [
-            libraryViewController, browseViewController, historyViewController, searchViewController, settingsViewController
-        ]
+        if #available(iOS 26.0, *) {
+            let searchTab = UISearchTab { _ in
+                searchViewController
+            }
+            searchTab.automaticallyActivatesSearch = true
+            tabController.tabs = [
+                UITab(
+                    title: NSLocalizedString("LIBRARY"),
+                    image: UIImage(systemName: "books.vertical.fill"),
+                    identifier: "0"
+                ) { _ in
+                    libraryViewController
+                },
+                UITab(
+                    title: NSLocalizedString("BROWSE"),
+                    image: UIImage(systemName: "globe"),
+                    identifier: "1"
+                ) { _ in
+                    browseViewController
+                },
+                UITab(
+                    title: NSLocalizedString("HISTORY"),
+                    image: UIImage(systemName: "clock.fill"),
+                    identifier: "2"
+                ) { _ in
+                    historyViewController
+                },
+                UITab(
+                    title: NSLocalizedString("SETTINGS"),
+                    image: UIImage(systemName: "gear"),
+                    identifier: "3"
+                ) { _ in
+                    settingsViewController
+                },
+                searchTab
+            ]
+        } else {
+            libraryViewController.tabBarItem = UITabBarItem(
+                title: NSLocalizedString("LIBRARY", comment: ""),
+                image: UIImage(systemName: "books.vertical.fill"),
+                tag: 0
+            )
+            browseViewController.tabBarItem = UITabBarItem(
+                title: NSLocalizedString("BROWSE", comment: ""),
+                image: UIImage(systemName: "globe"),
+                tag: 1
+            )
+            historyViewController.tabBarItem = UITabBarItem(
+                tabBarSystemItem: .history,
+                tag: 2
+            )
+            searchViewController.tabBarItem = UITabBarItem(
+                tabBarSystemItem: .search,
+                tag: 3
+            )
+            settingsViewController.tabBarItem = UITabBarItem(
+                title: NSLocalizedString("SETTINGS", comment: ""),
+                image: UIImage(systemName: "gear"),
+                tag: 4
+            )
+            tabController.viewControllers = [
+                libraryViewController, browseViewController, historyViewController, searchViewController, settingsViewController
+            ]
+        }
 
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
