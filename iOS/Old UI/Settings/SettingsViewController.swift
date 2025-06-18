@@ -566,10 +566,6 @@ extension SettingsViewController {
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        44
-    }
 }
 
 // MARK: - Data Clearing Methods

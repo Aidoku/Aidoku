@@ -203,9 +203,11 @@ actor DownloadTask: Identifiable {
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
                 await cache.add(chapter: chapter)
             }
-            downloads[downloadIndex].status = .finished
-            await delegate?.downloadFinished(download: getDownload(downloadIndex)!)
-            downloads.remove(at: downloadIndex)
+            if let download = downloads[safe: downloadIndex] {
+                downloads[downloadIndex].status = .finished
+                downloads.remove(at: downloadIndex)
+                await delegate?.downloadFinished(download: download)
+            }
             pages = []
             currentPage = 0
             await next()

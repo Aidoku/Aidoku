@@ -186,12 +186,20 @@ struct KomgaSetupView: View {
                 Button {
                     submit()
                 } label: {
-                    ZStack(alignment: .trailing) {
+                    if #available(iOS 26.0, *) {
                         if isLoading {
                             ProgressView().progressViewStyle(.circular)
+                        } else {
+                            Text(NSLocalizedString("CONTINUE"))
                         }
-                        Text(NSLocalizedString("CONTINUE"))
-                            .opacity(isLoading ? 0 : 1) // fixes weird transition animation
+                    } else {
+                        ZStack(alignment: .trailing) {
+                            if isLoading {
+                                ProgressView().progressViewStyle(.circular)
+                            }
+                            Text(NSLocalizedString("CONTINUE"))
+                                .opacity(isLoading ? 0 : 1) // fixes weird transition animation
+                        }
                     }
                 }
                 .disabled(submitDisabled)

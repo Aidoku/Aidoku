@@ -115,7 +115,7 @@ extension LocalFileImportView.ContentView {
                             }
                         } label: {
                             if selectedMangaId.isEmpty {
-                                Text(NSLocalizedString("CONTINE"))
+                                Text(NSLocalizedString("CONTINUE"))
                             } else {
                                 Text(NSLocalizedString("IMPORT")).bold()
                             }

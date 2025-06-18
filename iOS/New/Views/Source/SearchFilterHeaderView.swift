@@ -66,5 +66,12 @@ struct SearchFilterHeaderView: View {
                 }
             }
         }
+        .padding(.top, {
+            if #available(iOS 26.0, *) {
+                12
+            } else {
+                0
+            }
+        }())
     }
 }

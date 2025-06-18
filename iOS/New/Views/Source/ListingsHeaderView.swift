@@ -102,7 +102,7 @@ struct ListingsHeaderView: View {
 
                         if #available(iOS 26.0, *) {
                             label
-                                .glassEffect(active ? .regular.tint(.accent) : .regular)
+                                .glassEffect(active ? .regular.tint(.accentColor) : .regular)
                         } else {
                             label
                                 .background(
@@ -110,7 +110,7 @@ struct ListingsHeaderView: View {
                                         .fill(
                                             Color(
                                                 uiColor: active
-                                                    ? .accent
+                                                    ? .tintColor
                                                     : .secondarySystemFill
                                             )
                                         )

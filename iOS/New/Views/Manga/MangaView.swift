@@ -34,7 +34,7 @@ struct MangaView: View {
     }
 
     var body: some View {
-        List(selection: $selectedChapters) {
+        let list = List(selection: $selectedChapters) {
             headerView
 
             if let error = viewModel.error {
@@ -96,37 +96,6 @@ struct MangaView: View {
                 Text(NSLocalizedString("NO_WIFI_ALERT_MESSAGE"))
             }
         )
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                rightNavbarButton
-            }
-
-            ToolbarItem(placement: .topBarLeading) {
-                if editMode == .active {
-                    let allSelected = selectedChapters.count == viewModel.chapters.count
-                    Button {
-                        if allSelected {
-                            selectedChapters = Set()
-                        } else {
-                            selectedChapters = Set(viewModel.chapters.map { $0.key })
-                        }
-                    } label: {
-                        if allSelected {
-                            Text(NSLocalizedString("DESELECT_ALL"))
-                        } else {
-                            Text(NSLocalizedString("SELECT_ALL"))
-                        }
-                    }
-                    .disabled(viewModel.chapters.isEmpty)
-                }
-            }
-
-            ToolbarItemGroup(placement: .bottomBar) {
-                if editMode == .active {
-                    toolbar
-                }
-            }
-        }
         .scrollBackgroundHiddenPlease()
         .navigationBarBackButtonHidden(editMode == .active)
         .fullScreenCover(isPresented: $showingCoverView) {
@@ -146,10 +115,16 @@ struct MangaView: View {
                 UIView.animate(withDuration: 0.3) {
                     navigationController.isToolbarHidden = false
                     navigationController.toolbar.alpha = 1
+                    if #available(iOS 26.0, *) {
+                        navigationController.tabBarController?.isTabBarHidden = true
+                    }
                 }
             } else {
                 UIView.animate(withDuration: 0.3) {
                     navigationController.toolbar.alpha = 0
+                    if #available(iOS 26.0, *) {
+                        navigationController.tabBarController?.isTabBarHidden = false
+                    }
                 } completion: { _ in
                     navigationController.isToolbarHidden = true
                 }
@@ -172,6 +147,24 @@ struct MangaView: View {
             }
         }
         .environment(\.editMode, $editMode)
+
+        if #available(iOS 26.0, *) {
+            list
+                .toolbar {
+                    toolbarContentiOS26
+                }
+        } else {
+            list
+                .toolbar {
+                    toolbarContentBase
+
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        if editMode == .active {
+                            toolbar
+                        }
+                    }
+                }
+        }
     }
 }
 
@@ -462,78 +455,139 @@ extension MangaView {
             }
         }
     }
+}
+
+extension MangaView {
+    @ToolbarContentBuilder
+    var toolbarContentBase: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            rightNavbarButton
+        }
+
+        ToolbarItem(placement: .topBarLeading) {
+            if editMode == .active {
+                let allSelected = selectedChapters.count == viewModel.chapters.count
+                Button {
+                    if allSelected {
+                        selectedChapters = Set()
+                    } else {
+                        selectedChapters = Set(viewModel.chapters.map { $0.key })
+                    }
+                } label: {
+                    if allSelected {
+                        Text(NSLocalizedString("DESELECT_ALL"))
+                    } else {
+                        Text(NSLocalizedString("SELECT_ALL"))
+                    }
+                }
+                .disabled(viewModel.chapters.isEmpty)
+            }
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    var toolbarContentiOS26: some ToolbarContent {
+        toolbarContentBase
+
+        if editMode == .active {
+            ToolbarItem(placement: .bottomBar) {
+                toolbarMarkMenu
+            }
+
+            ToolbarSpacer(.flexible, placement: .bottomBar)
+
+            if viewModel.manga.sourceKey != "local" {
+                ToolbarItem(placement: .bottomBar) {
+                    toolbarDownloadButton
+                }
+            }
+        }
+    }
 
     var toolbar: some View {
         HStack {
-            Menu(NSLocalizedString("MARK")) {
-                let title = if selectedChapters.count == 1 {
-                    NSLocalizedString("1_CHAPTER")
-                } else {
-                    String(format: NSLocalizedString("%i_CHAPTERS"), selectedChapters.count)
-                }
-                Section(title) {
-                    Button {
-                        let markChapters = selectedChapters.compactMap { id in
-                            viewModel.chapters.first(where: { $0.key == id })
-                        }
-                        Task {
-                            await viewModel.markUnread(chapters: markChapters)
-                        }
-                        withAnimation {
-                            editMode = .inactive
-                        }
-                    } label: {
-                        Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
-                    }
-                    Button {
-                        let markChapters = selectedChapters.compactMap { id in
-                            viewModel.chapters.first(where: { $0.key == id })
-                        }
-                        Task {
-                            await viewModel.markRead(chapters: markChapters)
-                        }
-                        withAnimation {
-                            editMode = .inactive
-                        }
-                    } label: {
-                        Label(NSLocalizedString("READ"), systemImage: "eye")
-                    }
-                }
-            }
-            .disabled(selectedChapters.isEmpty)
-            Spacer()
-            if viewModel.manga.sourceKey != "local" {
-                Button(NSLocalizedString("DOWNLOAD")) {
-                    let downloadChapters = selectedChapters
-                        .compactMap { id in
-                            viewModel.chapters.first(where: { $0.key == id })?
-                                .toOld(
-                                    sourceId: viewModel.manga.sourceKey,
-                                    mangaId: viewModel.manga.key
-                                )
-                        }
-                        .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
-                        .sorted { $0.sourceOrder > $1.sourceOrder }
+            toolbarMarkMenu
 
-                    let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
-                    if
-                        downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
-                            || !downloadOnlyOnWifi
-                    {
-                        DownloadManager.shared.download(
-                            chapters: downloadChapters,
-                            manga: viewModel.manga.toOld()
-                        )
-                    } else {
-                        showConnectionAlert = true
+            Spacer()
+
+            if viewModel.manga.sourceKey != "local" {
+                toolbarDownloadButton
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.red)
+    }
+
+    var toolbarMarkMenu: some View {
+        Menu(NSLocalizedString("MARK")) {
+            let title = if selectedChapters.count == 1 {
+                NSLocalizedString("1_CHAPTER")
+            } else {
+                String(format: NSLocalizedString("%i_CHAPTERS"), selectedChapters.count)
+            }
+            Section(title) {
+                Button {
+                    let markChapters = selectedChapters.compactMap { id in
+                        viewModel.chapters.first(where: { $0.key == id })
+                    }
+                    Task {
+                        await viewModel.markUnread(chapters: markChapters)
                     }
                     withAnimation {
                         editMode = .inactive
                     }
+                } label: {
+                    Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
                 }
-                .disabled(selectedChapters.isEmpty)
+                Button {
+                    let markChapters = selectedChapters.compactMap { id in
+                        viewModel.chapters.first(where: { $0.key == id })
+                    }
+                    Task {
+                        await viewModel.markRead(chapters: markChapters)
+                    }
+                    withAnimation {
+                        editMode = .inactive
+                    }
+                } label: {
+                    Label(NSLocalizedString("READ"), systemImage: "eye")
+                }
             }
         }
+        .disabled(selectedChapters.isEmpty)
+    }
+
+    var toolbarDownloadButton: some View {
+        Button(NSLocalizedString("DOWNLOAD")) {
+            let downloadChapters = selectedChapters
+                .compactMap { id in
+                    viewModel.chapters.first(where: { $0.key == id })?
+                        .toOld(
+                            sourceId: viewModel.manga.sourceKey,
+                            mangaId: viewModel.manga.key
+                        )
+                }
+                .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
+                .sorted { $0.sourceOrder > $1.sourceOrder }
+
+            let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
+            if
+                downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
+                    || !downloadOnlyOnWifi
+            {
+                DownloadManager.shared.download(
+                    chapters: downloadChapters,
+                    manga: viewModel.manga.toOld()
+                )
+            } else {
+                showConnectionAlert = true
+            }
+            withAnimation {
+                editMode = .inactive
+            }
+        }
+        .disabled(selectedChapters.isEmpty)
     }
 }
 
