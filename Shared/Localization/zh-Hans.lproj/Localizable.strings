@@ -70,7 +70,7 @@
 "LANGUAGES" = "语言";
 "INFO" = "信息";
 "VERSION" = "版本";
-"BUILD" = "编译版本";
+"BUILD" = "编译";
 "BUTTON_FILTER" = "筛选";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
@@ -98,8 +98,8 @@
 "CHAPTERS" = "章节";
 "VOLUME_X" = "第 %g 卷";
 "CHAPTER_X" = "第 %g 章";
-"VOL_X" = "%g 卷";
-"CH_X" = "%g 章";
+"VOL_X" = "第 %g 卷";
+"CH_X" = "第 %g 章";
 "NO_CHAPTERS" = "没有章节";
 "NO_CHAPTERS_AVAILABLE" = "暂无章节";
 "START_READING" = "开始阅读";
@@ -163,7 +163,7 @@
 "LANDSCAPE" = "横屏";
 "READER" = "阅读";
 "OPEN_READER_VIEW" = "打开阅读界面";
-"UNREAD_CHAPTER_BADGES" = "未读章节徽章";
+"UNREAD_CHAPTER_BADGES" = "未读章节标记";
 "PIN_MANGA" = "置顶漫画";
 "PIN_MANGA_TYPE" = "置顶类型";
 "PIN_MANGA_UNREAD" = "未读";
@@ -212,7 +212,7 @@
 "EXPORT" = "导出";
 "RESTORE" = "恢复";
 "LOGS" = "日志";
-"LOGGING" = "日志记录";
+"LOGGING" = "日志";
 "LOG_SERVER" = "日志服务器";
 "EXPORT_LOGS" = "导出日志";
 "DISPLAY_LOGS" = "显示日志";
@@ -231,8 +231,8 @@
 "REMOVE_CHAPTER_HISTORY_TEXT" = "这将删除此章节的历史记录。您确定要继续吗？";
 "PAGE_X" = "第%i页";
 "AUTH_TO_ENABLE" = "需要认证才能启用。";
-"VOL_SPACE_X" = "%g 卷";
-"CH_SPACE_X" = "%g 章";
+"VOL_SPACE_X" = "第 %g 卷";
+"CH_SPACE_X" = "第 %g 章";
 "AUTH_TO_DISABLE" = "需要认证才能禁用。";
 "PAGE_X_OF_X" = "第 %i 页，共 %i 页";
 "LIBRARY_LOCKED" = "书架已锁定。";
@@ -288,7 +288,7 @@
 "FAILED_CHAPTER_LOAD" = "加载章节失败";
 "TOTAL_CHAPTERS" = "总章节数";
 "UNREAD_CHAPTERS" = "未读章节";
-"FAILED_CHAPTER_LOAD_INFO" = "可能是您离线了，或者源网站出现了问题。";
+"FAILED_CHAPTER_LOAD_INFO" = "你可能离线了或者来源网站出现问题。";
 "%i_PAGES_LEFT" = "剩余 %i 页";
 "REMOVE_FROM_CATEGORY" = "从分类中移除";
 "ADD_TO_CATEGORY" = "添加到分类";
@@ -365,10 +365,12 @@
 "SCANLATOR" = "翻译组";
 "NO_SCANLATOR" = "没有翻译组";
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作无法撤销。除书架外的所有阅读历史都被删除。";
-"CLEAR_EXCLUDING_LIBRARY" = "清除不在书架的阅读历史";
+"CLEAR_EXCLUDING_LIBRARY" = "清除书架外的阅读历史";
 "ENABLE_PERMISSION" = "启用权限";
 "PHOTOS_ACCESS_DENIED_TEXT" = "此前访问被拒绝。请授予Aidoku访问照片权限，以便将图片保存到您的照片。您可以在隐私设置中开启此权限。";
 "OPEN_WEBSITE" = "打开网站";
 "READER_ORIENTATION" = "方向";
 "FOLLOW_DEVICE" = "跟随设备";
 "MARK_DUPLICATE_CHAPTERS" = "标记重复章节为已读";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "从分类%@删除项目";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "从分类 % 删除 %i 个项目";
