@@ -150,6 +150,7 @@ class SearchViewController: UIViewController {
         becomeFirstResponder()
         hoveredCell?.highlight()
 
+        navigationController?.isToolbarHidden = true
         navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
         navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
