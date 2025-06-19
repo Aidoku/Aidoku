@@ -714,7 +714,7 @@ extension NewSourceViewController {
     private func saveEnabledFilters() {
         let filtersData = try? JSONEncoder().encode(enabledFilters)
         if let filtersData {
-            SettingsStore.shared.set(key: "\(source.id)-filters", value: filtersData)
+            SettingsStore.shared.set(key: "\(source.id).filters", value: filtersData)
         }
     }
 }
