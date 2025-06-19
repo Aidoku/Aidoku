@@ -86,8 +86,8 @@ struct MigrateSourcesView: View {
             }
             .sorted { $0.name ?? "" < $1.name ?? "" }
             .sorted {
-                let lhs = ($0.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $0.langs?.first ?? "") ?? 0
-                let rhs = ($1.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $1.langs?.first ?? "") ?? 0
+                let lhs = ($0.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $0.langs?.first ?? "") ?? Int.max
+                let rhs = ($1.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $1.langs?.first ?? "") ?? Int.max
                 return lhs < rhs
             }
     }

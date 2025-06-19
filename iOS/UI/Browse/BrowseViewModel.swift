@@ -160,8 +160,8 @@ class BrowseViewModel {
         externalSources.sort {
             let lhsLang = $0.languages.count == 1 ? $0.languages[0] : "multi"
             let rhsLang = $1.languages.count == 1 ? $1.languages[0] : "multi"
-            let lhs = SourceManager.languageCodes.firstIndex(of: lhsLang) ?? 0
-            let rhs = SourceManager.languageCodes.firstIndex(of: rhsLang) ?? 0
+            let lhs = SourceManager.languageCodes.firstIndex(of: lhsLang) ?? Int.max
+            let rhs = SourceManager.languageCodes.firstIndex(of: rhsLang) ?? Int.max
             return lhs < rhs
         }
 
