@@ -233,6 +233,7 @@ extension ReaderWebtoonPageNode {
             if isNodeLoaded {
                 displayPage()
             }
+            loading = false
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             await loadImage(zipURL: url, filePath: filePath)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
@@ -277,6 +278,8 @@ extension ReaderWebtoonPageNode {
             processors: processors,
             userInfo: [.contextKey: context ?? [:], .processesKey: true]
         )
+
+        defer { loading = false }
 
         let imageTask = ImagePipeline.shared.loadImage(
             with: request,
@@ -457,6 +460,7 @@ extension ReaderWebtoonPageNode {
         if isNodeLoaded {
             displayPage()
         }
+        loading = false
     }
 
     func displayPage() {
