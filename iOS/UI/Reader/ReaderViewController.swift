@@ -668,14 +668,20 @@ extension ReaderViewController {
             self.setNeedsStatusBarAppearanceUpdate()
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         } completion: { _ in
-            if navigationController.isToolbarHidden {
-                navigationController.toolbar.alpha = 0
-                if #available(iOS 26.0, *) {
+            UIView.setAnimationsEnabled(false)
+            if #available(iOS 26.0, *) {
+                if navigationController.isToolbarHidden {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 0
+                    navigationController.isToolbarHidden = false
                 }
-                navigationController.isToolbarHidden = false
+            } else {
+                if navigationController.toolbar.isHidden {
+                    navigationController.toolbar.alpha = 0
+                    navigationController.toolbar.isHidden = false
+                }
             }
             self.pageDescriptionButtonBottomConstraint.constant = 0
+            UIView.setAnimationsEnabled(true)
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 navigationController.navigationBar.alpha = 1
                 navigationController.toolbar.alpha = 1
@@ -716,7 +722,11 @@ extension ReaderViewController {
                 }
                 self.view.layoutIfNeeded()
             } completion: { _ in
-                navigationController.isToolbarHidden = true
+                if #available(iOS 26.0, *) {
+                    navigationController.isToolbarHidden = true
+                } else {
+                    navigationController.toolbar.isHidden = true
+                }
             }
         }
     }
