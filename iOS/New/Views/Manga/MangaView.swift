@@ -515,8 +515,6 @@ extension MangaView {
                 toolbarDownloadButton
             }
         }
-        .frame(maxWidth: .infinity)
-        .background(Color.red)
     }
 
     var toolbarMarkMenu: some View {
