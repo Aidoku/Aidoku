@@ -59,6 +59,13 @@ struct SourceListsView: View {
             withAnimation {
                 loading = false
                 sourceLists = SourceManager.shared.sourceLists
+                if SourceManager.shared.sourceListURLs.count != sourceLists.count {
+                    missingSourceLists = SourceManager.shared.sourceListURLs.filter { url in
+                        !sourceLists.contains(where: { $0.url == url })
+                    }
+                } else {
+                    missingSourceLists = []
+                }
             }
         }
         .task {
@@ -127,6 +134,8 @@ struct SourceListsView: View {
                         missingSourceLists = SourceManager.shared.sourceListURLs.filter { url in
                             !sourceLists.contains(where: { $0.url == url })
                         }
+                    } else {
+                        missingSourceLists = []
                     }
                 }
             } else {

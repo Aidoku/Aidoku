@@ -171,7 +171,7 @@ class BrowseViewController: BaseTableViewController {
 
     @objc func refreshSourceLists(_ refreshControl: UIRefreshControl? = nil) {
         Task {
-            await viewModel.loadExternalSources()
+            await viewModel.loadExternalSources(reload: true)
             updateExternalSources()
             refreshControl?.endRefreshing()
         }
