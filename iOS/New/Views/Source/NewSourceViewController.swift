@@ -368,6 +368,12 @@ class NewSourceViewController: UIViewController {
             ])
         }
     }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // ensure navbar is set back to normal when view is exited
+        self.setNavigationBarOpaque(false)
+    }
 }
 
 extension NewSourceViewController {
