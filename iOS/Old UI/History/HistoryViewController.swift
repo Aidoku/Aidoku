@@ -195,6 +195,7 @@ class HistoryViewController: UIViewController {
         super.viewWillAppear(animated)
 
         becomeFirstResponder()
+        navigationController?.isToolbarHidden = true
 
         if queueRefresh {
             queueRefresh = false
