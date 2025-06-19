@@ -73,12 +73,23 @@ class BrowseViewModel {
     func loadExternalSources() async {
         await SourceManager.shared.loadSourceLists()
 
-        var ids = Set<String>() // ensure external sources have unique ids
-        var results: [ExternalSourceInfo] = []
+        // ensure external sources have unique ids
+        var sourceById: [String: ExternalSourceInfo] = [:]
+
         for sourceList in SourceManager.shared.sourceLists {
-            results += sourceList.sources.filter { ids.insert($0.id).inserted }
+            for source in sourceList.sources {
+                if let existing = sourceById[source.id] {
+                    // if a newer version exists, replace it
+                    if source.version > existing.version {
+                        sourceById[source.id] = source
+                    }
+                } else {
+                    sourceById[source.id] = source
+                }
+            }
         }
-        unfilteredExternalSources = results
+
+        unfilteredExternalSources = Array(sourceById.values)
 
         filterExternalSources()
     }
