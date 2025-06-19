@@ -12,8 +12,6 @@ struct SourceListsView: View {
     @State private var missingSourceLists: [URL] = []
 
     @State private var loading = false
-    @State private var sourceListToAdd: String = ""
-    @State private var showAddListAlert = false
     @State private var showAddListFailAlert = false
 
     var body: some View {
@@ -46,32 +44,11 @@ struct SourceListsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showAddListAlert = true
+                    showAlert()
                 } label: {
                     Image(systemName: "plus")
                 }
             }
-        }
-        .alert(NSLocalizedString("SOURCE_LIST_ADD"), isPresented: $showAddListAlert) {
-            TextField(NSLocalizedString("SOURCE_LIST_URL"), text: $sourceListToAdd)
-                .keyboardType(.URL)
-                .textContentType(.URL)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .submitLabel(.done)
-
-            Button(NSLocalizedString("CANCEL"), role: .cancel) {
-                sourceListToAdd = ""
-            }
-
-            let is15Or16 = UIDevice.current.systemVersion.hasPrefix("15.") || UIDevice.current.systemVersion.hasPrefix("16.")
-            Button(NSLocalizedString("OK")) {
-                addSourceList(url: sourceListToAdd)
-                sourceListToAdd = ""
-            }
-            .disabled(!is15Or16 && sourceListToAdd.isEmpty)
-        } message: {
-            Text(NSLocalizedString("SOURCE_LIST_ADD_TEXT"))
         }
         .alert(NSLocalizedString("SOURCE_LIST_ADD_FAIL"), isPresented: $showAddListFailAlert) {
             Button(NSLocalizedString("OK"), role: .cancel) {}
@@ -138,7 +115,7 @@ struct SourceListsView: View {
     func addSourceList(url: String) {
         guard !url.isEmpty else { return }
         guard let url = URL(string: url) else {
-            showAddListAlert = true
+            showAddListFailAlert = true
             return
         }
         Task {
@@ -155,6 +132,28 @@ struct SourceListsView: View {
             } else {
                 showAddListFailAlert = true
             }
+        }
+    }
+
+    func showAlert() {
+        var alertTextField: UITextField?
+        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+            title: NSLocalizedString("SOURCE_LIST_ADD"),
+            message: NSLocalizedString("SOURCE_LIST_ADD_TEXT"),
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
+                    guard let text = alertTextField?.text, !text.isEmpty else { return }
+                    addSourceList(url: text)
+                }
+            ]
+        ) { textField in
+            textField.placeholder = NSLocalizedString("SOURCE_LIST_URL")
+            textField.keyboardType = .URL
+            textField.autocorrectionType = .no
+            textField.autocapitalizationType = .none
+            textField.returnKeyType = .done
+            alertTextField = textField
         }
     }
 }

@@ -515,11 +515,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func presentAlert(
         title: String,
-        message: String,
+        message: String? = nil,
         actions: [UIAlertAction] = [],
+        textFieldHandler: ((UITextField) -> Void)? = nil,
         completion: (() -> Void)? = nil
     ) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        if let textFieldHandler {
+            alertController.addTextField { textField in
+                textFieldHandler(textField)
+            }
+        }
 
         // if no actions are provided, add a default 'OK' action
         if actions.isEmpty {

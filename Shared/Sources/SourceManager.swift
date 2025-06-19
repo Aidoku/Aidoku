@@ -333,13 +333,11 @@ extension SourceManager {
 
     func addSourceList(url: URL) async -> Bool {
         guard !sourceListURLs.contains(url) else {
-            print("already added")
             return false
         }
 
         let result = await loadSourceList(url: url)
         guard let result else {
-            print("not a valid source")
             return false
         }
 
