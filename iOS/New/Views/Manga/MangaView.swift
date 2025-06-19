@@ -511,9 +511,7 @@ extension MangaView {
 
             Spacer()
 
-            if viewModel.manga.sourceKey != "local" {
-                toolbarDownloadButton
-            }
+            toolbarDownloadButton
         }
     }
 
@@ -585,7 +583,7 @@ extension MangaView {
                 editMode = .inactive
             }
         }
-        .disabled(selectedChapters.isEmpty)
+        .disabled(viewModel.manga.sourceKey == "local" || selectedChapters.isEmpty)
     }
 }
 
