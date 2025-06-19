@@ -19,6 +19,7 @@ struct MangaDetailsHeaderView: View {
     @Binding var nextChapter: AidokuRunner.Chapter?
     @Binding var readingInProgress: Bool
     @Binding var allChaptersRead: Bool
+    @Binding var initialDataLoaded: Bool
 
     @Binding var bookmarked: Bool
     @Binding var coverPressed: Bool
@@ -52,6 +53,7 @@ struct MangaDetailsHeaderView: View {
         nextChapter: Binding<AidokuRunner.Chapter?>,
         readingInProgress: Binding<Bool>,
         allChaptersRead: Binding<Bool>,
+        initialDataLoaded: Binding<Bool>,
         bookmarked: Binding<Bool>,
         coverPressed: Binding<Bool>,
         chapterSortOption: Binding<ChapterSortOption>,
@@ -69,6 +71,7 @@ struct MangaDetailsHeaderView: View {
         self._nextChapter = nextChapter
         self._readingInProgress = readingInProgress
         self._allChaptersRead = allChaptersRead
+        self._initialDataLoaded = initialDataLoaded
         self._bookmarked = bookmarked
         self._coverPressed = coverPressed
         self._chapterSortOption = chapterSortOption
@@ -189,7 +192,7 @@ struct MangaDetailsHeaderView: View {
 
             ChapterListHeaderView(
                 allChapters: manga.chapters,
-                filteredChapters: manga.chapters != nil ? chapters : nil,
+                filteredChapters: manga.chapters != nil ? chapters : (initialDataLoaded ? [] : nil),
                 sortOption: $chapterSortOption,
                 sortAscending: $chapterSortAscending,
                 filters: $filters,
@@ -507,6 +510,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
         nextChapter: Binding.constant(nil),
         readingInProgress: Binding.constant(false),
         allChaptersRead: Binding.constant(false),
+        initialDataLoaded: Binding.constant(true),
         bookmarked: $bookmarked,
         coverPressed: Binding.constant(false),
         chapterSortOption: $chapterSortOption,

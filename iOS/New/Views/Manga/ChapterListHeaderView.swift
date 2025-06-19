@@ -9,7 +9,7 @@ import SwiftUI
 import AidokuRunner
 
 struct ChapterListHeaderView: View {
-    let chapterCount: Int?
+    private let chapterCount: Int?
 
     @Binding var sortOption: ChapterSortOption
     @Binding var sortAscending: Bool
