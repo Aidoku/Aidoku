@@ -21,6 +21,7 @@ class SourceManager {
     var sources: [AidokuRunner.Source] = []
     var sourceLists: [SourceList] = []
     var sourceListURLs: [URL]
+    var sourceListLanguages: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
@@ -75,6 +76,7 @@ class SourceManager {
                 }
                 return results
             }
+            loadSourceListLanguages()
             NotificationCenter.default.post(name: .updateSourceLists, object: nil)
         }
     }
@@ -270,8 +272,8 @@ extension SourceManager {
     func sortSources() {
         sources.sort { $0.name < $1.name }
         sources.sort {
-            let lhs = Self.languageCodes.firstIndex(of: $0.languages.count == 1 ? $0.languages[0] : "multi") ?? 0
-            let rhs = Self.languageCodes.firstIndex(of: $1.languages.count == 1 ? $1.languages[0] : "multi") ?? 0
+            let lhs = Self.languageCodes.firstIndex(of: $0.languages.count == 1 ? $0.languages[0] : "multi") ?? Int.max
+            let rhs = Self.languageCodes.firstIndex(of: $1.languages.count == 1 ? $1.languages[0] : "multi") ?? Int.max
             return lhs < rhs
         }
     }
@@ -343,6 +345,11 @@ extension SourceManager {
 
         sourceLists.append(result)
         sourceListURLs.append(url)
+        for source in result.sources {
+            if let sourceLanguages = source.languages {
+                sourceListLanguages.formUnion(sourceLanguages)
+            }
+        }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
         return true
@@ -351,6 +358,7 @@ extension SourceManager {
     func removeSourceList(url: URL) {
         sourceLists.removeAll { $0.url == url }
         sourceListURLs.removeAll { $0 == url }
+        loadSourceListLanguages()
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
@@ -358,6 +366,7 @@ extension SourceManager {
     func clearSourceLists() {
         sourceLists = []
         sourceListURLs = []
+        sourceListLanguages = []
         UserDefaults.standard.set([URL](), forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
@@ -391,5 +400,17 @@ extension SourceManager {
                 sources: externalSources
             )
         }
+    }
+
+    func loadSourceListLanguages() {
+        var languages = Set<String>()
+        for sourceList in self.sourceLists {
+            for source in sourceList.sources {
+                if let sourceLanguages = source.languages {
+                    languages.formUnion(sourceLanguages)
+                }
+            }
+        }
+        sourceListLanguages = languages
     }
 }
