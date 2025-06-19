@@ -19,7 +19,7 @@ struct CloseButton: View {
                 Image(systemName: "xmark")
             }
         } else {
-            CloseButton(action: action)
+            CloseButtonUIKit(action: action)
         }
     }
 }
