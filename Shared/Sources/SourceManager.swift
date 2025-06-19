@@ -61,23 +61,8 @@ class SourceManager {
             NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
         }
 
-        loadSourceListsTask = Task {
-            sourceLists = await withTaskGroup(of: SourceList?.self) { group in
-                for url in sourceListURLs {
-                    // load sources from list
-                    group.addTask {
-                        await self.loadSourceList(url: url)
-                    }
-                }
-                var results: [SourceList] = []
-                for await result in group {
-                    guard let result else { continue }
-                    results.append(result)
-                }
-                return results
-            }
-            loadSourceListLanguages()
-            NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+        Task {
+            await loadSourceLists(reload: true)
         }
     }
 
@@ -85,8 +70,32 @@ class SourceManager {
         await loadSourcesTask?.value
     }
 
-    func loadSourceLists() async {
-        await loadSourceListsTask?.value
+    func loadSourceLists(reload: Bool = false) async {
+        if let loadSourceListsTask {
+            await loadSourceListsTask.value
+            self.loadSourceListsTask = nil
+        }
+        if reload {
+            loadSourceListsTask = Task {
+                sourceLists = await withTaskGroup(of: SourceList?.self) { group in
+                    for url in sourceListURLs {
+                        // load sources from list
+                        group.addTask {
+                            await self.loadSourceList(url: url)
+                        }
+                    }
+                    var results: [SourceList] = []
+                    for await result in group {
+                        guard let result else { continue }
+                        results.append(result)
+                    }
+                    return results
+                }
+                loadSourceListLanguages()
+                NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+            }
+            await loadSourceListsTask?.value
+        }
     }
 
     func getInstalledSources() async -> [AidokuRunner.Source] {
