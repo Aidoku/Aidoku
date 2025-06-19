@@ -26,6 +26,7 @@ extension MangaView {
         @Published var nextChapter: AidokuRunner.Chapter?
         @Published var readingInProgress = false
         @Published var allChaptersRead = false
+        @Published var initialDataLoaded = false
 
         @Published var chapterSortOption: ChapterSortOption = .sourceOrder {
             didSet { resortChapters() }
@@ -274,6 +275,7 @@ extension MangaView.ViewModel {
         }
         await loadDownloadStatus()
         updateReadButton()
+        initialDataLoaded = true
     }
 
     // refresh manga and chapter data from source, updating db
