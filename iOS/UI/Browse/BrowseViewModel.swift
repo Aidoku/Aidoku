@@ -70,8 +70,8 @@ class BrowseViewModel {
     }
 
     // load external source lists
-    func loadExternalSources() async {
-        await SourceManager.shared.loadSourceLists()
+    func loadExternalSources(reload: Bool = false) async {
+        await SourceManager.shared.loadSourceLists(reload: reload)
 
         // ensure external sources have unique ids
         var sourceById: [String: ExternalSourceInfo] = [:]
