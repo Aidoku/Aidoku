@@ -639,6 +639,7 @@ extension HistoryViewController {
     }
 
     @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard tableView.numberOfSections > 0 else { return }
         if !hovering {
             hovering = true
             if hoveredIndexPath == nil { hoveredIndexPath = IndexPath(row: 0, section: 0) }
