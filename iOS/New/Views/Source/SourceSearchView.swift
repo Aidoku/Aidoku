@@ -148,7 +148,7 @@ extension SourceSearchView {
         @Published var entries: [AidokuRunner.Manga] = []
         @Published var error: Error?
         @Published var loadingInitial = true
-        @Published var showEntries = false
+//        @Published var showEntries = false
         @Published var bookmarkedItems: Set<String> = .init()
 
         private(set) var hasMore = true

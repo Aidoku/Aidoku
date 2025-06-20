@@ -10,7 +10,7 @@ import SafariServices
 
 class SourceInfoViewController: SettingsTableViewController {
 
-    init(source: Source, subPage: Bool = false) {
+    init(source: Source) {
         super.init(items: source.settingItems)
         self.source = source
     }

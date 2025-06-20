@@ -17,8 +17,6 @@ struct ChapterTableCell: View {
     let downloaded: Bool
     var downloadProgress: Float?
 
-    @State private var height: CGFloat = 0
-
     var locked: Bool {
         chapter.locked && !downloaded
     }

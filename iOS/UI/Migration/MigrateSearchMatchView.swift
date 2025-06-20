@@ -18,7 +18,6 @@ struct MigrateSearchMatchView: View {
 
     private var sources: [AidokuRunner.Source]
 
-    @State private var searching = true
     @State private var searchResults: [String: [Manga]] = [:]
 
     @State private var searchText: String = ""

@@ -18,7 +18,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     var chapter: AidokuRunner.Chapter?
     var readingMode: ReadingMode = .webtoon
 
-    private let prefetcher = ImagePrefetcher()
+//    private let prefetcher = ImagePrefetcher()
 
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")

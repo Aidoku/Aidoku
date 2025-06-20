@@ -473,10 +473,10 @@ extension LocalFileManager {
     }
 
     // stop file system listener
-    func stopFileSystemListener() {
-        localFolderSource?.cancel()
-        localFolderSource = nil
-    }
+//    func stopFileSystemListener() {
+//        localFolderSource?.cancel()
+//        localFolderSource = nil
+//    }
 
     private func closeLocalFolderFileDescriptor() {
         if let fd = self.localFolderFileDescriptor {

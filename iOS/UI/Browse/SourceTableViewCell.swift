@@ -40,12 +40,6 @@ class SourceTableViewCell: UITableViewCell {
         }
     }
 
-    init(reuseIdentifier: String?) {
-        super.init(style: .default, reuseIdentifier: reuseIdentifier)
-        configure()
-        constrain()
-    }
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configure()

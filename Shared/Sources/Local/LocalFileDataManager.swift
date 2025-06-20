@@ -299,7 +299,7 @@ extension LocalFileDataManager {
         fileInfo.dateModified = values?.contentModificationDate
 
         let chapterObject = ChapterObject(context: self.context)
-        chapterObject.id = UUID().uuidString
+        chapterObject.id = id
         chapterObject.mangaId = mangaId
         chapterObject.sourceId = "local"
         chapterObject.title = title

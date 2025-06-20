@@ -51,13 +51,13 @@ struct WrappingHStack<Data, ID, Content>: View where Data: RandomAccessCollectio
 
 // MARK: Initializers
 
-extension WrappingHStack where ID == Data.Element.ID, Data.Element: Identifiable {
-    init(_ data: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
-        self.data = data
-        self.id = \.id
-        self.content = content
-    }
-}
+// extension WrappingHStack where ID == Data.Element.ID, Data.Element: Identifiable {
+//    init(_ data: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
+//        self.data = data
+//        self.id = \.id
+//        self.content = content
+//    }
+// }
 
 extension WrappingHStack {
     init(_ data: Data, id: KeyPath<Data.Element, ID>, @ViewBuilder content: @escaping (Data.Element) -> Content) {

@@ -59,7 +59,7 @@ extension MangaManager {
             }
         }
         NotificationCenter.default.post(
-            name: Notification.Name("addToLibrary"),
+            name: .addToLibrary,
             object: manga.toOld()
         )
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)

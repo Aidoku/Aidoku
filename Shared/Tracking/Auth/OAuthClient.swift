@@ -74,17 +74,17 @@ extension OAuthClient {
         return tokens
     }
 
-    func refreshAccessToken(refreshToken: String) async -> OAuthResponse? {
-        guard let url = URL(string: baseUrl + "/token") else { return nil }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = [
-            "grant_type": "refresh_token",
-            "refresh_token": refreshToken
-        ].percentEncoded()
-        tokens = try? await URLSession.shared.object(from: request)
-        return tokens
-    }
+//    func refreshAccessToken(refreshToken: String) async -> OAuthResponse? {
+//        guard let url = URL(string: baseUrl + "/token") else { return nil }
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "POST"
+//        request.httpBody = [
+//            "grant_type": "refresh_token",
+//            "refresh_token": refreshToken
+//        ].percentEncoded()
+//        tokens = try? await URLSession.shared.object(from: request)
+//        return tokens
+//    }
 
     func loadTokens() {
         if let data = UserDefaults.standard.data(forKey: "Token.\(id).oauth") {

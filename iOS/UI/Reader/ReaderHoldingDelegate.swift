@@ -10,7 +10,6 @@ import AidokuRunner
 
 protocol ReaderHoldingDelegate: AnyObject {
 
-    func getChapter() -> AidokuRunner.Chapter
     func getNextChapter() -> AidokuRunner.Chapter?
     func getPreviousChapter() -> AidokuRunner.Chapter?
     func setChapter(_ chapter: AidokuRunner.Chapter)

@@ -16,18 +16,4 @@ extension EdgeInsets {
             trailing: 0
         )
     }
-
-    static func inset(
-        top: CGFloat = 0,
-        leading: CGFloat = 0,
-        bottom: CGFloat = 0,
-        trailing: CGFloat = 0
-    ) -> Self {
-        .init(
-            top: 0,
-            leading: 0,
-            bottom: 0,
-            trailing: 0
-        )
-    }
 }

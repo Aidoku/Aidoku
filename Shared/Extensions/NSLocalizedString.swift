@@ -11,11 +11,11 @@ let fallbackBundle = Bundle.main.path(forResource: "en", ofType: "lproj")
     .flatMap { Bundle(path: $0) }
 
 // falls back to english for localized strings
-public func NSLocalizedString(
+func NSLocalizedString(
     _ key: String,
-    tableName: String? = nil,
-    bundle: Bundle = Bundle.main,
-    value: String = "",
+    tableName _: String? = nil,
+    bundle _: Bundle = Bundle.main,
+    value _: String = "",
     comment: String = ""
 ) -> String {
     guard let fallbackBundle else { return key }

@@ -59,12 +59,6 @@ class MangaCoverCell: UICollectionViewCell {
 
     private var imageTask: ImageTask?
 
-    init(manga: Manga) {
-        super.init(frame: .zero)
-        self.manga = manga
-        layoutViews()
-    }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         layoutViews()
