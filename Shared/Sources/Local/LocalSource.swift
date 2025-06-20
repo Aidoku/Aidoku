@@ -31,7 +31,8 @@ extension AidokuRunner.Source {
 
 final class LocalSourceRunner: AidokuRunner.Runner {
     let features = AidokuRunner.SourceFeatures(
-        usesHome: false, // todo
+        providesListings: true,
+        providesHome: false, // todo
         dynamicFilters: false,
         dynamicSettings: false,
         dynamicListings: false,
@@ -45,11 +46,6 @@ final class LocalSourceRunner: AidokuRunner.Runner {
         handlesBasicLogin: false,
         handlesWebLogin: false
     )
-
-    func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
-        let manga = await LocalFileDataManager.shared.fetchLocalSeries()
-        return .init(entries: manga, hasNextPage: false)
-    }
 
     func getSearchMangaList(query: String?, page: Int, filters: [AidokuRunner.FilterValue]) async throws -> AidokuRunner.MangaPageResult {
         await LocalFileManager.shared.scanIfNecessary()
@@ -70,7 +66,8 @@ final class LocalSourceRunner: AidokuRunner.Runner {
         await LocalFileManager.shared.fetchPages(mangaId: manga.key, chapterId: chapter.key)
     }
 
-    func getHome() async throws -> AidokuRunner.Home {
-        throw SourceError.unimplemented
+    func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
+        let manga = await LocalFileDataManager.shared.fetchLocalSeries()
+        return .init(entries: manga, hasNextPage: false)
     }
 }

@@ -116,7 +116,8 @@ final class KomgaSourceRunner: Runner {
     let helper: KomgaHelper
 
     let features: SourceFeatures = .init(
-        usesHome: true,
+        providesListings: true,
+        providesHome: true,
         dynamicFilters: true,
         dynamicListings: true,
         providesBaseUrl: true,
@@ -126,126 +127,6 @@ final class KomgaSourceRunner: Runner {
     init(sourceKey: String) {
         self.sourceKey = sourceKey
         self.helper = KomgaHelper(sourceKey: sourceKey)
-    }
-
-    func getHome() async throws -> Home {
-        var components: [HomeComponent] = [
-            .init(
-                title: NSLocalizedString("KEEP_READING"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "keep_reading",
-                        name: NSLocalizedString("KEEP_READING"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_added_books",
-                        name: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_ADDED_SERIES"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_added_series",
-                        name: NSLocalizedString("RECENTLY_ADDED_SERIES"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_updated_series",
-                        name: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_READ_BOOKS"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_read_books",
-                        name: NSLocalizedString("RECENTLY_READ_BOOKS"),
-                        kind: .default
-                    )
-                )
-            )
-        ]
-
-//        homeSubject.send(.init(components: components))
-
-        let helper = self.helper // capture the helper
-        try await withThrowingTaskGroup(of: (AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { taskGroup in
-            // on deck
-            taskGroup.addTask {
-                let listing = AidokuRunner.Listing(id: "on_deck", name: NSLocalizedString("ON_DECK"), kind: .default)
-                let onDeck: KomgaPageResponse<[KomgaBook]> = try await helper.request(
-                    path: "/api/v1/books/ondeck?sort=createdDate%2Cdesc",
-                    method: .GET
-                )
-                let baseUrl = try helper.getConfiguredServer()
-                return (listing, onDeck.content.map { $0.intoManga(baseUrl: baseUrl).intoLink() })
-            }
-
-            let listings: [AidokuRunner.Listing] = [
-                .init(id: "keep_reading", name: NSLocalizedString("KEEP_READING"), kind: .default),
-                .init(id: "recently_added_books", name: NSLocalizedString("RECENTLY_ADDED_BOOKS"), kind: .default),
-                .init(id: "recently_added_series", name: NSLocalizedString("RECENTLY_ADDED_SERIES"), kind: .default),
-                .init(id: "recently_updated_series", name: NSLocalizedString("RECENTLY_UPDATED_SERIES"), kind: .default),
-                .init(id: "recently_read_books", name: NSLocalizedString("RECENTLY_READ_BOOKS"), kind: .default)
-            ]
-
-            for listing in listings {
-                taskGroup.addTask {
-                    let result = try await helper.getMangaList(listing: listing, page: 1)
-                    return (listing, result.entries.map { $0.intoLink() })
-                }
-            }
-
-            for try await (listing, entries) in taskGroup {
-                if let index = components.firstIndex(where: { $0.title == listing.name }) {
-                    if entries.isEmpty {
-                        components.remove(at: index)
-                    } else {
-                        components[index].value = .scroller(
-                            entries: entries,
-                            listing: listing
-                        )
-                    }
-//                    self.homeSubject.send(.init(components: components))
-                } else if !entries.isEmpty {
-                    // insert on deck listing
-                    components.insert(.init(
-                        title: listing.name,
-                        value: .scroller(
-                            entries: entries,
-                            listing: listing
-                        )
-                    ), at: 1)
-                }
-            }
-        }
-
-        return .init(components: components)
-    }
-
-    func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
-        try await helper.getMangaList(listing: listing, page: page)
     }
 
     private struct Sort {
@@ -418,6 +299,126 @@ final class KomgaSourceRunner: Runner {
                 .init(content: .url(url: $0))
             }
         }
+    }
+
+    func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
+        try await helper.getMangaList(listing: listing, page: page)
+    }
+
+    func getHome() async throws -> Home {
+        var components: [HomeComponent] = [
+            .init(
+                title: NSLocalizedString("KEEP_READING"),
+                value: .scroller(
+                    entries: [],
+                    listing: .init(
+                        id: "keep_reading",
+                        name: NSLocalizedString("KEEP_READING"),
+                        kind: .default
+                    )
+                )
+            ),
+            .init(
+                title: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
+                value: .scroller(
+                    entries: [],
+                    listing: .init(
+                        id: "recently_added_books",
+                        name: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
+                        kind: .default
+                    )
+                )
+            ),
+            .init(
+                title: NSLocalizedString("RECENTLY_ADDED_SERIES"),
+                value: .scroller(
+                    entries: [],
+                    listing: .init(
+                        id: "recently_added_series",
+                        name: NSLocalizedString("RECENTLY_ADDED_SERIES"),
+                        kind: .default
+                    )
+                )
+            ),
+            .init(
+                title: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
+                value: .scroller(
+                    entries: [],
+                    listing: .init(
+                        id: "recently_updated_series",
+                        name: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
+                        kind: .default
+                    )
+                )
+            ),
+            .init(
+                title: NSLocalizedString("RECENTLY_READ_BOOKS"),
+                value: .scroller(
+                    entries: [],
+                    listing: .init(
+                        id: "recently_read_books",
+                        name: NSLocalizedString("RECENTLY_READ_BOOKS"),
+                        kind: .default
+                    )
+                )
+            )
+        ]
+
+//        homeSubject.send(.init(components: components))
+
+        let helper = self.helper // capture the helper
+        try await withThrowingTaskGroup(of: (AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { taskGroup in
+            // on deck
+            taskGroup.addTask {
+                let listing = AidokuRunner.Listing(id: "on_deck", name: NSLocalizedString("ON_DECK"), kind: .default)
+                let onDeck: KomgaPageResponse<[KomgaBook]> = try await helper.request(
+                    path: "/api/v1/books/ondeck?sort=createdDate%2Cdesc",
+                    method: .GET
+                )
+                let baseUrl = try helper.getConfiguredServer()
+                return (listing, onDeck.content.map { $0.intoManga(baseUrl: baseUrl).intoLink() })
+            }
+
+            let listings: [AidokuRunner.Listing] = [
+                .init(id: "keep_reading", name: NSLocalizedString("KEEP_READING"), kind: .default),
+                .init(id: "recently_added_books", name: NSLocalizedString("RECENTLY_ADDED_BOOKS"), kind: .default),
+                .init(id: "recently_added_series", name: NSLocalizedString("RECENTLY_ADDED_SERIES"), kind: .default),
+                .init(id: "recently_updated_series", name: NSLocalizedString("RECENTLY_UPDATED_SERIES"), kind: .default),
+                .init(id: "recently_read_books", name: NSLocalizedString("RECENTLY_READ_BOOKS"), kind: .default)
+            ]
+
+            for listing in listings {
+                taskGroup.addTask {
+                    let result = try await helper.getMangaList(listing: listing, page: 1)
+                    return (listing, result.entries.map { $0.intoLink() })
+                }
+            }
+
+            for try await (listing, entries) in taskGroup {
+                if let index = components.firstIndex(where: { $0.title == listing.name }) {
+                    if entries.isEmpty {
+                        components.remove(at: index)
+                    } else {
+                        components[index].value = .scroller(
+                            entries: entries,
+                            listing: listing
+                        )
+                    }
+//                    self.homeSubject.send(.init(components: components))
+                } else if !entries.isEmpty {
+                    // insert on deck listing
+                    components.insert(.init(
+                        title: listing.name,
+                        value: .scroller(
+                            entries: entries,
+                            listing: listing
+                        )
+                    ), at: 1)
+                }
+            }
+        }
+
+        return .init(components: components)
     }
 
     func getSearchFilters() async throws -> [AidokuRunner.Filter] {
