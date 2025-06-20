@@ -120,15 +120,6 @@ class SourceManager {
 // MARK: - Source Management
 extension SourceManager {
 
-    func source(for url: URL) -> AidokuRunner.Source? {
-        guard let host = url.host else {
-            return nil
-        }
-        return sources.first { source in
-            source.urls.contains { $0.host == host }
-        }
-    }
-
     func source(for id: String) -> AidokuRunner.Source? {
         sources.first { $0.id == id }
     }

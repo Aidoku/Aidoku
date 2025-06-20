@@ -34,10 +34,6 @@ class MangaViewController: BaseTableViewController {
         super.init()
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func configure() {
         super.configure()
 
@@ -280,7 +276,7 @@ class MangaViewController: BaseTableViewController {
         addObserver(forName: "syncTrackItem", using: checkSyncBlock)
 
         // check for manga migration
-        addObserver(forName: "migratedManga") { [weak self] notification in
+        addObserver(forName: .migratedManga) { [weak self] notification in
             guard
                 let self = self,
                 let migration = notification.object as? (from: Manga, to: Manga),
@@ -1351,7 +1347,7 @@ extension MangaViewController: ChapterSortDelegate {
 
 // MARK: - Header Size Change Listener
 extension MangaViewController: SizeChangeListenerDelegate {
-    func sizeChanged(_ newSize: CGSize) {
+    func sizeChanged(_: CGSize) {
         view.setNeedsLayout() // indirectly calls viewWillLayoutSubviews
     }
 }

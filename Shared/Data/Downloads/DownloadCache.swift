@@ -104,10 +104,10 @@ extension DownloadCache {
 // MARK: - Directory Provider
 extension DownloadCache {
 
-    func directory(for source: Source) -> URL {
-        DownloadManager.directory
-            .appendingSafePathComponent(source.id)
-    }
+//    func directory(for source: Source) -> URL {
+//        DownloadManager.directory
+//            .appendingSafePathComponent(source.id)
+//    }
 
     func directory(for manga: Manga) -> URL {
         DownloadManager.directory

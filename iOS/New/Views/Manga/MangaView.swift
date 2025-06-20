@@ -20,7 +20,6 @@ struct MangaView: View {
     @State private var showingCoverView = false
     @State private var showRemoveAllConfirm = false
     @State private var showConnectionAlert = false
-    @State private var showSyncTrackerAlert = false
 
     @State private var descriptionExpanded = false
 
@@ -200,7 +199,7 @@ extension MangaView {
             )
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
         }
-        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
+        .listRowInsets(.zero)
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
     }

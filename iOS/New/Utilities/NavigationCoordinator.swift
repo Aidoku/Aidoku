@@ -11,7 +11,7 @@ import SwiftUI
 class NavigationCoordinator: ObservableObject {
     weak var rootViewController: UIViewController?
 
-    public init(rootViewController: UIViewController?) {
+    init(rootViewController: UIViewController?) {
         self.rootViewController = rootViewController
     }
 
@@ -25,18 +25,18 @@ class NavigationCoordinator: ObservableObject {
         rootViewController?.navigationController?.pushViewController(viewController, animated: animated)
     }
 
-    func present<V: View>(_ view: V, animated: Bool = true) {
-        let vc = UIHostingController(rootView: view.environmentObject(self))
-        rootViewController?.present(vc, animated: animated)
-    }
+//    func present<V: View>(_ view: V, animated: Bool = true) {
+//        let vc = UIHostingController(rootView: view.environmentObject(self))
+//        rootViewController?.present(vc, animated: animated)
+//    }
 
     func present(_ viewController: UIViewController, animated: Bool = true) {
         rootViewController?.present(viewController, animated: animated)
     }
 
-    func pop(animated: Bool = true) {
-        rootViewController?.navigationController?.popViewController(animated: animated)
-    }
+//    func pop(animated: Bool = true) {
+//        rootViewController?.navigationController?.popViewController(animated: animated)
+//    }
 
     func dismiss(animated: Bool = true) {
         rootViewController?.dismiss(animated: animated)

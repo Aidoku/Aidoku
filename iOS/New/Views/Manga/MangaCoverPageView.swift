@@ -18,8 +18,6 @@ struct MangaCoverPageView: View {
     @State private var alternateCovers: [String] = []
     @State private var error: Error?
 
-    @EnvironmentObject private var path: NavigationCoordinator
-
     @Environment(\.dismiss) private var dismiss
 
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, coverImage: String) {

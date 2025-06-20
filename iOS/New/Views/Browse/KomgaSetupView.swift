@@ -28,9 +28,6 @@ struct KomgaSetupView: View {
     @State private var state: ViewState = .initial
     @State private var error: ServerError?
 
-    @State private var showInvalidUrlAlert = false
-    @State private var showUnableToConnectAlert = false
-
     @State private var uniqueName = true
     @State private var uniqueServer = true
 

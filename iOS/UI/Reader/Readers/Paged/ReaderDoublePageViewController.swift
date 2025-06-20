@@ -42,10 +42,6 @@ class ReaderDoublePageViewController: BaseViewController {
         super.init()
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func configure() {
         zoomView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(zoomView)

@@ -83,9 +83,7 @@ extension WasmAidoku {
     var create_manga_result: (Int32, Int32) -> Int32 {
         { mangaArray, hasMore in
             if let manga = self.globalStore.readStdValue(mangaArray) as? [Manga] {
-                let result = self.globalStore.storeStdValue(MangaPageResult(manga: manga, hasNextPage: hasMore != 0))
-                self.globalStore.addStdReference(to: result, target: mangaArray)
-                return result
+                return self.globalStore.storeStdValue(MangaPageResult(manga: manga, hasNextPage: hasMore != 0))
             }
             return -1
         }

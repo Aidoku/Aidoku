@@ -73,13 +73,13 @@ actor CloudflareHandler: NSObject {
             Task {
                 try? await Task.sleep(nanoseconds: 12_000_000_000)
                 if self.shouldTimeout {
-                    self.finish(for: request)
+                    self.finish()
                 }
             }
         }
     }
 
-    private func finish(for request: URLRequest) {
+    private func finish() {
         guard let continuation = finishContinuation else { return }
         finishContinuation = nil
 
@@ -139,7 +139,7 @@ actor CloudflareHandler: NSObject {
 
 #if os(macOS)
         // todo
-        await finish(for: request)
+        await finish()
 #else
         popupController?.dismiss(animated: true)
         let popup = WebViewViewController(request: request, handler: await proxy(for: request))
@@ -252,11 +252,11 @@ extension CloudflareHandler {
         }
         HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
 
-        await self.finish(for: request)
+        await self.finish()
     }
 
     // handle user popover dismiss
     nonisolated func canceled(request: URLRequest) async {
-        await finish(for: request)
+        await finish()
     }
 }

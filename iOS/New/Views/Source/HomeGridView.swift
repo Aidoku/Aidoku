@@ -55,8 +55,7 @@ struct HomeGridView: View {
             spacing: Self.spacing
         ) {
             ForEach(entries.indices, id: \.self) { offset in
-                let entry = entries[offset]
-                mangaGridItem(entry: entry, offset: offset)
+                mangaGridItem(entry: entries[offset])
             }
             loadMoreView
         }
@@ -77,7 +76,7 @@ struct HomeGridView: View {
         }
     }
 
-    private func mangaGridItem(entry: AidokuRunner.Manga, offset: Int) -> some View {
+    private func mangaGridItem(entry: AidokuRunner.Manga) -> some View {
         let inLibrary = bookmarkedItems.contains(entry.key)
         return Button {
             if let onSelect {

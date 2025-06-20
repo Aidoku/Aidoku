@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public extension View {
+extension View {
     func navigationBarSearch(
         _ searchText: Binding<String>,
         searching: Binding<Bool>? = nil,

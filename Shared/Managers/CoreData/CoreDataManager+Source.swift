@@ -86,27 +86,4 @@ extension CoreDataManager {
             }
         }
     }
-
-    func setCustomSourceConfig(sourceId: String, config: CustomSourceConfig?) async {
-        await container.performBackgroundTask { context in
-            guard let source = self.getSource(id: sourceId, context: context)
-            else { return }
-            source.customSource = config.flatMap { $0.encode() as NSObject }
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("CoreDataManager.setCustomSourceConfig: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    func getCustomSourceConfig(sourceId: String) async -> CustomSourceConfig? {
-        await container.performBackgroundTask { context in
-            guard
-                let source = self.getSource(id: sourceId, context: context),
-                let data = source.customSource as? Data
-            else { return nil }
-            return try? CustomSourceConfig(from: data)
-        }
-    }
 }

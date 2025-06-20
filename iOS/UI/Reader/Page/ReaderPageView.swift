@@ -71,10 +71,6 @@ class ReaderPageView: UIView {
         ])
     }
 
-    func hasOutstandingTask() -> Bool {
-        imageTask != nil && imageTask?.state == .running
-    }
-
     func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
         if sourceId != nil {
             self.sourceId = sourceId

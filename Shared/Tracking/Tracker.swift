@@ -100,10 +100,3 @@ extension Tracker {
         scoreOptions.first { $0.1 == score }?.0
     }
 }
-
-extension Tracker {
-    /// Check if tracker is currently tracking a manga object.
-    func isTracking(manga: Manga) -> Bool {
-        CoreDataManager.shared.hasTrack(trackerId: id, sourceId: manga.sourceId, mangaId: manga.id)
-    }
-}

@@ -23,6 +23,6 @@ class LogManager {
     }
 }
 
-func log(_ items: Any...) {
-    LogManager.logger.log(items.map { String(describing: $0) }.joined(separator: " "))
-}
+// func log(_ items: Any...) {
+//     LogManager.logger.log(items.map { String(describing: $0) }.joined(separator: " "))
+// }

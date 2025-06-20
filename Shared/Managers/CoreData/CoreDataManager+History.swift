@@ -112,25 +112,6 @@ extension CoreDataManager {
         }
     }
 
-    /// Removes a HistoryObject in the background.
-    func removeHistory(sourceId: String, mangaId: String, chapterId: String) async {
-        await container.performBackgroundTask { context in
-            do {
-                if let object = self.getHistory(
-                    sourceId: sourceId,
-                    mangaId: mangaId,
-                    chapterId: chapterId,
-                    context: context
-                ) {
-                    context.delete(object)
-                    try context.save()
-                }
-            } catch {
-                LogManager.logger.error("CoreDataManager.removeHistory: \(error.localizedDescription)")
-            }
-        }
-    }
-
     /// Removes history linked to the given chapters
     func removeHistory(chapters: [Chapter]) async {
         await container.performBackgroundTask { context in
@@ -292,36 +273,6 @@ extension CoreDataManager {
         }
     }
 
-    /// Marks chapter as completed.
-    func setCompleted(
-        _ completed: Bool = true,
-        progress: Int? = nil,
-        date: Date = Date(),
-        sourceId: String,
-        mangaId: String,
-        chapterId: String
-    ) async {
-        await container.performBackgroundTask { context in
-            let historyObject = self.getOrCreateHistory(
-                sourceId: sourceId,
-                mangaId: mangaId,
-                chapterId: chapterId,
-                context: context
-            )
-            guard historyObject.completed != completed else { return }
-            historyObject.completed = completed
-            if let progress = progress {
-                historyObject.progress = Int16(progress)
-            }
-            historyObject.dateRead = date
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("CoreDataManager.setCompleted: \(error.localizedDescription)")
-            }
-        }
-    }
-
     /// Marks chapters as completed.
     func setCompleted(
         chapters: [Chapter],
@@ -359,34 +310,5 @@ extension CoreDataManager {
             historyObject.completed = true
             historyObject.dateRead = date
         }
-    }
-
-    /// Marks chapters as completed.
-    func setCompleted(chapters: [Chapter], date: Date = Date()) async {
-        await container.performBackgroundTask { context in
-            self.setCompleted(chapters: chapters, date: date, context: context)
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("CoreDataManager.setCompleted(chapters:): \(error.localizedDescription)")
-            }
-        }
-    }
-
-    /// Check if a chapter has been completely read.
-    func isCompleted(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
-        context: NSManagedObjectContext? = nil
-    ) -> Bool {
-        let context = context ?? self.context
-        let request = HistoryObject.fetchRequest()
-        request.predicate = NSPredicate(
-            format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ AND completed == true",
-            chapterId, mangaId, sourceId
-        )
-        request.fetchLimit = 1
-        return (try? context.count(for: request)) ?? 0 > 0
     }
 }

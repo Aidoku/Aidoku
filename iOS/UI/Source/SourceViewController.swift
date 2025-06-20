@@ -35,10 +35,6 @@ class SourceViewController: MangaCollectionViewController {
         }
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func configure() {
         super.configure()
 
@@ -438,12 +434,6 @@ extension SourceViewController {
         snapshot.appendItems(manga)
 
         await dataSource.apply(snapshot)
-    }
-
-    func insert(items: [MangaInfo]) {
-        var snapshot = dataSource.snapshot()
-        snapshot.appendItems(items)
-        dataSource.apply(snapshot)
     }
 
     func refreshCells(for mangaInfo: [MangaInfo]) {

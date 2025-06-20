@@ -57,18 +57,6 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
-    /// Create a new library object.
-    @discardableResult
-    func createLibraryManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
-        let context = context ?? self.context
-        guard let mangaObject = getManga(sourceId: sourceId, mangaId: mangaId, context: context) else {
-            return nil
-        }
-        let object = LibraryMangaObject(context: context)
-        object.manga = mangaObject
-        return object
-    }
-
     /// Set LibraryManga opened date to current date.
     func setOpened(sourceId: String, mangaId: String) async {
         await container.performBackgroundTask { context in
