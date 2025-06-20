@@ -41,6 +41,7 @@ class NewSourceViewController: UIViewController {
     private var searchText: String {
         didSet {
             updateHostingControllers()
+            handleFilterHeaderVisibility()
         }
     }
     private var filters: [AidokuRunner.Filter]? {
@@ -708,6 +709,17 @@ extension NewSourceViewController {
                 navigationBar.standardAppearance.shadowColor = .clear
             }
             navigationBar.scrollEdgeAppearance = originalNavbarEdgeAppearance
+        }
+    }
+
+    private func handleFilterHeaderVisibility() {
+        guard source.config?.hidesFiltersWhileSearching ?? false else { return }
+        if searchText.isEmpty {
+            UIView.animate(withDuration: 0.2) {
+                self.searchController.searchBar.showsScopeBar = true
+            }
+        } else {
+            self.searchController.searchBar.showsScopeBar = false
         }
     }
 
