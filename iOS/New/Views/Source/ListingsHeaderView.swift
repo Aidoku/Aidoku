@@ -83,7 +83,7 @@ struct ListingsHeaderView: View {
     var headerScrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
-                let options = if source.features.usesHome {
+                let options = if source.features.providesHome {
                     [NSLocalizedString("HOME")] + listings.map { $0.name }
                 } else {
                     listings.map { $0.name }
