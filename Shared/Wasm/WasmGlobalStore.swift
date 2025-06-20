@@ -33,38 +33,23 @@ class WasmGlobalStore {
         stdDescriptors[descriptor] as Any?
     }
 
-    func storeStdValue(_ data: Any?, from: Int32? = nil) -> Int32 {
+    func storeStdValue(_ data: Any?) -> Int32 {
         stdDescriptorPointer += 1
         stdDescriptors[stdDescriptorPointer] = data
-//        if let d = from {
-//            var refs = stdReferences[d] ?? []
-//            refs.append(stdDescriptorPointer)
-//            stdReferences[d] = refs
-//        }
         return stdDescriptorPointer
     }
 
     func removeStdValue(_ descriptor: Int32) {
         stdDescriptors.removeValue(forKey: descriptor)
-//        for d in stdReferences[descriptor] ?? [] {
-//            removeStdValue(d)
-//        }
-//        stdReferences.removeValue(forKey: descriptor)
-    }
-
-    func addStdReference(to: Int32, target: Int32) {
-//        var refs = stdReferences[to] ?? []
-//        refs.append(target)
-//        stdReferences[to] = refs
     }
 }
 
 // MARK: - Memory R/W
 extension WasmGlobalStore {
 
-    func readString(offset: Int, length: Int) -> String? {
-        try? vm.runtime.memory().readString(offset: UInt32(offset), length: UInt32(length))
-    }
+//    func readString(offset: Int, length: Int) -> String? {
+//        try? vm.runtime.memory().readString(offset: UInt32(offset), length: UInt32(length))
+//    }
 
     func readString(offset: Int32, length: Int32) -> String? {
         try? vm.runtime.memory().readString(offset: UInt32(offset), length: UInt32(length))
@@ -82,15 +67,15 @@ extension WasmGlobalStore {
         try? vm.runtime.memory().readBytes(offset: UInt32(offset), length: UInt32(length))
     }
 
-    func write<T: WasmType & FixedWidthInteger>(value: T, offset: Int32) {
-        try? vm.runtime.memory().write(values: [value], offset: UInt32(offset))
-    }
+//    func write<T: WasmType & FixedWidthInteger>(value: T, offset: Int32) {
+//        try? vm.runtime.memory().write(values: [value], offset: UInt32(offset))
+//    }
 
     func write(bytes: [UInt8], offset: Int32) {
         try? vm.runtime.memory().write(bytes: bytes, offset: UInt32(offset))
     }
 
-    func write(data: Data, offset: Int32) {
-        try? vm.runtime.memory().write(data: data, offset: UInt32(offset))
-    }
+//    func write(data: Data, offset: Int32) {
+//        try? vm.runtime.memory().write(data: data, offset: UInt32(offset))
+//    }
 }

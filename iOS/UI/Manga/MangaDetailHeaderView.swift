@@ -586,7 +586,7 @@ class MangaDetailHeaderView: UIView {
 }
 
 extension MangaDetailHeaderView: SizeChangeListenerDelegate {
-    func sizeChanged(_ newSize: CGSize) {
+    func sizeChanged(_: CGSize) {
         sizeChangeListener?.sizeChanged(bounds.size)
     }
 }

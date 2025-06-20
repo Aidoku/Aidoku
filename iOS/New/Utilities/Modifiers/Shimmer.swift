@@ -9,7 +9,7 @@
 import SwiftUI
 
 /// A view modifier that applies an animated "shimmer" to any view, typically to show that an operation is in progress.
-public struct Shimmer: ViewModifier {
+struct Shimmer: ViewModifier {
     private let animation: Animation
     private let gradient: Gradient
     private let min, max: CGFloat
@@ -22,7 +22,7 @@ public struct Shimmer: ViewModifier {
     ///   - gradient: A custom gradient. Defaults to ``Shimmer/defaultGradient``.
     ///   - bandSize: The size of the animated mask's "band". Defaults to 0.3 unit points, which corresponds to
     /// 30% of the extent of the gradient.
-    public init(
+    init(
         animation: Animation = Self.defaultAnimation,
         gradient: Gradient = Self.defaultGradient,
         bandSize: CGFloat = 0.3
@@ -35,10 +35,10 @@ public struct Shimmer: ViewModifier {
     }
 
     /// The default animation effect.
-    public static let defaultAnimation = Animation.linear(duration: 1.5).delay(0.25).repeatForever(autoreverses: false)
+    static let defaultAnimation = Animation.linear(duration: 1.5).delay(0.25).repeatForever(autoreverses: false)
 
     // A default gradient for the animated mask.
-    public static let defaultGradient = Gradient(colors: [
+    static let defaultGradient = Gradient(colors: [
         .black.opacity(0.3), // translucent
         .black, // opaque
         .black.opacity(0.3) // translucent
@@ -82,7 +82,7 @@ public struct Shimmer: ViewModifier {
         }
     }
 
-    public func body(content: Content) -> some View {
+    func body(content: Content) -> some View {
         content
             .mask(LinearGradient(gradient: gradient, startPoint: startPoint, endPoint: endPoint))
             .animation(animation, value: isInitialState)
@@ -96,7 +96,7 @@ public struct Shimmer: ViewModifier {
     }
 }
 
-public extension View {
+extension View {
     /// Adds an animated shimmering effect to any view, typically to show that an operation is in progress.
     /// - Parameters:
     ///   - active: Convenience parameter to conditionally enable the effect. Defaults to `true`.

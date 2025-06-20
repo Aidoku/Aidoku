@@ -22,8 +22,6 @@ struct ExpandableTextView2: View {
     @State private var truncated = false
     @State private var moreButtonHeight: CGFloat = 0
 
-    @Namespace private var animation
-
     @EnvironmentObject private var path: NavigationCoordinator
 
     var textUntilNewline: String {

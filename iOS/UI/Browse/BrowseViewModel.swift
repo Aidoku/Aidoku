@@ -175,18 +175,6 @@ class BrowseViewModel {
         }
     }
 
-    // convert Source to SourceInfo
-    private func sourceToInfo(source: Source) -> SourceInfo2 {
-        SourceInfo2(
-            sourceId: source.manifest.info.id,
-            iconUrl: source.url.appendingPathComponent("Icon.png"),
-            name: source.manifest.info.name,
-            languages: [source.manifest.info.lang],
-            version: source.manifest.info.version,
-            contentRating: .init(rawValue: source.manifest.info.nsfw ?? 0) ?? .safe
-        )
-    }
-
     // filter sources by search query
     func search(query: String?) {
         self.query = query

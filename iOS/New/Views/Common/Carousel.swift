@@ -21,7 +21,6 @@ struct Carousel<Data: RandomAccessCollection, Content: View>: UIViewRepresentabl
         autoScrollInterval: TimeInterval? = nil,
         itemWidth: CGFloat? = nil,
         itemHeight: CGFloat? = nil,
-        infinite: Bool = true,
         currentPage: Binding<Int> = .constant(0),
         autoScrollPaused: Binding<Bool> = .constant(false),
         content: @escaping (Int, Data.Element) -> Content
@@ -245,7 +244,7 @@ class CarouselCollectionView: UICollectionView {
         }
     }
 
-    public init(frame: CGRect, collectionViewFlowLayout layout: UICollectionViewFlowLayout) {
+    init(frame: CGRect, collectionViewFlowLayout layout: UICollectionViewFlowLayout) {
         flowLayout = layout
         super.init(frame: frame, collectionViewLayout: layout)
         delegate = self
@@ -290,7 +289,7 @@ class CarouselCollectionView: UICollectionView {
 //        setFakePage(page + 1, animated: animated)
 //    }
 
-    private func loopItems(_ scrollView: UIScrollView) {
+    private func loopItems() {
         let page = fakeCurrentPage
         if page == 0 {
             setFakePage(fakeNumberOfItems - 2)
@@ -338,12 +337,12 @@ class CarouselCollectionView: UICollectionView {
 }
 
 extension CarouselCollectionView: UIScrollViewDelegate, UICollectionViewDelegate {
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        loopItems(scrollView)
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        loopItems()
     }
 
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        loopItems(scrollView)
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        loopItems()
         scheduleTimer()
         carouselDataSource?.pageDidChange(fakeCurrentPage % numberOfItems)
     }

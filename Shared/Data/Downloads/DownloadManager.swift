@@ -200,7 +200,7 @@ extension DownloadManager {
         NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
     }
 
-    func pauseDownloads(for chapters: [Chapter] = []) {
+    func pauseDownloads() {
         Task {
             await queue.pause()
         }
@@ -208,7 +208,7 @@ extension DownloadManager {
         NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
     }
 
-    func resumeDownloads(for chapters: [Chapter] = []) {
+    func resumeDownloads() {
         Task {
             await queue.resume()
         }

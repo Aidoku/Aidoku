@@ -47,10 +47,6 @@ struct PageDescriptionView: View {
     @State private var description: String?
     @State private var error: Error?
 
-    var descriptionBinding: Binding<String> {
-        Binding(get: { description ?? "" }, set: { description = $0 })
-    }
-
     var body: some View {
         PlatformNavigationStack {
             Group {
@@ -64,7 +60,6 @@ struct PageDescriptionView: View {
                         if let description {
                             Markdown(description)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-//                                .multilineTextAlignment(.leading)
                                 .padding()
                         }
                     }

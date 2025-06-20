@@ -85,9 +85,6 @@ class Source: Identifiable {
     var titleSearchable: Bool {
         filters.contains { $0 is TitleFilter }
     }
-    var authorSearchable: Bool {
-        filters.contains { $0 is AuthorFilter }
-    }
     var filterable: Bool {
         filters.contains { !($0 is TextFilter) }
     }
@@ -120,17 +117,6 @@ class Source: Identifiable {
 
         handlesImageRequests = (try? vm.findFunction(name: "modify_image_request")) != nil
         initialize()
-    }
-
-    func toInfo() -> SourceInfo2 {
-        SourceInfo2(
-            sourceId: manifest.info.id,
-            iconUrl: url.appendingPathComponent("Icon.png"),
-            name: manifest.info.name,
-            languages: [manifest.info.lang],
-            version: manifest.info.version,
-            contentRating: .init(rawValue: manifest.info.nsfw ?? 0) ?? .safe
-        )
     }
 
     func exportFunctions() {
@@ -264,10 +250,6 @@ extension Source {
         return defaultFilters
     }
 
-    func getDefaultLanguages() -> [String] {
-        (UserDefaults.standard.array(forKey: "\(id).languages") as? [String]) ?? []
-    }
-
     func parseFilter(from filter: FilterInfo) -> FilterBase? {
         switch filter.type {
         case "title": return TitleFilter()
@@ -363,14 +345,6 @@ extension Source {
         return await actor.getPageList(chapter: chapter)
     }
 
-    func getPageListWithoutContents(chapter: Chapter) async throws -> [Page] {
-        if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
-            return await DownloadManager.shared.getDownloadedPagesWithoutContents(for: chapter)
-        }
-
-        return await actor.getPageList(chapter: chapter)
-    }
-
     struct ImageRequest: Sendable {
         let id: Int32
         let url: String?
@@ -390,10 +364,10 @@ extension Source {
         )
     }
 
-    func modifyUrlRequest(request: URLRequest) -> URLRequest? {
-        guard !netModule.isRateLimited() else { return nil }
-        return netModule.modifyRequest(request)
-    }
+//    func modifyUrlRequest(request: URLRequest) -> URLRequest? {
+//        guard !netModule.isRateLimited() else { return nil }
+//        return netModule.modifyRequest(request)
+//    }
 
     func handleUrl(url: String) async throws -> DeepLink {
         try await actor.handleUrl(url: url)

@@ -12,7 +12,6 @@ actor SourceActor {
     var source: Source
 
     enum SourceError: Error {
-        case vmNotLoaded
         case missingValue
     }
 

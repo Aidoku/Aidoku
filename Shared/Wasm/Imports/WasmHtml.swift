@@ -36,7 +36,7 @@ class WasmHtml {
         try? globalStore.vm.linkFunction(name: "previous", namespace: namespace, function: self.previous)
 
         try? globalStore.vm.linkFunction(name: "base_uri", namespace: namespace, function: self.baseUri)
-        try? globalStore.vm.linkFunction(name: "body", namespace: namespace, function: self.select)
+        try? globalStore.vm.linkFunction(name: "body", namespace: namespace, function: self.body)
         try? globalStore.vm.linkFunction(name: "text", namespace: namespace, function: self.text)
         try? globalStore.vm.linkFunction(name: "untrimmed_text", namespace: namespace, function: self.untrimmedText)
         try? globalStore.vm.linkFunction(name: "own_text", namespace: namespace, function: self.ownText)
@@ -117,9 +117,9 @@ extension WasmHtml {
             guard descriptor >= 0, selector >= 0 else { return -1 }
             if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
                 if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.select(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                 } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.select(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                 }
             }
             return -1
@@ -131,9 +131,9 @@ extension WasmHtml {
             guard descriptor >= 0, selectorLength > 0 else { return -1 }
             if let selectorString = self.globalStore.readString(offset: selector, length: selectorLength) {
                 if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.attr(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                 } else if let object = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.attr(selectorString) {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                  }
             }
             return -1
@@ -188,7 +188,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.first() {
-                return self.globalStore.storeStdValue(element, from: descriptor)
+                return self.globalStore.storeStdValue(element)
             }
             return -1
         }
@@ -198,7 +198,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.last() {
-                return self.globalStore.storeStdValue(element, from: descriptor)
+                return self.globalStore.storeStdValue(element)
             }
             return -1
         }
@@ -208,7 +208,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.nextElementSibling() {
-                return self.globalStore.storeStdValue(element, from: descriptor)
+                return self.globalStore.storeStdValue(element)
             }
             return -1
         }
@@ -218,7 +218,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.previousElementSibling() {
-                return self.globalStore.storeStdValue(element, from: descriptor)
+                return self.globalStore.storeStdValue(element)
             }
             return -1
         }
@@ -228,7 +228,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let uri = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Node)?.getBaseUri() {
-                return self.globalStore.storeStdValue(uri, from: descriptor)
+                return self.globalStore.storeStdValue(uri)
             }
             return -1
         }
@@ -238,7 +238,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let element = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Document)?.body() {
-                return self.globalStore.storeStdValue(element, from: descriptor)
+                return self.globalStore.storeStdValue(element)
             }
             return -1
         }
@@ -248,18 +248,18 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text(trimAndNormaliseWhitespace: true) {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text(trimAndNormaliseWhitespace: true) {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
                 // https://github.com/scinfu/SwiftSoup/blob/02c63b7be50bda384f22c56c64d347231754a07e/Sources/String.swift#L84-L94
                 if !string.isEmpty {
                     let (firstChar, lastChar) = (string.first!, string.last!)
                     if firstChar.isWhitespace || lastChar.isWhitespace || firstChar == "\n" || lastChar == "\n" {
-                        return self.globalStore.storeStdValue(string.trimmingCharacters(in: .whitespacesAndNewlines), from: descriptor)
+                        return self.globalStore.storeStdValue(string.trimmingCharacters(in: .whitespacesAndNewlines))
                     }
                 }
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -269,11 +269,11 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text(trimAndNormaliseWhitespace: false) {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text(trimAndNormaliseWhitespace: false) {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -283,9 +283,9 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.ownText() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -295,9 +295,9 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.data() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -307,7 +307,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let array = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.array() {
-                return self.globalStore.storeStdValue(array, from: descriptor)
+                return self.globalStore.storeStdValue(array)
             }
             return -1
         }
@@ -317,9 +317,9 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.html() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.html() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -329,9 +329,9 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.outerHtml() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.outerHtml() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -341,11 +341,11 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text() {
-                return self.globalStore.storeStdValue(Entities.escape(string), from: descriptor)
+                return self.globalStore.storeStdValue(Entities.escape(string))
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text() {
-                return self.globalStore.storeStdValue(Entities.escape(string), from: descriptor)
+                return self.globalStore.storeStdValue(Entities.escape(string))
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue(Entities.escape(string), from: descriptor)
+                return self.globalStore.storeStdValue(Entities.escape(string))
             }
             return -1
         }
@@ -355,11 +355,11 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Elements)?.text() {
-                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string, from: descriptor)
+                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string)
             } else if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.text() {
-                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string, from: descriptor)
+                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string)
             } else if let string = self.globalStore.readStdValue(descriptor) as? String {
-                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string, from: descriptor)
+                return self.globalStore.storeStdValue((try? Entities.unescape(string)) ?? string)
             }
             return -1
         }
@@ -372,7 +372,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.id() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -382,7 +382,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.tagName() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }
@@ -392,7 +392,7 @@ extension WasmHtml {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let string = try? (self.globalStore.readStdValue(descriptor) as? SwiftSoup.Element)?.className() {
-                return self.globalStore.storeStdValue(string, from: descriptor)
+                return self.globalStore.storeStdValue(string)
             }
             return -1
         }

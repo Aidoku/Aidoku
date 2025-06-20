@@ -104,30 +104,6 @@ enum MangaViewer: Int, Codable {
     }
 }
 
-struct CodableColor {
-    var color: PlatformColor
-}
-
-extension CodableColor: Codable {
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let data = try container.decode(Data.self)
-        guard let newColor = try NSKeyedUnarchiver.unarchivedObject(ofClass: PlatformColor.self, from: data) else {
-            throw DecodingError.dataCorruptedError(
-                in: container,
-                debugDescription: "Invalid color"
-            )
-        }
-        color = newColor
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: true)
-        try container.encode(data)
-    }
-}
-
 struct MangaPageResult {
     let manga: [Manga]
     let hasNextPage: Bool

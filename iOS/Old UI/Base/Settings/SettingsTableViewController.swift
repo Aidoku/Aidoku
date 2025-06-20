@@ -33,6 +33,7 @@ class SettingsTableViewController: UITableViewController {
 
     init(items: [SettingItem] = [], source: Source? = nil, style: UITableView.Style = .insetGrouped) {
         self.items = items
+        self.source = source
         super.init(style: style)
     }
 

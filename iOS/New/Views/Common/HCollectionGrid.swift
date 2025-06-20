@@ -27,15 +27,13 @@ where
 
     var body: some View {
         VStack {
-            GeometryReader { geometry in
-                self.generateContent(in: geometry)
-            }
+            self.generateContent()
         }
         .frame(width: contentSize.width, height: contentSize.height)
     }
 
     @ViewBuilder
-    private func generateContent(in geometry: GeometryProxy) -> some View {
+    private func generateContent() -> some View {
         var alignments = Array(repeating: CGFloat.zero, count: rows)
         var currentIndex = -1
         var top: CGFloat = 0
@@ -88,22 +86,22 @@ where
 
 // MARK: Initializers
 
-extension HCollectionGrid where ID == Data.Element.ID, Data.Element: Identifiable {
-    init(
-        rows: Int,
-        verticalSpacing: CGFloat = 0,
-        horizontalSpacing: CGFloat = 0,
-        _ data: Data,
-        @ViewBuilder content: @escaping (Data.Element) -> Content
-    ) {
-        self.rows = max(1, rows)
-        self.data = data
-        self.id = \.id
-        self.content = content
-        self.verticalSpacing = verticalSpacing
-        self.horizontalSpacing = horizontalSpacing
-    }
-}
+// extension HCollectionGrid where ID == Data.Element.ID, Data.Element: Identifiable {
+//    init(
+//        rows: Int,
+//        verticalSpacing: CGFloat = 0,
+//        horizontalSpacing: CGFloat = 0,
+//        _ data: Data,
+//        @ViewBuilder content: @escaping (Data.Element) -> Content
+//    ) {
+//        self.rows = max(1, rows)
+//        self.data = data
+//        self.id = \.id
+//        self.content = content
+//        self.verticalSpacing = verticalSpacing
+//        self.horizontalSpacing = horizontalSpacing
+//    }
+// }
 
 extension HCollectionGrid {
     init(

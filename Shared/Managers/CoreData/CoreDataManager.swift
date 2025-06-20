@@ -90,19 +90,19 @@ final class CoreDataManager {
         container.viewContext
     }
 
-    func save() {
-        do {
-            try context.save()
-        } catch {
-            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
-        }
-    }
-
-    func saveIfNeeded() {
-        if context.hasChanges {
-            save()
-        }
-    }
+//    func save() {
+//        do {
+//            try context.save()
+//        } catch {
+//            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
+//        }
+//    }
+//
+//    func saveIfNeeded() {
+//        if context.hasChanges {
+//            save()
+//        }
+//    }
 
     func remove(_ objectID: NSManagedObjectID) {
         container.performBackgroundTask { context in

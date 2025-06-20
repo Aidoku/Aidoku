@@ -297,27 +297,27 @@ extension WasmStd {
             guard descriptor >= 0, keyLen > 0 else { return -1 }
             if let keyString = self.globalStore.readString(offset: key, length: keyLen) {
                 if let object = (self.globalStore.readStdValue(descriptor) as? [String: Any?])?[keyString] {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? KVCObject,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
 
                 // for iOS 14
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Manga,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Chapter,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? FilterBase,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Listing,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? WasmRequestObject,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 }
             }
             return -1
@@ -332,7 +332,6 @@ extension WasmStd {
                let valueToSet = self.globalStore.readStdValue(value) {
                 object[keyString] = valueToSet
                 self.globalStore.stdDescriptors[descriptor] = object
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
@@ -352,7 +351,7 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.keys), from: descriptor)
+                return self.globalStore.storeStdValue(Array(object.keys))
             }
             return -1
         }
@@ -362,7 +361,7 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.values), from: descriptor)
+                return self.globalStore.storeStdValue(Array(object.values))
             }
             return -1
         }
@@ -385,7 +384,7 @@ extension WasmStd {
             if let array = self.globalStore.readStdValue(descriptor) as? [Any?] {
                 guard index < array.count else { return -1 }
                 let value = array[Int(index)]
-                return self.globalStore.storeStdValue(value, from: descriptor)
+                return self.globalStore.storeStdValue(value)
             }
             return -1
         }
@@ -399,7 +398,6 @@ extension WasmStd {
                index < array.count {
                 array[Int(index)] = valueToSet
                 self.globalStore.stdDescriptors[descriptor] = array
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
@@ -411,7 +409,6 @@ extension WasmStd {
                let valueToAppend = self.globalStore.readStdValue(value) {
                 array.append(valueToAppend)
                 self.globalStore.stdDescriptors[descriptor] = array
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }

@@ -31,14 +31,14 @@ extension View {
         }
     }
 
-    @ViewBuilder
-    func hidden(_ hidden: Bool) -> some View {
-        if hidden {
-            self.hidden()
-        } else {
-            self
-        }
-    }
+//    @ViewBuilder
+//    func hidden(_ hidden: Bool) -> some View {
+//        if hidden {
+//            self.hidden()
+//        } else {
+//            self
+//        }
+//    }
 }
 
 extension View {
@@ -106,13 +106,13 @@ extension View {
         }
     }
 
-    func scrollPagingPlease() -> some View {
-        if #available(iOS 17.0, macOS 14.0, *) {
-            return self.scrollTargetBehavior(.paging)
-        } else {
-            return self
-        }
-    }
+//    func scrollPagingPlease() -> some View {
+//        if #available(iOS 17.0, macOS 14.0, *) {
+//            return self.scrollTargetBehavior(.paging)
+//        } else {
+//            return self
+//        }
+//    }
 
     func scrollBackgroundHiddenPlease() -> some View {
         if #available(iOS 16.0, macOS 13.0, *) {
@@ -130,25 +130,9 @@ extension View {
         }
     }
 
-    func boldPlease() -> some View {
-        if #available(iOS 16.0, macOS 13.0, *) {
-            return bold()
-        } else {
-            return font(.system(.body).weight(.bold))
-        }
-    }
-
     func contentTransitionDisabledPlease() -> some View {
         if #available(iOS 16.0, macOS 13.0, *) {
             return self.contentTransition(.identity)
-        } else {
-            return self
-        }
-    }
-
-    func selectionDisabledPlease(_ isDisabled: Bool) -> some View {
-        if #available(iOS 17.0, macOS 14.0, *) {
-            return self.selectionDisabled(isDisabled)
         } else {
             return self
         }
@@ -251,30 +235,6 @@ extension View {
     func focusNextField<F: RawRepresentable>(_ field: FocusState<F?>.Binding) where F.RawValue == Int {
         guard let currentValue = field.wrappedValue else { return }
         let nextValue = currentValue.rawValue + 1
-        if let newValue = F(rawValue: nextValue) {
-            field.wrappedValue = newValue
-        }
-    }
-
-    /// Focuses previous field in sequence, from the given `FocusState`.
-    /// Requires a currently active focus state and a previous field available in the sequence.
-    ///
-    /// Example usage:
-    /// ```
-    /// .onSubmit { self.focusNextField($focusedField) }
-    /// ```
-    /// Given that `focusField` is an enum that represents the focusable fields. For example:
-    /// ```
-    /// @FocusState private var focusedField: Field?
-    /// enum Field: Int, Hashable {
-    ///    case name
-    ///    case country
-    ///    case city
-    /// }
-    /// ```
-    func focusPreviousField<F: RawRepresentable>(_ field: FocusState<F?>.Binding) where F.RawValue == Int {
-        guard let currentValue = field.wrappedValue else { return }
-        let nextValue = currentValue.rawValue - 1
         if let newValue = F(rawValue: nextValue) {
             field.wrappedValue = newValue
         }

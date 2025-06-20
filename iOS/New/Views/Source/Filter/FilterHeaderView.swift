@@ -16,14 +16,6 @@ struct FilterHeaderView: View {
     @State private var sortedFilters: [AidokuRunner.Filter]
     @State private var showingSheet = false
 
-    @Environment(\.verticalSizeClass) private var verticalSizeClass
-
-    private let numberFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .spellOut
-        return formatter
-    }()
-
     init(
         filters: [AidokuRunner.Filter],
         enabledFilters: Binding<[FilterValue]>,

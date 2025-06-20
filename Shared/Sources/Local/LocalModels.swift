@@ -13,8 +13,6 @@ enum LocalFileManagerError: Error {
     case cannotReadArchive
     case noImagesFound
     case fileCopyFailed
-    case coreDataError(Error)
-    case unknown(String)
 }
 
 struct LocalSeriesInfo: Hashable {

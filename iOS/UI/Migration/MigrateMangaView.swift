@@ -18,8 +18,8 @@ struct MigrateMangaView: View {
 
     @State var selectedSources: [SourceInfo2] = []
 
-    private var strategies = MigrationStrategory.allCases
-    @State private var selectedStrategry: MigrationStrategory = .firstAlternative
+//    private var strategies = MigrationStrategory.allCases
+//    @State private var selectedStrategry: MigrationStrategory = .firstAlternative
 
     @State private var migratedManga: [Int: Manga?] = [:]
     @State private var newChapters: [Int: [Chapter]] = [:]
@@ -384,7 +384,7 @@ struct MigrateMangaView: View {
                         appDelegate.indicatorProgress = Float(counter) / Float(manga.count * 2)
                     }
                     if let result {
-                        NotificationCenter.default.post(name: Notification.Name("migratedManga"), object: result)
+                        NotificationCenter.default.post(name: .migratedManga, object: result)
                     }
                 }
             }

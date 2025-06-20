@@ -100,10 +100,6 @@ class ReaderViewController: BaseObservingViewController {
         super.init()
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func configure() {
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = false
@@ -470,10 +466,6 @@ extension ReaderViewController {
 
 // MARK: - Reader Holding Delegate
 extension ReaderViewController: ReaderHoldingDelegate {
-
-    func getChapter() -> AidokuRunner.Chapter {
-        chapter
-    }
 
     func getNextChapter() -> AidokuRunner.Chapter? {
         guard

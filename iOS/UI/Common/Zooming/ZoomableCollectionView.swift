@@ -50,10 +50,6 @@ class ZoomableCollectionView: ASDisplayNode {
         dummyZoomView.isUserInteractionEnabled = true
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         ASOverlayLayoutSpec(child: collectionNode, overlay: scrollNode)
     }

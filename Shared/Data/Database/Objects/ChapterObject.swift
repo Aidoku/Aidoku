@@ -11,22 +11,6 @@ import AidokuRunner
 
 @objc(ChapterObject)
 public class ChapterObject: NSManagedObject {
-    func load(from chapter: Chapter) {
-        sourceId = chapter.sourceId
-        mangaId = chapter.mangaId
-        id = chapter.id
-        title = chapter.title
-        scanlator = chapter.scanlator
-        url = chapter.url
-        lang = chapter.lang
-        self.chapter = chapter.chapterNum != nil ? NSNumber(value: chapter.chapterNum ?? -1) : nil
-        volume = chapter.volumeNum != nil ? NSNumber(value: chapter.volumeNum ?? -1) : nil
-        dateUploaded = chapter.dateUploaded
-        thumbnail = chapter.thumbnail
-        locked = chapter.locked
-        sourceOrder = Int16(chapter.sourceOrder)
-    }
-
     func load(
         from chapter: AidokuRunner.Chapter,
         sourceId: String,

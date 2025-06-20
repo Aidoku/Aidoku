@@ -17,8 +17,6 @@ struct SourceSettingsView: View {
 
     @EnvironmentObject var path: NavigationCoordinator
 
-    @Environment(\.dismiss) private var dismiss
-
     init(source: AidokuRunner.Source) {
         self.source = source
         if !source.features.dynamicSettings {
@@ -33,12 +31,10 @@ struct SourceSettingsView: View {
                 SourceTableCell(source: source)
                     .listRowInsets(.init(top: 16, leading: 16, bottom: 16, trailing: 16))
             }
-#if !os(macOS)
             .listRowBackground(
                 Color(uiColor: .secondarySystemGroupedBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             )
-#endif
 
             // source settings
             if let error {
@@ -67,15 +63,12 @@ struct SourceSettingsView: View {
             }
         }
         .navigationTitle(NSLocalizedString("SOURCE_SETTINGS"))
-#if !os(macOS)
         // for ios 15
         .background(
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
         )
-#endif
         .toolbar {
-#if !os(macOS)
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     path.dismiss()
@@ -83,14 +76,6 @@ struct SourceSettingsView: View {
                     Text(NSLocalizedString("DONE")).bold()
                 }
             }
-#else
-            Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Text(NSLocalizedString("DONE")).bold()
-            }
-#endif
         }
         .animation(.default, value: settings)
         .task {
