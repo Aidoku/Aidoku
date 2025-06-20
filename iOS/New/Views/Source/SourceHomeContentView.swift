@@ -45,7 +45,7 @@ struct SourceHomeContentView: View {
     }
 
     private func listing(for selection: Int) -> AidokuRunner.Listing? {
-        let listingIndex = selection - (source.features.usesHome ? 1 : 0)
+        let listingIndex = selection - (source.features.providesHome ? 1 : 0)
         return listings[safe: listingIndex]
     }
 
@@ -71,7 +71,7 @@ struct SourceHomeContentView: View {
                 if loading {
                     // loading skeleton
                     Group {
-                        if listingSelection == 0 && source.features.usesHome {
+                        if listingSelection == 0 && source.features.providesHome {
                             SourceHomeSkeletonView(source: source)
                         } else if let listing = currentListing {
                             switch listing.kind {
@@ -113,7 +113,7 @@ struct SourceHomeContentView: View {
                         .transition(.opacity)
                     }
                     .padding(.bottom)
-                } else if listingSelection > 0 || !source.features.usesHome, let listing = currentListing {
+                } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
                     // listing page
                     Group {
                         switch listing.kind {
@@ -169,7 +169,7 @@ struct SourceHomeContentView: View {
                         reader.scrollTo(0)
                     }
 
-                    if value != 0 || !source.features.usesHome {
+                    if value != 0 || !source.features.providesHome {
                         // load listing
                         var setListingSelection: Int? = value
                         if listingSelection == 0 {
@@ -203,7 +203,7 @@ struct SourceHomeContentView: View {
         }
         .onChange(of: listings) { value in
             // reset listing selection to the first if the selected one disappears
-            if (source.features.usesHome && listingSelection > value.count) || (!source.features.usesHome && listingSelection > 0) {
+            if (source.features.providesHome && listingSelection > value.count) || (!source.features.providesHome && listingSelection > 0) {
                 headerListingSelection = 0
             }
         }
@@ -213,7 +213,7 @@ struct SourceHomeContentView: View {
                 guard !Task.isCancelled else { return }
                 await reload()
                 // reload home page even if we're not on it
-                if source.features.usesHome && listingSelection != 0 {
+                if source.features.providesHome && listingSelection != 0 {
                     await loadHome()
                 }
             }
@@ -241,7 +241,7 @@ struct SourceHomeContentView: View {
             guard !Task.isCancelled else { return }
         }
         homeFullyLoaded = false
-        if source.features.usesHome && listingSelection == 0 {
+        if source.features.providesHome && listingSelection == 0 {
             await loadHome()
         } else {
             await loadListing()

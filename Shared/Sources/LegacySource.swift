@@ -41,7 +41,8 @@ final class LegacySourceRunner: AidokuRunner.Runner {
     init(source: Source) {
         self.source = source
         self.features = .init(
-            usesHome: false,
+            providesListings: true,
+            providesHome: false,
             dynamicFilters: false,
             dynamicSettings: false,
             dynamicListings: false,
