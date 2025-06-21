@@ -242,6 +242,7 @@ class NewSourceViewController: UIViewController {
 
         loadNavbarButtons()
 
+        navigationController?.delegate = self
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
 
@@ -370,24 +371,36 @@ class NewSourceViewController: UIViewController {
         }
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        // ensure navbar is set back to normal when view is exited
-        if let navigationBar = navigationController?.navigationBar {
-            if let originalNavbarAppearance {
-                navigationBar.standardAppearance = originalNavbarAppearance
-            }
-            navigationBar.scrollEdgeAppearance = originalNavbarEdgeAppearance
-        }
-
-        super.viewWillDisappear(animated)
-    }
-
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        // save original navbar appearance
+        if originalNavbarAppearance == nil, let navigationBar = navigationController?.navigationBar {
+            originalNavbarAppearance = navigationBar.standardAppearance
+            originalNavbarEdgeAppearance = navigationBar.scrollEdgeAppearance
+        }
         if !searchOverlay.isHidden {
             // set navbar back to opaque if we entered the view while still searching
             // e.g. returned to search page after exiting manga page
             self.setNavigationBarOpaque(true)
+        }
+    }
+}
+
+extension NewSourceViewController: UINavigationControllerDelegate {
+    func navigationController(
+        _ navigationController: UINavigationController,
+        didShow viewController: UIViewController,
+        animated: Bool
+    ) {
+        // ensure navbar is set back to normal when view is exited
+        if viewController !== self {
+            if let navigationBar = navigationController.navigationBar as UINavigationBar? {
+                if let originalNavbarAppearance {
+                    navigationBar.standardAppearance = originalNavbarAppearance
+                }
+                navigationBar.scrollEdgeAppearance = originalNavbarEdgeAppearance
+            }
         }
     }
 }
@@ -701,12 +714,10 @@ extension NewSourceViewController {
             return
         }
 
-        guard let navigationBar = navigationController?.navigationBar else { return }
-
-        if originalNavbarAppearance == nil {
-            originalNavbarAppearance = navigationBar.standardAppearance
-            originalNavbarEdgeAppearance = navigationBar.scrollEdgeAppearance
-        }
+        guard
+            !onlySearch,
+            let navigationBar = navigationController?.navigationBar
+        else { return }
 
         if opaque {
             let appearance = UINavigationBarAppearance()
