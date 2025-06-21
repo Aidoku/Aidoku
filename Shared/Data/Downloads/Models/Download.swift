@@ -45,10 +45,27 @@ struct Download: Equatable, Codable {
     }
 
     func toChapter() -> Chapter {
-        if let chapter = chapter {
+        if let chapter {
             return chapter
         } else {
-            return Chapter(sourceId: sourceId, id: chapterId, mangaId: mangaId, title: nil, sourceOrder: -1)
+            return Chapter(
+                sourceId: sourceId,
+                id: chapterId,
+                mangaId: mangaId,
+                title: nil,
+                sourceOrder: -1
+            )
+        }
+    }
+
+    func toManga() -> Manga {
+        if let manga {
+            return manga
+        } else {
+            return Manga(
+                sourceId: sourceId,
+                id: mangaId
+            )
         }
     }
 }

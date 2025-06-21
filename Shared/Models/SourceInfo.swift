@@ -6,22 +6,22 @@
 //
 
 import Foundation
+import AidokuRunner
 
 struct SourceInfo2: Hashable {
     let sourceId: String
 
     var iconUrl: URL?
     var name: String
-    var lang: String
+    var altNames: [String] = []
+    var languages: [String]
     var version: Int
 
-    enum ContentRating: Int {
-        case safe = 0
-        case suggestive = 1
-        case nsfw = 2
-    }
-
-    var contentRating: ContentRating
+    var contentRating: SourceContentRating
 
     var externalInfo: ExternalSourceInfo?
+
+    var isMultiLanguage: Bool {
+        languages.isEmpty || languages.count > 1 || languages.first == "multi"
+    }
 }

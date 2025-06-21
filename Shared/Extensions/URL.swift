@@ -8,7 +8,7 @@
 import Foundation
 
 extension URL {
-    public var queryParameters: [String: String]? {
+    var queryParameters: [String: String]? {
         get {
             guard
                 let components = URLComponents(url: self, resolvingAgainstBaseURL: true),

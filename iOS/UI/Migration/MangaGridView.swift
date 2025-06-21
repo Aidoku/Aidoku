@@ -24,7 +24,7 @@ struct MangaGridView: View {
                     .aspectRatio(2/3, contentMode: .fill)
             }
         }
-        .animation(.default)
+        .animation(.default, value: coverUrl)
         .cornerRadius(5)
         .foregroundColor(Color(UIColor.red))
         .overlay(

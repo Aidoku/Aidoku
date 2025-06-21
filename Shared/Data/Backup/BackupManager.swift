@@ -17,9 +17,9 @@ class BackupManager {
         Self.directory.contentsByDateModified
     }
 
-    static var backups: [Backup] {
-        Self.backupUrls.compactMap { Backup.load(from: $0) }
-    }
+//    static var backups: [Backup] {
+//        Self.backupUrls.compactMap { Backup.load(from: $0) }
+//    }
 
     func save(backup: Backup, url: URL? = nil) {
         Self.directory.createDirectory()
@@ -138,7 +138,6 @@ class BackupManager {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func restore(from backup: Backup) async throws {
         Task {
             SourceManager.shared.clearSourceLists()

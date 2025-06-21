@@ -6,12 +6,21 @@
 //
 
 import CoreData
+import AidokuRunner
 
 extension CoreDataManager {
 
     /// Remove all library manga objects.
     func clearLibrary(context: NSManagedObjectContext? = nil) {
         clear(request: LibraryMangaObject.fetchRequest(), context: context)
+    }
+
+    /// Get a particular library object.
+    func getLibraryManga(sourceId: String, context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
+        let context = context ?? self.context
+        let request = LibraryMangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "manga.sourceId == %@", sourceId)
+        return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular library object.
@@ -48,18 +57,6 @@ extension CoreDataManager {
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
-    /// Create a new library object.
-    @discardableResult
-    func createLibraryManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
-        let context = context ?? self.context
-        guard let mangaObject = getManga(sourceId: sourceId, mangaId: mangaId, context: context) else {
-            return nil
-        }
-        let object = LibraryMangaObject(context: context)
-        object.manga = mangaObject
-        return object
-    }
-
     /// Set LibraryManga opened date to current date.
     func setOpened(sourceId: String, mangaId: String) async {
         await container.performBackgroundTask { context in
@@ -92,10 +89,15 @@ extension CoreDataManager {
     }
 
     /// Add a manga with the specified chapters to the library.
-    func addToLibrary(manga: Manga, chapters: [Chapter], context: NSManagedObjectContext? = nil) {
-        let mangaObject = self.getOrCreateManga(manga, context: context)
+    func addToLibrary(
+        sourceId: String,
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter],
+        context: NSManagedObjectContext? = nil
+    ) {
+        let mangaObject = self.getOrCreateManga(manga, sourceId: sourceId, context: context)
         let libraryObject = LibraryMangaObject(context: context ?? self.context)
         libraryObject.manga = mangaObject
-        self.setChapters(chapters, sourceId: manga.sourceId, mangaId: manga.id, context: context)
+        self.setChapters(chapters, sourceId: sourceId, mangaId: manga.key, context: context)
     }
 }

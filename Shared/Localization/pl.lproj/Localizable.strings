@@ -199,7 +199,7 @@
 "MISSING_SOURCES_TEXT" = "Przywrócona kopia posiada dane z następujących źródeł, które nie są obecnie zainstaloawne:";
 "RESTORE_BACKUP" = "Przywrócić kopię zapasową?";
 "BACKUP_IMPORT_SUCCESS" = "Kopia zapasowa przywróćona";
-"BACKUP_IMPORT_FAIL" = "Przywracanie nieudane";
+"IMPORT_FAIL" = "Przywracanie nieudane";
 "EXPORT" = "Eksportuj";
 "RESTORE" = "Przywróć";
 "DISPLAY_LOGS" = "Wyświetl dzienniki";

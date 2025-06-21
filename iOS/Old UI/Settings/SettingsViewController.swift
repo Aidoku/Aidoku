@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 import SafariServices
 import Nuke
 import WebKit
@@ -411,8 +412,6 @@ class SettingsViewController: SettingsTableViewController {
 
 // MARK: - Table View Data Source
 extension SettingsViewController {
-
-    // swiftlint:disable:next cyclomatic_complexity
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
             switch item.key {
@@ -423,7 +422,9 @@ extension SettingsViewController {
                 navigationController?.pushViewController(CategoriesViewController(), animated: true)
 
             case "Browse.sourceLists":
-                navigationController?.pushViewController(SourceListsViewController(), animated: true)
+                let hostingController = UIHostingController(rootView: SourceListsView())
+                hostingController.navigationItem.title = NSLocalizedString("SOURCE_LISTS")
+                navigationController?.pushViewController(hostingController, animated: true)
 
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
@@ -564,10 +565,6 @@ extension SettingsViewController {
             }
         }
         tableView.deselectRow(at: indexPath, animated: true)
-    }
-
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        44
     }
 }
 

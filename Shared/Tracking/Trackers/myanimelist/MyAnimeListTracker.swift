@@ -8,18 +8,12 @@
 import Foundation
 import AuthenticationServices
 
-#if os(OSX)
-    import AppKit
-#else
-    import UIKit
-#endif
-
 /// MyAnimeList tracker for Aidoku.
 class MyAnimeListTracker: OAuthTracker {
 
     let id = "myanimelist"
     let name = "MyAnimeList"
-    let icon = UIImage(named: "mal")
+    let icon = PlatformImage(named: "mal")
 
     let supportedStatuses = TrackStatus.defaultStatuses
     let scoreType: TrackScoreType = .tenPoint

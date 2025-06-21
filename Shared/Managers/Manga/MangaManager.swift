@@ -6,9 +6,9 @@
 //
 
 import CoreData
+import AidokuRunner
 
 class MangaManager {
-
     static let shared = MangaManager()
 
     private var libraryRefreshTask: Task<(), Never>?
@@ -17,29 +17,36 @@ class MangaManager {
 // MARK: - Library Managing
 extension MangaManager {
 
-    func addToLibrary(manga: Manga, chapters: [Chapter] = [], fetchMangaDetails: Bool = false) async {
+    func addToLibrary(
+        sourceId: String,
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter] = [],
+        fetchMangaDetails: Bool = false
+    ) async {
         var manga = manga
         var chapters = chapters
         // update manga or chapters
         if fetchMangaDetails || chapters.isEmpty {
-            if let source = SourceManager.shared.source(for: manga.sourceId) {
-                if fetchMangaDetails {
-                    manga = (try? await source.getMangaDetails(manga: manga)) ?? manga
-                }
-                if chapters.isEmpty {
-                    chapters = (try? await source.getChapterList(manga: manga)) ?? []
-                }
+            if let source = SourceManager.shared.source(for: sourceId) {
+                manga = (try? await source.getMangaUpdate(manga: manga, needsDetails: fetchMangaDetails, needsChapters: chapters.isEmpty)) ?? manga
+                chapters = manga.chapters ?? chapters
             }
         }
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
+            CoreDataManager.shared.addToLibrary(
+                sourceId: sourceId,
+                manga: manga,
+                chapters: chapters,
+                context: context
+            )
             // add to default category
-            if let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first {
+            let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first
+            if let defaultCategory {
                 let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
                 if hasCategory {
                     CoreDataManager.shared.addCategoriesToManga(
-                        sourceId: manga.sourceId,
-                        mangaId: manga.id,
+                        sourceId: sourceId,
+                        mangaId: manga.key,
                         categories: [defaultCategory],
                         context: context
                     )
@@ -51,7 +58,10 @@ extension MangaManager {
                 LogManager.logger.error("MangaManager.addToLibrary: \(error.localizedDescription)")
             }
         }
-        NotificationCenter.default.post(name: Notification.Name("addToLibrary"), object: manga)
+        NotificationCenter.default.post(
+            name: .addToLibrary,
+            object: manga.toOld()
+        )
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 
@@ -114,6 +124,16 @@ extension MangaManager {
         excludedCategories: [String] = [],
         context: NSManagedObjectContext? = nil
     ) -> Bool {
+        // update strategy is never
+        if manga.updateStrategy == .never {
+            return true
+        }
+        // next update time hasn't been reached
+        if let nextUpdateTime = manga.nextUpdateTime {
+            if nextUpdateTime > Date() {
+                return true
+            }
+        }
         // completed
         if options.contains("completed") && manga.status == .completed {
             return true
@@ -167,7 +187,8 @@ extension MangaManager {
                 taskGroup.addTask {
                     guard
                         let newInfo = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
-                            .getMangaDetails(manga: mangaItem)
+                            .getMangaUpdate(manga: mangaItem.toNew(), needsDetails: true, needsChapters: false)
+                            .toOld()
                     else { return nil }
                     return (mangaItem.hashValue, newInfo)
                 }
@@ -237,7 +258,8 @@ extension MangaManager {
                     guard
                         !shouldSkip,
                         let chapters = try? await SourceManager.shared.source(for: manga.sourceId)?
-                            .getChapterList(manga: manga)
+                            .getMangaUpdate(manga: manga.toNew(), needsDetails: false, needsChapters: true)
+                            .chapters
                     else { return }
 
                     await CoreDataManager.shared.container.performBackgroundTask { context in

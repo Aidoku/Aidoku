@@ -40,12 +40,6 @@ class SourceTableViewCell: UITableViewCell {
         }
     }
 
-    init(reuseIdentifier: String?) {
-        super.init(style: .default, reuseIdentifier: reuseIdentifier)
-        configure()
-        constrain()
-    }
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         configure()
@@ -153,10 +147,10 @@ class SourceTableViewCell: UITableViewCell {
         self.info = info
         titleLabel.text = info.name
         versionLabel.text = "v" + String(info.version)
-        badgeView.isHidden = info.contentRating != .nsfw
-        subtitleLabel.text = info.lang == "multi"
-            ? NSLocalizedString("MULTI_LANGUAGE", comment: "")
-            : (Locale.current as NSLocale).displayName(forKey: .identifier, value: info.lang)
+        badgeView.isHidden = info.contentRating != .primarilyNsfw
+        subtitleLabel.text = info.isMultiLanguage
+            ? NSLocalizedString("MULTI_LANGUAGE")
+            : Locale.current.localizedString(forIdentifier: info.languages[0]) ?? info.languages[0]
 
         getButton.isHidden = info.externalInfo == nil
 
@@ -164,6 +158,17 @@ class SourceTableViewCell: UITableViewCell {
         if let iconUrl = info.iconUrl {
             Task {
                 await loadIcon(url: iconUrl)
+            }
+        } else {
+            switch info.sourceId {
+                case "local":
+                    iconView.image = UIImage.local
+                case let x where x.hasPrefix("kavita"):
+                    iconView.image = UIImage.kavita
+                case let x where x.hasPrefix("komga"):
+                    iconView.image = UIImage.komga
+                default:
+                    break
             }
         }
     }
@@ -201,15 +206,11 @@ class SourceTableViewCell: UITableViewCell {
     @objc func getPressed() {
         guard
             let externalInfo = info?.externalInfo,
-            let url = externalInfo.sourceUrl
+            let url = externalInfo.fileURL
         else { return }
         getButton.buttonState = .downloading
         Task {
-            let installedSource = await SourceManager.shared.importSource(
-                from: url
-                    .appendingPathComponent("sources", isDirectory: true)
-                    .appendingPathComponent(externalInfo.file)
-            )
+            let installedSource = try? await SourceManager.shared.importSource(from: url)
             getButton.buttonState = installedSource == nil ? .fail : .get
         }
     }

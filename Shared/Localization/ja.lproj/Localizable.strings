@@ -214,7 +214,7 @@
 "AUTH_FOR_LIBRARY" = "ライブラリを表示するために認証してください。";
 "LOCK_LIBRARY" = "ライブラリをロックする";
 "CORRUPTED_BACKUP_TEXT" = "このバックアップには、データが正しく構成されていないようです。名前を変更することはできません。";
-"BACKUP_IMPORT_FAIL" = "インポートに失敗しました";
+"IMPORT_FAIL" = "インポートに失敗しました";
 "RESTORE_BACKUP" = "このバックアップに復元しますか？";
 "LOGS" = "ログ";
 "ADVANCED" = "高度な設定";

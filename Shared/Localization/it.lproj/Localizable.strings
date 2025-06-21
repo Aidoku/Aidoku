@@ -223,7 +223,7 @@
 "WITH_COMPLETED_STATUS" = "Con stato concluso";
 "SAVE_IMAGE_OPTION" = "Opzioni di salvataggio delle immagini";
 "BACKUPS" = "Backup";
-"BACKUP_IMPORT_FAIL" = "Importazione fallita";
+"IMPORT_FAIL" = "Importazione fallita";
 "BACKUP_IMPORT_FAIL_TEXT" = "Impossibile salvare il backup. Assicurati che il backup sia nel formato corretto.";
 "LOGS" = "Log";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "L'URL dell'elenco delle fonti non è valido o è già stato aggiunto.";

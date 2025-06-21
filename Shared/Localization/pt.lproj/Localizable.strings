@@ -92,7 +92,7 @@
 "MISSING_SOURCES" = "Fontes Ausentes";
 "RESTORE_BACKUP" = "Restaurar para este Backup?";
 "RESTORE_BACKUP_TEXT" = "Todos os dados actuais serão removidos e substituídos pelos dados deste backup.";
-"BACKUP_IMPORT_FAIL" = "A importação falhou";
+"IMPORT_FAIL" = "A importação falhou";
 "BACKUP_IMPORT_FAIL_TEXT" = "Falha ao guardar o backup. Certifique-se de que o seu backup está no formato correto.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restauro";

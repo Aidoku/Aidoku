@@ -124,7 +124,7 @@
 "CORRUPTED_BACKUP_TEXT" = "Cette sauvegarde semble avoir des données mal configurées. Le renommage n'est pas possible.";
 "RESTORE_BACKUP_TEXT" = "Toutes les données actuelles seront supprimées et remplacées par les données de cette sauvegarde.";
 "BACKUP_IMPORT_SUCCESS" = "Sauvegarde importée";
-"BACKUP_IMPORT_FAIL" = "Échec de l'importation";
+"IMPORT_FAIL" = "Échec de l'importation";
 "EXPORT" = "Exporter";
 "RESTORE" = "Restaurer";
 "LOGS" = "Journaux";

@@ -6,14 +6,15 @@
 //
 
 import UIKit
+import AidokuRunner
 
 class ReaderPagedViewController: BaseObservingViewController {
 
-    let viewModel = ReaderPagedViewModel()
+    let viewModel: ReaderPagedViewModel
 
     weak var delegate: ReaderHoldingDelegate?
 
-    var chapter: Chapter?
+    var chapter: AidokuRunner.Chapter?
     var readingMode: ReadingMode = .rtl {
         didSet(oldValue) {
             guard readingMode != oldValue else { return }
@@ -34,8 +35,8 @@ class ReaderPagedViewController: BaseObservingViewController {
     var usesAutoPageLayout = false
     lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
-    private var previousChapter: Chapter?
-    private var nextChapter: Chapter?
+    private var previousChapter: AidokuRunner.Chapter?
+    private var nextChapter: AidokuRunner.Chapter?
 
     private lazy var pageViewController = makePageViewController()
 
@@ -45,6 +46,11 @@ class ReaderPagedViewController: BaseObservingViewController {
             navigationOrientation: readingMode == .vertical ? .vertical : .horizontal,
             options: nil
         )
+    }
+
+    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
+        self.viewModel = ReaderPagedViewModel(source: source, manga: manga)
+        super.init()
     }
 
     override func configure() {
@@ -96,7 +102,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
 extension ReaderPagedViewController {
 
-    func loadPageControllers(chapter: Chapter) {
+    func loadPageControllers(chapter: AidokuRunner.Chapter) {
         guard !viewModel.pages.isEmpty else { return } // TODO: handle zero pages
 
         // if transitioning from an adjacent chapter, keep the existing pages
@@ -129,8 +135,9 @@ extension ReaderPagedViewController {
 
         // previous chapter transition page
         let previousInfoController = ReaderPageViewController(type: .info(.previous))
-        previousInfoController.currentChapter = chapter
-        previousInfoController.previousChapter = previousChapter
+        let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
+        previousInfoController.currentChapter = chapter.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
+        previousInfoController.previousChapter = previousChapter?.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
         pageViewControllers.append(previousInfoController)
 
         // chapter pages
@@ -155,8 +162,8 @@ extension ReaderPagedViewController {
 
         // next chapter transition page
         let nextInfoController = ReaderPageViewController(type: .info(.next))
-        nextInfoController.currentChapter = chapter
-        nextInfoController.nextChapter = nextChapter
+        nextInfoController.currentChapter = chapter.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
+        nextInfoController.nextChapter = nextChapter?.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
         pageViewControllers.append(nextInfoController)
 
         // first page of next chapter
@@ -214,7 +221,10 @@ extension ReaderPagedViewController {
     func loadPage(at index: Int) {
         guard index > 0, index <= viewModel.pages.count else { return }
         let vcIndex = index + (previousChapter != nil ? 1 : 0)
-        pageViewControllers[vcIndex].setPage(viewModel.pages[index - 1], sourceId: chapter?.sourceId ?? "")
+        pageViewControllers[vcIndex].setPage(
+            viewModel.pages[index - 1],
+            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+        )
     }
 
     func loadPages(in range: ClosedRange<Int>) {
@@ -222,7 +232,10 @@ extension ReaderPagedViewController {
             guard i > 0 else { continue }
             guard i <= viewModel.pages.count else { break }
             let vcIndex = i + (previousChapter != nil ? 1 : 0)
-            pageViewControllers[vcIndex].setPage(viewModel.pages[i - 1], sourceId: chapter?.sourceId ?? "")
+            pageViewControllers[vcIndex].setPage(
+                viewModel.pages[i - 1],
+                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+            )
         }
     }
 
@@ -263,7 +276,7 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         move(toPage: page, animated: false)
     }
 
-    func setChapter(_ chapter: Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         self.chapter = chapter
         Task {
             await loadChapter(startPage: startPage)
@@ -273,16 +286,8 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
     func loadChapter(startPage: Int) async {
         guard let chapter = chapter else { return }
         await viewModel.loadPages(chapter: chapter)
-        delegate?.setTotalPages(viewModel.pages.count)
-        if viewModel.pages.isEmpty {
-            let alert = UIAlertController(
-                title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
-                message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO", comment: ""),
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-            present(alert, animated: true)
-        } else {
+        delegate?.setPages(viewModel.pages)
+        if !viewModel.pages.isEmpty {
             await MainActor.run {
                 self.loadPageControllers(chapter: chapter)
                 var startPage = startPage
@@ -333,24 +338,31 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             loadPreviousChapter()
 
         case 0: // previous chapter transition page
+            delegate?.setCurrentPage(0)
             // preload previous
             if let previousChapter = previousChapter {
                 Task {
                     await viewModel.preload(chapter: previousChapter)
                     if currentIndex > 0, let lastPage = viewModel.preloadedPages.last {
-                        pageViewControllers[currentIndex - 1].setPage(lastPage, sourceId: previousChapter.sourceId)
+                        pageViewControllers[currentIndex - 1].setPage(
+                            lastPage,
+                            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+                        )
                     }
                 }
             }
 
         case viewModel.pages.count + 1: // next chapter transition page
-            delegate?.setCurrentPage(viewModel.pages.count)
+            delegate?.setCurrentPage(viewModel.pages.count + 1)
             // preload next
             if let nextChapter = nextChapter {
                 Task {
                     await viewModel.preload(chapter: nextChapter)
                     if currentIndex + 1 < pageViewControllers.count, let firstPage = viewModel.preloadedPages.first {
-                        pageViewControllers[currentIndex + 1].setPage(firstPage, sourceId: nextChapter.sourceId)
+                        pageViewControllers[currentIndex + 1].setPage(
+                            firstPage,
+                            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+                        )
                     }
                 }
             }
@@ -361,7 +373,11 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
 
         default:
             currentPage = page
-            delegate?.setCurrentPage(page)
+            if usesDoublePages {
+                delegate?.setCurrentPages(page...page + 1)
+            } else {
+                delegate?.setCurrentPage(page)
+            }
             // preload 1 before and pagesToPreload ahead
             loadPages(in: page - 1 - (usesDoublePages ? 1 : 0)...page + pagesToPreload + (usesDoublePages ? 1 : 0))
         }

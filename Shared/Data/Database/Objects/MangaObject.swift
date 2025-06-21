@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import AidokuRunner
 
 @objc(MangaObject)
 public class MangaObject: NSManagedObject {
@@ -24,9 +25,35 @@ public class MangaObject: NSManagedObject {
         status = Int16(manga.status.rawValue)
         nsfw = Int16(manga.nsfw.rawValue)
         viewer = Int16(manga.viewer.rawValue)
+        neverUpdate = manga.updateStrategy == .never
+        nextUpdateTime = manga.nextUpdateTime
         chapterFlags = Int16(manga.chapterFlags)
         langFilter = manga.langFilter
         scanlatorFilter = manga.scanlatorFilter
+    }
+
+    func load(from manga: AidokuRunner.Manga, sourceId: String) {
+        id = manga.key
+        self.sourceId = sourceId
+        title = manga.title
+        author = manga.authors?.joined(separator: ", ")
+        artist = manga.artists?.joined(separator: ", ")
+        desc = manga.description
+        tags = manga.tags ?? []
+        cover = manga.cover
+        url = manga.url?.absoluteString
+        status = Int16(manga.status.rawValue)
+        let contentRating = manga.contentRating.rawValue
+        nsfw = Int16(contentRating > 0 ? contentRating - 1 : 0)
+        viewer = switch manga.viewer {
+            case .unknown: 0
+            case .rightToLeft: 1
+            case .leftToRight: 2
+            case .vertical: 3
+            case .webtoon: 4
+        }
+        neverUpdate = manga.updateStrategy == .never
+        nextUpdateTime = manga.nextUpdateTime.flatMap { Date(timeIntervalSince1970: TimeInterval($0)) }
     }
 
     func toManga() -> Manga {
@@ -43,6 +70,8 @@ public class MangaObject: NSManagedObject {
             status: PublishingStatus(rawValue: Int(status)) ?? .unknown,
             nsfw: MangaContentRating(rawValue: Int(nsfw)) ?? .safe,
             viewer: MangaViewer(rawValue: Int(viewer)) ?? .defaultViewer,
+            updateStrategy: neverUpdate ? .never : .always,
+            nextUpdateTime: nextUpdateTime,
             chapterFlags: Int(chapterFlags),
             langFilter: langFilter,
             scanlatorFilter: scanlatorFilter,
@@ -50,6 +79,34 @@ public class MangaObject: NSManagedObject {
             lastOpened: libraryObject?.lastOpened,
             lastRead: libraryObject?.lastRead,
             dateAdded: libraryObject?.dateAdded
+        )
+    }
+
+    func toNewManga() -> AidokuRunner.Manga {
+        let viewer: Viewer = switch viewer {
+            case 0: .unknown
+            case 1: .rightToLeft
+            case 2: .leftToRight
+            case 3: .vertical
+            case 4: .webtoon
+            default: .unknown
+        }
+        return AidokuRunner.Manga(
+            sourceKey: sourceId,
+            key: id,
+            title: title,
+            cover: cover,
+            artists: artist?.components(separatedBy: ", "),
+            authors: author?.components(separatedBy: ", "),
+            description: desc,
+            url: url.flatMap { URL(string: $0) },
+            tags: tags,
+            status: MangaStatus(rawValue: UInt8(status)) ?? .unknown,
+            contentRating: AidokuRunner.MangaContentRating(rawValue: UInt8(nsfw + 1)) ?? .unknown,
+            viewer: viewer,
+            updateStrategy: neverUpdate ? .never : .always,
+            nextUpdateTime: nextUpdateTime.flatMap { Int($0.timeIntervalSince1970) },
+            chapters: nil
         )
     }
 }
@@ -74,11 +131,15 @@ extension MangaObject {
     @NSManaged public var nsfw: Int16
     @NSManaged public var viewer: Int16
 
+    @NSManaged public var neverUpdate: Bool
+    @NSManaged public var nextUpdateTime: Date?
+
     @NSManaged public var chapterFlags: Int16
     @NSManaged public var langFilter: String?
     @NSManaged public var scanlatorFilter: [String]?
 
     @NSManaged public var libraryObject: LibraryMangaObject?
+    @NSManaged public var fileInfo: LocalFileInfoObject?
     @NSManaged public var chapters: NSSet?
 }
 

@@ -308,7 +308,7 @@
 "SOURCE_LIST_ADD" = "Adăugați lista de surse";
 "BACKUP_INFO" = "Apăsați lung pe o copie de rezervă pentru a o exporta sau glisați spre stânga pentru a o șterge.";
 "RESTORE_BACKUP_TEXT" = "Toate datele actuale vor fi eliminate și înlocuite cu datele din această copie de rezervă.";
-"BACKUP_IMPORT_FAIL" = "Import eșuat";
+"IMPORT_FAIL" = "Import eșuat";
 "CLEAR_CHAPTER_CACHE_TEXT" = "Această acțiune este ireversibilă. Capitolele din memoria cache vor fi șterse și descărcate din nou.";
 "SET_AS_NORMAL_PAGE" = "Setați ca pagină normală";
 "CLEAR_NETWORK_CACHE_TEXT" = "Această acțiune este ireversibilă. Cererile de rețea și imaginile stocate în cache vor fi șterse.";

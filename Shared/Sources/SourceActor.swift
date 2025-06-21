@@ -12,7 +12,6 @@ actor SourceActor {
     var source: Source
 
     enum SourceError: Error {
-        case vmNotLoaded
         case missingValue
     }
 
@@ -21,13 +20,14 @@ actor SourceActor {
     }
 
     func initialize() throws {
-        try source.globalStore.vm.call("initialize")
+        try source.globalStore.vm.findFunction(name: "initialize").call()
     }
 
     func getMangaList(filters: [FilterBase], page: Int = 1) -> MangaPageResult {
         let filterDescriptor = source.globalStore.storeStdValue(filters)
 
-        let pageResultDescriptor: Int32 = (try? source.globalStore.vm.call("get_manga_list", filterDescriptor, Int32(page))) ?? -1
+        let pageResultDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "get_manga_list")
+            .call(filterDescriptor, Int32(page))) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -39,7 +39,8 @@ actor SourceActor {
     func getMangaListing(listing: Listing, page: Int = 1) -> MangaPageResult {
         let listingDescriptor = source.globalStore.storeStdValue(listing)
 
-        let pageResultDescriptor: Int32 = (try? source.globalStore.vm.call("get_manga_listing", listingDescriptor, Int32(page))) ?? -1
+        let pageResultDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "get_manga_listing")
+            .call(listingDescriptor, Int32(page))) ?? -1
 
         let result = source.globalStore.readStdValue(pageResultDescriptor) as? MangaPageResult ?? MangaPageResult(manga: [], hasNextPage: false)
         source.globalStore.removeStdValue(pageResultDescriptor)
@@ -51,7 +52,8 @@ actor SourceActor {
     func getMangaDetails(manga: Manga) throws -> Manga {
         let mangaDescriptor = source.globalStore.storeStdValue(manga)
 
-        let resultMangaDescriptor: Int32 = (try? source.globalStore.vm.call("get_manga_details", mangaDescriptor)) ?? -1
+        let resultMangaDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "get_manga_details")
+            .call(mangaDescriptor)) ?? -1
 
         let manga = source.globalStore.readStdValue(resultMangaDescriptor) as? Manga
         source.globalStore.removeStdValue(resultMangaDescriptor)
@@ -68,7 +70,7 @@ actor SourceActor {
         source.globalStore.chapterCounter = 0
         source.globalStore.currentManga = manga.id
 
-        let chapterListDescriptor: Int32 = (try? source.globalStore.vm.call("get_chapter_list", mangaDescriptor)) ?? -1
+        let chapterListDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "get_chapter_list").call(mangaDescriptor)) ?? -1
 
         source.globalStore.chapterCounter = 0
 
@@ -86,7 +88,8 @@ actor SourceActor {
     func getPageList(chapter: Chapter) -> [Page] {
         let chapterDescriptor = source.globalStore.storeStdValue(chapter)
 
-        let pageListDescriptor: Int32 = (try? source.globalStore.vm.call("get_page_list", chapterDescriptor)) ?? -1
+        let pageListDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "get_page_list")
+            .call(chapterDescriptor)) ?? -1
 
         var pages = source.globalStore.readStdValue(pageListDescriptor) as? [Page] ?? []
         source.globalStore.removeStdValue(pageListDescriptor)
@@ -114,7 +117,7 @@ actor SourceActor {
         }
         source.globalStore.requests[request.id] = request
 
-        try? source.globalStore.vm.call("modify_image_request", Int32(request.id))
+        try? source.globalStore.vm.findFunction(name: "modify_image_request").call(Int32(request.id))
 
         guard let request = source.globalStore.requests[request.id] else { throw SourceError.missingValue }
 
@@ -126,7 +129,7 @@ actor SourceActor {
     func handleUrl(url: String) throws -> DeepLink {
         let urlDescriptor = source.globalStore.storeStdValue(url)
 
-        let deepLinkDescriptor: Int32 = (try? source.globalStore.vm.call("handle_url", urlDescriptor)) ?? -1
+        let deepLinkDescriptor: Int32 = (try? source.globalStore.vm.findFunction(name: "handle_url").call(urlDescriptor)) ?? -1
 
         let deepLink = source.globalStore.readStdValue(deepLinkDescriptor) as? DeepLink
         source.globalStore.removeStdValue(deepLinkDescriptor)
@@ -144,7 +147,7 @@ actor SourceActor {
     func handleNotification(notification: String) {
         let notificationDescriptor = source.globalStore.storeStdValue(notification)
 
-        try? source.globalStore.vm.call("handle_notification", notificationDescriptor)
+        try? source.globalStore.vm.findFunction(name: "handle_notification").call(notificationDescriptor)
 
         source.globalStore.removeStdValue(notificationDescriptor)
     }

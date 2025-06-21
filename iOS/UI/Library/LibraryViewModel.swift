@@ -105,7 +105,6 @@ class LibraryViewModel {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
         let currentCategory = self.currentCategory
         let sortMethod = self.sortMethod

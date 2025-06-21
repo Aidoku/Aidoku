@@ -31,15 +31,8 @@ struct TrackerSettingOptionView: View {
 
     var numberType: NumberType = .int
 
-    let dateFormatter: DateFormatter
-
-    private static let formatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
-
-    let coordinator: TrackerSettingOptionViewCoordinator
+    private let dateFormatter: DateFormatter
+    private let coordinator: TrackerSettingOptionViewCoordinator
 
     @Environment(\.colorScheme) private var colorScheme
 

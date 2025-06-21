@@ -25,16 +25,4 @@ struct TrackState {
     var startReadDate: Date?
     /// The date that reading completed.
     var finishReadDate: Date?
-
-    /// Converts the TrackState to a TrackUpdate object.
-    func toUpdate() -> TrackUpdate {
-        TrackUpdate(
-            score: score,
-            status: status,
-            lastReadChapter: lastReadChapter,
-            lastReadVolume: lastReadVolume,
-            startReadDate: startReadDate,
-            finishReadDate: finishReadDate
-        )
-    }
 }

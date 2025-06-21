@@ -5,19 +5,20 @@
 //  Created by Skitty on 9/27/22.
 //
 
-import UIKit
-import Nuke
+import AidokuRunner
 import AsyncDisplayKit
+import Nuke
+import UIKit
 
 class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
-    let viewModel = ReaderWebtoonViewModel()
+    let viewModel: ReaderWebtoonViewModel
     weak var delegate: ReaderHoldingDelegate?
 
-    var chapter: Chapter?
+    var chapter: AidokuRunner.Chapter?
     var readingMode: ReadingMode = .webtoon
 
-    private let prefetcher = ImagePrefetcher()
+//    private let prefetcher = ImagePrefetcher()
 
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
@@ -25,7 +26,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var loadingNext = false
 
     // The chapters currently shown in the reader view
-    private var chapters: [Chapter] = []
+    private var chapters: [AidokuRunner.Chapter] = []
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
 
@@ -39,8 +40,9 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     // Stores the last calculated page number
     private var previousPage = 0
 
-    convenience init() {
-        self.init(layout: VerticalContentOffsetPreservingLayout())
+    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
+        self.viewModel = ReaderWebtoonViewModel(source: source, manga: manga)
+        super.init(layout: VerticalContentOffsetPreservingLayout())
     }
 
     override func configure() {
@@ -83,7 +85,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool
-            ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+                ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
         }
     }
 
@@ -105,20 +107,6 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         return collectionNode.indexPathForItem(at: currentPoint)
     }
 
-    func showLoadFailAlert() {
-        let alert = UIAlertController(
-            title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
-            message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO", comment: ""),
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-        present(alert, animated: true)
-    }
-}
-
-// MARK: - Scroll View Delegate
-extension ReaderWebtoonViewController {
-
     func getCurrentPage() -> Int {
         guard
             let chapter = chapter,
@@ -127,12 +115,15 @@ extension ReaderWebtoonViewController {
         else { return 0 }
         let pageRow = getCurrentPagePath()?.row ?? 0
         let hasStartInfo = currentPages.first?.type != .imagePage
-        let hasEndInfo = currentPages.last?.type != .imagePage
         return min(
-            max(pageRow + (hasStartInfo ? 0 : 1), 1),
-            currentPages.count - (hasStartInfo ? 1 : 0) - (hasEndInfo ? 1 : 0)
+            max(pageRow + (hasStartInfo ? 0 : 1), 0),
+            currentPages.count - (hasStartInfo ? 1 : 0)
         )
     }
+}
+
+// MARK: - Scroll View Delegate
+extension ReaderWebtoonViewController {
 
     // Update current page when scrolling
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -201,7 +192,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
         guard
             case let point = interaction.location(in: collectionNode.view),
             let indexPath = collectionNode.indexPathForItem(at: point),
-            let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonImageNode,
+            let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
             let image = node.imageNode.image,
             UserDefaults.standard.bool(forKey: "Reader.saveImageOption")
         else {
@@ -291,8 +282,8 @@ extension ReaderWebtoonViewController {
         pages.insert(
             [Page(
                 type: .prevInfoPage,
-                sourceId: prevChapter.sourceId,
-                chapterId: prevChapter.id,
+                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
+                chapterId: prevChapter.key,
                 index: -1
             )]  + viewModel.preloadedPages,
             at: 0
@@ -338,7 +329,7 @@ extension ReaderWebtoonViewController {
         chapters.append(nextChapter)
         pages.append(viewModel.preloadedPages + [Page(
             type: .nextInfoPage,
-            sourceId: nextChapter.sourceId,
+            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
             chapterId: nextChapter.id,
             index: -2
         )])
@@ -372,7 +363,7 @@ extension ReaderWebtoonViewController {
         else { return }
         self.chapter = chapter
         delegate?.setChapter(chapter)
-        delegate?.setTotalPages(pages.filter({ $0.type == .imagePage }).count)
+        delegate?.setPages(pages.filter({ $0.type == .imagePage }))
         viewModel.setPages(chapter: chapter, pages: pages)
     }
 
@@ -386,7 +377,7 @@ extension ReaderWebtoonViewController {
         else { return }
         self.chapter = chapter
         delegate?.setChapter(chapter)
-        delegate?.setTotalPages(pages.filter({ $0.type == .imagePage }).count)
+        delegate?.setPages(pages.filter({ $0.type == .imagePage }))
         viewModel.setPages(chapter: chapter, pages: pages)
     }
 
@@ -405,7 +396,9 @@ extension ReaderWebtoonViewController {
             collectionNode.reloadItems(at: paths)
         } completion: { finished in
             if finished {
-                self.zoomView.adjustContentSize()
+                Task { @MainActor in
+                    self.zoomView.adjustContentSize()
+                }
             }
         }
     }
@@ -456,23 +449,33 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         scrollViewDidScroll(collectionNode.view)
     }
 
-    func setChapter(_ chapter: Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         self.chapter = chapter
         chapters = [chapter]
 
         Task {
             await viewModel.loadPages(chapter: chapter)
-            delegate?.setTotalPages(viewModel.pages.count)
+            delegate?.setPages(viewModel.pages)
             if viewModel.pages.isEmpty {
                 pages = []
-                showLoadFailAlert()
                 await collectionNode.reloadData()
                 return
             }
+            let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
             pages = [[
-                Page(type: .prevInfoPage, sourceId: chapter.sourceId, chapterId: chapter.id, index: -1)
+                Page(
+                    type: .prevInfoPage,
+                    sourceId: sourceId,
+                    chapterId: chapter.key,
+                    index: -1
+                )
             ] + viewModel.pages + [
-                Page(type: .nextInfoPage, sourceId: chapter.sourceId, chapterId: chapter.id, index: -2)
+                Page(
+                    type: .nextInfoPage,
+                    sourceId: sourceId,
+                    chapterId: chapter.key,
+                    index: -2
+                )
             ]]
 
             var startPage = startPage
@@ -516,17 +519,23 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
         pages.count
     }
 
-    func collectionNode(_ collectionNode: ASCollectionNode, numberOfItemsInSection section: Int) -> Int {
+    func collectionNode(
+        _ collectionNode: ASCollectionNode,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         pages[section].count
     }
 
-    func collectionNode(_ collectionNode: ASCollectionNode, nodeBlockForItemAt indexPath: IndexPath) -> ASCellNodeBlock {
+    func collectionNode(
+        _ collectionNode: ASCollectionNode,
+        nodeBlockForItemAt indexPath: IndexPath
+    ) -> ASCellNodeBlock {
         guard let chapter else { return { ASCellNode() } }
         var page = pages[indexPath.section][indexPath.item]
         if page.type == .imagePage {
             // image page
             return {
-                let cell = ReaderWebtoonImageNode(page: page)
+                let cell = ReaderWebtoonPageNode(source: self.viewModel.source, page: page)
                 cell.delegate = self
                 return cell
             }
@@ -548,8 +557,14 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
             return {
                 ReaderWebtoonTransitionNode(transition: .init(
                     type: page.type == .prevInfoPage ? .prev : .next,
-                    from: chapter,
-                    to: to
+                    from: chapter.toOld(
+                        sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,
+                        mangaId: self.viewModel.manga.key
+                    ),
+                    to: to?.toOld(
+                        sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,
+                        mangaId: self.viewModel.manga.key
+                    )
                 ))
             }
         }

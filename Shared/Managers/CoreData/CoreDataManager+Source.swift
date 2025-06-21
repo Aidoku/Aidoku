@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import AidokuRunner
 
 extension CoreDataManager {
 
@@ -37,9 +38,17 @@ extension CoreDataManager {
         return (try? context.fetch(request))?.first
     }
 
-    /// Creates a new track item.
+    /// Creates a new source item.
     @discardableResult
     func createSource(source: Source, context: NSManagedObjectContext? = nil) -> SourceObject {
+        let context = context ?? self.context
+        let object = SourceObject(context: context)
+        object.load(from: source)
+        return object
+    }
+
+    @discardableResult
+    func createSource(source: AidokuRunner.Source, context: NSManagedObjectContext? = nil) -> SourceObject {
         let context = context ?? self.context
         let object = SourceObject(context: context)
         object.load(from: source)

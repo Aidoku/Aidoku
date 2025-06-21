@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmAidoku: WasmImports {
 
@@ -17,11 +16,11 @@ class WasmAidoku: WasmImports {
     }
 
     func export(into namespace: String = "aidoku") {
-        try? globalStore.vm.addImportHandler(named: "create_manga", namespace: namespace, block: self.create_manga)
-        try? globalStore.vm.addImportHandler(named: "create_manga_result", namespace: namespace, block: self.create_manga_result)
-        try? globalStore.vm.addImportHandler(named: "create_chapter", namespace: namespace, block: self.create_chapter)
-        try? globalStore.vm.addImportHandler(named: "create_page", namespace: namespace, block: self.create_page)
-        try? globalStore.vm.addImportHandler(named: "create_deeplink", namespace: namespace, block: self.create_deeplink)
+        try? globalStore.vm.linkFunction(name: "create_manga", namespace: namespace, function: self.create_manga)
+        try? globalStore.vm.linkFunction(name: "create_manga_result", namespace: namespace, function: self.create_manga_result)
+        try? globalStore.vm.linkFunction(name: "create_chapter", namespace: namespace, function: self.create_chapter)
+        try? globalStore.vm.linkFunction(name: "create_page", namespace: namespace, function: self.create_page)
+        try? globalStore.vm.linkFunction(name: "create_deeplink", namespace: namespace, function: self.create_deeplink)
     }
 }
 
@@ -84,9 +83,7 @@ extension WasmAidoku {
     var create_manga_result: (Int32, Int32) -> Int32 {
         { mangaArray, hasMore in
             if let manga = self.globalStore.readStdValue(mangaArray) as? [Manga] {
-                let result = self.globalStore.storeStdValue(MangaPageResult(manga: manga, hasNextPage: hasMore != 0))
-                self.globalStore.addStdReference(to: result, target: mangaArray)
-                return result
+                return self.globalStore.storeStdValue(MangaPageResult(manga: manga, hasNextPage: hasMore != 0))
             }
             return -1
         }

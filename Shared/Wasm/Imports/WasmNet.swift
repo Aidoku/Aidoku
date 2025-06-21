@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 import SwiftSoup
 import WebKit
 
@@ -85,25 +84,25 @@ class WasmNet: WasmImports {
     }
 
     func export(into namespace: String = "net") {
-        try? globalStore.vm.addImportHandler(named: "init", namespace: namespace, block: self.init_request)
-        try? globalStore.vm.addImportHandler(named: "send", namespace: namespace, block: self.send)
-        try? globalStore.vm.addImportHandler(named: "close", namespace: namespace, block: self.close)
+        try? globalStore.vm.linkFunction(name: "init", namespace: namespace, function: self.init_request)
+        try? globalStore.vm.linkFunction(name: "send", namespace: namespace, function: self.send)
+        try? globalStore.vm.linkFunction(name: "close", namespace: namespace, function: self.close)
 
-        try? globalStore.vm.addImportHandler(named: "set_url", namespace: namespace, block: self.set_url)
-        try? globalStore.vm.addImportHandler(named: "set_header", namespace: namespace, block: self.set_header)
-        try? globalStore.vm.addImportHandler(named: "set_body", namespace: namespace, block: self.set_body)
+        try? globalStore.vm.linkFunction(name: "set_url", namespace: namespace, function: self.set_url)
+        try? globalStore.vm.linkFunction(name: "set_header", namespace: namespace, function: self.set_header)
+        try? globalStore.vm.linkFunction(name: "set_body", namespace: namespace, function: self.set_body)
 
-        try? globalStore.vm.addImportHandler(named: "get_url", namespace: namespace, block: self.get_url)
-        try? globalStore.vm.addImportHandler(named: "get_data_size", namespace: namespace, block: self.get_data_size)
-        try? globalStore.vm.addImportHandler(named: "get_data", namespace: namespace, block: self.get_data)
-        try? globalStore.vm.addImportHandler(named: "get_header", namespace: namespace, block: self.get_header)
-        try? globalStore.vm.addImportHandler(named: "get_status_code", namespace: namespace, block: self.get_status_code)
+        try? globalStore.vm.linkFunction(name: "get_url", namespace: namespace, function: self.get_url)
+        try? globalStore.vm.linkFunction(name: "get_data_size", namespace: namespace, function: self.get_data_size)
+        try? globalStore.vm.linkFunction(name: "get_data", namespace: namespace, function: self.get_data)
+        try? globalStore.vm.linkFunction(name: "get_header", namespace: namespace, function: self.get_header)
+        try? globalStore.vm.linkFunction(name: "get_status_code", namespace: namespace, function: self.get_status_code)
 
-        try? globalStore.vm.addImportHandler(named: "json", namespace: namespace, block: self.json)
-        try? globalStore.vm.addImportHandler(named: "html", namespace: namespace, block: self.html)
+        try? globalStore.vm.linkFunction(name: "json", namespace: namespace, function: self.json)
+        try? globalStore.vm.linkFunction(name: "html", namespace: namespace, function: self.html)
 
-        try? globalStore.vm.addImportHandler(named: "set_rate_limit", namespace: namespace, block: self.set_rate_limit)
-        try? globalStore.vm.addImportHandler(named: "set_rate_limit_period", namespace: namespace, block: self.set_rate_limit_period)
+        try? globalStore.vm.linkFunction(name: "set_rate_limit", namespace: namespace, function: self.set_rate_limit)
+        try? globalStore.vm.linkFunction(name: "set_rate_limit_period", namespace: namespace, function: self.set_rate_limit_period)
     }
 }
 
@@ -169,9 +168,10 @@ extension WasmNet {
     }
 
     func isRateLimited() -> Bool {
-        self.rateLimit > 0
-            && -(self.lastRequestTime?.timeIntervalSinceNow ?? -self.period) < self.period
-            && self.passedRequests >= self.rateLimit
+//        self.rateLimit > 0
+//            && -(self.lastRequestTime?.timeIntervalSinceNow ?? -self.period) < self.period
+//            && self.passedRequests >= self.rateLimit
+        false
     }
 
     func incrementRequest() {
@@ -241,7 +241,7 @@ extension WasmNet {
             guard let request = self.globalStore.requests[descriptor] else { return }
             let url: URL?
             // iOS 17 encodes by default the url string causing double encoded characters
-            if #available(iOS 17.0, *) {
+            if #available(iOS 17.0, macOS 14.0, *) {
                 // it seems if we pass a valid RFC 3986 url string to URL() it behaves the same as on iOS 16
                 let urlEncoded = request.URL?
                     .removingPercentEncoding?

@@ -25,15 +25,4 @@ struct TrackSearchItem {
     var type: MediaType?
     /// A boolean indicating if the item is currently being tracked by the user.
     var tracked: Bool
-
-    /// Converts the search item to a TrackItem for the given manga.
-    func toItem(for manga: Manga) -> TrackItem {
-        TrackItem(
-            id: id,
-            trackerId: trackerId,
-            sourceId: manga.sourceId,
-            mangaId: manga.id,
-            title: title
-        )
-    }
 }

@@ -20,6 +20,13 @@ struct MangaInfo: Hashable, Sendable {
     var unread: Int = 0
 
     func toManga() -> Manga {
-        Manga(sourceId: sourceId, id: mangaId, title: title, author: author, coverUrl: coverUrl, url: url)
+        Manga(
+            sourceId: sourceId,
+            id: mangaId,
+            title: title,
+            author: author,
+            coverUrl: coverUrl,
+            url: url
+        )
     }
 }

@@ -44,11 +44,6 @@ extension CoreDataManager {
         getCategories(sorted: sorted, context: context).compactMap { $0.title }
     }
 
-    /// Get category objects for a library object.
-    func getCategories(libraryManga: LibraryMangaObject) -> [CategoryObject] {
-        (libraryManga.categories?.allObjects as? [CategoryObject]) ?? []
-    }
-
     /// Check if category exists.
     func hasCategory(title: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context

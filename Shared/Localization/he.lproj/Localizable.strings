@@ -206,7 +206,7 @@
 "SYNC_LOCAL_HISTORY" = "סנכרון היסטוריה מקומית";
 "SELECTED" = "נבחר";
 "RESTORE_BACKUP_TEXT" = "כל הנתונים הנוכחים יוסרו ויוחלפו על ידי הנתונים מגיבוי זה.";
-"BACKUP_IMPORT_FAIL" = "הייבוא נכשל";
+"IMPORT_FAIL" = "הייבוא נכשל";
 "RESTORE" = "שחזר";
 "LOGS" = "דוחות";
 "CLEAR_MANGA_CACHE" = "נקה מטמון מאנגה";

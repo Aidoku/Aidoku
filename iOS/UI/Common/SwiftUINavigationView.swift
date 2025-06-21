@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct SwiftUINavigationView: View {
+struct SwiftUINavigationView<Content: View>: View {
 
     @Environment(\.presentationMode) var presentationMode
 
-    var rootView: AnyView
+    var rootView: Content
 
     var closeButtonTitle: String = NSLocalizedString("CANCEL", comment: "")
 

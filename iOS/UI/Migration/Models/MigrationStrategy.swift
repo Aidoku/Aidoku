@@ -7,14 +7,14 @@
 
 import Foundation
 
-enum MigrationStrategory: CaseIterable {
-    case firstAlternative
-    case mostChapters
-
-    func toString() -> String {
-        switch self {
-        case .firstAlternative: return NSLocalizedString("FIRST_ALTERNATIVE", comment: "")
-        case .mostChapters: return NSLocalizedString("MOST_CHAPTERS_SLOWER", comment: "")
-        }
-    }
-}
+// enum MigrationStrategory: CaseIterable {
+//    case firstAlternative
+//    case mostChapters
+//
+//    func toString() -> String {
+//        switch self {
+//        case .firstAlternative: return NSLocalizedString("FIRST_ALTERNATIVE", comment: "")
+//        case .mostChapters: return NSLocalizedString("MOST_CHAPTERS_SLOWER", comment: "")
+//        }
+//    }
+// }

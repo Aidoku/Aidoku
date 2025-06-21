@@ -8,7 +8,6 @@
 import Foundation
 
 extension URL {
-
     fileprivate static let invalidDirectoryCharacters: CharacterSet = {
         var invalidCharacters = CharacterSet(charactersIn: ":/")
         invalidCharacters.formUnion(.newlines)
@@ -55,7 +54,6 @@ extension URL {
 }
 
 extension FileManager {
-
     var documentDirectory: URL {
         urls(for: .documentDirectory, in: .userDomainMask)[0]
     }

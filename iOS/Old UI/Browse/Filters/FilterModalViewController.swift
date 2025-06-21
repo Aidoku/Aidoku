@@ -22,7 +22,7 @@ class FilterModalViewController: MiniModalViewController {
     let resetButton = UIButton(type: .roundedRect)
     let doneButton = UIButton(type: .roundedRect)
 
-    let bottomInset = UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
+    let bottomInset = UIApplication.shared.firstKeyWindow?.safeAreaInsets.bottom ?? 0
 
     lazy var scrollViewUpperHeightConstraint: NSLayoutConstraint = {
         let constraint = scrollView.heightAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.height - 64)

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 enum FilterType: Int {
     case base = 0

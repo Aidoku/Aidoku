@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmDefaults {
 
@@ -17,8 +16,8 @@ class WasmDefaults {
     }
 
     func export(into namespace: String = "defaults") {
-        try? globalStore.vm.addImportHandler(named: "get", namespace: namespace, block: self.get)
-        try? globalStore.vm.addImportHandler(named: "set", namespace: namespace, block: self.set)
+        try? globalStore.vm.linkFunction(name: "get", namespace: namespace, function: self.get)
+        try? globalStore.vm.linkFunction(name: "set", namespace: namespace, function: self.set)
     }
 
     var get: (Int32, Int32) -> Int32 {

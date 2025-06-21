@@ -7,17 +7,11 @@
 
 import Foundation
 
-#if os(OSX)
-    import AppKit
-#else
-    import UIKit
-#endif
-
 /// Shikimori tracker for Aidoku.
 class ShikimoriTracker: OAuthTracker {
     let id = "shikimori"
     let name = "Shikimori"
-    let icon = UIImage(named: "shikimori")
+    let icon = PlatformImage(named: "shikimori")
 
     let supportedStatuses = TrackStatus.defaultStatuses
     let scoreType: TrackScoreType = .tenPoint

@@ -127,7 +127,7 @@
 "RESTORE_BACKUP_TEXT" = "Todos os dados atuais serão removidos e substituídos pelos dados deste backup.";
 "BACKUP_IMPORT_SUCCESS" = "Backup importado";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Para restaurar este backup, localize-o na página de backups nas configurações.";
-"BACKUP_IMPORT_FAIL" = "Falha na importação";
+"IMPORT_FAIL" = "Falha na importação";
 "BACKUP_IMPORT_FAIL_TEXT" = "Falha ao salvar o backup. Certifique-se de que seu backup esteja no formato adequado.";
 "EXPORT" = "Exportar";
 "RESTORE" = "Restaurar";

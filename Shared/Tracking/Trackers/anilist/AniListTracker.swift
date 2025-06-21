@@ -7,18 +7,12 @@
 
 import Foundation
 
-#if os(OSX)
-    import AppKit
-#else
-    import UIKit
-#endif
-
 /// AniList tracker for Aidoku.
 class AniListTracker: OAuthTracker {
 
     let id = "anilist"
     let name = "AniList"
-    let icon = UIImage(named: "anilist")
+    let icon = PlatformImage(named: "anilist")
 
     let supportedStatuses = TrackStatus.defaultStatuses
     var scoreType: TrackScoreType = .tenPoint

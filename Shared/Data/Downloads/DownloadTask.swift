@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import AidokuRunner
 import UniformTypeIdentifiers
+import Nuke
 
 protocol DownloadTaskDelegate: AnyObject {
     func taskCancelled(task: DownloadTask) async
@@ -54,9 +56,10 @@ actor DownloadTask: Identifiable {
             return
         }
 
-        if let download = downloads.first,
-           let source = SourceManager.shared.source(for: download.sourceId) {
-
+        if
+            let download = downloads.first,
+            let source = SourceManager.shared.source(for: download.sourceId)
+        {
             let chapter = Chapter(
                 sourceId: download.sourceId,
                 id: download.chapterId,
@@ -91,9 +94,11 @@ actor DownloadTask: Identifiable {
     }
 
     // perform download
-    func download(_ downloadIndex: Int, from source: Source, to directory: URL) async {
+    func download(_ downloadIndex: Int, from source: AidokuRunner.Source, to directory: URL) async {
         guard !downloads.isEmpty && downloads.count >= downloadIndex else { return }
 
+        let pageInterceptor = PageInterceptorProcessor(source: source)
+        let manga = downloads[downloadIndex].toManga()
         let chapter = downloads[downloadIndex].toChapter()
         let tmpDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
             .appendingSafePathComponent(".tmp_\(chapter.id)")
@@ -102,46 +107,107 @@ actor DownloadTask: Identifiable {
         downloads[downloadIndex].status = .downloading
 
         if pages.isEmpty {
-            pages = (try? await source.getPageList(
-                chapter: chapter,
-                skipDownloadedCheck: true
-            )) ?? []
+            pages = ((try? await source.getPageList(
+                manga: manga.toNew(),
+                chapter: chapter.toNew()
+            )) ?? []).map { $0.toOld(sourceId: source.key, chapterId: chapter.id) }
             downloads[downloadIndex].total = pages.count
         }
+
         while !pages.isEmpty && currentPage < pages.count && running {
             downloads[downloadIndex].progress = currentPage + 1
-            let page = pages[currentPage]
             await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
+
+            let page = pages[currentPage]
             let pageNumber = String(format: "%03d", currentPage + 1) // XXX.png
+
+            currentPage += 1
+
             if let urlString = page.imageURL, let url = URL(string: urlString) {
-                var urlRequest = URLRequest(url: url)
                 // let source modify image request
-                if let request = try? await source.getImageRequest(url: urlString) {
-                    for (key, value) in request.headers {
-                        urlRequest.setValue(value, forHTTPHeaderField: key)
+                let urlRequest = await source.getModifiedImageRequest(
+                    url: url,
+                    context: page.context
+                )
+
+                let result = try? await URLSession.shared.data(for: urlRequest)
+
+                if source.features.processesPages {
+                    let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
+                    do {
+                        let container = ImageContainer(image: image)
+                        let request = ImageRequest(
+                            urlRequest: urlRequest,
+                            userInfo: [.contextKey: page.context ?? [:]]
+                        )
+                        let newImage = try pageInterceptor.process(
+                            container,
+                            context: .init(
+                                request: request,
+                                response: .init(
+                                    container: container,
+                                    request: request,
+                                    urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
+                                        HTTPURLResponse(
+                                            url: $0,
+                                            statusCode: 404,
+                                            httpVersion: nil,
+                                            headerFields: nil
+                                        )
+                                    }
+                                ),
+                                isCompleted: true
+                            )
+                        )
+                        let data = newImage.image.pngData()
+                        try data?.write(
+                            to: tmpDirectory
+                                .appendingPathComponent(pageNumber)
+                                .appendingPathExtension("png")
+                        )
+                        continue
+                    } catch {
+                        LogManager.logger.error("Error processing image: \(error)")
                     }
-                    if let body = request.body { urlRequest.httpBody = body }
                 }
-                if let (data, res) = try? await URLSession.shared.data(for: urlRequest) {
+
+                if let (data, res) = result {
                     // See if we can guess the file extension
                     let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
-                    try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension(fileExtention))
+                    try? data.write(
+                        to: tmpDirectory
+                            .appendingPathComponent(pageNumber)
+                            .appendingPathExtension(fileExtention)
+                    )
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
             } else if let text = page.text, let data = text.data(using: .utf8) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("txt"))
             }
-            currentPage += 1
+
+            if page.hasDescription {
+                var description = page.description
+                if description == nil {
+                    description = try? await source.getPageDescription(page: page.toNew())
+                }
+                if let description {
+                    let data = description.data(using: .utf8)
+                    let path = tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("desc.txt")
+                    try? data?.write(to: path)
+                }
+            }
         }
 
         if currentPage == pages.count {
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
                 await cache.add(chapter: chapter)
             }
-            downloads[downloadIndex].status = .finished
-            await delegate?.downloadFinished(download: getDownload(downloadIndex)!)
-            downloads.remove(at: downloadIndex)
+            if let download = downloads[safe: downloadIndex] {
+                downloads[downloadIndex].status = .finished
+                downloads.remove(at: downloadIndex)
+                await delegate?.downloadFinished(download: download)
+            }
             pages = []
             currentPage = 0
             await next()
@@ -230,8 +296,10 @@ actor DownloadTask: Identifiable {
             return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
         }
 
-        guard let mimeType = response.mimeType,
-              let type = UTType(mimeType: mimeType) else {
+        guard
+            let mimeType = response.mimeType,
+            let type = UTType(mimeType: mimeType)
+        else {
             return defaultValue
         }
 
