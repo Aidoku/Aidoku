@@ -81,7 +81,12 @@ struct SourceSearchView: View {
                     }
                     .onChange(of: enabledFilters) { _ in
                         // update search when filters change
-                        viewModel.loadManga(searchText: searchText, filters: enabledFilters, force: true)
+                        viewModel.loadManga(
+                            searchText: searchText,
+                            filters: enabledFilters,
+                            force: true,
+                            scrollProxy: reader
+                        )
                     }
                     .onChange(of: scrollTopToggle) { _ in
                         // scroll to top when toggle changes
