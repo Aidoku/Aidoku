@@ -25,6 +25,7 @@ extension MangaView {
 
         @Published var nextChapter: AidokuRunner.Chapter?
         @Published var readingInProgress = false
+        @Published var allChaptersLocked = false
         @Published var allChaptersRead = false
         @Published var initialDataLoaded = false
 
@@ -579,6 +580,7 @@ extension MangaView.ViewModel {
     enum ChapterResult {
         case none
         case allRead
+        case allLocked
         case chapter(AidokuRunner.Chapter)
     }
 
@@ -591,6 +593,9 @@ extension MangaView.ViewModel {
         if let chapter {
             return .chapter(chapter)
         }
+        if !chapters.contains(where: { !$0.locked }) {
+            return .allLocked
+        }
         return .allRead
     }
 
@@ -601,8 +606,12 @@ extension MangaView.ViewModel {
                 return
             case .allRead:
                 allChaptersRead = true
+                allChaptersLocked = false
+            case .allLocked:
+                allChaptersLocked = true
             case .chapter(let nextChapter):
                 allChaptersRead = false
+                allChaptersLocked = false
                 readingInProgress = readingHistory[nextChapter.id]?.date ?? 0 > 0
                 self.nextChapter = nextChapter
         }

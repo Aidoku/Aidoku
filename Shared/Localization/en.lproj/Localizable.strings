@@ -503,6 +503,7 @@
 "UPLOAD_DATE" = "Upload Date";
 "TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
+"ALL_CHAPTERS_LOCKED" = "All Chapters Locked";
 "DEFAULT_READING_MODE" = "Default Reading Mode";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";
