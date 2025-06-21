@@ -371,9 +371,24 @@ class NewSourceViewController: UIViewController {
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
         // ensure navbar is set back to normal when view is exited
-        self.setNavigationBarOpaque(false)
+        if let navigationBar = navigationController?.navigationBar {
+            if let originalNavbarAppearance {
+                navigationBar.standardAppearance = originalNavbarAppearance
+            }
+            navigationBar.scrollEdgeAppearance = originalNavbarEdgeAppearance
+        }
+
+        super.viewWillDisappear(animated)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !searchOverlay.isHidden {
+            // set navbar back to opaque if we entered the view while still searching
+            // e.g. returned to search page after exiting manga page
+            self.setNavigationBarOpaque(true)
+        }
     }
 }
 
