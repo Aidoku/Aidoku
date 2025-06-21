@@ -219,7 +219,7 @@ class NewSourceViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
 
         // load filters from defaults
-        let filtersData: Data? = SettingsStore.shared.get(key: "\(source.id)-filters")
+        let filtersData: Data? = SettingsStore.shared.get(key: "\(source.id).filters")
         if let filtersData {
             let enabledFilters = try? JSONDecoder().decode([FilterValue].self, from: filtersData)
             self.enabledFilters = enabledFilters ?? []
