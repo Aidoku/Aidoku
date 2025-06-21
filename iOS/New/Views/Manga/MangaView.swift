@@ -176,6 +176,7 @@ extension MangaView {
                 chapters: $viewModel.chapters,
                 nextChapter: $viewModel.nextChapter,
                 readingInProgress: $viewModel.readingInProgress,
+                allChaptersLocked: $viewModel.allChaptersLocked,
                 allChaptersRead: $viewModel.allChaptersRead,
                 initialDataLoaded: $viewModel.initialDataLoaded,
                 bookmarked: $viewModel.bookmarked,

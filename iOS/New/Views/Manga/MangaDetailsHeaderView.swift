@@ -18,6 +18,7 @@ struct MangaDetailsHeaderView: View {
     @Binding var chapters: [AidokuRunner.Chapter]
     @Binding var nextChapter: AidokuRunner.Chapter?
     @Binding var readingInProgress: Bool
+    @Binding var allChaptersLocked: Bool
     @Binding var allChaptersRead: Bool
     @Binding var initialDataLoaded: Bool
 
@@ -52,6 +53,7 @@ struct MangaDetailsHeaderView: View {
         chapters: Binding<[AidokuRunner.Chapter]>,
         nextChapter: Binding<AidokuRunner.Chapter?>,
         readingInProgress: Binding<Bool>,
+        allChaptersLocked: Binding<Bool>,
         allChaptersRead: Binding<Bool>,
         initialDataLoaded: Binding<Bool>,
         bookmarked: Binding<Bool>,
@@ -70,6 +72,7 @@ struct MangaDetailsHeaderView: View {
         self._chapters = chapters
         self._nextChapter = nextChapter
         self._readingInProgress = readingInProgress
+        self._allChaptersLocked = allChaptersLocked
         self._allChaptersRead = allChaptersRead
         self._initialDataLoaded = initialDataLoaded
         self._bookmarked = bookmarked
@@ -218,6 +221,9 @@ struct MangaDetailsHeaderView: View {
             updateReadButtonText()
         }
         .onChange(of: readingInProgress) { _ in
+            updateReadButtonText()
+        }
+        .onChange(of: allChaptersLocked) { _ in
             updateReadButtonText()
         }
         .onChange(of: allChaptersRead) { _ in
@@ -407,7 +413,10 @@ struct MangaDetailsHeaderView: View {
 
     func updateReadButtonText() {
         var title = ""
-        if allChaptersRead {
+        if allChaptersLocked {
+            title = NSLocalizedString("ALL_CHAPTERS_LOCKED", comment: "")
+            readButtonDisabled = true
+        } else if allChaptersRead {
             title = NSLocalizedString("ALL_CHAPTERS_READ", comment: "")
             readButtonDisabled = true
         } else if source == nil {
@@ -509,6 +518,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
         chapters: Binding.constant([]),
         nextChapter: Binding.constant(nil),
         readingInProgress: Binding.constant(false),
+        allChaptersLocked: Binding.constant(false),
         allChaptersRead: Binding.constant(false),
         initialDataLoaded: Binding.constant(true),
         bookmarked: $bookmarked,
