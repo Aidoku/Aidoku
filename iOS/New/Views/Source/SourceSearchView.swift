@@ -53,6 +53,8 @@ struct SourceSearchView: View {
             } else {
                 ScrollViewReader { reader in
                     ScrollView(.vertical) {
+                        VStack {}.id(0) // indicator to scroll to the top
+
                         contentView(scrollProxy: reader)
                     }
 #if os(macOS)
@@ -238,9 +240,14 @@ extension SourceSearchView {
                     guard !Task.isCancelled else { return }
                     await loadBookmarks(entries: result.entries)
                     hasMore = result.hasNextPage
+
+                    // ensure no duplicate entries
+                    var hashValues = Set(entries.map { $0.hashValue })
+                    let newEntries = result.entries.filter { hashValues.insert($0.hashValue).inserted }
                     withAnimation {
-                        entries += result.entries
+                        entries += newEntries
                     }
+
                     nextPage += 1
                     if result.entries.isEmpty && hasMore {
                         await loadMore(searchText: searchText, filters: filters)
