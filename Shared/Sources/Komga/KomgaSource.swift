@@ -445,85 +445,113 @@ final class KomgaSourceRunner: Runner {
             }
             return result
         }
-        return [
-            .init(
-                id: "genre",
-                title: NSLocalizedString("GENRE"),
-                value: .multiselect(.init(
-                    isGenre: true,
-                    canExclude: true,
-                    usesTagStyle: true,
-                    options: [NSLocalizedString("ANY")] + result[.genres, default: []],
-                    ids: [""] + result[.genres, default: []]
-                ))
-            ),
-            .init(
-                id: "tag",
-                title: NSLocalizedString("TAG"),
-                value: .multiselect(.init(
-                    isGenre: true,
-                    canExclude: true,
-                    usesTagStyle: true,
-                    options: [NSLocalizedString("ANY")] + result[.tags, default: []],
-                    ids: [""] + result[.tags, default: []]
-                ))
-            ),
-            .init(
-                id: "publisher",
-                title: NSLocalizedString("PUBLISHER"),
-                value: .multiselect(.init(
-                    canExclude: true,
-                    usesTagStyle: false,
-                    options: [NSLocalizedString("ANY")] + result[.publishers, default: []],
-                    ids: [""] + result[.publishers, default: []],
-                ))
-            ),
-            .init(
-                id: "language",
-                title: NSLocalizedString("LANGUAGE"),
-                value: .multiselect(.init(
-                    canExclude: true,
-                    usesTagStyle: false,
-                    options: [NSLocalizedString("ANY")] + result[.languages, default: []].map {
-                        if let localizedName = Locale.current.localizedString(forIdentifier: $0) {
-                            "\(localizedName) (\($0))"
-                        } else {
-                            $0
-                        }
-                    },
-                    ids: [""] + result[.languages, default: []],
-                ))
-            ),
-            .init(
-                id: "age_rating",
-                title: NSLocalizedString("AGE_RATING"),
-                value: .multiselect(.init(
-                    canExclude: true,
-                    usesTagStyle: false,
-                    options: result[.ageRatings, default: []]
-                ))
-            ),
-            .init(
-                id: "release_date",
-                title: NSLocalizedString("RELEASE_DATE"),
-                value: .multiselect(.init(
-                    canExclude: true,
-                    usesTagStyle: false,
-                    options: [NSLocalizedString("ANY")] + result[.releaseDates, default: []],
-                    ids: [""] + result[.releaseDates, default: []],
-                ))
-            ),
-            .init(
-                id: "sharing_label",
-                title: NSLocalizedString("SHARING_LABEL"),
-                value: .multiselect(.init(
-                    canExclude: true,
-                    usesTagStyle: false,
-                    options: [NSLocalizedString("ANY")] + result[.sharingLabels, default: []],
-                    ids: [""] + result[.sharingLabels, default: []],
-                ))
+        var filters: [AidokuRunner.Filter] = []
+        if let genres = result[.genres], !genres.isEmpty {
+            filters.append(
+                .init(
+                    id: "genre",
+                    title: NSLocalizedString("GENRE"),
+                    value: .multiselect(.init(
+                        isGenre: true,
+                        canExclude: true,
+                        usesTagStyle: true,
+                        options: [NSLocalizedString("ANY")] + genres,
+                        ids: [""] + genres
+                    ))
+                )
             )
-        ]
+        }
+        if let tags = result[.tags], !tags.isEmpty {
+            filters.append(
+                .init(
+                    id: "tag",
+                    title: NSLocalizedString("TAG"),
+                    value: .multiselect(.init(
+                        isGenre: true,
+                        canExclude: true,
+                        usesTagStyle: true,
+                        options: [NSLocalizedString("ANY")] + tags,
+                        ids: [""] + tags
+                    ))
+                )
+            )
+        }
+        if let publishers = result[.publishers], !publishers.isEmpty {
+            filters.append(
+                .init(
+                    id: "publisher",
+                    title: NSLocalizedString("PUBLISHER"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: [NSLocalizedString("ANY")] + publishers,
+                        ids: [""] + publishers,
+                    ))
+                )
+            )
+        }
+        if let languages = result[.languages], !languages.isEmpty {
+            filters.append(
+                .init(
+                    id: "language",
+                    title: NSLocalizedString("LANGUAGE"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: [NSLocalizedString("ANY")] + languages.map {
+                            if let localizedName = Locale.current.localizedString(forIdentifier: $0) {
+                                "\(localizedName) (\($0))"
+                            } else {
+                                $0
+                            }
+                        },
+                        ids: [""] + languages,
+                    ))
+                )
+            )
+        }
+        if let ratings = result[.ageRatings], ratings.count > 1 {
+            filters.append(
+                .init(
+                    id: "age_rating",
+                    title: NSLocalizedString("AGE_RATING"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: result[.ageRatings, default: []]
+                    ))
+                )
+            )
+        }
+        if let releaseDates = result[.releaseDates], !releaseDates.isEmpty {
+            filters.append(
+                .init(
+                    id: "release_date",
+                    title: NSLocalizedString("RELEASE_DATE"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: [NSLocalizedString("ANY")] + releaseDates,
+                        ids: [""] + releaseDates
+                    ))
+                )
+            )
+        }
+        if let labels = result[.sharingLabels], !labels.isEmpty {
+            filters.append(
+                .init(
+                    id: "sharing_label",
+                    title: NSLocalizedString("SHARING_LABEL"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: [NSLocalizedString("ANY")] + labels,
+                        ids: [""] + labels
+                    ))
+                )
+            )
+        }
+        return filters
     }
 
     func getListings() async throws -> [AidokuRunner.Listing] {
