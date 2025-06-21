@@ -155,15 +155,18 @@ struct SourceListsView: View {
                     guard let text = alertTextField?.text, !text.isEmpty else { return }
                     addSourceList(url: text)
                 }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    textField.placeholder = NSLocalizedString("SOURCE_LIST_URL")
+                    textField.keyboardType = .URL
+                    textField.autocorrectionType = .no
+                    textField.autocapitalizationType = .none
+                    textField.returnKeyType = .done
+                    alertTextField = textField
+                }
             ]
-        ) { textField in
-            textField.placeholder = NSLocalizedString("SOURCE_LIST_URL")
-            textField.keyboardType = .URL
-            textField.autocorrectionType = .no
-            textField.autocapitalizationType = .none
-            textField.returnKeyType = .done
-            alertTextField = textField
-        }
+        )
     }
 }
 
