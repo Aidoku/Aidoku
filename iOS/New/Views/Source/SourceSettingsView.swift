@@ -123,7 +123,7 @@ struct SourceSettingsView: View {
         settings = []
         settings = currentSettings
 
-        for name in ["refresh-content", "refresh-settings"] {
+        for name in ["refresh-content", "refresh-settings", "refresh-listings", "refresh-filters"] {
             NotificationCenter.default.post(name: .init(name), object: nil)
         }
     }

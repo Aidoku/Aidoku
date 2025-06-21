@@ -102,7 +102,7 @@ extension AidokuRunner.Source {
                     key: "login",
                     title: "LOGIN",
                     requires: "server",
-                    refreshes: ["content", "listings"],
+                    refreshes: ["content", "listings", "filters"],
                     value: .login(.init(method: .basic))
                 )
             ],

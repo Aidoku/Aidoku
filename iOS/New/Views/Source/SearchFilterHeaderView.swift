@@ -55,16 +55,15 @@ struct SearchFilterHeaderView: View {
                 ProgressView().progressViewStyle(.circular)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .init("refresh-filters"))) { _ in
+            error = nil
+            Task {
+                await loadFilters()
+            }
+        }
         .task {
             guard filters == nil else { return }
-            do {
-                filters = try await source.getSearchFilters()
-                filtersEmpty = filters?.isEmpty ?? true
-            } catch {
-                withAnimation {
-                    self.error = error
-                }
-            }
+            await self.loadFilters()
         }
         .padding(.top, {
             if #available(iOS 26.0, *) {
@@ -73,5 +72,16 @@ struct SearchFilterHeaderView: View {
                 0
             }
         }())
+    }
+
+    func loadFilters() async {
+        do {
+            filters = try await source.getSearchFilters()
+            filtersEmpty = filters?.isEmpty ?? true
+        } catch {
+            withAnimation {
+                self.error = error
+            }
+        }
     }
 }
