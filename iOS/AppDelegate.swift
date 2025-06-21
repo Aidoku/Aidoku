@@ -517,14 +517,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         title: String,
         message: String? = nil,
         actions: [UIAlertAction] = [],
-        textFieldHandler: ((UITextField) -> Void)? = nil,
+        textFieldHandlers: [((UITextField) -> Void)] = [],
         completion: (() -> Void)? = nil
     ) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
-        if let textFieldHandler {
+        for handler in textFieldHandlers {
             alertController.addTextField { textField in
-                textFieldHandler(textField)
+                handler(textField)
             }
         }
 

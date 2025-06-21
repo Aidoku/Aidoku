@@ -488,7 +488,11 @@ extension SettingView {
             }
             switch value.method {
                 case .basic:
-                    showLoginAlert = true
+                    if #available(iOS 16.0, *) {
+                        showLoginAlert = true
+                    } else {
+                        showLoginAlertView(value: value)
+                    }
                 case .oauth:
                     handleOAuthLogin(value: value)
                 case .web:
@@ -521,42 +525,12 @@ extension SettingView {
                 username = SettingsStore.shared.get(key: key + Self.usernameKeySuffix)
                 password = SettingsStore.shared.get(key: key + Self.passwordKeySuffix)
             }
-            let is15Or16 = UIDevice.current.systemVersion.hasPrefix("15.") || UIDevice.current.systemVersion.hasPrefix("16.")
+            let is16 = UIDevice.current.systemVersion.hasPrefix("16.")
             Button(NSLocalizedString("LOGIN")) {
-                guard !(username.isEmpty || password.isEmpty) else {
-                    return
-                }
-                @MainActor
-                func commit() {
-                    SettingsStore.shared.set(key: key + Self.usernameKeySuffix, value: username)
-                    SettingsStore.shared.set(key: key + Self.passwordKeySuffix, value: password)
-                    SettingsStore.shared.set(key: key, value: "logged_in") // set key to indicate logged in
-                }
-                if let source, source.features.handlesBasicLogin {
-                    loginLoading = true
-                    Task {
-                        do {
-                            let success = try await source.handleBasicLogin(key: setting.key, username: username, password: password)
-                            if success {
-                                commit()
-                            } else {
-                                showLoginFailAlert = true
-                            }
-                        } catch {
-                            LogManager.logger.error("Error handling basic login for \(source.key): \(error)")
-                            showLoginFailAlert = true
-                        }
-                        loginLoading = false
-
-                        username = SettingsStore.shared.get(key: key + Self.usernameKeySuffix)
-                        password = SettingsStore.shared.get(key: key + Self.passwordKeySuffix)
-                    }
-                } else {
-                    commit()
-                }
+                handleBasicLogin(username: username, password: password)
             }
             // the disabled modifier just hides the button on iOS 15/16, so don't use it if we're on those versions
-            .disabled(!is15Or16 && (username.isEmpty || password.isEmpty))
+            .disabled(!is16 && (username.isEmpty || password.isEmpty))
         } message: {
             Text(NSLocalizedString("LOGIN_BASIC_TEXT"))
         }
@@ -594,6 +568,84 @@ extension SettingView {
         .onAppear {
             username = SettingsStore.shared.get(key: key + Self.usernameKeySuffix)
             password = SettingsStore.shared.get(key: key + Self.passwordKeySuffix)
+        }
+    }
+
+    // use uikit alert for ios 15, since it doesn't support text fields in alerts
+    private func showLoginAlertView(value: LoginSetting) {
+        guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
+            return
+        }
+        let key = key(setting.key)
+        var usernameTextField: UITextField?
+        var passwordTextField: UITextField?
+        delegate.presentAlert(
+            title: setting.title,
+            message: NSLocalizedString("LOGIN_BASIC_TEXT"),
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("LOGIN"), style: .default) { _ in
+                    guard
+                        let username = usernameTextField?.text,
+                        let password = passwordTextField?.text
+                    else { return }
+                    handleBasicLogin(username: username, password: password)
+                }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    let useEmail = value.useEmail ?? false
+                    textField.placeholder = useEmail ? NSLocalizedString("EMAIL") : NSLocalizedString("USERNAME")
+                    textField.textContentType = useEmail ? .emailAddress : .username
+                    textField.keyboardType = useEmail ? .emailAddress : .default
+                    textField.autocorrectionType = .no
+                    textField.autocapitalizationType = .none
+                    textField.returnKeyType = .next
+                    usernameTextField = textField
+                },
+                { textField in
+                    textField.isSecureTextEntry = true
+                    textField.placeholder = NSLocalizedString("PASSWORD")
+                    textField.textContentType = .password
+                    textField.returnKeyType = .done
+                    passwordTextField = textField
+                }
+            ]
+        )
+    }
+
+    private func handleBasicLogin(username: String, password: String) {
+        guard !(username.isEmpty || password.isEmpty) else {
+            return
+        }
+        let key = key(setting.key)
+        @MainActor
+        func commit() {
+            SettingsStore.shared.set(key: key + Self.usernameKeySuffix, value: username)
+            SettingsStore.shared.set(key: key + Self.passwordKeySuffix, value: password)
+            SettingsStore.shared.set(key: key, value: "logged_in") // set key to indicate logged in
+        }
+        if let source, source.features.handlesBasicLogin {
+            loginLoading = true
+            Task {
+                do {
+                    let success = try await source.handleBasicLogin(key: setting.key, username: username, password: password)
+                    if success {
+                        commit()
+                    } else {
+                        showLoginFailAlert = true
+                    }
+                } catch {
+                    LogManager.logger.error("Error handling basic login for \(source.key): \(error)")
+                    showLoginFailAlert = true
+                }
+                loginLoading = false
+
+                self.username = SettingsStore.shared.get(key: key + Self.usernameKeySuffix)
+                self.password = SettingsStore.shared.get(key: key + Self.passwordKeySuffix)
+            }
+        } else {
+            commit()
         }
     }
 
