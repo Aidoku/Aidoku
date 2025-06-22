@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct AddSourceView: View {
     let allExternalSources: [ExternalSourceInfo]
@@ -158,7 +159,7 @@ struct AddSourceView: View {
             .animation(.default, value: searching)
             .fileImporter(
                 isPresented: $importing,
-                allowedContentTypes: [.zip],
+                allowedContentTypes: [UTType(exportedAs: "app.aidoku.Aidoku.aix", conformingTo: .zip)],
                 onCompletion: { result in
                     switch result {
                         case .success(let url):
