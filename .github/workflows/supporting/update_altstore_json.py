@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 bundle_id = "app.aidoku.Aidoku"
-minimum_ios_version = "14.0"
+minimum_ios_version = "15.0"
 json_file_name = ".github/workflows/supporting/altstore/apps.json"
 github_repo = "Aidoku/Aidoku"
 
