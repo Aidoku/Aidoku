@@ -34,9 +34,7 @@ struct ExternalSourceInfo: Codable, Hashable {
             if let downloadURL {
                 URL(string: downloadURL, relativeTo: sourceUrl)
             } else if let file {
-                sourceUrl
-                    .appendingPathComponent("sources")
-                    .appendingPathComponent(file)
+                URL(string: "sources/\(file)", relativeTo: sourceUrl)
             } else {
                 nil
             }
@@ -56,9 +54,7 @@ extension ExternalSourceInfo {
             if let iconURL {
                 URL(string: iconURL, relativeTo: sourceUrl)
             } else if let icon {
-                sourceUrl
-                    .appendingPathComponent("icons")
-                    .appendingPathComponent(icon)
+                URL(string: "icons/\(icon)", relativeTo: sourceUrl)
             } else {
                 nil
             }
