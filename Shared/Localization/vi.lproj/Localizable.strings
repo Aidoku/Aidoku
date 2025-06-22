@@ -362,3 +362,15 @@
 "BOTH" = "Cả hai";
 "DELETE_DOWNLOAD_AFTER_READING" = "Xóa tải về sau khi đọc xong";
 "SKIPPING_CHAPTERS" = "Bỏ qua %i chương vì nguồn bị thiếu hoặc đã bị lọc bỏ";
+"ENABLE_PERMISSION" = "Bật quyền truy cập";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Quyền truy cập đã bị từ chối trước đó. Vui lòng cho phép Aidoku truy cập vào thư viện ảnh của bạn để lưu ảnh vào Camera Roll. Bạn có thể bật quyền truy cập trong phần cài đặt quyền riêng tư.";
+"OPEN_WEBSITE" = "Mở trang web";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Hành động này là không thể đảo ngược. Mọi lịch sử đọc ngoại trừ thư viện sẽ bị xóa.";
+"NO_SCANLATOR" = "Không có máy quét";
+"SCANLATOR" = "Máy quét";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Xóa các mục khỏi thư mục %@";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Đang xóa %i mục khỏi danh mục %@";
+"CLEAR_EXCLUDING_LIBRARY" = "Xóa Lịch sử Đọc Không bao gồm Thư viện";
+"READER_ORIENTATION" = "Định hướng";
+"FOLLOW_DEVICE" = "Theo dõi thiết bị";
+"MARK_DUPLICATE_CHAPTERS" = "Đánh dấu các chương trùng lặp là đã đọc";
