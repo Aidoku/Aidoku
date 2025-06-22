@@ -189,12 +189,31 @@ class SearchViewController: UIViewController {
     }
 
     func fetchData() async {
-        guard let query = query, !query.isEmpty else { return }
+        guard let query, !query.isEmpty else { return }
 
-        for (i, source) in sources.enumerated() {
-            Task {
-                let search = try? await source.getSearchMangaList(query: query, page: 1, filters: [])
-                self.updateResults(for: source.id, atIndex: i, result: search)
+        // sources freeze if we run too many tasks concurrently, so we limit it
+        let maxConcurrentTasks = 3
+
+        await withTaskGroup(of: (Int, String, AidokuRunner.MangaPageResult?).self) { [sources] group in
+            // add the initial tasks to the group
+            for i in 0..<min(sources.count, maxConcurrentTasks) {
+                let source = sources[i]
+                group.addTask {
+                    (i, source.id, try? await source.getSearchMangaList(query: query, page: 1, filters: []))
+                }
+            }
+
+            var index = maxConcurrentTasks
+            while let (i, id, result) = await group.next() {
+                if index < sources.count {
+                    // once a task completes, we can start a new one if there are still sources left
+                    let source = sources[index]
+                    group.addTask { [index] in
+                        (index, source.id, try? await source.getSearchMangaList(query: query, page: 1, filters: []))
+                    }
+                    index += 1
+                }
+                self.updateResults(for: id, atIndex: i, result: result)
             }
         }
     }
