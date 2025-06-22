@@ -16,8 +16,7 @@ enum NetworkDataType {
 }
 
 final class Reachability {
-    // todo: this is causing crashes on ios 26 sim, uncomment later
-//    private static var observers: [UUID: NWPathMonitor] = [:]
+    private static var observers: [UUID: NWPathMonitor] = [:]
     private static let queue = DispatchQueue(label: "ReachabilityMonitorQueue")
 
     static func getConnectionType() -> NetworkDataType {
@@ -41,31 +40,31 @@ final class Reachability {
         _ handle: @escaping (NetworkDataType) -> Void,
         queue: DispatchQueue = .main
     ) -> UUID {
-//        let monitor = NWPathMonitor()
-//
-//        monitor.pathUpdateHandler = { path in
-//            let connectionType: NetworkDataType
-//            if path.usesInterfaceType(.wifi) || path.usesInterfaceType(.wiredEthernet) {
-//                connectionType = .wifi
-//            } else if path.usesInterfaceType(.cellular) {
-//                connectionType = .cellular
-//            } else {
-//                connectionType = .none
-//            }
-//            queue.async {
-//                handle(connectionType)
-//            }
-//        }
-//
-//        monitor.start(queue: self.queue)
+        let monitor = NWPathMonitor()
+
+        monitor.pathUpdateHandler = { path in
+            let connectionType: NetworkDataType
+            if path.usesInterfaceType(.wifi) || path.usesInterfaceType(.wiredEthernet) {
+                connectionType = .wifi
+            } else if path.usesInterfaceType(.cellular) {
+                connectionType = .cellular
+            } else {
+                connectionType = .none
+            }
+            queue.async {
+                handle(connectionType)
+            }
+        }
+
+        monitor.start(queue: self.queue)
 
         let id = UUID()
-//        observers[id] = monitor
+        observers[id] = monitor
         return id
     }
 
     static func unregisterConnectionTypeObserver(_ id: UUID) {
-//        observers[id]?.cancel()
-//        observers.removeValue(forKey: id)
+        observers[id]?.cancel()
+        observers.removeValue(forKey: id)
     }
 }
