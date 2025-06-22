@@ -86,7 +86,7 @@ def update_json_file(json_file, repo):
     app["bundleIdentifier"] = bundle_id
     tag = latest_release["tag_name"]
     full_version = tag.lstrip('v')
-    version = re.search(r"(\d+\.\d+\.\d+)", full_version).group(1)
+    version = re.search(r"(\d+\.\d+(\.\d+)?)", full_version).group(1)
     version_entry_exists = any(item["version"] == version for item in app["versions"])
     if not version_entry_exists:
         version_date = latest_release["published_at"]
