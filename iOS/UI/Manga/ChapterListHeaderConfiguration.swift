@@ -49,6 +49,11 @@ class ChapterListHeaderContentView: UIView, UIContentView {
         let titleLabel = UILabel()
         titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        return titleLabel
+    }()
+
+    private lazy var sortButton: UIButton = {
+        let sortButton = UIButton(type: .roundedRect)
         let sortImage: UIImage?
         if #available(iOS 15.0, *) {
             sortImage = UIImage(systemName: "line.3.horizontal.decrease")
@@ -58,11 +63,6 @@ class ChapterListHeaderContentView: UIView, UIContentView {
         sortButton.showsMenuAsPrimaryAction = true
         sortButton.setImage(sortImage, for: .normal)
         sortButton.translatesAutoresizingMaskIntoConstraints = false
-        return titleLabel
-    }()
-
-    private lazy var sortButton: UIButton = {
-        let sortButton = UIButton(type: .roundedRect)
         return sortButton
     }()
 
@@ -194,7 +194,7 @@ class ChapterListHeaderContentView: UIView, UIContentView {
             title: NSLocalizedString("LANGUAGE", comment: ""),
             children: configuration.sourceLanguages.map { lang in
                 UIAction(
-                    title: (Locale.current as NSLocale).displayName(forKey: .identifier, value: lang) ?? "",
+                    title: Locale.current.localizedString(forIdentifier: lang) ?? lang,
                     image: configuration.langFilter == lang
                         ? UIImage(systemName: "checkmark")
                         : nil

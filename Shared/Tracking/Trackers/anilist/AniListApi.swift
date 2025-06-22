@@ -6,7 +6,10 @@
 //
 
 import Foundation
+
+#if canImport(UIKit)
 import UIKit
+#endif
 
 class AniListApi {
 
@@ -93,10 +96,12 @@ extension AniListApi {
                 oauth.tokens!.askedForRefresh = true
                 oauth.saveTokens()
 
-                await (UIApplication.shared.delegate as? AppDelegate)?.sendAlert(
+#if !os(macOS)
+                await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
                     title: NSLocalizedString("ANILIST_LOGIN_NEEDED", comment: ""),
                     message: NSLocalizedString("ANILIST_LOGIN_NEEDED_TEXT", comment: "")
                 )
+#endif
             }
         }
 

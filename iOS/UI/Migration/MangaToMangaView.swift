@@ -73,7 +73,7 @@ struct MangaToMangaView: View {
         .onChange(of: toManga) { newValue in
             if let newValue = newValue {
                 if let source = SourceManager.shared.source(for: newValue.sourceId) {
-                    toSource = source.manifest.info.name
+                    toSource = source.name
                 }
             } else {
                 toSource = nil

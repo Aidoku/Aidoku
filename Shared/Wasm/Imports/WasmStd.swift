@@ -30,39 +30,39 @@ class WasmStd: WasmImports {
     }
 
     func export(into namespace: String = "std") {
-        try? globalStore.vm.addImportHandler(named: "copy", namespace: namespace, block: self.copy)
-        try? globalStore.vm.addImportHandler(named: "destroy", namespace: namespace, block: self.destroy)
+        try? globalStore.vm.linkFunction(name: "copy", namespace: namespace, function: self.copy)
+        try? globalStore.vm.linkFunction(name: "destroy", namespace: namespace, function: self.destroy)
 
-        try? globalStore.vm.addImportHandler(named: "create_null", namespace: namespace, block: self.create_null)
-        try? globalStore.vm.addImportHandler(named: "create_int", namespace: namespace, block: self.create_int)
-        try? globalStore.vm.addImportHandler(named: "create_float", namespace: namespace, block: self.create_float)
-        try? globalStore.vm.addImportHandler(named: "create_string", namespace: namespace, block: self.create_string)
-        try? globalStore.vm.addImportHandler(named: "create_bool", namespace: namespace, block: self.create_bool)
-        try? globalStore.vm.addImportHandler(named: "create_array", namespace: namespace, block: self.create_array)
-        try? globalStore.vm.addImportHandler(named: "create_object", namespace: namespace, block: self.create_object)
-        try? globalStore.vm.addImportHandler(named: "create_date", namespace: namespace, block: self.create_date)
+        try? globalStore.vm.linkFunction(name: "create_null", namespace: namespace, function: self.create_null)
+        try? globalStore.vm.linkFunction(name: "create_int", namespace: namespace, function: self.create_int)
+        try? globalStore.vm.linkFunction(name: "create_float", namespace: namespace, function: self.create_float)
+        try? globalStore.vm.linkFunction(name: "create_string", namespace: namespace, function: self.create_string)
+        try? globalStore.vm.linkFunction(name: "create_bool", namespace: namespace, function: self.create_bool)
+        try? globalStore.vm.linkFunction(name: "create_array", namespace: namespace, function: self.create_array)
+        try? globalStore.vm.linkFunction(name: "create_object", namespace: namespace, function: self.create_object)
+        try? globalStore.vm.linkFunction(name: "create_date", namespace: namespace, function: self.create_date)
 
-        try? globalStore.vm.addImportHandler(named: "typeof", namespace: namespace, block: self.typeof)
-        try? globalStore.vm.addImportHandler(named: "string_len", namespace: namespace, block: self.string_len)
-        try? globalStore.vm.addImportHandler(named: "read_string", namespace: namespace, block: self.read_string)
-        try? globalStore.vm.addImportHandler(named: "read_int", namespace: namespace, block: self.read_int)
-        try? globalStore.vm.addImportHandler(named: "read_float", namespace: namespace, block: self.read_float)
-        try? globalStore.vm.addImportHandler(named: "read_bool", namespace: namespace, block: self.read_bool)
-        try? globalStore.vm.addImportHandler(named: "read_date", namespace: namespace, block: self.read_date)
-        try? globalStore.vm.addImportHandler(named: "read_date_string", namespace: namespace, block: self.read_date_string)
+        try? globalStore.vm.linkFunction(name: "typeof", namespace: namespace, function: self.typeof)
+        try? globalStore.vm.linkFunction(name: "string_len", namespace: namespace, function: self.string_len)
+        try? globalStore.vm.linkFunction(name: "read_string", namespace: namespace, function: self.read_string)
+        try? globalStore.vm.linkFunction(name: "read_int", namespace: namespace, function: self.read_int)
+        try? globalStore.vm.linkFunction(name: "read_float", namespace: namespace, function: self.read_float)
+        try? globalStore.vm.linkFunction(name: "read_bool", namespace: namespace, function: self.read_bool)
+        try? globalStore.vm.linkFunction(name: "read_date", namespace: namespace, function: self.read_date)
+        try? globalStore.vm.linkFunction(name: "read_date_string", namespace: namespace, function: self.read_date_string)
 
-        try? globalStore.vm.addImportHandler(named: "object_len", namespace: namespace, block: self.object_len)
-        try? globalStore.vm.addImportHandler(named: "object_get", namespace: namespace, block: self.object_get)
-        try? globalStore.vm.addImportHandler(named: "object_set", namespace: namespace, block: self.object_set)
-        try? globalStore.vm.addImportHandler(named: "object_remove", namespace: namespace, block: self.object_remove)
-        try? globalStore.vm.addImportHandler(named: "object_keys", namespace: namespace, block: self.object_keys)
-        try? globalStore.vm.addImportHandler(named: "object_values", namespace: namespace, block: self.object_values)
+        try? globalStore.vm.linkFunction(name: "object_len", namespace: namespace, function: self.object_len)
+        try? globalStore.vm.linkFunction(name: "object_get", namespace: namespace, function: self.object_get)
+        try? globalStore.vm.linkFunction(name: "object_set", namespace: namespace, function: self.object_set)
+        try? globalStore.vm.linkFunction(name: "object_remove", namespace: namespace, function: self.object_remove)
+        try? globalStore.vm.linkFunction(name: "object_keys", namespace: namespace, function: self.object_keys)
+        try? globalStore.vm.linkFunction(name: "object_values", namespace: namespace, function: self.object_values)
 
-        try? globalStore.vm.addImportHandler(named: "array_len", namespace: namespace, block: self.array_len)
-        try? globalStore.vm.addImportHandler(named: "array_get", namespace: namespace, block: self.array_get)
-        try? globalStore.vm.addImportHandler(named: "array_set", namespace: namespace, block: self.array_set)
-        try? globalStore.vm.addImportHandler(named: "array_append", namespace: namespace, block: self.array_append)
-        try? globalStore.vm.addImportHandler(named: "array_remove", namespace: namespace, block: self.array_remove)
+        try? globalStore.vm.linkFunction(name: "array_len", namespace: namespace, function: self.array_len)
+        try? globalStore.vm.linkFunction(name: "array_get", namespace: namespace, function: self.array_get)
+        try? globalStore.vm.linkFunction(name: "array_set", namespace: namespace, function: self.array_set)
+        try? globalStore.vm.linkFunction(name: "array_append", namespace: namespace, function: self.array_append)
+        try? globalStore.vm.linkFunction(name: "array_remove", namespace: namespace, function: self.array_remove)
     }
 }
 
@@ -297,27 +297,27 @@ extension WasmStd {
             guard descriptor >= 0, keyLen > 0 else { return -1 }
             if let keyString = self.globalStore.readString(offset: key, length: keyLen) {
                 if let object = (self.globalStore.readStdValue(descriptor) as? [String: Any?])?[keyString] {
-                    return self.globalStore.storeStdValue(object, from: descriptor)
+                    return self.globalStore.storeStdValue(object)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? KVCObject,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
 
                 // for iOS 14
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Manga,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Chapter,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? FilterBase,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? Listing,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 } else if let object = self.globalStore.readStdValue(descriptor) as? WasmRequestObject,
                           let value = object.valueByPropertyName(name: keyString) {
-                    return self.globalStore.storeStdValue(value, from: descriptor)
+                    return self.globalStore.storeStdValue(value)
                 }
             }
             return -1
@@ -332,7 +332,6 @@ extension WasmStd {
                let valueToSet = self.globalStore.readStdValue(value) {
                 object[keyString] = valueToSet
                 self.globalStore.stdDescriptors[descriptor] = object
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
@@ -352,7 +351,7 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.keys), from: descriptor)
+                return self.globalStore.storeStdValue(Array(object.keys))
             }
             return -1
         }
@@ -362,7 +361,7 @@ extension WasmStd {
         { descriptor in
             guard descriptor >= 0 else { return -1 }
             if let object = self.globalStore.readStdValue(descriptor) as? [String: Any?] {
-                return self.globalStore.storeStdValue(Array(object.values), from: descriptor)
+                return self.globalStore.storeStdValue(Array(object.values))
             }
             return -1
         }
@@ -385,7 +384,7 @@ extension WasmStd {
             if let array = self.globalStore.readStdValue(descriptor) as? [Any?] {
                 guard index < array.count else { return -1 }
                 let value = array[Int(index)]
-                return self.globalStore.storeStdValue(value, from: descriptor)
+                return self.globalStore.storeStdValue(value)
             }
             return -1
         }
@@ -399,7 +398,6 @@ extension WasmStd {
                index < array.count {
                 array[Int(index)] = valueToSet
                 self.globalStore.stdDescriptors[descriptor] = array
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }
@@ -411,7 +409,6 @@ extension WasmStd {
                let valueToAppend = self.globalStore.readStdValue(value) {
                 array.append(valueToAppend)
                 self.globalStore.stdDescriptors[descriptor] = array
-                self.globalStore.addStdReference(to: descriptor, target: value)
             }
         }
     }

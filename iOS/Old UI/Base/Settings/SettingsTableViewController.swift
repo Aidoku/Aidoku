@@ -33,6 +33,7 @@ class SettingsTableViewController: UITableViewController {
 
     init(items: [SettingItem] = [], source: Source? = nil, style: UITableView.Style = .insetGrouped) {
         self.items = items
+        self.source = source
         super.init(style: style)
     }
 
@@ -121,13 +122,17 @@ extension SettingsTableViewController {
         if let requires = item.requires {
             switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
             observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                }
             })
             requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
             observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                }
             })
             requireObservers.append(item)
         } else {
@@ -164,13 +169,17 @@ extension SettingsTableViewController {
         if let requires = item.requires {
             stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
             NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
+                }
             }
             requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
             NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                Task { @MainActor in
+                    stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
+                }
             }
             requireObservers.append(item)
         } else {
@@ -182,7 +191,6 @@ extension SettingsTableViewController {
         return cell
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath,
@@ -212,16 +220,20 @@ extension SettingsTableViewController {
                 cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
                 observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
-                    cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    Task { @MainActor in
+                        cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                        cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    }
                 })
                 requireObservers.append(item)
             } else if let requires = item.requiresFalse {
                 cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
                 observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
-                    cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    Task { @MainActor in
+                        cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                        cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    }
                 })
                 requireObservers.append(item)
             } else {
@@ -250,16 +262,20 @@ extension SettingsTableViewController {
                 cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
                 observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
-                    cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    Task { @MainActor in
+                        cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                        cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    }
                 })
                 requireObservers.append(item)
             } else if let requires = item.requiresFalse {
                 cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
                 observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
-                    cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
-                    cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    Task { @MainActor in
+                        cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
+                        cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
+                    }
                 })
                 requireObservers.append(item)
             } else {
@@ -314,7 +330,6 @@ extension SettingsTableViewController {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func performAction(for item: SettingItem, at indexPath: IndexPath) {
         switch item.type {
         case "select", "multi-select", "multi-single-select":
@@ -361,7 +376,7 @@ extension SettingsTableViewController {
             source?.performAction(key: action)
             NotificationCenter.default.post(name: NSNotification.Name(action), object: nil)
         case "login":
-            guard item.method == "oauth", let key = item.key else { return } // TODO: support more than OAuth
+            guard item.method == "oauth", let key = item.key else { return }
             let url: URL?
             if item.urlKey != nil, let urlString = UserDefaults.standard.string(forKey: item.urlKey ?? "") {
                 url = URL(string: urlString)

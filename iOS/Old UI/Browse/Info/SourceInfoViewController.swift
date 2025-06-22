@@ -10,7 +10,7 @@ import SafariServices
 
 class SourceInfoViewController: SettingsTableViewController {
 
-    init(source: Source, subPage: Bool = false) {
+    init(source: Source) {
         super.init(items: source.settingItems)
         self.source = source
     }
@@ -158,7 +158,7 @@ extension SourceInfoViewController {
                 key: "\(source.id).languages",
                 title: NSLocalizedString("LANGUAGE", comment: ""),
                 values: source.languages.map { $0.value ?? $0.code },
-                titles: source.languages.map { (Locale.current as NSLocale).displayName(forKey: .identifier, value: $0.code) ?? $0.code },
+                titles: source.languages.map { Locale.current.localizedString(forIdentifier: $0.code) ?? $0.code },
                 notification: "languageChange"
             )
             navigationController?.pushViewController(SettingSelectViewController(source: source, item: item, style: tableView.style), animated: true)

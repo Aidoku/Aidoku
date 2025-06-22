@@ -210,7 +210,7 @@
 "RESTORE_BACKUP_TEXT" = "Mọi dữ liệu hiện có sẽ bị ghi đè lên bởi bản sao lưu này.";
 "BACKUP_IMPORT_SUCCESS" = "Đã thêm bản sao lưu";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Để quay về bản sao lưu này, tìm bản sao lưu ở trong mục Cài đặt.";
-"BACKUP_IMPORT_FAIL" = "Không thể thêm bản sao lưu";
+"IMPORT_FAIL" = "Không thể thêm bản sao lưu";
 "BACKUP_IMPORT_FAIL_TEXT" = "Hãy đảm bảo bản sao lưu có định dạng phù hợp.";
 "EXPORT" = "Xuất";
 "RESTORE" = "Khôi phục";

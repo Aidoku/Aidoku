@@ -46,10 +46,6 @@ class MangaCoverViewController: BaseViewController {
         super.init()
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func configure() {
         super.configure()
 
@@ -104,18 +100,10 @@ class MangaCoverViewController: BaseViewController {
         }
 
         if let coverUrl = manga.coverUrl {
-            var urlRequest = URLRequest(url: coverUrl)
-
-            if
-                let source = SourceManager.shared.source(for: manga.sourceId),
-                source.handlesImageRequests,
-                let request = try? await source.getImageRequest(url: coverUrl.absoluteString)
-            {
-                urlRequest.url = URL(string: request.url ?? "")
-                for (key, value) in request.headers {
-                    urlRequest.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { urlRequest.httpBody = body }
+            let urlRequest = if let source = SourceManager.shared.source(for: manga.sourceId) {
+                await source.getModifiedImageRequest(url: coverUrl, context: nil)
+            } else {
+                URLRequest(url: coverUrl)
             }
 
             let request = ImageRequest(urlRequest: urlRequest)

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AidokuRunner
 
 struct MigrateSearchMatchView: View {
 
@@ -15,9 +16,8 @@ struct MigrateSearchMatchView: View {
     @Binding var newManga: Manga?
     var sourcesToSearch: [SourceInfo2]
 
-    private var sources: [Source]
+    private var sources: [AidokuRunner.Source]
 
-    @State private var searching = true
     @State private var searchResults: [String: [Manga]] = [:]
 
     @State private var searchText: String = ""
@@ -91,7 +91,8 @@ struct MigrateSearchMatchView: View {
             }
             for source in sources {
                 Task {
-                    let results = (try? await source.fetchSearchManga(query: searchText))?.manga
+                    let results = (try? await source.getSearchMangaList(query: searchText, page: 1, filters: []))?
+                        .entries.map { $0.toOld() }
                     withAnimation {
                         searchResults[source.id] = results ?? []
                     }

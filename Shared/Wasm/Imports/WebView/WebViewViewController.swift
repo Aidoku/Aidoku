@@ -9,24 +9,26 @@ import UIKit
 import WebKit
 
 class WebViewViewController: BaseViewController, WKNavigationDelegate {
+    let request: URLRequest
+    var handler: PopupWebViewHandler?
 
-    var handler: WasmNetWebViewHandler?
+    init(request: URLRequest, handler: PopupWebViewHandler? = nil) {
+        self.request = request
+        self.handler = handler
+        super.init()
+    }
 
     override func configure() {
         view.backgroundColor = .systemBackground
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        handler?.webView(webView, didFinish: navigation)
+        handler?.navigated(webView: webView, for: request)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        // if user dismissed the view without it succeeding
-        if !(handler?.done ?? true) {
-            handler?.webView.removeFromSuperview()
-            handler?.netModule.semaphore.signal()
-        }
+        handler?.canceled(request: request)
         handler = nil
     }
 }

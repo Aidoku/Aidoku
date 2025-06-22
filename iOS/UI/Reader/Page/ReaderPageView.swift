@@ -5,20 +5,24 @@
 //  Created by Skitty on 8/15/22.
 //
 
-import UIKit
+import AidokuRunner
+import MarkdownUI
 import Nuke
+import SwiftUI
+import ZIPFoundation
 
 class ReaderPageView: UIView {
 
-    weak var delegate: ReaderPageViewDelegate?
+    weak var parent: UIViewController?
 
     let imageView = UIImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+
+    private var textView: UIHostingController<MarkdownView>?
+
     private var imageWidthConstraint: NSLayoutConstraint?
     private var imageHeightConstraint: NSLayoutConstraint?
-    var maxWidth = false
-
-    var imageTask: ImageTask?
+    private var imageTask: ImageTask?
     private var sourceId: String?
 
     private var completion: ((Bool) -> Void)?
@@ -27,6 +31,11 @@ class ReaderPageView: UIView {
         super.init(frame: .zero)
         configure()
         constrain()
+    }
+
+    convenience init(parent: UIViewController?) {
+        self.init()
+        self.parent = parent
     }
 
     required init?(coder: NSCoder) {
@@ -62,32 +71,40 @@ class ReaderPageView: UIView {
         ])
     }
 
-    func hasOutstandingTask() -> Bool {
-        imageTask != nil && imageTask?.state == .running
-    }
-
     func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
         if sourceId != nil {
             self.sourceId = sourceId
         }
-        if let urlString = page.imageURL, let url = URL(string: urlString) {
-            return await setPageImage(url: url, sourceId: self.sourceId)
+
+        if let image = page.image {
+            imageView.image = image
+            fixImageSize()
+            return true
+        } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
+            return await setPageImage(zipURL: url, filePath: filePath)
+        } else if let urlString = page.imageURL, let url = URL(string: urlString) {
+            return await setPageImage(url: url, context: page.context, sourceId: self.sourceId)
         } else if let base64 = page.base64 {
             return await setPageImage(base64: base64, key: page.hashValue)
+        } else if let text = page.text {
+            setPageText(text: text)
+            return true
         } else {
             return false
         }
     }
 
-    func setPageImage(url: URL, sourceId: String? = nil) async -> Bool {
-        if imageView.image == nil {
-            progressView.setProgress(value: 0, withAnimation: false)
-            progressView.isHidden = false
+    func setPageImage(url: URL, context: PageContext? = nil, sourceId: String? = nil) async -> Bool {
+        // remove text view if it exists
+        if let textView {
+            textView.view.removeFromSuperview()
+            textView.didMove(toParent: nil)
+            self.textView = nil
         }
 
         let request: ImageRequest
 
-        if let imageTask = imageTask {
+        if let imageTask {
             switch imageTask.state {
             case .running:
                 if completion != nil {
@@ -109,22 +126,22 @@ class ReaderPageView: UIView {
                 request = imageTask.request
             }
         } else {
-            var urlRequest = URLRequest(url: url)
-
-            if
-                let sourceId = sourceId,
-                let source = SourceManager.shared.source(for: sourceId),
-                source.handlesImageRequests,
-                let request = try? await source.getImageRequest(url: url.absoluteString)
-            {
-                urlRequest.url = URL(string: request.url ?? "")
-                for (key, value) in request.headers {
-                    urlRequest.setValue(value, forHTTPHeaderField: key)
-                }
-                if let body = request.body { urlRequest.httpBody = body }
+            let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+                await source.getModifiedImageRequest(url: url, context: nil)
+            } else {
+                URLRequest(url: url)
             }
 
             var processors: [ImageProcessing] = []
+            if
+                let sourceId,
+                let newSource = SourceManager.shared.source(for: sourceId)
+            {
+                // only process pages if the source supports it and the image isn't downloaded
+                if newSource.features.processesPages, !url.isFileURL {
+                    processors.append(PageInterceptorProcessor(source: newSource))
+                }
+            }
             if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                 processors.append(CropBordersProcessor())
             }
@@ -134,56 +151,169 @@ class ReaderPageView: UIView {
 
             request = ImageRequest(
                 urlRequest: urlRequest,
-                processors: processors
+                processors: processors,
+                userInfo: [.contextKey: context ?? [:], .processesKey: true]
             )
+        }
+
+        if imageView.image == nil {
+            progressView.setProgress(value: 0, withAnimation: false)
+            progressView.isHidden = false
         }
 
         return await startImageTask(request)
     }
 
-    func startImageTask(_ request: ImageRequest) async -> Bool {
-        await withCheckedContinuation { continuation in
-            imageTask = ImagePipeline.shared.loadImage(
-                with: request,
-                progress: { [weak self] _, completed, total in
-                    guard let self else { return }
-                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
-                },
-                completion: { [weak self] result in
-                    guard let self else { return }
-                    switch result {
-                    case .success(let response):
-                        imageView.image = response.image
-                        fixImageSize()
-                        completion?(true)
-                        continuation.resume(returning: true)
-                    case .failure:
-                        completion?(false)
-                        continuation.resume(returning: false)
+    private func startImageTask(_ request: ImageRequest) async -> Bool {
+        imageTask = ImagePipeline.shared.loadImage(
+            with: request,
+            progress: { [weak self] _, completed, total in
+                guard let self else { return }
+                self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+            },
+            completion: { _ in }
+        )
+        // hide progress view when task completes
+        defer {
+            progressView.isHidden = true
+            imageTask = nil
+        }
+        do {
+            let response = try await imageTask?.response
+            guard let response else {
+                return false
+            }
+            imageView.image = response.image
+            fixImageSize()
+            completion?(true)
+            return true
+        } catch {
+            let error = error as? ImagePipeline.Error
+            switch error {
+                case .dataLoadingFailed, .dataIsEmpty:
+                    // we can still send to image processor even if the request failed
+                    if request.userInfo[.processesKey] as? Bool == true {
+                        let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
+                        if let processor {
+                            let result = await Task.detached {
+                                try? processor.processWithoutImage(request: request)
+                            }.value
+                            if let result {
+                                imageView.image = result.image
+                                fixImageSize()
+                                completion?(true)
+                                return true
+                            }
+                        }
                     }
-                    progressView.isHidden = true
-                }
-            )
+                default:
+                    break
+            }
+            completion?(false)
+            return false
         }
     }
 
     func setPageImage(base64: String, key: Int) async -> Bool {
+        // remove text view if it exists
+        if let textView {
+            textView.view.removeFromSuperview()
+            textView.didMove(toParent: nil)
+            self.textView = nil
+        }
+
         let request = ImageRequest(id: String(key), data: { Data() })
 
-        // TODO: can we show decoding progress?
         progressView.setProgress(value: 0, withAnimation: false)
         progressView.isHidden = false
+        defer { progressView.isHidden = true }
 
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
-            progressView.isHidden = true
             fixImageSize()
             return true
         }
 
-        if let data = Data(base64Encoded: base64) {
-            if var image = UIImage(data: data) {
+        let image: UIImage? = await Task.detached {
+            guard
+                let imageData = Data(base64Encoded: base64),
+                var image = UIImage(data: imageData)
+            else {
+                return nil
+            }
+
+            if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                let processor = CropBordersProcessor()
+                let processedImage = processor.process(image)
+                if let processedImage = processedImage {
+                    image = processedImage
+                }
+            }
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
+                let processedImage = processor.process(image)
+                if let processedImage = processedImage {
+                    image = processedImage
+                }
+            }
+
+            return image
+        }.value
+        guard let image else { return false }
+
+        ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+        imageView.image = image
+        fixImageSize()
+
+        return true
+    }
+
+    func setPageImage(zipURL: URL, filePath: String) async -> Bool {
+        // remove text view if it exists
+        if let textView {
+            textView.view.removeFromSuperview()
+            textView.didMove(toParent: nil)
+            self.textView = nil
+        }
+
+        var hasher = Hasher()
+        hasher.combine(zipURL)
+        hasher.combine(filePath)
+        let key = String(hasher.finalize())
+
+        let request = ImageRequest(id: key, data: { Data() })
+
+        progressView.setProgress(value: 0, withAnimation: false)
+        progressView.isHidden = false
+        defer { progressView.isHidden = true }
+
+        if ImagePipeline.shared.cache.containsCachedImage(for: request) {
+            let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
+            imageView.image = imageContainer?.image
+            fixImageSize()
+            return true
+        }
+
+        let image: UIImage? = await Task.detached {
+            do {
+                var imageData = Data()
+                let archive: Archive
+                archive = try Archive(url: zipURL, accessMode: .read)
+                guard let entry = archive[filePath]
+                else {
+                    return nil
+                }
+                _ = try archive.extract(
+                    entry,
+                    consumer: { data in
+                        imageData.append(data)
+                    }
+                )
+                guard var image = UIImage(data: imageData) else {
+                    return nil
+                }
+
                 if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                     let processor = CropBordersProcessor()
                     let processedImage = processor.process(image)
@@ -192,23 +322,25 @@ class ReaderPageView: UIView {
                     }
                 }
                 if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = DownsampleProcessor(width: UIScreen.main.bounds.width)
+                    let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
                     }
                 }
-                ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
-                imageView.image = image
-                progressView.isHidden = true
-                fixImageSize()
-                return true
+
+                return image
+            } catch {
+                return nil
             }
-        }
+        }.value
+        guard let image else { return false }
 
-        progressView.isHidden = true
+        ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
+        imageView.image = image
+        fixImageSize()
 
-        return false
+        return true
     }
 
     // match image constraints with image size
@@ -219,7 +351,6 @@ class ReaderPageView: UIView {
         imageWidthConstraint?.isActive = false
 
         if
-            !maxWidth,
             case let height = imageView.image!.size.height * (bounds.width / imageView.image!.size.width),
             height > bounds.height || UIScreen.main.bounds.width > UIScreen.main.bounds.height // fix for double pages
         {
@@ -241,5 +372,41 @@ class ReaderPageView: UIView {
         }
         imageWidthConstraint?.isActive = true
         imageHeightConstraint?.isActive = true
+    }
+
+    func setPageText(text: String) {
+        imageView.image = nil
+        progressView.isHidden = true
+
+        let view = MarkdownView(text)
+
+        if let textView {
+            textView.rootView = view
+        } else {
+            textView = UIHostingController(rootView: view)
+            guard let textView else { return }
+            if #available(iOS 16.0, *) {
+                textView.sizingOptions = .intrinsicContentSize
+            }
+            if #available(iOS 16.4, *) {
+                // fixes text being shifted when navbar is hidden/shown
+                textView.safeAreaRegions = []
+            }
+            textView.view.translatesAutoresizingMaskIntoConstraints = false
+            if let parent {
+                parent.addChild(textView)
+                textView.didMove(toParent: parent)
+            }
+            addSubview(textView.view)
+
+            NSLayoutConstraint.activate([
+                textView.view.topAnchor.constraint(equalTo: topAnchor),
+                textView.view.leadingAnchor.constraint(equalTo: leadingAnchor),
+                textView.view.trailingAnchor.constraint(equalTo: trailingAnchor),
+                // if the text string is too long, it'll just extend downwards out of bounds
+                // we should probably make it scrollable as long as it doesn't mess with the existing swipe gesture
+                textView.view.heightAnchor.constraint(greaterThanOrEqualTo: heightAnchor)
+            ])
+        }
     }
 }

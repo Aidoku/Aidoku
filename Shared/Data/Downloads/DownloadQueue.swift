@@ -59,7 +59,7 @@ actor DownloadQueue {
     func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
         var downloads: [Download] = []
         for chapter in chapters {
-            if await cache.isChapterDownloaded(chapter: chapter) {
+            if await cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id) {
                 continue
             }
             // create tmp directory so we know it's queued
@@ -157,13 +157,6 @@ extension DownloadQueue {
     func hasQueuedDownloads() -> Bool {
         !queue.isEmpty
     }
-
-    func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
-        if let download = queue[chapter.sourceId]?.first(where: { $0.chapterId == chapter.id }) {
-            return download.status
-        }
-        return .none
-    }
 }
 
 // MARK: - Task Delegate
@@ -173,7 +166,7 @@ extension DownloadQueue: DownloadTaskDelegate {
         await taskFinished(task: task)
     }
 
-    func taskPaused(task: DownloadTask) async {}
+    func taskPaused(task _: DownloadTask) async {}
 
     func taskFinished(task: DownloadTask) async {
         tasks.removeValue(forKey: task.id)

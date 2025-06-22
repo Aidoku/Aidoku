@@ -354,7 +354,7 @@ class MangaDetailHeaderView: UIView {
             }
             let showSourceLabel = inLibrary && UserDefaults.standard.bool(forKey: "General.showSourceLabel")
             if showSourceLabel, let source = SourceManager.shared.source(for: manga.sourceId) {
-                sourceLabelView.text = source.manifest.info.name
+                sourceLabelView.text = source.name
                 sourceLabelView.isHidden = false
             } else {
                 sourceLabelView.isHidden = true
@@ -407,19 +407,10 @@ class MangaDetailHeaderView: UIView {
             }
         }
 
-        var urlRequest = URLRequest(url: url)
-
-        if
-            let sourceId = sourceId,
-            let source = SourceManager.shared.source(for: sourceId),
-            source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString)
-        {
-            urlRequest.url = URL(string: request.url ?? "")
-            for (key, value) in request.headers {
-                urlRequest.setValue(value, forHTTPHeaderField: key)
-            }
-            if let body = request.body { urlRequest.httpBody = body }
+        let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+            await source.getModifiedImageRequest(url: url, context: nil)
+        } else {
+            URLRequest(url: url)
         }
 
         let request = ImageRequest(
@@ -595,7 +586,7 @@ class MangaDetailHeaderView: UIView {
 }
 
 extension MangaDetailHeaderView: SizeChangeListenerDelegate {
-    func sizeChanged(_ newSize: CGSize) {
+    func sizeChanged(_: CGSize) {
         sizeChangeListener?.sizeChanged(bounds.size)
     }
 }

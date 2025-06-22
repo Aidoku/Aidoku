@@ -157,7 +157,7 @@
 "RESTORE_BACKUP" = "Herstellen naar deze back-up?";
 "BACKUP_IMPORT_SUCCESS" = "Back-up geïmporteerd";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Als u deze back-up wilt herstellen, vindt u deze op de back-up pagina in de instellingen.";
-"BACKUP_IMPORT_FAIL" = "Importeren mislukt";
+"IMPORT_FAIL" = "Importeren mislukt";
 "EXPORT" = "Exporteren";
 "RESTORE" = "Herstellen";
 "LOGS" = "Logboeken";

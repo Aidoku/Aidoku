@@ -6,18 +6,16 @@
 //
 
 import UIKit
+import AidokuRunner
 
 class CategorySelectViewController: UITableViewController {
-
-    let manga: Manga
-    var chapterList: [Chapter]
+    let manga: AidokuRunner.Manga
 
     var categories: [String] = []
     var selectedCategories: [String] = []
 
-    init(manga: Manga, chapterList: [Chapter] = []) {
+    init(manga: AidokuRunner.Manga) {
         self.manga = manga
-        self.chapterList = chapterList
         super.init(style: .plain)
     }
 
@@ -37,16 +35,18 @@ class CategorySelectViewController: UITableViewController {
 
         Task {
             await CoreDataManager.shared.container.performBackgroundTask { context in
-                self.categories = CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+                self.categories = CoreDataManager.shared.getCategories(context: context).map {
+                    $0.title ?? ""
+                }
                 let inLibrary = CoreDataManager.shared.hasLibraryManga(
-                    sourceId: self.manga.sourceId,
-                    mangaId: self.manga.id,
+                    sourceId: self.manga.sourceKey,
+                    mangaId: self.manga.key,
                     context: context
                 )
                 if inLibrary {
                     self.selectedCategories = CoreDataManager.shared.getCategories(
-                        sourceId: self.manga.sourceId,
-                        mangaId: self.manga.id,
+                        sourceId: self.manga.sourceKey,
+                        mangaId: self.manga.key,
                         context: context
                     )
                     .compactMap { $0.title }
@@ -65,17 +65,21 @@ class CategorySelectViewController: UITableViewController {
         Task {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.hasLibraryManga(
-                    sourceId: self.manga.sourceId,
-                    mangaId: self.manga.id,
+                    sourceId: self.manga.sourceKey,
+                    mangaId: self.manga.key,
                     context: context
                 )
             }
             if !inLibrary {
-                await MangaManager.shared.addToLibrary(manga: manga, chapters: chapterList)
+                await MangaManager.shared.addToLibrary(
+                    sourceId: manga.sourceKey,
+                    manga: manga,
+                    chapters: manga.chapters ?? []
+                )
             }
             await MangaManager.shared.setCategories(
-                sourceId: manga.sourceId,
-                mangaId: manga.id,
+                sourceId: manga.sourceKey,
+                mangaId: manga.key,
                 categories: selectedCategories
             )
         }

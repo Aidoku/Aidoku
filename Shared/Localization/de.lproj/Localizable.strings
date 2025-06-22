@@ -62,7 +62,7 @@
 "MISSING_SOURCES" = "Fehlende Quellen";
 "MISSING_SOURCES_TEXT" = "Das wiederhergestellte Backup kann Daten aus den folgenden Quellen enthalten, die derzeit nicht installiert sind:";
 "RESTORE_BACKUP" = "Zu diesem Backup wiederherstellen?";
-"BACKUP_IMPORT_FAIL" = "Import fehlgeschlagen";
+"IMPORT_FAIL" = "Import fehlgeschlagen";
 "DISPLAY_LOGS" = "Protokolle anzeigen";
 "ADVANCED" = "Fortgeschritten";
 "%@_AGO" = "vor %@";

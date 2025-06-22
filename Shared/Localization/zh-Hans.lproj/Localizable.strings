@@ -207,7 +207,7 @@
 "RESTORE_BACKUP_TEXT" = "所有当前数据将被删除并用此备份中的数据替换。";
 "BACKUP_IMPORT_SUCCESS" = "导入备份成功";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "要恢复到此备份，请在设置中的备份页面中找到它。";
-"BACKUP_IMPORT_FAIL" = "导入备份失败";
+"IMPORT_FAIL" = "导入备份失败";
 "BACKUP_IMPORT_FAIL_TEXT" = "无法保存备份。请确保您的备份格式正确。";
 "EXPORT" = "导出";
 "RESTORE" = "恢复";

@@ -6,29 +6,17 @@
 //
 
 import SwiftUI
-
-// UIKit close button for SwiftUI
-private struct CloseButton: UIViewRepresentable {
-    private let action: () -> Void
-
-    init(action: @escaping () -> Void) { self.action = action }
-
-    func makeUIView(context: Context) -> UIButton {
-        UIButton(type: .close, primaryAction: UIAction { _ in action() })
-    }
-
-    func updateUIView(_ uiView: UIButton, context: Context) {}
-}
+import AidokuRunner
 
 struct ReaderChapterListView: View {
-    @Environment(\.presentationMode) var presentationMode
+    var chapterList: [AidokuRunner.Chapter]
+    @State var chapter: AidokuRunner.Chapter
+    var chapterSet: ((AidokuRunner.Chapter) -> Void)?
 
-    var chapterList: [Chapter]
-    @State var chapter: Chapter
-    var chapterSet: ((Chapter) -> Void)?
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
+        PlatformNavigationStack {
             ScrollViewReader { proxy in
                 List(chapterList) { chapter in
                     Button {
@@ -40,7 +28,7 @@ struct ReaderChapterListView: View {
                                 Text(displayString(for: chapter))
                                     .foregroundColor(.primary)
                                     .font(.subheadline)
-                                if let title = chapter.title {
+                                if let title = chapter.title, chapter.chapterNumber != nil || chapter.volumeNumber != nil {
                                     Text(title)
                                         .foregroundColor(.secondary)
                                         .font(.subheadline)
@@ -63,35 +51,30 @@ struct ReaderChapterListView: View {
             .navigationTitle(NSLocalizedString("CHAPTERS", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     CloseButton {
-                        presentationMode.wrappedValue.dismiss()
+                        dismiss()
                     }
                 }
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 
-    func displayString(for chapter: Chapter) -> String {
-        let str: String
-
-        if let chapterNum = chapter.chapterNum {
-            if let volumeNum = chapter.volumeNum {
-                str = String(
+    private func displayString(for chapter: AidokuRunner.Chapter) -> String {
+        if let chapterNum = chapter.chapterNumber {
+            if let volumeNum = chapter.volumeNumber {
+                String(
                     format: NSLocalizedString("VOL_X", comment: "") + " " + NSLocalizedString("CH_X", comment: ""),
                     volumeNum,
                     chapterNum
                 )
             } else {
-                str = String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+                String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
             }
-        } else if let volumeNum = chapter.volumeNum {
-            str = String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+        } else if let volumeNum = chapter.volumeNumber {
+            String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
         } else {
-            str = ""
+            chapter.title ?? ""
         }
-
-        return str
     }
 }
