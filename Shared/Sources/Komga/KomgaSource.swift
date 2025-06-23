@@ -668,7 +668,7 @@ struct KomgaHelper: Sendable {
             case _ where listing.id.hasPrefix("library-"):
                 let id = String(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 8)...])
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/list?page=\(page - 1)&size=20",
+                    path: "/api/v1/series/list?page=\(page - 1)&size=20&sort=name%2Casc",
                     method: .POST,
                     body: .init(condition: .allOf([
                         .libraryId(id),
