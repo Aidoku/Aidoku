@@ -5,10 +5,10 @@
 //  Created by Skitty on 12/21/22.
 //
 
-import UIKit
 import AsyncDisplayKit
-
+import Gifu
 import SwiftUI
+import UIKit
 
 class ZoomableCollectionView: ASDisplayNode {
 
@@ -79,7 +79,8 @@ class ZoomableCollectionView: ASDisplayNode {
                 allowNextTouchPassThrough = false
                 return orig
             }
-            if orig is _ASDisplayView {
+            print(orig)
+            if orig is _ASDisplayView || orig is GIFImageView {
                 if lastHit.timeIntervalSinceNow <= -0.1 {
                     if !tempGestures.isEmpty {
                         tempGestures.forEach {
