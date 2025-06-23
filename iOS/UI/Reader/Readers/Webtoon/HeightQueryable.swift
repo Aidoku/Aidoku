@@ -11,7 +11,7 @@ protocol HeightQueryable {
     func getHeight() -> CGFloat
 }
 
-extension ReaderWebtoonImageNode: HeightQueryable {
+extension ReaderWebtoonPageNode: HeightQueryable {
     func getHeight() -> CGFloat {
         if pillarbox && isPillarboxOrientation() {
             let percent = (100 - pillarboxAmount) / 100

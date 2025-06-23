@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WasmInterpreter
 
 class WasmJson {
 
@@ -17,7 +16,7 @@ class WasmJson {
     }
 
     func export(into namespace: String = "json") {
-        try? globalStore.vm.addImportHandler(named: "parse", namespace: namespace, block: self.parse)
+        try? globalStore.vm.linkFunction(name: "parse", namespace: namespace, function: self.parse)
     }
 
     var parse: (Int32, Int32) -> Int32 {

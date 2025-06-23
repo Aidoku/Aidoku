@@ -124,33 +124,36 @@ class ReaderInfoPageView: UIView {
         Int(floor(higherChapterNumber) - floor(lowerChapterNumber))
     }
 
+    func title(for chapter: Chapter) -> String {
+        switch (chapter.volumeNum, chapter.chapterNum, chapter.title) {
+        case (.some(let volumeNum), nil, nil):
+            return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+        case (nil, .some(let chapterNum), nil):
+            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+        case (nil, nil, .some(let chapterTitle)): return chapterTitle
+        default:
+            var arr = [String]()
+            if let volumeNum = chapter.volumeNum {
+                arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
+            }
+            if let chapterNum = chapter.chapterNum {
+                arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNum))
+            }
+            if let chapterTitle = chapter.title {
+                arr.append("-")
+                arr.append(chapterTitle)
+            }
+            return arr.joined(separator: " ")
+        }
+    }
+
     func updateLabelText() {
         guard let currentChapter else { return }
         if let previousChapter {
             topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
-            if let previousTitle = previousChapter.title {
-                topChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CH_X", comment: ""),
-                    previousChapter.chapterNum ?? 0
-                ) + " - " + previousTitle
-            } else {
-                topChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CHAPTER_X", comment: ""),
-                    previousChapter.chapterNum ?? 0
-                )
-            }
+            topChapterTitleLabel.text = title(for: previousChapter)
             bottomChapterLabel.text = NSLocalizedString("CURRENT_COLON", comment: "")
-            if let currentTitle = currentChapter.title {
-                bottomChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CH_X", comment: ""),
-                    currentChapter.chapterNum ?? 0
-                ) + " - " + currentTitle
-            } else {
-                bottomChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CHAPTER_X", comment: ""),
-                    currentChapter.chapterNum ?? 0
-                )
-            }
+            bottomChapterTitleLabel.text = title(for: currentChapter)
             if let currChapterNum = currentChapter.chapterNum,
                let prevChapterNum = previousChapter.chapterNum {
                 let chapterDifference = chapterDifference(higherChapterNumber: currChapterNum, lowerChapterNumber: prevChapterNum)
@@ -166,29 +169,9 @@ class ReaderInfoPageView: UIView {
             stackView.isHidden = false
         } else if let nextChapter {
             topChapterLabel.text = NSLocalizedString("FINISHED_COLON", comment: "")
-            if let currentTitle = currentChapter.title {
-                topChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CH_X", comment: ""),
-                    currentChapter.chapterNum ?? 0
-                ) + " - " + currentTitle
-            } else {
-                topChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CHAPTER_X", comment: ""),
-                    currentChapter.chapterNum ?? 0
-                )
-            }
+            topChapterTitleLabel.text = title(for: currentChapter)
             bottomChapterLabel.text = NSLocalizedString("NEXT_COLON", comment: "")
-            if let nextTitle = nextChapter.title {
-                bottomChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CH_X", comment: ""),
-                    nextChapter.chapterNum ?? 0
-                ) + " - " + nextTitle
-            } else {
-                bottomChapterTitleLabel.text = String(
-                    format: NSLocalizedString("CHAPTER_X", comment: ""),
-                    nextChapter.chapterNum ?? 0
-                )
-            }
+            bottomChapterTitleLabel.text = title(for: nextChapter)
             if let currChapterNum = currentChapter.chapterNum,
                let nextChapterNum = nextChapter.chapterNum {
                 let chapterDifference = chapterDifference(higherChapterNumber: nextChapterNum, lowerChapterNumber: currChapterNum)

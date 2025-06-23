@@ -33,7 +33,6 @@ class DownloadQueueViewController: UITableViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -248,10 +247,9 @@ extension DownloadQueueViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         let id = queue[section].sourceId
         let source = SourceManager.shared.source(for: id)
-        return source?.manifest.info.name
+        return source?.name
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCell(withIdentifier: "DownloadTableViewCell")
         if cell == nil {

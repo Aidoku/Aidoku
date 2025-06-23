@@ -27,24 +27,6 @@ struct JsonAnyValue: Codable {
     let stringArrayValue: [String]?
     let objectValue: [String: JsonAnyValue]?
 
-    init(
-        type: JsonAnyType,
-        boolValue: Bool? = nil,
-        intValue: Int? = nil,
-        doubleValue: Double? = nil,
-        stringValue: String? = nil,
-        stringArrayValue: [String]? = nil,
-        objectValue: [String: JsonAnyValue]? = nil
-    ) {
-        self.type = type
-        self.boolValue = boolValue
-        self.intValue = intValue
-        self.doubleValue = doubleValue
-        self.stringValue = stringValue
-        self.stringArrayValue = stringArrayValue
-        self.objectValue = objectValue
-    }
-
     init(from decoder: Decoder) throws {
         let container =  try decoder.singleValueContainer()
 

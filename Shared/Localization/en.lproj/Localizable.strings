@@ -10,8 +10,10 @@
 "CONTINUE" = "Continue";
 "CANCEL" = "Cancel";
 "OK" = "OK";
+"DONE" = "Done";
 "UNKNOWN" = "Unknown";
 "UNAVAILABLE" = "Unavailable";
+"INVALID" = "Invalid";
 "RESET" = "Reset";
 "DELETE" = "Delete";
 "REMOVE" = "Remove";
@@ -55,6 +57,8 @@
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
 "COVER" = "Cover";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Removing Item from Library";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "Removing %i Items from Library";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
 
@@ -73,6 +77,7 @@
 "BROWSE" = "Browse";
 "BROWSE_NO_SOURCES" = "No sources";
 "BROWSE_NO_SOURCES_TEXT" = "Configure your source list or open a\nsource in Aidoku to get started";
+"BROWSE_NO_SOURCES_TEXT_NEW" = "Add a source with the plus button.";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Adding Sources Guide";
 "UPDATES" = "Updates";
 "INSTALLED" = "Installed";
@@ -89,12 +94,118 @@
 "SOURCE_INFO" = "Source Info";
 "LANGUAGE" = "Language";
 "LANGUAGES" = "Languages";
+"BASE_URL" = "Base URL";
 "INFO" = "Info";
 "VERSION" = "Version";
 "BUILD" = "Build";
 "BUTTON_FILTER" = "Filter";
 "LIST_HEADER" = "List";
 "LIST_ALL" = "All";
+"SEE_ALL" = "See All";
+"HOME" = "Home";
+"FILTERS" = "Filters";
+"APPLY" = "Apply";
+"SOURCE_SETTINGS" = "Source Settings";
+"RESET_SETTINGS_CONFIRM_%@" = "Are you sure you want to reset all settings for %@?";
+"CANCEL_CONFIRM" = "Are you sure you want to cancel?";
+"CANCEL_CONFIRM_TEXT" = "Your changes will be discarded.";
+"DISCARD_CHANGES" = "Discard Changes";
+"INVALID_URL" = "Invalid URL";
+"INVALID_URL_TEXT" = "The URL for this source is invalid.";
+"MORE_BARBUTTON" = "More";
+"RETRY" = "Retry";
+"NO_RESULT" = "No Result";
+"UNIMPLEMENTED" = "Unimplemented";
+"NETWORK_ERROR" = "Network Error";
+"DECODING_ERROR" = "Decoding Error";
+"UNKNOWN_ERROR" = "Unknown Error";
+
+"ADD_SOURCE" = "Add Source";
+"IMPORT_SOURCE" = "Import Source";
+"BUILT_IN_SOURCES" = "Built-in Sources";
+"EXTERNAL_SOURCES" = "External Sources";
+"NO_RESULTS" = "No results";
+"NO_EXTERNAL_SOURCES" = "No External Sources";
+"NO_EXTERNAL_SOURCES_INFO" = "Configure source lists in the settings tab to install external sources.";
+"NO_AVAILABLE_SOURCES" = "No Available Sources";
+"NO_AVAILABLE_SOURCES_INFO" = "Adjust your filters to view more external sources.";
+"ALL_SOURCES_INSTALLED" = "All Sources Installed";
+"ALL_SOURCES_INSTALLED_INFO" = "There are no remaining external sources to install.";
+
+// Local Source
+"LOCAL_SOURCE" = "Local Source";
+"LOCAL_SOURCE_INFO" = "The local source allows you to upload and manage your own reading library directly within Aidoku.";
+"LOCAL_SOURCE_SETUP" = "Local Source Setup";
+"LOCAL_FILES" = "Local Files";
+"LOCAL_FILES_TAGLINE" = "Read from local files";
+"IMPORT" = "Import";
+"IMPORT_FILE" = "Import File";
+"LOCAL_FILE_IMPORT" = "Local File Import";
+"LOCAL_FILE_IMPORT_TEXT" = "Import a CBZ or ZIP file containing images to read.";
+"CHAPTER_TITLE" = "Chapter Title";
+"SERIES_TITLE" = "Series Title";
+"DESCRIPTION" = "Description";
+"SERIES" = "Series";
+"NEW_SERIES" = "New Series";
+"NEW_SERIES_TEXT" = "Create a new series for this file";
+"SELECT_SERIES" = "Select Series";
+"VOLUME_CHAPTER_INVALID_ERROR" = "A chapter with this configuration already exists.";
+"VOLUME_CHAPTER_EMPTY_ERROR" = "A volume and/or chapter number is required.";
+"SERIES_TITLE_UNIQUE_ERROR" = "A series with this title already exists.";
+"SERIES_TITLE_EMPTY_ERROR" = "A title must be provided for a new series.";
+"CREATE_NEW_SERIES_INFO" = "A new series will be created on the next page, or you can select an existing series to add this file to.";
+"ADD_TO_OTHER_SERIES_INFO" = "The file will be added to the selected series.";
+"%i_PAGES" = "%i pages";
+"1_PAGE" = "1 page";
+"CBZ_NAME" = "Comic Book Zip Archive";
+"ZIP_NAME" = "Zip Archive";
+
+// Komga
+"KOMGA" = "Komga";
+"KOMGA_TAGLINE" = "Self-hosted media server";
+"KOMGA_INFO" = "Komga is a self-hosted media server for comics and manga. You will need a Komga server set up and running in order to use this source.";
+"SOURCE_NAME" = "Source Name";
+"SOURCE_NAME_INFO" = "The name the source will show in the browse tab.";
+"SOURCE_NAME_UNIQUE_ERROR" = "Please choose a unique source name.";
+"SERVER_URL" = "Server URL";
+"SERVER_URL_INFO" = "The base URL of a Komga server to connect to.";
+"SERVER_URL_UNIQUE_ERROR" = "A Komga source configured with that server already exists.";
+"DEMO_KOMGA_SERVER" = "Demo Komga Server";
+"DEMO_KOMGA_SERVER_INFO" = "You can log in to the demo Komga server using the email `demo@komga.org` and password `komga-demo`.";
+"SERVER_ERROR" = "Server Error";
+"SERVER_ERROR_CONNECTION" = "Unable to connect to the given server. Ensure a Komga instance is running and the URL is entered correctly.";
+"SERVER_ERROR_AUTHENTICATION" = "Unable to log in. Ensure your credentials are entered correctly.";
+"KOMGA_SETUP" = "Komga Setup";
+
+"ON_DECK" = "On Deck";
+"KEEP_READING" = "Keep Reading";
+"RECENTLY_ADDED_BOOKS" = "Recently Added Books";
+"RECENTLY_ADDED_SERIES" = "Recently Added Series";
+"RECENTLY_UPDATED_SERIES" = "Recently Updated Series";
+"RECENTLY_READ_BOOKS" = "Recently Read Books";
+"ANY" = "Any";
+"AUTHOR" = "Author";
+"ARTIST" = "Artist";
+"SORT" = "Sort";
+"SORT_NAME" = "Name";
+"SORT_DATE_ADDED" = "Date added";
+"SORT_DATE_UPDATED" = "Date updated";
+"SORT_DATE_READ" = "Date read";
+"SORT_RELEASE_DATE" = "Release date";
+"SORT_FOLDER_NAME" = "Folder name";
+"SORT_BOOKS_COUNT" = "Books count";
+"SORT_RANDOM" = "Random";
+"STATUS_ONGOING" = "Random";
+"GENRE" = "Genre";
+"TAG" = "Tag";
+"PUBLISHER" = "Publisher";
+"AGE_RATING" = "Age Rating";
+"RELEASE_DATE" = "Release Date";
+"SHARING_LABEL" = "Sharing Label";
+
+"NOT_LOGGED_IN" = "Not logged in";
+"NO_SERVER_CONFIGURED" = "No server configured";
+"INVALID_SERVER_URL" = "Invalid server URL";
 
 // Manga
 "UNTITLED" = "Untitled";
@@ -113,8 +224,12 @@
 "DESELECT_ALL" = "Deselect All";
 "LINK_COPIED" = "Link Copied";
 "LINK_COPIED_TEXT" = "The link has been copied to the clipboard.";
+"SCANLATOR" = "Scanlator";
+"NO_SCANLATOR" = "No scanlator";
+"LOCKED" = "Locked";
 
 // Reader
+"VOLUME" = "Volume";
 "CHAPTER" = "Chapter";
 "CHAPTERS" = "Chapters";
 "VOLUME_X" = "Volume %g";
@@ -172,6 +287,20 @@
 "SEARCH" = "Search";
 "VIEW_MORE" = "View More";
 
+// Account
+"LOGIN" = "Log In";
+"LOGOUT" = "Log Out";
+"LOGOUT_FROM_%@" = "Log out from %@?";
+"LOGOUT_CONFIRM" = "Are you sure you want to log out?";
+"USERNAME" = "Username";
+"EMAIL" = "Email";
+"PASSWORD" = "Password";
+"LOGIN_FAILED" = "Log In Failed";
+"LOGIN_FAILED_TEXT" = "Failed to log in to the source. Make sure your credentials are entered correctly.";
+"LOGIN_BASIC_TEXT" = "Any credentials entered will be given directly to the source. Do not log in to any source you do not trust.";
+"LOGIN_WEBVIEW_WARNING" = "Log in via web view?";
+"LOGIN_WEBVIEW_WARNING_TEXT" = "All cookies set in the presented web view will be given to the source. Do not log in to any source you do not trust.";
+
 // Settings
 "SETTINGS" = "Settings";
 "AUTH_TO_ENABLE" = "Authenticate to enable.";
@@ -218,6 +347,8 @@
 "WITH_UNREAD_CHAPTERS" = "With unread chapters";
 "WITH_COMPLETED_STATUS" = "With completed status";
 "THAT_HAVENT_BEEN_READ" = "That haven't been read";
+
+// Source Lists
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";
 "SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";
@@ -227,6 +358,10 @@
 "SOURCE_LIST_ADD_TEXT" = "Enter the source list URL";
 "SOURCE_LIST_ADD_FAIL" = "Failed to Add Source List";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "The provided source list URL is invalid or has already been added.";
+"UNAVAILABLE_SOURCE_LISTS" = "Unavailable Source Lists";
+"UNAVAILABLE_SOURCE_LISTS_TEXT" = "An error occured while fetching the above source lists.";
+"COPY_URL" = "Copy URL";
+
 "LOCK_HISTORY_TAB" = "Lock History Tab";
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
@@ -248,8 +383,10 @@
 "RESTORE_BACKUP_TEXT" = "All current data will be removed and replaced by the data from this backup.";
 "BACKUP_IMPORT_SUCCESS" = "Backup Imported";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "To restore to this backup, find it in the backups page in settings.";
-"BACKUP_IMPORT_FAIL" = "Import Failed";
+"IMPORT_FAIL" = "Import Failed";
 "BACKUP_IMPORT_FAIL_TEXT" = "Failed to save backup. Please ensure that your backup is in the proper format.";
+"SOURCE_IMPORT_FAIL_TEXT" = "Failed to import source. Please ensure that your aix file is valid.";
+"FILE_IMPORT_FAIL_TEXT" = "Failed to import file. Please ensure it is a valid CBZ or ZIP archive that contains images.";
 "EXPORT" = "Export";
 "RESTORE" = "Restore";
 "LOGS" = "Logs";
@@ -290,8 +427,6 @@
 "DOUBLE_PAGE" = "Double Page";
 "MULTI_LANGUAGE" = "Multi-Language";
 "TRACKERS" = "Trackers";
-"LOGOUT" = "Log out";
-"LOGOUT_FROM_%@" = "Log out from %@?";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
 "STARTED" = "Started";
@@ -335,6 +470,7 @@
 "1_CHAPTER" = "1 Chapter";
 "UPCOMING" = "Upcoming";
 "SELECT" = "Select";
+"ADD" = "Add";
 "ADD_TO_CATEGORY" = "Add to Category";
 "ADD_TO_CATEGORIES" = "Add to Categories";
 "RENAME_CATEGORY_INFO" = "Enter a new name for this category.";
@@ -346,6 +482,8 @@
 "CATEGORY_NAME" = "Category Name";
 "SYNC_WITH_TRACKER" = "Sync with Tracker";
 "SYNC_WITH_TRACKER_INFO" = "It looks like the latest chapter set in the tracker (%g) is higher than your latest read chapter. Would you like to update your local history to match?";
+
+// Migration
 "MIGRATE_SOURCES" = "Migrate Sources";
 "START_MATCHING" = "Start Matching";
 "SYNC_LOCAL_HISTORY" = "Sync Local History";
@@ -361,9 +499,13 @@
 "FIRST_ALTERNATIVE" = "First Alternative";
 "MIGRATE_%i_ITEMS?" = "Migrate %i items?";
 "MIGRATE_ONE_ITEM?" = "Migrate 1 item?";
+"SOURCE_BREAKING_CHANGE" = "Source Breaking Change";
+"SOURCE_BREAKING_CHANGE_TEXT" = "This source had a breaking change and requires migration to keep your library and history.";
+
 "UPLOAD_DATE" = "Upload Date";
 "TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
+"ALL_CHAPTERS_LOCKED" = "All Chapters Locked";
 "DEFAULT_READING_MODE" = "Default Reading Mode";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";
@@ -376,7 +518,5 @@
 "MAL_LOGIN_NEEDED_TEXT" = "Your MyAnimeList token has expired, so the MyAnimeList tracker will stop working until you re-login in settings.";
 "BACKUP_ERROR" = "Backup Restore Error";
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
-"SCANLATOR" = "Scanlator";
-"NO_SCANLATOR" = "No scanlator";
 "READER_ORIENTATION" = "Orientation";
 "FOLLOW_DEVICE" = "Follow Device";

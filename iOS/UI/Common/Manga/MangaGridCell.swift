@@ -5,8 +5,9 @@
 //  Created by Skitty on 7/24/22.
 //
 
-import UIKit
+import Gifu
 import Nuke
+import UIKit
 
 class MangaGridCell: UICollectionViewCell {
 
@@ -41,7 +42,7 @@ class MangaGridCell: UICollectionViewCell {
         }
     }
 
-    let imageView = UIImageView()
+    let imageView = GIFImageView()
     private let titleLabel = UILabel()
     private let overlayView = UIView()
     private let gradient = CAGradientLayer()
@@ -244,20 +245,10 @@ class MangaGridCell: UICollectionViewCell {
             return
         }
 
-        var urlRequest = URLRequest(url: url)
-
-        if
-            let sourceId = sourceId,
-            let source = SourceManager.shared.source(for: sourceId),
-            source.handlesImageRequests,
-            let request = try? await source.getImageRequest(url: url.absoluteString)
-        {
-
-            urlRequest.url = URL(string: request.url ?? "")
-            for (key, value) in request.headers {
-                urlRequest.setValue(value, forHTTPHeaderField: key)
-            }
-            if let body = request.body { urlRequest.httpBody = body }
+        let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+            await source.getModifiedImageRequest(url: url, context: nil)
+        } else {
+            URLRequest(url: url)
         }
 
         let request = ImageRequest(
@@ -265,24 +256,29 @@ class MangaGridCell: UICollectionViewCell {
             processors: [DownsampleProcessor(width: bounds.width)]
         )
 
-        if let image = ImagePipeline.shared.cache.cachedImage(for: request) {
-            imageView.image = image.image
-        } else {
-            imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
-                guard let self else { return }
-                switch result {
-                case .success(let response):
-                    if response.request.imageId != self.url {
-                        return
-                    }
-                    Task { @MainActor in
+        let cached = ImagePipeline.shared.cache.containsCachedImage(for: request)
+
+        imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
+            guard let self else { return }
+            switch result {
+            case .success(let response):
+                if response.request.imageId != self.url {
+                    return
+                }
+                Task { @MainActor in
+                    if cached {
+                        self.imageView.image = response.image
+                    } else {
                         UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
                             self.imageView.image = response.image
                         }
                     }
-                case .failure:
-                    imageTask = nil
+                    if response.container.type == .gif, let data = response.container.data {
+                        self.imageView.animate(withGIFData: data)
+                    }
                 }
+            case .failure:
+                imageTask = nil
             }
         }
     }

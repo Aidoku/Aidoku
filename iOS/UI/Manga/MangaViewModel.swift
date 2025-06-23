@@ -52,7 +52,8 @@ class MangaViewModel {
         } else {
             // load from source
             guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
-            fullChapterList = (try? await source.getChapterList(manga: manga)) ?? []
+            let update = try? await source.getMangaUpdate(manga: manga.toNew(), needsDetails: false, needsChapters: true)
+            fullChapterList = update?.chapters?.map { $0.toOld(sourceId: manga.sourceId, mangaId: manga.id) } ?? []
         }
 
         // get unique chapters without changing the order
@@ -64,7 +65,10 @@ class MangaViewModel {
     }
 
     func loadHistory(manga: Manga) async {
-        readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
+        readingHistory = await CoreDataManager.shared.getReadingHistory(
+            sourceId: manga.sourceId,
+            mangaId: manga.id
+        )
     }
 
     func removeHistory(for chapters: [Chapter]) {
@@ -140,16 +144,20 @@ class MangaViewModel {
 
         for filter in filters {
             switch filter.type {
-            case .downloaded:
-                filteredChapterList = filteredChapterList.filter {
-                    let downloaded = !DownloadManager.shared.isChapterDownloaded(chapter: $0)
-                    return filter.exclude ? downloaded : !downloaded
-                }
-            case .unread:
-                self.filteredChapterList = self.filteredChapterList.filter {
-                    let isCompleted = self.readingHistory[$0.id]?.0 == -1
-                    return filter.exclude ? isCompleted : !isCompleted
-                }
+                case .downloaded:
+                    filteredChapterList = filteredChapterList.filter {
+                        let downloaded = !DownloadManager.shared.isChapterDownloaded(chapter: $0)
+                        return filter.exclude ? downloaded : !downloaded
+                    }
+                case .unread:
+                    self.filteredChapterList = self.filteredChapterList.filter {
+                        let isCompleted = self.readingHistory[$0.id]?.0 == -1
+                        return filter.exclude ? isCompleted : !isCompleted
+                    }
+                case .locked:
+                    self.filteredChapterList = self.filteredChapterList.filter {
+                        filter.exclude ? !$0.locked : $0.locked
+                    }
             }
         }
     }
@@ -168,7 +176,7 @@ class MangaViewModel {
         NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
     }
 
-    func generageChapterFlags() -> Int {
+    func generateChapterFlags() -> Int {
         var flags: Int = 0
         if sortAscending {
             flags |= ChapterFlagMask.sortAscending
@@ -176,31 +184,35 @@ class MangaViewModel {
         flags |= sortMethod.rawValue << 1
         for filter in filters {
             switch filter.type {
-            case .downloaded:
-                flags |= ChapterFlagMask.downloadFilterEnabled
-                if filter.exclude {
-                    flags |= ChapterFlagMask.downloadFilterExcluded
-                }
-            case .unread:
-                flags |= ChapterFlagMask.unreadFilterEnabled
-                if filter.exclude {
-                    flags |= ChapterFlagMask.unreadFilterExcluded
-                }
+                case .downloaded:
+                    flags |= ChapterFlagMask.downloadFilterEnabled
+                    if filter.exclude {
+                        flags |= ChapterFlagMask.downloadFilterExcluded
+                    }
+                case .unread:
+                    flags |= ChapterFlagMask.unreadFilterEnabled
+                    if filter.exclude {
+                        flags |= ChapterFlagMask.unreadFilterExcluded
+                    }
+                case .locked:
+                    flags |= ChapterFlagMask.lockedFilterEnabled
+                    if filter.exclude {
+                        flags |= ChapterFlagMask.lockedFilterExcluded
+                    }
             }
         }
         return flags
     }
 
     func saveFilters(manga: Manga) async {
-        manga.chapterFlags = generageChapterFlags()
+        manga.chapterFlags = generateChapterFlags()
         manga.langFilter = langFilter
         manga.scanlatorFilter = scanlatorFilter
         await CoreDataManager.shared.updateMangaDetails(manga: manga)
     }
 
     func getSourceDefaultLanguages(sourceId: String) -> [String] {
-        guard let source = SourceManager.shared.source(for: sourceId) else { return [] }
-        return source.getDefaultLanguages()
+        (UserDefaults.standard.array(forKey: "\(sourceId).languages") as? [String]) ?? []
     }
 
     func getScanlators() -> [String] {
@@ -229,7 +241,9 @@ class MangaViewModel {
     func getNextChapter() -> ChapterResult {
         guard !filteredChapterList.isEmpty else { return .none }
         // get first chapter not completed
-        let chapter = getOrderedChapterList().reversed().first(where: { readingHistory[$0.id]?.page ?? 0 != -1 })
+        let chapter = getOrderedChapterList().reversed().first(
+            where: { (!$0.locked || DownloadManager.shared.getDownloadStatus(for: $0) == .finished) && readingHistory[$0.id]?.page ?? 0 != -1 }
+        )
         if let chapter = chapter {
             return .chapter(chapter)
         }

@@ -210,7 +210,7 @@
 "RESTORE_BACKUP_TEXT" = "Bütün veri silinecek ve bu yedekdeki veri ile değiştirilecek.";
 "BACKUP_IMPORT_SUCCESS" = "Yedek İçe Aktarıldı";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Bu yedeği geri yüklemek için, yedeği ayarlarda yedek sayfasında bul.";
-"BACKUP_IMPORT_FAIL" = "İçe Aktarma Başarısız Oldu";
+"IMPORT_FAIL" = "İçe Aktarma Başarısız Oldu";
 "BACKUP_IMPORT_FAIL_TEXT" = "Yedek Kaydedilemedi. Lütfen yedeğinizin doğru biçimde olduğundan emin olun.";
 "EXPORT" = "Dışa Aktar";
 "RESTORE" = "Geri Yükle";

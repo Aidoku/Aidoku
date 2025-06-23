@@ -264,7 +264,7 @@
 "MISSING_SOURCES" = "Chybějící zdroje";
 "RESTORE_BACKUP_TEXT" = "Všechna aktuální data budou odstraněna a nahrazena daty z této zálohy.";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Chcete-li obnovit tuto zálohu, najděte ji na stránce záloh v nastavení.";
-"BACKUP_IMPORT_FAIL" = "Import se nezdařil";
+"IMPORT_FAIL" = "Import se nezdařil";
 "BACKUP_IMPORT_FAIL_TEXT" = "Nepodařilo se uložit zálohu. Zkontrolujte, zda je záloha ve správném formátu.";
 "LOGS" = "Protokoly";
 "LOGGING" = "Protokolování";

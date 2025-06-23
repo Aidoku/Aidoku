@@ -124,7 +124,7 @@
 "CORRUPTED_BACKUP_TEXT" = "Cette sauvegarde semble avoir des données mal configurées. Le renommage n'est pas possible.";
 "RESTORE_BACKUP_TEXT" = "Toutes les données actuelles seront supprimées et remplacées par les données de cette sauvegarde.";
 "BACKUP_IMPORT_SUCCESS" = "Sauvegarde importée";
-"BACKUP_IMPORT_FAIL" = "Échec de l'importation";
+"IMPORT_FAIL" = "Échec de l'importation";
 "EXPORT" = "Exporter";
 "RESTORE" = "Restaurer";
 "LOGS" = "Journaux";
@@ -359,3 +359,16 @@
 "NO_UPDATES" = "Pas de mises à jour";
 "SKIPPING_CHAPTERS" = "%i chapitres ignorés, soit la source manque, soit ils ont été filtrés";
 "DELETE_DOWNLOAD_AFTER_READING" = "Supprimer le téléchargement après lecture";
+"OPEN_WEBSITE" = "Ouvrir le site";
+"ENABLE_PERMISSION" = "Activer l'autorisation";
+"PHOTOS_ACCESS_DENIED_TEXT" = "L'accès a été précédemment refusé. Merci d'autoriser Aidoku à accéder à vos photos pour sauvegarder les images dans votre pellicules. Vous pouvez activer l'accès dans les paramètres de confidentialité.";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Cette action est irrémédiable. Tout l'historique de lecture hors librairie sera retiré.";
+"CLEAR_EXCLUDING_LIBRARY" = "Effacer l'historique de lecture (sauf la bibliothèque)";
+"READER_ORIENTATION" = "Orientation";
+"FOLLOW_DEVICE" = "Suivre l'appareil";
+"MARK_DUPLICATE_CHAPTERS" = "Marquer les chapitres dupliqués comme lus";
+"NO_SCANLATOR" = "Pas de scantrad";
+"SCANLATOR" = "Scantrad";
+"PILLARBOX_ORIENTATION" = "Orientation des colonnes";
+"PILLARBOX_AMOUNT" = "Nombre de colonnes";
+"PILLARBOX" = "Colonnes";

@@ -157,7 +157,7 @@
 "RESTORE_BACKUP" = "Herstellen naar deze back-up?";
 "BACKUP_IMPORT_SUCCESS" = "Back-up geïmporteerd";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Als u deze back-up wilt herstellen, vindt u deze op de back-up pagina in de instellingen.";
-"BACKUP_IMPORT_FAIL" = "Importeren mislukt";
+"IMPORT_FAIL" = "Importeren mislukt";
 "EXPORT" = "Exporteren";
 "RESTORE" = "Herstellen";
 "LOGS" = "Logboeken";
@@ -364,3 +364,13 @@
 "SKIPPING_CHAPTERS" = "%i Hoofdstukken worden overgeslagen, omdat de bron deze mist, of omdat deze eruit gefilterd worden";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "Geen scanlator";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "%i Boeken uit Categorie %A verwijderen";
+"ENABLE_PERMISSION" = "Geef Toestemming";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Toegang was eerder geweigerd. Geef Aidoku toegang tot uw Gallerij om fotos op te slaan. U kunt de toegang aanpassen in de privacy instellingen.";
+"CLEAR_EXCLUDING_LIBRARY" = "Wis Leesgeschiedenis, m.u.v. Bibliotheek";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Deze actie is onomkeerbaar. Alle leesgeschiedenis behalve de bibliotheek zal verwijderd worden.";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Boek uit Categorie %@ verwijderen";
+"READER_ORIENTATION" = "Orientatie";
+"FOLLOW_DEVICE" = "Volg Apparaat";
+"MARK_DUPLICATE_CHAPTERS" = "Markeer Dubbele Hoofstukken als Gelezen";
+"OPEN_WEBSITE" = "Open Website";

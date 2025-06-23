@@ -1,6 +1,6 @@
 //
 //  MangaUpdateObject.swift
-//  Aidoku (iOS)
+//  Aidoku
 //
 //  Created by axiel7 on 09/02/2024.
 //
