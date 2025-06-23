@@ -66,6 +66,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>ICLOUD_CONTAINER_ID</key>
+	<string>$(ICLOUD_CONTAINER_ID)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
