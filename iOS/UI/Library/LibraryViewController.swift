@@ -577,16 +577,7 @@ class LibraryViewController: MangaCollectionViewController {
         ) {
             Task {
                 let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }
-                for manga in identifiers {
-                    await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
-                }
-                self.viewModel.pinnedManga = self.viewModel.pinnedManga.filter { item in
-                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
-                }
-                self.viewModel.manga = self.viewModel.pinnedManga.filter { item in
-                    !identifiers.contains(where: { $0.mangaId == item.mangaId && $0.sourceId == item.sourceId })
-                }
-                self.updateDataSource()
+                await self.removeFromLibrary(mangaInfo: identifiers)?.value
                 self.updateNavbarItems()
                 self.updateToolbar()
             }
@@ -1148,13 +1139,7 @@ extension LibraryViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                Task {
-                    for manga in mangaInfo {
-                        await self.viewModel.removeFromLibrary(manga: manga)
-                    }
-
-                    self.updateDataSource()
-                }
+                self.removeFromLibrary(mangaInfo: mangaInfo)
             })
 
             actions.append(UIMenu(options: .displayInline, children: bottomMenuChildren))
@@ -1187,6 +1172,62 @@ extension LibraryViewController: UISearchResultsUpdating {
 
 // MARK: - Undoable Methods
 extension LibraryViewController {
+    @discardableResult
+    func removeFromLibrary(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
+        let mangaCount = mangaInfo.count
+        let actionName =
+            mangaCount > 1
+            ? String(
+                format: NSLocalizedString("REMOVING_%i_ITEMS_FROM_LIBRARY", comment: ""), mangaCount
+            ) : NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_LIBRARY", comment: "")
+        undoManager.setActionName(actionName)
+
+        let removedManga = mangaInfo.map {
+            let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId)?
+                .toManga()
+
+            let chapters = CoreDataManager.shared.getChapters(
+                sourceId: $0.sourceId, mangaId: $0.mangaId
+            ).map { $0.toChapter() }
+
+            let trackItems = CoreDataManager.shared.getTracks(
+                sourceId: $0.sourceId, mangaId: $0.mangaId
+            ).map { $0.toItem() }
+
+            let categories = CoreDataManager.shared.getCategories(
+                sourceId: $0.sourceId, mangaId: $0.mangaId
+            ).compactMap { $0.title }
+
+            return (manga, chapters, trackItems, categories)
+        }
+
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoManager.registerUndo(withTarget: target) { redoTarget in
+                redoTarget.removeFromLibrary(mangaInfo: mangaInfo)
+            }
+
+            Task {
+                for (manga, chapters, trackItems, categories) in removedManga {
+                    guard let manga = manga else { continue }
+                    await MangaManager.shared.restoreToLibrary(
+                        manga: manga, chapters: chapters, trackItems: trackItems,
+                        categories: categories)
+                }
+
+                NotificationCenter.default.post(
+                    name: Notification.Name("updateLibrary"), object: nil)
+            }
+        }
+
+        return Task {
+            for manga in mangaInfo {
+                await viewModel.removeFromLibrary(manga: manga)
+            }
+
+            updateDataSource()
+        }
+    }
+
     @discardableResult
     func removeFromCategory(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
         guard let currentCategory = viewModel.currentCategory else { return nil }
