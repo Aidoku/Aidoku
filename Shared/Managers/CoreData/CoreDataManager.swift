@@ -77,6 +77,13 @@ final class CoreDataManager {
                 LogManager.logger.error("Error loading persistent stores \(error), \(error.userInfo)")
             }
         }
+
+//        do {
+//            try container.initializeCloudKitSchema(options: [.printSchema])
+//        } catch {
+//            print("error initializing cloudkit schema:", error)
+//        }
+
         return container
     }()
 
