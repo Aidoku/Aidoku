@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import AsyncDisplayKit
+import Gifu
 import Nuke
 import SwiftUI
 import ZIPFoundation
@@ -37,8 +38,8 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         (progressNode.view as? CircularProgressView)!
     }
 
-    lazy var imageNode: ASImageNode = {
-        let node = ASImageNode()
+    lazy var imageNode: GIFImageNode = {
+        let node = GIFImageNode()
         node.alpha = 0
         node.contentMode = .scaleToFill
         node.shouldAnimateSizeChanges = false
@@ -294,6 +295,9 @@ extension ReaderWebtoonPageNode {
         do {
             let response = try await imageTask.response
             image = response.image
+            if response.container.type == .gif, let data = response.container.data {
+                imageNode.animate(withGIFData: data)
+            }
             if isNodeLoaded {
                 displayPage()
             }
@@ -311,6 +315,9 @@ extension ReaderWebtoonPageNode {
                                 }.value
                                 if let result {
                                     self.image = result.image
+                                    if result.type == .gif, let data = result.data {
+                                        self.imageNode.animate(withGIFData: data)
+                                    }
                                     if self.isNodeLoaded {
                                         self.displayPage()
                                     }
@@ -478,7 +485,7 @@ extension ReaderWebtoonPageNode {
             Task { @MainActor in
                 imageNode.isUserInteractionEnabled = true
                 if let delegate {
-                    imageNode.view.addInteraction(UIContextMenuInteraction(delegate: delegate))
+                    imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
             }
         } else if let text {

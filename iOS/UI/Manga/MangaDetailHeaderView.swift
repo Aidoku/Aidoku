@@ -5,8 +5,9 @@
 //  Created by Skitty on 1/1/23.
 //
 
-import UIKit
+import Gifu
 import Nuke
+import UIKit
 
 protocol MangaDetailHeaderViewDelegate: AnyObject {
     func bookmarkPressed()
@@ -64,8 +65,8 @@ class MangaDetailHeaderView: UIView {
     }()
 
     // cover image (not private since we can preload this)
-    lazy var coverImageView: UIImageView = {
-        let coverImageView = UIImageView()
+    lazy var coverImageView: GIFImageView = {
+        let coverImageView = GIFImageView()
         coverImageView.image = UIImage(named: "MangaPlaceholder")
         coverImageView.contentMode = .scaleAspectFill
         coverImageView.clipsToBounds = true
@@ -418,10 +419,14 @@ class MangaDetailHeaderView: UIView {
             processors: [DownsampleProcessor(width: bounds.width)]
         )
 
-        guard let image = try? await ImagePipeline.shared.image(for: request) else { return }
+        let task = ImagePipeline.shared.imageTask(with: request)
+        guard let response = try? await task.response else { return }
         Task { @MainActor in
             UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
-                self.coverImageView.image = image
+                self.coverImageView.image = response.image
+            }
+            if response.container.type == .gif, let data = response.container.data {
+                self.coverImageView.animate(withGIFData: data)
             }
         }
     }

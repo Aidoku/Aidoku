@@ -26,16 +26,25 @@ struct SourceImageView: View {
             request: imageRequest,
             transaction: .init(animation: .default)
         ) { state in
-            let result = if let image = state.image {
-                image
+            if state.imageContainer?.type == .gif, let data = state.imageContainer?.data {
+                GIFImage(
+                    data: data,
+                    contentMode: contentMode
+                )
+                    .frame(width: width, height: height)
+                    .id(state.image != nil ? imageUrl : "placeholder") // ensures only opacity is animated
             } else {
-                Image(placeholder)
+                let result = if let image = state.image {
+                    image
+                } else {
+                    Image(placeholder)
+                }
+                result
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                    .frame(width: width, height: height)
+                    .id(state.image != nil ? imageUrl : "placeholder") // ensures only opacity is animated
             }
-            result
-                .resizable()
-                .aspectRatio(contentMode: contentMode)
-                .frame(width: width, height: height)
-                .id(state.image != nil ? imageUrl : "placeholder") // ensures only opacity is animated
         }
         .processors({
             if let downsampleWidth {

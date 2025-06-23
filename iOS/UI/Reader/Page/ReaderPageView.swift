@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+import Gifu
 import MarkdownUI
 import Nuke
 import SwiftUI
@@ -15,7 +16,7 @@ class ReaderPageView: UIView {
 
     weak var parent: UIViewController?
 
-    let imageView = UIImageView()
+    let imageView = GIFImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
 
     private var textView: UIHostingController<MarkdownView>?
@@ -184,6 +185,9 @@ class ReaderPageView: UIView {
                 return false
             }
             imageView.image = response.image
+            if response.container.type == .gif, let data = response.container.data {
+                imageView.animate(withGIFData: data)
+            }
             fixImageSize()
             completion?(true)
             return true
@@ -200,6 +204,9 @@ class ReaderPageView: UIView {
                             }.value
                             if let result {
                                 imageView.image = result.image
+                                if result.type == .gif, let data = result.data {
+                                    imageView.animate(withGIFData: data)
+                                }
                                 fixImageSize()
                                 completion?(true)
                                 return true

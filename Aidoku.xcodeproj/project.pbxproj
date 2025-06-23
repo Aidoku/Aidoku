@@ -29,6 +29,7 @@
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
+		FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182A2E09B05D00CEE275 /* GIFImage.swift */; };
 		FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F8662964917A00D1EA2D /* SourceViewController.swift */; };
 		FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
 		FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */; };

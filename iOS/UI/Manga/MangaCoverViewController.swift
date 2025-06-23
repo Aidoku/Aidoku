@@ -5,8 +5,9 @@
 //  Created by axiel7 on 01/07/2023.
 //
 
-import UIKit
+import Gifu
 import Nuke
+import UIKit
 
 class MangaCoverViewController: BaseViewController {
 
@@ -26,8 +27,8 @@ class MangaCoverViewController: BaseViewController {
     let imageContainerView = UIView()
 
     // cover image
-    private lazy var coverImageView: UIImageView = {
-        let coverImageView = UIImageView()
+    private lazy var coverImageView: GIFImageView = {
+        let coverImageView = GIFImageView()
         coverImageView.image = UIImage(named: "MangaPlaceholder")
         coverImageView.contentMode = .scaleAspectFit
         coverImageView.clipsToBounds = true
@@ -107,12 +108,16 @@ class MangaCoverViewController: BaseViewController {
             }
 
             let request = ImageRequest(urlRequest: urlRequest)
+            let task = ImagePipeline.shared.imageTask(with: request)
+            guard let response = try? await task.response else { return }
 
-            guard let image = try? await ImagePipeline.shared.image(for: request) else { return }
             Task { @MainActor in
                 UIView.transition(with: coverImageView, duration: 0.3, options: .transitionCrossDissolve) {
-                    self.coverImageView.image = image
+                    self.coverImageView.image = response.image
                     self.fixImageSize()
+                }
+                if response.container.type == .gif, let data = response.container.data {
+                    self.coverImageView.animate(withGIFData: data)
                 }
             }
         }
