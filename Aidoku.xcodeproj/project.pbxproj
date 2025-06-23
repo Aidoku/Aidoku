@@ -30,6 +30,7 @@
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
 		FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182A2E09B05D00CEE275 /* GIFImage.swift */; };
+		FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */; };
 		FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F8662964917A00D1EA2D /* SourceViewController.swift */; };
 		FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
 		FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */; };
@@ -360,6 +361,7 @@
 		FBA498762A9A53F500D3F53E /* TouchDownGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA498752A9A53F500D3F53E /* TouchDownGestureRecognizer.swift */; };
 		FBAE7BEE2AF2DC5D00D530EE /* LegacySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */; };
 		FBAE7BEF2AF2DC5D00D530EE /* LegacySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */; };
+		FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */ = {isa = PBXBuildFile; productRef = FBBCB31C2E08D6B000ED5CAB /* Gifu */; };
 		FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */; };
 		FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */; };
 		FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */; };
@@ -467,6 +469,8 @@
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
+		FB05182A2E09B05D00CEE275 /* GIFImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImage.swift; sourceTree = "<group>"; };
+		FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImageNode.swift; sourceTree = "<group>"; };
 		FB05F8662964917A00D1EA2D /* SourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewController.swift; sourceTree = "<group>"; };
 		FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Source.swift"; sourceTree = "<group>"; };
 		FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceViewModel.swift; sourceTree = "<group>"; };
@@ -825,6 +829,7 @@
 				FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */,
 				FBFDF5F82DF799180064F603 /* AidokuRunner in Frameworks */,
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
+				FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */,
 				FBE53F0C29CC015E00899601 /* AsyncDisplayKit in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
 				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
@@ -1214,6 +1219,7 @@
 				FB1B51B228E35B4700D3CE0E /* ReaderWebtoonViewModel.swift */,
 				FB4C09D629B01AD2009E0761 /* ReaderWebtoonPageNode.swift */,
 				FBE53F0529CB723D00899601 /* ReaderWebtoonTransitionNode.swift */,
+				FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */,
 				FB7F05F52DDCDC900036B116 /* HostingNode.swift */,
 				FB4C09D929B03DE1009E0761 /* VerticalContentOffsetPreservingLayout.swift */,
 				FBE53F0D29CCA78000899601 /* HeightQueryable.swift */,
@@ -1396,6 +1402,7 @@
 				FB8E48D22DBD8E05002A3621 /* SourceImageView.swift */,
 				FB662E942DA813E300007514 /* MangaCoverView.swift */,
 				FB662E952DA813E300007514 /* MangaGridItem.swift */,
+				FB05182A2E09B05D00CEE275 /* GIFImage.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1850,6 +1857,7 @@
 				FB3737D02D17458400AB1551 /* AidokuRunner */,
 				FB662EDD2DA816CF00007514 /* MarkdownUI */,
 				FBFDF5F72DF799180064F603 /* AidokuRunner */,
+				FBBCB31C2E08D6B000ED5CAB /* Gifu */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -1954,6 +1962,7 @@
 				FBE53F0A29CC015E00899601 /* XCRemoteSwiftPackageReference "Texture" */,
 				FB662EDC2DA816CF00007514 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 				FBFDF5F62DF799180064F603 /* XCRemoteSwiftPackageReference "AidokuRunner" */,
+				FBBCB31B2E08D6AF00ED5CAB /* XCRemoteSwiftPackageReference "Gifu" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -2178,6 +2187,7 @@
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
 				FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */,
 				FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
+				FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */,
@@ -2282,6 +2292,7 @@
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
 				FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */,
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
+				FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */,
 				FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB55C0B32DF244580019A551 /* LocalSource.swift in Sources */,
@@ -2837,6 +2848,14 @@
 				minimumVersion = 0.9.9;
 			};
 		};
+		FBBCB31B2E08D6AF00ED5CAB /* XCRemoteSwiftPackageReference "Gifu" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kaishin/Gifu.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.4.0;
+			};
+		};
 		FBE53F0A29CC015E00899601 /* XCRemoteSwiftPackageReference "Texture" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Skittyblock/Texture.git";
@@ -2889,6 +2908,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		FBBCB31C2E08D6B000ED5CAB /* Gifu */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FBBCB31B2E08D6AF00ED5CAB /* XCRemoteSwiftPackageReference "Gifu" */;
+			productName = Gifu;
 		};
 		FBE53F0B29CC015E00899601 /* AsyncDisplayKit */ = {
 			isa = XCSwiftPackageProductDependency;
