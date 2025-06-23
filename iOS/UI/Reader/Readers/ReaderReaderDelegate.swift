@@ -6,7 +6,9 @@
 //
 
 import UIKit
+import AidokuRunner
 
+@MainActor
 // swiftlint:disable:next class_delegate_protocol
 protocol ReaderReaderDelegate: UIViewController {
 
@@ -15,5 +17,5 @@ protocol ReaderReaderDelegate: UIViewController {
 
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)
-    func setChapter(_ chapter: Chapter, startPage: Int)
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
 }

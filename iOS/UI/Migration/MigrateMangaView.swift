@@ -18,8 +18,8 @@ struct MigrateMangaView: View {
 
     @State var selectedSources: [SourceInfo2] = []
 
-    private var strategies = MigrationStrategory.allCases
-    @State private var selectedStrategry: MigrationStrategory = .firstAlternative
+//    private var strategies = MigrationStrategory.allCases
+//    @State private var selectedStrategry: MigrationStrategory = .firstAlternative
 
     @State private var migratedManga: [Int: Manga?] = [:]
     @State private var newChapters: [Int: [Chapter]] = [:]
@@ -27,13 +27,18 @@ struct MigrateMangaView: View {
 
     @State var showingConfirmAlert = false
 
-    init(manga: [Manga]) {
+    init(manga: [Manga], destination: String? = nil) {
         _manga = State(initialValue: manga)
         var sources: [Int: SourceInfo2?] = [:]
         for manga in manga {
             sources[manga.hashValue] = SourceManager.shared.source(for: manga.sourceId)?.toInfo()
         }
         _sources = State(initialValue: sources)
+        if let destination {
+            if let info = SourceManager.shared.source(for: destination)?.toInfo() {
+                _selectedSources = State(initialValue: [info])
+            }
+        }
     }
 
     var body: some View {
@@ -171,13 +176,13 @@ struct MigrateMangaView: View {
                             let title = manga.title,
                             let source = SourceManager.shared.source(for: source.sourceId)
                         else { continue }
-                        let search = try? await source.fetchSearchManga(query: title)
-                        if let newManga = search?.manga.first {
+                        let search = try? await source.getSearchMangaList(query: title, page: 1, filters: [])
+                        if let newManga = search?.entries.first {
                             // if we need to check chapters
 //                            let chapters = try? await source.getChapterList(manga: newManga)
                             await MainActor.run {
                                 withAnimation {
-                                    migratedManga[manga.hashValue] = newManga
+                                    migratedManga[manga.hashValue] = newManga.toOld()
 //                                    newChapters[manga.hashValue] = chapters
                                     states[manga.hashValue] = .done
                                 }
@@ -197,7 +202,6 @@ struct MigrateMangaView: View {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     func performMigration() async {
         UIApplication.shared.isIdleTimerDisabled = true
 
@@ -217,18 +221,22 @@ struct MigrateMangaView: View {
                     group.addTask {
                         guard
                             let newManga = await migratedManga[oldManga.hashValue],
-                            let newManga = newManga,
+                            let newManga,
                             let source = SourceManager.shared.source(for: newManga.sourceId)
                         else { return nil }
 
-                        let mangaDetails = (try? await source.getMangaDetails(manga: newManga)) ?? newManga
+                        let newChapters = await newChapters[oldManga.hashValue]
 
-                        let chapters: [Chapter]
-                        if let newChapters = await newChapters[oldManga.hashValue] {
-                            chapters = newChapters
-                        } else {
-                            chapters = (try? await source.getChapterList(manga: mangaDetails)) ?? []
-                        }
+                        let updatedManga = try? await source.getMangaUpdate(
+                            manga: newManga.toNew(),
+                            needsDetails: true,
+                            needsChapters: newChapters == nil
+                        )
+
+                        let mangaDetails = updatedManga?.toOld() ?? newManga
+                        let chapters = newChapters
+                            ?? updatedManga?.chapters?.map { $0.toOld(sourceId: newManga.sourceId, mangaId: newManga.id) }
+                            ?? []
 
                         return (oldManga.key, mangaDetails, chapters)
                     }
@@ -281,7 +289,11 @@ struct MigrateMangaView: View {
                                 ) {
                                     storedManga = storedNewManga
                                     // remove old manga
-                                    CoreDataManager.shared.removeManga(sourceId: oldManga.sourceId, mangaId: oldManga.id, context: context)
+                                    CoreDataManager.shared.removeManga(
+                                        sourceId: oldManga.sourceId,
+                                        mangaId: oldManga.id,
+                                        context: context
+                                    )
                                 } else {
                                     // get old manga to replace data
                                     storedManga = CoreDataManager.shared.getManga(
@@ -299,10 +311,18 @@ struct MigrateMangaView: View {
                                     context: context
                                 )
 
-                                let maxChapterRead = storedOldHistory
+                                var maxChapterRead = storedOldHistory
                                     .compactMap { $0.chapter?.chapter != nil ? $0.chapter : nil }
                                     .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
                                     .chapter?.floatValue
+
+                                if maxChapterRead == nil || maxChapterRead == -1 {
+                                    // try finding max volume read instead, in case of no chapters
+                                    maxChapterRead = storedOldHistory
+                                        .compactMap { $0.chapter?.volume != nil ? $0.chapter : nil }
+                                        .max { $0.volume!.decimalValue < $1.volume!.decimalValue }?
+                                        .volume?.floatValue
+                                }
 
                                 // remove old chapters and history
                                 CoreDataManager.shared.removeChapters(
@@ -319,18 +339,25 @@ struct MigrateMangaView: View {
 
                                 // store new chapters
                                 CoreDataManager.shared.setChapters(
-                                    newChapters,
+                                    newChapters.map { $0.toNew() },
                                     sourceId: newManga.sourceId,
                                     mangaId: newManga.id,
                                     context: context
                                 )
 
                                 // mark new chapters as read
-                                if let maxChapterRead = maxChapterRead {
-                                    CoreDataManager.shared.setCompleted(
-                                        chapters: newChapters.filter({ $0.chapterNum ?? Float.greatestFiniteMagnitude <= maxChapterRead }),
-                                        context: context
-                                    )
+                                if let maxChapterRead {
+                                    var chaptersToMark = newChapters.filter({ $0.chapterNum ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                                    if chaptersToMark.isEmpty {
+                                        // fall back to using volume numbers instead, in case the source we're migrating to uses volumes
+                                        chaptersToMark = newChapters.filter({ $0.volumeNum ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                                    }
+                                    if !chaptersToMark.isEmpty {
+                                        CoreDataManager.shared.setCompleted(
+                                            chapters: chaptersToMark,
+                                            context: context
+                                        )
+                                    }
                                 }
 
                                 // migrate trackers
@@ -372,7 +399,7 @@ struct MigrateMangaView: View {
                         appDelegate.indicatorProgress = Float(counter) / Float(manga.count * 2)
                     }
                     if let result {
-                        NotificationCenter.default.post(name: Notification.Name("migratedManga"), object: result)
+                        NotificationCenter.default.post(name: .migratedManga, object: result)
                     }
                 }
             }
@@ -388,7 +415,7 @@ struct MigrateMangaView: View {
         presentationMode.wrappedValue.dismiss()
 
         // for ios 14 and to dismiss the sheet if migrating from browse tab
-        if var topController = UIApplication.shared.windows.first!.rootViewController {
+        if var topController = UIApplication.shared.firstKeyWindow?.rootViewController {
             while let presentedViewController = topController.presentedViewController {
                 topController = presentedViewController
             }

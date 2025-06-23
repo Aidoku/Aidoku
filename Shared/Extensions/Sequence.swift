@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension Sequence {
-    func concurrentMap<T>(
+extension Sequence where Element: Sendable {
+    func concurrentMap<T: Sendable>(
         _ transform: @escaping (Element) async throws -> T
     ) async rethrows -> [T] {
         let tasks = map { element in
@@ -34,28 +34,43 @@ extension Sequence {
         return values
     }
 
-    func asyncForEach(
-        _ operation: (Element) async throws -> Void
-    ) async rethrows {
-        for element in self {
-            try await operation(element)
-        }
-    }
+    func asyncCompactMap<T>(
+        _ transform: (Element) async throws -> T?
+    ) async rethrows -> [T] {
+        var values = [T]()
 
-    func concurrentForEach(
-        _ operation: @escaping (Element) async -> Void
-    ) async {
-        // A task group automatically waits for all of its
-        // sub-tasks to complete, while also performing those
-        // tasks in parallel:
-        await withTaskGroup(of: Void.self) { group in
-            for element in self {
-                group.addTask {
-                    await operation(element)
-                }
+        for element in self {
+            let result = try await transform(element)
+            if let result {
+                values.append(result)
             }
         }
+
+        return values
     }
+
+//    func asyncForEach(
+//        _ operation: (Element) async throws -> Void
+//    ) async rethrows {
+//        for element in self {
+//            try await operation(element)
+//        }
+//    }
+
+//    func concurrentForEach(
+//        _ operation: @escaping (Element) async -> Void
+//    ) async {
+//        // A task group automatically waits for all of its
+//        // sub-tasks to complete, while also performing those
+//        // tasks in parallel:
+//        await withTaskGroup(of: Void.self) { group in
+//            for element in self {
+//                group.addTask {
+//                    await operation(element)
+//                }
+//            }
+//        }
+//    }
 }
 
 extension Sequence where Iterator.Element: Hashable {

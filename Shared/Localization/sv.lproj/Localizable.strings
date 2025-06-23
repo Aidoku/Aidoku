@@ -265,7 +265,7 @@
 "FINISHED_COLON" = "Avslutade:";
 "SCORE" = "Betyg";
 "WEEKLY" = "Veckovis";
-"BACKUP_IMPORT_FAIL" = "Importering misslyckades";
+"IMPORT_FAIL" = "Importering misslyckades";
 "UNAVAILABLE" = "Otillgänglig";
 "VOLUME_X" = "Volym %g";
 "TYPE_COLON_%@" = "Typ: %@";

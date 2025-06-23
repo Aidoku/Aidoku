@@ -8,6 +8,7 @@
 import UIKit
 import LocalAuthentication
 import SwiftUI
+import AidokuRunner
 
 class LibraryViewController: MangaCollectionViewController {
 
@@ -56,6 +57,11 @@ class LibraryViewController: MangaCollectionViewController {
     private let libraryUndoManager = UndoManager()
     override var undoManager: UndoManager { libraryUndoManager }
     override var canBecomeFirstResponder: Bool { true }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.isToolbarHidden = true
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -224,7 +230,6 @@ class LibraryViewController: MangaCollectionViewController {
         ])
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
     override func observe() {
         super.observe()
 
@@ -900,8 +905,23 @@ extension LibraryViewController {
 
                 if let chapter = chapter {
                     // open reader view
-                    let readerController = ReaderViewController(chapter: chapter, chapterList: chapters)
-                    let navigationController = ReaderNavigationController(rootViewController: readerController)
+                    guard let source = SourceManager.shared.source(for: chapter.sourceId) else {
+                        return
+                    }
+                    let manga = AidokuRunner.Manga(
+                        sourceKey: chapter.sourceId,
+                        key: chapter.mangaId,
+                        title: "",
+                        chapters: chapters.map { $0.toNew() }
+                    )
+                    let readerController = ReaderViewController(
+                        source: source,
+                        manga: manga,
+                        chapter: chapter.toNew()
+                    )
+                    let navigationController = ReaderNavigationController(
+                        rootViewController: readerController
+                    )
                     navigationController.modalPresentationStyle = .fullScreen
                     present(navigationController, animated: true)
                 } else {
@@ -1007,7 +1027,11 @@ extension LibraryViewController {
                 ) { _ in
                     let manga = manga.toManga()
                     self.present(
-                        UINavigationController(rootViewController: CategorySelectViewController(manga: manga)),
+                        UINavigationController(
+                            rootViewController: CategorySelectViewController(
+                                manga: manga.toNew()
+                            )
+                        ),
                         animated: true
                     )
                 })
@@ -1020,7 +1044,7 @@ extension LibraryViewController {
             ) { [weak self] _ in
                 let manga = manga.toManga()
                 let migrateView = MigrateMangaView(manga: [manga])
-                self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: AnyView(migrateView))), animated: true)
+                self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: migrateView)), animated: true)
             })
 
             var bottomMenuChildren: [UIMenuElement] = []
@@ -1092,11 +1116,13 @@ extension LibraryViewController {
                 }
             }
 
-            bottomMenuChildren.append(UIMenu(
-                title: NSLocalizedString("DOWNLOAD", comment: ""),
-                image: UIImage(systemName: "arrow.down.circle"),
-                children: [downloadAllAction, downloadUnreadAction]
-            ))
+            if manga.sourceId != "local" {
+                bottomMenuChildren.append(UIMenu(
+                    title: NSLocalizedString("DOWNLOAD", comment: ""),
+                    image: UIImage(systemName: "arrow.down.circle"),
+                    children: [downloadAllAction, downloadUnreadAction]
+                ))
+            }
 
             if self.viewModel.currentCategory != nil {
                 bottomMenuChildren.append(UIAction(

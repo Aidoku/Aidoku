@@ -26,7 +26,7 @@
 "MISSING_SOURCES_TEXT" = "Kopja e rikthyer mund të përmbajë të dhëna nga burimet e mëposhtme, të cilat nuk janë të instaluara aktualisht:";
 "RESTORE_BACKUP" = "Rikthe në këtë kopje rezervë?";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Për të rikthyer në këtë kopje rezervë, gjeni atë në faqen e kopjeve rezervë në cilësime.";
-"BACKUP_IMPORT_FAIL" = "Importimi Dështoi";
+"IMPORT_FAIL" = "Importimi Dështoi";
 "BACKUP_IMPORT_FAIL_TEXT" = "Dështoi ruajtja e kopjes rezervë. Ju lutemi sigurohuni që kopja juaj rezervë të jetë në formatin e duhur.";
 "EXPORT" = "Eksporto";
 "LOGS" = "Regjistrat";

@@ -17,7 +17,7 @@ struct MigrateSourcesView: View {
     struct MigrateSourceInfo: Identifiable {
         var id: String
         var name: String?
-        var lang: String?
+        var langs: [String]?
         var coverUrl: URL?
     }
 
@@ -28,22 +28,9 @@ struct MigrateSourcesView: View {
         List(sources) { source in
             NavigationLink(destination: MigrateMangaView(manga: manga[source.id] ?? [])) {
                 HStack {
-                    LazyImage(url: source.coverUrl) { state in
-                        if let image = state.image {
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            Image("MangaPlaceholder") // placeholder
-                        }
-                    }
-                    .frame(width: 48, height: 48)
-                    .cornerRadius(48 * 0.225)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 48 * 0.225)
-                            .stroke(Color(UIColor.quaternarySystemFill), lineWidth: 1)
-                    )
-                    .padding(.trailing, 6)
+                    SourceIconView(sourceId: source.id, imageUrl: source.coverUrl)
+                        .padding(.trailing, 6)
+
                     VStack(alignment: .leading) {
                         HStack {
                             Text(source.name ?? source.id)
@@ -51,10 +38,11 @@ struct MigrateSourcesView: View {
                                 .padding(.leading, -2)
                         }
                         if
-                            let lang = source.lang,
-                            let langString = lang == "multi"
-                                ? NSLocalizedString("MULTI_LANGUAGE", comment: "")
-                                : (Locale.current as NSLocale).displayName(forKey: .identifier, value: lang)
+                            let langs = source.langs,
+                            !langs.isEmpty,
+                            let langString = (langs.count > 1 || langs.first == "multi")
+                                ? NSLocalizedString("MULTI_LANGUAGE")
+                                : Locale.current.localizedString(forIdentifier: langs.first!)
                         {
                             Text(langString)
                                 .foregroundColor(.secondary)
@@ -88,18 +76,18 @@ struct MigrateSourcesView: View {
         sources = manga.keys
             .map { id in
                 let source = SourceManager.shared.source(for: id)
-                let coverUrl = source?.url.appendingPathComponent("Icon.png")
+                let coverUrl = source?.imageUrl
                 return MigrateSourceInfo(
                     id: id,
-                    name: source?.manifest.info.name,
-                    lang: source?.manifest.info.lang,
+                    name: source?.name,
+                    langs: source?.languages,
                     coverUrl: coverUrl
                 )
             }
             .sorted { $0.name ?? "" < $1.name ?? "" }
             .sorted {
-                let lhs = SourceManager.languageCodes.firstIndex(of: $0.lang ?? "") ?? 0
-                let rhs = SourceManager.languageCodes.firstIndex(of: $1.lang ?? "") ?? 0
+                let lhs = ($0.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $0.langs?.first ?? "") ?? Int.max
+                let rhs = ($1.langs?.count ?? 0) > 1 ? 0 : SourceManager.languageCodes.firstIndex(of: $1.langs?.first ?? "") ?? Int.max
                 return lhs < rhs
             }
     }

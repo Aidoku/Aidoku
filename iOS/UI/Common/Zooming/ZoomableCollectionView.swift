@@ -5,14 +5,16 @@
 //  Created by Skitty on 12/21/22.
 //
 
-import UIKit
 import AsyncDisplayKit
+import Gifu
+import SwiftUI
+import UIKit
 
 class ZoomableCollectionView: ASDisplayNode {
 
     let collectionNode: ASCollectionNode
     let scrollNode = ASScrollNode()
-    private let dummyZoomView = UIView(frame: .zero)
+    private let dummyZoomView: UIView
     let layout: UICollectionViewLayout
 
     private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
@@ -20,24 +22,20 @@ class ZoomableCollectionView: ASDisplayNode {
 
     var zoomTimer: Timer?
 
-    lazy private var zoomingTap: UITapGestureRecognizer = {
-        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        zoomingTap.numberOfTapsRequired = 2
-        return zoomingTap
-    }()
-
+    @MainActor
     init(layout: UICollectionViewLayout) {
         self.layout = layout
         collectionNode = ASCollectionNode(collectionViewLayout: layout)
+        dummyZoomView = UIView(frame: .zero)
         super.init()
 
         automaticallyManagesSubnodes = true
         collectionNode.backgroundColor = .clear
 
         // remove gesture recognizers from the collection view (in order to use scroll view's)
-        collectionNode.view.gestureRecognizers?.forEach {
-            collectionNode.view.removeGestureRecognizer($0)
-        }
+//        collectionNode.view.gestureRecognizers?.forEach {
+//            collectionNode.view.removeGestureRecognizer($0)
+//        }
 
         scrollNode.view.delegate = self
 
@@ -45,12 +43,11 @@ class ZoomableCollectionView: ASDisplayNode {
         scrollNode.view.bouncesZoom = false
         scrollNode.view.addSubview(dummyZoomView)
 
+        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        zoomingTap.numberOfTapsRequired = 2
+
         dummyZoomView.addGestureRecognizer(zoomingTap)
         dummyZoomView.isUserInteractionEnabled = true
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
@@ -59,41 +56,61 @@ class ZoomableCollectionView: ASDisplayNode {
 
     override func layoutDidFinish() {
         super.layoutDidFinish()
-        adjustContentSize()
+        Task { @MainActor in
+            adjustContentSize()
+        }
     }
 
+    @MainActor
     func adjustContentSize() {
         let size = layout.collectionViewContentSize
         scrollNode.view.contentSize = size
         dummyZoomView.frame = CGRect(origin: .zero, size: size)
     }
 
+    private var allowNextTouchPassThrough = false
+
     // move force touch gestures on cell nodes to scroll node and then remove on next hit
     // if the gestures aren't removed, new ones wont work
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let orig = collectionNode.hitTest(convert(point, to: collectionNode), with: event)
-        if let orig = orig as? _ASDisplayView {
-            if lastHit.timeIntervalSinceNow <= -0.1 {
-                if !tempGestures.isEmpty {
-                    tempGestures.forEach {
-                        scrollNode.view.removeGestureRecognizer($0.gesture)
-                        $0.parent.addGestureRecognizer($0.gesture)
-                    }
-                    tempGestures = []
-                }
+        if let orig {
+            if allowNextTouchPassThrough {
+                allowNextTouchPassThrough = false
+                return orig
             }
-            lastHit = Date()
-
-            orig.gestureRecognizers?.forEach {
-                if gestureRecognizerShouldBegin($0) {
-                    tempGestures.append((orig, $0))
-                    orig.removeGestureRecognizer($0)
-                    scrollNode.view.addGestureRecognizer($0)
+            print(orig)
+            if orig is _ASDisplayView || orig is GIFImageView {
+                if lastHit.timeIntervalSinceNow <= -0.1 {
+                    if !tempGestures.isEmpty {
+                        tempGestures.forEach {
+                            scrollNode.view.removeGestureRecognizer($0.gesture)
+                            $0.parent.addGestureRecognizer($0.gesture)
+                        }
+                        tempGestures = []
+                    }
                 }
+                lastHit = Date()
+
+                orig.gestureRecognizers?.forEach {
+                    if gestureRecognizerShouldBegin($0) {
+                        tempGestures.append((orig, $0))
+                        orig.removeGestureRecognizer($0)
+                        scrollNode.view.addGestureRecognizer($0)
+                    }
+                }
+            } else if String(describing: type(of: orig)) == "CGDrawingView" {
+                allowNextTouchPassThrough = true
             }
         }
         return super.hitTest(point, with: event)
     }
+
+//    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+//        let orig = collectionNode.hitTest(convert(point, to: collectionNode), with: event)
+//        print(orig as Any)
+//        return super.point(inside: point, with: event)
+//    }
 }
 
 // MARK: - Scroll View Delegate
@@ -127,9 +144,26 @@ extension ZoomableCollectionView: UIScrollViewDelegate {
 
 // MARK: - Double Tap Gesture
 extension ZoomableCollectionView {
+    private class ZoomInfo {
+        let total: Int
+        var value = 0
+
+        let scales: [CGFloat]
+        let points: [CGPoint]
+        let zoomOut: Bool
+
+        init(total: Int, value: Int = 0, scales: [CGFloat], points: [CGPoint], zoomOut: Bool = false) {
+            self.total = total
+            self.value = value
+            self.scales = scales
+            self.points = points
+            self.zoomOut = zoomOut
+        }
+    }
 
     // simulates an animated zoom
     // necessary since zoom toRect doesn't call scrollViewDidZoom
+    @MainActor
     @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
         if let zoomTimer {
             zoomTimer.invalidate()
@@ -176,27 +210,45 @@ extension ZoomableCollectionView {
             points.append(point)
         }
 
-        let finalScales = scales
-        let finalPoints = points
-
-        var i = 0
         // ~300ms animation
-        zoomTimer = Timer.scheduledTimer(withTimeInterval: 0.3 / Double(steps), repeats: true) { timer in
-            if i > steps || !timer.isValid {
-                timer.invalidate()
-                return
-            }
-            self.scrollNode.view.zoomScale = finalScales[i]
+        zoomTimer = Timer.scheduledTimer(
+            timeInterval: 0.3 / Double(steps),
+            target: self,
+            selector: #selector(handleZoomTimer),
+            userInfo: ZoomInfo(
+                total: steps,
+                scales: scales,
+                points: points,
+                zoomOut: out
+            ),
+            repeats: true
+        )
+    }
+
+    @objc func handleZoomTimer(_ timer: Timer) {
+        guard timer.isValid, let info = timer.userInfo as? ZoomInfo else {
+            timer.invalidate()
+            return
+        }
+        if info.value > info.total {
+            timer.invalidate()
+            return
+        }
+        let scale = info.scales[info.value]
+        let point = info.points[info.value]
+        let zoomOut = info.zoomOut
+        Task { @MainActor in
+            self.scrollNode.view.zoomScale = scale
             self.scrollViewDidZoom(self.scrollNode.view)
-            if out {
+            if zoomOut {
                 self.scrollNode.view.setContentOffset(
-                    CGPoint(x: finalPoints[i].x, y: self.scrollNode.view.contentOffset.y),
+                    CGPoint(x: point.x, y: self.scrollNode.view.contentOffset.y),
                     animated: false
                 )
             } else {
-                self.scrollNode.view.setContentOffset(finalPoints[i], animated: false)
+                self.scrollNode.view.setContentOffset(point, animated: false)
             }
-            i += 1
         }
+        info.value += 1
     }
 }

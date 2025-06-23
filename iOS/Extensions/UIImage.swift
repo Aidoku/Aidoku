@@ -9,17 +9,11 @@ import Photos
 import UIKit
 
 extension UIImage {
-    func sizeToFit(_ pageSize: CGSize) -> CGSize {
-        guard size.height * size.width * pageSize.width * pageSize.height > 0 else { return .zero }
-
-        let scaledHeight = size.height * (pageSize.width / size.width)
-        return CGSize(width: pageSize.width, height: scaledHeight)
-    }
-
-    func saveToAlbum(_ name: String? = nil, viewController: BaseViewController) {
+    @MainActor
+    func saveToAlbum(_ name: String? = nil, viewController: UIViewController) {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         guard status != .restricted && status != .denied else {
-            viewController.confirmAction(
+            let alertController = confirmAction(
                 title: NSLocalizedString("ENABLE_PERMISSION", comment: ""),
                 message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT", comment: ""),
                 continueActionName: NSLocalizedString("SETTINGS", comment: "")
@@ -28,6 +22,7 @@ extension UIImage {
                     UIApplication.shared.open(settings)
                 }
             }
+            viewController.present(alertController, animated: true)
             return
         }
 
@@ -48,6 +43,37 @@ extension UIImage {
             albumChangeRequest.addAssets([placeholder] as NSFastEnumeration)
         }
     }
+}
+
+@MainActor
+private func confirmAction(
+    title: String? = nil,
+    message: String? = nil,
+    actions: [UIAlertAction] = [],
+    continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
+    destructive: Bool = true,
+    proceed: @escaping () -> Void
+) -> UIAlertController {
+    let alertView = UIAlertController(
+        title: title,
+        message: message,
+        preferredStyle: UIDevice.current.userInterfaceIdiom == .pad ? .alert : .actionSheet
+    )
+
+    for action in actions {
+        alertView.addAction(action)
+    }
+    let action = UIAlertAction(
+        title: continueActionName,
+        style: destructive ? .destructive : .default
+    ) { _ in
+        proceed()
+    }
+    alertView.addAction(action)
+
+    alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+
+    return alertView
 }
 
 private func fetchAlbum(_ name: String) -> PHAssetCollection? {

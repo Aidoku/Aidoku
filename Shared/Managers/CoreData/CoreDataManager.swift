@@ -77,6 +77,13 @@ final class CoreDataManager {
                 LogManager.logger.error("Error loading persistent stores \(error), \(error.userInfo)")
             }
         }
+
+//        do {
+//            try container.initializeCloudKitSchema(options: [.printSchema])
+//        } catch {
+//            print("error initializing cloudkit schema:", error)
+//        }
+
         return container
     }()
 
@@ -90,24 +97,25 @@ final class CoreDataManager {
         container.viewContext
     }
 
-    func save() {
-        do {
-            try context.save()
-        } catch {
-            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
-        }
-    }
+//    func save() {
+//        do {
+//            try context.save()
+//        } catch {
+//            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
+//        }
+//    }
+//
+//    func saveIfNeeded() {
+//        if context.hasChanges {
+//            save()
+//        }
+//    }
 
-    func saveIfNeeded() {
-        if context.hasChanges {
-            save()
-        }
-    }
-
-    func remove(_ object: NSManagedObject) {
+    func remove(_ objectID: NSManagedObjectID) {
         container.performBackgroundTask { context in
-            let object = context.object(with: object.objectID)
+            let object = context.object(with: objectID)
             context.delete(object)
+            try? context.save()
         }
     }
 

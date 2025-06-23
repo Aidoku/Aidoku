@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import AidokuRunner
 
 extension CoreDataManager {
 
@@ -20,7 +21,11 @@ extension CoreDataManager {
     }
 
     /// Get a particular manga object.
-    func getManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> MangaObject? {
+    func getManga(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> MangaObject? {
         let context = context ?? self.context
         let request = MangaObject.fetchRequest()
         request.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", sourceId, mangaId)
@@ -30,18 +35,26 @@ extension CoreDataManager {
 
     /// Create a manga object.
     @discardableResult
-    func createManga(_ manga: Manga, context: NSManagedObjectContext? = nil) -> MangaObject {
+    func createManga(
+        _ manga: AidokuRunner.Manga,
+        sourceId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> MangaObject {
         let context = context ?? self.context
         let object = MangaObject(context: context)
-        object.load(from: manga)
+        object.load(from: manga, sourceId: sourceId)
         return object
     }
 
-    func getOrCreateManga(_ manga: Manga, context: NSManagedObjectContext? = nil) -> MangaObject {
-        if let mangaObject = getManga(sourceId: manga.sourceId, mangaId: manga.id, context: context) {
+    func getOrCreateManga(
+        _ manga: AidokuRunner.Manga,
+        sourceId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> MangaObject {
+        if let mangaObject = getManga(sourceId: sourceId, mangaId: manga.key, context: context) {
             return mangaObject
         }
-        return createManga(manga, context: context)
+        return createManga(manga, sourceId: sourceId, context: context)
     }
 
     /// Check if a manga object exists.
@@ -60,7 +73,13 @@ extension CoreDataManager {
     /// Removes a manga object.
     func removeManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
         guard let object = getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
-        (context ?? self.context).delete(object)
+        if object.fileInfo != nil {
+            if let libraryObject = object.libraryObject {
+                (context ?? self.context).delete(libraryObject)
+            }
+        } else {
+            (context ?? self.context).delete(object)
+        }
     }
 
     func updateMangaDetails(manga: Manga) async {

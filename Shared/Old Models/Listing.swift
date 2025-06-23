@@ -11,6 +11,10 @@ struct Listing: KVCObject, Hashable, Codable {
     var name: String
     var flags: Int32 = 0 // currently unused
 
+    init(name: String) {
+        self.name = name
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.name = try container.decode(String.self, forKey: .name)

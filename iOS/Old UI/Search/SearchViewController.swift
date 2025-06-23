@@ -7,6 +7,8 @@
 
 import Foundation
 import UIKit
+import AidokuRunner
+import SwiftUI
 
 class MangaCarouselHeader: UICollectionReusableView {
 
@@ -48,8 +50,8 @@ class MangaCarouselHeader: UICollectionReusableView {
 
 class SearchViewController: UIViewController {
 
-    var sources: [Source] = []
-    var results: [String: MangaPageResult] = [:]
+    var sources: [AidokuRunner.Source] = []
+    var results: [String: AidokuRunner.MangaPageResult] = [:]
 
     var collectionView: UICollectionView?
 
@@ -73,7 +75,7 @@ class SearchViewController: UIViewController {
 
         navigationController?.navigationBar.prefersLargeTitles = true
 
-        sources = SourceManager.shared.sources.filter { $0.titleSearchable }
+        sources = SourceManager.shared.sources
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchBar.delegate = self
@@ -82,7 +84,7 @@ class SearchViewController: UIViewController {
 
         let config = UICollectionViewCompositionalLayoutConfiguration()
         let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { sectionIndex, _ in
-            let mangaCount: CGFloat = CGFloat(self.results[self.sources[sectionIndex].id]?.manga.count ?? 0)
+            let mangaCount: CGFloat = CGFloat(self.results[self.sources[sectionIndex].id]?.entries.count ?? 0)
 
             let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(120), heightDimension: .fractionalHeight(1))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -125,18 +127,18 @@ class SearchViewController: UIViewController {
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("updateSourceList"), object: nil, queue: nil
         ) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
-                self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
+                self.sources = SourceManager.shared.sources
                 self.collectionView?.reloadData()
             }
         })
         observers.append(NotificationCenter.default.addObserver(
             forName: Notification.Name("loadedSourceFilters"), object: nil, queue: nil
         ) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
-                self.sources = SourceManager.shared.sources.filter { $0.titleSearchable }
+                self.sources = SourceManager.shared.sources
                 self.collectionView?.reloadData()
             }
         })
@@ -148,6 +150,7 @@ class SearchViewController: UIViewController {
         becomeFirstResponder()
         hoveredCell?.highlight()
 
+        navigationController?.isToolbarHidden = true
         navigationController?.navigationBar.tintColor = UINavigationBar.appearance().tintColor
         navigationController?.tabBarController?.tabBar.tintColor = UITabBar.appearance().tintColor
     }
@@ -156,37 +159,66 @@ class SearchViewController: UIViewController {
         self.collectionView?.reloadSections(IndexSet(integersIn: 0..<self.sources.count))
     }
 
-    func openMangaView(for manga: Manga) {
-        navigationController?.pushViewController(MangaViewController(manga: manga), animated: true)
+    func openMangaView(for manga: AidokuRunner.Manga, source: AidokuRunner.Source) {
+        let hostingController = UIHostingController(
+            rootView: MangaView(source: source, manga: manga)
+                .environmentObject(NavigationCoordinator(rootViewController: self))
+        )
+        hostingController.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(hostingController, animated: true)
     }
 
     @objc func openSearchView(_ sender: UIButton) {
         guard sources.count > sender.tag else { return }
         let source = sources[sender.tag]
-        let sourceController = SourceViewController(source: source)
-        sourceController.hidesListings = true
-        sourceController.navigationItem.searchController?.searchBar.text = query
-        Task {
-            await sourceController.viewModel.setTitleQuery(query)
-            await sourceController.viewModel.setCurrentPage(1)
-            await sourceController.viewModel.setManga((results[source.id]?.manga ?? []).map { $0.toInfo() })
-            await sourceController.viewModel.setHasMore(results[source.id]?.hasNextPage ?? false)
+        if let legacySource = source.legacySource {
+            let sourceController = SourceViewController(source: legacySource)
+            sourceController.hidesListings = true
+            sourceController.navigationItem.searchController?.searchBar.text = query
+            Task {
+                await sourceController.viewModel.setTitleQuery(query)
+                await sourceController.viewModel.setCurrentPage(1)
+                await sourceController.viewModel.setManga((results[source.id]?.entries ?? []).map { $0.toOld().toInfo() })
+                await sourceController.viewModel.setHasMore(results[source.id]?.hasNextPage ?? false)
+                navigationController?.pushViewController(sourceController, animated: true)
+            }
+        } else {
+            let sourceController = NewSourceViewController(source: source, onlySearch: true, searchQuery: query)
             navigationController?.pushViewController(sourceController, animated: true)
         }
     }
 
     func fetchData() async {
-        guard let query = query, !query.isEmpty else { return }
+        guard let query, !query.isEmpty else { return }
 
-        for (i, source) in sources.enumerated() {
-            Task {
-                let search = try? await source.fetchSearchManga(query: query, page: 1)
-                self.updateResults(for: source.id, atIndex: i, result: search)
+        // sources freeze if we run too many tasks concurrently, so we limit it
+        let maxConcurrentTasks = 3
+
+        await withTaskGroup(of: (Int, String, AidokuRunner.MangaPageResult?).self) { [sources] group in
+            // add the initial tasks to the group
+            for i in 0..<min(sources.count, maxConcurrentTasks) {
+                let source = sources[i]
+                group.addTask {
+                    (i, source.id, try? await source.getSearchMangaList(query: query, page: 1, filters: []))
+                }
+            }
+
+            var index = maxConcurrentTasks
+            while let (i, id, result) = await group.next() {
+                if index < sources.count {
+                    // once a task completes, we can start a new one if there are still sources left
+                    let source = sources[index]
+                    group.addTask { [index] in
+                        (index, source.id, try? await source.getSearchMangaList(query: query, page: 1, filters: []))
+                    }
+                    index += 1
+                }
+                self.updateResults(for: id, atIndex: i, result: result)
             }
         }
     }
 
-    func updateResults(for id: String, atIndex i: Int, result: MangaPageResult?) {
+    func updateResults(for id: String, atIndex i: Int, result: AidokuRunner.MangaPageResult?) {
         results[id] = result
         collectionView?.reloadSections(IndexSet(integer: i))
     }
@@ -196,7 +228,7 @@ class SearchViewController: UIViewController {
 extension SearchViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        results[sources[section].id]?.manga.count ?? 0
+        results[sources[section].id]?.entries.count ?? 0
     }
 
     func collectionView(
@@ -214,7 +246,7 @@ extension SearchViewController: UICollectionViewDataSource {
                 headerView = MangaCarouselHeader(frame: .zero)
             }
 
-            headerView?.title = sources[indexPath.section].manifest.info.name
+            headerView?.title = sources[indexPath.section].name
             headerView?.viewMoreButton.addTarget(self, action: #selector(openSearchView(_:)), for: .touchUpInside)
             headerView?.viewMoreButton.tag = indexPath.section
 
@@ -228,9 +260,12 @@ extension SearchViewController: UICollectionViewDataSource {
         if cell == nil {
             cell = MangaCoverCell(frame: .zero)
         }
-        if let manga = results[sources[indexPath.section].id]?.manga[indexPath.row] {
-            cell?.manga = manga
-            cell?.showsLibraryBadge = CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id)
+        if let manga = results[sources[indexPath.section].id]?.entries[indexPath.row] {
+            cell?.manga = manga.toOld()
+            cell?.showsLibraryBadge = CoreDataManager.shared.hasLibraryManga(
+                sourceId: manga.sourceKey,
+                mangaId: manga.key
+            )
         }
         return cell ?? UICollectionViewCell()
     }
@@ -245,8 +280,8 @@ extension SearchViewController: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if let manga = results[sources[indexPath.section].id]?.manga[indexPath.row] {
-            openMangaView(for: manga)
+        if let manga = results[sources[indexPath.section].id]?.entries[indexPath.row] {
+            openMangaView(for: manga, source: sources[indexPath.section])
         }
     }
 
@@ -269,15 +304,15 @@ extension SearchViewController: UICollectionViewDelegate {
     ) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
             var actions: [UIAction] = []
-            if let manga = self.results[self.sources[indexPath.section].id]?.manga[indexPath.row] {
-                if CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceId, mangaId: manga.id) {
+            if let manga = self.results[self.sources[indexPath.section].id]?.entries[indexPath.row] {
+                if CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceKey, mangaId: manga.key) {
                     actions.append(UIAction(
                         title: NSLocalizedString("REMOVE_FROM_LIBRARY", comment: ""),
                         image: UIImage(systemName: "trash"),
                         attributes: .destructive
                     ) { _ in
                         Task {
-                            await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.id)
+                            await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceKey, mangaId: manga.key)
                             (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = false
                         }
                     })
@@ -287,7 +322,11 @@ extension SearchViewController: UICollectionViewDelegate {
                         image: UIImage(systemName: "books.vertical.fill")
                     ) { _ in
                         Task {
-                            await MangaManager.shared.addToLibrary(manga: manga, fetchMangaDetails: true)
+                            await MangaManager.shared.addToLibrary(
+                                sourceId: manga.sourceKey,
+                                manga: manga,
+                                fetchMangaDetails: true
+                            )
                             (collectionView.cellForItem(at: indexPath) as? MangaCoverCell)?.showsLibraryBadge = true
                         }
                     })
