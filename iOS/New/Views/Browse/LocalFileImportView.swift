@@ -138,8 +138,14 @@ extension LocalFileImportView.ContentView {
                         case .success(let url):
                             loadingFile = true
                             Task {
-                                fileInfo = await LocalFileManager.shared.loadImportFileInfo(url: url)
-                                fullyPresented = true
+                                let importFileInfo = await LocalFileManager.shared.loadImportFileInfo(url: url)
+                                if let importFileInfo {
+                                    fileInfo = importFileInfo
+                                    fullyPresented = true
+                                } else {
+                                    showImportFailAlert = true
+                                }
+                                loadingFile = false
                                 loadingImport = false
                             }
                         case .failure(let error):
