@@ -1127,6 +1127,12 @@ extension MangaViewController {
             } else {
                 config.downloading = status == .downloading || status == .queued
             }
+            // inset the separator when a thumbnail is shown
+            if chapter.thumbnail != nil {
+                // todo: this doesn't update when the device rotates
+                cell.separatorInset = tableView.separatorInset
+                cell.separatorInset.left += 40
+            }
             cell.contentConfiguration = config
             cell.backgroundColor = .systemBackground
             cell.selectionStyle = (chapter.locked && !config.downloaded) ? .none : .default
