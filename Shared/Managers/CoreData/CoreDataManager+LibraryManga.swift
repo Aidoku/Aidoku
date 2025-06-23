@@ -98,7 +98,6 @@ extension CoreDataManager {
         let mangaObject = self.getOrCreateManga(manga, sourceId: sourceId, context: context)
         let libraryObject = LibraryMangaObject(context: context ?? self.context)
         libraryObject.manga = mangaObject
-
         self.setChapters(chapters, sourceId: sourceId, mangaId: manga.key, context: context)
     }
 }
