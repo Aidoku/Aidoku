@@ -101,7 +101,27 @@ extension MangaManager {
         manga: Manga, chapters: [Chapter], trackItems: [TrackItem], categories: [String]
     ) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.addToLibrary(manga: manga, chapters: chapters, context: context)
+            CoreDataManager.shared.addToLibrary(
+                sourceId: manga.sourceId,
+                manga: manga.toNew(),
+                chapters: chapters.map { $0.toNew() },
+                context: context
+            )
+
+            if let libraryObject = CoreDataManager.shared.getLibraryManga(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                context: context
+            ) {
+                if let lastOpened = manga.lastOpened, let lastUpdated = manga.lastUpdated,
+                   let dateAdded = manga.dateAdded
+                {
+                    libraryObject.lastOpened = lastOpened
+                    libraryObject.lastUpdated = lastUpdated
+                    libraryObject.lastRead = manga.lastRead
+                    libraryObject.dateAdded = dateAdded
+                }
+            }
 
             for item in trackItems {
                 CoreDataManager.shared.createTrack(
