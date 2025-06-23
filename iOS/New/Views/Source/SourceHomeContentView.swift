@@ -203,8 +203,14 @@ struct SourceHomeContentView: View {
         }
         .onChange(of: listings) { value in
             // reset listing selection to the first if the selected one disappears
-            if (source.features.providesHome && listingSelection > value.count) || (!source.features.providesHome && listingSelection > 0) {
+            let maxListings = value.count - (source.features.providesHome ? 0 : 1)
+            if listingSelection > maxListings {
                 headerListingSelection = 0
+            } else if !source.features.providesHome || (source.features.providesHome && listingSelection > 0) {
+                // otherwise, reload current listing
+                Task {
+                    await reload()
+                }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .init("refresh-content"))) { _ in
