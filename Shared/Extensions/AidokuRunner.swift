@@ -249,6 +249,7 @@ extension AidokuRunner.Chapter {
             chapterNum: chapterNumber,
             volumeNum: volumeNumber,
             dateUploaded: dateUploaded,
+            thumbnail: thumbnail,
             locked: locked,
             sourceOrder: sourceOrder ?? 0
         )

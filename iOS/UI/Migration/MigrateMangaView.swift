@@ -311,10 +311,18 @@ struct MigrateMangaView: View {
                                     context: context
                                 )
 
-                                let maxChapterRead = storedOldHistory
+                                var maxChapterRead = storedOldHistory
                                     .compactMap { $0.chapter?.chapter != nil ? $0.chapter : nil }
                                     .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
                                     .chapter?.floatValue
+
+                                if maxChapterRead == nil || maxChapterRead == -1 {
+                                    // try finding max volume read instead, in case of no chapters
+                                    maxChapterRead = storedOldHistory
+                                        .compactMap { $0.chapter?.volume != nil ? $0.chapter : nil }
+                                        .max { $0.volume!.decimalValue < $1.volume!.decimalValue }?
+                                        .volume?.floatValue
+                                }
 
                                 // remove old chapters and history
                                 CoreDataManager.shared.removeChapters(
@@ -338,11 +346,18 @@ struct MigrateMangaView: View {
                                 )
 
                                 // mark new chapters as read
-                                if let maxChapterRead = maxChapterRead {
-                                    CoreDataManager.shared.setCompleted(
-                                        chapters: newChapters.filter({ $0.chapterNum ?? Float.greatestFiniteMagnitude <= maxChapterRead }),
-                                        context: context
-                                    )
+                                if let maxChapterRead {
+                                    var chaptersToMark = newChapters.filter({ $0.chapterNum ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                                    if chaptersToMark.isEmpty {
+                                        // fall back to using volume numbers instead, in case the source we're migrating to uses volumes
+                                        chaptersToMark = newChapters.filter({ $0.volumeNum ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                                    }
+                                    if !chaptersToMark.isEmpty {
+                                        CoreDataManager.shared.setCompleted(
+                                            chapters: chaptersToMark,
+                                            context: context
+                                        )
+                                    }
                                 }
 
                                 // migrate trackers
