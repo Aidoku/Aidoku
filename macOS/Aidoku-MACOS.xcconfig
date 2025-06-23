@@ -1,0 +1,8 @@
+//
+//  Aidoku-MACOS.xcconfig
+//  Aidoku
+//
+//  Created by Nikolai Schumacher on 17.05.25.
+//
+
+#include "../Shared/Aidoku.xcconfig"
