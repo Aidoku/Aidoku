@@ -97,6 +97,10 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler
         }
     }
 
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        navigated(webView: webView, for: request)
+    }
+
     func navigated(webView: WKWebView, for request: URLRequest) {
         WKWebsiteDataStore.default().httpCookieStore.getAllCookies { webViewCookies in
             guard let url = self.request.url else { return }
