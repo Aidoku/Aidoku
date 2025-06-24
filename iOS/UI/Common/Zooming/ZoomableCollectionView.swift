@@ -79,7 +79,6 @@ class ZoomableCollectionView: ASDisplayNode {
                 allowNextTouchPassThrough = false
                 return orig
             }
-            print(orig)
             if orig is _ASDisplayView || orig is GIFImageView {
                 if lastHit.timeIntervalSinceNow <= -0.1 {
                     if !tempGestures.isEmpty {
