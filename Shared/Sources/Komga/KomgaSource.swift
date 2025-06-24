@@ -99,11 +99,29 @@ extension AidokuRunner.Source {
                     ))
                 ),
                 .init(
-                    key: "login",
-                    title: "LOGIN",
-                    requires: "server",
-                    refreshes: ["content", "listings", "filters"],
-                    value: .login(.init(method: .basic))
+                    value: .group(.init(
+                        items: [
+                            .init(
+                                key: "login",
+                                title: "LOGIN",
+                                requires: "server",
+                                refreshes: ["content", "listings", "filters"],
+                                value: .login(.init(method: .basic))
+                            )
+                        ]
+                    ))
+                ),
+                .init(
+                    title: "OTHER_SETTINGS",
+                    value: .group(.init(
+                        items: [
+                            .init(
+                                key: "useChapters",
+                                title: "USE_CHAPTERS",
+                                value: .toggle(.init(subtitle: "USE_CHAPTERS_TEXT"))
+                            )
+                        ]
+                    ))
                 )
             ],
             runner: KomgaSourceRunner(sourceKey: key)
@@ -274,7 +292,12 @@ final class KomgaSourceRunner: Runner {
 
             manga.chapters = chapters.content
                 .filter { $0.media.mediaProfile != "EPUB" || $0.media.epubDivinaCompatible } // can't read epubs (yet?)
-                .map { $0.intoChapter(baseUrl: baseUrl) }
+                .map {
+                    $0.intoChapter(
+                        baseUrl: baseUrl,
+                        useChapters: UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+                    )
+                }
         }
 
         return manga

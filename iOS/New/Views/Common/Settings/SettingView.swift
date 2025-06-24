@@ -317,7 +317,7 @@ extension SettingView {
             VStack(alignment: .leading) {
                 Text(setting.title)
                 if let subtitle = value.subtitle {
-                    Text(subtitle)
+                    Text(NSLocalizedString(subtitle))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -576,7 +576,6 @@ extension SettingView {
         guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
             return
         }
-        let key = key(setting.key)
         var usernameTextField: UITextField?
         var passwordTextField: UITextField?
         delegate.presentAlert(
