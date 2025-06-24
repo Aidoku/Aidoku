@@ -298,8 +298,9 @@ class MangaDetailHeaderView: UIView {
 
         titleLabel.text = manga.title ?? NSLocalizedString("UNTITLED", comment: "")
         authorLabel.text = manga.author
-        descriptionLabel.text = manga.description
-        descriptionLabel.alpha = manga.description == nil ? 0 : 1 // for animating in
+        let hasDescription = !(manga.description?.isEmpty ?? true)
+        descriptionLabel.text = hasDescription ? manga.description : nil
+        descriptionLabel.alpha = hasDescription ? 1 : 0 // for animating in
 
         let status: String
         switch manga.status {
@@ -339,7 +340,7 @@ class MangaDetailHeaderView: UIView {
 
         UIView.animate(withDuration: 0.3) {
             self.authorLabel.isHidden = manga.author == nil
-            self.descriptionLabel.isHidden = manga.description == nil
+            self.descriptionLabel.isHidden = !hasDescription
             self.labelStackView.isHidden = manga.status == .unknown && manga.nsfw == .safe
         }
 
