@@ -247,7 +247,7 @@ final class KomgaSourceRunner: Runner {
         )
         let baseUrl = try helper.getConfiguredServer()
         return .init(
-            entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+            entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
             hasNextPage: res.totalPages > page
         )
     }
@@ -259,7 +259,7 @@ final class KomgaSourceRunner: Runner {
 
         if needsDetails {
             let series: KomgaSeries = try await helper.request(path: "/api/v1/series/\(manga.key)")
-            manga = manga.copy(from: series.intoManga(baseUrl: baseUrl))
+            manga = manga.copy(from: series.intoManga(sourceKey: sourceKey, baseUrl: baseUrl))
         }
 
         if needsChapters {
@@ -366,8 +366,7 @@ final class KomgaSourceRunner: Runner {
 
 //        homeSubject.send(.init(components: components))
 
-        let helper = self.helper // capture the helper
-        try await withThrowingTaskGroup(of: (AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { taskGroup in
+        try await withThrowingTaskGroup(of: (AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { [helper, sourceKey] taskGroup in
             // on deck
             taskGroup.addTask {
                 let listing = AidokuRunner.Listing(id: "on_deck", name: NSLocalizedString("ON_DECK"), kind: .default)
@@ -376,7 +375,7 @@ final class KomgaSourceRunner: Runner {
                     method: .GET
                 )
                 let baseUrl = try helper.getConfiguredServer()
-                return (listing, onDeck.content.map { $0.intoManga(baseUrl: baseUrl).intoLink() })
+                return (listing, onDeck.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl).intoLink() })
             }
 
             let listings: [AidokuRunner.Listing] = [
@@ -606,7 +605,7 @@ struct KomgaHelper: Sendable {
                     ]))
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -616,7 +615,7 @@ struct KomgaHelper: Sendable {
                     method: .GET
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -627,7 +626,7 @@ struct KomgaHelper: Sendable {
                     body: .init(condition: .allOf([])) // needs to have some condition
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -637,7 +636,7 @@ struct KomgaHelper: Sendable {
                     method: .GET
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -647,7 +646,7 @@ struct KomgaHelper: Sendable {
                     method: .GET
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -661,7 +660,7 @@ struct KomgaHelper: Sendable {
                     ]))
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
@@ -676,7 +675,7 @@ struct KomgaHelper: Sendable {
                     ]))
                 )
                 return .init(
-                    entries: res.content.map { $0.intoManga(baseUrl: baseUrl) },
+                    entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
                     hasNextPage: res.totalPages > page
                 )
 
