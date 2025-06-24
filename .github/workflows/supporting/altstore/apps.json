@@ -45,7 +45,8 @@
         ],
         "privacy": {
           "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
-          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library"
+          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library",
+          "NSLocalNetworkUsageDescription": "Aidoku needs local network for local file reading support"
         }
       },
       "versions": [
