@@ -11,9 +11,9 @@ import SwiftUI
 // intended to be used inside of a horizontal scroll view
 struct HCollectionGrid<Data, ID, Content>: View
 where
-    Data: RandomAccessCollection,
-    ID: Hashable,
-    Content: View
+    Data: RandomAccessCollection & Sendable,
+    ID: Hashable & Sendable,
+    Content: View & Sendable
 {
     private let rows: Int
     private let data: Data
