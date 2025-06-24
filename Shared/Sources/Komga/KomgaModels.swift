@@ -229,9 +229,9 @@ struct KomgaBook: Codable, Sendable {
 }
 
 extension KomgaBook {
-    func intoManga(baseUrl: String) -> AidokuRunner.Manga {
+    func intoManga(sourceKey: String, baseUrl: String) -> AidokuRunner.Manga {
         .init(
-            sourceKey: "komga",
+            sourceKey: sourceKey,
             key: seriesId,
             title: metadata.title,
             cover: "\(baseUrl)/api/v1/books/\(id)/thumbnail",
@@ -302,7 +302,7 @@ struct KomgaSeries: Codable, Sendable {
 }
 
 extension KomgaSeries {
-    func intoManga(baseUrl: String) -> AidokuRunner.Manga {
+    func intoManga(sourceKey: String, baseUrl: String) -> AidokuRunner.Manga {
         let status: AidokuRunner.MangaStatus = switch metadata.status {
             case .ended: .completed
             case .ongoing: .ongoing
@@ -327,7 +327,7 @@ extension KomgaSeries {
         }
 
         return .init(
-            sourceKey: "komga",
+            sourceKey: sourceKey,
             key: id,
             title: metadata.title,
             cover: "\(baseUrl)/api/v1/series/\(id)/thumbnail",
