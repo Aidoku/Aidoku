@@ -241,11 +241,12 @@ extension KomgaBook {
         )
     }
 
-    func intoChapter(baseUrl: String) -> AidokuRunner.Chapter {
+    func intoChapter(baseUrl: String, useChapters: Bool) -> AidokuRunner.Chapter {
         .init(
             key: id,
             title: metadata.title,
-            volumeNumber: metadata.numberSort,
+            chapterNumber: useChapters ? metadata.numberSort : nil,
+            volumeNumber: useChapters ? nil : metadata.numberSort,
             dateUploaded: metadata.releaseDate ?? metadata.created,
             scanlators: metadata.authors.compactMap {
                 if $0.role == "translator" {

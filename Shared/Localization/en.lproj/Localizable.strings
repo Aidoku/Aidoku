@@ -176,6 +176,9 @@
 "SERVER_ERROR_CONNECTION" = "Unable to connect to the given server. Ensure a Komga instance is running and the URL is entered correctly.";
 "SERVER_ERROR_AUTHENTICATION" = "Unable to log in. Ensure your credentials are entered correctly.";
 "KOMGA_SETUP" = "Komga Setup";
+"OTHER_SETTINGS" = "Other Settings";
+"USE_CHAPTERS" = "Use Chapters";
+"USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
 
 "ON_DECK" = "On Deck";
 "KEEP_READING" = "Keep Reading";
