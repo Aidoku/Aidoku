@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Sequence where Element: Sendable {
+extension Sequence where Self: Sendable, Element: Sendable {
     func concurrentMap<T: Sendable>(
         _ transform: @escaping (Element) async throws -> T
     ) async rethrows -> [T] {
@@ -16,12 +16,13 @@ extension Sequence where Element: Sendable {
                 try await transform(element)
             }
         }
-
         return try await tasks.asyncMap { task in
             try await task.value
         }
     }
+}
 
+extension Sequence where Element: Sendable {
     func asyncMap<T>(
         _ transform: (Element) async throws -> T
     ) async rethrows -> [T] {
