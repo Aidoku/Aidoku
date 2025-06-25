@@ -192,12 +192,16 @@ extension DownloadManager {
             cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
         }
+        // Invalidate cache for download manager UI
+        invalidateDownloadedMangaCache()
     }
 
     func deleteChapters(for manga: Manga) {
         cache.directory(for: manga).removeItem()
         cache.remove(manga: manga)
         NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
+        // Invalidate cache for download manager UI
+        invalidateDownloadedMangaCache()
     }
 
     func pauseDownloads() {
@@ -243,5 +247,225 @@ extension DownloadManager {
         Task {
             await queue.removeProgressBlock(for: chapter)
         }
+    }
+}
+
+// MARK: - Download Manager UI Support
+extension DownloadManager {
+    
+    private static var downloadedMangaCache: [DownloadedMangaInfo] = []
+    private static var lastCacheUpdate: Date = .distantPast
+    private static let cacheValidityDuration: TimeInterval = 60 // 1 minute
+    
+    /// Get all downloaded manga with metadata from CoreData if available
+    func getAllDownloadedManga() async -> [DownloadedMangaInfo] {
+        // Return cached result if still valid
+        let now = Date()
+        if now.timeIntervalSince(Self.lastCacheUpdate) < Self.cacheValidityDuration {
+            return Self.downloadedMangaCache
+        }
+        
+        var downloadedManga: [DownloadedMangaInfo] = []
+        
+        // Ensure downloads directory exists
+        guard Self.directory.exists else {
+            Self.downloadedMangaCache = []
+            Self.lastCacheUpdate = now
+            return []
+        }
+        
+        // Scan source directories
+        let sourceDirectories = Self.directory.contents.filter { $0.isDirectory }
+        
+        for sourceDirectory in sourceDirectories {
+            let sourceId = sourceDirectory.lastPathComponent
+            let mangaDirectories = sourceDirectory.contents.filter { $0.isDirectory }
+            
+            for mangaDirectory in mangaDirectories {
+                let mangaId = mangaDirectory.lastPathComponent
+                
+                // Count chapters and calculate total size
+                let chapterDirectories = mangaDirectory.contents.filter { 
+                    $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") 
+                }
+                
+                guard !chapterDirectories.isEmpty else { continue }
+                
+                let totalSize = await calculateDirectorySize(mangaDirectory)
+                let chapterCount = chapterDirectories.count
+                
+                // Fetch metadata from CoreData
+                let mangaMetadata = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    let mangaObject = CoreDataManager.shared.getManga(
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        context: context
+                    )
+                    let isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        context: context
+                    )
+                    return (
+                        title: mangaObject?.title,
+                        coverUrl: mangaObject?.cover,
+                        isInLibrary: isInLibrary
+                    )
+                }
+                
+                let downloadedMangaInfo = DownloadedMangaInfo(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    title: mangaMetadata.title,
+                    coverUrl: mangaMetadata.coverUrl,
+                    totalSize: totalSize,
+                    chapterCount: chapterCount,
+                    isInLibrary: mangaMetadata.isInLibrary
+                )
+                
+                downloadedManga.append(downloadedMangaInfo)
+            }
+        }
+        
+        // Sort by source ID, then by title/manga ID
+        downloadedManga.sort { lhs, rhs in
+            if lhs.sourceId != rhs.sourceId {
+                return lhs.sourceId < rhs.sourceId
+            }
+            return lhs.displayTitle.localizedCaseInsensitiveCompare(rhs.displayTitle) == .orderedAscending
+        }
+        
+        // Cache the result
+        Self.downloadedMangaCache = downloadedManga
+        Self.lastCacheUpdate = now
+        
+        return downloadedManga
+    }
+    
+    /// Get downloaded chapters for a specific manga
+    func getDownloadedChapters(for mangaInfo: DownloadedMangaInfo) async -> [DownloadedChapterInfo] {
+        let mangaDirectory = Self.directory
+            .appendingSafePathComponent(mangaInfo.sourceId)
+            .appendingSafePathComponent(mangaInfo.mangaId)
+        
+        guard mangaDirectory.exists else { return [] }
+        
+        let chapterDirectories = mangaDirectory.contents.filter { 
+            $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") 
+        }
+        
+        var chapters: [DownloadedChapterInfo] = []
+        
+        for chapterDirectory in chapterDirectories {
+            let chapterId = chapterDirectory.lastPathComponent
+            let size = await calculateDirectorySize(chapterDirectory)
+            
+            // Get directory creation date as download date
+            let attributes = try? FileManager.default.attributesOfItem(atPath: chapterDirectory.path)
+            let downloadDate = attributes?[.creationDate] as? Date
+            
+            // Fetch chapter metadata from CoreData
+            let chapterTitle = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let chapterObject = CoreDataManager.shared.getChapter(
+                    sourceId: mangaInfo.sourceId,
+                    mangaId: mangaInfo.mangaId,
+                    chapterId: chapterId,
+                    context: context
+                )
+                return chapterObject?.title
+            }
+            
+            let chapterInfo = DownloadedChapterInfo(
+                chapterId: chapterId,
+                title: chapterTitle,
+                size: size,
+                downloadDate: downloadDate
+            )
+            
+            chapters.append(chapterInfo)
+        }
+        
+        // Sort chapters by ID (which should correspond to chapter order)
+        chapters.sort { lhs, rhs in
+            // Try to sort numerically if possible, otherwise alphabetically
+            if let lhsNum = Double(lhs.chapterId), let rhsNum = Double(rhs.chapterId) {
+                return lhsNum < rhsNum
+            }
+            return lhs.chapterId.localizedStandardCompare(rhs.chapterId) == .orderedAscending
+        }
+        
+        return chapters
+    }
+    
+    /// Calculate the total size of a directory in bytes
+    private func calculateDirectorySize(_ directory: URL) async -> Int64 {
+        guard directory.exists else { return 0 }
+        
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .utility).async {
+                var totalSize: Int64 = 0
+                
+                if let enumerator = FileManager.default.enumerator(
+                    at: directory,
+                    includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
+                    options: [.skipsHiddenFiles]
+                ) {
+                    for case let fileURL as URL in enumerator {
+                        do {
+                            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                            if resourceValues.isRegularFile == true {
+                                totalSize += Int64(resourceValues.fileSize ?? 0)
+                            }
+                        } catch {
+                            // Skip files that can't be accessed
+                            continue
+                        }
+                    }
+                }
+                
+                continuation.resume(returning: totalSize)
+            }
+        }
+    }
+    
+    /// Delete chapters for a specific manga (used by download manager UI)
+    func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) {
+        let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.mangaId)
+        deleteChapters(for: manga)
+        
+        // Invalidate cache
+        Self.lastCacheUpdate = .distantPast
+    }
+    
+    /// Delete a specific chapter (used by download manager UI)
+    func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) {
+        let chapter = Chapter(
+            sourceId: mangaInfo.sourceId,
+            id: chapterInfo.chapterId,
+            mangaId: mangaInfo.mangaId,
+            title: chapterInfo.title,
+            sourceOrder: -1
+        )
+        delete(chapters: [chapter])
+        
+        // Invalidate cache
+        Self.lastCacheUpdate = .distantPast
+    }
+    
+    /// Get total size of all downloads
+    func getTotalDownloadedSize() async -> Int64 {
+        guard Self.directory.exists else { return 0 }
+        return await calculateDirectorySize(Self.directory)
+    }
+    
+    /// Get formatted total download size string
+    func getFormattedTotalDownloadedSize() async -> String {
+        let totalSize = await getTotalDownloadedSize()
+        return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+    }
+    
+    /// Invalidate the downloaded manga cache (call when downloads are added/removed)
+    func invalidateDownloadedMangaCache() {
+        Self.lastCacheUpdate = .distantPast
     }
 }

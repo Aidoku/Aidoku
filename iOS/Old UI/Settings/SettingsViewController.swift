@@ -280,7 +280,8 @@ class SettingsViewController: SettingsTableViewController {
             ReaderWebtoonViewModel.settings,
             // MARK: Backups
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
-                SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
+                SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: "")),
+                SettingItem(type: "page", key: "Downloads.manager", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
             ]),
             // MARK: Trackers
             SettingItem(type: "group", title: NSLocalizedString("TRACKERS", comment: ""), items: [
@@ -428,6 +429,11 @@ extension SettingsViewController {
 
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
+
+            case "Downloads.manager":
+                let hostingController = UIHostingController(rootView: DownloadManagerView())
+                hostingController.navigationItem.title = NSLocalizedString("DOWNLOAD_MANAGER")
+                navigationController?.pushViewController(hostingController, animated: true)
 
             case "Trackers.trackers":
                 navigationController?.pushViewController(TrackersViewController(), animated: true)
