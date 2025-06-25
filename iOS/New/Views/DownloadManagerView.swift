@@ -77,6 +77,32 @@ class DownloadManagerViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        // Listen for new downloads being queued
+        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsQueued"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for download state changes (pause/resume)
+        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsPaused"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsResumed"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
         // Listen for library changes (add/remove from library)
         NotificationCenter.default.publisher(for: .addToLibrary)
             .sink { [weak self] _ in
@@ -86,7 +112,25 @@ class DownloadManagerViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        // Listen for manga removal from library
+        NotificationCenter.default.publisher(for: NSNotification.Name("removeFromLibrary"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
         NotificationCenter.default.publisher(for: NSNotification.Name("updateLibrary"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for chapter updates (new chapters discovered during library refresh)
+        NotificationCenter.default.publisher(for: NSNotification.Name("updateHistory"))
             .sink { [weak self] _ in
                 Task { @MainActor in
                     await self?.loadDownloadedManga()

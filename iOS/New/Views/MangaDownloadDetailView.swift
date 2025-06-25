@@ -116,12 +116,39 @@ class MangaDownloadDetailViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
+        // Listen for new downloads being queued for this manga
+        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsQueued"))
+            .sink { [weak self] notification in
+                guard let downloads = notification.object as? [Download] else { return }
+                let relevantDownloads = downloads.filter { 
+                    $0.sourceId == self?.manga.sourceId && $0.mangaId == self?.manga.mangaId 
+                }
+                if !relevantDownloads.isEmpty {
+                    Task { @MainActor in
+                        await self?.loadChapters()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+        
         // Listen for library changes to update the manga's library status
         NotificationCenter.default.publisher(for: .addToLibrary)
             .sink { [weak self] notification in
                 guard let addedManga = notification.object as? Manga,
                       addedManga.sourceId == self?.manga.sourceId,
                       addedManga.id == self?.manga.mangaId else { return }
+                Task { @MainActor in
+                    await self?.updateMangaLibraryStatus()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for manga removal from library
+        NotificationCenter.default.publisher(for: NSNotification.Name("removeFromLibrary"))
+            .sink { [weak self] notification in
+                guard let removedManga = notification.object as? Manga,
+                      removedManga.sourceId == self?.manga.sourceId,
+                      removedManga.id == self?.manga.mangaId else { return }
                 Task { @MainActor in
                     await self?.updateMangaLibraryStatus()
                 }

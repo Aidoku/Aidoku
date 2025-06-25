@@ -183,6 +183,8 @@ extension DownloadManager {
                 name: NSNotification.Name("downloadsQueued"),
                 object: downloads
             )
+            // Invalidate cache since new downloads may affect the list
+            invalidateDownloadedMangaCache()
         }
     }
 
@@ -210,6 +212,8 @@ extension DownloadManager {
         }
         downloadsPaused = true
         NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
+        // Invalidate cache since paused state may affect display
+        invalidateDownloadedMangaCache()
     }
 
     func resumeDownloads() {
@@ -218,12 +222,16 @@ extension DownloadManager {
         }
         downloadsPaused = false
         NotificationCenter.default.post(name: Notification.Name("downloadsResumed"), object: nil)
+        // Invalidate cache since resumed state may affect display
+        invalidateDownloadedMangaCache()
     }
 
     func cancelDownload(for chapter: Chapter) {
         Task {
             await queue.cancelDownload(for: chapter)
         }
+        // Invalidate cache since cancelled downloads may affect display
+        invalidateDownloadedMangaCache()
     }
 
     func cancelDownloads(for chapters: [Chapter] = []) {
@@ -235,6 +243,8 @@ extension DownloadManager {
             }
         }
         downloadsPaused = false
+        // Invalidate cache since cancelled downloads may affect display
+        invalidateDownloadedMangaCache()
     }
 
     func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
