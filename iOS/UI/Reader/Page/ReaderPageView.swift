@@ -477,4 +477,3 @@ class ReaderPageView: UIView {
         }
     }
 }
-
