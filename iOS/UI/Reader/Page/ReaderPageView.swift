@@ -27,6 +27,10 @@ class ReaderPageView: UIView {
     private var sourceId: String?
 
     private var completion: ((Bool) -> Void)?
+    
+    // MARK: - Reload functionality properties
+    private var currentPage: Page?
+    private var currentImageRequest: ImageRequest?
 
     init() {
         super.init(frame: .zero)
@@ -73,6 +77,9 @@ class ReaderPageView: UIView {
     }
 
     func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
+        // Store current page data for reload functionality
+        self.currentPage = page
+        
         if sourceId != nil {
             self.sourceId = sourceId
         }
@@ -156,6 +163,9 @@ class ReaderPageView: UIView {
                 userInfo: [.contextKey: context ?? [:], .processesKey: true]
             )
         }
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         if imageView.image == nil {
             progressView.setProgress(value: 0, withAnimation: false)
@@ -230,6 +240,9 @@ class ReaderPageView: UIView {
         }
 
         let request = ImageRequest(id: String(key), data: { Data() })
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         progressView.setProgress(value: 0, withAnimation: false)
         progressView.isHidden = false
@@ -290,6 +303,9 @@ class ReaderPageView: UIView {
         let key = String(hasher.finalize())
 
         let request = ImageRequest(id: key, data: { Data() })
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         progressView.setProgress(value: 0, withAnimation: false)
         progressView.isHidden = false
@@ -414,6 +430,50 @@ class ReaderPageView: UIView {
                 // we should probably make it scrollable as long as it doesn't mess with the existing swipe gesture
                 textView.view.heightAnchor.constraint(greaterThanOrEqualTo: heightAnchor)
             ])
+        }
+    }
+    
+    // MARK: - Image Reload Functionality
+    
+    /// Reloads the current image by clearing its cache and re-fetching from the source
+    @MainActor
+    func reloadCurrentImage() async -> Bool {
+        guard let currentPage = currentPage else {
+            return false
+        }
+        
+        // Clear the cache for the current image
+        clearCurrentImageCache()
+        
+        // Clear the current image to show loading state
+        imageView.image = nil
+        
+        // Reload the image using the original page data
+        return await setPage(currentPage, sourceId: sourceId)
+    }
+    
+    /// Clears the cache entry for the current image
+    private func clearCurrentImageCache() {
+        guard let currentPage = currentPage else { return }
+        
+        // Handle different image types
+        if let urlString = currentPage.imageURL, let url = URL(string: urlString) {
+            // For URL-based images, use the stored request if available
+            if let currentImageRequest = currentImageRequest {
+                ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
+            }
+        } else if currentPage.base64 != nil {
+            // For base64 images
+            let request = ImageRequest(id: String(currentPage.hashValue), data: { Data() })
+            ImagePipeline.shared.cache.removeCachedImage(for: request)
+        } else if let zipURL = currentPage.zipURL, currentPage.imageURL != nil {
+            // For zip file images
+            var hasher = Hasher()
+            hasher.combine(URL(string: zipURL)!)
+            hasher.combine(currentPage.imageURL!)
+            let key = String(hasher.finalize())
+            let request = ImageRequest(id: key, data: { Data() })
+            ImagePipeline.shared.cache.removeCachedImage(for: request)
         }
     }
 }

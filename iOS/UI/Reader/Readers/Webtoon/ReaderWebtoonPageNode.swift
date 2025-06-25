@@ -27,6 +27,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var text: String?
     var ratio: CGFloat?
     private var loading = false
+    
+    // MARK: - Reload functionality properties
+    private var currentImageRequest: ImageRequest?
 
     var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
     var pillarboxAmount = CGFloat(UserDefaults.standard.double(forKey: "Reader.pillarboxAmount"))
@@ -279,6 +282,9 @@ extension ReaderWebtoonPageNode {
             processors: processors,
             userInfo: [.contextKey: context ?? [:], .processesKey: true]
         )
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         defer { loading = false }
 
@@ -341,6 +347,9 @@ extension ReaderWebtoonPageNode {
             data: { Data() },
             userInfo: [:]
         )
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         progressNode.isHidden = false
         defer { loading = false }
@@ -400,6 +409,9 @@ extension ReaderWebtoonPageNode {
             data: { Data() },
             userInfo: [:]
         )
+        
+        // Store current image request for reload functionality
+        self.currentImageRequest = request
 
         progressNode.isHidden = false
         defer { loading = false }
@@ -506,5 +518,55 @@ extension ReaderWebtoonPageNode {
         let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
         frame = CGRect(origin: .zero, size: size)
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
+    }
+    
+    // MARK: - Image Reload Functionality
+    
+    /// Reloads the current image by clearing its cache and re-fetching from the source
+    @MainActor
+    func reloadCurrentImage() async -> Bool {
+        // Clear the cache for the current image
+        clearCurrentImageCache()
+        
+        // Clear the current image and text to show loading state
+        image = nil
+        text = nil
+        imageNode.image = nil
+        imageNode.alpha = 0
+        textNode.alpha = 0
+        loading = false
+        
+        // Reload the image using the original page data
+        await loadPage()
+        return image != nil || text != nil
+    }
+    
+    /// Clears the cache entry for the current image
+    private func clearCurrentImageCache() {
+        // Handle different image types
+        if let urlString = page.imageURL, let url = URL(string: urlString) {
+            // For URL-based images, remove from both memory and disk cache
+            if let currentImageRequest = currentImageRequest {
+                ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
+            }
+            
+            // Also try to remove the basic URL request from cache
+            let basicRequest = ImageRequest(url: url)
+            ImagePipeline.shared.cache.removeCachedImage(for: basicRequest)
+            
+        } else if page.base64 != nil {
+            // For base64 images, remove using the page key
+            let request = ImageRequest(id: page.key, data: { Data() })
+            ImagePipeline.shared.cache.removeCachedImage(for: request)
+            
+        } else if let zipURL = page.zipURL, let filePath = page.imageURL {
+            // For zip-based images, remove using the generated key
+            var hasher = Hasher()
+            hasher.combine(URL(string: zipURL))
+            hasher.combine(filePath)
+            let key = String(hasher.finalize())
+            let request = ImageRequest(id: key, data: { Data() })
+            ImagePipeline.shared.cache.removeCachedImage(for: request)
+        }
     }
 }
