@@ -61,11 +61,11 @@ extension URLSession {
         }
     }
 
-    func object<T: Codable>(from url: URL) async throws -> T {
+    func object<T: Decodable>(from url: URL) async throws -> T {
         try await self.object(from: URLRequest.from(url))
     }
 
-    func object<T: Codable>(from req: URLRequest) async throws -> T {
+    func object<T: Decodable>(from req: URLRequest) async throws -> T {
         // let start = DispatchTime.now()
         let (data, _) = try await self.data(for: req)
         // let end = DispatchTime.now()
