@@ -262,17 +262,15 @@ struct DownloadedChapterRow: View {
 }
 
 #Preview {
-    NavigationView {
-        MangaDownloadDetailView(
-            manga: DownloadedMangaInfo(
-                sourceId: "test",
-                mangaId: "test-manga",
-                title: "Test Manga",
-                coverUrl: nil,
-                totalSize: 52428800, // 50 MB
-                chapterCount: 12,
-                isInLibrary: true
-            )
+    MangaDownloadDetailView(
+        manga: DownloadedMangaInfo(
+            sourceId: "test",
+            mangaId: "test-manga",
+            title: "Test Manga",
+            coverUrl: nil,
+            totalSize: 52428800, // 50 MB
+            chapterCount: 12,
+            isInLibrary: true
         )
-    }
+    )
 } 

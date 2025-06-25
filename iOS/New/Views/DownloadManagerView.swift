@@ -89,32 +89,22 @@ class DownloadManagerViewModel: ObservableObject {
 
 struct DownloadManagerView: View {
     @StateObject private var viewModel = DownloadManagerViewModel()
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading downloads...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.downloadedManga.isEmpty {
-                    emptyStateView
-                } else {
-                    downloadsList
-                }
+        Group {
+            if viewModel.isLoading {
+                ProgressView("Loading downloads...")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.downloadedManga.isEmpty {
+                emptyStateView
+            } else {
+                downloadsList
             }
-            .navigationTitle("Download Manager")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .task {
-                await viewModel.loadDownloadedManga()
-            }
+        }
+        .navigationTitle("Download Manager")
+        .navigationBarTitleDisplayMode(.large)
+        .task {
+            await viewModel.loadDownloadedManga()
         }
     }
     
@@ -230,5 +220,7 @@ struct DownloadedMangaRow: View {
 }
 
 #Preview {
-    DownloadManagerView()
+    NavigationView {
+        DownloadManagerView()
+    }
 } 
