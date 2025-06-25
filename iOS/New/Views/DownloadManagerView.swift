@@ -76,6 +76,23 @@ class DownloadManagerViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+        
+        // Listen for library changes (add/remove from library)
+        NotificationCenter.default.publisher(for: .addToLibrary)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name("updateLibrary"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.loadDownloadedManga()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func getSourceDisplayName(_ sourceId: String) -> String {
@@ -175,14 +192,32 @@ struct DownloadedMangaRow: View {
     
     var body: some View {
         HStack {
-            // Placeholder for manga cover (could be enhanced later)
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.3))
-                .frame(width: 50, height: 70)
-                .overlay(
-                    Image(systemName: "book.fill")
-                        .foregroundColor(.secondary)
-                )
+            // Manga cover with fallback to placeholder
+            Group {
+                if let coverUrl = manga.coverUrl, let url = URL(string: coverUrl) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                            )
+                    }
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay(
+                            Image(systemName: "book.fill")
+                                .foregroundColor(.secondary)
+                        )
+                }
+            }
+            .frame(width: 50, height: 70)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(manga.displayTitle)

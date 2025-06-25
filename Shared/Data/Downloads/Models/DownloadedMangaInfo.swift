@@ -11,7 +11,8 @@ import Foundation
 struct DownloadedMangaInfo: Identifiable, Hashable {
     let id: String
     let sourceId: String
-    let mangaId: String
+    let mangaId: String          // actual manga ID from CoreData
+    let directoryMangaId: String // sanitized manga ID used for directory name
     let title: String?           // from CoreData if available
     let coverUrl: String?        // from CoreData if available  
     let totalSize: Int64
@@ -28,10 +29,11 @@ struct DownloadedMangaInfo: Identifiable, Hashable {
         ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
     }
     
-    init(sourceId: String, mangaId: String, title: String? = nil, coverUrl: String? = nil, totalSize: Int64, chapterCount: Int, isInLibrary: Bool) {
+    init(sourceId: String, mangaId: String, directoryMangaId: String? = nil, title: String? = nil, coverUrl: String? = nil, totalSize: Int64, chapterCount: Int, isInLibrary: Bool) {
         self.id = "\(sourceId)_\(mangaId)"
         self.sourceId = sourceId
         self.mangaId = mangaId
+        self.directoryMangaId = directoryMangaId ?? mangaId
         self.title = title
         self.coverUrl = coverUrl
         self.totalSize = totalSize

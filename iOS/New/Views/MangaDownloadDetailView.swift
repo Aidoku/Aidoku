@@ -16,7 +16,7 @@ class MangaDownloadDetailViewModel: ObservableObject {
     @Published var showingDeleteChapterConfirmation = false
     @Published var chapterToDelete: DownloadedChapterInfo?
     
-    let manga: DownloadedMangaInfo
+    @Published var manga: DownloadedMangaInfo
     private var cancellables = Set<AnyCancellable>()
     
     init(manga: DownloadedMangaInfo) {
@@ -54,6 +54,32 @@ class MangaDownloadDetailViewModel: ObservableObject {
         showingDeleteAllConfirmation = true
     }
     
+    func updateMangaLibraryStatus() async {
+        // Check current library status from CoreData
+        let isInLibrary = await withCheckedContinuation { continuation in
+            CoreDataManager.shared.container.performBackgroundTask { context in
+                let hasLibraryManga = CoreDataManager.shared.hasLibraryManga(
+                    sourceId: self.manga.sourceId,
+                    mangaId: self.manga.mangaId,
+                    context: context
+                )
+                continuation.resume(returning: hasLibraryManga)
+            }
+        }
+        
+        // Update the manga object with new library status
+        manga = DownloadedMangaInfo(
+            sourceId: manga.sourceId,
+            mangaId: manga.mangaId,
+            directoryMangaId: manga.directoryMangaId,
+            title: manga.title,
+            coverUrl: manga.coverUrl,
+            totalSize: manga.totalSize,
+            chapterCount: manga.chapterCount,
+            isInLibrary: isInLibrary
+        )
+    }
+    
     private func setupNotificationObservers() {
         // Listen for download events that might affect this manga's chapters
         NotificationCenter.default.publisher(for: NSNotification.Name("downloadFinished"))
@@ -86,6 +112,26 @@ class MangaDownloadDetailViewModel: ObservableObject {
                       manga.id == self?.manga.mangaId else { return }
                 Task { @MainActor in
                     self?.chapters.removeAll()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Listen for library changes to update the manga's library status
+        NotificationCenter.default.publisher(for: .addToLibrary)
+            .sink { [weak self] notification in
+                guard let addedManga = notification.object as? Manga,
+                      addedManga.sourceId == self?.manga.sourceId,
+                      addedManga.id == self?.manga.mangaId else { return }
+                Task { @MainActor in
+                    await self?.updateMangaLibraryStatus()
+                }
+            }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: NSNotification.Name("updateLibrary"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    await self?.updateMangaLibraryStatus()
                 }
             }
             .store(in: &cancellables)

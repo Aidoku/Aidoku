@@ -295,27 +295,53 @@ extension DownloadManager {
                 let chapterCount = chapterDirectories.count
                 
                 // Fetch metadata from CoreData
-                let mangaMetadata = await CoreDataManager.shared.container.performBackgroundTask { context in
-                    let mangaObject = CoreDataManager.shared.getManga(
-                        sourceId: sourceId,
-                        mangaId: mangaId,
-                        context: context
-                    )
-                    let isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                        sourceId: sourceId,
-                        mangaId: mangaId,
-                        context: context
-                    )
-                    return (
-                        title: mangaObject?.title,
-                        coverUrl: mangaObject?.cover,
-                        isInLibrary: isInLibrary
-                    )
+                let mangaMetadata = await withCheckedContinuation { continuation in
+                    CoreDataManager.shared.container.performBackgroundTask { context in
+                        // First try direct lookup with the directory name
+                        var mangaObject = CoreDataManager.shared.getManga(
+                            sourceId: sourceId,
+                            mangaId: mangaId,
+                            context: context
+                        )
+                        var isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                            sourceId: sourceId,
+                            mangaId: mangaId,
+                            context: context
+                        )
+                        
+                        // If not found, try to find a manga whose sanitized ID matches the directory name
+                        if mangaObject == nil {
+                            let allMangaForSource = CoreDataManager.shared.getManga(context: context)
+                                .filter { $0.sourceId == sourceId }
+                            
+                            for candidateManga in allMangaForSource {
+                                let candidateId = candidateManga.id
+                                if candidateId.directoryName == mangaId {
+                                    mangaObject = candidateManga
+                                    isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                        sourceId: sourceId,
+                                        mangaId: candidateId,
+                                        context: context
+                                    )
+                                    break
+                                }
+                            }
+                        }
+                        
+                        let result = (
+                            title: mangaObject?.title,
+                            coverUrl: mangaObject?.cover,
+                            isInLibrary: isInLibrary,
+                            actualMangaId: mangaObject?.id ?? mangaId
+                        )
+                        continuation.resume(returning: result)
+                    }
                 }
                 
                 let downloadedMangaInfo = DownloadedMangaInfo(
                     sourceId: sourceId,
-                    mangaId: mangaId,
+                    mangaId: mangaMetadata.actualMangaId, // Use the actual manga ID, not directory name
+                    directoryMangaId: mangaId, // Keep directory name for file access
                     title: mangaMetadata.title,
                     coverUrl: mangaMetadata.coverUrl,
                     totalSize: totalSize,
@@ -346,7 +372,7 @@ extension DownloadManager {
     func getDownloadedChapters(for mangaInfo: DownloadedMangaInfo) async -> [DownloadedChapterInfo] {
         let mangaDirectory = Self.directory
             .appendingSafePathComponent(mangaInfo.sourceId)
-            .appendingSafePathComponent(mangaInfo.mangaId)
+            .appendingSafePathComponent(mangaInfo.directoryMangaId)
         
         guard mangaDirectory.exists else { return [] }
         
@@ -364,15 +390,35 @@ extension DownloadManager {
             let attributes = try? FileManager.default.attributesOfItem(atPath: chapterDirectory.path)
             let downloadDate = attributes?[.creationDate] as? Date
             
-            // Fetch chapter metadata from CoreData
-            let chapterTitle = await CoreDataManager.shared.container.performBackgroundTask { context in
-                let chapterObject = CoreDataManager.shared.getChapter(
-                    sourceId: mangaInfo.sourceId,
-                    mangaId: mangaInfo.mangaId,
-                    chapterId: chapterId,
-                    context: context
-                )
-                return chapterObject?.title
+            // Fetch chapter metadata from CoreData (use actual manga ID, not directory name)
+            let chapterTitle = await withCheckedContinuation { continuation in
+                CoreDataManager.shared.container.performBackgroundTask { context in
+                    // Try direct lookup first with directory chapter ID (sanitized)
+                    var chapterObject = CoreDataManager.shared.getChapter(
+                        sourceId: mangaInfo.sourceId,
+                        mangaId: mangaInfo.mangaId, // Use actual manga ID for CoreData lookup
+                        chapterId: chapterId,
+                        context: context
+                    )
+                    
+                    // If not found, try to find a chapter whose sanitized ID matches the directory name
+                    if chapterObject == nil {
+                        let allChaptersForManga = CoreDataManager.shared.getChapters(
+                            sourceId: mangaInfo.sourceId,
+                            mangaId: mangaInfo.mangaId,
+                            context: context
+                        )
+                        
+                        for candidateChapter in allChaptersForManga {
+                            if candidateChapter.id.directoryName == chapterId {
+                                chapterObject = candidateChapter
+                                break
+                            }
+                        }
+                    }
+                    
+                    continuation.resume(returning: chapterObject?.title)
+                }
             }
             
             let chapterInfo = DownloadedChapterInfo(
@@ -430,7 +476,7 @@ extension DownloadManager {
     
     /// Delete chapters for a specific manga (used by download manager UI)
     func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) {
-        let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.mangaId)
+        let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.directoryMangaId)
         deleteChapters(for: manga)
         
         // Invalidate cache
@@ -442,7 +488,7 @@ extension DownloadManager {
         let chapter = Chapter(
             sourceId: mangaInfo.sourceId,
             id: chapterInfo.chapterId,
-            mangaId: mangaInfo.mangaId,
+            mangaId: mangaInfo.directoryMangaId, // Use directory name for file system operations
             title: chapterInfo.title,
             sourceOrder: -1
         )
