@@ -5,59 +5,77 @@
 //  Created by Skitty on 9/27/22.
 //
 
+import SwiftUI
 import UIKit
 
 class ReaderSettingsViewController: SettingsTableViewController {
 
     init(mangaId: String) {
-        super.init(items: [SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
-            SettingItem(
-                type: "select",
-                key: "Reader.readingMode.\(mangaId)",
-                title: NSLocalizedString("READING_MODE", comment: ""),
-                values: ["default", "auto", "rtl", "ltr", "vertical", "webtoon"],
-                titles: [
-                    NSLocalizedString("DEFAULT", comment: ""),
-                    NSLocalizedString("AUTOMATIC", comment: ""),
-                    NSLocalizedString("RTL", comment: ""),
-                    NSLocalizedString("LTR", comment: ""),
-                    NSLocalizedString("VERTICAL", comment: ""),
-                    NSLocalizedString("WEBTOON", comment: "")
-                ],
-                notification: "Reader.readingMode"
-            ),
-            SettingItem(
-                type: "switch",
-                key: "Reader.skipDuplicateChapters",
-                title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
-            ),
-            SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
-            SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
-            SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
-            SettingItem(
-                type: "select",
-                key: "Reader.backgroundColor",
-                title: NSLocalizedString("READER_BG_COLOR", comment: ""),
-                values: ["system", "white", "black"],
-                titles: [
-                    NSLocalizedString("READER_BG_COLOR_SYSTEM", comment: ""),
-                    NSLocalizedString("READER_BG_COLOR_WHITE", comment: ""),
-                    NSLocalizedString("READER_BG_COLOR_BLACK", comment: "")
-                ]
-            ),
-            SettingItem(
-                type: "select",
-                key: "Reader.orientation",
-                title: NSLocalizedString("READER_ORIENTATION", comment: ""),
-                values: ["device", "portrait", "landscape"],
-                titles: [
-                    NSLocalizedString("FOLLOW_DEVICE", comment: ""),
-                    NSLocalizedString("PORTRAIT", comment: ""),
-                    NSLocalizedString("LANDSCAPE", comment: "")
-                ],
-                notification: "Reader.orientation"
-            )
-        ])])
+        super.init(items: [
+            SettingItem(type: "group", title: NSLocalizedString("GENERAL", comment: ""), items: [
+                SettingItem(
+                    type: "select",
+                    key: "Reader.readingMode.\(mangaId)",
+                    title: NSLocalizedString("READING_MODE", comment: ""),
+                    values: ["default", "auto", "rtl", "ltr", "vertical", "webtoon"],
+                    titles: [
+                        NSLocalizedString("DEFAULT", comment: ""),
+                        NSLocalizedString("AUTOMATIC", comment: ""),
+                        NSLocalizedString("RTL", comment: ""),
+                        NSLocalizedString("LTR", comment: ""),
+                        NSLocalizedString("VERTICAL", comment: ""),
+                        NSLocalizedString("WEBTOON", comment: "")
+                    ],
+                    notification: "Reader.readingMode"
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.skipDuplicateChapters",
+                    title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.downsampleImages",
+                    title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.upscaleImages",
+                    title: NSLocalizedString("UPSCALE_IMAGES", comment: ""),
+                    requiresFalse: "Reader.downsampleImages"
+                ),
+                SettingItem(
+                    type: "page",
+                    key: "Reader.upscaleModels",
+                    title: NSLocalizedString("UPSCALING_MODELS", comment: "")
+                ),
+                SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
+                SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.backgroundColor",
+                    title: NSLocalizedString("READER_BG_COLOR", comment: ""),
+                    values: ["system", "white", "black"],
+                    titles: [
+                        NSLocalizedString("READER_BG_COLOR_SYSTEM", comment: ""),
+                        NSLocalizedString("READER_BG_COLOR_WHITE", comment: ""),
+                        NSLocalizedString("READER_BG_COLOR_BLACK", comment: "")
+                    ]
+                ),
+                SettingItem(
+                    type: "select",
+                    key: "Reader.orientation",
+                    title: NSLocalizedString("READER_ORIENTATION", comment: ""),
+                    values: ["device", "portrait", "landscape"],
+                    titles: [
+                        NSLocalizedString("FOLLOW_DEVICE", comment: ""),
+                        NSLocalizedString("PORTRAIT", comment: ""),
+                        NSLocalizedString("LANDSCAPE", comment: "")
+                    ],
+                    notification: "Reader.orientation"
+                )
+            ])
+        ])
     }
 
     required init?(coder: NSCoder) {
@@ -106,7 +124,11 @@ class ReaderSettingsViewController: SettingsTableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let item = items[indexPath.section].items?[indexPath.row] {
-            if item.type == "select" || item.type == "multi-select" {
+            if item.key == "Reader.upscaleModels" {
+                let hostingController = UIHostingController(rootView: UpscaleModelListView())
+                hostingController.navigationItem.title = NSLocalizedString("UPSCALING_MODELS")
+                navigationController?.pushViewController(hostingController, animated: true)
+            } else if item.type == "select" || item.type == "multi-select" {
                 let vc = SettingSelectViewController(item: item, style: tableView.style)
                 navigationController?.pushViewController(vc, animated: true)
                 tableView.deselectRow(at: indexPath, animated: true)
