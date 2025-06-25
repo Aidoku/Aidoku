@@ -40,15 +40,36 @@ class UserDefaultsObserver: ObservableObject {
         self.init(keys: [key])
     }
 
-    deinit {
-        cancellable?.cancel()
-    }
-
     private static func isEqual(_ lhs: Any?, _ rhs: Any?) -> Bool {
         if let lhs = lhs as? NSObject, let rhs = rhs as? NSObject {
             return lhs == rhs
         } else {
             return lhs == nil && rhs == nil
         }
+    }
+}
+
+class UserDefaultsBool: ObservableObject {
+    @Published var value: Bool {
+        didSet {
+            UserDefaults.standard.set(value, forKey: key)
+        }
+    }
+
+    private let key: String
+    private var cancellable: AnyCancellable?
+
+    init(key: String, defaultValue: Bool = false) {
+        self.key = key
+        self.value = UserDefaults.standard.bool(forKey: key)
+
+        cancellable = NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let newValue = UserDefaults.standard.bool(forKey: self.key)
+                if self.value != newValue {
+                    self.value = newValue
+                }
+            }
     }
 }
