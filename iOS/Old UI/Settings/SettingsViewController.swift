@@ -251,6 +251,17 @@ class SettingsViewController: SettingsTableViewController {
                     title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS", comment: "")
                 ),
                 SettingItem(type: "switch", key: "Reader.downsampleImages", title: NSLocalizedString("DOWNSAMPLE_IMAGES", comment: "")),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.upscaleImages",
+                    title: NSLocalizedString("UPSCALE_IMAGES", comment: ""),
+                    requiresFalse: "Reader.downsampleImages"
+                ),
+                SettingItem(
+                    type: "page",
+                    key: "Reader.upscaleModels",
+                    title: NSLocalizedString("UPSCALING_MODELS", comment: "")
+                ),
                 SettingItem(type: "switch", key: "Reader.cropBorders", title: NSLocalizedString("CROP_BORDERS", comment: "")),
                 SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
                 SettingItem(
@@ -424,6 +435,11 @@ extension SettingsViewController {
             case "Browse.sourceLists":
                 let hostingController = UIHostingController(rootView: SourceListsView())
                 hostingController.navigationItem.title = NSLocalizedString("SOURCE_LISTS")
+                navigationController?.pushViewController(hostingController, animated: true)
+
+            case "Reader.upscaleModels":
+                let hostingController = UIHostingController(rootView: UpscaleModelListView())
+                hostingController.navigationItem.title = NSLocalizedString("UPSCALING_MODELS")
                 navigationController?.pushViewController(hostingController, animated: true)
 
             case "Backups.backups":

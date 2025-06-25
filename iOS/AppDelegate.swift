@@ -124,6 +124,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.skipDuplicateChapters": true,
                 "Reader.markDuplicateChapters": true,
                 "Reader.downsampleImages": true,
+                "Reader.upscaleImages": false,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
                 "Reader.backgroundColor": "black",
@@ -152,7 +153,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             $0.dataCache = dataCache
             $0.imageCache = imageCache
             $0.dataLoader = dataLoader
-            $0.dataCachePolicy = .automatic
+            $0.dataCachePolicy = .storeOriginalData
             $0.isStoringPreviewsInMemoryCache = false
         }
 

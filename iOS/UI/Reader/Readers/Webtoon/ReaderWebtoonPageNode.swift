@@ -256,6 +256,7 @@ extension ReaderWebtoonPageNode {
         }
 
         let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+        let shouldUpscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
         let shouldCropBorders = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
         let width = await UIScreen.main.bounds.width
         var processors: [ImageProcessing] = []
@@ -272,6 +273,8 @@ extension ReaderWebtoonPageNode {
         }
         if shouldDownsample {
             processors.append(await DownsampleProcessor(width: width))
+        } else if shouldUpscale {
+            processors.append(UpscaleProcessor())
         }
 
         let request = ImageRequest(
@@ -365,15 +368,18 @@ extension ReaderWebtoonPageNode {
 
             if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                 let processor = CropBordersProcessor()
-                let processedImage = processor.process(image)
-                if let processedImage = processedImage {
+                if let processedImage = processor.process(image) {
                     image = processedImage
                 }
             }
             if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
                 let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                let processedImage = processor.process(image)
-                if let processedImage = processedImage {
+                if let processedImage = processor.process(image) {
+                    image = processedImage
+                }
+            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                let processor = UpscaleProcessor()
+                if let processedImage = processor.process(image) {
                     image = processedImage
                 }
             }

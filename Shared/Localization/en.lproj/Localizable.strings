@@ -367,6 +367,16 @@
 "UNAVAILABLE_SOURCE_LISTS_TEXT" = "An error occured while fetching the above source lists.";
 "COPY_URL" = "Copy URL";
 
+// Upscaling
+"UPSCALING" = "Upscaling";
+"UPSCALE_IMAGES" = "Upscale Images";
+"UPSCALING_MODELS" = "Upscaling Models";
+"ENABLED_MODEL" = "Enabled Model";
+"AVAILABLE_MODELS" = "Available Models";
+"NO_AVAILABLE_MODELS" = "No Available Models";
+"NO_AVAILABLE_MODELS_TEXT" = "Failed to fetch available models. Check your network connection and ensure your app is running the latest version.";
+"MODEL_INFO" = "Model Info";
+
 "LOCK_HISTORY_TAB" = "Lock History Tab";
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";

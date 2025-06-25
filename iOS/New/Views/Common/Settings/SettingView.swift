@@ -48,7 +48,7 @@ struct SettingView: View {
     // empty view controller to support login view presentation
     private static var loginShimController = LoginShimViewController()
 
-    init(source: AidokuRunner.Source?, setting: Setting, namespace: String? = nil, hidden: Binding<Bool> = .constant(false)) {
+    init(source: AidokuRunner.Source? = nil, setting: Setting, namespace: String? = nil, hidden: Binding<Bool> = .constant(false)) {
         self.source = source
 
         // localize the setting title
@@ -190,7 +190,8 @@ struct SettingView: View {
         } else {
             refresh()
         }
-        NotificationCenter.default.post(name: .init(key(setting.key)), object: nil)
+        let notificationName = setting.notification ?? key(setting.key)
+        NotificationCenter.default.post(name: .init(notificationName), object: nil)
     }
 }
 
