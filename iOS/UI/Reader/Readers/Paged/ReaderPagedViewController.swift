@@ -517,7 +517,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                     self.present(activityController, animated: true)
                 }
             }
-            
+
             let reloadAction = UIAction(
                 title: NSLocalizedString("RELOAD", comment: ""),
                 image: UIImage(systemName: "arrow.clockwise")
@@ -530,7 +530,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction, reloadAction])
         })
     }
-    
+
     @MainActor
     private func reloadCurrentPageImage(for imageView: UIImageView) async {
         for pageViewController in pageViewControllers {
@@ -545,7 +545,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
             }
         }
     }
-    
+
     private func showReloadError() {
         let alert = UIAlertController(
             title: NSLocalizedString("RELOAD_FAILED", comment: "Reload Failed"),

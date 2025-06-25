@@ -27,7 +27,7 @@ class ReaderPageView: UIView {
     private var sourceId: String?
 
     private var completion: ((Bool) -> Void)?
-    
+
     // MARK: - Reload functionality properties
     private var currentPage: Page?
     private var currentImageRequest: ImageRequest?
@@ -79,7 +79,7 @@ class ReaderPageView: UIView {
     func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
         // Store current page data for reload functionality
         self.currentPage = page
-        
+
         if sourceId != nil {
             self.sourceId = sourceId
         }
@@ -163,7 +163,7 @@ class ReaderPageView: UIView {
                 userInfo: [.contextKey: context ?? [:], .processesKey: true]
             )
         }
-        
+
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
@@ -240,7 +240,7 @@ class ReaderPageView: UIView {
         }
 
         let request = ImageRequest(id: String(key), data: { Data() })
-        
+
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
@@ -303,7 +303,7 @@ class ReaderPageView: UIView {
         let key = String(hasher.finalize())
 
         let request = ImageRequest(id: key, data: { Data() })
-        
+
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
@@ -432,30 +432,30 @@ class ReaderPageView: UIView {
             ])
         }
     }
-    
+
     // MARK: - Image Reload Functionality
-    
+
     /// Reloads the current image by clearing its cache and re-fetching from the source
     @MainActor
     func reloadCurrentImage() async -> Bool {
         guard let currentPage = currentPage else {
             return false
         }
-        
+
         // Clear the cache for the current image
         clearCurrentImageCache()
-        
+
         // Clear the current image to show loading state
         imageView.image = nil
-        
+
         // Reload the image using the original page data
         return await setPage(currentPage, sourceId: sourceId)
     }
-    
+
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
         guard let currentPage = currentPage else { return }
-        
+
         // Handle different image types
         if let urlString = currentPage.imageURL, let url = URL(string: urlString) {
             // For URL-based images, use the stored request if available
@@ -477,3 +477,4 @@ class ReaderPageView: UIView {
         }
     }
 }
+

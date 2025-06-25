@@ -217,7 +217,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
 
                 self.present(activityController, animated: true)
             }
-            
+
             let reloadAction = UIAction(
                 title: NSLocalizedString("RELOAD", comment: ""),
                 image: UIImage(systemName: "arrow.clockwise")
@@ -226,11 +226,11 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
                     await self.reloadPageImage(for: node)
                 }
             }
-            
+
             return UIMenu(title: "", children: [saveToPhotosAction, shareAction, reloadAction])
         })
     }
-    
+
     /// Reloads the page image for the given webtoon page node
     @MainActor
     private func reloadPageImage(for node: ReaderWebtoonPageNode) async {
@@ -240,7 +240,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
             showReloadError()
         }
     }
-    
+
     /// Shows an error message when image reload fails
     private func showReloadError() {
         let alert = UIAlertController(
@@ -323,7 +323,7 @@ extension ReaderWebtoonViewController {
         let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
         layout?.isInsertingCellsAbove = true
 
-        // disable animations and adjust offset before re-enabling 
+        // disable animations and adjust offset before re-enabling
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         CATransaction.setAnimationDuration(0)
