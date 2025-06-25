@@ -403,15 +403,17 @@ extension DownloadManager {
             // Fetch chapter metadata from CoreData (use actual manga ID, not directory name)
             let chapterTitle = await withCheckedContinuation { continuation in
                 CoreDataManager.shared.container.performBackgroundTask { context in
-                    // Try direct lookup first with directory chapter ID (sanitized)
-                    var chapterObject = CoreDataManager.shared.getChapter(
+                    var chapterObject: ChapterObject?
+                    
+                    // Strategy 1: Try direct lookup first with directory chapter ID (sanitized)
+                    chapterObject = CoreDataManager.shared.getChapter(
                         sourceId: mangaInfo.sourceId,
                         mangaId: mangaInfo.mangaId, // Use actual manga ID for CoreData lookup
                         chapterId: chapterId,
                         context: context
                     )
                     
-                    // If not found, try to find a chapter whose sanitized ID matches the directory name
+                    // Strategy 2: If not found, try to find a chapter whose sanitized ID matches the directory name
                     if chapterObject == nil {
                         let allChaptersForManga = CoreDataManager.shared.getChapters(
                             sourceId: mangaInfo.sourceId,
@@ -425,6 +427,73 @@ extension DownloadManager {
                                 break
                             }
                         }
+                    }
+                    
+                    // Strategy 3: If still not found, try partial matching (in case of encoding issues)
+                    if chapterObject == nil && mangaInfo.isInLibrary {
+                        let allChaptersForManga = CoreDataManager.shared.getChapters(
+                            sourceId: mangaInfo.sourceId,
+                            mangaId: mangaInfo.mangaId,
+                            context: context
+                        )
+                        
+                        #if DEBUG
+                        print("🔍 Chapter lookup debug for \(mangaInfo.displayTitle):")
+                        print("   Directory chapter ID: '\(chapterId)'")
+                        print("   Available chapters in CoreData:")
+                        for chapter in allChaptersForManga.prefix(10) {
+                            print("     - ID: '\(chapter.id)' -> directoryName: '\(chapter.id.directoryName)' title: '\(chapter.title ?? "nil")'")
+                        }
+                        if allChaptersForManga.count > 10 {
+                            print("     ... and \(allChaptersForManga.count - 10) more")
+                        }
+                        #endif
+                        
+                        // Try to find the best match by removing common problematic characters
+                        let normalizedDirectoryId = chapterId.lowercased()
+                            .replacingOccurrences(of: "_", with: "")
+                            .replacingOccurrences(of: "-", with: "")
+                            .replacingOccurrences(of: " ", with: "")
+                        
+                        var bestMatch: ChapterObject?
+                        var bestScore = 0
+                        
+                        for candidateChapter in allChaptersForManga {
+                            let normalizedCandidateId = candidateChapter.id.lowercased()
+                                .replacingOccurrences(of: "_", with: "")
+                                .replacingOccurrences(of: "-", with: "")
+                                .replacingOccurrences(of: " ", with: "")
+                            
+                            // Exact match after normalization
+                            if normalizedCandidateId == normalizedDirectoryId {
+                                chapterObject = candidateChapter
+                                #if DEBUG
+                                print("   ✅ Found exact normalized match: '\(candidateChapter.id)' -> '\(candidateChapter.title ?? "nil")'")
+                                #endif
+                                break
+                            }
+                            
+                            // Partial match scoring
+                            let score = self.calculateSimilarity(normalizedDirectoryId, normalizedCandidateId)
+                            if score > bestScore && score > 80 { // 80% similarity threshold
+                                bestMatch = candidateChapter
+                                bestScore = score
+                            }
+                        }
+                        
+                        // Use best match if no exact match found
+                        if chapterObject == nil && bestMatch != nil {
+                            chapterObject = bestMatch
+                            #if DEBUG
+                            print("   ⚠️ Using best match (\(bestScore)%): '\(bestMatch!.id)' -> '\(bestMatch!.title ?? "nil")'")
+                            #endif
+                        }
+                        
+                        #if DEBUG
+                        if chapterObject == nil {
+                            print("   ❌ No chapter match found for directory: '\(chapterId)'")
+                        }
+                        #endif
                     }
                     
                     continuation.resume(returning: chapterObject?.title)
@@ -523,5 +592,42 @@ extension DownloadManager {
     /// Invalidate the downloaded manga cache (call when downloads are added/removed)
     func invalidateDownloadedMangaCache() {
         Self.lastCacheUpdate = .distantPast
+    }
+    
+    /// Calculate similarity percentage between two strings using Levenshtein distance
+    private func calculateSimilarity(_ str1: String, _ str2: String) -> Int {
+        let len1 = str1.count
+        let len2 = str2.count
+        
+        if len1 == 0 { return len2 == 0 ? 100 : 0 }
+        if len2 == 0 { return 0 }
+        
+        // Create a matrix for dynamic programming
+        var matrix = Array(repeating: Array(repeating: 0, count: len2 + 1), count: len1 + 1)
+        
+        // Initialize first row and column
+        for i in 0...len1 { matrix[i][0] = i }
+        for j in 0...len2 { matrix[0][j] = j }
+        
+        // Fill the matrix
+        let str1Array = Array(str1)
+        let str2Array = Array(str2)
+        
+        for i in 1...len1 {
+            for j in 1...len2 {
+                let cost = str1Array[i-1] == str2Array[j-1] ? 0 : 1
+                matrix[i][j] = min(
+                    matrix[i-1][j] + 1,      // deletion
+                    matrix[i][j-1] + 1,      // insertion
+                    matrix[i-1][j-1] + cost  // substitution
+                )
+            }
+        }
+        
+        let distance = matrix[len1][len2]
+        let maxLen = max(len1, len2)
+        let similarity = ((maxLen - distance) * 100) / maxLen
+        
+        return similarity
     }
 }

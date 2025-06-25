@@ -15,6 +15,10 @@ class DownloadManagerViewModel: ObservableObject {
     @Published var totalSize: String = ""
     @Published var totalCount = 0
     
+    // Non-reactive state for background updates
+    private var backgroundUpdateInProgress = false
+    private var lastUpdateId = UUID()
+    private var updateDebouncer: Timer?
     private var cancellables = Set<AnyCancellable>()
     
     init() {
@@ -43,100 +47,114 @@ class DownloadManagerViewModel: ObservableObject {
         }
     }
     
+    /// Background update that preserves user navigation and minimizes UI disruption
+    private func performBackgroundUpdate() async {
+        // Prevent concurrent background updates
+        guard !backgroundUpdateInProgress else { return }
+        backgroundUpdateInProgress = true
+        defer { backgroundUpdateInProgress = false }
+        
+        let updateId = UUID()
+        lastUpdateId = updateId
+        
+        // Fetch new data in background
+        let newManga = await DownloadManager.shared.getAllDownloadedManga()
+        let newFormattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
+        
+        await MainActor.run {
+            // Check if this update is still relevant (not superseded by another)
+            guard updateId == lastUpdateId else { return }
+            
+            // Perform selective updates using intelligent diffing
+            updateDataSelectively(
+                newManga: newManga,
+                newTotalSize: newFormattedSize
+            )
+        }
+    }
+    
+    /// Intelligently update only changed data to preserve navigation state
+    private func updateDataSelectively(newManga: [DownloadedMangaInfo], newTotalSize: String) {
+        let oldManga = downloadedManga
+        
+        // Update totals immediately as they don't affect navigation
+        totalSize = newTotalSize
+        totalCount = newManga.count
+        
+        // Only update manga list if there are actual changes
+        if !areMangaListsEqual(oldManga, newManga) {
+            // Use smooth animation for data changes
+            withAnimation(.easeInOut(duration: 0.3)) {
+                downloadedManga = newManga
+            }
+        }
+    }
+    
+    /// Compare manga lists efficiently to avoid unnecessary updates
+    private func areMangaListsEqual(_ lhs: [DownloadedMangaInfo], _ rhs: [DownloadedMangaInfo]) -> Bool {
+        guard lhs.count == rhs.count else { return false }
+        
+        // Quick comparison by ID and key properties
+        for (old, new) in zip(lhs, rhs) {
+            if old.id != new.id ||
+               old.totalSize != new.totalSize ||
+               old.chapterCount != new.chapterCount ||
+               old.isInLibrary != new.isInLibrary {
+                return false
+            }
+        }
+        return true
+    }
+    
+    /// Debounced update to prevent excessive refreshes
+    private func scheduleBackgroundUpdate() {
+        updateDebouncer?.invalidate()
+        updateDebouncer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+            Task {
+                await self?.performBackgroundUpdate()
+            }
+        }
+    }
+    
     private func setupNotificationObservers() {
-        // Listen for download completion/removal to refresh the list
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadFinished"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
+        // High-priority updates that need immediate response
+        let immediateUpdateNotifications: [NSNotification.Name] = [
+            NSNotification.Name("downloadRemoved"),
+            NSNotification.Name("downloadsRemoved")
+        ]
         
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadRemoved"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
+        for notification in immediateUpdateNotifications {
+            NotificationCenter.default.publisher(for: notification)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    Task {
+                        await self?.performBackgroundUpdate()
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
         
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsRemoved"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
+        // Low-priority updates that can be debounced
+        let debouncedUpdateNotifications: [NSNotification.Name] = [
+            NSNotification.Name("downloadFinished"),
+            NSNotification.Name("downloadsCancelled"),
+            NSNotification.Name("downloadsQueued"),
+            NSNotification.Name("downloadsPaused"),
+            NSNotification.Name("downloadsResumed"),
+            .addToLibrary,
+            NSNotification.Name("removeFromLibrary"),
+            NSNotification.Name("updateLibrary"),
+            NSNotification.Name("updateHistory")
+        ]
         
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsCancelled"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
+        for notification in debouncedUpdateNotifications {
+            NotificationCenter.default.publisher(for: notification)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    self?.scheduleBackgroundUpdate()
                 }
-            }
-            .store(in: &cancellables)
-        
-        // Listen for new downloads being queued
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsQueued"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Listen for download state changes (pause/resume)
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsPaused"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        NotificationCenter.default.publisher(for: NSNotification.Name("downloadsResumed"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Listen for library changes (add/remove from library)
-        NotificationCenter.default.publisher(for: .addToLibrary)
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Listen for manga removal from library
-        NotificationCenter.default.publisher(for: NSNotification.Name("removeFromLibrary"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        NotificationCenter.default.publisher(for: NSNotification.Name("updateLibrary"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Listen for chapter updates (new chapters discovered during library refresh)
-        NotificationCenter.default.publisher(for: NSNotification.Name("updateHistory"))
-            .sink { [weak self] _ in
-                Task { @MainActor in
-                    await self?.loadDownloadedManga()
-                }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
     }
     
     private func getSourceDisplayName(_ sourceId: String) -> String {
@@ -145,6 +163,10 @@ class DownloadManagerViewModel: ObservableObject {
         }
         // Fallback to source ID for unknown sources
         return sourceId.capitalized
+    }
+    
+    deinit {
+        updateDebouncer?.invalidate()
     }
 }
 
@@ -214,7 +236,7 @@ struct DownloadManagerView: View {
                 .padding(.vertical, 4)
             }
             
-            // Manga grouped by source
+            // Manga grouped by source with stable IDs for smooth updates
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
                     ForEach(group.manga) { manga in
@@ -236,29 +258,14 @@ struct DownloadedMangaRow: View {
     
     var body: some View {
         HStack {
-            // Manga cover with fallback to placeholder
-            Group {
-                if let coverUrl = manga.coverUrl, let url = URL(string: coverUrl) {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray.opacity(0.3))
-                            .overlay(
-                                ProgressView()
-                                    .scaleEffect(0.7)
-                            )
-                    }
-                } else {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay(
-                            Image(systemName: "book.fill")
-                                .foregroundColor(.secondary)
-                        )
-                }
+            // Manga cover or placeholder
+            AsyncImage(url: manga.coverUrl != nil ? URL(string: manga.coverUrl!) : nil) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } placeholder: {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
             }
             .frame(width: 50, height: 70)
             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -269,32 +276,35 @@ struct DownloadedMangaRow: View {
                     .lineLimit(2)
                 
                 HStack {
-                    Text(manga.formattedSize)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    
-                    Text("•")
+                    Image(systemName: "doc.fill")
                         .foregroundColor(.secondary)
-                    
                     Text("\(manga.chapterCount) chapters")
-                        .font(.subheadline)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Image(systemName: "externaldrive.fill")
+                        .foregroundColor(.secondary)
+                    Text(manga.formattedSize)
+                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 
                 if manga.isInLibrary {
                     HStack {
                         Image(systemName: "books.vertical.fill")
-                            .font(.caption)
+                            .foregroundColor(.blue)
                         Text("In Library")
                             .font(.caption)
+                            .foregroundColor(.blue)
                     }
-                    .foregroundColor(.blue)
                 }
             }
             
             Spacer()
         }
-        .padding(.vertical, 4)
+        .contentShape(Rectangle())
     }
 }
 
