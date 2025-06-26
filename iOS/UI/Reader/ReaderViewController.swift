@@ -553,14 +553,15 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     func setCurrentPages(_ pages: ClosedRange<Int>) {
+        guard let totalPages = toolbarView.totalPages else { return }
+
         updateDescriptionButton(pages: pages)
 
-        let page = pages.lowerBound
-        guard page > 0 && page <= toolbarView.totalPages ?? Int.max else { return }
+        let page = max(1, min(pages.lowerBound, totalPages))
         currentPage = page
         toolbarView.currentPage = page
         toolbarView.updateSliderPosition()
-        if page == toolbarView.totalPages {
+        if pages.upperBound >= totalPages {
             setCompleted()
         }
     }
