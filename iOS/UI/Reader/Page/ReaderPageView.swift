@@ -454,7 +454,7 @@ class ReaderPageView: UIView {
 
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
-        guard let currentPage = currentPage else { return }
+        guard let currentPage else { return }
 
         // Handle different image types
         if let urlString = currentPage.imageURL, let url = URL(string: urlString) {
