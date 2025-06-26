@@ -237,6 +237,10 @@ extension ReaderWebtoonViewController {
         guard infinite else { return }
         checkInfiniteLoad()
     }
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        guard infinite else { return }
+        checkInfiniteLoad()
+    }
 
     // check if at the top or bottom to append the next/prev chapter
     func checkInfiniteLoad() {
@@ -406,6 +410,33 @@ extension ReaderWebtoonViewController {
 
 // MARK: - Reader Delegate
 extension ReaderWebtoonViewController: ReaderReaderDelegate {
+    func moveLeft() {
+        let offset = CGPoint(
+            x: collectionNode.contentOffset.x,
+            y: max(
+                0,
+                collectionNode.contentOffset.y - collectionNode.bounds.height * 2/3
+            )
+        )
+        scrollView.setContentOffset(
+            offset,
+            animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        )
+    }
+
+    func moveRight() {
+        let offset = CGPoint(
+            x: collectionNode.contentOffset.x,
+            y: min(
+                scrollView.contentSize.height - scrollView.bounds.height,
+                collectionNode.contentOffset.y + collectionNode.bounds.height * 2/3
+            )
+        )
+        scrollView.setContentOffset(
+            offset,
+            animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        )
+    }
 
     func sliderMoved(value: CGFloat) {
         isSliding = true

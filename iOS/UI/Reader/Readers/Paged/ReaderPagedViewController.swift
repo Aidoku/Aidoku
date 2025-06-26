@@ -191,9 +191,7 @@ extension ReaderPagedViewController {
     }
 
     func move(toPage page: Int, animated: Bool) {
-        guard page <= viewModel.pages.count && page > 0 else {
-            return
-        }
+        let page = min(max(page, 0), viewModel.pages.count + 1)
 
         let vcIndex = page + (previousChapter != nil ? 1 : 0)
         var targetViewController: UIViewController?
@@ -216,9 +214,14 @@ extension ReaderPagedViewController {
             return
         }
 
+        let forward = switch readingMode {
+            case .rtl: currentPage > page
+            default: currentPage < page
+        }
+
         pageViewController.setViewControllers(
             [targetViewController],
-            direction: .forward,
+            direction: forward ? .forward : .reverse,
             animated: animated
         ) { completed in
             self.pageViewController(
@@ -277,6 +280,47 @@ extension ReaderPagedViewController {
 
 // MARK: - Reader Delegate
 extension ReaderPagedViewController: ReaderReaderDelegate {
+    func moveLeft() {
+        if
+            let currentViewController = pageViewController.viewControllers?.first,
+            let targetViewController = pageViewController(pageViewController, viewControllerBefore: currentViewController)
+        {
+            let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+            pageViewController.setViewControllers(
+                [targetViewController],
+                direction: .reverse,
+                animated: animated
+            ) { completed in
+                self.pageViewController(
+                    self.pageViewController,
+                    didFinishAnimating: true,
+                    previousViewControllers: [currentViewController],
+                    transitionCompleted: completed
+                )
+            }
+        }
+    }
+
+    func moveRight() {
+        if
+            let currentViewController = pageViewController.viewControllers?.last,
+            let targetViewController = pageViewController(pageViewController, viewControllerAfter: currentViewController)
+        {
+            let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+            pageViewController.setViewControllers(
+                [targetViewController],
+                direction: .forward,
+                animated: animated
+            ) { completed in
+                self.pageViewController(
+                    self.pageViewController,
+                    didFinishAnimating: true,
+                    previousViewControllers: [currentViewController],
+                    transitionCompleted: completed
+                )
+            }
+        }
+    }
 
     func sliderMoved(value: CGFloat) {
         let page = Int(round(value * CGFloat(viewModel.pages.count - 1))) + 1

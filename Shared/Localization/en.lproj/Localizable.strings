@@ -381,6 +381,7 @@
 "MODEL_INFO" = "Model Info";
 
 "LOCK_HISTORY_TAB" = "Lock History Tab";
+
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "SAVE_IMAGE_OPTION" = "Save Image Option";
@@ -388,6 +389,14 @@
 "READER_BG_COLOR_SYSTEM" = "System";
 "READER_BG_COLOR_WHITE" = "White";
 "READER_BG_COLOR_BLACK" = "Black";
+"TAP_ZONES" = "Tap Zones";
+"ZONE_LEFT_RIGHT" = "Left and Right";
+"ZONE_L_SHAPED" = "L-shaped";
+"ZONE_KINDLE" = "Kindle";
+"ZONE_EDGE" = "Edge";
+"DISABLED" = "Disabled";
+"ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
+
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";
