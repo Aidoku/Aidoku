@@ -142,6 +142,8 @@ extension LocalFileManager {
     // add a new file to the local files source
     func uploadFile(
         from url: URL,
+        // if the file already exists, skip uploading it to avoid duplicates
+        skipUpload: Bool = false,
         // the (optional) manga id to add to
         mangaId: String? = nil,
         // optional metadata for new db objects:
@@ -208,38 +210,45 @@ extension LocalFileManager {
             chapter
         }
 
-        // get new name for file if necessary
-        let newFile = if let chapterName {
-            if chapterName.isEmpty {
-                if let volume, let chapter {
-                    "volume_\(volume)_chapter_\(chapter).\(url.pathExtension)"
-                } else if let volume {
-                    "volume_\(volume).\(url.pathExtension)"
-                } else if let chapter {
-                    "chapter_\(chapter).\(url.pathExtension)"
+        let destURL: URL
+
+        if skipUpload {
+            destURL = url
+        } else {
+            // get new name for file if necessary
+            let newFile = if let chapterName {
+                if chapterName.isEmpty {
+                    if let volume, let chapter {
+                        "volume_\(volume)_chapter_\(chapter).\(url.pathExtension)"
+                    } else if let volume {
+                        "volume_\(volume).\(url.pathExtension)"
+                    } else if let chapter {
+                        "chapter_\(chapter).\(url.pathExtension)"
+                    } else {
+                        "\(resolvedMangaId).\(url.pathExtension)"
+                    }
                 } else {
-                    "\(resolvedMangaId).\(url.pathExtension)"
+                    "\(chapterName).\(url.pathExtension)"
                 }
             } else {
-                "\(chapterName).\(url.pathExtension)"
+                url.lastPathComponent
             }
-        } else {
-            url.lastPathComponent
-        }
 
-        // copy file to Documents/Local/<mangaId>/<cbzfile>
-        var destURL = mangaFolder.appendingPathComponent(newFile)
-        var counter = 1
-        while destURL.exists {
-            // if the file already exists, append a number to the name
-            let name = newFile.removingExtension() + " (\(counter)).\(url.pathExtension)"
-            destURL = mangaFolder.appendingPathComponent(name)
-            counter += 1
-        }
-        do {
-            try fileManager.copyItem(at: url, to: destURL)
-        } catch {
-            throw LocalFileManagerError.fileCopyFailed
+            // copy file to Documents/Local/<mangaId>/<cbzfile>
+            var newDestURL = mangaFolder.appendingPathComponent(newFile)
+            var counter = 1
+            while newDestURL.exists {
+                // if the file already exists, append a number to the name
+                let name = newFile.removingExtension() + " (\(counter)).\(url.pathExtension)"
+                newDestURL = mangaFolder.appendingPathComponent(name)
+                counter += 1
+            }
+            destURL = newDestURL
+            do {
+                try fileManager.copyItem(at: url, to: destURL)
+            } catch {
+                throw LocalFileManagerError.fileCopyFailed
+            }
         }
 
         let coverURL: URL?
@@ -374,12 +383,12 @@ extension LocalFileManager {
 // MARK: Scanning
 extension LocalFileManager {
     // performs a scan if the last one was over an hour ago (or if one hasn't been run this app launch)
-    func scanIfNecessary() async {
-        if lastScanTime < Date().addingTimeInterval(-60 * 60) {
-            await scanLocalFiles()
-            lastScanTime = Date()
-        }
-    }
+//    func scanIfNecessary() async {
+//        if lastScanTime < Date().addingTimeInterval(-60 * 60) {
+//            await scanLocalFiles()
+//            lastScanTime = Date()
+//        }
+//    }
 
     // scan the local files folder and synchronize the db to match the file system
     func scanLocalFiles() async {
@@ -438,7 +447,7 @@ extension LocalFileManager {
             // add chapters for new cbz files
             let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
             for cbzFile in chaptersToAdd {
-                try? await uploadFile(from: cbzFile, mangaId: mangaId)
+                try? await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
             }
         }
     }
