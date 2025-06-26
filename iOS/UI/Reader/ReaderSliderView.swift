@@ -41,7 +41,7 @@ class ReaderSliderView: UIControl {
     private let trackView = UIView()
     private let progressedTrackView = UIView()
     private let thumbView = UIView()
-    private let grabberView = UIView()
+    private let grabberView = UIView(frame: .init(x: 0, y: 0, width: 10, height: 10))
 
     private var trackWidthConstraint: NSLayoutConstraint?
     private var trackPositionConstraint: NSLayoutConstraint?
@@ -87,11 +87,11 @@ class ReaderSliderView: UIControl {
         addSubview(thumbView)
 
         grabberView.backgroundColor = .white
-        grabberView.layer.shadowPath = UIBezierPath(rect: grabberView.bounds).cgPath
+        grabberView.layer.shadowPath = UIBezierPath(roundedRect: grabberView.bounds, cornerRadius: 5).cgPath
         grabberView.layer.shadowRadius = 1.5
         grabberView.layer.shadowOffset = CGSize(width: 0, height: 1)
         grabberView.layer.shadowColor = UIColor.black.cgColor
-        grabberView.layer.shadowOpacity = 0.2
+        grabberView.layer.shadowOpacity = 0.1
         grabberView.layer.cornerRadius = 5
         grabberView.translatesAutoresizingMaskIntoConstraints = false
         thumbView.addSubview(grabberView)
