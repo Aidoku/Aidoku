@@ -258,6 +258,11 @@ class SourceViewController: MangaCollectionViewController {
             await viewModel.loadNextMangaPage()
             await updateDataSource()
             refreshControl?.endRefreshing()
+            for cell in collectionView.visibleCells {
+                if let indexPath = collectionView.indexPath(for: cell) {
+                    collectionView(collectionView, willDisplay: cell, forItemAt: indexPath)
+                }
+            }
         }
     }
 
