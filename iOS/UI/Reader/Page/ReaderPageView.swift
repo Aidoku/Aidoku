@@ -438,7 +438,7 @@ class ReaderPageView: UIView {
     /// Reloads the current image by clearing its cache and re-fetching from the source
     @MainActor
     func reloadCurrentImage() async -> Bool {
-        guard let currentPage = currentPage else {
+        guard let currentPage else {
             return false
         }
 
