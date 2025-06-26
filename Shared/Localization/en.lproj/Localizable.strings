@@ -231,6 +231,7 @@
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "No scanlator";
 "LOCKED" = "Locked";
+"TOGGLE_LOCK" = "Toggle Lock";
 
 // Reader
 "VOLUME" = "Volume";
