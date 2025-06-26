@@ -466,11 +466,11 @@ class ReaderPageView: UIView {
             // For base64 images
             let request = ImageRequest(id: String(currentPage.hashValue), data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
-        } else if let zipURL = currentPage.zipURL, currentPage.imageURL != nil {
+        } else if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             // For zip file images
             var hasher = Hasher()
-            hasher.combine(URL(string: zipURL)!)
-            hasher.combine(currentPage.imageURL!)
+            hasher.combine(url)
+            hasher.combine(filePath)
             let key = String(hasher.finalize())
             let request = ImageRequest(id: key, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
