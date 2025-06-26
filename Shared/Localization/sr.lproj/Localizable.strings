@@ -100,13 +100,13 @@
 "STATUS" = "Статус";
 "VOLUMES" = "Томови";
 "STARTED" = "Почето";
-"REREADING" = "Поновно читање";
+"TRACK_REREADING" = "Поновно читање";
 "START_TRACKING" = "Почни праћење";
 "SCORE" = "Оцена";
 "FINISHED" = "Готово";
-"READING" = "Читање";
-"PLANNING" = "Планирање";
-"DROPPED" = "Одбачено";
+"TRACK_READING" = "Читање";
+"TRACK_PLANNING" = "Планирање";
+"TRACK_DROPPED" = "Одбачено";
 "MANGA" = "Манга";
 "MANHWA" = "Манхва";
 "MANHUA" = "Манхуа";
@@ -336,7 +336,7 @@
 "TRACKERS" = "Трекери";
 "LOGOUT" = "Одјави се";
 "LOGOUT_FROM_%@" = "Одјавити се са %@?";
-"PAUSED" = "Паузирано";
+"TRACK_PAUSED" = "Паузирано";
 "STOP_TRACKING" = "Престани праћење";
 "ONESHOT" = "Једнократни";
 "NOT_PUBLISHED" = "Није објављено";

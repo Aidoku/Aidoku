@@ -233,8 +233,8 @@
 "SET_AS_NORMAL_PAGE" = "通常ページにする";
 "SINGLE_PAGE" = "シングルページ";
 "STOP_TRACKING" = "追跡停止";
-"READING" = "読書中";
-"PLANNING" = "読書予定";
+"TRACK_READING" = "読書中";
+"TRACK_PLANNING" = "読書予定";
 "VIEW_ON_WEBSITE" = "ウェブサイトで見る";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "すべてのダウンロードを削除してもよろしいですか？";
 "SUPPORT_VIA_KOFI" = "Ko-Fiでコーヒーをおごる";
@@ -297,9 +297,9 @@
 "STATUS" = "ステータス";
 "START_TRACKING" = "追跡開始";
 "SCORE" = "評価";
-"REREADING" = "再読中";
-"PAUSED" = "一時停止";
-"DROPPED" = "放棄済み";
+"TRACK_REREADING" = "再読中";
+"TRACK_PAUSED" = "一時停止";
+"TRACK_DROPPED" = "放棄済み";
 "TRACKERS" = "トラッカー";
 "LOGOUT_FROM_%@" = "%@からログアウトしますか？";
 "NOT_PUBLISHED" = "未発表";

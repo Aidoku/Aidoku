@@ -194,12 +194,12 @@
 "STATUS" = "Status";
 "VOLUMES" = "Boekdeel";
 "STARTED" = "Begonnen";
-"REREADING" = "Herlezen";
+"TRACK_REREADING" = "Herlezen";
 "START_TRACKING" = "Begin met volgen";
 "SCORE" = "Score";
-"PAUSED" = "Gepauzeerd";
-"READING" = "Lezen";
-"PLANNING" = "Planning";
+"TRACK_PAUSED" = "Gepauzeerd";
+"TRACK_READING" = "Lezen";
+"TRACK_PLANNING" = "Planning";
 "NOT_PUBLISHED" = "Niet gepubliceerd";
 "MANHWA" = "Manhwa";
 "VIEW_ON_WEBSITE" = "Zie op website";
@@ -324,7 +324,7 @@
 "CLEAR_READ_HISTORY" = "Leesgeschiedenis legen";
 "PAGED" = "Pagina genummerd";
 "TRACKERS" = "Trackers";
-"DROPPED" = "Geannuleerd";
+"TRACK_DROPPED" = "Geannuleerd";
 "STOP_TRACKING" = "Tracking stoppen";
 "ONESHOT" = "Eenmalig";
 "MANHUA" = "Manhua";

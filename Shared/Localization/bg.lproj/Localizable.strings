@@ -267,7 +267,7 @@
 "LOGOUT" = "Излизане";
 "STARTED" = "Започнат";
 "SCORE" = "Оценка";
-"PAUSED" = "Паузирано";
+"TRACK_PAUSED" = "Паузирано";
 "PAGES_TO_PRELOAD" = "Страници за предварително зареждане";
 "IMPORT_FAIL" = "Неуспешен импорт";
 "BACKUP_IMPORT_SUCCESS" = "Импортирано резервно копие";
@@ -280,7 +280,7 @@
 "LOGOUT_FROM_%@" = "Излизане от %@?";
 "STATUS" = "Статус";
 "VOLUMES" = "Томове";
-"REREADING" = "Препрочитане";
+"TRACK_REREADING" = "Препрочитане";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Сигурни ли сте че искате да премахнете всички сваляния?";
 "UNREAD_CHAPTERS" = "Непрочетени глави";
 "ONESHOT" = "One-shot";
@@ -315,9 +315,9 @@
 "RESET_SETTINGS_TEXT" = "Това действие е необратимо. Всички настройки и източници ще бъдат рестартрирани.";
 "START_TRACKING" = "Започни следването";
 "FINISHED" = "Приключено";
-"READING" = "Четене";
-"PLANNING" = "Планиране";
-"DROPPED" = "Спрян";
+"TRACK_READING" = "Четене";
+"TRACK_PLANNING" = "Планиране";
+"TRACK_DROPPED" = "Спрян";
 "STOP_TRACKING" = "Спиране на следенето";
 "TRACK" = "Следване";
 "MANGA" = "Манга";

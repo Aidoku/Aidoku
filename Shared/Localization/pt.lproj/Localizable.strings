@@ -107,7 +107,7 @@
 "LOCKED_CATEGORIES" = "Categorias Travadas";
 "AUTH_FOR_LIBRARY" = "Autentique para visualizar a biblioteca.";
 "FINISHED" = "Finalizado";
-"READING" = "Lendo";
+"TRACK_READING" = "Lendo";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Romance Leve";
 "TRACK" = "Seguir";
@@ -267,12 +267,12 @@
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
 "STARTED" = "Começou";
-"REREADING" = "Relendo";
+"TRACK_REREADING" = "Relendo";
 "START_TRACKING" = "Começar a Seguir";
 "SCORE" = "Pontuação";
-"PAUSED" = "Pausado";
-"PLANNING" = "Planejamento";
-"DROPPED" = "Abandonado";
+"TRACK_PAUSED" = "Pausado";
+"TRACK_PLANNING" = "Planejamento";
+"TRACK_DROPPED" = "Abandonado";
 "STOP_TRACKING" = "Deixar de Seguir";
 "ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Não Publicado";

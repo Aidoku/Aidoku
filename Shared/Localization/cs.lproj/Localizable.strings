@@ -160,10 +160,10 @@
 "STARTED" = "Začato";
 "START_TRACKING" = "Spustit sledování";
 "SCORE" = "Skóre";
-"PAUSED" = "Pozastaveno";
-"READING" = "Čtení";
+"TRACK_PAUSED" = "Pozastaveno";
+"TRACK_READING" = "Čtení";
 "FINISHED" = "Dokončeno";
-"DROPPED" = "Zahozené";
+"TRACK_DROPPED" = "Zahozené";
 "STOP_TRACKING" = "Zastavit sledování";
 "ONESHOT" = "Jednorázové";
 "NOT_PUBLISHED" = "Nezveřejněno";
@@ -282,8 +282,8 @@
 "SET_AS_WIDE_PAGE" = "Nastavit jako širokou stránku";
 "AUTOMATIC" = "Automaticky";
 "PAGE_LAYOUT" = "Rozložení stránky";
-"REREADING" = "Opětovné čtení";
-"PLANNING" = "Plánováno";
+"TRACK_REREADING" = "Opětovné čtení";
+"TRACK_PLANNING" = "Plánováno";
 "SUPPORT_VIA_KOFI" = "Podpora přes Ko-Fi";
 "UNREAD_CHAPTERS" = "Nepřečtené kapitoly";
 "RELOAD" = "Znovu načíst";
