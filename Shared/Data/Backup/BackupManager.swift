@@ -60,7 +60,6 @@ class BackupManager {
         }
         do {
             try FileManager.default.copyItem(at: url, to: targetLocation)
-            try? FileManager.default.removeItem(at: url)
             NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
             return true
         } catch {
@@ -69,7 +68,6 @@ class BackupManager {
     }
 
     func createBackup() async -> Backup {
-        // no
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let library = CoreDataManager.shared.getLibraryManga(context: context).map {
                 BackupLibraryManga(libraryObject: $0)
