@@ -34,16 +34,22 @@ class DownloadManagerViewModel: ObservableObject {
     }
 
     func loadDownloadedManga() async {
-        isLoading = true
+        await MainActor.run {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                self.isLoading = true
+            }
+        }
 
         let manga = await DownloadManager.shared.getAllDownloadedManga()
         let formattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
 
         await MainActor.run {
-            self.downloadedManga = manga
-            self.totalSize = formattedSize
-            self.totalCount = manga.count
-            self.isLoading = false
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.downloadedManga = manga
+                self.totalSize = formattedSize
+                self.totalCount = manga.count
+                self.isLoading = false
+            }
         }
     }
 
@@ -179,12 +185,17 @@ struct DownloadManagerView: View {
             if viewModel.isLoading {
                 ProgressView("Loading downloads...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity)
             } else if viewModel.downloadedManga.isEmpty {
                 emptyStateView
+                    .transition(.opacity)
             } else {
                 downloadsList
+                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isLoading)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.downloadedManga.isEmpty)
         .navigationTitle("Download Manager")
         .navigationBarTitleDisplayMode(.large)
         .task {
