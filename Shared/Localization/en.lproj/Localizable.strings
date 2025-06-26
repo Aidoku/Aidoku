@@ -32,6 +32,7 @@
 // Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
+"DOWNLOAD_MANAGER" = "Download Manager";
 "DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";

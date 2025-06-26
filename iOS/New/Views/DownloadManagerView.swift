@@ -196,7 +196,7 @@ struct DownloadManagerView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: viewModel.downloadedManga.isEmpty)
-        .navigationTitle("Download Manager")
+        .navigationTitle(NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
         .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadDownloadedManga()
