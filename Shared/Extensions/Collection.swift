@@ -7,6 +7,7 @@
 //  Credit to Nikita Kukushkin for this
 //  https://stackoverflow.com/questions/25329186/safe-bounds-checked-array-lookup-in-swift-through-optional-bindings
 //
+
 import Foundation
 
 extension Collection {

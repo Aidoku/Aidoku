@@ -26,11 +26,6 @@
 		4875B8262BA6F2C3001E39CA /* MangaUpdateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4875B8242BA6F2C3001E39CA /* MangaUpdateManager.swift */; };
 		489267F92A4FDB5E00F31002 /* MangaCoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489267F82A4FDB5E00F31002 /* MangaCoverViewController.swift */; };
 		48E20A272B78420E00BFFED8 /* SwiftUINavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E20A262B78420E00BFFED8 /* SwiftUINavigationController.swift */; };
-		91D7BEF82DD7E47000898539 /* Aidoku-IOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEF72DD7E46800898539 /* Aidoku-IOS.xcconfig */; };
-		91D7BEFA2DD7E49300898539 /* Aidoku-MACOS.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEF92DD7E48400898539 /* Aidoku-MACOS.xcconfig */; };
-		91D7BEFC2DD7E4C500898539 /* Aidoku.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */; };
-		91D7BEFD2DD7E4C500898539 /* Aidoku.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */; };
-		91D7BF002DD8881300898539 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 91D7BEFF2DD8881300898539 /* Info.plist */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -311,6 +306,7 @@
 		FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */; };
 		FB7983A12E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */; };
 		FB7983A22E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7983A02E0074B80044BC71 /* PopupWebViewHandler.swift */; };
+		FB79841A2E0D8432000761A9 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
 		FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E962787740A001E6EAF /* WasmJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E942787740A001E6EAF /* WasmJson.swift */; };
 		FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7E9727877416001E6EAF /* WasmNet.swift */; };
@@ -1993,9 +1989,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4846277CE1920056D02C /* Assets.xcassets in Resources */,
-				91D7BEFD2DD7E4C500898539 /* Aidoku.xcconfig in Resources */,
 				FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */,
-				91D7BEF82DD7E47000898539 /* Aidoku-IOS.xcconfig in Resources */,
 				FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2004,10 +1998,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				91D7BF002DD8881300898539 /* Info.plist in Resources */,
-				91D7BEFC2DD7E4C500898539 /* Aidoku.xcconfig in Resources */,
 				FB1B4847277CE1920056D02C /* Assets.xcassets in Resources */,
-				91D7BEFA2DD7E49300898539 /* Aidoku-MACOS.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2466,6 +2457,7 @@
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
+				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB82A5C32DF8622700366BC8 /* LocalModels.swift in Sources */,
@@ -2751,11 +2743,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 7T4TYRQ8MT;
+				DEVELOPMENT_TEAM = 648WP6YBU2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_FILE = macOS/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2763,7 +2755,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = Aidoku;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2785,11 +2776,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 7T4TYRQ8MT;
+				DEVELOPMENT_TEAM = 648WP6YBU2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_FILE = macOS/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2797,7 +2788,6 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(PRODUCT_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = Aidoku;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
