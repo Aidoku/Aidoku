@@ -459,7 +459,7 @@ class ReaderPageView: UIView {
         // Handle different image types
         if let urlString = currentPage.imageURL, let url = URL(string: urlString) {
             // For URL-based images, use the stored request if available
-            if let currentImageRequest = currentImageRequest {
+            if let currentImageRequest {
                 ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
             }
         } else if currentPage.base64 != nil {
