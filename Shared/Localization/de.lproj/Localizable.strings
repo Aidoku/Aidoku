@@ -264,7 +264,7 @@
 "STATUS" = "Status";
 "VOLUMES" = "Bände";
 "STARTED" = "Angefangen";
-"REREADING" = "Lese erneut";
+"TRACK_REREADING" = "Lese erneut";
 "VIEW_ON_WEBSITE" = "Auf Webseite ansehen";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Bist du sicher, dass du alle Downloads entfernen möchtest?";
 "CACHE_SIZE_%@" = "Cachegröße: %@";
@@ -301,13 +301,13 @@
 "RENAME_CATEGORY" = "Kategorie umbenennen";
 "%i_CHAPTERS" = "%i Kapitel";
 "PINNED" = "Angepinnt";
-"PAUSED" = "Pausiert";
-"DROPPED" = "Abgebrochen";
+"TRACK_PAUSED" = "Pausiert";
+"TRACK_DROPPED" = "Abgebrochen";
 "STOP_TRACKING" = "Tracking stoppen";
-"READING" = "Angefangen";
+"TRACK_READING" = "Angefangen";
 "START_TRACKING" = "Tracking starten";
 "FINISHED" = "Abgeschlossen";
-"PLANNING" = "Geplant";
+"TRACK_PLANNING" = "Geplant";
 "ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Nicht veröffentlicht";
 "MANGA" = "Manga";

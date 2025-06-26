@@ -258,13 +258,13 @@
 "VOLUMES" = "Tập";
 "STATUS" = "Tình trạng";
 "STARTED" = "Bắt đầu";
-"PLANNING" = "Sẽ đọc";
+"TRACK_PLANNING" = "Sẽ đọc";
 "START_TRACKING" = "Bắt đầu theo dõi";
 "STOP_TRACKING" = "Ngưng theo dõi";
-"PAUSED" = "Ngưng đọc";
+"TRACK_PAUSED" = "Ngưng đọc";
 "FINISHED" = "Đã xong";
-"READING" = "Đang đọc";
-"DROPPED" = "Đã bỏ";
+"TRACK_READING" = "Đang đọc";
+"TRACK_DROPPED" = "Đã bỏ";
 "MANHWA" = "Manhwa (Hàn)";
 "ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Không phát hành";
@@ -279,7 +279,7 @@
 "SUPPORT_VIA_KOFI" = "Ủng hộ qua Ko-Fi";
 "LIGHT_NOVEL" = "Light Novel (Tiểu thuyết)";
 "SCORE" = "Điểm";
-"REREADING" = "Đang đọc lại";
+"TRACK_REREADING" = "Đang đọc lại";
 "MANGA" = "Manga";
 "CLEAR_TRACKED_MANGA_TEXT" = "Hành động này không thể phục hồi. Việc theo dõi cho tất cả manga sẽ bị gỡ bỏ.";
 "FAILED_CHAPTER_LOAD_INFO" = "Bạn đang không kết nối internet hoặc nguồn truyện đang có vấn đề.";

@@ -48,7 +48,7 @@ final class LocalSourceRunner: AidokuRunner.Runner {
     )
 
     func getSearchMangaList(query: String?, page: Int, filters: [AidokuRunner.FilterValue]) async throws -> AidokuRunner.MangaPageResult {
-        await LocalFileManager.shared.scanIfNecessary()
+        await LocalFileManager.shared.scanLocalFiles()
         let manga = await LocalFileDataManager.shared.fetchLocalSeries(query: query)
         return .init(entries: manga, hasNextPage: false)
     }

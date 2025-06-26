@@ -27,6 +27,7 @@
 "WARNING" = "Warning";
 "ENABLE_PERMISSION" = "Enable Permission";
 "PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Aidoku access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
+"CONTENT" = "Content";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -230,6 +231,7 @@
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "No scanlator";
 "LOCKED" = "Locked";
+"TOGGLE_LOCK" = "Toggle Lock";
 
 // Reader
 "VOLUME" = "Volume";
@@ -429,31 +431,38 @@
 "PAGE_LAYOUT" = "Page Layout";
 "DOUBLE_PAGE" = "Double Page";
 "MULTI_LANGUAGE" = "Multi-Language";
+
+// Tracking
 "TRACKERS" = "Trackers";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
-"STARTED" = "Started";
-"REREADING" = "Rereading";
 "START_TRACKING" = "Start Tracking";
 "SCORE" = "Score";
-"PAUSED" = "Paused";
+"TRACK_READING" = "Reading";
+"TRACK_PLANNING" = "Planning";
+"TRACK_COMPLETED" = "Completed";
+"TRACK_PAUSED" = "Paused";
+"TRACK_DROPPED" = "Dropped";
+"TRACK_REREADING" = "Rereading";
+"STARTED" = "Started";
 "FINISHED" = "Finished";
-"READING" = "Reading";
-"PLANNING" = "Planning";
-"DROPPED" = "Dropped";
 "STOP_TRACKING" = "Stop Tracking";
-"ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Not Published";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Light Novel";
+"ONESHOT" = "One-shot";
+"OEL" = "OEL";
+"COMIC" = "Comic";
+"BOOK" = "Book";
 "TRACK" = "Track";
 "STATUS_COLON_%@" = "Status: %@";
 "TYPE_COLON_%@" = "Type: %@";
 "VIEW_ON_WEBSITE" = "View On Website";
 "CLEAR_TRACKED_MANGA" = "Clear Tracked Manga";
 "CLEAR_TRACKED_MANGA_TEXT" = "This action is irreversible. Tracking for all trackers added to manga will be removed.";
+
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";

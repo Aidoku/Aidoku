@@ -6,7 +6,7 @@
 "START_TRACKING" = "Börja spåra";
 "UNINSTALL" = "Avinstallera";
 "RENAME_BACKUP_TEXT" = "Ange ett nytt namn för din säkerhetskopia";
-"REREADING" = "Läser om";
+"TRACK_REREADING" = "Läser om";
 "TRACK" = "Spåra";
 "DELETE" = "Radera";
 "VERTICAL_SCROLL" = "Lodrät skrollning";
@@ -60,7 +60,7 @@
 "VIEW_MORE" = "Visa mer";
 "CANCELLED" = "Inställd";
 "CACHE_SIZE_%@" = "Storlek för cacheminne: %@";
-"DROPPED" = "Avbruten";
+"TRACK_DROPPED" = "Avbruten";
 "BACKUP_INFO" = "Långtryck på säkerhetskopia för att exportera den, eller svep till vänster för att radera.";
 
 // Browse
@@ -197,7 +197,7 @@
 "WITH_UNREAD_CHAPTERS" = "Med olästa kapitlen";
 "CORRUPTED_BACKUP" = "Korrupt säkerhetskopia";
 "UNKNOWN" = "Okänd";
-"PLANNING" = "Planerar";
+"TRACK_PLANNING" = "Planerar";
 "CLEAR_MANGA_CACHE_TEXT" = "Denna handling är oåterkallelig. Cachad manga som inte finns i ditt bibliotek kommer att tas bort.";
 "COMPLETED" = "Avslutad";
 "PILLARBOX_AMOUNT" = "Mängd svarta fält";
@@ -221,7 +221,7 @@
 "WEBTOON" = "Webtoon";
 "RESTORE_BACKUP_TEXT" = "All nuvarande data kommer att raderas och ersättas av data från denna säkerhetskopia.";
 "BACKUP_IMPORT_FAIL_TEXT" = "Misslyckades att spara säkerhetskopia. Vänligen säkerställ att din säkerhetskopia är i korrekt format.";
-"PAUSED" = "Pausad";
+"TRACK_PAUSED" = "Pausad";
 "APPEARANCE_DARK" = "Mörk";
 "CH_X" = "Kap.%g";
 "CATEGORY_LOCKED" = "Kategorin är låst.";
@@ -282,7 +282,7 @@
 "CHAPTERS" = "Kapitel";
 "CLEAR_NETWORK_CACHE" = "Frigör cacheminne för nätverk";
 "READER" = "Läsare";
-"READING" = "Läser";
+"TRACK_READING" = "Läser";
 "HIATUS" = "Uppehåll";
 "EXPERIMENTAL" = "Experimentell";
 

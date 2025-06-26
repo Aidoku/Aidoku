@@ -31,12 +31,12 @@ class TrackStatus {
 
     func toString() -> String {
         switch rawValue {
-        case 1: return NSLocalizedString("READING", comment: "")
-        case 2: return NSLocalizedString("PLANNING", comment: "")
-        case 3: return NSLocalizedString("COMPLETED", comment: "")
-        case 4: return NSLocalizedString("PAUSED", comment: "")
-        case 5: return NSLocalizedString("DROPPED", comment: "")
-        case 6: return NSLocalizedString("REREADING", comment: "")
+        case 1: return NSLocalizedString("TRACK_READING", comment: "")
+        case 2: return NSLocalizedString("TRACK_PLANNING", comment: "")
+        case 3: return NSLocalizedString("TRACK_COMPLETED", comment: "")
+        case 4: return NSLocalizedString("TRACK_PAUSED", comment: "")
+        case 5: return NSLocalizedString("TRACK_DROPPED", comment: "")
+        case 6: return NSLocalizedString("TRACK_REREADING", comment: "")
         default: return NSLocalizedString("UNKNOWN", comment: "")
         }
     }

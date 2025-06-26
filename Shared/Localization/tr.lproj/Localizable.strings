@@ -258,11 +258,11 @@
 "STARTED" = "Başladı";
 "START_TRACKING" = "İzlemeyi Başlat";
 "SCORE" = "Skor";
-"PAUSED" = "Durduruldu";
+"TRACK_PAUSED" = "Durduruldu";
 "FINISHED" = "Bitirildi";
-"READING" = "Okunuyor";
-"PLANNING" = "Planlanmış";
-"DROPPED" = "Bırakıldı";
+"TRACK_READING" = "Okunuyor";
+"TRACK_PLANNING" = "Planlanmış";
+"TRACK_DROPPED" = "Bırakıldı";
 "STOP_TRACKING" = "İzlemeyi Bırak";
 "ONESHOT" = "Tekli";
 "NOT_PUBLISHED" = "Yayınlanmamış";
@@ -279,7 +279,7 @@
 "LOCKED_CATEGORIES" = "Kilitli Kategoriler";
 "LOGOUT" = "Çıkış Yap";
 "AUTH_FOR_LIBRARY" = "Kütüphaneyi görüntülemek için kimliğinizi doğrulayın.";
-"REREADING" = "Tekrar Okunuyor";
+"TRACK_REREADING" = "Tekrar Okunuyor";
 "CLEAR_TRACKED_MANGA" = "İzlenen Mangaları Sil";
 "CLEAR_TRACKED_MANGA_TEXT" = "Bu aksiyon geri döndürülemez. İzleyici eklenmiş bütün mangalar için izleme silinecek.";
 "SUPPORT_VIA_KOFI" = "Ko-Fi İle Destek Ol";

@@ -161,9 +161,9 @@
 "SINGLE_PAGE" = "Halaman tunggal";
 "PAGED" = "Halaman";
 "PAGE_LAYOUT" = "Tata Letak Halaman";
-"READING" = "Membaca";
-"PLANNING" = "Perencanaan";
-"DROPPED" = "Dihentikan";
+"TRACK_READING" = "Membaca";
+"TRACK_PLANNING" = "Perencanaan";
+"TRACK_DROPPED" = "Dihentikan";
 "ONESHOT" = "Komik Pendek";
 "NOT_PUBLISHED" = "Belum diterbitkan";
 "MANGA" = "Manga";
@@ -257,7 +257,7 @@
 "AUTH_FOR_LIBRARY" = "Otentikasi untuk melihat perpustakaan.";
 "SET_AS_WIDE_PAGE" = "Tetapkan sebagai Halaman Lebar";
 "LOGOUT" = "Keluar";
-"REREADING" = "Membaca Ulang";
+"TRACK_REREADING" = "Membaca Ulang";
 "AUTH_TO_OPEN" = "Otentikasi untuk membuka.";
 "LOCK_LIBRARY" = "Kunci Perpustakaan";
 "DOUBLE_PAGE" = "Halaman Ganda";
@@ -266,7 +266,7 @@
 "STARTED" = "Dimulai";
 "TRACKERS" = "Pelacak";
 "SCORE" = "Skor";
-"PAUSED" = "Dijeda";
+"TRACK_PAUSED" = "Dijeda";
 "STOP_TRACKING" = "Hentikan Pelacakan";
 "START_TRACKING" = "Mulai Pelacakan";
 "MANHUA" = "Manhua";

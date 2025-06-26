@@ -245,9 +245,9 @@
 "VOLUMES" = "Izdanja";
 "START_TRACKING" = "Započni praćenje";
 "SCORE" = "Vrednuj";
-"PAUSED" = "Na pauzi";
+"TRACK_PAUSED" = "Na pauzi";
 "FINISHED" = "Završeno";
-"READING" = "Čitanje";
+"TRACK_READING" = "Čitanje";
 "VIEW_LIBRARY" = "Pregledaj knjižnicu";
 "CATEGORY_EMPTY" = "Kategorija Prazna";
 "AUTH_TO_OPEN" = "Autentificiraj za otvaranje.";
@@ -262,11 +262,11 @@
 "DOUBLE_PAGE" = "Dupla stranica";
 "TRACKERS" = "Tragači";
 "STARTED" = "Započeto";
-"PLANNING" = "Planirano";
-"DROPPED" = "Napušteno";
+"TRACK_PLANNING" = "Planirano";
+"TRACK_DROPPED" = "Napušteno";
 "STOP_TRACKING" = "Zaustavi praćenje";
 "MULTI_LANGUAGE" = "Višejezično";
-"REREADING" = "Ponovno čitanje";
+"TRACK_REREADING" = "Ponovno čitanje";
 "STATUS_COLON_%@" = "Status: %@";
 "TYPE_COLON_%@" = "Tip: %@";
 "CLEAR_TRACKED_MANGA" = "Očisti praćenu mangu";

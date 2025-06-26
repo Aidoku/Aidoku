@@ -261,12 +261,12 @@
 "STATUS" = "Statut";
 "START_TRACKING" = "Commencer le suivi";
 "FINISHED" = "Fini";
-"READING" = "Lecture";
-"DROPPED" = "Abandonné";
-"REREADING" = "Relecture";
+"TRACK_READING" = "Lecture";
+"TRACK_DROPPED" = "Abandonné";
+"TRACK_REREADING" = "Relecture";
 "SCORE" = "Score";
-"PAUSED" = "En pause";
-"PLANNING" = "Planification";
+"TRACK_PAUSED" = "En pause";
+"TRACK_PLANNING" = "Planification";
 "ONESHOT" = "One-shot";
 "MANHWA" = "Manhwa";
 "STARTED" = "Commencé";
