@@ -58,7 +58,9 @@ class GIFImageNode: ASControlNode {
 
     func animate(withGIFData data: Data) {
         if let imageView {
-            imageView.animate(withGIFData: data)
+            Task { @MainActor in
+                imageView.animate(withGIFData: data)
+            }
         } else {
             animatedData = data
         }
