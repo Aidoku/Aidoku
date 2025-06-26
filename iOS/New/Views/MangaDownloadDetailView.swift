@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import AidokuRunner
 
 @MainActor
 class MangaDownloadDetailViewModel: ObservableObject {
@@ -321,6 +322,7 @@ class MangaDownloadDetailViewModel: ObservableObject {
 struct MangaDownloadDetailView: View {
     @StateObject private var viewModel: MangaDownloadDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var path: NavigationCoordinator
 
     init(manga: DownloadedMangaInfo) {
         self._viewModel = StateObject(wrappedValue: MangaDownloadDetailViewModel(manga: manga))
@@ -341,11 +343,18 @@ struct MangaDownloadDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                if !viewModel.chapters.isEmpty {
-                    Button(action: viewModel.confirmDeleteAll) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
+                Menu {
+                    Button(action: openMangaPage) {
+                        Label("Open Manga", systemImage: "book")
                     }
+
+                    if !viewModel.chapters.isEmpty {
+                        Button(role: .destructive, action: viewModel.confirmDeleteAll) {
+                            Label("Remove All Chapters", systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
@@ -488,6 +497,29 @@ struct MangaDownloadDetailView: View {
         components.append(viewModel.manga.formattedSize)
 
         return components.joined(separator: " • ")
+    }
+
+    private func openMangaPage() {
+        guard let source = SourceManager.shared.source(for: viewModel.manga.sourceId) else {
+            print("Source not found for ID: \(viewModel.manga.sourceId)")
+            return
+        }
+
+        // Create a basic manga object from the downloaded manga info
+        let aidokuManga = AidokuRunner.Manga(
+            sourceKey: viewModel.manga.sourceId,
+            key: viewModel.manga.mangaId,
+            title: viewModel.manga.title ?? "Unknown Title"
+        )
+
+        // Navigate to manga page using NavigationCoordinator
+        let hostingController = UIHostingController(
+            rootView: MangaView(source: source, manga: aidokuManga)
+                .environmentObject(path)
+        )
+        hostingController.navigationItem.largeTitleDisplayMode = UINavigationItem.LargeTitleDisplayMode.never
+        hostingController.title = aidokuManga.title
+        path.push(hostingController)
     }
 }
 

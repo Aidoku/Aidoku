@@ -431,7 +431,11 @@ extension SettingsViewController {
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
 
             case "Downloads.manager":
-                let hostingController = UIHostingController(rootView: DownloadManagerView())
+                let path = NavigationCoordinator(rootViewController: self)
+                let hostingController = UIHostingController(
+                    rootView: DownloadManagerView()
+                        .environmentObject(path)
+                )
                 hostingController.navigationItem.title = NSLocalizedString("DOWNLOAD_MANAGER")
                 navigationController?.pushViewController(hostingController, animated: true)
 

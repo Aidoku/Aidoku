@@ -172,6 +172,7 @@ class DownloadManagerViewModel: ObservableObject {
 
 struct DownloadManagerView: View {
     @StateObject private var viewModel = DownloadManagerViewModel()
+    @EnvironmentObject private var path: NavigationCoordinator
 
     var body: some View {
         Group {
@@ -240,9 +241,17 @@ struct DownloadManagerView: View {
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
                     ForEach(group.manga) { manga in
-                        NavigationLink(destination: MangaDownloadDetailView(manga: manga)) {
+                        Button(action: {
+                            let hostingController = UIHostingController(
+                                rootView: MangaDownloadDetailView(manga: manga)
+                                    .environmentObject(path)
+                            )
+                            hostingController.title = manga.displayTitle
+                            path.push(hostingController)
+                        }) {
                             DownloadedMangaRow(manga: manga)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
