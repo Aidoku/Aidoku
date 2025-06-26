@@ -559,10 +559,10 @@ extension ReaderWebtoonPageNode {
             let request = ImageRequest(id: page.key, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
 
-        } else if let zipURL = page.zipURL, let filePath = page.imageURL {
+        } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             // For zip-based images, remove using the generated key
             var hasher = Hasher()
-            hasher.combine(URL(string: zipURL))
+            hasher.combine(url)
             hasher.combine(filePath)
             let key = String(hasher.finalize())
             let request = ImageRequest(id: key, data: { Data() })
