@@ -447,7 +447,11 @@ extension LocalFileManager {
             // add chapters for new cbz files
             let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
             for cbzFile in chaptersToAdd {
-                try? await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                do {
+                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                } catch {
+                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \"\(mangaId)\": \(error)")
+                }
             }
         }
     }
