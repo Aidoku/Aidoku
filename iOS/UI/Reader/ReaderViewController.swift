@@ -101,7 +101,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     override func configure() {
-        view.backgroundColor = .systemBackground
+        node.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = false
 
         // navbar buttons
@@ -160,7 +160,7 @@ class ReaderViewController: BaseObservingViewController {
         toolbarButtonItemView.customView?.heightAnchor.constraint(equalToConstant: 40).isActive = true
         if #available(iOS 26.0, *) {
             toolbarViewWidthConstraint = toolbarButtonItemView.customView?.widthAnchor.constraint(
-                equalToConstant: view.bounds.width - 32 - 10
+                equalToConstant: node.bounds.width - 32 - 10
             )
         } else {
             toolbarViewWidthConstraint = toolbarButtonItemView.customView?.widthAnchor.constraint(equalToConstant: view.bounds.width)
@@ -681,8 +681,8 @@ extension ReaderViewController {
                 if #available(iOS 26.0, *) {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 1
                 }
-                self.view.backgroundColor = .systemBackground
-                self.view.layoutIfNeeded()
+                self.node.backgroundColor = .systemBackground
+                self.node.layoutIfNeeded()
             }
         }
     }
@@ -705,7 +705,7 @@ extension ReaderViewController {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 0
                 }
 
-                self.view.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
+                self.node.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
                 case "system":
                     .systemBackground
                 case "white":
@@ -713,7 +713,7 @@ extension ReaderViewController {
                 default:
                     .black
                 }
-                self.view.layoutIfNeeded()
+                self.node.layoutIfNeeded()
             } completion: { _ in
                 if #available(iOS 26.0, *) {
                     navigationController.isToolbarHidden = true
