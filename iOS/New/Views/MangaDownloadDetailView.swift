@@ -500,26 +500,34 @@ struct MangaDownloadDetailView: View {
     }
 
     private func openMangaPage() {
-        guard let source = SourceManager.shared.source(for: viewModel.manga.sourceId) else {
+        guard SourceManager.shared.source(for: viewModel.manga.sourceId) != nil else {
             print("Source not found for ID: \(viewModel.manga.sourceId)")
             return
         }
 
         // Create a basic manga object from the downloaded manga info
-        let aidokuManga = AidokuRunner.Manga(
-            sourceKey: viewModel.manga.sourceId,
-            key: viewModel.manga.mangaId,
-            title: viewModel.manga.title ?? "Unknown Title"
+        let manga = Manga(
+            sourceId: viewModel.manga.sourceId,
+            id: viewModel.manga.mangaId,
+            title: viewModel.manga.title
         )
 
-        // Navigate to manga page using NavigationCoordinator
-        let hostingController = UIHostingController(
-            rootView: MangaView(source: source, manga: aidokuManga)
-                .environmentObject(path)
-        )
-        hostingController.navigationItem.largeTitleDisplayMode = UINavigationItem.LargeTitleDisplayMode.never
-        hostingController.title = aidokuManga.title
-        path.push(hostingController)
+        // Convert downloaded chapters to Chapter objects with proper source order
+        let chapters = viewModel.chapters.enumerated().map { index, downloadedChapter in
+            Chapter(
+                sourceId: viewModel.manga.sourceId,
+                id: downloadedChapter.chapterId,
+                mangaId: viewModel.manga.mangaId,
+                title: downloadedChapter.title,
+                chapterNum: downloadedChapter.chapterNumber,
+                volumeNum: downloadedChapter.volumeNumber,
+                sourceOrder: index // Use enumerated index for proper ordering
+            )
+        }
+
+        // Use MangaViewController with the downloaded chapters
+        let mangaViewController = MangaViewController(manga: manga, chapterList: chapters)
+        path.push(mangaViewController)
     }
 }
 

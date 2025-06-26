@@ -241,16 +241,19 @@ struct DownloadManagerView: View {
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
                     ForEach(group.manga) { manga in
-                        Button(action: {
-                            let hostingController = UIHostingController(
-                                rootView: MangaDownloadDetailView(manga: manga)
-                                    .environmentObject(path)
-                            )
-                            hostingController.title = manga.displayTitle
-                            path.push(hostingController)
-                        }) {
-                            DownloadedMangaRow(manga: manga)
-                        }
+                        Button(
+                            action: {
+                                let hostingController = UIHostingController(
+                                    rootView: MangaDownloadDetailView(manga: manga)
+                                        .environmentObject(path)
+                                )
+                                hostingController.title = manga.displayTitle
+                                path.push(hostingController)
+                            },
+                            label: {
+                                DownloadedMangaRow(manga: manga)
+                            }
+                        )
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
