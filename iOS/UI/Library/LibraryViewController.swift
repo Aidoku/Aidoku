@@ -11,36 +11,51 @@ import SwiftUI
 import AidokuRunner
 
 class LibraryViewController: MangaCollectionViewController {
-
     let viewModel = LibraryViewModel()
 
-    private lazy var downloadBarButton = UIBarButtonItem(
-        image: UIImage(systemName: "square.and.arrow.down"),
-        style: .plain,
-        target: self,
-        action: #selector(openDownloadQueue)
-    )
+    private lazy var downloadBarButton = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "square.and.arrow.down"),
+            style: .plain,
+            target: self,
+            action: #selector(openDownloadQueue)
+        )
+        item.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        return item
+    }()
 
-    private lazy var lockBarButton = UIBarButtonItem(
-        image: UIImage(systemName: locked ? "lock" : "lock.open"),
-        style: .plain,
-        target: self,
-        action: #selector(toggleLock)
-    )
+    private lazy var lockBarButton = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: locked ? "lock" : "lock.open"),
+            style: .plain,
+            target: self,
+            action: #selector(toggleLock)
+        )
+        item.title = NSLocalizedString("TOGGLE_LOCK")
+        return item
+    }()
 
-    private lazy var moreBarButton = UIBarButtonItem(
-        image: UIImage(systemName: "ellipsis"),
-        style: .plain,
-        target: nil,
-        action: nil
-    )
+    private lazy var moreBarButton = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "ellipsis"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        item.title = NSLocalizedString("MORE_BARBUTTON")
+        return item
+    }()
 
-    private lazy var mangaUpdatesButton = UIBarButtonItem(
-        image: UIImage(systemName: "bell"),
-        style: .plain,
-        target: self,
-        action: #selector(openMangaUpdates)
-    )
+    private lazy var mangaUpdatesButton = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "bell"),
+            style: .plain,
+            target: self,
+            action: #selector(openMangaUpdates)
+        )
+        item.title = NSLocalizedString("MANGA_UPDATES")
+        return item
+    }()
 
     private lazy var refreshControl = UIRefreshControl()
 
@@ -425,7 +440,9 @@ class LibraryViewController: MangaCollectionViewController {
         updateToolbar()
         reloadItems()
     }
+}
 
+extension LibraryViewController {
     @objc func stopEditing() {
         setEditing(false, animated: true)
         deselectAllItems()
