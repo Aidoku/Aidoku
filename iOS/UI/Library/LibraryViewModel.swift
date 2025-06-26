@@ -453,9 +453,15 @@ class LibraryViewModel {
             }
         } else if sortMethod == .lastOpened {
             let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
-            if let index = index {
+            if let index {
                 let manga = manga.remove(at: index)
-                self.manga.insert(manga, at: 0)
+                if sortAscending {
+                    // add to end
+                    self.manga.append(manga)
+                } else {
+                    // add to start
+                    self.manga.insert(manga, at: 0)
+                }
             }
         }
     }
