@@ -13,6 +13,7 @@ import Foundation
      sourceId/
        mangaId/
          chapterId/
+           .metadata.json     Chapter info stored here     (title, chapter number, volume number, source order)
            001.png
            002.png
            ...
@@ -262,11 +263,11 @@ extension DownloadManager {
 
 // MARK: - Download Manager UI Support
 extension DownloadManager {
-    
+
     private static var downloadedMangaCache: [DownloadedMangaInfo] = []
     private static var lastCacheUpdate: Date = .distantPast
     private static let cacheValidityDuration: TimeInterval = 60 // 1 minute
-    
+
     /// Get all downloaded manga with metadata from CoreData if available
     func getAllDownloadedManga() async -> [DownloadedMangaInfo] {
         // Return cached result if still valid
@@ -274,80 +275,101 @@ extension DownloadManager {
         if now.timeIntervalSince(Self.lastCacheUpdate) < Self.cacheValidityDuration {
             return Self.downloadedMangaCache
         }
-        
+
         var downloadedManga: [DownloadedMangaInfo] = []
-        
+
         // Ensure downloads directory exists
         guard Self.directory.exists else {
             Self.downloadedMangaCache = []
             Self.lastCacheUpdate = now
             return []
         }
-        
+
         // Scan source directories
         let sourceDirectories = Self.directory.contents.filter { $0.isDirectory }
-        
+
         for sourceDirectory in sourceDirectories {
             let sourceId = sourceDirectory.lastPathComponent
             let mangaDirectories = sourceDirectory.contents.filter { $0.isDirectory }
-            
+
             for mangaDirectory in mangaDirectories {
                 let mangaId = mangaDirectory.lastPathComponent
-                
+
                 // Count chapters and calculate total size
-                let chapterDirectories = mangaDirectory.contents.filter { 
-                    $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") 
+                let chapterDirectories = mangaDirectory.contents.filter {
+                    $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
                 }
-                
+
                 guard !chapterDirectories.isEmpty else { continue }
-                
+
                 let totalSize = await calculateDirectorySize(mangaDirectory)
                 let chapterCount = chapterDirectories.count
+
+                // Try to load metadata from the manga directory first
+                let storedMetadata = loadMangaMetadata(from: mangaDirectory)
                 
-                // Fetch metadata from CoreData
-                let mangaMetadata = await withCheckedContinuation { continuation in
-                    CoreDataManager.shared.container.performBackgroundTask { context in
-                        // First try direct lookup with the directory name
-                        var mangaObject = CoreDataManager.shared.getManga(
-                            sourceId: sourceId,
-                            mangaId: mangaId,
-                            context: context
-                        )
-                        var isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                            sourceId: sourceId,
-                            mangaId: mangaId,
-                            context: context
-                        )
-                        
-                        // If not found, try to find a manga whose sanitized ID matches the directory name
-                        if mangaObject == nil {
-                            let allMangaForSource = CoreDataManager.shared.getManga(context: context)
-                                .filter { $0.sourceId == sourceId }
-                            
-                            for candidateManga in allMangaForSource {
-                                let candidateId = candidateManga.id
-                                if candidateId.directoryName == mangaId {
-                                    mangaObject = candidateManga
-                                    isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                                        sourceId: sourceId,
-                                        mangaId: candidateId,
-                                        context: context
-                                    )
-                                    break
+                // Fallback to CoreData only if no stored metadata exists
+                let mangaMetadata = if let storedMetadata = storedMetadata {
+                    (
+                        title: storedMetadata.title,
+                        coverUrl: storedMetadata.thumbnailBase64 != nil ? "data:image;base64,\(storedMetadata.thumbnailBase64!)" : storedMetadata.cover,
+                        isInLibrary: await withCheckedContinuation { continuation in
+                            CoreDataManager.shared.container.performBackgroundTask { context in
+                                let isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                    sourceId: sourceId,
+                                    mangaId: mangaId,
+                                    context: context
+                                )
+                                continuation.resume(returning: isInLibrary)
+                            }
+                        },
+                        actualMangaId: mangaId
+                    )
+                } else {
+                    await withCheckedContinuation { continuation in
+                        CoreDataManager.shared.container.performBackgroundTask { context in
+                            // First try direct lookup with the directory name
+                            var mangaObject = CoreDataManager.shared.getManga(
+                                sourceId: sourceId,
+                                mangaId: mangaId,
+                                context: context
+                            )
+                            var isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                sourceId: sourceId,
+                                mangaId: mangaId,
+                                context: context
+                            )
+
+                            // If not found, try to find a manga whose sanitized ID matches the directory name
+                            if mangaObject == nil {
+                                let allMangaForSource = CoreDataManager.shared.getManga(context: context)
+                                    .filter { $0.sourceId == sourceId }
+
+                                for candidateManga in allMangaForSource {
+                                    let candidateId = candidateManga.id
+                                    if candidateId.directoryName == mangaId {
+                                        mangaObject = candidateManga
+                                        isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                            sourceId: sourceId,
+                                            mangaId: candidateId,
+                                            context: context
+                                        )
+                                        break
+                                    }
                                 }
                             }
+
+                            let result = (
+                                title: mangaObject?.title,
+                                coverUrl: mangaObject?.cover,
+                                isInLibrary: isInLibrary,
+                                actualMangaId: mangaObject?.id ?? mangaId
+                            )
+                            continuation.resume(returning: result)
                         }
-                        
-                        let result = (
-                            title: mangaObject?.title,
-                            coverUrl: mangaObject?.cover,
-                            isInLibrary: isInLibrary,
-                            actualMangaId: mangaObject?.id ?? mangaId
-                        )
-                        continuation.resume(returning: result)
                     }
                 }
-                
+
                 let downloadedMangaInfo = DownloadedMangaInfo(
                     sourceId: sourceId,
                     mangaId: mangaMetadata.actualMangaId, // Use the actual manga ID, not directory name
@@ -358,11 +380,11 @@ extension DownloadManager {
                     chapterCount: chapterCount,
                     isInLibrary: mangaMetadata.isInLibrary
                 )
-                
+
                 downloadedManga.append(downloadedMangaInfo)
             }
         }
-        
+
         // Sort by source ID, then by title/manga ID
         downloadedManga.sort { lhs, rhs in
             if lhs.sourceId != rhs.sourceId {
@@ -370,146 +392,51 @@ extension DownloadManager {
             }
             return lhs.displayTitle.localizedCaseInsensitiveCompare(rhs.displayTitle) == .orderedAscending
         }
-        
+
         // Cache the result
         Self.downloadedMangaCache = downloadedManga
         Self.lastCacheUpdate = now
-        
+
         return downloadedManga
     }
-    
+
     /// Get downloaded chapters for a specific manga
     func getDownloadedChapters(for mangaInfo: DownloadedMangaInfo) async -> [DownloadedChapterInfo] {
         let mangaDirectory = Self.directory
             .appendingSafePathComponent(mangaInfo.sourceId)
             .appendingSafePathComponent(mangaInfo.directoryMangaId)
-        
+
         guard mangaDirectory.exists else { return [] }
-        
-        let chapterDirectories = mangaDirectory.contents.filter { 
-            $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") 
+
+        let chapterDirectories = mangaDirectory.contents.filter {
+            $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
         }
-        
+
         var chapters: [DownloadedChapterInfo] = []
-        
+
         for chapterDirectory in chapterDirectories {
             let chapterId = chapterDirectory.lastPathComponent
             let size = await calculateDirectorySize(chapterDirectory)
-            
+
             // Get directory creation date as download date
             let attributes = try? FileManager.default.attributesOfItem(atPath: chapterDirectory.path)
             let downloadDate = attributes?[.creationDate] as? Date
-            
-            // Fetch chapter metadata from CoreData (use actual manga ID, not directory name)
-            let chapterTitle = await withCheckedContinuation { continuation in
-                CoreDataManager.shared.container.performBackgroundTask { context in
-                    var chapterObject: ChapterObject?
-                    
-                    // Strategy 1: Try direct lookup first with directory chapter ID (sanitized)
-                    chapterObject = CoreDataManager.shared.getChapter(
-                        sourceId: mangaInfo.sourceId,
-                        mangaId: mangaInfo.mangaId, // Use actual manga ID for CoreData lookup
-                        chapterId: chapterId,
-                        context: context
-                    )
-                    
-                    // Strategy 2: If not found, try to find a chapter whose sanitized ID matches the directory name
-                    if chapterObject == nil {
-                        let allChaptersForManga = CoreDataManager.shared.getChapters(
-                            sourceId: mangaInfo.sourceId,
-                            mangaId: mangaInfo.mangaId,
-                            context: context
-                        )
-                        
-                        for candidateChapter in allChaptersForManga {
-                            if candidateChapter.id.directoryName == chapterId {
-                                chapterObject = candidateChapter
-                                break
-                            }
-                        }
-                    }
-                    
-                    // Strategy 3: If still not found, try partial matching (in case of encoding issues)
-                    if chapterObject == nil && mangaInfo.isInLibrary {
-                        let allChaptersForManga = CoreDataManager.shared.getChapters(
-                            sourceId: mangaInfo.sourceId,
-                            mangaId: mangaInfo.mangaId,
-                            context: context
-                        )
-                        
-                        #if DEBUG
-                        print("🔍 Chapter lookup debug for \(mangaInfo.displayTitle):")
-                        print("   Directory chapter ID: '\(chapterId)'")
-                        print("   Available chapters in CoreData:")
-                        for chapter in allChaptersForManga.prefix(10) {
-                            print("     - ID: '\(chapter.id)' -> directoryName: '\(chapter.id.directoryName)' title: '\(chapter.title ?? "nil")'")
-                        }
-                        if allChaptersForManga.count > 10 {
-                            print("     ... and \(allChaptersForManga.count - 10) more")
-                        }
-                        #endif
-                        
-                        // Try to find the best match by removing common problematic characters
-                        let normalizedDirectoryId = chapterId.lowercased()
-                            .replacingOccurrences(of: "_", with: "")
-                            .replacingOccurrences(of: "-", with: "")
-                            .replacingOccurrences(of: " ", with: "")
-                        
-                        var bestMatch: ChapterObject?
-                        var bestScore = 0
-                        
-                        for candidateChapter in allChaptersForManga {
-                            let normalizedCandidateId = candidateChapter.id.lowercased()
-                                .replacingOccurrences(of: "_", with: "")
-                                .replacingOccurrences(of: "-", with: "")
-                                .replacingOccurrences(of: " ", with: "")
-                            
-                            // Exact match after normalization
-                            if normalizedCandidateId == normalizedDirectoryId {
-                                chapterObject = candidateChapter
-                                #if DEBUG
-                                print("   ✅ Found exact normalized match: '\(candidateChapter.id)' -> '\(candidateChapter.title ?? "nil")'")
-                                #endif
-                                break
-                            }
-                            
-                            // Partial match scoring
-                            let score = self.calculateSimilarity(normalizedDirectoryId, normalizedCandidateId)
-                            if score > bestScore && score > 80 { // 80% similarity threshold
-                                bestMatch = candidateChapter
-                                bestScore = score
-                            }
-                        }
-                        
-                        // Use best match if no exact match found
-                        if chapterObject == nil && bestMatch != nil {
-                            chapterObject = bestMatch
-                            #if DEBUG
-                            print("   ⚠️ Using best match (\(bestScore)%): '\(bestMatch!.id)' -> '\(bestMatch!.title ?? "nil")'")
-                            #endif
-                        }
-                        
-                        #if DEBUG
-                        if chapterObject == nil {
-                            print("   ❌ No chapter match found for directory: '\(chapterId)'")
-                        }
-                        #endif
-                    }
-                    
-                    continuation.resume(returning: chapterObject?.title)
-                }
-            }
-            
+
+            // Try to load metadata from the chapter directory
+            let metadata = loadChapterMetadata(from: chapterDirectory)
+
             let chapterInfo = DownloadedChapterInfo(
                 chapterId: chapterId,
-                title: chapterTitle,
+                title: metadata?.title,
+                chapterNumber: metadata?.chapterNumber,
+                volumeNumber: metadata?.volumeNumber,
                 size: size,
                 downloadDate: downloadDate
             )
-            
+
             chapters.append(chapterInfo)
         }
-        
+
         // Sort chapters by ID (which should correspond to chapter order)
         chapters.sort { lhs, rhs in
             // Try to sort numerically if possible, otherwise alphabetically
@@ -518,18 +445,113 @@ extension DownloadManager {
             }
             return lhs.chapterId.localizedStandardCompare(rhs.chapterId) == .orderedAscending
         }
-        
+
         return chapters
     }
-    
+
+    /// Save chapter metadata when downloading
+    func saveChapterMetadata(_ chapter: Chapter, to directory: URL) {
+        let metadata = ChapterMetadata(
+            title: chapter.title,
+            chapterNumber: chapter.chapterNum,
+            volumeNumber: chapter.volumeNum,
+            sourceOrder: chapter.sourceOrder
+        )
+        
+        let metadataURL = directory.appendingPathComponent(".metadata.json")
+        
+        do {
+            let data = try JSONEncoder().encode(metadata)
+            try data.write(to: metadataURL)
+        } catch {
+            print("Failed to save chapter metadata: \(error)")
+        }
+    }
+
+    /// Save manga metadata when first downloading from it
+    func saveMangaMetadata(_ manga: Manga, to directory: URL) async {
+        // Get the cover image and convert to base64
+        var thumbnailBase64: String?
+        if let coverUrl = manga.cover, let url = URL(string: coverUrl) {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                thumbnailBase64 = data.base64EncodedString()
+            } catch {
+                print("Failed to download manga cover: \(error)")
+            }
+        }
+        
+        let metadata = MangaMetadata(
+            title: manga.title,
+            cover: manga.cover,
+            thumbnailBase64: thumbnailBase64,
+            description: manga.desc
+        )
+        
+        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
+        
+        do {
+            let data = try JSONEncoder().encode(metadata)
+            try data.write(to: metadataURL)
+        } catch {
+            print("Failed to save manga metadata: \(error)")
+        }
+    }
+
+    /// Load chapter metadata from directory
+    private func loadChapterMetadata(from directory: URL) -> ChapterMetadata? {
+        let metadataURL = directory.appendingPathComponent(".metadata.json")
+        
+        guard metadataURL.exists else { return nil }
+        
+        do {
+            let data = try Data(contentsOf: metadataURL)
+            return try JSONDecoder().decode(ChapterMetadata.self, from: data)
+        } catch {
+            print("Failed to load chapter metadata: \(error)")
+            return nil
+        }
+    }
+
+    /// Load manga metadata from directory
+    private func loadMangaMetadata(from directory: URL) -> MangaMetadata? {
+        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
+        
+        guard metadataURL.exists else { return nil }
+        
+        do {
+            let data = try Data(contentsOf: metadataURL)
+            return try JSONDecoder().decode(MangaMetadata.self, from: data)
+        } catch {
+            print("Failed to load manga metadata: \(error)")
+            return nil
+        }
+    }
+
+    /// Simple chapter metadata structure
+    private struct ChapterMetadata: Codable {
+        let title: String?
+        let chapterNumber: Float?
+        let volumeNumber: Float?
+        let sourceOrder: Int
+    }
+
+    /// Simple manga metadata structure
+    private struct MangaMetadata: Codable {
+        let title: String?
+        let cover: String?
+        let thumbnailBase64: String?
+        let description: String?
+    }
+
     /// Calculate the total size of a directory in bytes
     private func calculateDirectorySize(_ directory: URL) async -> Int64 {
         guard directory.exists else { return 0 }
-        
+
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .utility).async {
                 var totalSize: Int64 = 0
-                
+
                 if let enumerator = FileManager.default.enumerator(
                     at: directory,
                     includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
@@ -547,21 +569,21 @@ extension DownloadManager {
                         }
                     }
                 }
-                
+
                 continuation.resume(returning: totalSize)
             }
         }
     }
-    
+
     /// Delete chapters for a specific manga (used by download manager UI)
     func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) {
         let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.directoryMangaId)
         deleteChapters(for: manga)
-        
+
         // Invalidate cache
         Self.lastCacheUpdate = .distantPast
     }
-    
+
     /// Delete a specific chapter (used by download manager UI)
     func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) {
         let chapter = Chapter(
@@ -572,62 +594,26 @@ extension DownloadManager {
             sourceOrder: -1
         )
         delete(chapters: [chapter])
-        
+
         // Invalidate cache
         Self.lastCacheUpdate = .distantPast
     }
-    
+
     /// Get total size of all downloads
     func getTotalDownloadedSize() async -> Int64 {
         guard Self.directory.exists else { return 0 }
         return await calculateDirectorySize(Self.directory)
     }
-    
+
     /// Get formatted total download size string
     func getFormattedTotalDownloadedSize() async -> String {
         let totalSize = await getTotalDownloadedSize()
         return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
     }
-    
+
     /// Invalidate the downloaded manga cache (call when downloads are added/removed)
     func invalidateDownloadedMangaCache() {
         Self.lastCacheUpdate = .distantPast
     }
-    
-    /// Calculate similarity percentage between two strings using Levenshtein distance
-    private func calculateSimilarity(_ str1: String, _ str2: String) -> Int {
-        let len1 = str1.count
-        let len2 = str2.count
-        
-        if len1 == 0 { return len2 == 0 ? 100 : 0 }
-        if len2 == 0 { return 0 }
-        
-        // Create a matrix for dynamic programming
-        var matrix = Array(repeating: Array(repeating: 0, count: len2 + 1), count: len1 + 1)
-        
-        // Initialize first row and column
-        for i in 0...len1 { matrix[i][0] = i }
-        for j in 0...len2 { matrix[0][j] = j }
-        
-        // Fill the matrix
-        let str1Array = Array(str1)
-        let str2Array = Array(str2)
-        
-        for i in 1...len1 {
-            for j in 1...len2 {
-                let cost = str1Array[i-1] == str2Array[j-1] ? 0 : 1
-                matrix[i][j] = min(
-                    matrix[i-1][j] + 1,      // deletion
-                    matrix[i][j-1] + 1,      // insertion
-                    matrix[i-1][j-1] + cost  // substitution
-                )
-            }
-        }
-        
-        let distance = matrix[len1][len2]
-        let maxLen = max(len1, len2)
-        let similarity = ((maxLen - distance) * 100) / maxLen
-        
-        return similarity
-    }
+
 }

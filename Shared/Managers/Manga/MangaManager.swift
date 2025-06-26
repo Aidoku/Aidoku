@@ -70,7 +70,7 @@ extension MangaManager {
         let mangaForNotification = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getManga(sourceId: sourceId, mangaId: mangaId, context: context)?.toManga()
         }
-        
+
         await CoreDataManager.shared.container.performBackgroundTask { context in
             // remove from library
             CoreDataManager.shared.removeManga(
@@ -99,12 +99,12 @@ extension MangaManager {
                 LogManager.logger.error("MangaManager.removeFromLibrary(mangaId: \(mangaId)): \(error.localizedDescription)")
             }
         }
-        
+
         // Post specific notification for removal with manga object
         if let manga = mangaForNotification {
             NotificationCenter.default.post(name: Notification.Name("removeFromLibrary"), object: manga)
         }
-        
+
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
     }
 

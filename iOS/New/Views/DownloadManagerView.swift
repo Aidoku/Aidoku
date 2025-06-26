@@ -2,7 +2,7 @@
 //  DownloadManagerView.swift
 //  Aidoku
 //
-//  Created by Assistant on 12/30/24.
+//  Created by doomsboygaming on 6/25/25.
 //
 
 import SwiftUI
@@ -14,17 +14,17 @@ class DownloadManagerViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var totalSize: String = ""
     @Published var totalCount = 0
-    
+
     // Non-reactive state for background updates
     private var backgroundUpdateInProgress = false
     private var lastUpdateId = UUID()
     private var updateDebouncer: Timer?
     private var cancellables = Set<AnyCancellable>()
-    
+
     init() {
         setupNotificationObservers()
     }
-    
+
     // Group manga by source for sectioned display
     var groupedManga: [(source: String, manga: [DownloadedMangaInfo])] {
         let grouped = Dictionary(grouping: downloadedManga) { $0.sourceId }
@@ -32,13 +32,13 @@ class DownloadManagerViewModel: ObservableObject {
             .sorted { $0.key < $1.key }
             .map { (source: getSourceDisplayName($0.key), manga: $0.value) }
     }
-    
+
     func loadDownloadedManga() async {
         isLoading = true
-        
+
         let manga = await DownloadManager.shared.getAllDownloadedManga()
         let formattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
-        
+
         await MainActor.run {
             self.downloadedManga = manga
             self.totalSize = formattedSize
@@ -46,25 +46,25 @@ class DownloadManagerViewModel: ObservableObject {
             self.isLoading = false
         }
     }
-    
+
     /// Background update that preserves user navigation and minimizes UI disruption
     private func performBackgroundUpdate() async {
         // Prevent concurrent background updates
         guard !backgroundUpdateInProgress else { return }
         backgroundUpdateInProgress = true
         defer { backgroundUpdateInProgress = false }
-        
+
         let updateId = UUID()
         lastUpdateId = updateId
-        
+
         // Fetch new data in background
         let newManga = await DownloadManager.shared.getAllDownloadedManga()
         let newFormattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
-        
+
         await MainActor.run {
             // Check if this update is still relevant (not superseded by another)
             guard updateId == lastUpdateId else { return }
-            
+
             // Perform selective updates using intelligent diffing
             updateDataSelectively(
                 newManga: newManga,
@@ -72,15 +72,15 @@ class DownloadManagerViewModel: ObservableObject {
             )
         }
     }
-    
+
     /// Intelligently update only changed data to preserve navigation state
     private func updateDataSelectively(newManga: [DownloadedMangaInfo], newTotalSize: String) {
         let oldManga = downloadedManga
-        
+
         // Update totals immediately as they don't affect navigation
         totalSize = newTotalSize
         totalCount = newManga.count
-        
+
         // Only update manga list if there are actual changes
         if !areMangaListsEqual(oldManga, newManga) {
             // Use smooth animation for data changes
@@ -89,11 +89,11 @@ class DownloadManagerViewModel: ObservableObject {
             }
         }
     }
-    
+
     /// Compare manga lists efficiently to avoid unnecessary updates
     private func areMangaListsEqual(_ lhs: [DownloadedMangaInfo], _ rhs: [DownloadedMangaInfo]) -> Bool {
         guard lhs.count == rhs.count else { return false }
-        
+
         // Quick comparison by ID and key properties
         for (old, new) in zip(lhs, rhs) {
             if old.id != new.id ||
@@ -105,7 +105,7 @@ class DownloadManagerViewModel: ObservableObject {
         }
         return true
     }
-    
+
     /// Debounced update to prevent excessive refreshes
     private func scheduleBackgroundUpdate() {
         updateDebouncer?.invalidate()
@@ -115,14 +115,14 @@ class DownloadManagerViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func setupNotificationObservers() {
         // High-priority updates that need immediate response
         let immediateUpdateNotifications: [NSNotification.Name] = [
             NSNotification.Name("downloadRemoved"),
             NSNotification.Name("downloadsRemoved")
         ]
-        
+
         for notification in immediateUpdateNotifications {
             NotificationCenter.default.publisher(for: notification)
                 .receive(on: DispatchQueue.main)
@@ -133,7 +133,7 @@ class DownloadManagerViewModel: ObservableObject {
                 }
                 .store(in: &cancellables)
         }
-        
+
         // Low-priority updates that can be debounced
         let debouncedUpdateNotifications: [NSNotification.Name] = [
             NSNotification.Name("downloadFinished"),
@@ -146,7 +146,7 @@ class DownloadManagerViewModel: ObservableObject {
             NSNotification.Name("updateLibrary"),
             NSNotification.Name("updateHistory")
         ]
-        
+
         for notification in debouncedUpdateNotifications {
             NotificationCenter.default.publisher(for: notification)
                 .receive(on: DispatchQueue.main)
@@ -156,7 +156,7 @@ class DownloadManagerViewModel: ObservableObject {
                 .store(in: &cancellables)
         }
     }
-    
+
     private func getSourceDisplayName(_ sourceId: String) -> String {
         if let source = SourceManager.shared.source(for: sourceId) {
             return source.name
@@ -164,7 +164,7 @@ class DownloadManagerViewModel: ObservableObject {
         // Fallback to source ID for unknown sources
         return sourceId.capitalized
     }
-    
+
     deinit {
         updateDebouncer?.invalidate()
     }
@@ -172,7 +172,7 @@ class DownloadManagerViewModel: ObservableObject {
 
 struct DownloadManagerView: View {
     @StateObject private var viewModel = DownloadManagerViewModel()
-    
+
     var body: some View {
         Group {
             if viewModel.isLoading {
@@ -190,24 +190,24 @@ struct DownloadManagerView: View {
             await viewModel.loadDownloadedManga()
         }
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
-            
+
             Text("No Downloads")
                 .font(.title2)
                 .fontWeight(.semibold)
-            
+
             Text("Downloaded manga chapters will appear here")
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
     private var downloadsList: some View {
         List {
             // Summary header
@@ -221,7 +221,7 @@ struct DownloadManagerView: View {
                             .font(.headline)
                             .foregroundColor(.primary)
                     }
-                    
+
                     HStack {
                         Text("\(viewModel.totalCount) manga")
                             .font(.subheadline)
@@ -235,7 +235,7 @@ struct DownloadManagerView: View {
                 }
                 .padding(.vertical, 4)
             }
-            
+
             // Manga grouped by source with stable IDs for smooth updates
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
@@ -255,10 +255,10 @@ struct DownloadManagerView: View {
 
 struct DownloadedMangaRow: View {
     let manga: DownloadedMangaInfo
-    
+
     var body: some View {
-        HStack {
-            // Manga cover or placeholder
+        HStack(spacing: 12) {
+            // Manga cover or placeholder matching history page style
             AsyncImage(url: manga.coverUrl != nil ? URL(string: manga.coverUrl!) : nil) { image in
                 image
                     .resizable()
@@ -267,44 +267,51 @@ struct DownloadedMangaRow: View {
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
             }
-            .frame(width: 50, height: 70)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            
+            .frame(width: 56, height: 56 * 3/2)
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .strokeBorder(Color(UIColor.quaternarySystemFill), lineWidth: 1)
+            )
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(manga.displayTitle)
-                    .font(.headline)
+                    .font(.system(size: 16))
                     .lineLimit(2)
-                
-                HStack {
-                    Image(systemName: "doc.fill")
-                        .foregroundColor(.secondary)
-                    Text("\(manga.chapterCount) chapters")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                HStack {
-                    Image(systemName: "externaldrive.fill")
-                        .foregroundColor(.secondary)
-                    Text(manga.formattedSize)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
+
+                // Format like chapter subtitles: chapters • size
+                Text(formatMangaSubtitle())
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+
                 if manga.isInLibrary {
                     HStack {
                         Image(systemName: "books.vertical.fill")
                             .foregroundColor(.blue)
                         Text("In Library")
-                            .font(.caption)
+                            .font(.system(size: 14))
                             .foregroundColor(.blue)
                     }
                 }
             }
-            
+
             Spacer()
         }
         .contentShape(Rectangle())
+    }
+
+    private func formatMangaSubtitle() -> String {
+        var components: [String] = []
+
+        // Add chapter count
+        let chapterText = manga.chapterCount == 1 ? "1 chapter" : "\(manga.chapterCount) chapters"
+        components.append(chapterText)
+
+        // Add size
+        components.append(manga.formattedSize)
+
+        return components.joined(separator: " • ")
     }
 }
 
@@ -312,4 +319,4 @@ struct DownloadedMangaRow: View {
     NavigationView {
         DownloadManagerView()
     }
-} 
+}

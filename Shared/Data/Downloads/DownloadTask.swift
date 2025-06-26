@@ -201,6 +201,16 @@ actor DownloadTask: Identifiable {
 
         if currentPage == pages.count {
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
+                // Save chapter metadata after successful download
+                await DownloadManager.shared.saveChapterMetadata(chapter, to: directory)
+                
+                // Save manga metadata when first chapter for this manga is downloaded
+                let mangaDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
+                if !metadataPath.exists, let mangaInfo = downloads[downloadIndex].manga {
+                    await DownloadManager.shared.saveMangaMetadata(mangaInfo, to: mangaDirectory)
+                }
+                
                 await cache.add(chapter: chapter)
             }
             if let download = downloads[safe: downloadIndex] {
