@@ -145,8 +145,8 @@
 "LOGOUT" = "登出";
 "MULTI_LANGUAGE" = "多語言";
 "STATUS" = "狀態";
-"READING" = "閱讀中";
-"PAUSED" = "擱置中";
+"TRACK_READING" = "閱讀中";
+"TRACK_PAUSED" = "擱置中";
 "FINISHED" = "已完結";
 "MANHWA" = "韓漫";
 "LIGHT_NOVEL" = "輕小說";
@@ -268,7 +268,7 @@
 "DELETE_DOWNLOAD_AFTER_READING" = "閱讀完刪除下載";
 "CROP_BORDERS" = "裁減邊緣";
 "READER_BG_COLOR" = "背景顏色";
-"DROPPED" = "已棄追";
+"TRACK_DROPPED" = "已棄追";
 "ONESHOT" = "短篇";
 "FAILED_CHAPTER_LOAD_INFO" = "您可能處於離線狀態或來源出現問題。";
 "RENAME_CATEGORY_INFO" = "為此類別輸入一個新名稱。";
@@ -300,8 +300,8 @@
 "CATEGORY_EMPTY" = "類別為空";
 "VOLUMES" = "冊數";
 "STARTED" = "已開始";
-"REREADING" = "重溫中";
-"PLANNING" = "待閱讀";
+"TRACK_REREADING" = "重溫中";
+"TRACK_PLANNING" = "待閱讀";
 "TYPE_COLON_%@" = "類型：%@";
 "CLEAR_TRACKED_MANGA_TEXT" = "不可逆的操作，所有漫畫的進度追蹤將會從進度追蹤器中刪除。";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "您確定要移除所有下載內容嗎？";

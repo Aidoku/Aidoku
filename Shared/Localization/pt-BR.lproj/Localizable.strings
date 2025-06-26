@@ -259,12 +259,12 @@
 "VOLUMES" = "Volumes";
 "STARTED" = "Iniciado";
 "STATUS" = "Status";
-"REREADING" = "Relendo";
+"TRACK_REREADING" = "Relendo";
 "START_TRACKING" = "Começar a seguir";
-"PAUSED" = "Pausado";
+"TRACK_PAUSED" = "Pausado";
 "FINISHED" = "Finalizado";
-"READING" = "Lendo";
-"DROPPED" = "Abandonado";
+"TRACK_READING" = "Lendo";
+"TRACK_DROPPED" = "Abandonado";
 "MANHWA" = "Manhwa";
 "NOT_PUBLISHED" = "Não publicado";
 "MANHUA" = "Manhua";
@@ -272,7 +272,7 @@
 "SCORE" = "Pontuação";
 "STOP_TRACKING" = "Deixar de seguir";
 "TRACK" = "Seguir";
-"PLANNING" = "Planejamento";
+"TRACK_PLANNING" = "Planejamento";
 "ONESHOT" = "One-shot";
 "MANGA" = "Manga";
 "TYPE_COLON_%@" = "Tipo: %@";

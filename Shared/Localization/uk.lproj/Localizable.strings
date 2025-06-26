@@ -257,7 +257,7 @@
 "SELECTED" = "Обрані";
 "MIGRATE_%i_ITEMS?" = "Мігрувати %i елементів?";
 "UPLOAD_DATE" = "Дата завантаження";
-"DROPPED" = "Покинуто";
+"TRACK_DROPPED" = "Покинуто";
 "STOP_TRACKING" = "Припинити відстеження";
 "MANHWA" = "Манхва";
 "ONESHOT" = "Ван-шот";
@@ -308,13 +308,13 @@
 "STATUS" = "Статус";
 "VOLUMES" = "Томи";
 "STARTED" = "Розпочата";
-"REREADING" = "Перечитати";
+"TRACK_REREADING" = "Перечитати";
 "START_TRACKING" = "Почати відстеження";
 "SCORE" = "Оцінка";
-"PAUSED" = "Призупинено";
+"TRACK_PAUSED" = "Призупинено";
 "FINISHED" = "Закінчено";
-"READING" = "Читати";
-"PLANNING" = "Планую";
+"TRACK_READING" = "Читати";
+"TRACK_PLANNING" = "Планую";
 "MANGA" = "Манґа";
 "SET_AS_WIDE_PAGE" = "Встановити як широку сторінку";
 "CATEGORY_NAME" = "Назва категорії";

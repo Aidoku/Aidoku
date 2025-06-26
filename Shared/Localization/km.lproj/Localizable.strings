@@ -167,10 +167,10 @@
 "STATUS" = "ស្ថានភាព";
 "VOLUMES" = "ចំនូនជំពូក";
 "STARTED" = "បានចាប់ផ្តើម";
-"REREADING" = "ការអានឡើងវិញ";
+"TRACK_REREADING" = "ការអានឡើងវិញ";
 "START_TRACKING" = "ចាប់ផ្តើមតាមដាន";
 "SCORE" = "ការវាយតម្លៃ";
-"READING" = "ការអាន";
+"TRACK_READING" = "ការអាន";
 "ONESHOT" = "ONESHOT";
 "MANHWA" = "ម៉ានវ៉ា (Manhwa)";
 "MANHUA" = "ម៉ានហ័រ (Manhua)";
@@ -307,10 +307,10 @@
 "EXCLUDED_CATEGORIES" = "ធ្នើសៀវភៅម៉ានហ្គាដែលមិនរាប់បញ្ចូល";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "ដើម្បីស្តារ Backup នេះ ស្វែងរកវានៅក្នុងទំព័រ Backups នៅក្នុងការកំណត់។";
 "BACKUP_IMPORT_FAIL_TEXT" = "បរាជ័យក្នុងការរក្សា Backup។ សូមប្រាកដថា Backup របស់អ្នកស្ថិតក្នុងទម្រង់ត្រឹមត្រូវ។";
-"DROPPED" = "បោះបង់ចោល";
-"PAUSED" = "បញ្ឈប់ជាបណ្តោះអាសន្ន";
+"TRACK_DROPPED" = "បោះបង់ចោល";
+"TRACK_PAUSED" = "បញ្ឈប់ជាបណ្តោះអាសន្ន";
 "FINISHED" = "អានរួចហើយ";
-"PLANNING" = "កាលវិភាគអាន";
+"TRACK_PLANNING" = "កាលវិភាគអាន";
 "STOP_TRACKING" = "បញ្ឈប់ការតាមដាន";
 "NOT_PUBLISHED" = "មិនបានផ្សព្វផ្សាយ";
 "RESET_TEXT" = "ប្រតិបត្តិការនេះមិនអាចត្រឡប់វិញបានទេ។ ទិន្នន័យ ការកំណត់ និងឃ្លាំងសម្ងាត់ទាំងអស់នឹងត្រូវបានសម្អាត និងកំណត់ឡើងវិញ។";

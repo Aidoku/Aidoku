@@ -128,7 +128,7 @@ class BackupManager {
 
         var stringValue: String {
             switch self {
-            case .manga: NSLocalizedString("MANGA", comment: "")
+            case .manga: NSLocalizedString("CONTENT", comment: "")
             case .categories: NSLocalizedString("CATEGORIES", comment: "")
             case .library: NSLocalizedString("LIBRARY", comment: "")
             case .history: NSLocalizedString("HISTORY", comment: "")
