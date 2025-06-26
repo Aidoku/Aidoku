@@ -307,7 +307,7 @@ extension DownloadManager {
 
                 // Try to load metadata from the manga directory first
                 let storedMetadata = loadMangaMetadata(from: mangaDirectory)
-                
+
                 // Fallback to CoreData only if no stored metadata exists
                 let mangaMetadata = if let storedMetadata = storedMetadata {
                     (
@@ -457,9 +457,9 @@ extension DownloadManager {
             volumeNumber: chapter.volumeNum,
             sourceOrder: chapter.sourceOrder
         )
-        
+
         let metadataURL = directory.appendingPathComponent(".metadata.json")
-        
+
         do {
             let data = try JSONEncoder().encode(metadata)
             try data.write(to: metadataURL)
@@ -472,24 +472,24 @@ extension DownloadManager {
     func saveMangaMetadata(_ manga: Manga, to directory: URL) async {
         // Get the cover image and convert to base64
         var thumbnailBase64: String?
-        if let coverUrl = manga.cover, let url = URL(string: coverUrl) {
+        if let coverUrl = manga.coverUrl {
             do {
-                let (data, _) = try await URLSession.shared.data(from: url)
+                let (data, _) = try await URLSession.shared.data(from: coverUrl)
                 thumbnailBase64 = data.base64EncodedString()
             } catch {
                 print("Failed to download manga cover: \(error)")
             }
         }
-        
+
         let metadata = MangaMetadata(
             title: manga.title,
-            cover: manga.cover,
+            cover: manga.coverUrl?.absoluteString,
             thumbnailBase64: thumbnailBase64,
-            description: manga.desc
+            description: manga.description
         )
-        
+
         let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
-        
+
         do {
             let data = try JSONEncoder().encode(metadata)
             try data.write(to: metadataURL)
@@ -501,9 +501,9 @@ extension DownloadManager {
     /// Load chapter metadata from directory
     private func loadChapterMetadata(from directory: URL) -> ChapterMetadata? {
         let metadataURL = directory.appendingPathComponent(".metadata.json")
-        
+
         guard metadataURL.exists else { return nil }
-        
+
         do {
             let data = try Data(contentsOf: metadataURL)
             return try JSONDecoder().decode(ChapterMetadata.self, from: data)
@@ -516,9 +516,9 @@ extension DownloadManager {
     /// Load manga metadata from directory
     private func loadMangaMetadata(from directory: URL) -> MangaMetadata? {
         let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
-        
+
         guard metadataURL.exists else { return nil }
-        
+
         do {
             let data = try Data(contentsOf: metadataURL)
             return try JSONDecoder().decode(MangaMetadata.self, from: data)
