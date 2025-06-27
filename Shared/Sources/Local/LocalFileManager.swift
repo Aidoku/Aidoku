@@ -158,15 +158,41 @@ extension LocalFileManager {
         self.suppressFileEvents = true
         defer { self.suppressFileEvents = false }
 
-        // the given url comes from an imported file, so we need to do this
-        guard url.startAccessingSecurityScopedResource() else {
-            throw LocalFileManagerError.securityScopeDenied
-        }
-        defer { url.stopAccessingSecurityScopedResource() }
+        let documentsDirectory = FileManager.default.documentDirectory
 
         // ensure the file is one we can parse
         guard Self.allowedFileExtensions.contains(url.pathExtension.lowercased()) else {
-            throw LocalFileManagerError.notCBZFile
+            throw LocalFileManagerError.invalidFileType
+        }
+
+        // if the url isn't in the documents directory, we need to copy it there
+        var url = url
+        var shouldRemoveUrl = false
+        if !url.path.contains(documentsDirectory.path) {
+            // if the given url comes from an imported file, we need to do this
+            guard url.startAccessingSecurityScopedResource() else {
+                throw LocalFileManagerError.securityScopeDenied
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            // create a temporary url to copy file to
+            guard let tempUrl = FileManager.default.temporaryDirectory?.appendingPathComponent(url.lastPathComponent) else {
+                throw LocalFileManagerError.tempDirectoryUnavailable
+            }
+            // copy url to temp folder
+            do {
+                try FileManager.default.copyItem(at: url, to: tempUrl)
+            } catch {
+                throw LocalFileManagerError.fileCopyFailed
+            }
+            // remove the temporary file when done
+            shouldRemoveUrl = true
+            url = tempUrl
+        }
+        defer {
+            if shouldRemoveUrl {
+                try? FileManager.default.removeItem(at: url)
+            }
         }
 
         // read zip file
@@ -174,6 +200,7 @@ extension LocalFileManager {
         do {
             archive = try Archive(url: url, accessMode: .read)
         } catch {
+            LogManager.logger.error("Failed to read archive at \(url.path): \(error)")
             throw LocalFileManagerError.cannotReadArchive
         }
 
@@ -357,7 +384,7 @@ extension LocalFileManager {
         defer { self.suppressFileEvents = false }
 
         let documentsDir = FileManager.default.documentDirectory
-        let fileURL = documentsDir.appendingPathComponent(filePath)
+        let fileURL = documentsDir.append(path: filePath)
         if fileURL.exists {
             try? FileManager.default.removeItem(at: fileURL)
         }
@@ -422,9 +449,14 @@ extension LocalFileManager {
                 includingPropertiesForKeys: nil,
                 options: .skipsHiddenFiles
             ))?.filter { Self.allowedFileExtensions.contains($0.pathExtension.lowercased()) } ?? []
+            let mangaId = folder.lastPathComponent
             // add cbz files as chapters
             for cbzFile in cbzFiles {
-                try? await uploadFile(from: cbzFile, mangaId: folder.lastPathComponent)
+                do {
+                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                } catch {
+                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for new manga \(mangaId): \(error)")
+                }
             }
         }
 
@@ -450,7 +482,7 @@ extension LocalFileManager {
                 do {
                     try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
                 } catch {
-                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \"\(mangaId)\": \(error)")
+                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \(mangaId): \(error)")
                 }
             }
         }

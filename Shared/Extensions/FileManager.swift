@@ -51,6 +51,18 @@ extension URL {
     func appendingSafePathComponent(_ pathComponent: String) -> URL {
         self.appendingPathComponent(pathComponent.components(separatedBy: Self.invalidDirectoryCharacters).joined())
     }
+
+    func append(path: String) -> URL {
+        if #available(iOS 16.0, *) {
+            return appending(path: path)
+        } else {
+            var url = self
+            for component in path.split(separator: "/") {
+                url = url.appendingPathComponent(String(component))
+            }
+            return url
+        }
+    }
 }
 
 extension FileManager {
