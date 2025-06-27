@@ -57,7 +57,9 @@ struct Carousel<Data: RandomAccessCollection, Content: View>: UIViewRepresentabl
     }
 
     func updateUIView(_ uiView: CarouselCollectionView, context: Context) {
-        uiView.isAutoScrollEnabled = !autoScrollPaused
+        if autoScrollInterval != nil {
+            uiView.isAutoScrollEnabled = !autoScrollPaused
+        }
         uiView.reloadData()
     }
 
@@ -189,7 +191,7 @@ class CarouselCollectionView: UICollectionView {
     weak var carouselDataSource: CarouselCollectionViewDataSource?
 
     let flowLayout: UICollectionViewFlowLayout
-    var autoScrollInterval: TimeInterval = 5
+    var autoScrollInterval: TimeInterval = 0
 
     var isAutoScrollEnabled: Bool = false {
         didSet {
@@ -207,7 +209,6 @@ class CarouselCollectionView: UICollectionView {
             if let fakeIndexPath = indexPathForItem(at: center) {
                 return getRealIndex(fakeIndexPath)
             } else {
-//                assertionFailure()
                 return 0
             }
         }
