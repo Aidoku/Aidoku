@@ -292,7 +292,7 @@ class SourceViewController: MangaCollectionViewController {
         } else {
             url = nil
         }
-        if let url = url {
+        if let url, url.scheme == "http" || url.scheme == "https" {
             let safariViewController = SFSafariViewController(url: url)
             present(safariViewController, animated: true)
         }

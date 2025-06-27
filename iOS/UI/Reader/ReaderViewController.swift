@@ -345,7 +345,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     @objc func openWebView() {
-        guard let url = chapter.url else { return }
+        guard let url = chapter.url, url.scheme == "http" || url.scheme == "https" else { return }
         present(SFSafariViewController(url: url), animated: true)
     }
 

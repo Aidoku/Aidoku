@@ -360,7 +360,10 @@ extension SettingsTableViewController {
                 )
             }
         case "link":
-            guard let url = URL(string: item.url ?? item.key ?? "") else { return }
+            guard
+                let url = URL(string: item.url ?? item.key ?? ""),
+                url.scheme == "http" || url.scheme == "https"
+            else { return }
             if let notification = item.notification {
                 self.source?.performAction(key: notification)
                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
