@@ -40,6 +40,16 @@ struct ExternalSourceInfo: Codable, Hashable {
             }
         }
     }
+
+    var resolvedContentRating: AidokuRunner.SourceContentRating {
+        if let contentRating {
+            contentRating
+        } else if let nsfw, let rating = AidokuRunner.SourceContentRating(rawValue: nsfw) {
+            rating
+        } else {
+            .safe
+        }
+    }
 }
 
 extension ExternalSourceInfo {
@@ -66,7 +76,7 @@ extension ExternalSourceInfo {
             altNames: altNames ?? [],
             languages: languages ?? lang.flatMap { [$0] } ?? [],
             version: version,
-            contentRating: .init(rawValue: nsfw ?? 0) ?? .safe,
+            contentRating: resolvedContentRating,
             externalInfo: self
         )
     }
