@@ -260,7 +260,7 @@ extension LocalFileDataManager {
         description: String? = nil
     ) {
         let fileInfo = LocalFileInfoObject(context: context)
-        fileInfo.path = url.path.replacingOccurrences(of: FileManager.default.documentDirectory.path, with: "")
+        fileInfo.path = removeDocumentsDirPrefix(from: url)
         let values = try? url.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
         fileInfo.dateCreated = values?.creationDate
         fileInfo.dateModified = values?.contentModificationDate
@@ -289,11 +289,9 @@ extension LocalFileDataManager {
         request.fetchLimit = 1
         guard let mangaObject = (try? context.fetch(request))?.first else { return }
 
-        let documentsDirPath = FileManager.default.documentDirectory.path + "/"
-
         // create chapter in db
         let fileInfo = LocalFileInfoObject(context: self.context)
-        fileInfo.path = url.path.replacingOccurrences(of: documentsDirPath, with: "")
+        fileInfo.path = removeDocumentsDirPrefix(from: url)
         let values = try? url.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey])
         fileInfo.dateCreated = values?.creationDate
         fileInfo.dateModified = values?.contentModificationDate
@@ -358,5 +356,18 @@ extension LocalFileDataManager {
             // manga that exist on disk but not in db
             folderMangaIds.subtracting(dbMangaIds),
         )
+    }
+}
+
+// MARK: Helpers
+extension LocalFileDataManager {
+    private func removeDocumentsDirPrefix(from url: URL) -> String {
+        let documentsDirPath = FileManager.default.documentDirectory.path + "/"
+        let path = url.path.replacingOccurrences(of: documentsDirPath, with: "")
+        let privatePrefix = "/private"
+        if path.hasPrefix(privatePrefix) {
+            return String(path.dropFirst(privatePrefix.count))
+        }
+        return path
     }
 }

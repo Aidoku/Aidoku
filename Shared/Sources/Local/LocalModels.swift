@@ -8,8 +8,9 @@
 import Foundation
 
 enum LocalFileManagerError: Error {
+    case invalidFileType
     case securityScopeDenied
-    case notCBZFile
+    case tempDirectoryUnavailable
     case cannotReadArchive
     case noImagesFound
     case fileCopyFailed
