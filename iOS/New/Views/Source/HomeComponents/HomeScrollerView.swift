@@ -95,7 +95,10 @@ struct HomeScrollerView: View {
                                 Button {
                                     switch value {
                                         case .url(let urlString):
-                                            guard let url = URL(string: urlString) else { return }
+                                            guard
+                                                let url = URL(string: urlString),
+                                                url.scheme == "http" || url.scheme == "https"
+                                            else { return }
                                             path.present(SFSafariViewController(url: url))
                                         case .listing(let listing):
                                             path.push(SourceListingViewController(source: source, listing: listing))

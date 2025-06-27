@@ -313,6 +313,7 @@ struct MangaDetailsHeaderView: View {
 
             if let url = manga.url {
                 Button {
+                    guard url.scheme == "http" || url.scheme == "https" else { return }
                     path.present(SFSafariViewController(url: url))
                 } label: {
                     Image(systemName: "safari")
