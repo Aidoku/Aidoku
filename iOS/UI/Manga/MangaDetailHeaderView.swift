@@ -222,6 +222,9 @@ class MangaDetailHeaderView: UIView {
     }
 
     private func configure() {
+        // fix buttons turning gray when reloaded with a sheet presented (e.g. migration view)
+        tintAdjustmentMode = .normal
+
         descriptionLabel.sizeChangeListener = self
 
         bookmarkButton.addTarget(self, action: #selector(bookmarkPressed), for: .touchUpInside)
