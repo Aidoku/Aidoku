@@ -46,6 +46,7 @@ struct MangaListView: View {
                         HomeGridView(
                             source: source,
                             entries: entries,
+                            bookmarkedItems: $bookmarkedItems,
                             loadMore: {
                                 if hasMore {
                                     await loadEntries()
@@ -57,6 +58,7 @@ struct MangaListView: View {
                         HomeListView(
                             source: source,
                             component: .init(title: nil, value: .mangaList(entries: entries.map { $0.intoLink() })),
+                            bookmarkedItems: $bookmarkedItems,
                             loadMore: {
                                 if hasMore {
                                     await loadEntries()
