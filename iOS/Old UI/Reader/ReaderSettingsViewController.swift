@@ -36,6 +36,24 @@ class ReaderSettingsViewController: SettingsTableViewController {
             SettingItem(type: "switch", key: "Reader.saveImageOption", title: NSLocalizedString("SAVE_IMAGE_OPTION", comment: "")),
             SettingItem(
                 type: "select",
+                key: "Reader.tapZones",
+                title: NSLocalizedString("TAP_ZONES", comment: ""),
+                values: ["auto", "left-right", "l-shaped", "kindle", "disabled"],
+                titles: [
+                    NSLocalizedString("AUTOMATIC", comment: ""),
+                    NSLocalizedString("ZONE_LEFT_RIGHT", comment: ""),
+                    NSLocalizedString("ZONE_L_SHAPED", comment: ""),
+                    NSLocalizedString("ZONE_KINDLE", comment: ""),
+                    NSLocalizedString("DISABLED", comment: "")
+                ]
+            ),
+            SettingItem(
+                type: "switch",
+                key: "Reader.animatePageTransitions",
+                title: NSLocalizedString("ANIMATE_PAGE_TRANSITIONS")
+            ),
+            SettingItem(
+                type: "select",
                 key: "Reader.backgroundColor",
                 title: NSLocalizedString("READER_BG_COLOR", comment: ""),
                 values: ["system", "white", "black"],
