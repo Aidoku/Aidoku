@@ -372,3 +372,11 @@
 "MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "將%i個項目從類別%@中移除";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "將項目從類別%@中移除";
+"CONTENT" = "漫畫";
+"DONE" = "完成";
+"INVALID" = "無效";
+"MORE_BARBUTTON" = "更多";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "將項目從書櫃中移除";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "將%i個項目從書櫃中移除";
+"HOME" = "首頁";
+"DISCARD_CHANGES" = "捨棄所作更動";
