@@ -138,6 +138,7 @@ final class KomgaSourceRunner: Runner {
         providesHome: true,
         dynamicFilters: true,
         dynamicListings: true,
+        providesImageRequests: true,
         providesBaseUrl: true,
         handlesBasicLogin: true
     )
@@ -584,6 +585,13 @@ final class KomgaSourceRunner: Runner {
         }
     }
 
+    func getImageRequest(url: String, context: PageContext?) async throws -> URLRequest {
+        guard let url = URL(string: url) else { throw SourceError.message("Invalid URL") }
+        var request = URLRequest(url: url)
+        request.setValue(helper.getAuthorizationHeader(), forHTTPHeaderField: "Authorization")
+        return request
+    }
+
     func getBaseUrl() async throws -> URL? {
         URL(string: try helper.getConfiguredServer())
     }
@@ -707,7 +715,7 @@ struct KomgaHelper: Sendable {
         }
     }
 
-    private func getAuthorizationHeader() -> String? {
+    func getAuthorizationHeader() -> String? {
         let username = UserDefaults.standard.string(forKey: "\(sourceKey).login.username")
         let password = UserDefaults.standard.string(forKey: "\(sourceKey).login.password")
         guard let username, let password else {
