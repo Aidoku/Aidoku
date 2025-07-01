@@ -28,6 +28,7 @@
 "ENABLE_PERMISSION" = "Enable Permission";
 "PHOTOS_ACCESS_DENIED_TEXT" = "Access was previously denied. Please allow Aidoku access to your Photos to save images to your Camera Roll. You can enable access in privacy settings.";
 "CONTENT" = "Content";
+"%@_EXPERIMENTAL" = "%@ (Experimental)";
 
 // Downloads
 "DOWNLOAD" = "Download";
@@ -366,6 +367,18 @@
 "UNAVAILABLE_SOURCE_LISTS" = "Unavailable Source Lists";
 "UNAVAILABLE_SOURCE_LISTS_TEXT" = "An error occured while fetching the above source lists.";
 "COPY_URL" = "Copy URL";
+
+// Upscaling
+"UPSCALING" = "Upscaling";
+"UPSCALE_IMAGES" = "Upscale Images";
+"UPSCALING_MODELS" = "Upscaling Models";
+"UPSCALE_MAX_IMAGE_HEIGHT" = "Maximum Image Height";
+"UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "Images larger than the maxmimum image height won't be upscaled.";
+"ENABLED_MODEL" = "Enabled Model";
+"AVAILABLE_MODELS" = "Available Models";
+"NO_AVAILABLE_MODELS" = "No Available Models";
+"NO_AVAILABLE_MODELS_TEXT" = "Failed to fetch available models. Check your network connection and ensure your app is running the latest version.";
+"MODEL_INFO" = "Model Info";
 
 "LOCK_HISTORY_TAB" = "Lock History Tab";
 "DOWNSAMPLE_IMAGES" = "Downsample Images";

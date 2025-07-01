@@ -5,8 +5,8 @@
 //  Created by Skitty on 8/15/22.
 //
 
-import UIKit
 import AidokuRunner
+import UIKit
 
 class ReaderPagedViewController: BaseObservingViewController {
 
@@ -70,6 +70,18 @@ class ReaderPagedViewController: BaseObservingViewController {
         addObserver(forName: "Reader.pagesToPreload") { [weak self] notification in
             self?.pagesToPreload = notification.object as? Int
                 ?? UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+        }
+        addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
+            // clear pages that aren't in the preload range if we get a memory warning
+            guard
+                let self,
+                let viewController = pageViewController.viewControllers?.first,
+                let currentIndex = getIndex(of: viewController, pos: .first)
+            else { return }
+            let safeRange = max(0, currentIndex - pagesToPreload)...min(pageViewControllers.count - 1, currentIndex + pagesToPreload)
+            for (idx, controller) in pageViewControllers.enumerated() where !safeRange.contains(idx) {
+                controller.clearPage()
+            }
         }
     }
 
