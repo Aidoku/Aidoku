@@ -113,7 +113,7 @@ struct ReaderSettingsView: View {
                 }
 
                 if #available(iOS 16.0, *), !downsampleImages.value {
-                    Section(NSLocalizedString("UPSCALING")) {
+                    Section {
                         SettingView(
                             setting: .init(
                                 key: "Reader.upscaleImages",
@@ -125,7 +125,22 @@ struct ReaderSettingsView: View {
                             NavigationLink(destination: UpscaleModelListView()) {
                                 Text(NSLocalizedString("UPSCALING_MODELS"))
                             }
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.upscaleMaxHeight",
+                                    title: NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT"),
+                                    value: .stepper(.init(
+                                        minimumValue: 200,
+                                        maximumValue: 4000,
+                                        stepValue: 100
+                                    ))
+                                )
+                            )
                         }
+                    } header: {
+                        Text(NSLocalizedString("UPSCALING"))
+                    } footer: {
+                        Text(NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT_TEXT"))
                     }
                 }
 

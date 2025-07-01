@@ -125,6 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.markDuplicateChapters": true,
                 "Reader.downsampleImages": true,
                 "Reader.upscaleImages": false,
+                "Reader.upscaleMaxHeight": 2000,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
                 "Reader.backgroundColor": "black",

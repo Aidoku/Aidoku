@@ -317,6 +317,7 @@ extension SettingView {
         HStack {
             VStack(alignment: .leading) {
                 Text(setting.title)
+                    .lineLimit(1)
                 if let subtitle = value.subtitle {
                     Text(NSLocalizedString(subtitle))
                         .font(.footnote)
@@ -340,6 +341,7 @@ extension SettingView {
     func stepperView(value: StepperSetting) -> some View {
         HStack {
             Text(setting.title)
+                .lineLimit(1)
             Spacer()
             if value.maximumValue >= value.minimumValue {
                 Text(String(format: "%g", doubleBinding))
