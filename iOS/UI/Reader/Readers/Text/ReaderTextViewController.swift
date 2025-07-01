@@ -82,6 +82,34 @@ class ReaderTextViewController: BaseViewController {
 
 // MARK: - Reader Delegate
 extension ReaderTextViewController: ReaderReaderDelegate {
+    func moveLeft() {
+        let offset = CGPoint(
+            x: scrollView.contentOffset.x,
+            y: max(
+                0,
+                scrollView.contentOffset.y - scrollView.bounds.height * 2/3
+            )
+        )
+        scrollView.setContentOffset(
+            offset,
+            animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        )
+    }
+
+    func moveRight() {
+        let offset = CGPoint(
+            x: scrollView.contentOffset.x,
+            y: min(
+                scrollView.contentSize.height - scrollView.bounds.height,
+                scrollView.contentOffset.y + scrollView.bounds.height * 2/3
+            )
+        )
+        scrollView.setContentOffset(
+            offset,
+            animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        )
+    }
+
     func sliderMoved(value: CGFloat) {
         isSliding = true
 
