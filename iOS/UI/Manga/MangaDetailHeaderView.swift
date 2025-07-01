@@ -536,6 +536,7 @@ class MangaDetailHeaderView: UIView {
     }
     @objc private func safariPressed() {
         delegate?.safariPressed()
+        NSObject.cancelPreviousPerformRequests(withTarget: self)
     }
     @objc private func safariHeld() {
         cancelSafariButtonPress = true
