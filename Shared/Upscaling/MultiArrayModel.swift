@@ -14,7 +14,6 @@ import Accelerate
 import CoreML
 import MetalKit
 
-@available(iOS 16.0, *)
 class MultiArrayModel: ImageProcessingModel {
     private let mlmodel: MLModel
     private let inputName: String
@@ -159,9 +158,10 @@ class MultiArrayModel: ImageProcessingModel {
                     for channel in 0..<3 {
                         let channelOffset = outBlockSize * outBlockSize * channel
                         let src = dataPointer.advanced(by: channelOffset)
+                        let count = outBlockSize * outBlockSize
                         // use temporary buffer for this channel's output
-                        var tempBlock = [UInt8](repeating: 0, count: outBlockSize * outBlockSize)
-                        normalizeAccelerate(src, &tempBlock, count: outBlockSize * outBlockSize)
+                        var tempBlock = [UInt8](repeating: 0, count: count)
+                        normalizeAccelerate(src, &tempBlock, count: count)
                         // write to output image buffer
                         for srcY in 0..<outBlockSize {
                             for srcX in 0..<outBlockSize {
@@ -252,8 +252,7 @@ private class MLInput: MLFeatureProvider {
 private extension MLModel {
     func prediction(inputName: String, outputName: String, input: MLMultiArray) throws -> MLMultiArray? {
         let inputProvider = MLInput(name: inputName, input: input)
-        // swiftlint:disable:next force_try
-        let outFeatures = try! self.prediction(from: inputProvider)
+        let outFeatures = try self.prediction(from: inputProvider)
         return outFeatures.featureValue(for: outputName)?.multiArrayValue
     }
 }
