@@ -247,6 +247,9 @@ class MangaGridCell: UICollectionViewCell {
 
         self.imageView.stopAnimatingGIF()
 
+        // ensure sources are loaded so we can get the modified image request
+        await SourceManager.shared.loadSources()
+
         let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
             await source.getModifiedImageRequest(url: url, context: nil)
         } else {
