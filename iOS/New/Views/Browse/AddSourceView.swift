@@ -157,32 +157,31 @@ struct AddSourceView: View {
             )
             .animation(.default, value: searchText)
             .animation(.default, value: searching)
-            .fileImporter(
-                isPresented: $importing,
-                allowedContentTypes: [UTType(exportedAs: "app.aidoku.Aidoku.aix", conformingTo: .zip)],
-                onCompletion: { result in
-                    switch result {
-                        case .success(let url):
-                            Task {
-                                if CFURLStartAccessingSecurityScopedResource(url as CFURL) {
-                                    let result = try? await SourceManager.shared.importSource(from: url)
-                                    if result == nil {
-                                        showImportFailAlert = true
-                                    } else {
-                                        dismiss()
-                                    }
-                                    CFURLStopAccessingSecurityScopedResource(url as CFURL)
-                                } else {
-                                    LogManager.logger.error("Unable to access imported file: \(url)")
+            .sheet(isPresented: $importing) {
+                DocumentPickerView(
+                    allowedContentTypes: [UTType(exportedAs: "app.aidoku.Aidoku.aix", conformingTo: .zip)],
+                    onDocumentsPicked: { urls in
+                        guard let url = urls.first else {
+                            return
+                        }
+                        Task {
+                            if CFURLStartAccessingSecurityScopedResource(url as CFURL) {
+                                let result = try? await SourceManager.shared.importSource(from: url)
+                                if result == nil {
                                     showImportFailAlert = true
+                                } else {
+                                    dismiss()
                                 }
+                                CFURLStopAccessingSecurityScopedResource(url as CFURL)
+                            } else {
+                                LogManager.logger.error("Unable to access imported file: \(url)")
+                                showImportFailAlert = true
                             }
-                        case .failure(let error):
-                            LogManager.logger.error("Unable import file: \(error)")
-                            showImportFailAlert = true
+                        }
                     }
-                }
-            )
+                )
+                .ignoresSafeArea()
+            }
             .alert(NSLocalizedString("IMPORT_FAIL"), isPresented: $showImportFailAlert) {
                 Button(NSLocalizedString("OK"), role: .cancel) {}
             } message: {

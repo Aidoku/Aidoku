@@ -130,30 +130,30 @@ extension LocalFileImportView.ContentView {
             } message: {
                 Text(NSLocalizedString("FILE_IMPORT_FAIL_TEXT"))
             }
-            .fileImporter(
-                isPresented: $importing,
-                allowedContentTypes: [UTType(exportedAs: "vnd.comicbook-zip", conformingTo: .zip), .zip],
-                onCompletion: { result in
-                    switch result {
-                        case .success(let url):
-                            loadingFile = true
-                            Task {
-                                let importFileInfo = await LocalFileManager.shared.loadImportFileInfo(url: url)
-                                if let importFileInfo {
-                                    fileInfo = importFileInfo
-                                    fullyPresented = true
-                                } else {
-                                    showImportFailAlert = true
-                                }
-                                loadingFile = false
-                                loadingImport = false
+            .sheet(isPresented: $importing) {
+                DocumentPickerView(
+                    allowedContentTypes: [.init(filenameExtension: "cbz")!, .zip],
+                    onDocumentsPicked: { urls in
+                        guard let url = urls.first else {
+                            loadingImport = false
+                            return
+                        }
+                        loadingFile = true
+                        Task {
+                            let importFileInfo = await LocalFileManager.shared.loadImportFileInfo(url: url)
+                            if let importFileInfo {
+                                fileInfo = importFileInfo
+                                fullyPresented = true
+                            } else {
+                                showImportFailAlert = true
                             }
-                        case .failure(let error):
-                            LogManager.logger.error("Unable import file: \(error)")
-                            showImportFailAlert = true
+                            loadingFile = false
+                            loadingImport = false
+                        }
                     }
-                }
-            )
+                )
+                .ignoresSafeArea()
+            }
             .onChange(of: fileInfo) { _ in
                 loadFileInfoFields()
             }
