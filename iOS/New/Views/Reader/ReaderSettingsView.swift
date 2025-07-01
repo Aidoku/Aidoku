@@ -112,7 +112,7 @@ struct ReaderSettingsView: View {
                     )
                 }
 
-                if !downsampleImages.value {
+                if #available(iOS 16.0, *), !downsampleImages.value {
                     Section(NSLocalizedString("UPSCALING")) {
                         SettingView(
                             setting: .init(

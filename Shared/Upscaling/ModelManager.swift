@@ -16,6 +16,7 @@ struct ModelInfo: Codable {
     var info: String?
     var tags: [String]?
     var type: String?
+    var miniOS: Int?
     var config: [String: JsonAnyValue]?
     var file: String
     var size: Int?
@@ -57,6 +58,9 @@ actor ModelManager {
 
         // save metadata
         let metadataURL = try metadataURL(forModelFile: fileName)
+        var model = model
+        model.file = fileName  // ensure file field is just the local file name
+        model.size = nil
         let metadataData = try JSONEncoder().encode(model)
         try metadataData.write(to: metadataURL)
     }
@@ -154,11 +158,15 @@ actor ModelManager {
         let installedFiles = Set(files)
 
         return modelList.models.filter {
+            if let miniOS = $0.miniOS, miniOS > ProcessInfo.processInfo.operatingSystemVersion.majorVersion {
+                // filter out models not supported on current iOS version
+                return false
+            }
             if let type = $0.type {
-                Self.supportedModelTypes.contains(type)
+                return Self.supportedModelTypes.contains(type)
                     && !installedFiles.contains((($0.file as NSString).lastPathComponent))
             } else {
-                false
+                return false
             }
         }
     }
@@ -245,11 +253,7 @@ extension ModelManager {
 
         switch modelType.lowercased() {
             case "multiarray":
-                if #available(iOS 16.0, *) {
-                    model = MultiArrayModel(model: mlModel, config: config)
-                } else {
-                    model = nil
-                }
+                model = MultiArrayModel(model: mlModel, config: config)
             case "image":
                 model = ImageModel(model: mlModel, config: config)
             default:
