@@ -117,7 +117,7 @@ struct ReaderSettingsView: View {
                         SettingView(
                             setting: .init(
                                 key: "Reader.upscaleImages",
-                                title: NSLocalizedString("UPSCALE_IMAGES"),
+                                title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("UPSCALE_IMAGES")),
                                 value: .toggle(.init())
                             )
                         )
@@ -140,7 +140,9 @@ struct ReaderSettingsView: View {
                     } header: {
                         Text(NSLocalizedString("UPSCALING"))
                     } footer: {
-                        Text(NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT_TEXT"))
+                        if upscaleImages.value {
+                            Text(NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT_TEXT"))
+                        }
                     }
                 }
 
