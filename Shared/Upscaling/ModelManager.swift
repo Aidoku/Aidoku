@@ -164,12 +164,12 @@ actor ModelManager {
     }
 
     // set the currently enabled model
-    func setEnabledModel(fileName: String?) {
+    nonisolated func setEnabledModel(fileName: String?) {
         UserDefaults.standard.set(fileName, forKey: "enabledModelFile")
     }
 
     // get currently enabled model file name
-    func getEnabledModelFileName() -> String? {
+    nonisolated func getEnabledModelFileName() -> String? {
         UserDefaults.standard.string(forKey: "enabledModelFile")
     }
 

@@ -32,7 +32,7 @@ struct ReaderSettingsView: View {
                         setting: .init(
                             key: "Reader.readingMode.\(mangaId)",
                             title: NSLocalizedString("READING_MODE"),
-                            notification: "Reader.readingMode",
+                            notification: Notification.Name.readerReadingMode.rawValue,
                             value: .select(.init(
                                 values: ["default", "auto", "rtl", "ltr", "vertical", "webtoon"],
                                 titles: [
