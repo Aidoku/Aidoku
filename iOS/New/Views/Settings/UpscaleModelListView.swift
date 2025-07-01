@@ -19,50 +19,50 @@ struct UpscaleModelListView: View {
     @State private var showModelInfoAlert = false
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            List {
-                Section(NSLocalizedString("ENABLED_MODEL")) {
+        List {
+            Section(NSLocalizedString("ENABLED_MODEL")) {
+                Button {
+                    enabledModel = nil
+                    ModelManager.shared.setEnabledModel(fileName: nil)
+                } label: {
+                    HStack {
+                        Text(NSLocalizedString("NONE"))
+                        Spacer()
+                        if enabledModel == nil {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                }
+                .foregroundStyle(.primary)
+
+                ForEach(models, id: \.file) { model in
                     Button {
-                        enabledModel = nil
-                        Task {
-                            await ModelManager.shared.setEnabledModel(fileName: nil)
-                        }
+                        enabledModel = model.file
+                        ModelManager.shared.setEnabledModel(fileName: model.file)
                     } label: {
-                        HStack {
-                            Text(NSLocalizedString("NONE"))
-                            Spacer()
-                            if enabledModel == nil {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(.tint)
-                            }
-                        }
+                        modelItem(model: model, installed: true)
                     }
                     .foregroundStyle(.primary)
-
-                    ForEach(models, id: \.file) { model in
-                        Button {
-                            enabledModel = model.file
-                            Task {
-                                await ModelManager.shared.setEnabledModel(fileName: model.file)
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            if let index = models.firstIndex(where: { $0.file == model.file }) {
+                                models.remove(at: index)
                             }
+                            remove(modelFiles: [model.file])
                         } label: {
-                            modelItem(model: model, installed: true)
-                        }
-                        .foregroundStyle(.primary)
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                if let index = models.firstIndex(where: { $0.file == model.file }) {
-                                    models.remove(at: index)
-                                }
-                                remove(modelFiles: [model.file])
-                            } label: {
-                                Label(NSLocalizedString("REMOVE"), systemImage: "trash")
-                            }
+                            Label(NSLocalizedString("REMOVE"), systemImage: "trash")
                         }
                     }
-                    .onDelete(perform: delete)
                 }
+                .onDelete(perform: delete)
+            }
 
+            if loading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.secondary)
+            } else {
                 if !availableModels.isEmpty {
                     Section {
                         ForEach(availableModels, id: \.file) { model in
@@ -85,36 +85,28 @@ struct UpscaleModelListView: View {
                     }
                 }
             }
-            .overlay {
-                if loading {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.secondary)
-                }
+        }
+        .navigationTitle(NSLocalizedString("UPSCALING_MODELS"))
+        .alert(NSLocalizedString("MODEL_INFO"), isPresented: $showModelInfoAlert) {
+            Button(NSLocalizedString("OK"), role: .cancel) {
+                modelInfo = nil
             }
-            .navigationTitle(NSLocalizedString("UPSCALING_MODELS"))
-            .alert(NSLocalizedString("MODEL_INFO"), isPresented: $showModelInfoAlert) {
-                Button(NSLocalizedString("OK"), role: .cancel) {
-                    modelInfo = nil
-                }
-            } message: {
-                if let modelInfo {
-                    Text(modelInfo)
-                }
+        } message: {
+            if let modelInfo {
+                Text(modelInfo)
             }
-            .task {
-                enabledModel = await ModelManager.shared.getEnabledModelFileName()
-                models = await ModelManager.shared.getInstalledModels()
-                if let fetchedModels = await ModelManager.shared.getAvailableModels() {
-                    availableModels = fetchedModels
-                } else {
-                    failedToLoad = true
-                }
+        }
+        .task {
+            enabledModel = ModelManager.shared.getEnabledModelFileName()
+            models = await ModelManager.shared.getInstalledModels()
+            if let fetchedModels = await ModelManager.shared.getAvailableModels() {
+                availableModels = fetchedModels
+            } else {
+                failedToLoad = true
+            }
+            withAnimation {
                 loading = false
             }
-        } else {
-            Text("iOS 16+")
-                .foregroundStyle(.secondary)
         }
     }
 
