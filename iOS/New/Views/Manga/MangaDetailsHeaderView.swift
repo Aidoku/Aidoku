@@ -322,9 +322,11 @@ struct MangaDetailsHeaderView: View {
                 .transition(.opacity)
                 .simultaneousGesture(
                     LongPressGesture()
-                        .onEnded { _ in
-                            UIPasteboard.general.string = url.absoluteString
-                            longHeldSafari = true
+                        .onEnded { finished in
+                            if finished {
+                                UIPasteboard.general.string = url.absoluteString
+                                longHeldSafari = true
+                            }
                         }
                 )
                 .alert(
