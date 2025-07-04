@@ -49,6 +49,7 @@ class MangaViewModel {
                     $0.toChapter()
                 }
             }
+        } else if !fullChapterList.isEmpty {
         } else {
             // load from source
             guard let source = SourceManager.shared.source(for: manga.sourceId) else { return }
