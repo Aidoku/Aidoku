@@ -126,6 +126,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.downsampleImages": true,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
+                "Reader.tapZones": "disabled",
+                "Reader.animatePageTransitions": true,
                 "Reader.backgroundColor": "black",
                 "Reader.pagesToPreload": 2,
                 "Reader.pagedPageLayout": "auto",
