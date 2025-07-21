@@ -142,4 +142,10 @@ class ReaderPageViewController: BaseViewController {
         pageView?.progressView.isHidden = false
         setPage(page, sourceId: sourceId)
     }
+
+    func clearPage() {
+        pageSet = false
+        pageView?.imageView.image = nil
+        zoomView?.zoomEnabled = false
+    }
 }

@@ -27,6 +27,14 @@ extension NSImage {
         }
         return bitmap.representation(using: .png, properties: [:])
     }
+
+    var cgImage: CGImage? {
+        var proposedRect = CGRect(origin: .zero, size: self.size)
+        guard let cgImage = self.cgImage(forProposedRect: &proposedRect, context: nil, hints: nil) else {
+            return nil
+        }
+        return cgImage
+    }
 }
 
 enum UITextAutocapitalizationType: Int {

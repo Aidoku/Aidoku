@@ -208,17 +208,22 @@ class ReaderViewController: BaseObservingViewController {
             self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.manga.key)"))
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
+        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
+            guard let self else { return }
+            self.updateReadPosition()
+        }
+        // reload pages when processors change
         addObserver(forName: "Reader.downsampleImages") { [weak self] _ in
+            guard let self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
+        addObserver(forName: "Reader.upscaleImages") { [weak self] _ in
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
         addObserver(forName: "Reader.cropBorders") { [weak self] _ in
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
-        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
-            guard let self else { return }
-            self.updateReadPosition()
         }
     }
 
@@ -338,8 +343,8 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     @objc func openReaderSettings() {
-        let vc = UINavigationController(
-            rootViewController: ReaderSettingsViewController(mangaId: manga.key)
+        let vc = UIHostingController(
+            rootView: ReaderSettingsView(mangaId: manga.key)
         )
         present(vc, animated: true)
     }
