@@ -299,12 +299,15 @@ class SettingsViewController: SettingsTableViewController {
             ReaderWebtoonViewModel.settings,
             // MARK: Backups
             SettingItem(type: "group", title: NSLocalizedString("BACKUPS", comment: ""), items: [
-                SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: "")),
-                SettingItem(type: "page", key: "Downloads.manager", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
+                SettingItem(type: "page", key: "Backups.backups", title: NSLocalizedString("BACKUPS", comment: ""))
             ]),
             // MARK: Trackers
             SettingItem(type: "group", title: NSLocalizedString("TRACKERS", comment: ""), items: [
                 SettingItem(type: "page", key: "Trackers.trackers", title: NSLocalizedString("TRACKERS", comment: ""))
+            ]),
+            // MARK: Download Manager
+            SettingItem(type: "group", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""), items: [
+                SettingItem(type: "page", key: "Downloads.manager", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
             ]),
             // MARK: Logging
             SettingItem(type: "group", title: NSLocalizedString("LOGGING", comment: ""), items: [
@@ -454,6 +457,9 @@ extension SettingsViewController {
             case "Backups.backups":
                 navigationController?.pushViewController(BackupsViewController(), animated: true)
 
+            case "Trackers.trackers":
+                navigationController?.pushViewController(TrackersViewController(), animated: true)
+
             case "Downloads.manager":
                 let path = NavigationCoordinator(rootViewController: self)
                 let hostingController = UIHostingController(
@@ -462,9 +468,6 @@ extension SettingsViewController {
                 )
                 hostingController.navigationItem.title = NSLocalizedString("DOWNLOAD_MANAGER")
                 navigationController?.pushViewController(hostingController, animated: true)
-
-            case "Trackers.trackers":
-                navigationController?.pushViewController(TrackersViewController(), animated: true)
 
             case "Logs.export":
                 let url = LogManager.export()
