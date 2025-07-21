@@ -274,6 +274,25 @@ class SettingsViewController: SettingsTableViewController {
                         NSLocalizedString("PORTRAIT", comment: ""),
                         NSLocalizedString("LANDSCAPE", comment: "")
                     ]
+                ),
+                SettingItem(
+                    type: "switch",
+                    key: "Reader.upscaleImages",
+                    title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("UPSCALE_IMAGES")),
+                    requiresFalse: "Reader.downsampleImages"
+                ),
+                SettingItem(
+                    type: "page",
+                    key: "Reader.upscaleModels",
+                    title: NSLocalizedString("UPSCALING_MODELS", comment: "")
+                ),
+                SettingItem(
+                    type: "stepper",
+                    key: "Reader.upscaleMaxHeight",
+                    title: NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT", comment: ""),
+                    minimumValue: 200,
+                    maximumValue: 4000,
+                    stepValue: 100
                 )
             ]),
             ReaderPagedViewModel.settings,
@@ -424,6 +443,11 @@ extension SettingsViewController {
             case "Browse.sourceLists":
                 let hostingController = UIHostingController(rootView: SourceListsView())
                 hostingController.navigationItem.title = NSLocalizedString("SOURCE_LISTS")
+                navigationController?.pushViewController(hostingController, animated: true)
+
+            case "Reader.upscaleModels":
+                let hostingController = UIHostingController(rootView: UpscaleModelListView())
+                hostingController.navigationItem.title = NSLocalizedString("UPSCALING_MODELS")
                 navigationController?.pushViewController(hostingController, animated: true)
 
             case "Backups.backups":

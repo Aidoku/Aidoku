@@ -15,6 +15,7 @@ enum JsonAnyType: Int {
     case array = 5
     case object = 6
     case double = 7
+    case intArray = 8
 }
 
 struct JsonAnyValue: Codable {
@@ -24,6 +25,7 @@ struct JsonAnyValue: Codable {
     let intValue: Int?
     let doubleValue: Double?
     let stringValue: String?
+    let intArrayValue: [Int]?
     let stringArrayValue: [String]?
     let objectValue: [String: JsonAnyValue]?
 
@@ -36,6 +38,7 @@ struct JsonAnyValue: Codable {
             intValue = nil
             doubleValue = nil
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = nil
         } else if let int = try? container.decode(Int.self) {
@@ -44,6 +47,7 @@ struct JsonAnyValue: Codable {
             intValue = int
             doubleValue = Double(int)
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = nil
         } else if let float = try? container.decode(Float.self) {
@@ -52,6 +56,7 @@ struct JsonAnyValue: Codable {
             intValue = Int(float)
             doubleValue = Double(float)
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = nil
         } else if let double = try? container.decode(Double.self) {
@@ -60,6 +65,7 @@ struct JsonAnyValue: Codable {
             intValue = Int(double)
             doubleValue = double
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = nil
         } else if let string = try? container.decode(String.self) {
@@ -68,6 +74,16 @@ struct JsonAnyValue: Codable {
             intValue = nil
             doubleValue = nil
             stringValue = string
+            intArrayValue = nil
+            stringArrayValue = nil
+            objectValue = nil
+        } else if let ints = try? container.decode([Int].self) {
+            type = .array
+            boolValue = nil
+            intValue = nil
+            doubleValue = nil
+            stringValue = nil
+            intArrayValue = ints
             stringArrayValue = nil
             objectValue = nil
         } else if let strings = try? container.decode([String].self) {
@@ -76,6 +92,7 @@ struct JsonAnyValue: Codable {
             intValue = nil
             doubleValue = nil
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = strings
             objectValue = nil
         } else if let object = try? container.decode([String: JsonAnyValue].self) {
@@ -84,6 +101,7 @@ struct JsonAnyValue: Codable {
             intValue = nil
             doubleValue = nil
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = object
         } else {
@@ -92,6 +110,7 @@ struct JsonAnyValue: Codable {
             intValue = nil
             doubleValue = nil
             stringValue = nil
+            intArrayValue = nil
             stringArrayValue = nil
             objectValue = nil
         }
@@ -107,6 +126,7 @@ struct JsonAnyValue: Codable {
         case .array: try container.encode(stringArrayValue)
         case .object: try container.encode(objectValue)
         case .double: try container.encode(doubleValue)
+        case .intArray: try container.encode(intArrayValue)
         }
     }
 
@@ -119,6 +139,7 @@ struct JsonAnyValue: Codable {
         case .array: return stringArrayValue
         case .object: return objectValue?.mapValues { $0.toRaw() }
         case .double: return doubleValue
+        case .intArray: return intArrayValue
         }
     }
 }
