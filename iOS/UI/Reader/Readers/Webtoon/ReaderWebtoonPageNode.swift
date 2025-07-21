@@ -250,7 +250,7 @@ extension ReaderWebtoonPageNode {
 
     private func loadImage(url: URL, context: PageContext?) async {
         let urlRequest = if let source {
-            await source.getModifiedImageRequest(url: url, context: nil)
+            await source.getModifiedImageRequest(url: url, context: context)
         } else {
             URLRequest(url: url)
         }

@@ -128,7 +128,7 @@ class ReaderPageView: UIView {
             }
         } else {
             let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
-                await source.getModifiedImageRequest(url: url, context: nil)
+                await source.getModifiedImageRequest(url: url, context: context)
             } else {
                 URLRequest(url: url)
             }
