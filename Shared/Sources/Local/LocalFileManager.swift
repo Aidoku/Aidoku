@@ -43,11 +43,11 @@ actor LocalFileManager {
 extension LocalFileManager {
     // get info about a file to be imported
     func loadImportFileInfo(url: URL) -> ImportFileInfo? {
-        // the given url comes from an imported file, so we need to do this
-        guard url.startAccessingSecurityScopedResource() else {
-            return nil
+        // if the given url comes from an imported file that isn't copied, we need to do this
+        let accessGranted = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessGranted { url.stopAccessingSecurityScopedResource() }
         }
-        defer { url.stopAccessingSecurityScopedResource() }
 
         // ensure the file is one we can parse
         let pathExtension = url.pathExtension.lowercased()
