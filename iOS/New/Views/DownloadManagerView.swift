@@ -125,8 +125,8 @@ class DownloadManagerViewModel: ObservableObject {
     private func setupNotificationObservers() {
         // High-priority updates that need immediate response
         let immediateUpdateNotifications: [NSNotification.Name] = [
-            NSNotification.Name("downloadRemoved"),
-            NSNotification.Name("downloadsRemoved")
+            .downloadRemoved,
+            .downloadsRemoved
         ]
 
         for notification in immediateUpdateNotifications {
@@ -142,15 +142,15 @@ class DownloadManagerViewModel: ObservableObject {
 
         // Low-priority updates that can be debounced
         let debouncedUpdateNotifications: [NSNotification.Name] = [
-            NSNotification.Name("downloadFinished"),
-            NSNotification.Name("downloadsCancelled"),
-            NSNotification.Name("downloadsQueued"),
-            NSNotification.Name("downloadsPaused"),
-            NSNotification.Name("downloadsResumed"),
+            .downloadFinished,
+            .downloadsCancelled,
+            .downloadsQueued,
+            .downloadsPaused,
+            .downloadsResumed,
             .addToLibrary,
-            NSNotification.Name("removeFromLibrary"),
-            NSNotification.Name("updateLibrary"),
-            NSNotification.Name("updateHistory")
+            .removeFromLibrary,
+            .updateLibrary,
+            .updateHistory
         ]
 
         for notification in debouncedUpdateNotifications {

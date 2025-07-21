@@ -227,13 +227,13 @@ class MangaDownloadDetailViewModel: ObservableObject {
     private func setupNotificationObservers() {
         // Immediate updates for relevant manga operations
         let immediateNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
-            (NSNotification.Name("downloadRemoved"), { [weak self] notification in
+            (.downloadRemoved, { [weak self] notification in
                 guard let chapter = notification.object as? Chapter,
                       chapter.sourceId == self?.manga.sourceId,
                       chapter.mangaId == self?.manga.mangaId else { return false }
                 return true
             }),
-            (NSNotification.Name("downloadsRemoved"), { [weak self] notification in
+            (.downloadsRemoved, { [weak self] notification in
                 guard let manga = notification.object as? Manga,
                       manga.sourceId == self?.manga.sourceId,
                       manga.id == self?.manga.mangaId else { return false }
@@ -256,13 +256,13 @@ class MangaDownloadDetailViewModel: ObservableObject {
 
         // Debounced updates for general events
         let debouncedNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
-            (NSNotification.Name("downloadFinished"), { [weak self] notification in
+            (.downloadFinished, { [weak self] notification in
                 guard let download = notification.object as? Download,
                       download.sourceId == self?.manga.sourceId,
                       download.mangaId == self?.manga.mangaId else { return false }
                 return true
             }),
-            (NSNotification.Name("downloadsQueued"), { [weak self] notification in
+            (.downloadsQueued, { [weak self] notification in
                 guard let downloads = notification.object as? [Download] else { return false }
                 return downloads.contains { $0.sourceId == self?.manga.sourceId && $0.mangaId == self?.manga.mangaId }
             }),
@@ -272,7 +272,7 @@ class MangaDownloadDetailViewModel: ObservableObject {
                       addedManga.id == self?.manga.mangaId else { return false }
                 return true
             }),
-            (NSNotification.Name("removeFromLibrary"), { [weak self] notification in
+            (.removeFromLibrary, { [weak self] notification in
                 guard let removedManga = notification.object as? Manga,
                       removedManga.sourceId == self?.manga.sourceId,
                       removedManga.id == self?.manga.mangaId else { return false }
@@ -293,8 +293,7 @@ class MangaDownloadDetailViewModel: ObservableObject {
 
         // General updates that might affect this manga
         let generalNotifications: [NSNotification.Name] = [
-            NSNotification.Name("updateLibrary"),
-            NSNotification.Name("updateHistory")
+            .updateLibrary, .updateHistory
         ]
 
         for notification in generalNotifications {

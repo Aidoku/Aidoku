@@ -10,7 +10,8 @@ import Foundation
 extension Notification.Name {
     static let updateSourceLists = Self("updateSourceLists")
 
-    // manga
+    // library
+    static let updateLibrary = Self("updateLibrary")
     static let addToLibrary = Self("addToLibrary")
     static let removeFromLibrary = Self("removeFromLibrary")
     static let migratedManga = Self("migratedManga")
