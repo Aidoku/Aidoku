@@ -313,6 +313,7 @@ struct MangaDetailsHeaderView: View {
 
             if let url = manga.url {
                 Button {
+                    guard url.scheme == "http" || url.scheme == "https" else { return }
                     path.present(SFSafariViewController(url: url))
                 } label: {
                     Image(systemName: "safari")
@@ -321,9 +322,11 @@ struct MangaDetailsHeaderView: View {
                 .transition(.opacity)
                 .simultaneousGesture(
                     LongPressGesture()
-                        .onEnded { _ in
-                            UIPasteboard.general.string = url.absoluteString
-                            longHeldSafari = true
+                        .onEnded { finished in
+                            if finished {
+                                UIPasteboard.general.string = url.absoluteString
+                                longHeldSafari = true
+                            }
                         }
                 )
                 .alert(

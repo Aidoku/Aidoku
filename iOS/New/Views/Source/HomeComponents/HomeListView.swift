@@ -13,6 +13,7 @@ struct HomeListView: View {
     let source: AidokuRunner.Source
     let component: HomeComponent
     let partial: Bool
+    @Binding var bookmarkedItems: Set<String>
     var loadMore: (() async -> Void)?
     var onSelect: ((AidokuRunner.Manga) -> Void)?
 
@@ -21,9 +22,11 @@ struct HomeListView: View {
     private let entries: [HomeComponent.Value.Link]
     private let listing: AidokuRunner.Listing?
 
+    private let usesBookmarksState: Bool
+
     @State private var loadingMore = false
-    @State private var bookmarkedItems: Set<String> = .init()
-    @State private var loadedBookmarks = false
+    @State private var bookmarkedItemsState: Set<String> = .init()
+    @State private var loadedBookmarks: Bool
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -31,6 +34,7 @@ struct HomeListView: View {
         source: AidokuRunner.Source,
         component: HomeComponent,
         partial: Bool = false,
+        bookmarkedItems: Binding<Set<String>>? = nil,
         loadMore: (() async -> Void)? = nil,
         onSelect: ((AidokuRunner.Manga) -> Void)? = nil
     ) {
@@ -39,6 +43,15 @@ struct HomeListView: View {
         self.partial = partial
         self.loadMore = loadMore
         self.onSelect = onSelect
+        if let bookmarkedItems {
+            self._loadedBookmarks = State(initialValue: true)
+            self._bookmarkedItems = bookmarkedItems
+            self.usesBookmarksState = false
+        } else {
+            self._loadedBookmarks = State(initialValue: false)
+            self._bookmarkedItems = Binding.constant([])
+            self.usesBookmarksState = true
+        }
 
         guard case let .mangaList(ranking, pageSize, entries, listing) = component.value else {
             fatalError("invalid component type")
@@ -148,7 +161,7 @@ struct HomeListView: View {
                 width: 100 * 2/3,
                 height: 100,
                 downsampleWidth: 200,
-                bookmarked: mangaKey.flatMap { bookmarkedItems.contains($0) } ?? false
+                bookmarked: mangaKey.flatMap { (usesBookmarksState ? bookmarkedItemsState : bookmarkedItems).contains($0) } ?? false
             )
 
             let titleStack = VStack(alignment: .leading, spacing: 4) {
@@ -182,7 +195,10 @@ struct HomeListView: View {
             Button {
                 switch value {
                     case .url(let urlString):
-                        guard let url = URL(string: urlString) else { return }
+                        guard
+                            let url = URL(string: urlString),
+                            url.scheme == "http" || url.scheme == "https"
+                        else { return }
                         path.present(SFSafariViewController(url: url))
                     case .listing(let listing):
                         path.push(SourceListingViewController(source: source, listing: listing))
@@ -207,8 +223,8 @@ struct HomeListView: View {
     }
 
     func loadBookmarked() async {
-        guard !entries.isEmpty else { return }
-        bookmarkedItems = await CoreDataManager.shared.container.performBackgroundTask { context in
+        guard !entries.isEmpty, usesBookmarksState else { return }
+        bookmarkedItemsState = await CoreDataManager.shared.container.performBackgroundTask { context in
             var keys: Set<String> = .init()
             for entry in entries {
                 let mangaKey: String? = switch entry.value {

@@ -36,8 +36,8 @@ public class MangaObject: NSManagedObject {
         id = manga.key
         self.sourceId = sourceId
         title = manga.title
-        author = manga.authors?.joined(separator: ", ")
-        artist = manga.artists?.joined(separator: ", ")
+        author = manga.authors.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
+        artist = manga.artists.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
         desc = manga.description
         tags = manga.tags ?? []
         cover = manga.cover

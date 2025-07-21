@@ -144,7 +144,7 @@ class BrowseViewModel {
                 return nil
             }
             // hide nsfw sources
-            let contentRating = info.contentRating ?? AidokuRunner.SourceContentRating(rawValue: info.nsfw ?? 0) ?? .safe
+            let contentRating = info.resolvedContentRating
             if !showNsfw && contentRating == .primarilyNsfw {
                 return nil
             }

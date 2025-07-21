@@ -221,8 +221,15 @@ struct TrackerView: View {
 
 struct SafariView: UIViewControllerRepresentable {
     @Binding var url: URL?
+
     func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
-        SFSafariViewController(url: url ?? URL(string: "about:blank")!)
+        let url = if let url, url.scheme == "http" || url.scheme == "https" {
+            url
+        } else {
+            URL(string: "about:blank")!
+        }
+        return SFSafariViewController(url: url)
     }
+
     func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {}
 }

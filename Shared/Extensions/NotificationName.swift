@@ -40,6 +40,9 @@ extension Notification.Name {
     // browse
     static let browseLanguages = Self("Browse.languages")
 
+    // reader
+    static let readerReadingMode = Self("Reader.readingMode")
+
     // settings
     static let portraitRowsSetting = Self("General.portraitRows")
     static let landscapeRowsSetting = Self("General.landscapeRows")

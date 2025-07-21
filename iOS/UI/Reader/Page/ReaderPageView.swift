@@ -128,7 +128,7 @@ class ReaderPageView: UIView {
             }
         } else {
             let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
-                await source.getModifiedImageRequest(url: url, context: nil)
+                await source.getModifiedImageRequest(url: url, context: context)
             } else {
                 URLRequest(url: url)
             }
@@ -148,6 +148,8 @@ class ReaderPageView: UIView {
             }
             if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
                 processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
+            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                processors.append(UpscaleProcessor())
             }
 
             request = ImageRequest(
@@ -252,15 +254,18 @@ class ReaderPageView: UIView {
 
             if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                 let processor = CropBordersProcessor()
-                let processedImage = processor.process(image)
-                if let processedImage = processedImage {
+                if let processedImage = processor.process(image) {
                     image = processedImage
                 }
             }
             if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
                 let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                let processedImage = processor.process(image)
-                if let processedImage = processedImage {
+                if let processedImage = processor.process(image) {
+                    image = processedImage
+                }
+            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                let processor = UpscaleProcessor()
+                if let processedImage = processor.process(image) {
                     image = processedImage
                 }
             }
@@ -323,15 +328,18 @@ class ReaderPageView: UIView {
 
                 if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
                     let processor = CropBordersProcessor()
-                    let processedImage = processor.process(image)
-                    if let processedImage = processedImage {
+                    if let processedImage = processor.process(image) {
                         image = processedImage
                     }
                 }
                 if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
                     let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                    let processedImage = processor.process(image)
-                    if let processedImage = processedImage {
+                    if let processedImage = processor.process(image) {
+                        image = processedImage
+                    }
+                } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                    let processor = UpscaleProcessor()
+                    if let processedImage = processor.process(image) {
                         image = processedImage
                     }
                 }
