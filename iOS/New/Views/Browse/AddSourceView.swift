@@ -159,23 +159,20 @@ struct AddSourceView: View {
             .animation(.default, value: searching)
             .sheet(isPresented: $importing) {
                 DocumentPickerView(
-                    allowedContentTypes: [UTType(exportedAs: "app.aidoku.Aidoku.aix", conformingTo: .zip)],
+                    allowedContentTypes: [
+                        UTType(exportedAs: "app.aidoku.Aidoku.aix", conformingTo: .zip),
+                        .init(filenameExtension: "aix")!
+                    ],
                     onDocumentsPicked: { urls in
                         guard let url = urls.first else {
                             return
                         }
                         Task {
-                            if CFURLStartAccessingSecurityScopedResource(url as CFURL) {
-                                let result = try? await SourceManager.shared.importSource(from: url)
-                                if result == nil {
-                                    showImportFailAlert = true
-                                } else {
-                                    dismiss()
-                                }
-                                CFURLStopAccessingSecurityScopedResource(url as CFURL)
-                            } else {
-                                LogManager.logger.error("Unable to access imported file: \(url)")
+                            let result = try? await SourceManager.shared.importSource(from: url)
+                            if result == nil {
                                 showImportFailAlert = true
+                            } else {
+                                dismiss()
                             }
                         }
                     }
