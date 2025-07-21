@@ -33,16 +33,26 @@
 // Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
-"DOWNLOAD_MANAGER" = "Download Manager";
 "DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
+"REMOVE_DOWNLOAD_CONFIRM" = "Are you sure you'd like to this download?";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "REMOVE_DOWNLOADS" = "Remove Downloads";
 "REMOVE_DOWNLOADS_CONFIRM" = "Remove all selected downloads?";
 "NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
+
+// Download Manager
+"DOWNLOAD_MANAGER" = "Download Manager";
+"NO_DOWNLOADS" = "No Downloads";
+"NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
+"TOTAL_DOWNLOADS" = "Total Downloads";
+"%i_SERIES" = "%i series";
+"IN_LIBRARY" = "In Library";
+"VIEW_SERIES" = "View Series";
 
 // Library
 "LIBRARY" = "Library";
@@ -477,7 +487,6 @@
 "CLEAR_TRACKED_MANGA" = "Clear Tracked Manga";
 "CLEAR_TRACKED_MANGA_TEXT" = "This action is irreversible. Tracking for all trackers added to manga will be removed.";
 
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
 "UNREAD_CHAPTERS" = "Unread Chapters";

@@ -167,7 +167,7 @@ class DownloadManagerViewModel: ObservableObject {
         if let source = SourceManager.shared.source(for: sourceId) {
             return source.name
         }
-        // Fallback to source ID for unknown sources
+        // Fall back to source ID for unknown sources
         return sourceId.capitalized
     }
 
@@ -183,7 +183,7 @@ struct DownloadManagerView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView("Loading downloads...")
+                ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.opacity)
             } else if viewModel.downloadedManga.isEmpty {
@@ -196,7 +196,7 @@ struct DownloadManagerView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: viewModel.downloadedManga.isEmpty)
-        .navigationTitle(NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
+        .navigationTitle(NSLocalizedString("DOWNLOAD_MANAGER"))
         .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadDownloadedManga()
@@ -209,11 +209,11 @@ struct DownloadManagerView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
 
-            Text("No Downloads")
+            Text(NSLocalizedString("NO_DOWNLOADS"))
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            Text("Downloaded manga chapters will appear here")
+            Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -226,7 +226,7 @@ struct DownloadManagerView: View {
             Section {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("Total Downloads")
+                        Text(NSLocalizedString("TOTAL_DOWNLOADS"))
                             .font(.headline)
                         Spacer()
                         Text(viewModel.totalSize)
@@ -235,14 +235,21 @@ struct DownloadManagerView: View {
                     }
 
                     HStack {
-                        Text("\(viewModel.totalCount) manga")
+                        Text(String(format: NSLocalizedString("%i_SERIES"), viewModel.totalCount))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Spacer()
                         let totalChapters = viewModel.downloadedManga.reduce(0) { $0 + $1.chapterCount }
-                        Text("\(totalChapters) chapters")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        Text(
+                            (
+                                totalChapters == 1
+                                    ? NSLocalizedString("1_CHAPTER")
+                                    : String(format: NSLocalizedString("%i_CHAPTERS"), totalChapters)
+                            )
+                            .lowercased()
+                        )
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                     }
                 }
                 .padding(.vertical, 4)
@@ -312,7 +319,7 @@ struct DownloadedMangaRow: View {
                     HStack {
                         Image(systemName: "books.vertical.fill")
                             .foregroundColor(.blue)
-                        Text("In Library")
+                        Text(NSLocalizedString("IN_LIBRARY"))
                             .font(.system(size: 14))
                             .foregroundColor(.blue)
                     }
@@ -328,7 +335,12 @@ struct DownloadedMangaRow: View {
         var components: [String] = []
 
         // Add chapter count
-        let chapterText = manga.chapterCount == 1 ? "1 chapter" : "\(manga.chapterCount) chapters"
+        let chapterText = (
+            manga.chapterCount == 1
+                ? NSLocalizedString("1_CHAPTER")
+                : String(format: NSLocalizedString("%i_CHAPTERS"), manga.chapterCount)
+        )
+        .lowercased()
         components.append(chapterText)
 
         // Add size

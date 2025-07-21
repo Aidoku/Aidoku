@@ -14,8 +14,6 @@ class MangaDownloadDetailViewModel: ObservableObject {
     @Published var chapters: [DownloadedChapterInfo] = []
     @Published var isLoading = true
     @Published var showingDeleteAllConfirmation = false
-    @Published var showingDeleteChapterConfirmation = false
-    @Published var chapterToDelete: DownloadedChapterInfo?
     @Published var sortAscending = true
 
     @Published var manga: DownloadedMangaInfo
@@ -184,11 +182,6 @@ class MangaDownloadDetailViewModel: ObservableObject {
         }
     }
 
-    func confirmDeleteChapter(_ chapter: DownloadedChapterInfo) {
-        chapterToDelete = chapter
-        showingDeleteChapterConfirmation = true
-    }
-
     func confirmDeleteAll() {
         showingDeleteAllConfirmation = true
     }
@@ -331,7 +324,7 @@ struct MangaDownloadDetailView: View {
     var body: some View {
         Group {
             if viewModel.isLoading {
-                ProgressView("Loading chapters...")
+                ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if viewModel.chapters.isEmpty {
                 emptyStateView
@@ -345,12 +338,12 @@ struct MangaDownloadDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
                     Button(action: openMangaPage) {
-                        Label("Open Manga", systemImage: "book")
+                        Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")
                     }
 
                     if !viewModel.chapters.isEmpty {
                         Button(role: .destructive, action: viewModel.confirmDeleteAll) {
-                            Label("Remove All Chapters", systemImage: "trash")
+                            Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
                         }
                     }
                 } label: {
@@ -361,25 +354,13 @@ struct MangaDownloadDetailView: View {
         .task {
             await viewModel.loadChapters()
         }
-        .alert("Delete All Chapters", isPresented: $viewModel.showingDeleteAllConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
+        .alert(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), isPresented: $viewModel.showingDeleteAllConfirmation) {
+            Button(NSLocalizedString("CANCEL"), role: .cancel) { }
+            Button(NSLocalizedString("REMOVE"), role: .destructive) {
                 viewModel.deleteAllChapters()
             }
         } message: {
-            Text("Are you sure you want to delete all chapters for \(viewModel.manga.displayTitle)? This action cannot be undone.")
-        }
-        .alert("Delete Chapter", isPresented: $viewModel.showingDeleteChapterConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                if let chapter = viewModel.chapterToDelete {
-                    viewModel.deleteChapter(chapter)
-                }
-            }
-        } message: {
-            if let chapter = viewModel.chapterToDelete {
-                Text("Are you sure you want to delete \(chapter.displayTitle)? This action cannot be undone.")
-            }
+            Text("REMOVE_ALL_DOWNLOADS_CONFIRM")
         }
     }
 
@@ -389,11 +370,11 @@ struct MangaDownloadDetailView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.secondary)
 
-            Text("No Chapters")
+            Text(NSLocalizedString("NO_DOWNLOADS"))
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            Text("Downloaded chapters for this manga will appear here")
+            Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -411,11 +392,11 @@ struct MangaDownloadDetailView: View {
             Section {
                 ForEach(viewModel.chapters) { chapter in
                     ChapterRow(chapter: chapter) {
-                        viewModel.confirmDeleteChapter(chapter)
+                        viewModel.deleteChapter(chapter)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button("Delete", role: .destructive) {
-                            viewModel.confirmDeleteChapter(chapter)
+                        Button(NSLocalizedString("REMOVE"), role: .destructive) {
+                            viewModel.deleteChapter(chapter)
                         }
                     }
                 }
@@ -472,7 +453,7 @@ struct MangaDownloadDetailView: View {
                     HStack {
                         Image(systemName: "books.vertical.fill")
                             .foregroundColor(.blue)
-                        Text("In Library")
+                        Text(NSLocalizedString("IN_LIBRARY"))
                             .font(.system(size: 14))
                             .foregroundColor(.blue)
                     }
