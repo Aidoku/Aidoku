@@ -133,9 +133,9 @@
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB31AD0E27AE18DA00D50410 /* SwiftSoup */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
-		FB3DDF7E2E1452A800A64897 /* DocumentPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */; };
 		FB3DDF7A2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
 		FB3DDF7B2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
+		FB3DDF7E2E1452A800A64897 /* DocumentPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */; };
 		FB3F49E52B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */; };
 		FB3F49E62B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */; };
 		FB3F49E82B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */; };
@@ -565,8 +565,8 @@
 		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A32B14180F005E6264 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A42B14183C005E6264 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
-		FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPickerView.swift; sourceTree = "<group>"; };
 		FB3DDF792E1317A800A64897 /* ImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageModel.swift; sourceTree = "<group>"; };
+		FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPickerView.swift; sourceTree = "<group>"; };
 		FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterSortOption.swift; sourceTree = "<group>"; };
 		FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterFilterOption.swift; sourceTree = "<group>"; };
 		FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterFlagMask.swift; sourceTree = "<group>"; };
@@ -1519,8 +1519,6 @@
 		FB662EB72DA813E300007514 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				723D3AFB2E0DC5C4003ED4CF /* DownloadManagerView.swift */,
-				723D3AFC2E0DC5C4003ED4CF /* MangaDownloadDetailView.swift */,
 				FB662E982DA813E300007514 /* Common */,
 				FB662E8F2DA813E300007514 /* Browse */,
 				FB662EB62DA813E300007514 /* Source */,
@@ -1666,6 +1664,7 @@
 		FB7984152E0C9F4D000761A9 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				FBB516482E2F057200749F4E /* Download Manager */,
 				FB55C0AE2DF1E2650019A551 /* SourceListsView.swift */,
 				FB7984132E0C9F1D000761A9 /* UpscaleModelListView.swift */,
 			);
@@ -1738,6 +1737,15 @@
 				FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */,
 			);
 			path = Reader;
+			sourceTree = "<group>";
+		};
+		FBB516482E2F057200749F4E /* Download Manager */ = {
+			isa = PBXGroup;
+			children = (
+				723D3AFB2E0DC5C4003ED4CF /* DownloadManagerView.swift */,
+				723D3AFC2E0DC5C4003ED4CF /* MangaDownloadDetailView.swift */,
+			);
+			path = "Download Manager";
 			sourceTree = "<group>";
 		};
 		FBD6A40128525C77007116C9 /* Localization */ = {
