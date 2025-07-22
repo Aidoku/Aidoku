@@ -63,33 +63,29 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
 
     /// Computed property for display title with smart formatting
     var displayTitle: String {
-        // If we have a proper title, use it
-        if let title = title, !title.isEmpty {
-            return title
-        }
-
-        // Try to format using chapter/volume numbers like the app normally does
-        if let chapterNumber = chapterNumber {
-            if let volumeNumber = volumeNumber {
-                return String(
-                    format: NSLocalizedString("VOL_X", comment: "") + " " + NSLocalizedString("CH_X", comment: ""),
-                    volumeNumber,
-                    chapterNumber
-                )
-            } else {
-                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNumber)
+        switch (volumeNumber, chapterNumber, title) {
+        case (.some(let volumeNum), nil, nil):
+            return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+        case (nil, .some(let chapterNum), nil):
+            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+        case (nil, nil, .some(let chapterTitle)): return chapterTitle
+        default:
+            var arr = [String]()
+            if let volumeNumber {
+                arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNumber))
             }
-        } else if let volumeNumber = volumeNumber {
-            return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNumber)
+            if let chapterNumber {
+                arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNumber))
+            }
+            if let title {
+                arr.append("-")
+                arr.append(title)
+            }
+            if arr.isEmpty {
+                return chapterId
+            }
+            return arr.joined(separator: " ")
         }
-
-        // Try to extract chapter number from chapterId as last resort
-        if let extractedNumber = extractChapterNumber(from: chapterId) {
-            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), extractedNumber)
-        }
-
-        // Final fallback to chapter ID
-        return chapterId
     }
 
     /// Extract chapter number from chapter ID string as a last resort
