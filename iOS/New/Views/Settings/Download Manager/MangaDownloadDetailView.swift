@@ -107,9 +107,7 @@ struct MangaDownloadDetailView: View {
                     Button(action: viewModel.toggleSortOrder) {
                         Image(systemName: viewModel.sortAscending ? "arrow.up" : "arrow.down")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.bottom, 2)
             }
