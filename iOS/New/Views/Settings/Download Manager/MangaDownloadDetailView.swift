@@ -30,7 +30,7 @@ struct MangaDownloadDetailView: View {
         .navigationTitle(viewModel.manga.displayTitle)
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button(action: openMangaPage) {
                         Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")

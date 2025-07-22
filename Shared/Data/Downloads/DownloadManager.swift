@@ -207,6 +207,10 @@ extension DownloadManager {
         invalidateDownloadedMangaCache()
     }
 
+    func deleteAll() {
+        cache.removeAll()
+    }
+
     func pauseDownloads() {
         Task {
             await queue.pause()

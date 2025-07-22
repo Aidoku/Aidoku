@@ -25,12 +25,33 @@ struct DownloadManagerView: View {
                     .transition(.opacity)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if !viewModel.downloadedManga.isEmpty {
+                    Menu {
+                        Button(role: .destructive, action: viewModel.confirmDeleteAll) {
+                            Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                }
+            }
+        }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: viewModel.downloadedManga.isEmpty)
         .navigationTitle(NSLocalizedString("DOWNLOAD_MANAGER"))
         .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadDownloadedManga()
+        }
+        .alert(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), isPresented: $viewModel.showingDeleteAllConfirmation) {
+            Button(NSLocalizedString("CANCEL"), role: .cancel) { }
+            Button(NSLocalizedString("REMOVE"), role: .destructive) {
+                viewModel.deleteAllChapters()
+            }
+        } message: {
+            Text("REMOVE_ALL_DOWNLOADS_CONFIRM")
         }
     }
 

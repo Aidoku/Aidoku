@@ -15,6 +15,7 @@ extension DownloadManagerView {
         @Published var isLoading = true
         @Published var totalSize: String = ""
         @Published var totalCount = 0
+        @Published var showingDeleteAllConfirmation = false
 
         // Non-reactive state for background updates
         private var backgroundUpdateInProgress = false
@@ -177,5 +178,18 @@ extension DownloadManagerView.ViewModel {
         }
         // Fall back to source ID for unknown sources
         return sourceId.capitalized
+    }
+
+    func deleteAllChapters() {
+        // clear manga in ui
+        withAnimation(.easeOut(duration: 0.3)) {
+            downloadedManga = []
+        }
+
+        DownloadManager.shared.deleteAll()
+    }
+
+    func confirmDeleteAll() {
+        showingDeleteAllConfirmation = true
     }
 }
