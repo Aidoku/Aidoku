@@ -147,13 +147,13 @@ struct DownloadedMangaRow: View {
                     .lineLimit(1)
 
                 if manga.isInLibrary {
-                    HStack {
+                    HStack(spacing: 4) {
                         Image(systemName: "books.vertical.fill")
-                            .foregroundColor(.blue)
+                            .imageScale(.small)
                         Text(NSLocalizedString("IN_LIBRARY"))
-                            .font(.system(size: 14))
-                            .foregroundColor(.blue)
+                            .font(.footnote)
                     }
+                    .foregroundStyle(.tint)
                 }
             }
 
