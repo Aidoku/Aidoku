@@ -267,7 +267,6 @@ extension DownloadManager {
 
 // MARK: - Download Manager UI Support
 extension DownloadManager {
-
     private static var downloadedMangaCache: [DownloadedMangaInfo] = []
     private static var lastCacheUpdate: Date = .distantPast
     private static let cacheValidityDuration: TimeInterval = 60 // 1 minute
@@ -620,5 +619,4 @@ extension DownloadManager {
     func invalidateDownloadedMangaCache() {
         Self.lastCacheUpdate = .distantPast
     }
-
 }

@@ -279,9 +279,9 @@ extension MangaDownloadDetailView.ViewModel {
                 return true
             }),
             (.removeFromLibrary, { [weak self] notification in
-                guard let removedManga = notification.object as? Manga,
-                      removedManga.sourceId == self?.manga.sourceId,
-                      removedManga.id == self?.manga.mangaId else { return false }
+                guard let removedManga = notification.object as? AidokuRunner.Manga,
+                      removedManga.sourceKey == self?.manga.sourceId,
+                      removedManga.key == self?.manga.mangaId else { return false }
                 return true
             })
         ]

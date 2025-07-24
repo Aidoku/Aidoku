@@ -36,7 +36,6 @@
 "DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
-"REMOVE_DOWNLOAD_CONFIRM" = "Are you sure you'd like to this download?";
 "REMOVE_ALL_DOWNLOADS" = "Remove All Downloads";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Are you sure you'd like to remove all downloads?";
 "REMOVE_DOWNLOADS" = "Remove Downloads";

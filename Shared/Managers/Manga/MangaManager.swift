@@ -68,7 +68,7 @@ extension MangaManager {
     func removeFromLibrary(sourceId: String, mangaId: String) async {
         // Get manga object for notification before deletion
         let mangaForNotification = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getManga(sourceId: sourceId, mangaId: mangaId, context: context)?.toManga()
+            CoreDataManager.shared.getManga(sourceId: sourceId, mangaId: mangaId, context: context)?.toNewManga()
         }
 
         await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -101,11 +101,11 @@ extension MangaManager {
         }
 
         // Post specific notification for removal with manga object
-        if let manga = mangaForNotification {
-            NotificationCenter.default.post(name: Notification.Name("removeFromLibrary"), object: manga)
+        if let mangaForNotification {
+            NotificationCenter.default.post(name: .removeFromLibrary, object: mangaForNotification)
         }
 
-        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+        NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 
     func restoreToLibrary(
