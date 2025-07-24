@@ -111,17 +111,9 @@ struct DownloadManagerView: View {
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
                     ForEach(group.manga) { manga in
-                        Button {
-                            let hostingController = UIHostingController(
-                                rootView: MangaDownloadDetailView(manga: manga)
-                                    .environmentObject(path)
-                            )
-                            hostingController.title = manga.displayTitle
-                            path.push(hostingController)
-                        } label: {
+                        NavigationLink(destination: MangaDownloadDetailView(manga: manga).environmentObject(path)) {
                             DownloadedMangaRow(manga: manga)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }

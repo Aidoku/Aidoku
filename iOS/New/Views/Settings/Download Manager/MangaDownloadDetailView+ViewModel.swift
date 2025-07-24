@@ -184,10 +184,8 @@ extension MangaDownloadDetailView.ViewModel {
             chapters.removeAll()
         }
 
-        // Perform actual deletion in background
-        Task {
-            DownloadManager.shared.deleteChaptersForManga(manga)
-        }
+        // Perform actual deletion
+        DownloadManager.shared.deleteChaptersForManga(manga)
     }
 
     func confirmDeleteAll() {
