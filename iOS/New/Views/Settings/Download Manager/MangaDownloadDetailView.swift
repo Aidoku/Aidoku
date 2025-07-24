@@ -5,6 +5,7 @@
 //  Created by doomsboygaming on 6/25/25.
 //
 
+import AidokuRunner
 import SwiftUI
 import UIKit
 
@@ -32,18 +33,24 @@ struct MangaDownloadDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button(action: openMangaPage) {
-                        Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")
-                    }
-
-                    if !viewModel.chapters.isEmpty {
-                        Button(role: .destructive, action: viewModel.confirmDeleteAll) {
-                            Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
+                if viewModel.manga.isInLibrary || !viewModel.chapters.isEmpty {
+                    Menu {
+                        if viewModel.manga.isInLibrary, let source = SourceManager.shared.source(for: viewModel.manga.sourceId) {
+                            Button {
+                                openMangaView(source: source)
+                            } label: {
+                                Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")
+                            }
                         }
+
+                        if !viewModel.chapters.isEmpty {
+                            Button(role: .destructive, action: viewModel.confirmDeleteAll) {
+                                Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
                 }
             }
         }
@@ -180,35 +187,16 @@ struct MangaDownloadDetailView: View {
         path.present(navigationController)
     }
 
-    private func openMangaPage() {
-        guard SourceManager.shared.source(for: viewModel.manga.sourceId) != nil else {
-            print("Source not found for ID: \(viewModel.manga.sourceId)")
-            return
-        }
-
-        // Create a basic manga object from the downloaded manga info
-        let manga = Manga(
-            sourceId: viewModel.manga.sourceId,
-            id: viewModel.manga.mangaId,
-            title: viewModel.manga.title
-        )
-
-        // Convert downloaded chapters to Chapter objects with proper source order
-        let chapters = viewModel.chapters.enumerated().map { index, downloadedChapter in
-            Chapter(
-                sourceId: viewModel.manga.sourceId,
-                id: downloadedChapter.chapterId,
-                mangaId: viewModel.manga.mangaId,
-                title: downloadedChapter.title,
-                chapterNum: downloadedChapter.chapterNumber,
-                volumeNum: downloadedChapter.volumeNumber,
-                sourceOrder: index // Use enumerated index for proper ordering
+    private func openMangaView(source: AidokuRunner.Source) {
+        let hostingController = UIHostingController(
+            rootView: MangaView(
+                source: source,
+                manga: viewModel.manga.toManga()
             )
-        }
-
-        // Use MangaViewController with the downloaded chapters
-        let mangaViewController = MangaViewController(manga: manga, chapterList: chapters)
-        path.push(mangaViewController)
+            .environmentObject(path)
+        )
+        hostingController.navigationItem.largeTitleDisplayMode = .never
+        path.push(hostingController)
     }
 }
 
