@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct MangaDownloadDetailView: View {
     @StateObject private var viewModel: ViewModel
@@ -86,7 +87,12 @@ struct MangaDownloadDetailView: View {
             // Chapters list with smooth animations
             Section {
                 ForEach(viewModel.chapters) { chapter in
-                    ChapterRow(chapter: chapter)
+                    Button {
+                        openReaderView(chapter: chapter)
+                    } label: {
+                        ChapterRow(chapter: chapter)
+                    }
+                    .foregroundStyle(.primary)
                 }
                 .onDelete(perform: delete)
             } header: {
@@ -174,6 +180,17 @@ struct MangaDownloadDetailView: View {
         return components.joined(separator: " • ")
     }
 
+    private func openReaderView(chapter: DownloadedChapterInfo) {
+        let readerController = ReaderViewController(
+            source: SourceManager.shared.source(for: viewModel.manga.sourceId),
+            manga: viewModel.manga.toManga(),
+            chapter: chapter.toChapter()
+        )
+        let navigationController = ReaderNavigationController(rootViewController: readerController)
+        navigationController.modalPresentationStyle = .fullScreen
+        path.present(navigationController)
+    }
+
     private func openMangaPage() {
         guard SourceManager.shared.source(for: viewModel.manga.sourceId) != nil else {
             print("Source not found for ID: \(viewModel.manga.sourceId)")
@@ -220,7 +237,7 @@ private struct ChapterRow: View {
                 if let subtitle = formatChapterSubtitle() {
                     Text(subtitle)
                         .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }

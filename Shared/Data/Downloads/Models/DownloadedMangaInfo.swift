@@ -5,6 +5,7 @@
 //  Created by doomsboygaming on 6/25/25.
 //
 
+import AidokuRunner
 import Foundation
 
 /// Information about a downloaded manga with metadata and size details
@@ -48,6 +49,15 @@ struct DownloadedMangaInfo: Identifiable, Hashable {
         self.totalSize = totalSize
         self.chapterCount = chapterCount
         self.isInLibrary = isInLibrary
+    }
+
+    func toManga() -> AidokuRunner.Manga {
+        .init(
+            sourceKey: sourceId,
+            key: mangaId,
+            title: title ?? "",
+            cover: coverUrl
+        )
     }
 }
 
@@ -125,5 +135,14 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
         self.volumeNumber = volumeNumber
         self.size = size
         self.downloadDate = downloadDate
+    }
+
+    func toChapter() -> AidokuRunner.Chapter {
+        .init(
+            key: chapterId,
+            title: title,
+            chapterNumber: chapterNumber,
+            volumeNumber: volumeNumber
+        )
     }
 }
