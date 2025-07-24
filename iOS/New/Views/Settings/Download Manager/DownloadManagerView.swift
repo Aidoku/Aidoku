@@ -51,7 +51,7 @@ struct DownloadManagerView: View {
                 viewModel.deleteAllChapters()
             }
         } message: {
-            Text("REMOVE_ALL_DOWNLOADS_CONFIRM")
+            Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
         }
     }
 
@@ -59,14 +59,14 @@ struct DownloadManagerView: View {
         VStack(spacing: 20) {
             Image(systemName: "arrow.down.circle")
                 .font(.system(size: 60))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
             Text(NSLocalizedString("NO_DOWNLOADS"))
                 .font(.title2)
                 .fontWeight(.semibold)
 
             Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -83,13 +83,13 @@ struct DownloadManagerView: View {
                         Spacer()
                         Text(viewModel.totalSize)
                             .font(.headline)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
                     }
 
                     HStack {
                         Text(String(format: NSLocalizedString("%i_SERIES"), viewModel.totalCount))
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         Spacer()
                         let totalChapters = viewModel.downloadedManga.reduce(0) { $0 + $1.chapterCount }
                         Text(
@@ -101,7 +101,7 @@ struct DownloadManagerView: View {
                             .lowercased()
                         )
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, 4)
@@ -111,20 +111,17 @@ struct DownloadManagerView: View {
             ForEach(viewModel.groupedManga, id: \.source) { group in
                 Section(header: Text(group.source)) {
                     ForEach(group.manga) { manga in
-                        Button(
-                            action: {
-                                let hostingController = UIHostingController(
-                                    rootView: MangaDownloadDetailView(manga: manga)
-                                        .environmentObject(path)
-                                )
-                                hostingController.title = manga.displayTitle
-                                path.push(hostingController)
-                            },
-                            label: {
-                                DownloadedMangaRow(manga: manga)
-                            }
-                        )
-                        .buttonStyle(PlainButtonStyle())
+                        Button {
+                            let hostingController = UIHostingController(
+                                rootView: MangaDownloadDetailView(manga: manga)
+                                    .environmentObject(path)
+                            )
+                            hostingController.title = manga.displayTitle
+                            path.push(hostingController)
+                        } label: {
+                            DownloadedMangaRow(manga: manga)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -141,30 +138,22 @@ struct DownloadedMangaRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Manga cover or placeholder matching history page style
-            AsyncImage(url: manga.coverUrl != nil ? URL(string: manga.coverUrl!) : nil) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-            }
-            .frame(width: 56, height: 56 * 3/2)
-            .clipShape(RoundedRectangle(cornerRadius: 5))
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .strokeBorder(Color(UIColor.quaternarySystemFill), lineWidth: 1)
+            MangaCoverView(
+                source: SourceManager.shared.source(for: manga.sourceId),
+                coverImage: manga.coverUrl ?? "",
+                width: 56,
+                height: 56 * 3/2
             )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(manga.displayTitle)
-                    .font(.system(size: 16))
+                    .font(.callout)
                     .lineLimit(2)
 
                 // Format like chapter subtitles: chapters • size
                 Text(formatMangaSubtitle())
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
 
                 if manga.isInLibrary {

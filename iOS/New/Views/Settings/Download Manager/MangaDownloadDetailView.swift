@@ -64,14 +64,14 @@ struct MangaDownloadDetailView: View {
         VStack(spacing: 20) {
             Image(systemName: "doc.text")
                 .font(.system(size: 60))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
             Text(NSLocalizedString("NO_DOWNLOADS"))
                 .font(.title2)
                 .fontWeight(.semibold)
 
             Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -98,15 +98,12 @@ struct MangaDownloadDetailView: View {
             } header: {
                 HStack {
                     Text("Downloaded Chapters")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
 
                     Spacer()
 
                     Button(action: viewModel.toggleSortOrder) {
                         Image(systemName: viewModel.sortAscending ? "arrow.up" : "arrow.down")
-                            .font(.system(size: 13, weight: .medium))
+                            .imageScale(.small)
                     }
                 }
                 .padding(.bottom, 2)
@@ -116,30 +113,22 @@ struct MangaDownloadDetailView: View {
 
     private var mangaInfoHeader: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: viewModel.manga.coverUrl != nil ? URL(string: viewModel.manga.coverUrl!) : nil) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-            }
-            .frame(width: 56, height: 56 * 3/2)
-            .clipShape(RoundedRectangle(cornerRadius: 5))
-            .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                    .strokeBorder(Color(UIColor.quaternarySystemFill), lineWidth: 1)
+            MangaCoverView(
+                source: SourceManager.shared.source(for: viewModel.manga.sourceId),
+                coverImage: viewModel.manga.coverUrl ?? "",
+                width: 56,
+                height: 56 * 3/2
             )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.manga.displayTitle)
-                    .font(.system(size: 16))
+                    .font(.callout)
                     .lineLimit(2)
 
                 // Format like chapter subtitles: Date • Size
                 Text(formatMangaSubtitle())
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                     .lineLimit(1)
 
                 if viewModel.manga.isInLibrary {
@@ -155,7 +144,7 @@ struct MangaDownloadDetailView: View {
 
             Spacer()
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
 
     private func delete(at offsets: IndexSet) {
@@ -230,13 +219,13 @@ private struct ChapterRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(chapter.displayTitle)
-                    .font(.system(size: 16))
-                    .lineLimit(2)
+                    .font(.callout)
+                    .lineLimit(1)
 
                 // Format like chapter subtitles: Date • Size
                 if let subtitle = formatChapterSubtitle() {
                     Text(subtitle)
-                        .font(.system(size: 14))
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
