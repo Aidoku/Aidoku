@@ -244,11 +244,11 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
     /// Shows an error message when image reload fails
     private func showReloadError() {
         let alert = UIAlertController(
-            title: NSLocalizedString("RELOAD_FAILED", comment: "Reload Failed"),
-            message: NSLocalizedString("RELOAD_FAILED_MESSAGE", comment: "Failed to reload the image. Please try again."),
+            title: NSLocalizedString("RELOAD_FAILED"),
+            message: NSLocalizedString("RELOAD_FAILED_TEXT"),
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default))
         present(alert, animated: true)
     }
 }

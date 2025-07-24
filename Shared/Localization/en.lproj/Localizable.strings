@@ -459,6 +459,8 @@
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
 "UNREAD_CHAPTERS" = "Unread Chapters";
 "RELOAD" = "Reload";
+"RELOAD_FAILED" = "Reload Failed";
+"RELOAD_FAILED_TEXT" = "Failed to reload the image. Please try again.";
 "%i_OF_%i" = "%i of %i";
 "%i_PAGES_LEFT" = "%i pages left";
 "ONE_PAGE_LEFT" = "1 page left";

@@ -457,7 +457,7 @@ class ReaderPageView: UIView {
         guard let currentPage else { return }
 
         // Handle different image types
-        if let urlString = currentPage.imageURL, let url = URL(string: urlString) {
+        if currentPage.imageURL != nil {
             // For URL-based images, use the stored request if available
             if let currentImageRequest {
                 ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
@@ -466,7 +466,7 @@ class ReaderPageView: UIView {
             // For base64 images
             let request = ImageRequest(id: String(currentPage.hashValue), data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
-        } else if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
+        } else if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = currentPage.imageURL {
             // For zip file images
             var hasher = Hasher()
             hasher.combine(url)
