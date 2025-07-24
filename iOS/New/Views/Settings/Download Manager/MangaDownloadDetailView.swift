@@ -63,7 +63,7 @@ struct MangaDownloadDetailView: View {
                 viewModel.deleteAllChapters()
             }
         } message: {
-            Text("REMOVE_ALL_DOWNLOADS_CONFIRM")
+            Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
         }
     }
 
@@ -104,7 +104,7 @@ struct MangaDownloadDetailView: View {
                 .onDelete(perform: delete)
             } header: {
                 HStack {
-                    Text("Downloaded Chapters")
+                    Text(NSLocalizedString("DOWNLOADED_CHAPTERS"))
 
                     Spacer()
 
@@ -113,7 +113,6 @@ struct MangaDownloadDetailView: View {
                             .imageScale(.small)
                     }
                 }
-                .padding(.bottom, 2)
             }
         }
     }

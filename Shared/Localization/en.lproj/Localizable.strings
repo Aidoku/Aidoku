@@ -49,6 +49,7 @@
 "DOWNLOAD_MANAGER" = "Download Manager";
 "NO_DOWNLOADS" = "No Downloads";
 "NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
+"DOWNLOADED_CHAPTERS" = "Downloaded Chapters";
 "TOTAL_DOWNLOADS" = "Total Downloads";
 "%i_SERIES" = "%i series";
 "IN_LIBRARY" = "In Library";
