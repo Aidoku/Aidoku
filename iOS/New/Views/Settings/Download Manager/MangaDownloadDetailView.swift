@@ -86,15 +86,9 @@ struct MangaDownloadDetailView: View {
             // Chapters list with smooth animations
             Section {
                 ForEach(viewModel.chapters) { chapter in
-                    ChapterRow(chapter: chapter) {
-                        viewModel.deleteChapter(chapter)
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(NSLocalizedString("REMOVE"), role: .destructive) {
-                            viewModel.deleteChapter(chapter)
-                        }
-                    }
+                    ChapterRow(chapter: chapter)
                 }
+                .onDelete(perform: delete)
             } header: {
                 HStack {
                     Text("Downloaded Chapters")
@@ -158,6 +152,13 @@ struct MangaDownloadDetailView: View {
         .padding(.vertical, 8)
     }
 
+    private func delete(at offsets: IndexSet) {
+        let chapters = offsets.map { viewModel.chapters[$0] }
+        for chapter in chapters {
+            viewModel.deleteChapter(chapter)
+        }
+    }
+
     private func formatMangaSubtitle() -> String {
         var components: [String] = []
 
@@ -205,9 +206,8 @@ struct MangaDownloadDetailView: View {
     }
 }
 
-struct ChapterRow: View {
+private struct ChapterRow: View {
     let chapter: DownloadedChapterInfo
-    let onDelete: () -> Void
 
     var body: some View {
         HStack {
@@ -226,12 +226,6 @@ struct ChapterRow: View {
             }
 
             Spacer()
-
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-            }
-            .buttonStyle(BorderlessButtonStyle())
         }
         .contentShape(Rectangle())
     }
