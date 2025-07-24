@@ -462,11 +462,13 @@ class ReaderPageView: UIView {
             if let currentImageRequest {
                 ImagePipeline.shared.cache.removeCachedImage(for: currentImageRequest)
             }
-        } else if currentPage.base64 != nil {
+        }
+        if currentPage.base64 != nil {
             // For base64 images
             let request = ImageRequest(id: String(currentPage.hashValue), data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
-        } else if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = currentPage.imageURL {
+        }
+        if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = currentPage.imageURL {
             // For zip file images
             var hasher = Hasher()
             hasher.combine(url)
