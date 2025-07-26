@@ -24,6 +24,7 @@ class ReaderViewController: BaseObservingViewController {
     var pages: [Page] = []
     var readingMode: ReadingMode = .rtl
     var defaultReadingMode: ReadingMode?
+    private var tapZone: TapZone?
 
     var chapterList: [AidokuRunner.Chapter]
     var chaptersToMark: [AidokuRunner.Chapter] = []
@@ -56,7 +57,7 @@ class ReaderViewController: BaseObservingViewController {
         )
 
     private lazy var barToggleTapGesture: UITapGestureRecognizer = {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(toggleBarVisibility))
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
 
         let doubleTap = UITapGestureRecognizer(target: self, action: nil)
@@ -186,6 +187,9 @@ class ReaderViewController: BaseObservingViewController {
         UserDefaults.standard.register(defaults: [readingModeKey: "default"])
         setReadingMode(UserDefaults.standard.string(forKey: readingModeKey))
 
+        // load current tap zone
+        updateTapZone()
+
         // load chapter list
         loadCurrentChapter()
     }
@@ -207,6 +211,8 @@ class ReaderViewController: BaseObservingViewController {
             guard let self else { return }
             self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.manga.key)"))
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+            // if the tap zone is auto, it will changed based on the current reader
+            self.updateTapZone()
         }
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
@@ -224,6 +230,13 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.cropBorders") { [weak self] _ in
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
+        addObserver(forName: "Reader.tapZones") { [weak self] _ in
+            self?.updateTapZone()
+        }
+        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
+            guard let self else { return }
+            self.updateReadPosition()
         }
     }
 
@@ -646,10 +659,61 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 }
 
+// MARK: - Tap Zones
+extension ReaderViewController {
+    func updateTapZone() {
+        let enabledTapZone = UserDefaults.standard.string(forKey: "Reader.tapZones")
+        let tapZone: TapZone? = switch enabledTapZone {
+            case "auto": switch reader {
+                case is ReaderPagedViewController: .leftRight
+                case is ReaderWebtoonViewController: .lShaped
+                case is ReaderTextViewController: .lShaped
+                default: .leftRight
+            }
+            case "left-right": .leftRight
+            case "l-shaped": .lShaped
+            case "kindle": .kindle
+            case "edge": .edge
+            default: nil
+        }
+        self.tapZone = tapZone
+    }
+
+    @objc func handleTap(_ gestureRecognizer: UITapGestureRecognizer) {
+        guard let reader, let tapZone else {
+            toggleBarVisibility()
+            return
+        }
+
+        let point = gestureRecognizer.location(in: view)
+        let relativePoint = CGPoint(
+            x: point.x / view.bounds.width,
+            y: point.y / view.bounds.height
+        )
+
+        let type = tapZone.regions
+            .first { $0.bounds.contains(relativePoint) }
+            .map(\.type)
+
+        if let type {
+            // hide the bars when tapping regardless
+            if let navigationController, navigationController.navigationBar.alpha > 0 {
+                hideBars()
+            }
+            // handle page moving
+            switch type {
+                case .left: reader.moveLeft()
+                case .right: reader.moveRight()
+            }
+        } else {
+            toggleBarVisibility()
+        }
+    }
+}
+
 // MARK: - Bar Visibility
 extension ReaderViewController {
-
-    @objc func toggleBarVisibility() {
+    func toggleBarVisibility() {
         guard let navigationController else { return }
         if navigationController.navigationBar.alpha > 0 {
             hideBars()

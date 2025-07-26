@@ -11,6 +11,7 @@ struct ReaderSettingsView: View {
     let mangaId: String
 
     @State private var readingMode: ReadingMode?
+    @State private var tapZones: DefaultTapZones
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
 
@@ -21,6 +22,10 @@ struct ReaderSettingsView: View {
         self._readingMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
                 .flatMap(ReadingMode.init)
+        )
+        self._tapZones = State(
+            initialValue: UserDefaults.standard.string(forKey: "Reader.tapZones")
+                .flatMap(DefaultTapZones.init) ?? .disabled
         )
     }
 
@@ -110,6 +115,27 @@ struct ReaderSettingsView: View {
                             ))
                         )
                     )
+                }
+
+                Section {
+                    NavigationLink(destination: TapZonesSelectView()) {
+                        HStack {
+                            Text(NSLocalizedString("TAP_ZONES"))
+                            Spacer()
+                            Text(tapZones.title)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.animatePageTransitions",
+                            title: NSLocalizedString("ANIMATE_PAGE_TRANSITIONS"),
+                            value: .toggle(.init())
+                        )
+                    )
+                } header: {
+                    Text(NSLocalizedString("TAP_ZONES"))
                 }
 
                 if #available(iOS 16.0, *), !downsampleImages.value {
@@ -232,6 +258,9 @@ struct ReaderSettingsView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .readerReadingMode)) { _ in
                 readingMode = UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)").flatMap(ReadingMode.init)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .readerTapZones)) { _ in
+                tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
             }
         }
     }

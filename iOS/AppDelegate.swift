@@ -128,6 +128,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.upscaleMaxHeight": 2000,
                 "Reader.cropBorders": false,
                 "Reader.saveImageOption": true,
+                "Reader.tapZones": "disabled",
+                "Reader.animatePageTransitions": true,
                 "Reader.backgroundColor": "black",
                 "Reader.pagesToPreload": 2,
                 "Reader.pagedPageLayout": "auto",
