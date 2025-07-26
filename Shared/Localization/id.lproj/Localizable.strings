@@ -275,3 +275,8 @@
 "VOLUME_X" = "Bab %g";
 "CHAPTER_X" = "Bagian %g";
 "VOL_X" = "Bab.%g";
+"DONE" = "Selesai";
+"PAUSE" = "Jeda";
+"RESUME" = "Lanjutkan";
+"COPY" = "Salin";
+"WARNING" = "Peringatan";
