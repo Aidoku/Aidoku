@@ -205,6 +205,7 @@
 		FB58C6B22999B44D00A6F49F /* WebViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */; };
 		FB58C6B32999B4AA00A6F49F /* WasmNetWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */; };
 		FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
+		FB5E5D012E32BFC700843E27 /* TapZonesSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */; };
 		FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B4278F89930072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B52791DA130072A2A2 /* KVCObject.swift */; };
@@ -627,6 +628,7 @@
 		FB55C0B72DF32B9E0019A551 /* LocalFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileManager.swift; sourceTree = "<group>"; };
 		FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNetWebViewHandler.swift; sourceTree = "<group>"; };
 		FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewViewController.swift; sourceTree = "<group>"; };
+		FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapZonesSelectView.swift; sourceTree = "<group>"; };
 		FB6340B2278F898E0072A2A2 /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
 		FB6340B52791DA130072A2A2 /* KVCObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KVCObject.swift; sourceTree = "<group>"; };
 		FB6340BA2792202B0072A2A2 /* Listing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listing.swift; sourceTree = "<group>"; };
@@ -1663,6 +1665,7 @@
 			children = (
 				FB55C0AE2DF1E2650019A551 /* SourceListsView.swift */,
 				FB7984132E0C9F1D000761A9 /* UpscaleModelListView.swift */,
+				FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -2370,6 +2373,7 @@
 				FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */,
 				FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */,
 				FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */,
+				FB5E5D012E32BFC700843E27 /* TapZonesSelectView.swift in Sources */,
 				FB8E48DD2DC04E19002A3621 /* Array.swift in Sources */,
 				FB7984192E0CB640000761A9 /* ImageProcessingModel.swift in Sources */,
 				FB0CAA5228A68FD70024561A /* EmptyPageStackView.swift in Sources */,
