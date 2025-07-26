@@ -161,7 +161,7 @@ extension MangaCollectionViewController {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
-                title: "Focus item to the left",
+                title: NSLocalizedString("FOCUS_ITEM_LEFT"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputLeftArrow,
                 modifierFlags: [],
@@ -170,7 +170,7 @@ extension MangaCollectionViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Focus item to the right",
+                title: NSLocalizedString("FOCUS_ITEM_RIGHT"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputRightArrow,
                 modifierFlags: [],
@@ -179,7 +179,7 @@ extension MangaCollectionViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Focus item above",
+                title: NSLocalizedString("FOCUS_ITEM_ABOVE"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputUpArrow,
                 modifierFlags: [],
@@ -188,7 +188,7 @@ extension MangaCollectionViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Focus item below",
+                title: NSLocalizedString("FOCUS_ITEM_BELOW"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputDownArrow,
                 modifierFlags: [],
@@ -197,7 +197,7 @@ extension MangaCollectionViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Open focused item",
+                title: NSLocalizedString("OPEN_FOCUS_ITEM"),
                 action: #selector(enterKeyPressed),
                 input: "\r",
                 modifierFlags: [],
@@ -206,7 +206,7 @@ extension MangaCollectionViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Reset focus",
+                title: NSLocalizedString("RESET_FOCUS"),
                 action: #selector(escapeKeyPressed),
                 input: UIKeyCommand.inputEscape,
                 modifierFlags: [],

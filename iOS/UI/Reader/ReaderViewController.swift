@@ -801,7 +801,7 @@ extension ReaderViewController {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
-                title: "Turn page left",
+                title: NSLocalizedString("TURN_PAGE_LEFT"),
                 action: #selector(moveLeft),
                 input: UIKeyCommand.inputLeftArrow,
                 modifierFlags: [],
@@ -810,7 +810,7 @@ extension ReaderViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Turn page right",
+                title: NSLocalizedString("TURN_PAGE_RIGHT"),
                 action: #selector(moveRight),
                 input: UIKeyCommand.inputRightArrow,
                 modifierFlags: [],
@@ -837,7 +837,7 @@ extension ReaderViewController {
 //                state: .off
 //            ),
             UIKeyCommand(
-                title: "Chapter forward",
+                title: NSLocalizedString("CHAPTER_FORWARD"),
                 action: #selector(nextChapter),
                 input: ",",
                 modifierFlags: [],
@@ -846,7 +846,7 @@ extension ReaderViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Chapter backward",
+                title: NSLocalizedString("CHAPTER_BACKWARD"),
                 action: #selector(previousChapter),
                 input: ".",
                 modifierFlags: [],
@@ -855,7 +855,7 @@ extension ReaderViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Open chapter list",
+                title: NSLocalizedString("OPEN_CHAPTER_LIST"),
                 action: #selector(openChapterList),
                 input: "\t",
                 modifierFlags: [],
@@ -864,7 +864,7 @@ extension ReaderViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Close reader",
+                title: NSLocalizedString("CLOSE_READER"),
                 action: #selector(close),
                 input: UIKeyCommand.inputEscape,
                 modifierFlags: [],
