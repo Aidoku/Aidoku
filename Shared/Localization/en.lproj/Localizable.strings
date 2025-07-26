@@ -566,3 +566,19 @@
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
 "READER_ORIENTATION" = "Orientation";
 "FOLLOW_DEVICE" = "Follow Device";
+
+// Keyboard shortcuts
+"FOCUS_ITEM_LEFT" = "Focus item to the left";
+"FOCUS_ITEM_RIGHT" = "Focus item to the right";
+"FOCUS_ITEM_ABOVE" = "Focus item above";
+"FOCUS_ITEM_BELOW" = "Focus item below";
+"FOCUS_ITEM_NEXT" = "Focus next item";
+"FOCUS_ITEM_PREV" = "Focus previous item";
+"OPEN_FOCUS_ITEM" = "Open focused item";
+"RESET_FOCUS" = "Reset focus";
+"TURN_PAGE_LEFT" = "Turn page left";
+"TURN_PAGE_RIGHT" = "Turn page right";
+"CHAPTER_FORWARD" = "Chapter forward";
+"CHAPTER_BACKWARD" = "Chapter backward";
+"OPEN_CHAPTER_LIST" = "Open chapter list";
+"CLOSE_READER" = "Close reader";

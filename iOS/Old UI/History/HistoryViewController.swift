@@ -600,7 +600,7 @@ extension HistoryViewController {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
-                title: "Select Previous Item in List",
+                title: NSLocalizedString("FOCUS_ITEM_PREV"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputUpArrow,
                 modifierFlags: [],
@@ -609,7 +609,7 @@ extension HistoryViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Select Next Item in List",
+                title: NSLocalizedString("FOCUS_ITEM_NEXT"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputDownArrow,
                 modifierFlags: [],
@@ -618,7 +618,7 @@ extension HistoryViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Confirm Selection",
+                title: NSLocalizedString("OPEN_FOCUS_ITEM"),
                 action: #selector(enterKeyPressed),
                 input: "\r",
                 modifierFlags: [],
@@ -627,7 +627,7 @@ extension HistoryViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Clear Selection",
+                title: NSLocalizedString("RESET_FOCUS"),
                 action: #selector(escKeyPressed),
                 input: UIKeyCommand.inputEscape,
                 modifierFlags: [],
