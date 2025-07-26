@@ -10,8 +10,10 @@ import Foundation
 extension Notification.Name {
     static let updateSourceLists = Self("updateSourceLists")
 
-    // manga
+    // library
+    static let updateLibrary = Self("updateLibrary")
     static let addToLibrary = Self("addToLibrary")
+    static let removeFromLibrary = Self("removeFromLibrary")
     static let migratedManga = Self("migratedManga")
 
     // history
@@ -33,6 +35,8 @@ extension Notification.Name {
     static let downloadsRemoved = Self("downloadsRemoved")
     static let downloadsCancelled = Self("downloadsCancelled")
     static let downloadsQueued = Self("downloadsQueued")
+    static let downloadsPaused = Self("downloadsPaused")
+    static let downloadsResumed = Self("downloadsResumed")
 
     // browse
     static let browseLanguages = Self("Browse.languages")
