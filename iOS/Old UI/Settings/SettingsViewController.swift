@@ -326,6 +326,10 @@ class SettingsViewController: SettingsTableViewController {
             SettingItem(type: "group", title: NSLocalizedString("TRACKERS", comment: ""), items: [
                 SettingItem(type: "page", key: "Trackers.trackers", title: NSLocalizedString("TRACKERS", comment: ""))
             ]),
+            // MARK: Download Manager
+            SettingItem(type: "group", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""), items: [
+                SettingItem(type: "page", key: "Downloads.manager", title: NSLocalizedString("DOWNLOAD_MANAGER", comment: ""))
+            ]),
             // MARK: Logging
             SettingItem(type: "group", title: NSLocalizedString("LOGGING", comment: ""), items: [
                 SettingItem(
@@ -481,6 +485,15 @@ extension SettingsViewController {
 
             case "Trackers.trackers":
                 navigationController?.pushViewController(TrackersViewController(), animated: true)
+
+            case "Downloads.manager":
+                let path = NavigationCoordinator(rootViewController: self)
+                let hostingController = UIHostingController(
+                    rootView: DownloadManagerView()
+                        .environmentObject(path)
+                )
+                hostingController.navigationItem.title = NSLocalizedString("DOWNLOAD_MANAGER")
+                navigationController?.pushViewController(hostingController, animated: true)
 
             case "Logs.export":
                 let url = LogManager.export()

@@ -78,6 +78,10 @@ class DownloadCache {
             .subdirectories[chapter.mangaId.directoryName]?
             .subdirectories[chapter.id.directoryName] = nil
     }
+
+    func removeAll() {
+        DownloadManager.directory.removeItem()
+    }
 }
 
 extension DownloadCache {
