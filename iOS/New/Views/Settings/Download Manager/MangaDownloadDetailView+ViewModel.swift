@@ -28,7 +28,7 @@ extension MangaDownloadDetailView {
         init(manga: DownloadedMangaInfo) {
             self.manga = manga
             // Load sort preference from UserDefaults
-            self.sortAscending = UserDefaults.standard.object(forKey: "downloadChapterSortAscending") as? Bool ?? true
+            self.sortAscending = UserDefaults.standard.bool(forKey: "downloadChapterSortAscending")
             setupNotificationObservers()
         }
 
