@@ -33,6 +33,8 @@ class DownloadManager {
 
     var ignoreConnectionType = false
 
+    private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
+
     init() {
         self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
@@ -81,10 +83,12 @@ class DownloadManager {
                     // otherwise, load file as text
                     imageURL = nil
                     text = try? String(contentsOf: url)
-                } else {
+                } else if Self.allowedImageExtensions.contains(url.pathExtension) {
                     // load file as image
                     imageURL = url.absoluteString
                     text = nil
+                } else {
+                    return nil
                 }
                 return Page(
                     sourceId: chapter.sourceId,
