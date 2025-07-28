@@ -1133,7 +1133,7 @@ extension LibraryViewController {
                 }
             }
 
-            if manga.sourceId != "local" {
+            if manga.sourceId != LocalSourceRunner.sourceKey {
                 bottomMenuChildren.append(UIMenu(
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle"),

@@ -249,7 +249,7 @@ extension MangaView {
     @ViewBuilder
     func contextMenu(chapter: AidokuRunner.Chapter, index: Int, last: Bool) -> some View {
         Section {
-            if viewModel.manga.sourceKey == "local" {
+            if viewModel.manga.isLocal() {
                 // if the chapter is from the local source, add a button to remove it instead of download
                 Button(role: .destructive) {
                     Task {
@@ -497,7 +497,7 @@ extension MangaView {
 
             ToolbarSpacer(.flexible, placement: .bottomBar)
 
-            if viewModel.manga.sourceKey != "local" {
+            if !viewModel.manga.isLocal() {
                 ToolbarItem(placement: .bottomBar) {
                     toolbarDownloadButton
                 }
@@ -583,7 +583,7 @@ extension MangaView {
                 editMode = .inactive
             }
         }
-        .disabled(viewModel.manga.sourceKey == "local" || selectedChapters.isEmpty)
+        .disabled(viewModel.manga.isLocal() || selectedChapters.isEmpty)
     }
 }
 

@@ -384,7 +384,7 @@ extension MangaManager {
 extension MangaManager {
     // sets uploaded cover image and returns the new cover url
     func setCover(manga: AidokuRunner.Manga, cover: PlatformImage) async -> String? {
-        if manga.sourceKey == "local" {
+        if manga.isLocal() {
             return await LocalFileManager.shared.setCover(for: manga.key, image: cover)
         }
 

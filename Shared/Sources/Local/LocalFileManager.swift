@@ -381,7 +381,7 @@ extension LocalFileManager {
 
         // set cover image in coredata
         return await CoreDataManager.shared.setCover(
-            sourceId: "local",
+            sourceId: LocalSourceRunner.sourceKey,
             mangaId: mangaId,
             coverUrl: newCoverURL.absoluteString
         )

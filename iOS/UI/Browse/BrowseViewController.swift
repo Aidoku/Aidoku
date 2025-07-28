@@ -278,7 +278,7 @@ extension BrowseViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                if source.id == "local" {
+                if source.id == LocalSourceRunner.sourceKey {
                     self.presentAlert(
                         title: "Remove Local Source?",
                         message: "This will remove all imported local files.",

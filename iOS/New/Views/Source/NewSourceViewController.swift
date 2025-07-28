@@ -670,7 +670,7 @@ extension NewSourceViewController {
             )
         }
 
-        if source.id == "local" {
+        if source.id == LocalSourceRunner.sourceKey {
             rightBarButtonItems.append(
                 UIBarButtonItem(
                     title: NSLocalizedString("UPLOAD_FILE"),
