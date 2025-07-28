@@ -317,7 +317,7 @@ extension MangaView.ViewModel {
             // update manga in db
             if inLibrary {
                 let result = await CoreDataManager.shared.updateMangaDetails(manga: newManga.toOld())
-                newManga = result?.toNew() ?? newManga
+                newManga = result?.toNew(chapters: newManga.chapters) ?? newManga
             }
 
             // update chapters in db
