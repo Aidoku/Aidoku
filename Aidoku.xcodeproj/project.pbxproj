@@ -173,6 +173,8 @@
 		FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AF0285D46BF0066A13B /* Date.swift */; };
 		FB4B0AF2285D46BF0066A13B /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4B0AF0285D46BF0066A13B /* Date.swift */; };
 		FB4C09D729B01AD2009E0761 /* ReaderWebtoonPageNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4C09D629B01AD2009E0761 /* ReaderWebtoonPageNode.swift */; };
+		FB4E57992E3529C0006EF27C /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4E57982E3529BD006EF27C /* TabBarController.swift */; };
+		FB4E579B2E352CAB006EF27C /* UIKeyModifierFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */; };
 		FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
 		FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
@@ -610,6 +612,8 @@
 		FB4B0AF6285D7F160066A13B /* eo */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = eo; path = eo.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB4C09D629B01AD2009E0761 /* ReaderWebtoonPageNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWebtoonPageNode.swift; sourceTree = "<group>"; };
 		FB4C09D929B03DE1009E0761 /* VerticalContentOffsetPreservingLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalContentOffsetPreservingLayout.swift; sourceTree = "<group>"; };
+		FB4E57982E3529BD006EF27C /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
+		FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyModifierFlags.swift; sourceTree = "<group>"; };
 		FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Track.swift"; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
@@ -940,6 +944,7 @@
 				FB0CAA5328A68FDF0024561A /* LockedPageStackView.swift */,
 				FB9A48412968943400FFC414 /* SwiftUINavigationView.swift */,
 				48E20A262B78420E00BFFED8 /* SwiftUINavigationController.swift */,
+				FB4E57982E3529BD006EF27C /* TabBarController.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1317,6 +1322,7 @@
 				487046982B7B13F000333F13 /* Dates.swift */,
 				FBCA1B262888ACA4007149C5 /* HostingController.swift */,
 				FBE578F828983F5700F9F1B5 /* UICollectionView+CellRegistration.swift */,
+				FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2170,6 +2176,7 @@
 				FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */,
 				FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB3F49EB2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */,
+				FB4E57992E3529C0006EF27C /* TabBarController.swift in Sources */,
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FBE7A58F2DE1214F00CA5B60 /* ExternalSourceTableCell.swift in Sources */,
 				FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */,
@@ -2293,6 +2300,7 @@
 				723D3AFD2E0DC5C4003ED4CF /* DownloadManagerView.swift in Sources */,
 				723D3AFE2E0DC5C4003ED4CF /* MangaDownloadDetailView.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,
+				FB4E579B2E352CAB006EF27C /* UIKeyModifierFlags.swift in Sources */,
 				FB2E02522868A67500786F21 /* TrackerView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
