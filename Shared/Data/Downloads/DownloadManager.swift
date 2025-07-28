@@ -468,7 +468,7 @@ extension DownloadManager {
             let data = try JSONEncoder().encode(metadata)
             try data.write(to: metadataURL)
         } catch {
-            print("Failed to save chapter metadata: \(error)")
+            LogManager.logger.error("Failed to save chapter metadata: \(error)")
         }
     }
 
@@ -481,7 +481,7 @@ extension DownloadManager {
                 let (data, _) = try await URLSession.shared.data(from: coverUrl)
                 thumbnailBase64 = data.base64EncodedString()
             } catch {
-                print("Failed to download manga cover: \(error)")
+                LogManager.logger.error("Failed to download manga cover: \(error)")
             }
         }
 
@@ -498,7 +498,7 @@ extension DownloadManager {
             let data = try JSONEncoder().encode(metadata)
             try data.write(to: metadataURL)
         } catch {
-            print("Failed to save manga metadata: \(error)")
+            LogManager.logger.error("Failed to save manga metadata: \(error)")
         }
     }
 
@@ -512,7 +512,7 @@ extension DownloadManager {
             let data = try Data(contentsOf: metadataURL)
             return try JSONDecoder().decode(ChapterMetadata.self, from: data)
         } catch {
-            print("Failed to load chapter metadata: \(error)")
+            LogManager.logger.error("Failed to load chapter metadata: \(error)")
             return nil
         }
     }
@@ -527,7 +527,7 @@ extension DownloadManager {
             let data = try Data(contentsOf: metadataURL)
             return try JSONDecoder().decode(MangaMetadata.self, from: data)
         } catch {
-            print("Failed to load manga metadata: \(error)")
+            LogManager.logger.error("Failed to load manga metadata: \(error)")
             return nil
         }
     }
