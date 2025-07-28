@@ -318,12 +318,12 @@ extension LocalFileManager {
             false
         }
         if !hasMangaObject {
-            let cover = coverURL?.absoluteString ?? {
+            let cover = coverURL?.toAidokuImageUrl()?.absoluteString ?? {
                 // if no cover url, try finding one in the directory
                 for ext in Self.allowedImageExtensions {
                     let coverPath = mangaFolder.appendingPathComponent("cover.\(ext)")
                     if coverPath.exists {
-                        return coverPath.absoluteString
+                        return coverPath.toAidokuImageUrl()?.absoluteString
                     }
                 }
                 return nil
@@ -383,7 +383,7 @@ extension LocalFileManager {
         return await CoreDataManager.shared.setCover(
             sourceId: LocalSourceRunner.sourceKey,
             mangaId: mangaId,
-            coverUrl: newCoverURL.absoluteString
+            coverUrl: newCoverURL.toAidokuImageUrl()?.absoluteString
         )
     }
 }
