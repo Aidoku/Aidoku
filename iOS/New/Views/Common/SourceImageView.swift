@@ -68,11 +68,13 @@ struct SourceImageView: View {
     }
 
     func loadImageRequest(url: String) async {
-        guard
-            let source,
-            let url = URL(string: url)
-        else {
-            imageRequest = ImageRequest(url: URL(string: url))
+        let url = URL(string: url)
+        if let fileUrl = url?.toAidokuFileUrl() {
+            imageRequest = ImageRequest(url: fileUrl)
+            return
+        }
+        guard let source, let url, !url.isFileURL else {
+            imageRequest = ImageRequest(url: url)
             return
         }
         imageRequest = ImageRequest(urlRequest: await source.getModifiedImageRequest(url: url, context: nil))

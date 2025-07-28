@@ -354,6 +354,40 @@ extension LocalFileManager {
     }
 }
 
+extension LocalFileManager {
+    func setCover(for mangaId: String, image: PlatformImage) async -> String? {
+        let mangaData = await LocalFileDataManager.shared.fetchLocalSeries(id: mangaId)
+
+        // remove the cover image file if it exists
+        if let cover = mangaData?.cover, let url = URL(string: cover) {
+            let fileURL = url.toAidokuFileUrl() ?? url
+            if fileURL.isFileURL {
+                fileURL.removeItem()
+            }
+        }
+
+        // upload the new cover
+        let fileManager = FileManager.default
+        let localFolder = fileManager.documentDirectory.appendingPathComponent("Local", isDirectory: true)
+        let mangaFolder = localFolder.appendingPathComponent(mangaId, isDirectory: true)
+        let coverFileName = "cover.png"
+        let newCoverURL = mangaFolder.appendingPathComponent(coverFileName)
+        do {
+            try image.pngData()?.write(to: newCoverURL)
+        } catch {
+            LogManager.logger.error("Failed to write cover image for manga \(mangaId): \(error)")
+            return nil
+        }
+
+        // set cover image in coredata
+        return await CoreDataManager.shared.setCover(
+            sourceId: "local",
+            mangaId: mangaId,
+            coverUrl: newCoverURL.absoluteString
+        )
+    }
+}
+
 // MARK: Removing
 extension LocalFileManager {
     // remove all db objects and local files associated with a given mangaId

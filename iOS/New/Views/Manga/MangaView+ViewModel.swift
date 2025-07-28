@@ -58,6 +58,20 @@ extension MangaView {
         }
 
         private func setupNotifications() {
+            NotificationCenter.default.publisher(for: .updateMangaDetails)
+                .sink { [weak self] output in
+                    guard
+                        let self,
+                        let manga = output.object as? AidokuRunner.Manga,
+                        manga.sourceKey == self.manga.sourceKey,
+                        manga.key == self.manga.key
+                    else {
+                        return
+                    }
+                    self.manga = manga
+                }
+                .store(in: &cancellables)
+
             NotificationCenter.default.publisher(for: .addToLibrary)
                 .sink { [weak self] output in
                     guard
@@ -294,7 +308,7 @@ extension MangaView.ViewModel {
 
         do {
             let oldManga = self.manga
-            let newManga = try await source.getMangaUpdate(
+            var newManga = try await source.getMangaUpdate(
                 manga: oldManga,
                 needsDetails: true,
                 needsChapters: true
@@ -302,7 +316,8 @@ extension MangaView.ViewModel {
 
             // update manga in db
             if inLibrary {
-                await CoreDataManager.shared.updateMangaDetails(manga: newManga.toOld())
+                let result = await CoreDataManager.shared.updateMangaDetails(manga: newManga.toOld())
+                newManga = result?.toNew() ?? newManga
             }
 
             // update chapters in db

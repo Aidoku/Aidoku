@@ -147,6 +147,10 @@ extension AidokuRunner.Manga {
             nextUpdateTime: nextUpdateTime.flatMap { Date(timeIntervalSince1970: TimeInterval($0)) },
         )
     }
+
+    func isLocal() -> Bool {
+        sourceKey == LocalSourceRunner.sourceKey
+    }
 }
 
 extension AidokuRunner.MangaStatus {

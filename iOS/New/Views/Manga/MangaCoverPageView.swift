@@ -12,18 +12,22 @@ import SwiftUI
 
 struct MangaCoverPageView: View {
     let source: AidokuRunner.Source?
-    let manga: AidokuRunner.Manga
-    let coverImage: String
+    @State var manga: AidokuRunner.Manga
+    @State var inLibrary: Bool?
 
+    @State private var hasEditedCover = false
     @State private var alternateCovers: [String] = []
     @State private var error: Error?
 
+    @State private var showImagePicker = false
+    @State private var uploadedCover: UIImage?
+
     @Environment(\.dismiss) private var dismiss
 
-    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, coverImage: String) {
+    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, inLibrary: Bool? = nil) {
         self.source = source
-        self.manga = manga
-        self.coverImage = coverImage
+        self._manga = State(initialValue: manga)
+        self._inLibrary = State(initialValue: inLibrary)
 
         UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(.primary)
         UIPageControl.appearance().pageIndicatorTintColor = UIColor(.secondary)
@@ -31,21 +35,48 @@ struct MangaCoverPageView: View {
 
     var body: some View {
         PlatformNavigationStack {
-            TabView {
-                view(coverImage: coverImage)
-                if let error {
-                    ErrorView(error: error) {
-                        await loadCovers()
+            VStack {
+                TabView {
+                    view(coverImage: manga.cover ?? "")
+                    if let error {
+                        ErrorView(error: error) {
+                            await loadCovers()
+                        }
+                    } else {
+                        ForEach(alternateCovers, id: \.self) { cover in
+                            if cover != manga.cover {
+                                view(coverImage: cover)
+                            }
+                        }
                     }
-                } else {
-                    ForEach(alternateCovers, id: \.self) { cover in
-                        if cover != coverImage {
-                            view(coverImage: cover)
+                }
+                .tabViewStyle(.page)
+
+                if inLibrary == true || manga.isLocal() {
+                    HStack {
+                        Button {
+                            showImagePicker = true
+                        } label: {
+                            Text(NSLocalizedString("UPLOAD_CUSTOM_COVER"))
+                        }
+                        .buttonStyle(.bordered)
+
+                        if source != nil && hasEditedCover && !manga.isLocal() {
+                            Button {
+                                Task {
+                                    let newUrl = await MangaManager.shared.resetCover(manga: manga)
+                                    if let newUrl {
+                                        setCover(url: newUrl, original: true)
+                                    }
+                                }
+                            } label: {
+                                Text(NSLocalizedString("RESET_COVER"))
+                            }
+                            .buttonStyle(.bordered)
                         }
                     }
                 }
             }
-            .tabViewStyle(.page)
             .background(Color(uiColor: .systemBackground)) // ios 26 has no background color
             .navigationTitle(NSLocalizedString("COVER"))
             .navigationBarTitleDisplayMode(.inline)
@@ -58,23 +89,40 @@ struct MangaCoverPageView: View {
                     }
                 }
             }
-            .task {
-                await loadCovers()
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(image: $uploadedCover)
+                    .ignoresSafeArea()
             }
-        }
-    }
+            .onChange(of: uploadedCover) { newImage in
+                guard let newImage else { return }
 
-    func loadCovers() async {
-        guard let source, source.features.providesAlternateCovers else { return }
-        withAnimation {
-            error = nil
-        }
-        do {
-            let result = try await source.getAlternateCovers(manga: manga)
-            alternateCovers = result.unique()
-        } catch {
-            withAnimation {
-                self.error = error
+                Task {
+                    let newUrl = await MangaManager.shared.setCover(
+                        manga: manga,
+                        cover: newImage
+                    )
+                    if let newUrl {
+                        setCover(url: newUrl)
+                    }
+                }
+            }
+            .task {
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    hasEditedCover = CoreDataManager.shared.hasEditedKey(
+                        sourceId: manga.sourceKey,
+                        mangaId: manga.key,
+                        key: .cover,
+                        context: context
+                    )
+                    if inLibrary == nil {
+                        inLibrary = CoreDataManager.shared.hasLibraryManga(
+                            sourceId: manga.sourceKey,
+                            mangaId: manga.key,
+                            context: context
+                        )
+                    }
+                }
+                await loadCovers()
             }
         }
     }
@@ -96,6 +144,20 @@ struct MangaCoverPageView: View {
                         } label: {
                             Label(NSLocalizedString("SAVE_TO_PHOTOS"), systemImage: "photo")
                         }
+                        if coverImage != manga.cover {
+                            Button {
+                                Task {
+                                    await CoreDataManager.shared.setCover(
+                                        sourceId: manga.sourceKey,
+                                        mangaId: manga.key,
+                                        coverUrl: coverImage
+                                    )
+                                    setCover(url: coverImage)
+                                }
+                            } label: {
+                                Label(NSLocalizedString("SET_COVER_IMAGE"), systemImage: "book.closed")
+                            }
+                        }
                         // todo: share sheet doesn't work on ipads
 //                        Button {
 //                            Task {
@@ -112,7 +174,35 @@ struct MangaCoverPageView: View {
         }
     }
 
+    func loadCovers() async {
+        guard let source, source.features.providesAlternateCovers else { return }
+        withAnimation {
+            error = nil
+        }
+        do {
+            let result = try await source.getAlternateCovers(manga: manga)
+            alternateCovers = result.unique()
+        } catch {
+            withAnimation {
+                self.error = error
+            }
+        }
+    }
+
     func loadImage(url: URL) async throws -> UIImage {
         try await ImagePipeline.shared.image(for: url)
+    }
+
+    func setCover(url: String, original: Bool = false) {
+        if manga.cover == url {
+            // make the image view refresh with a unique url
+            manga.cover = url + "?edited=\(Date().timeIntervalSince1970)"
+        } else {
+            manga.cover = url
+        }
+        withAnimation {
+            hasEditedCover = !original
+        }
+        NotificationCenter.default.post(name: .updateMangaDetails, object: manga)
     }
 }

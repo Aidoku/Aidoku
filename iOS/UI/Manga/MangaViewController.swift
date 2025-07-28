@@ -5,9 +5,10 @@
 //  Created by Skitty on 1/30/22.
 //
 
-import UIKit
-import SwiftUI
+import AidokuRunner
 import SafariServices
+import SwiftUI
+import UIKit
 
 class MangaViewController: BaseTableViewController {
 
@@ -167,6 +168,18 @@ class MangaViewController: BaseTableViewController {
             guard let self = self else { return }
             self.updateReadButton()
             self.updateDataSource()
+        }
+        // update manga details
+        addObserver(forName: "updateMangaDetails") { [weak self] notification in
+            guard
+                let self,
+                let manga = notification.object as? AidokuRunner.Manga,
+                self.manga.key == manga.sourceKey + "." + manga.key
+            else {
+                return
+            }
+            self.manga = manga.toOld()
+            self.headerView.configure(with: self.manga)
         }
         // update library status
         addObserver(forName: "addToLibrary") { [weak self] notification in
@@ -501,13 +514,16 @@ class MangaViewController: BaseTableViewController {
                     needsChapters: true
                 )
                 if let newManga {
-                    let updatedManga = oldManga.copy(from: newManga.toOld())
-                    await MainActor.run {
-                        self.manga = updatedManga
-                    }
+                    var updatedManga = oldManga.copy(from: newManga.toOld())
+
                     // update in db
                     if inLibrary {
-                        await CoreDataManager.shared.updateMangaDetails(manga: updatedManga)
+                        let result = await CoreDataManager.shared.updateMangaDetails(manga: updatedManga)
+                        updatedManga = result ?? updatedManga
+                    }
+
+                    await MainActor.run {
+                        self.manga = updatedManga
                     }
 
                     let chapterList = newManga.chapters?.enumerated().map {
@@ -1297,9 +1313,13 @@ extension MangaViewController: MangaDetailHeaderViewDelegate {
 
     // open full manga cover view
     func coverPressed() {
-        let navigationController = UINavigationController(rootViewController: MangaCoverViewController(manga: manga))
-        navigationController.modalPresentationStyle = .fullScreen
-        present(navigationController, animated: true)
+        let view = MangaCoverPageView(
+            source: SourceManager.shared.source(for: manga.sourceId),
+            manga: manga.toNew()
+        )
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.modalPresentationStyle = .fullScreen
+        present(hostingController, animated: true)
     }
 }
 

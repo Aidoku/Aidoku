@@ -25,6 +25,7 @@ final actor LocalFileDataManager {
     }
 }
 
+// MARK: Checking
 extension LocalFileDataManager {
     // check if a series exists in the db with the given name (id)
     func hasSeries(name: String) -> Bool {
@@ -77,6 +78,7 @@ extension LocalFileDataManager {
     }
 }
 
+// MARK: Fetching
 extension LocalFileDataManager {
     // fetch list of series with some basic info from db
     func fetchLocalSeriesInfo(query: String? = nil) -> [LocalSeriesInfo] {
@@ -120,6 +122,20 @@ extension LocalFileDataManager {
         }
     }
 
+    // fetch a series from db with specified id
+    func fetchLocalSeries(id: String) -> AidokuRunner.Manga? {
+        let request = MangaObject.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, "local")
+        request.fetchLimit = 1
+        do {
+            let results = try context.fetch(request)
+            return results.first?.toNewManga()
+        } catch {
+            LogManager.logger.error("Failed to fetch local manga: \(error)")
+            return nil
+        }
+    }
+
     // fetch local chapters for a series from db
     func fetchChapters(mangaId: String) -> [AidokuRunner.Chapter] {
         let request = ChapterObject.fetchRequest()
@@ -129,7 +145,7 @@ extension LocalFileDataManager {
             let results = try context.fetch(request)
             return results.map { $0.toNewChapter() }
         } catch {
-            LogManager.logger.error("Failed to fetch local manga: \(error)")
+            LogManager.logger.error("Failed to fetch local manga chapters: \(error)")
             return []
         }
     }
@@ -150,6 +166,7 @@ extension LocalFileDataManager {
     }
 }
 
+// MARK: Removing
 extension LocalFileDataManager {
     // remove a manga object (and all associated chapters) from the db
     func removeManga(with mangaId: String) -> String? {
@@ -251,6 +268,7 @@ extension LocalFileDataManager {
     }
 }
 
+// MARK: Creating
 extension LocalFileDataManager {
     func createManga(
         url: URL,
@@ -315,6 +333,7 @@ extension LocalFileDataManager {
     }
 }
 
+// MARK: Miscellaneous
 extension LocalFileDataManager {
     // finds manga in db but not on disk and manga on disk but not in db, and fix broken manga covers
     func findMangaDiskChanges(mangaFolders: [URL]) -> (toRemove: Set<String>, toAdd: Set<String>) {
