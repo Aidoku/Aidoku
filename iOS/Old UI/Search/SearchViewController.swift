@@ -377,7 +377,7 @@ extension SearchViewController {
     override var keyCommands: [UIKeyCommand]? {
         [
             UIKeyCommand(
-                title: "Select Item to the Left",
+                title: NSLocalizedString("FOCUS_ITEM_LEFT"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputLeftArrow,
                 modifierFlags: [],
@@ -386,7 +386,7 @@ extension SearchViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Select Item to the Right",
+                title: NSLocalizedString("FOCUS_ITEM_RIGHT"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputRightArrow,
                 modifierFlags: [],
@@ -395,7 +395,7 @@ extension SearchViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Select Item Above",
+                title: NSLocalizedString("FOCUS_ITEM_ABOVE"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputUpArrow,
                 modifierFlags: [],
@@ -404,7 +404,7 @@ extension SearchViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Select Item Below",
+                title: NSLocalizedString("FOCUS_ITEM_BELOW"),
                 action: #selector(arrowKeyPressed(_:)),
                 input: UIKeyCommand.inputDownArrow,
                 modifierFlags: [],
@@ -413,7 +413,7 @@ extension SearchViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Open Selected Item",
+                title: NSLocalizedString("OPEN_FOCUS_ITEM"),
                 action: #selector(enterKeyPressed),
                 input: "\r",
                 modifierFlags: [],
@@ -422,7 +422,7 @@ extension SearchViewController {
                 state: .off
             ),
             UIKeyCommand(
-                title: "Clear Selection",
+                title: NSLocalizedString("RESET_FOCUS"),
                 action: #selector(escKeyPressed),
                 input: UIKeyCommand.inputEscape,
                 modifierFlags: [],

@@ -793,3 +793,107 @@ extension ReaderViewController {
         }
     }
 }
+
+// MARK: - Keyboard Shortcuts
+extension ReaderViewController {
+    override var canBecomeFirstResponder: Bool { true }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                title: NSLocalizedString("TURN_PAGE_LEFT"),
+                action: #selector(moveLeft),
+                input: UIKeyCommand.inputLeftArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("TURN_PAGE_RIGHT"),
+                action: #selector(moveRight),
+                input: UIKeyCommand.inputRightArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+//            UIKeyCommand(
+//                title: "Scroll up",
+//                action: #selector(scrollUp),
+//                input: UIKeyCommand.inputUpArrow,
+//                modifierFlags: [],
+//                alternates: [],
+//                attributes: [],
+//                state: .off
+//            ),
+//            UIKeyCommand(
+//                title: "Scroll down",
+//                action: #selector(scrollDown),
+//                input: UIKeyCommand.inputDownArrow,
+//                modifierFlags: [],
+//                alternates: [],
+//                attributes: [],
+//                state: .off
+//            ),
+            UIKeyCommand(
+                title: NSLocalizedString("CHAPTER_FORWARD"),
+                action: #selector(nextChapter),
+                input: ",",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("CHAPTER_BACKWARD"),
+                action: #selector(previousChapter),
+                input: ".",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("OPEN_CHAPTER_LIST"),
+                action: #selector(openChapterList),
+                input: "\t",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("CLOSE_READER"),
+                action: #selector(close),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
+        ]
+    }
+
+    @objc func moveLeft() {
+        reader?.moveLeft()
+    }
+
+    @objc func moveRight() {
+        reader?.moveRight()
+    }
+
+    @objc func nextChapter() {
+        if let nextChapter = getNextChapter() {
+            reader?.setChapter(nextChapter, startPage: 1)
+            setChapter(nextChapter)
+        }
+    }
+
+    @objc func previousChapter() {
+        if let previousChaoter = getPreviousChapter() {
+            reader?.setChapter(previousChaoter, startPage: 1)
+            setChapter(previousChaoter)
+        }
+    }
+}

@@ -13,6 +13,17 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     var itemSpacing: CGFloat = 12
 
+    private var focusedIndexPath: IndexPath? {
+        didSet {
+            if let oldValue {
+                collectionView(collectionView, didUnhighlightItemAt: oldValue)
+            }
+            if let focusedIndexPath {
+                collectionView(collectionView, didHighlightItemAt: focusedIndexPath)
+            }
+        }
+    }
+
     override func configure() {
         super.configure()
         collectionView.dataSource = dataSource
@@ -140,5 +151,122 @@ extension MangaCollectionViewController {
             collectionView: collectionView,
             cellProvider: makeCellRegistration().cellProvider
         )
+    }
+}
+
+// MARK: - Keyboard Shortcuts
+extension MangaCollectionViewController {
+    override var canBecomeFirstResponder: Bool { true }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_LEFT"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputLeftArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_RIGHT"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputRightArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_ABOVE"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_BELOW"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("OPEN_FOCUS_ITEM"),
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("RESET_FOCUS"),
+                action: #selector(escapeKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
+        ]
+    }
+
+    @objc func escapeKeyPressed() {
+        focusedIndexPath = nil
+    }
+
+    @objc func enterKeyPressed() {
+        guard let focusedIndexPath else { return }
+        collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: focusedIndexPath)
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard let focusedIndexPath else {
+            self.focusedIndexPath = IndexPath(item: 0, section: 0)
+            return
+        }
+
+        var position = focusedIndexPath.row
+        var section = focusedIndexPath.section
+        let itemsPerRow = UserDefaults.standard.integer(
+            forKey: UIScreen.main.bounds.width > UIScreen.main.bounds.height
+                ? "General.landscapeRows"
+                : "General.portraitRows"
+        )
+        switch sender.input {
+            case UIKeyCommand.inputLeftArrow: position -= 1
+            case UIKeyCommand.inputRightArrow: position += 1
+            case UIKeyCommand.inputUpArrow: position -= itemsPerRow
+            case UIKeyCommand.inputDownArrow: position += itemsPerRow
+            default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            let itemsInPrevSection = collectionView.numberOfItems(inSection: section)
+            position += itemsInPrevSection / itemsPerRow * itemsPerRow
+            if position < itemsInPrevSection - itemsPerRow {
+                position += itemsPerRow
+            }
+        } else if position >= collectionView.numberOfItems(inSection: section) {
+            guard section < collectionView.numberOfSections - 1 else { return }
+            section += 1
+            position -= collectionView.numberOfItems(inSection: section - 1) / itemsPerRow * itemsPerRow
+            if position >= itemsPerRow {
+               position -= itemsPerRow
+            }
+        }
+
+        position = min(position, collectionView.numberOfItems(inSection: section) - 1)
+        let newFocusedndexPath = IndexPath(row: position, section: section)
+
+        self.collectionView.scrollToItem(at: newFocusedndexPath, at: .centeredVertically, animated: true)
+        self.focusedIndexPath = newFocusedndexPath
     }
 }
