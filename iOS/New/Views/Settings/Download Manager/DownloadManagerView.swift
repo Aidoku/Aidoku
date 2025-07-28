@@ -13,13 +13,15 @@ struct DownloadManagerView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
-                ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .transition(.opacity)
-            } else if viewModel.downloadedManga.isEmpty {
-                emptyStateView
-                    .transition(.opacity)
+            if viewModel.downloadedManga.isEmpty {
+                if viewModel.isLoading {
+                    ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .transition(.opacity)
+                } else {
+                    emptyStateView
+                        .transition(.opacity)
+                }
             } else {
                 downloadsList
                     .transition(.opacity)

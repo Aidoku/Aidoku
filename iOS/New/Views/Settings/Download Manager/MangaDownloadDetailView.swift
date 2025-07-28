@@ -20,11 +20,13 @@ struct MangaDownloadDetailView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading {
-                ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.chapters.isEmpty {
-                emptyStateView
+            if viewModel.chapters.isEmpty {
+                if viewModel.isLoading {
+                    ProgressView(NSLocalizedString("LOADING_ELLIPSIS"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    emptyStateView
+                }
             } else {
                 chaptersList
             }
