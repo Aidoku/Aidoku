@@ -12,7 +12,7 @@ extension AidokuRunner.Source {
     static func local() -> AidokuRunner.Source {
         .init(
             url: nil,
-            key: "local",
+            key: LocalSourceRunner.sourceKey,
             name: NSLocalizedString("LOCAL_FILES"),
             version: 1,
             languages: ["multi"],
@@ -30,6 +30,8 @@ extension AidokuRunner.Source {
 }
 
 final class LocalSourceRunner: AidokuRunner.Runner {
+    static let sourceKey = "local"
+
     let features = AidokuRunner.SourceFeatures(
         providesListings: true,
         providesHome: false, // todo

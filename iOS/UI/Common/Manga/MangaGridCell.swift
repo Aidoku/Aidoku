@@ -237,11 +237,9 @@ class MangaGridCell: UICollectionViewCell {
     }
 
     func loadImage(url: URL?) async {
-        guard let url = url else { return }
+        guard let url else { return }
 
-        self.url = url.absoluteString
-
-        if imageTask != nil && imageTask?.state == .running {
+        if let imageTask, imageTask.state == .running {
             return
         }
 
@@ -250,11 +248,15 @@ class MangaGridCell: UICollectionViewCell {
         // ensure sources are loaded so we can get the modified image request
         await SourceManager.shared.loadSources()
 
-        let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+        let urlRequest = if let fileUrl = url.toAidokuFileUrl() {
+            URLRequest(url: fileUrl)
+        } else if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
             await source.getModifiedImageRequest(url: url, context: nil)
         } else {
             URLRequest(url: url)
         }
+
+        self.url = (urlRequest.url ?? url).absoluteString
 
         let request = ImageRequest(
             urlRequest: urlRequest,

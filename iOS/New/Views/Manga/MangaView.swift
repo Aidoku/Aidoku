@@ -100,8 +100,7 @@ struct MangaView: View {
         .fullScreenCover(isPresented: $showingCoverView) {
             MangaCoverPageView(
                 source: source,
-                manga: viewModel.manga,
-                coverImage: viewModel.manga.cover ?? ""
+                manga: viewModel.manga
             )
         }
         .task {

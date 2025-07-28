@@ -12,20 +12,43 @@ import AidokuRunner
 @objc(MangaObject)
 public class MangaObject: NSManagedObject {
 
-    func load(from manga: Manga) {
+    func load(from manga: Manga, override: Bool = false) {
+        let editedKeys = EditedKeys(rawValue: editedKeys)
         id = manga.id
         sourceId = manga.sourceId
-        title = manga.title ?? ""
-        author = manga.author
-        artist = manga.artist
-        desc = manga.description
-        tags = manga.tags ?? []
-        cover = manga.coverUrl?.absoluteString
-        url = manga.url?.absoluteString
-        status = Int16(manga.status.rawValue)
-        nsfw = Int16(manga.nsfw.rawValue)
-        viewer = Int16(manga.viewer.rawValue)
-        neverUpdate = manga.updateStrategy == .never
+        if override || !editedKeys.contains(.title) {
+            title = manga.title ?? ""
+        }
+        if override || !editedKeys.contains(.authors) {
+            author = manga.author ?? ""
+        }
+        if override || !editedKeys.contains(.artists) {
+            artist = manga.artist ?? ""
+        }
+        if override || !editedKeys.contains(.description) {
+            desc = manga.description
+        }
+        if override || !editedKeys.contains(.tags) {
+            tags = manga.tags ?? []
+        }
+        if override || !editedKeys.contains(.cover) {
+            cover = manga.coverUrl?.absoluteString
+        }
+        if override || !editedKeys.contains(.url) {
+            url = manga.url?.absoluteString
+        }
+        if override || !editedKeys.contains(.status) {
+            status = Int16(manga.status.rawValue)
+        }
+        if override || !editedKeys.contains(.contentRating) {
+            nsfw = Int16(manga.nsfw.rawValue)
+        }
+        if override || !editedKeys.contains(.viewer) {
+            viewer = Int16(manga.viewer.rawValue)
+        }
+        if override || !editedKeys.contains(.neverUpdate) {
+            neverUpdate = manga.updateStrategy == .never
+        }
         nextUpdateTime = manga.nextUpdateTime
         chapterFlags = Int16(manga.chapterFlags)
         langFilter = manga.langFilter
@@ -137,6 +160,8 @@ extension MangaObject {
     @NSManaged public var chapterFlags: Int16
     @NSManaged public var langFilter: String?
     @NSManaged public var scanlatorFilter: [String]?
+
+    @NSManaged public var editedKeys: Int32
 
     @NSManaged public var libraryObject: LibraryMangaObject?
     @NSManaged public var fileInfo: LocalFileInfoObject?

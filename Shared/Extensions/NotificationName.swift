@@ -15,6 +15,7 @@ extension Notification.Name {
     static let addToLibrary = Self("addToLibrary")
     static let removeFromLibrary = Self("removeFromLibrary")
     static let migratedManga = Self("migratedManga")
+    static let updateMangaDetails = Self("updateMangaDetails")
 
     // history
     static let updateHistory = Self("updateHistory")

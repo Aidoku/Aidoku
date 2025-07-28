@@ -284,6 +284,9 @@
 "INFINITE_VERTICAL_SCROLL" = "Infinite Vertical Scrolling";
 "SAVE_TO_PHOTOS" = "Save to Photos";
 "OPEN_WEBSITE" = "Open Website";
+"SET_COVER_IMAGE" = "Set Cover Image";
+"UPLOAD_CUSTOM_COVER" = "Upload Custom Cover";
+"RESET_COVER" = "Reset Cover";
 
 // History
 "HISTORY" = "History";

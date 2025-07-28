@@ -82,19 +82,74 @@ extension CoreDataManager {
         }
     }
 
-    func updateMangaDetails(manga: Manga) async {
+    /// Set the cover image for a manga object.
+    @discardableResult
+    func setCover(
+        sourceId: String,
+        mangaId: String,
+        coverUrl: String?,
+        original: Bool = false,
+    ) async -> String? {
+        await container.performBackgroundTask { context in
+            guard let object = self.getManga(
+                sourceId: sourceId,
+                mangaId: mangaId,
+                context: context
+            ) else { return nil }
+            let originalCover = object.cover
+            object.cover = coverUrl
+            var editedKeys = EditedKeys(rawValue: object.editedKeys)
+            if original {
+                // if the cover is set to original, remove the cover edited key
+                editedKeys.remove(.cover)
+            } else {
+                // otherwise, set the cover edited key
+                editedKeys.insert(.cover)
+            }
+            object.editedKeys = editedKeys.rawValue
+            do {
+                try context.save()
+                return originalCover
+            } catch {
+                LogManager.logger.error("CoreDataManager.setCover: \(error.localizedDescription)")
+                return nil
+            }
+        }
+    }
+
+    func hasEditedKey(
+        sourceId: String,
+        mangaId: String,
+        key: EditedKeys,
+        context: NSManagedObjectContext? = nil
+    ) -> Bool {
+        guard let object = self.getManga(
+            sourceId: sourceId,
+            mangaId: mangaId,
+            context: context ?? self.context
+        ) else { return false }
+        let editedKeys = EditedKeys(rawValue: object.editedKeys)
+        return editedKeys.contains(key)
+    }
+
+    // set the override flag to force update for already edited keys
+    @discardableResult
+    func updateMangaDetails(manga: Manga, override: Bool = false) async -> Manga? {
         await container.performBackgroundTask { context in
             guard let object = self.getManga(
                 sourceId: manga.sourceId,
                 mangaId: manga.id,
                 context: context
-            ) else { return }
-            object.load(from: manga)
+            ) else {
+                return nil
+            }
+            object.load(from: manga, override: override)
             do {
                 try context.save()
             } catch {
                 LogManager.logger.error("CoreDataManager.updateMangaDetails: \(error.localizedDescription)")
             }
+            return object.toManga()
         }
     }
 

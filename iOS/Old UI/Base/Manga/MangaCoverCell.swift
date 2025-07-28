@@ -214,7 +214,9 @@ class MangaCoverCell: UICollectionViewCell {
             imageView.image = UIImage(named: "MangaPlaceholder")
         }
 
-        let urlRequest = if let sourceId = manga?.sourceId, let source = SourceManager.shared.source(for: sourceId) {
+        let urlRequest = if let fileUrl = url.toAidokuFileUrl() {
+            URLRequest(url: fileUrl)
+        } else if let sourceId = manga?.sourceId, let source = SourceManager.shared.source(for: sourceId) {
             await source.getModifiedImageRequest(url: url, context: nil)
         } else {
             URLRequest(url: url)

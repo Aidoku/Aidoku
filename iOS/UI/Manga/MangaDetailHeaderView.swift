@@ -412,7 +412,9 @@ class MangaDetailHeaderView: UIView {
             }
         }
 
-        let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+        let urlRequest = if let fileUrl = url.toAidokuFileUrl() {
+            URLRequest(url: fileUrl)
+        } else if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
             await source.getModifiedImageRequest(url: url, context: nil)
         } else {
             URLRequest(url: url)
