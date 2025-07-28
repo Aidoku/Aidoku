@@ -28,6 +28,7 @@ class ReaderViewController: BaseObservingViewController {
 
     var chapterList: [AidokuRunner.Chapter]
     var chaptersToMark: [AidokuRunner.Chapter] = []
+    var chaptersToRemoveDownload: [AidokuRunner.Chapter] = []
     var currentPage = 1
 
     weak var reader: ReaderReaderDelegate?
@@ -249,6 +250,13 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+
+        if !chaptersToRemoveDownload.isEmpty {
+            DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
+                $0.toOld(sourceId: source?.key ?? manga.sourceKey, mangaId: manga.key)
+            })
+        }
+
         guard currentPage >= 1 else { return }
         updateReadPosition()
     }
@@ -652,9 +660,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
             }
         }
         if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
-            DownloadManager.shared.delete(chapters: [
-                chapter.toOld(sourceId: source?.key ?? manga.sourceKey, mangaId: manga.key)
-            ])
+            chaptersToRemoveDownload.append(chapter)
         }
     }
 }
