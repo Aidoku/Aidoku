@@ -138,7 +138,7 @@ struct ReaderSettingsView: View {
                     Text(NSLocalizedString("TAP_ZONES"))
                 }
 
-                if #available(iOS 16.0, *), !downsampleImages.value {
+                if !downsampleImages.value {
                     Section {
                         SettingView(
                             setting: .init(
