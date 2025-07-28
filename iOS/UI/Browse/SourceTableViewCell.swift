@@ -161,7 +161,7 @@ class SourceTableViewCell: UITableViewCell {
             }
         } else {
             switch info.sourceId {
-                case "local":
+                case LocalSourceRunner.sourceKey:
                     iconView.image = UIImage.local
                 case let x where x.hasPrefix("kavita"):
                     iconView.image = UIImage.kavita

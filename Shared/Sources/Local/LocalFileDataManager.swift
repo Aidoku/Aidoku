@@ -125,7 +125,7 @@ extension LocalFileDataManager {
     // fetch a series from db with specified id
     func fetchLocalSeries(id: String) -> AidokuRunner.Manga? {
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, "local")
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, LocalSourceRunner.sourceKey)
         request.fetchLimit = 1
         do {
             let results = try context.fetch(request)
@@ -139,7 +139,7 @@ extension LocalFileDataManager {
     // fetch local chapters for a series from db
     func fetchChapters(mangaId: String) -> [AidokuRunner.Chapter] {
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(format: "mangaId == %@ AND sourceId == %@", mangaId, "local")
+        request.predicate = NSPredicate(format: "mangaId == %@ AND sourceId == %@", mangaId, LocalSourceRunner.sourceKey)
         request.sortDescriptors = [NSSortDescriptor(key: "sourceOrder", ascending: true)]
         do {
             let results = try context.fetch(request)
@@ -153,7 +153,12 @@ extension LocalFileDataManager {
     // get the path to the zip archive for a chapter
     func fetchChapterArchivePath(mangaId: String, chapterId: String) -> String? {
         let chapterRequest = ChapterObject.fetchRequest()
-        chapterRequest.predicate = NSPredicate(format: "mangaId == %@ AND id == %@ AND sourceId == %@", mangaId, chapterId, "local")
+        chapterRequest.predicate = NSPredicate(
+            format: "mangaId == %@ AND id == %@ AND sourceId == %@",
+            mangaId,
+            chapterId,
+            LocalSourceRunner.sourceKey
+        )
         chapterRequest.fetchLimit = 1
         guard
             let chapter = (try? self.context.fetch(chapterRequest))?.first,
@@ -171,7 +176,11 @@ extension LocalFileDataManager {
     // remove a manga object (and all associated chapters) from the db
     func removeManga(with mangaId: String) -> String? {
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, "local")
+        request.predicate = NSPredicate(
+            format: "id == %@ AND sourceId == %@",
+            mangaId,
+            LocalSourceRunner.sourceKey
+        )
         request.fetchLimit = 1
         guard let mangaObject = (try? self.context.fetch(request))?.first else {
             return nil // nothing to remove
@@ -212,7 +221,12 @@ extension LocalFileDataManager {
     // remove a chapter object from the db
     func removeChapter(mangaId: String, chapterId: String) -> String? {
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@ AND mangaId == %@ AND sourceId == %@", chapterId, mangaId, "local")
+        request.predicate = NSPredicate(
+            format: "id == %@ AND mangaId == %@ AND sourceId == %@",
+            chapterId,
+            mangaId,
+            LocalSourceRunner.sourceKey
+        )
         request.fetchLimit = 1
         guard let object = (try? self.context.fetch(request))?.first else {
             return nil // nothing to remove
@@ -241,7 +255,11 @@ extension LocalFileDataManager {
         // fetch db chapters for the manga
         let dbChapters: [ChapterObject] = {
             let request = ChapterObject.fetchRequest()
-            request.predicate = NSPredicate(format: "mangaId == %@ AND sourceId == %@", mangaId, "local")
+            request.predicate = NSPredicate(
+                format: "mangaId == %@ AND sourceId == %@",
+                mangaId,
+                LocalSourceRunner.sourceKey
+            )
             return (try? self.context.fetch(request)) ?? []
         }()
 
@@ -285,7 +303,7 @@ extension LocalFileDataManager {
 
         let object = MangaObject(context: context)
         object.id = id
-        object.sourceId = "local"
+        object.sourceId = LocalSourceRunner.sourceKey
         object.title = title
         object.cover = cover
         object.desc = description
@@ -317,7 +335,7 @@ extension LocalFileDataManager {
         let chapterObject = ChapterObject(context: self.context)
         chapterObject.id = id
         chapterObject.mangaId = mangaId
-        chapterObject.sourceId = "local"
+        chapterObject.sourceId = LocalSourceRunner.sourceKey
         chapterObject.title = title
         chapterObject.volume = volume.map { NSNumber(value: $0) }
         chapterObject.chapter = chapter.map { NSNumber(value: $0) }
@@ -342,7 +360,7 @@ extension LocalFileDataManager {
         // fetch all local manga objects from db
         let coreDataManga: [MangaObject] = {
             let request = MangaObject.fetchRequest()
-            request.predicate = NSPredicate(format: "sourceId == %@", "local")
+            request.predicate = NSPredicate(format: "sourceId == %@", LocalSourceRunner.sourceKey)
             return (try? self.context.fetch(request)) ?? []
         }()
         let dbMangaIds = Set(coreDataManga.map { $0.id })

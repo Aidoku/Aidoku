@@ -251,10 +251,10 @@ struct AddSourceView: View {
 //                )
 //            }
 
-            if !SourceManager.shared.sources.contains(where: { $0.key == "local" }) {
+            if !SourceManager.shared.sources.contains(where: { $0.key == LocalSourceRunner.sourceKey }) {
                 ExternalSourceTableCell(
                     source: .init(
-                        sourceId: "local",
+                        sourceId: LocalSourceRunner.sourceKey,
                         name: NSLocalizedString("LOCAL_FILES"),
                         languages: ["multi"],
                         version: 1,

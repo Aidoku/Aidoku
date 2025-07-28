@@ -100,7 +100,7 @@ struct HomeGridView: View {
         .buttonStyle(MangaGridButtonStyle())
         .contextMenu {
             // add a remove button for manga from the local source
-            if entry.sourceKey == "local" {
+            if entry.isLocal() {
                 Button(role: .destructive) {
                     Task {
                         await LocalFileManager.shared.removeManga(with: entry.key)

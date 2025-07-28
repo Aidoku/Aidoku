@@ -35,7 +35,7 @@ class SourceManager {
     }
 
     var localSourceInstalled: Bool {
-        sources.contains(where: { $0.id == "local" })
+        sources.contains(where: { $0.id == LocalSourceRunner.sourceKey })
     }
 
     init() {

@@ -910,7 +910,7 @@ extension MangaViewController {
             markButton.isEnabled = !selectedRows.isEmpty
             downloadButton.isEnabled = !selectedRows.isEmpty
 
-            rootNavigation.toolbarItems = if manga.sourceId == "local" {
+            rootNavigation.toolbarItems = if manga.sourceId == LocalSourceRunner.sourceKey {
                 [
                     markButton,
                     UIBarButtonItem(systemItem: .flexibleSpace)
@@ -999,7 +999,7 @@ extension MangaViewController {
             var actions: [UIMenuElement] = []
 
             // only allow downloading when not from local source
-            if self.manga.sourceId != "local" {
+            if self.manga.sourceId != LocalSourceRunner.sourceKey {
                 // download action
                 let downloadAction: UIMenuElement
                 let downloadStatus = DownloadManager.shared.getDownloadStatus(for: chapter)
