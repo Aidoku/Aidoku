@@ -128,11 +128,11 @@ class AniListTracker: OAuthTracker {
         URL(string: "https://anilist.co/manga/\(trackId)")
     }
 
-    func search(for manga: Manga) async -> [TrackSearchItem] {
-        await search(title: manga.title ?? "", nsfw: manga.nsfw != .safe)
+    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await search(title: manga.title ?? "", nsfw: includeNsfw)
     }
 
-    func search(title: String) async -> [TrackSearchItem] {
+    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {
         if
             let url = URL(string: title),
             url.host == "anilist.co",
@@ -153,7 +153,7 @@ class AniListTracker: OAuthTracker {
                 tracked: media.mediaListEntry != nil
             )]
         } else {
-            return await search(title: title, nsfw: false)
+            return await search(title: title, nsfw: includeNsfw)
         }
     }
 

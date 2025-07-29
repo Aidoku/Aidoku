@@ -72,11 +72,11 @@ class MyAnimeListTracker: OAuthTracker {
         URL(string: "https://myanimelist.net/manga/\(trackId)")
     }
 
-    func search(for manga: Manga) async -> [TrackSearchItem] {
-        await search(title: manga.title ?? "")
+    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await search(title: manga.title ?? "", includeNsfw: includeNsfw)
     }
 
-    func search(title: String) async -> [TrackSearchItem] {
+    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {
         (await api.search(query: title)?.data.concurrentMap { node -> TrackSearchItem in
             let details = await self.api.getMangaDetails(id: node.node.id)
             return TrackSearchItem(

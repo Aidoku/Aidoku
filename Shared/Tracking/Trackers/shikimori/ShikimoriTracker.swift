@@ -41,12 +41,12 @@ class ShikimoriTracker: OAuthTracker {
         return URL(string: oauthClient.baseUrl + "/mangas/\(id)")
     }
 
-    func search(for manga: Manga) async -> [TrackSearchItem] {
-        await getSearch(query: manga.title ?? "", includeNsfw: manga.nsfw != .safe)
+    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await getSearch(query: manga.title ?? "", includeNsfw: includeNsfw)
     }
 
-    func search(title: String) async -> [TrackSearchItem] {
-        await getSearch(query: title)
+    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await getSearch(query: title, includeNsfw: includeNsfw)
     }
 
     func handleAuthenticationCallback(url: URL) async {

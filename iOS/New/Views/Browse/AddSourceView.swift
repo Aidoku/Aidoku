@@ -23,7 +23,7 @@ struct AddSourceView: View {
     @State private var showImportFailAlert = false
     @State private var showLanguageSelectSheet = false
 
-    @State private var searchFocused: Bool = false
+    @State private var searchFocused: Bool? = false
 
     @Environment(\.dismiss) private var dismiss
 
