@@ -189,15 +189,8 @@ struct MangaDownloadDetailView: View {
     }
 
     private func openMangaView(source: AidokuRunner.Source) {
-        let hostingController = UIHostingController(
-            rootView: MangaView(
-                source: source,
-                manga: viewModel.manga.toManga()
-            )
-            .environmentObject(path)
-        )
-        hostingController.navigationItem.largeTitleDisplayMode = .never
-        path.push(hostingController)
+        let viewController = NewMangaViewController(source: source, manga: viewModel.manga.toManga())
+        path.push(viewController)
     }
 }
 

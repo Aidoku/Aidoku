@@ -160,12 +160,8 @@ class SearchViewController: UIViewController {
     }
 
     func openMangaView(for manga: AidokuRunner.Manga, source: AidokuRunner.Source) {
-        let hostingController = UIHostingController(
-            rootView: MangaView(source: source, manga: manga)
-                .environmentObject(NavigationCoordinator(rootViewController: self))
-        )
-        hostingController.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(hostingController, animated: true)
+        let viewController = NewMangaViewController(source: source, manga: manga)
+        navigationController?.pushViewController(viewController, animated: true)
     }
 
     @objc func openSearchView(_ sender: UIButton) {
