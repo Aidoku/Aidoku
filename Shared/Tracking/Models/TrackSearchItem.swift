@@ -8,7 +8,7 @@
 import Foundation
 
 /// A structure containing the necessary data to be returned from a tracker search.
-struct TrackSearchItem {
+struct TrackSearchItem: Equatable {
     /// A unique identifier of the tracker item.
     let id: String
     /// The identifier for the item's tracker.

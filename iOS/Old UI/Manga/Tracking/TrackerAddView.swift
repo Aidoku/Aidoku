@@ -13,33 +13,32 @@ struct TrackerAddView: View {
     let manga: Manga
     @Binding var refresh: Bool
 
-    @State var isLoading = false
-    @State var showSearchController = false
+    @State private var isLoading = false
+    @State private var showSearchView = false
 
     var body: some View {
         HStack {
             ZStack {
                 HStack {
-                Image(uiImage: tracker.icon ?? UIImage(named: "MangaPlaceholder")!)
-                    .resizable()
-                    .frame(width: 44, height: 44, alignment: .leading)
-                    .cornerRadius(10)
+                    Image(uiImage: tracker.icon ?? UIImage(named: "MangaPlaceholder")!)
+                        .resizable()
+                        .frame(width: 44, height: 44, alignment: .leading)
+                        .cornerRadius(10)
                     Spacer()
                 }
                 if isLoading {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
+                        .progressViewStyle(.circular)
                 } else {
-                    Button(NSLocalizedString("START_TRACKING", comment: "")) {
-                        showSearchController.toggle()
+                    Button(NSLocalizedString("START_TRACKING")) {
+                        showSearchView = true
                     }
                 }
             }
         }
         .padding([.top, .horizontal])
-        .sheet(isPresented: $showSearchController, content: {
-            TrackerSearchNavigationController(tracker: tracker, manga: manga)
-                .ignoresSafeArea()
-        })
+        .sheet(isPresented: $showSearchView) {
+            TrackerSearchView(tracker: tracker, manga: manga)
+        }
     }
 }

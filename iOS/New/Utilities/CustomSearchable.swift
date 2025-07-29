@@ -11,17 +11,25 @@ extension View {
     func customSearchable(
         text: Binding<String>,
         enabled: Binding<Bool> = .constant(true),
-        focused: Binding<Bool> = .constant(true),
+        focused: Binding<Bool?> = .constant(nil),
+        showsCancelButton: Bool = true,
+        hidesNavigationBarDuringPresentation: Bool = true,
+        bookmarkIcon: UIImage? = nil,
         onSubmit: (() -> Void)? = nil,
-        onCancel: (() -> Void)? = nil
+        onCancel: (() -> Void)? = nil,
+        onBookmarkPress: (() -> Void)? = nil,
     ) -> some View {
         overlay(
             CustomSearchBar(
                 searchText: text,
                 enabled: enabled,
                 focused: focused,
+                showsCancelButton: showsCancelButton,
+                hidesNavigationBarDuringPresentation: hidesNavigationBarDuringPresentation,
+                bookmarkIcon: bookmarkIcon,
                 onSubmit: onSubmit,
-                onCancel: onCancel
+                onCancel: onCancel,
+                onBookmarkPress: onBookmarkPress
             )
             .frame(width: 0, height: 0)
         )
@@ -35,9 +43,13 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
 
     @Binding var searchText: String
     @Binding var enabled: Bool
-    @Binding var focused: Bool
+    @Binding var focused: Bool?
+    let showsCancelButton: Bool
+    let hidesNavigationBarDuringPresentation: Bool
+    let bookmarkIcon: UIImage?
     let onSubmit: (() -> Void)?
     let onCancel: (() -> Void)?
+    let onBookmarkPress: (() -> Void)?
 
     class Coordinator: NSObject, UISearchBarDelegate, UISearchResultsUpdating {
         let parent: CustomSearchBar
@@ -63,8 +75,14 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
             }
         }
 
+        func searchBarBookmarkButtonClicked(_ searchBar: UISearchBar) {
+            if let onBookmarkPress = parent.onBookmarkPress {
+                onBookmarkPress()
+            }
+        }
+
         func updateSearchResults(for searchController: UISearchController) {
-            if parent.focused != searchController.isActive {
+            if parent.focused != nil && parent.focused != searchController.isActive {
                 parent.focused = searchController.isActive
             }
         }
@@ -79,27 +97,36 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
         searchController.searchBar.delegate = context.coordinator
         searchController.searchResultsUpdater = context.coordinator
         searchController.searchBar.autocorrectionType = autocorrectionDisabled ? .no : .yes
+        if let bookmarkIcon {
+            searchController.searchBar.showsBookmarkButton = true
+            searchController.searchBar.setImage(bookmarkIcon, for: .bookmark, state: .normal)
+        }
 
         return NavSearchBarWrapper(searchController: searchController)
     }
 
     func updateUIViewController(_ controller: NavSearchBarWrapper, context: Context) {
+        controller.searchController.searchBar.text = searchText
         controller.searchController.searchBar.autocorrectionType = autocorrectionDisabled ? .no : .yes
         if controller.shouldShow != enabled {
             controller.setShow(enabled)
         }
-        // putting this in a task slightly delays it, allowing the search bar to show before we focus it
-        Task {
-            if focused {
-                if !controller.searchController.isActive {
-                    controller.searchController.isActive = true
-                    controller.searchController.searchBar.becomeFirstResponder()
-                    controller.parent?.navigationItem.searchController?.isActive = true
-                    controller.parent?.navigationItem.searchController?.searchBar.becomeFirstResponder()
-                }
-            } else {
-                if controller.searchController.isActive {
-                    controller.searchController.isActive = false
+        controller.searchController.searchBar.showsCancelButton = showsCancelButton
+        controller.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation
+        if let focused {
+            // putting this in a task slightly delays it, allowing the search bar to show before we focus it
+            Task {
+                if focused {
+                    if !controller.searchController.isActive {
+                        controller.searchController.isActive = true
+                        controller.searchController.searchBar.becomeFirstResponder()
+                        controller.parent?.navigationItem.searchController?.isActive = true
+                        controller.parent?.navigationItem.searchController?.searchBar.becomeFirstResponder()
+                    }
+                } else {
+                    if controller.searchController.isActive {
+                        controller.searchController.isActive = false
+                    }
                 }
             }
         }

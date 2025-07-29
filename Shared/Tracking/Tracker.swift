@@ -70,7 +70,8 @@ protocol Tracker: AnyObject {
     /// - Returns: An array of titles the user can select to register for the manga.
     ///
     /// - Parameter manga: The Manga object to find matches for.
-    func search(for manga: Manga) async -> [TrackSearchItem]
+    /// - Parameter includeNsfw: Whether NSFW search results should be included.
+    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem]
 
     /// Get search results for possible tracker matches for a title string.
     ///
@@ -79,7 +80,8 @@ protocol Tracker: AnyObject {
     /// - Returns: An array of titles the user can select to register for the manga.
     ///
     /// - Parameter title: The title string to search with.
-    func search(title: String) async -> [TrackSearchItem]
+    /// - Parameter includeNsfw: Whether NSFW search results should be included.
+    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem]
 
     /// Log out from the tracker.
     func logout()

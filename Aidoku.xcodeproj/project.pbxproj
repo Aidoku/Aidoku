@@ -61,7 +61,6 @@
 		FB0CAA6528A9B5440024561A /* MangaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6428A9B5440024561A /* MangaManager.swift */; };
 		FB0CAA6628A9B5540024561A /* MangaManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6428A9B5440024561A /* MangaManager.swift */; };
 		FB0CAA6A28A9BB9C0024561A /* ReaderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA6928A9BB9C0024561A /* ReaderViewController.swift */; };
-		FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */; };
 		FB0E1CC7288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
 		FB0E1CC8288A5A2300B67BA9 /* TrackUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */; };
 		FB0E1CCA288AE50700B67BA9 /* OAuthTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */; };
@@ -399,7 +398,7 @@
 		FBCA1B2A2889864E007149C5 /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B292889864E007149C5 /* View.swift */; };
 		FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
 		FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */; };
-		FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */; };
+		FBCA1B302889C63F007149C5 /* TrackerSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B2F2889C63F007149C5 /* TrackerSearchView.swift */; };
 		FBD0F2EF2D923E14009CB0C4 /* UserAgentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD0F2EE2D923E11009CB0C4 /* UserAgentProvider.swift */; };
 		FBD0F2F02D923E14009CB0C4 /* UserAgentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD0F2EE2D923E11009CB0C4 /* UserAgentProvider.swift */; };
 		FBD245A92DF3826D00F591E4 /* LocalFileImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD245A82DF3826900F591E4 /* LocalFileImportView.swift */; };
@@ -518,7 +517,6 @@
 		FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+History.swift"; sourceTree = "<group>"; };
 		FB0CAA6428A9B5440024561A /* MangaManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaManager.swift; sourceTree = "<group>"; };
 		FB0CAA6928A9BB9C0024561A /* ReaderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewController.swift; sourceTree = "<group>"; };
-		FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchTableViewCell.swift; sourceTree = "<group>"; };
 		FB0E1CC6288A5A2300B67BA9 /* TrackUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackUpdate.swift; sourceTree = "<group>"; };
 		FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthTracker.swift; sourceTree = "<group>"; };
 		FB0E1CCD288AE9B000B67BA9 /* AniListTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AniListTracker.swift; sourceTree = "<group>"; };
@@ -792,7 +790,7 @@
 		FBCA1B262888ACA4007149C5 /* HostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingController.swift; sourceTree = "<group>"; };
 		FBCA1B292889864E007149C5 /* View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
 		FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupTrackItem.swift; sourceTree = "<group>"; };
-		FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchViewController.swift; sourceTree = "<group>"; };
+		FBCA1B2F2889C63F007149C5 /* TrackerSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSearchView.swift; sourceTree = "<group>"; };
 		FBD0F2EE2D923E11009CB0C4 /* UserAgentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAgentProvider.swift; sourceTree = "<group>"; };
 		FBD245A82DF3826900F591E4 /* LocalFileImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileImportView.swift; sourceTree = "<group>"; };
 		FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSectionHeaderView.swift; sourceTree = "<group>"; };
@@ -1304,8 +1302,6 @@
 				FB2E02512868A67500786F21 /* TrackerView.swift */,
 				FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */,
 				FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */,
-				FBCA1B2F2889C63F007149C5 /* TrackerSearchViewController.swift */,
-				FB0E1CC42889E16300B67BA9 /* TrackerSearchTableViewCell.swift */,
 			);
 			path = Tracking;
 			sourceTree = "<group>";
@@ -1477,6 +1473,7 @@
 		FB662E9C2DA813E300007514 /* Manga */ = {
 			isa = PBXGroup;
 			children = (
+				FBAED4042E3972BC00B81E74 /* Tracking */,
 				FB17005C2E39313700DBC4E4 /* NewMangaViewController.swift */,
 				FB662EE72DA81A5C00007514 /* MangaView.swift */,
 				FB8E48DE2DC1179E002A3621 /* MangaView+ViewModel.swift */,
@@ -1759,6 +1756,14 @@
 				FB1B48B5277CF8280056D02C /* ReaderNavigationController.swift */,
 			);
 			path = Reader;
+			sourceTree = "<group>";
+		};
+		FBAED4042E3972BC00B81E74 /* Tracking */ = {
+			isa = PBXGroup;
+			children = (
+				FBCA1B2F2889C63F007149C5 /* TrackerSearchView.swift */,
+			);
+			path = Tracking;
 			sourceTree = "<group>";
 		};
 		FBB516482E2F057200749F4E /* Download Manager */ = {
@@ -2219,7 +2224,6 @@
 				FB55C0B62DF2479C0019A551 /* LocalSetupView.swift in Sources */,
 				FB05F8672964917A00D1EA2D /* SourceViewController.swift in Sources */,
 				FBB5164C2E2F23AE00749F4E /* MangaDownloadDetailView+ViewModel.swift in Sources */,
-				FB0E1CC52889E16300B67BA9 /* TrackerSearchTableViewCell.swift in Sources */,
 				FB0CAA5428A68FDF0024561A /* LockedPageStackView.swift in Sources */,
 				FB7984142E0C9F21000761A9 /* UpscaleModelListView.swift in Sources */,
 				FB17005D2E39313C00DBC4E4 /* NewMangaViewController.swift in Sources */,
@@ -2423,7 +2427,7 @@
 				FBE53F0429CB58BB00899601 /* VerticalContentOffsetPreservingLayout.swift in Sources */,
 				FB427512295FBEC100131377 /* SourceInfo.swift in Sources */,
 				FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */,
-				FBCA1B302889C63F007149C5 /* TrackerSearchViewController.swift in Sources */,
+				FBCA1B302889C63F007149C5 /* TrackerSearchView.swift in Sources */,
 				FB2BE5EB295385B900FAD8A7 /* ZoomableLayoutProtocol.swift in Sources */,
 				FB2BE5ED2953872600FAD8A7 /* ZoomableCollectionViewController.swift in Sources */,
 				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
