@@ -114,6 +114,8 @@ actor DownloadTask: Identifiable {
             downloads[downloadIndex].total = pages.count
         }
 
+        var failedPages = 0
+
         while !pages.isEmpty && currentPage < pages.count && running {
             downloads[downloadIndex].progress = currentPage + 1
             await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
@@ -174,11 +176,19 @@ actor DownloadTask: Identifiable {
                 if let (data, res) = result {
                     // See if we can guess the file extension
                     let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
-                    try? data.write(
-                        to: tmpDirectory
-                            .appendingPathComponent(pageNumber)
-                            .appendingPathExtension(fileExtention)
-                    )
+                    do {
+                        try data.write(
+                            to: tmpDirectory
+                                .appendingPathComponent(pageNumber)
+                                .appendingPathExtension(fileExtention)
+                        )
+                    } catch {
+                        failedPages += 1
+                        LogManager.logger.error("Error writing downloaded image: \(error)")
+                    }
+                } else {
+                    failedPages += 1
+                    LogManager.logger.error("Error downloading image with url \(urlRequest)")
                 }
             } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                 try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
@@ -199,24 +209,35 @@ actor DownloadTask: Identifiable {
             }
         }
 
+        // handle completion of the current download
         if currentPage == pages.count {
-            if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
-                // Save chapter metadata after successful download
-                await DownloadManager.shared.saveChapterMetadata(chapter, to: directory)
-
-                // Save manga metadata when first chapter for this manga is downloaded
-                let mangaDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
-                if !metadataPath.exists, let mangaInfo = downloads[downloadIndex].manga {
-                    await DownloadManager.shared.saveMangaMetadata(mangaInfo, to: mangaDirectory)
+            if failedPages == pages.count {
+                // the entire chapter failed to download, skip adding to cache and cancel
+                tmpDirectory.removeItem()
+                if let download = downloads[safe: downloadIndex] {
+                    downloads[downloadIndex].status = .cancelled
+                    downloads.remove(at: downloadIndex)
+                    await delegate?.downloadCancelled(download: download)
                 }
+            } else {
+                if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
+                    // Save chapter metadata after successful download
+                    await DownloadManager.shared.saveChapterMetadata(chapter, to: directory)
 
-                await cache.add(chapter: chapter)
-            }
-            if let download = downloads[safe: downloadIndex] {
-                downloads[downloadIndex].status = .finished
-                downloads.remove(at: downloadIndex)
-                await delegate?.downloadFinished(download: download)
+                    // Save manga metadata when first chapter for this manga is downloaded
+                    let mangaDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                    let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
+                    if !metadataPath.exists, let mangaInfo = downloads[downloadIndex].manga {
+                        await DownloadManager.shared.saveMangaMetadata(mangaInfo, to: mangaDirectory)
+                    }
+
+                    await cache.add(chapter: chapter)
+                }
+                if let download = downloads[safe: downloadIndex] {
+                    downloads[downloadIndex].status = .finished
+                    downloads.remove(at: downloadIndex)
+                    await delegate?.downloadFinished(download: download)
+                }
             }
             pages = []
             currentPage = 0
@@ -299,8 +320,10 @@ actor DownloadTask: Identifiable {
             resume()
         }
     }
+}
 
-    // MARK: Utility
+// MARK: Utility
+extension DownloadTask {
     private func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
         if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
             return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
