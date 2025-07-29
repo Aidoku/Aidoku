@@ -150,6 +150,9 @@ private class ChapterCellContentView: UIView, UIContentView {
                     thumbnailImageView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor, constant: 12),
                     thumbnailImageView.centerYAnchor.constraint(equalTo: centerYAnchor)
                 ])
+            } else {
+                thumbnailImageView?.image = nil
+                loadThumbnail()
             }
         } else {
             titleLabelLeadingContraint.constant = 12
@@ -230,7 +233,7 @@ private class ChapterCellContentView: UIView, UIContentView {
             let imageTask = ImagePipeline.shared.imageTask(with: request)
             guard let response = try? await imageTask.response else { return }
 
-            Task { @MainActor in
+            await MainActor.run {
                 if cached {
                     thumbnailImageView.image = response.image
                 } else {
