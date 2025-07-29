@@ -20,7 +20,7 @@ actor DownloadQueue {
 
     var running: Bool = false
 
-    private var sendCancelNotification = false
+    private var sendCancelNotification = true
 
     init(cache: DownloadCache) {
         self.cache = cache
@@ -85,7 +85,6 @@ actor DownloadQueue {
 
     func cancelDownload(for chapter: Chapter) async {
         if let task = tasks[chapter.sourceId] {
-            sendCancelNotification = true
             await task.cancel(chapter: chapter)
         } else {
             // no longer in queue but the tmp download directory still exists, so we should remove it
@@ -97,6 +96,8 @@ actor DownloadQueue {
     }
 
     func cancelDownloads(for chapters: [Chapter]) async {
+        sendCancelNotification = false
+        defer { sendCancelNotification = true }
         for chapter in chapters {
             if let task = tasks[chapter.sourceId] {
                 await task.cancel(chapter: chapter)
@@ -116,6 +117,8 @@ actor DownloadQueue {
     }
 
     func cancelAll() async {
+        sendCancelNotification = false
+        defer { sendCancelNotification = true }
         for task in tasks {
             await task.value.cancel()
         }
@@ -193,7 +196,6 @@ extension DownloadQueue: DownloadTaskDelegate {
             progressBlocks.removeValue(forKey: chapter)
         }
         if sendCancelNotification {
-            sendCancelNotification = false
             NotificationCenter.default.post(name: NSNotification.Name("downloadCancelled"), object: download)
         }
     }
