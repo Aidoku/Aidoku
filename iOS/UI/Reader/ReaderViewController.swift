@@ -417,6 +417,7 @@ extension ReaderViewController {
             } else {
                 setReadingMode(defaultMode)
             }
+            return
         default: // auto
             // use given default reading mode
             if let defaultReadingMode {
@@ -480,7 +481,7 @@ extension ReaderViewController {
                     pageController = nil
                 }
         }
-        if let pageController = pageController {
+        if let pageController {
             reader?.remove()
             pageController.delegate = self
             reader = pageController
