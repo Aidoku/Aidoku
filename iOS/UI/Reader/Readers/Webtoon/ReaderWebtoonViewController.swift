@@ -34,6 +34,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var isSliding = false
     // Indicates if a zoom gesture is in progress
     var isZooming = false
+    // Indicates if a scroll is in progress
+    private var isScrolling = false
     // Indicates if an info refresh should be done if info pages are off screen
     private var needsInfoRefresh = false
 
@@ -128,6 +130,8 @@ extension ReaderWebtoonViewController {
     // Update current page when scrolling
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         super.scrollViewDidScroll(scrollView)
+
+        isScrolling = true
 
         // ignore if page slider is being used
         guard !isSliding && !isZooming else { return }
@@ -262,14 +266,17 @@ extension ReaderWebtoonViewController {
         if decelerate {
             return
         }
+        isScrolling = false
         checkInfiniteLoad()
     }
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         guard infinite else { return }
+        isScrolling = false
         checkInfiniteLoad()
     }
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         guard infinite else { return }
+        isScrolling = false
         checkInfiniteLoad()
     }
 
@@ -308,6 +315,11 @@ extension ReaderWebtoonViewController {
         // check if pages failed to load
         if viewModel.preloadedPages.isEmpty {
             return
+        }
+
+        // wait until zooming and scrolling stops
+        while isZooming || isScrolling {
+            try? await Task.sleep(nanoseconds: 500_000_000)
         }
 
         // queue remove last section if we have three already
@@ -356,6 +368,11 @@ extension ReaderWebtoonViewController {
         // check if pages failed to load
         if viewModel.preloadedPages.isEmpty {
             return
+        }
+
+        // wait until zooming and scrolling stops
+        while isZooming || isScrolling {
+            try? await Task.sleep(nanoseconds: 500_000_000)
         }
 
         // queue remove first section if we have three already
