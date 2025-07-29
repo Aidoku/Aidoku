@@ -264,7 +264,7 @@ extension MangaView.ViewModel {
             await source.partialMangaPublisher?.sink { @Sendable newManga in
                 Task { @MainActor in
                     withAnimation {
-                        self.manga = newManga
+                        self.manga = self.manga.copy(from: newManga)
                         self.chapters = self.filteredChapters()
                     }
                 }
