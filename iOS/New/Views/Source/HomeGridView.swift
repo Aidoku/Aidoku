@@ -82,12 +82,7 @@ struct HomeGridView: View {
             if let onSelect {
                 onSelect(entry)
             } else {
-                let hostingController = UIHostingController(
-                    rootView: MangaView(source: source, manga: entry)
-                        .environmentObject(path)
-                )
-                hostingController.navigationItem.largeTitleDisplayMode = .never
-                path.push(hostingController)
+                path.push(NewMangaViewController(source: source, manga: entry))
             }
         } label: {
             MangaGridItem(

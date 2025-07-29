@@ -206,12 +206,7 @@ struct HomeListView: View {
                         if let onSelect {
                             onSelect(manga)
                         } else {
-                            let hostingController = UIHostingController(
-                                rootView: MangaView(source: source, manga: manga)
-                                    .environmentObject(path)
-                            )
-                            hostingController.navigationItem.largeTitleDisplayMode = .never
-                            path.push(hostingController)
+                            path.push(NewMangaViewController(source: source, manga: manga))
                         }
                 }
             } label: {

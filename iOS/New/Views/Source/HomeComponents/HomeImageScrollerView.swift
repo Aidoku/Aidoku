@@ -88,12 +88,7 @@ struct HomeImageScrollerView: View {
                                         case .listing(let listing):
                                             path.push(SourceListingViewController(source: source, listing: listing))
                                         case .manga(let manga):
-                                            let hostingController = UIHostingController(
-                                                rootView: MangaView(source: source, manga: manga)
-                                                    .environmentObject(path)
-                                            )
-                                            hostingController.navigationItem.largeTitleDisplayMode = .never
-                                            path.push(hostingController)
+                                            path.push(NewMangaViewController(source: source, manga: manga))
                                     }
                                 } label: {
                                     label
