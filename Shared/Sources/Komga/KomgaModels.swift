@@ -348,7 +348,7 @@ extension KomgaSeries {
             },
             description: metadata.summary.isEmpty ? booksMetadata.summary : metadata.summary,
             url: URL(string: "\(baseUrl)/series/\(id)"),
-            tags: metadata.genres + metadata.tags,
+            tags: (metadata.genres + metadata.tags).sorted(),
             status: status,
             contentRating: contentRating,
             viewer: viewer,
