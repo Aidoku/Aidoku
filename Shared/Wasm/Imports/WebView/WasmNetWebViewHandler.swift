@@ -167,9 +167,7 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler
         guard !done, !popupShown else { return }
         // check if captcha or verify button is shown
         webView.evaluateJavaScript("""
-        document.querySelector('#challenge-stage iframe') !== null
-            || document.querySelector('.hcaptcha-box iframe') !== null
-            || document.querySelector('#challenge-stage input[type=button]') !== null
+        document.querySelector('input[name="cf-turnstile-response"]') !== null
             || document.body.textContent.includes('Verify you are human by completing')
         """
         ) { html, _ in
