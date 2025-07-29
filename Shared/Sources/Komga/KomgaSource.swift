@@ -29,7 +29,8 @@ extension AidokuRunner.Source {
                 .flatMap { [$0] } ?? [],
             contentRating: .safe,
             config: .init(
-                languageSelectType: .single
+                languageSelectType: .single,
+                supportsTagSearch: true
             ),
             staticListings: [],
             staticFilters: [
@@ -129,7 +130,7 @@ extension AidokuRunner.Source {
     }
 }
 
-final class KomgaSourceRunner: Runner {
+actor KomgaSourceRunner: Runner {
     let sourceKey: String
     let helper: KomgaHelper
 
@@ -142,6 +143,8 @@ final class KomgaSourceRunner: Runner {
         providesBaseUrl: true,
         handlesBasicLogin: true
     )
+
+    var storedKomgaTags: [String] = []
 
     init(sourceKey: String) {
         self.sourceKey = sourceKey
@@ -159,7 +162,7 @@ final class KomgaSourceRunner: Runner {
 
         for filter in filters {
             switch filter {
-                case .text(let id, let value):
+                case let .text(id, value):
                     let search = value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? value
                     var authors: [KomgaBook.Metadata.Author] = []
                     if id == "author" {
@@ -179,11 +182,11 @@ final class KomgaSourceRunner: Runner {
                         }))
                     }
 
-                case .sort(let value):
+                case let .sort(value):
                     sort.value = Int(value.index)
                     sort.ascending = value.ascending
 
-                case .multiselect(let filterId, let included, let excluded):
+                case let .multiselect(filterId, included, excluded):
                     if filterId == "genre"  || filterId == "tag" {
                         let includedConditions: [KomgaSearchCondition] = included
                             .map { filterId == "genre" ? .genre($0) : .tag($0) }
@@ -234,6 +237,13 @@ final class KomgaSourceRunner: Runner {
                         if let condition {
                             conditions.append(condition)
                         }
+                    }
+
+                case let .select(id, value):
+                    if id == "genre" {
+                        conditions.append(.anyOf([
+                            storedKomgaTags.contains(value) ? .tag(value) : .genre(value)
+                        ]))
                     }
 
                 default:
@@ -485,6 +495,7 @@ final class KomgaSourceRunner: Runner {
             )
         }
         if let tags = result[.tags], !tags.isEmpty {
+            storedKomgaTags = tags
             filters.append(
                 .init(
                     id: "tag",
