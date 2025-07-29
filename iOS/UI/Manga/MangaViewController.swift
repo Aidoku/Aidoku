@@ -352,7 +352,13 @@ class MangaViewController: BaseTableViewController {
                 let self = self,
                 let downloads = notification.object as? [Download]
             else { return }
-            let chapters = downloads.compactMap { $0.chapter }
+            let chapters = downloads.compactMap {
+                if $0.chapter?.mangaId == self.manga.id && $0.chapter?.sourceId == self.manga.sourceId {
+                    $0.chapter
+                } else {
+                    nil
+                }
+            }
             Task { @MainActor in
                 for chapter in chapters {
                     self.viewModel.downloadProgress[chapter.id] = 0
@@ -364,7 +370,8 @@ class MangaViewController: BaseTableViewController {
             guard
                 let self = self,
                 let download = notification.object as? Download,
-                let chapter = download.chapter
+                let chapter = download.chapter,
+                chapter.mangaId == self.manga.id && chapter.sourceId == self.manga.sourceId
             else { return }
             Task { @MainActor in
                 self.viewModel.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)

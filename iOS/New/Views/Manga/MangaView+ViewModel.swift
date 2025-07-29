@@ -160,10 +160,16 @@ extension MangaView {
             // downloads
             NotificationCenter.default.publisher(for: .downloadsQueued)
                 .sink { [weak self] output in
-                    guard let downloads = output.object as? [Download] else { return }
-                    let chapters = downloads.compactMap { $0.chapter }
+                    guard let self, let downloads = output.object as? [Download] else { return }
+                    let chapters = downloads.compactMap {
+                        if $0.chapter?.mangaId == self.manga.key && $0.chapter?.sourceId == self.manga.sourceKey {
+                            $0.chapter
+                        } else {
+                            nil
+                        }
+                    }
                     for chapter in chapters {
-                        self?.downloadProgress[chapter.id] = 0
+                        self.downloadProgress[chapter.id] = 0
                     }
                 }
                 .store(in: &cancellables)
@@ -171,10 +177,12 @@ extension MangaView {
             NotificationCenter.default.publisher(for: .downloadProgressed)
                 .sink { [weak self] output in
                     guard
+                        let self,
                         let download = output.object as? Download,
-                        let chapter = download.chapter
+                        let chapter = download.chapter,
+                        chapter.mangaId == self.manga.key && chapter.sourceId == self.manga.sourceKey
                     else { return }
-                    self?.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)
+                    self.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)
                 }
                 .store(in: &cancellables)
 
