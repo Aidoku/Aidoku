@@ -88,7 +88,7 @@ struct HomeImageScrollerView: View {
                                         case .listing(let listing):
                                             path.push(SourceListingViewController(source: source, listing: listing))
                                         case .manga(let manga):
-                                            path.push(NewMangaViewController(source: source, manga: manga))
+                                            path.push(NewMangaViewController(source: source, manga: manga, parent: path.rootViewController))
                                     }
                                 } label: {
                                     label

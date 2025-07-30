@@ -25,11 +25,12 @@ struct MangaView: View {
 
     @State private var loadingAlert: UIAlertController?
 
-    @EnvironmentObject private var path: NavigationCoordinator
+    private var path: NavigationCoordinator
 
-    init(source: AidokuRunner.Source, manga: AidokuRunner.Manga) {
+    init(source: AidokuRunner.Source, manga: AidokuRunner.Manga, path: NavigationCoordinator) {
         self.source = source
         self._viewModel = StateObject(wrappedValue: ViewModel(source: source, manga: manga))
+        self.path = path
     }
 
     var body: some View {
@@ -197,6 +198,7 @@ extension MangaView {
                     }
                 }
             )
+            .environmentObject(path)
             .frame(minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
         }
         .listRowInsets(.zero)
