@@ -82,8 +82,8 @@ struct ReaderSettingsView: View {
                     )
                     SettingView(
                         setting: .init(
-                            key: "Reader.saveImageOption",
-                            title: NSLocalizedString("SAVE_IMAGE_OPTION"),
+                            key: "Reader.disableQuickActions",
+                            title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
                             value: .toggle(.init())
                         )
                     )

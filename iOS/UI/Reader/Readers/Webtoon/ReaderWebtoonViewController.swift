@@ -198,7 +198,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
             let indexPath = collectionNode.indexPathForItem(at: point),
             let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
             let image = node.imageNode.image,
-            UserDefaults.standard.bool(forKey: "Reader.saveImageOption")
+            !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions")
         else {
             return nil
         }
