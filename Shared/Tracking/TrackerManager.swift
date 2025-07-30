@@ -61,7 +61,11 @@ class TrackerManager {
             }
 
             // update reading state
-            if Int(floor(state.lastReadChapter ?? 0)) == state.totalChapters ?? -1 {
+            if
+                case let lastReadChapter = Int(floor(chapterNum)),
+                let totalChapters = state.totalChapters,
+                lastReadChapter == totalChapters
+            {
                 if state.finishReadDate == nil {
                     update.finishReadDate = Date()
                 }
@@ -70,7 +74,7 @@ class TrackerManager {
                 if state.startReadDate == nil {
                     update.startReadDate = Date()
                 }
-                update.status = .reading
+                update.status = state.status == .completed ? .rereading : .reading
             }
 
             await tracker.update(trackId: item.id, update: update)

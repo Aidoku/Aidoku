@@ -61,8 +61,8 @@ class MyAnimeListTracker: OAuthTracker {
             status: getStatus(statusString: status.status ?? ""),
             lastReadChapter: status.numChaptersRead != nil ? Float(status.numChaptersRead!) : nil,
             lastReadVolume: status.numVolumesRead,
-            totalChapters: manga.numChapters,
-            totalVolumes: manga.numVolumes,
+            totalChapters: manga.numChapters == 0 ? nil : manga.numChapters,
+            totalVolumes: manga.numVolumes == 0 ? nil : manga.numVolumes,
             startReadDate: status.startDate?.date(format: "yyyy-MM-dd"),
             finishReadDate: status.finishDate?.date(format: "yyyy-MM-dd")
         )
