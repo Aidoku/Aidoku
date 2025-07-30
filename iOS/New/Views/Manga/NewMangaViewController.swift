@@ -12,6 +12,19 @@ class NewMangaViewController: UIViewController {
     let source: AidokuRunner.Source
     let manga: AidokuRunner.Manga
 
+    var hostingNavigationItem: UINavigationItem?
+
+    override var navigationItem: UINavigationItem {
+        if let hostingNavigationItem {
+            if #available(iOS 16.0, *) {
+                if !hostingNavigationItem.trailingItemGroups.isEmpty {
+                    super.navigationItem.trailingItemGroups = hostingNavigationItem.trailingItemGroups
+                }
+            }
+        }
+        return super.navigationItem
+    }
+
     init(source: AidokuRunner.Source, manga: AidokuRunner.Manga) {
         self.source = source
         self.manga = manga
@@ -30,15 +43,23 @@ class NewMangaViewController: UIViewController {
         navigationItem.titleView = UIView() // hide navigation bar title
         navigationItem.largeTitleDisplayMode = .never
 
+        // shim right bar button item to use during transition
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "ellipsis"),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+
         let path = NavigationCoordinator(rootViewController: self)
         let rootView = MangaView(source: source, manga: manga)
             .environmentObject(path)
         let hostingController = UIHostingController(rootView: rootView)
-        addChild(hostingController)
-        hostingController.didMove(toParent: self)
-        view.addSubview(hostingController.view)
-
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+
+        add(child: hostingController)
+
+        hostingNavigationItem = hostingController.navigationItem
 
         NSLayoutConstraint.activate([
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
