@@ -61,15 +61,15 @@ struct ReaderSettingsView: View {
                     )
                     SettingView(
                         setting: .init(
-                            key: "Reader.downsampleImages",
-                            title: NSLocalizedString("DOWNSAMPLE_IMAGES"),
+                            key: "Reader.markDuplicateChapters",
+                            title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS"),
                             value: .toggle(.init())
                         )
                     )
                     SettingView(
                         setting: .init(
-                            key: "Reader.skipDuplicateChapters",
-                            title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS"),
+                            key: "Reader.downsampleImages",
+                            title: NSLocalizedString("DOWNSAMPLE_IMAGES"),
                             value: .toggle(.init())
                         )
                     )
