@@ -543,7 +543,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
-            UserDefaults.standard.bool(forKey: "Reader.saveImageOption"),
+            !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions"),
             let pageView = interaction.view as? UIImageView,
             pageView.image != nil
         else {
