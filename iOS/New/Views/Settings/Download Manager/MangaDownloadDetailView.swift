@@ -189,7 +189,7 @@ struct MangaDownloadDetailView: View {
     }
 
     private func openMangaView(source: AidokuRunner.Source) {
-        let viewController = NewMangaViewController(source: source, manga: viewModel.manga.toManga())
+        let viewController = NewMangaViewController(source: source, manga: viewModel.manga.toManga(), parent: path.rootViewController)
         path.push(viewController)
     }
 }

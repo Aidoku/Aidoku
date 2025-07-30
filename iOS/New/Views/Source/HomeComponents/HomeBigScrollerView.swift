@@ -63,7 +63,7 @@ struct HomeBigScrollerView: View {
                     autoScrollPaused: $autoScrollPaused,
                 ) { offset, entry in
                     Button {
-                        path.push(NewMangaViewController(source: source, manga: entry))
+                        path.push(NewMangaViewController(source: source, manga: entry, parent: path.rootViewController))
                     } label: {
                         VStack(spacing: 0) {
                             HStack(alignment: .top, spacing: 12) {

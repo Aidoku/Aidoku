@@ -206,7 +206,7 @@ struct HomeListView: View {
                         if let onSelect {
                             onSelect(manga)
                         } else {
-                            path.push(NewMangaViewController(source: source, manga: manga))
+                            path.push(NewMangaViewController(source: source, manga: manga, parent: path.rootViewController))
                         }
                 }
             } label: {
