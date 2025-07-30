@@ -146,11 +146,12 @@ extension SettingsTableViewController {
 
     // MARK: Stepper Cell
     func stepperCell(for item: SettingItem) -> UITableViewCell {
-        let cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
+        let cell = StepperTableViewCell(style: .default, reuseIdentifier: "StepperCell")
 
-        cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
-        cell.detailTextLabel?.textColor = .secondaryLabel
-        let stepperView = UIStepper()
+        cell.titleLabel.text = item.title
+        cell.detailLabel.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
+
+        let stepperView = cell.stepperView
         if let max = item.maximumValue {
             stepperView.maximumValue = max
         }
@@ -160,7 +161,7 @@ extension SettingsTableViewController {
         stepperView.stepValue = item.stepValue ?? 1
         stepperView.defaultsKey = item.key ?? ""
         stepperView.handleChange { _ in
-            cell.detailTextLabel?.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
+            cell.detailLabel.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
             if let notification = item.notification {
                 self.source?.performAction(key: notification)
                 NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
@@ -185,8 +186,6 @@ extension SettingsTableViewController {
         } else {
             stepperView.isEnabled = true
         }
-        cell.accessoryView = stepperView
-        cell.selectionStyle = .none
 
         return cell
     }

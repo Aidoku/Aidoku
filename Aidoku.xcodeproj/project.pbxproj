@@ -384,6 +384,7 @@
 		FBA498762A9A53F500D3F53E /* TouchDownGestureRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA498752A9A53F500D3F53E /* TouchDownGestureRecognizer.swift */; };
 		FBAE7BEE2AF2DC5D00D530EE /* LegacySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */; };
 		FBAE7BEF2AF2DC5D00D530EE /* LegacySource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */; };
+		FBAED4062E3A5ED200B81E74 /* StepperTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAED4052E3A5ECF00B81E74 /* StepperTableViewCell.swift */; };
 		FBB5164A2E2F231F00749F4E /* DownloadManagerView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB516492E2F231B00749F4E /* DownloadManagerView+ViewModel.swift */; };
 		FBB5164C2E2F23AE00749F4E /* MangaDownloadDetailView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB5164B2E2F23AB00749F4E /* MangaDownloadDetailView+ViewModel.swift */; };
 		FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */ = {isa = PBXBuildFile; productRef = FBBCB31C2E08D6B000ED5CAB /* Gifu */; };
@@ -778,6 +779,7 @@
 		FBA498752A9A53F500D3F53E /* TouchDownGestureRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchDownGestureRecognizer.swift; sourceTree = "<group>"; };
 		FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySource.swift; sourceTree = "<group>"; };
 		FBAE7BF02AF58A0000D530EE /* 0.7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.7.xcdatamodel; sourceTree = "<group>"; };
+		FBAED4052E3A5ECF00B81E74 /* StepperTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperTableViewCell.swift; sourceTree = "<group>"; };
 		FBB516492E2F231B00749F4E /* DownloadManagerView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DownloadManagerView+ViewModel.swift"; sourceTree = "<group>"; };
 		FBB5164B2E2F23AB00749F4E /* MangaDownloadDetailView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MangaDownloadDetailView+ViewModel.swift"; sourceTree = "<group>"; };
 		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
@@ -1641,6 +1643,7 @@
 				FBED232627BDB69B0095D0C0 /* SettingSelectViewController.swift */,
 				FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */,
 				FB72502727CC06AA0037F1C9 /* SegmentTableViewCell.swift */,
+				FBAED4052E3A5ECF00B81E74 /* StepperTableViewCell.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -2216,6 +2219,7 @@
 				FB662E8B2DA58B1200007514 /* NewSourceViewController.swift in Sources */,
 				487046992B7B13F000333F13 /* Dates.swift in Sources */,
 				FB792D9B2961FE9D00666074 /* MangaViewModel.swift in Sources */,
+				FBAED4062E3A5ED200B81E74 /* StepperTableViewCell.swift in Sources */,
 				04B48CFC2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */,
 				FB55AFA028AAAD9E0083EFC3 /* UIToolbar.swift in Sources */,
 				FB82A5C42DF8622700366BC8 /* LocalModels.swift in Sources */,
