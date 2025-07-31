@@ -110,8 +110,9 @@ struct TrackerSearchView: View {
             .customSearchable(
                 text: $query,
                 focused: $searchBarFocused,
-                showsCancelButton: false,
+                hideCancelButton: true,
                 hidesNavigationBarDuringPresentation: false,
+                hidesSearchBarWhenScrolling: false,
                 bookmarkIcon: UIImage(systemName: "slider.horizontal.3")?
                     .withTintColor(.tintColor, renderingMode: .alwaysOriginal),
                 onSubmit: {

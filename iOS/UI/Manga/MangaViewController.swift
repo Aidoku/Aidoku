@@ -162,6 +162,7 @@ class MangaViewController: BaseTableViewController {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     override func observe() {
         // reload chapter list (triggered on filtering)
         addObserver(forName: "reloadChapterList") { [weak self] _ in
