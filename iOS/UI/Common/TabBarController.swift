@@ -5,7 +5,7 @@
 //  Created by Skitty on 7/26/25.
 //
 
-import UIKit
+import SwiftUI
 
 class TabBarController: UITabBarController {
     override func viewDidLoad() {
@@ -13,9 +13,20 @@ class TabBarController: UITabBarController {
 
         let libraryViewController = SwiftUINavigationController(rootViewController: LibraryViewController())
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
-        let historyViewController = UINavigationController(rootViewController: HistoryViewController())
+        let historyPath = NavigationCoordinator(rootViewController: nil)
+        let historyHostingController = UIHostingController(rootView: HistoryView()
+            .environmentObject(historyPath))
+        historyPath.rootViewController = historyHostingController
+        let historyViewController = UINavigationController(rootViewController: historyHostingController)
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
         let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
+
+        libraryViewController.navigationBar.prefersLargeTitles = true
+        browseViewController.navigationBar.prefersLargeTitles = true
+        historyViewController.navigationBar.prefersLargeTitles = true
+        searchViewController.navigationBar.prefersLargeTitles = true
+        settingsViewController.navigationBar.prefersLargeTitles = true
+
         if #available(iOS 26.0, *) {
             let searchTab = UISearchTab { _ in
                 searchViewController

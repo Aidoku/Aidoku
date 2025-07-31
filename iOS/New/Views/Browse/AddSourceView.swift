@@ -148,6 +148,7 @@ struct AddSourceView: View {
                 text: $searchText,
                 enabled: $searching,
                 focused: $searchFocused,
+                hidesSearchBarWhenScrolling: false,
                 onCancel: {
                     // task delays slightly to prevent sheet from closing
                     Task {

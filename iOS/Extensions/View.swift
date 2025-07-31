@@ -118,7 +118,9 @@ extension View {
         if #available(iOS 16.0, macOS 13.0, *) {
             return self.scrollContentBackground(.hidden)
         } else {
-            return self
+            return self.introspect(.scrollView, on: .iOS(.v15)) { scrollView in
+                scrollView.backgroundColor = .clear
+            }
         }
     }
 
@@ -133,6 +135,14 @@ extension View {
     func contentTransitionDisabledPlease() -> some View {
         if #available(iOS 16.0, macOS 13.0, *) {
             return self.contentTransition(.identity)
+        } else {
+            return self
+        }
+    }
+
+    func listSectionSpacingPlease(_ spacing: CGFloat) -> some View {
+        if #available(iOS 17.0, *) {
+            return self.listSectionSpacing(spacing)
         } else {
             return self
         }
