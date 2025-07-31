@@ -25,6 +25,8 @@ struct HistoryView: View {
 
     @State private var locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
 
+    @State private var selectedItems = Set<String>() // fix for list highlighting being buggy
+
     @EnvironmentObject private var path: NavigationCoordinator
 
     var body: some View {
@@ -32,7 +34,7 @@ struct HistoryView: View {
             if locked {
                 lockedView
             } else {
-                List {
+                List(selection: $selectedItems) {
                     ForEach(viewModel.filteredHistory, id: \.daysAgo) { section in
                         if !section.entries.isEmpty {
                             Section {
@@ -159,7 +161,11 @@ struct HistoryView: View {
 
     func cellView(entry: HistoryEntry) -> some View {
         let manga = viewModel.mangaCache[entry.mangaCacheKey]
-        let view = Button {
+        let view = HistoryEntryCell(
+            entry: entry,
+            manga: manga,
+            chapter: viewModel.chapterCache[entry.chapterCacheKey]
+        ) {
             if let manga {
                 if let source = SourceManager.shared.source(for: manga.sourceKey) {
                     path.push(NewMangaViewController(
@@ -171,14 +177,9 @@ struct HistoryView: View {
                     path.push(MangaViewController(manga: manga.toOld()))
                 }
             }
-        } label: {
-            HistoryEntryCell(
-                entry: entry,
-                manga: manga,
-                chapter: viewModel.chapterCache[entry.chapterCacheKey]
-            )
         }
-        .foregroundStyle(.primary)
+        .equatable()
+        .contentShape(Rectangle())
         .listRowSeparator(.hidden, edges: .top)
         .listRowSeparator(.visible, edges: .bottom)
         .introspect(.listCell, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
@@ -194,6 +195,8 @@ struct HistoryView: View {
             }
             .tint(.red)
         }
+        .id(entry.key)
+        .tag(entry.key)
 
         if #available(iOS 16.0, *) {
             return view
@@ -263,46 +266,52 @@ struct HistoryView: View {
     }
 }
 
-private struct HistoryEntryCell: View {
+private struct HistoryEntryCell: View, Equatable {
     let entry: HistoryEntry
 
     let manga: AidokuRunner.Manga?
     let chapter: AidokuRunner.Chapter?
 
+    var onPressed: (() -> Void)?
+
     private static let coverImageWidth: CGFloat = 56
 
     var body: some View {
-        HStack(spacing: 12) {
-            MangaCoverView(
-                coverImage: manga?.cover ?? "",
-                width: Self.coverImageWidth,
-                height: Self.coverImageWidth * 3/2,
-                downsampleWidth: Self.coverImageWidth
-            )
-            VStack(alignment: .leading, spacing: 4) {
-                Text(manga?.title ?? "")
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .foregroundStyle(.primary)
-                Text(makeSubtitle())
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline)
-                    .lineLimit(1)
-                if let additionalEntryCount = entry.additionalEntryCount, additionalEntryCount > 0 {
-                    let text = Text(String(format: NSLocalizedString("%lld_PLUS_MORE"), additionalEntryCount))
+        Button {
+            onPressed?()
+        } label: {
+            HStack(spacing: 12) {
+                MangaCoverView(
+                    coverImage: manga?.cover ?? "",
+                    width: Self.coverImageWidth,
+                    height: Self.coverImageWidth * 3/2,
+                    downsampleWidth: Self.coverImageWidth
+                )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(manga?.title ?? "")
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .foregroundStyle(.primary)
+                    Text(makeSubtitle())
                         .foregroundStyle(.secondary)
-                        .font(.footnote)
+                        .font(.subheadline)
                         .lineLimit(1)
-                    if #available(iOS 16.0, *) {
-                        text.contentTransition(.numericText())
-                    } else {
-                        text
+                    if let additionalEntryCount = entry.additionalEntryCount, additionalEntryCount > 0 {
+                        let text = Text(String(format: NSLocalizedString("%lld_PLUS_MORE"), additionalEntryCount))
+                            .foregroundStyle(.secondary)
+                            .font(.footnote)
+                            .lineLimit(1)
+                        if #available(iOS 16.0, *) {
+                            text.contentTransition(.numericText())
+                        } else {
+                            text
+                        }
                     }
                 }
+                Spacer()
             }
-            Spacer()
         }
-        .foregroundStyle(.primary)
+        .tint(.primary)
     }
 
     func makeSubtitle() -> String {
@@ -333,5 +342,9 @@ private struct HistoryEntryCell: View {
         formatter.timeStyle = .short
         components.append(formatter.string(from: entry.date))
         return components.joined(separator: " - ")
+    }
+
+    static func == (lhs: HistoryEntryCell, rhs: HistoryEntryCell) -> Bool {
+        lhs.entry == rhs.entry && lhs.manga == rhs.manga && lhs.chapter == rhs.chapter
     }
 }
