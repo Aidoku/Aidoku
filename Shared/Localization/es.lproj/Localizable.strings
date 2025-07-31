@@ -182,7 +182,6 @@
 "WEEKLY" = "Semanalmente";
 "SOURCE_LIST_ADD_FAIL" = "Fallo al agregar la lista de fuentes";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "El enlace de la lista de fuentes es inválido o ya ha sido agregado.";
-"SAVE_IMAGE_OPTION" = "Opción de guardar imagen";
 "LOADING_ELLIPSIS" = "Cargando…";
 "LANGUAGES" = "Idiomas";
 "SELECT_CHAPTERS" = "Seleccionar capítulos";

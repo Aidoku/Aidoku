@@ -191,7 +191,6 @@
 "SOURCE_LIST_ADD_FAIL" = "सोर्स लिस्ट जोड़ने में विफल हुआ";
 "LOCK_HISTORY_TAB" = "इतिहास टैब लॉक करें";
 "DOWNSAMPLE_IMAGES" = "इमिजेज़ डाउनसैम्पल करे";
-"SAVE_IMAGE_OPTION" = "इमिज ऑप्शन सेव करे";
 "BACKUP_NAME" = "बैकअप का नाम";
 "RENAME_BACKUP" = "बैकअप रीनेम करे";
 "CORRUPTED_BACKUP" = "बैकअप करप्टेड है";

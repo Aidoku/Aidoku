@@ -221,7 +221,6 @@
 "EVERY_2_DAYS" = "Ogni 2 giorni";
 "WITH_UNREAD_CHAPTERS" = "Con capitoli non letti";
 "WITH_COMPLETED_STATUS" = "Con stato concluso";
-"SAVE_IMAGE_OPTION" = "Opzioni di salvataggio delle immagini";
 "BACKUPS" = "Backup";
 "IMPORT_FAIL" = "Importazione fallita";
 "BACKUP_IMPORT_FAIL_TEXT" = "Impossibile salvare il backup. Assicurati che il backup sia nel formato corretto.";

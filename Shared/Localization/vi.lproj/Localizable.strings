@@ -198,7 +198,6 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Danh sách nguồn không hợp lệ hoặc đã được thêm trước đó.";
 "LOCK_HISTORY_TAB" = "Khoá Lịch sử đọc";
 "DOWNSAMPLE_IMAGES" = "Giảm chất lượng ảnh";
-"SAVE_IMAGE_OPTION" = "Hiển thị lựa chọn lưu ảnh";
 "BACKUPS" = "Sao lưu";
 "BACKUP_NAME" = "Tên bản sao lưu";
 "RENAME_BACKUP" = "Đổi tên bản sao lưu";

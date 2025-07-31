@@ -84,7 +84,6 @@
 "SUPPPORT_DEVELOPMENT" = "Apoiar Desenvolvimento";
 "INCOGNITO_MODE" = "Modo Incógnito";
 "READER" = "Leitor";
-"SAVE_IMAGE_OPTION" = "Opção de Guardar Imagem";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Nome do Backup";
 "MISSING_SOURCES_TEXT" = "O backup restaurado pode conter dados das seguintes fontes, que não estão atualmente instaladas:";

@@ -62,7 +62,6 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Дати URL листе извора је неважећи или је већ додат.";
 "SOURCE_LIST_ADD_TEXT" = "Унесите URL листе извора";
 "RENAME_BACKUP_TEXT" = "Унесите ново име за вашу резервну копију";
-"SAVE_IMAGE_OPTION" = "Опција за чување слике";
 "BACKUPS" = "Резервне копије";
 "BACKUP_NAME" = "Назив резервне копије";
 "RENAME_BACKUP" = "Преименуј резервну копију";

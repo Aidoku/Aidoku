@@ -187,7 +187,6 @@
 "SOURCE_LIST_ADD_TEXT" = "Wpisz URL źródła";
 "SOURCE_LIST_ADD_FAIL" = "Nie udało się dodać źródła";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Podany URL źródła jest nieprawidłowy lub został już dodany.";
-"SAVE_IMAGE_OPTION" = "Opcja Zapisz zdjęcie";
 "BACKUPS" = "Kopie zapasowe";
 "BACKUP_NAME" = "Nazwa kopii zapasowej";
 "RENAME_BACKUP" = "Zmień nazwę kopii zapasowej";

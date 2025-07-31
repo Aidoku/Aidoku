@@ -197,7 +197,6 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Belirtilen kaynak listesi URL'si geçersiz veya zaten eklenmiş.";
 "LOCK_HISTORY_TAB" = "Geçmiş Sayfasını Kilitle";
 "DOWNSAMPLE_IMAGES" = "Resimleri Küçült";
-"SAVE_IMAGE_OPTION" = "Resim Seçeneğini Kaydet";
 "BACKUPS" = "Yedekler";
 "BACKUP_NAME" = "Yedek İsmi";
 "RENAME_BACKUP" = "Yedeği Yeniden Adlandır";

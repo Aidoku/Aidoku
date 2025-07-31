@@ -87,7 +87,6 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Adresa URL a listei de surse furnizată nu este validă sau a fost deja adăugată.";
 "LOCK_HISTORY_TAB" = "Blochează fila cu Istoricul";
 "DOWNSAMPLE_IMAGES" = "Downsample imagini";
-"SAVE_IMAGE_OPTION" = "Opțiunea de salvare a imaginii";
 "BACKUPS" = "Copii de rezervă";
 "BACKUP_NAME" = "Nume copie de rezervă";
 "RENAME_BACKUP" = "Redenumire Backup";
