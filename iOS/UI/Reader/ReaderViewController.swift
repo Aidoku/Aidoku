@@ -215,10 +215,6 @@ class ReaderViewController: BaseObservingViewController {
             // if the tap zone is auto, it will changed based on the current reader
             self.updateTapZone()
         }
-        addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
-            guard let self else { return }
-            self.updateReadPosition()
-        }
         // reload pages when processors change
         addObserver(forName: "Reader.downsampleImages") { [weak self] _ in
             guard let self else { return }
