@@ -47,7 +47,7 @@ class ReaderDoublePageViewController: BaseViewController {
         view.addSubview(zoomView)
 
         pageStack.axis = .horizontal
-        pageStack.distribution = .fillProportionally
+        pageStack.distribution = .fillEqually
         pageStack.alignment = .center
         pageStack.translatesAutoresizingMaskIntoConstraints = false
         zoomView.addSubview(pageStack)
