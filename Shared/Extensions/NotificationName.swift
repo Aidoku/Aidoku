@@ -49,4 +49,5 @@ extension Notification.Name {
     // settings
     static let portraitRowsSetting = Self("General.portraitRows")
     static let landscapeRowsSetting = Self("General.landscapeRows")
+    static let historyLockTabSetting = Self("History.lockHistoryTab")
 }

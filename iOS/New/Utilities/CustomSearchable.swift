@@ -12,8 +12,9 @@ extension View {
         text: Binding<String>,
         enabled: Binding<Bool> = .constant(true),
         focused: Binding<Bool?> = .constant(nil),
-        showsCancelButton: Bool = true,
+        hideCancelButton: Bool = false,
         hidesNavigationBarDuringPresentation: Bool = true,
+        hidesSearchBarWhenScrolling: Bool = true,
         bookmarkIcon: UIImage? = nil,
         onSubmit: (() -> Void)? = nil,
         onCancel: (() -> Void)? = nil,
@@ -24,8 +25,9 @@ extension View {
                 searchText: text,
                 enabled: enabled,
                 focused: focused,
-                showsCancelButton: showsCancelButton,
+                hideCancelButton: hideCancelButton,
                 hidesNavigationBarDuringPresentation: hidesNavigationBarDuringPresentation,
+                hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling,
                 bookmarkIcon: bookmarkIcon,
                 onSubmit: onSubmit,
                 onCancel: onCancel,
@@ -44,8 +46,9 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
     @Binding var searchText: String
     @Binding var enabled: Bool
     @Binding var focused: Bool?
-    let showsCancelButton: Bool
+    let hideCancelButton: Bool
     let hidesNavigationBarDuringPresentation: Bool
+    let hidesSearchBarWhenScrolling: Bool
     let bookmarkIcon: UIImage?
     let onSubmit: (() -> Void)?
     let onCancel: (() -> Void)?
@@ -97,12 +100,13 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
         searchController.searchBar.delegate = context.coordinator
         searchController.searchResultsUpdater = context.coordinator
         searchController.searchBar.autocorrectionType = autocorrectionDisabled ? .no : .yes
+        searchController.navigationItem.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
         if let bookmarkIcon {
             searchController.searchBar.showsBookmarkButton = true
             searchController.searchBar.setImage(bookmarkIcon, for: .bookmark, state: .normal)
         }
 
-        return NavSearchBarWrapper(searchController: searchController)
+        return NavSearchBarWrapper(searchController: searchController, hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling)
     }
 
     func updateUIViewController(_ controller: NavSearchBarWrapper, context: Context) {
@@ -111,7 +115,9 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
         if controller.shouldShow != enabled {
             controller.setShow(enabled)
         }
-        controller.searchController.searchBar.showsCancelButton = showsCancelButton
+        if hideCancelButton {
+            controller.searchController.searchBar.showsCancelButton = false
+        }
         controller.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation
         if let focused {
             // putting this in a task slightly delays it, allowing the search bar to show before we focus it
@@ -134,10 +140,12 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
 
     class NavSearchBarWrapper: UIViewController {
         var searchController: UISearchController
+        let hidesSearchBarWhenScrolling: Bool
         var shouldShow = false
 
-        init(searchController: UISearchController) {
+        init(searchController: UISearchController, hidesSearchBarWhenScrolling: Bool) {
             self.searchController = searchController
+            self.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
             super.init(nibName: nil, bundle: nil)
         }
 
@@ -171,7 +179,7 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
 
         func show() {
             parent?.navigationItem.searchController = searchController
-            parent?.navigationItem.hidesSearchBarWhenScrolling = false
+            parent?.navigationItem.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
             if #available(iOS 16.0, *) {
                 parent?.navigationItem.preferredSearchBarPlacement = .stacked
             }
