@@ -216,7 +216,6 @@
 "SOURCE_LIST_ADDED_TEXT" = "Vous pouvez maintenant parcourir les sources externes dans l'onglet Parcourir.";
 "SOURCE_LIST_ADD_TEXT" = "Entrez l'URL de la liste de sources";
 "SOURCE_LIST_ADD_FAIL" = "Échec de l'ajout de la liste des sources";
-"SAVE_IMAGE_OPTION" = "Option de sauvegarde des images";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Pour restaurer cette sauvegarde, retrouvez-la dans la page des sauvegardes dans les paramètres.";
 "BACKUP_IMPORT_FAIL_TEXT" = "Échec de l'enregistrement de la sauvegarde. Veuillez vous assurer que votre sauvegarde est dans le bon format.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Cette action est irréversible. Les requêtes réseau et les images mises en cache seront effacées.";

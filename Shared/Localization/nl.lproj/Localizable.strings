@@ -23,12 +23,12 @@
 // Library
 "LIBRARY" = "Bibliotheek";
 "LIBRARY_SEARCH" = "Vind in bibliotheek";
-"LIBRARY_EMPTY" = "Bibliotheek leeg";
-"LIBRARY_ADD_FROM_BROWSE" = "Voeg manga toe vanuit het blader tabblad";
+"LIBRARY_EMPTY" = "Bibliotheek Leeg";
+"LIBRARY_ADD_FROM_BROWSE" = "Voeg manga toe vanuit het ontdekken tabblad";
 "ADD_TO_LIBRARY" = "Voeg toe aan bibliotheek";
 "REMOVE_FROM_LIBRARY" = "Verwijder van bibliotheek";
-"MANGA_INFO" = "Manga info";
-"SORT_BY" = "Sorteer op";
+"MANGA_INFO" = "Manga Informatie";
+"SORT_BY" = "Sorteren op";
 "FILTER_BY" = "Filter op";
 "TITLE" = "Titel";
 "LATEST_CHAPTER" = "Nieuwste hoofdstuk";
@@ -49,7 +49,7 @@
 "UPDATES" = "Updates";
 "INSTALLED" = "Geïnstalleerd";
 "BUTTON_ERROR" = "FOUT";
-"PIN" = "Pin";
+"PIN" = "Vastzetten";
 "UNPIN" = "Losmaken";
 "REORDER" = "Opnieuw ordenen";
 "LANGUAGE" = "Taal";
@@ -58,13 +58,13 @@
 "BUTTON_UPDATE" = "UPDATE";
 
 // Manga
-"UNTITLED" = "Ongetiteld";
+"UNTITLED" = "Zonder titel";
 "ONGOING" = "Voortdurende";
 "CANCELLED" = "Geannuleerd";
 "COMPLETED" = "Voltooid";
 "HIATUS" = "Pauze";
 "SUGGESTIVE" = "Suggestief";
-"BUILD" = "Construct";
+"BUILD" = "Bouw";
 "MISSING_SOURCE" = "Ontbrekende bron";
 "MISSING_SOURCE_TEXT" = "De originele bron lijkt te ontbreken voor deze Manga. Download deze opnieuw of verwijder deze titel van jouw bibliotheek.";
 "SELECT_CHAPTERS" = "Kies hoofdstukken";
@@ -262,7 +262,7 @@
 "BROWSE" = "Blader";
 "BROWSE_NO_SOURCES" = "Geen bronnen";
 "EXTERNAL" = "Extern";
-"BUTTON_GET" = "KRIJGEN";
+"BUTTON_GET" = "ONTVANG";
 "UNINSTALL" = "Deïnstalleren";
 
 // Source
@@ -296,7 +296,6 @@
 "LOCK_HISTORY_TAB" = "Tabblad Geschiedenis vergrendelen";
 "DOWNSAMPLE_IMAGES" = "Afbeeldingen verkleinen";
 "CROP_BORDERS" = "Rand bijsnijden";
-"SAVE_IMAGE_OPTION" = "Afbeelding opslaan optie";
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Back-up naam";
 "RENAME_BACKUP" = "Hernoem Back-up";
@@ -401,3 +400,4 @@
 "NO_RESULTS" = "Geen resultaten";
 "NO_EXTERNAL_SOURCES" = "Geen externe bronnen";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Voeg een bron toe via de plus knop.";
+"VIEW_SERIES" = "Bekijk Series";

@@ -136,7 +136,6 @@
 "LOCK_HISTORY_TAB" = "ล็อคแท็บประวัติ";
 "DOWNSAMPLE_IMAGES" = "ลดขนาดไฟล์รูปภาพ";
 "CROP_BORDERS" = "ครอบตัดเส้นขอบ";
-"SAVE_IMAGE_OPTION" = "ตั้งค่าบันทึกรูปภาพ";
 "READER_BG_COLOR_BLACK" = "ดำ";
 "BACKUPS" = "การสำรองข้อมูล";
 "BACKUP_NAME" = "ชื่อไฟล์สำรองข้อมูล";

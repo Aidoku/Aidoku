@@ -205,9 +205,8 @@
 "SOURCE_ORDER" = "來源順序";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "這會刪除此章節的歷史紀錄。 確定要繼續嗎？";
 "AUTH_FOR_HISTORY" = "解鎖以查看閱讀歷史紀錄。";
-"BUILD" = "版號";
+"BUILD" = "建置版本";
 "MISSING_SOURCE" = "缺少來源";
-"SAVE_IMAGE_OPTION" = "儲存圖片選項";
 "SUPPPORT_DEVELOPMENT" = "支持開發";
 "INCOGNITO_MODE_TEXT" = "開啟時停止記錄閱讀歷史";
 "SOURCE_LIST_ADD_TEXT" = "輸入來源列表連結";
@@ -372,3 +371,11 @@
 "MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "將%i個項目從類別%@中移除";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "將項目從類別%@中移除";
+"CONTENT" = "漫畫";
+"DONE" = "完成";
+"INVALID" = "無效";
+"MORE_BARBUTTON" = "更多";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "將項目從書櫃中移除";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "將%i個項目從書櫃中移除";
+"HOME" = "首頁";
+"DISCARD_CHANGES" = "捨棄所作更動";

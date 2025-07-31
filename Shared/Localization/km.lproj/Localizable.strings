@@ -135,7 +135,6 @@
 "SOURCE_LIST_ADD" = "បញ្ជីបន្ថែមប្រភព";
 "SOURCE_LIST_ADD_FAIL" = "បរាជ័យក្នុងការបន្ថែមប្រភពនៅក្នុងបញ្ជី";
 "CROP_BORDERS" = "កាត់កៀនៗរូបភាព";
-"SAVE_IMAGE_OPTION" = "ជម្រើសរក្សាទុករូបភាព";
 "READER_BG_COLOR" = "ពណ៌ផ្ទៃខាងក្រោយ";
 "READER_BG_COLOR_SYSTEM" = "ប្រព័ន្ធ";
 "READER_BG_COLOR_WHITE" = "ស";
