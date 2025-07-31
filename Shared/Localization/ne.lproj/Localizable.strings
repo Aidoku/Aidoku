@@ -77,7 +77,6 @@
 "READER_BG_COLOR_BLACK" = "कालो";
 "DOWNSAMPLE_IMAGES" = "छवि downsample गर्नुहोस्";
 "CROP_BORDERS" = "पृष्ठ सिमाना काट्नुहोस्";
-"SAVE_IMAGE_OPTION" = "छवि सेभ गर्ने अप्शन";
 "BACKUPS" = "ब्याकअपहरू";
 "BACKUP_NAME" = "ब्याकअपको नाम";
 "LOGGING" = "Logging";

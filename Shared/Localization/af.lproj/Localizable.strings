@@ -211,7 +211,6 @@
 "RENAME_BACKUP_TEXT" = "Tik 'n nuwe naam vir jou rugsteun in";
 "SOURCE_LIST_ADD_FAIL" = "Kon Bronnelys Nie Byvoeg Nie";
 "DOWNSAMPLE_IMAGES" = "Verlaag Prente Kwaliteit";
-"SAVE_IMAGE_OPTION" = "Stoor Prent Opsie";
 "BACKUPS" = "Rugsteune";
 "CORRUPTED_BACKUP" = "Korrupte Rugsteun";
 "CORRUPTED_BACKUP_TEXT" = "Hierdie rugsteun se data is verkeerd gekonfigureer. Om te Hernoem is nie moontlik nie.";

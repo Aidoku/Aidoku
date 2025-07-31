@@ -230,7 +230,6 @@
 "SOURCE_LIST_ADD_TEXT" = "Digite o URL da lista de fontes";
 "SOURCE_LIST_ADD_FAIL" = "Falha ao adicionar lista de fontes";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "O URL da lista de fontes providenciado é inválido ou ja foi adicionado.";
-"SAVE_IMAGE_OPTION" = "Opção para salvar imagens";
 "MISSING_SOURCES" = "Fontes ausentes";
 "MISSING_SOURCES_TEXT" = "O backup restaurado pode conter dados das seguintes fontes, que não estão instaladas no momento:";
 "LOGS" = "Registros";

@@ -235,7 +235,6 @@
 "SOURCE_LIST_URL" = "URL Daftar Sumber";
 "SOURCE_LIST_ADD_FAIL" = "Gagal Menambahkan Daftar Sumber";
 "LOCK_HISTORY_TAB" = "Kunci Tab Riwayat";
-"SAVE_IMAGE_OPTION" = "Simpan Opsi Gambar";
 "RENAME_BACKUP" = "Ganti nama Cadangan";
 "IMPORT_FAIL" = "Impor Gagal";
 "EXPORT" = "Ekspor";
@@ -275,3 +274,8 @@
 "VOLUME_X" = "Bab %g";
 "CHAPTER_X" = "Bagian %g";
 "VOL_X" = "Bab.%g";
+"DONE" = "Selesai";
+"PAUSE" = "Jeda";
+"RESUME" = "Lanjutkan";
+"COPY" = "Salin";
+"WARNING" = "Peringatan";
