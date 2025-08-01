@@ -59,6 +59,7 @@ extension HistoryView.ViewModel {
                 self.filteredHistory = []
                 self.historyData = [:]
                 self.offset = 0
+                self.loadingState = .idle
             }
             .store(in: &cancellables)
 
@@ -210,6 +211,7 @@ extension HistoryView.ViewModel {
             filteredHistory = []
             historyData = [:]
             offset = 0
+            loadingState = .idle
         }
     }
 
