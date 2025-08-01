@@ -489,6 +489,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                     object.manga?.id = newId
                                 }
                                 for object in chapterObjects {
+                                    object.mangaId = newMangaIds[object.mangaId] ?? object.mangaId
                                     object.id = newChapterIds[object.id] ?? object.id
                                 }
                                 for object in historyObjects {
@@ -501,6 +502,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                     LogManager.logger.error("Failed to save id migration: \(error)")
                                 }
                             }
+
+                            NotificationCenter.default.post(name: .updateLibrary, object: nil)
+                            NotificationCenter.default.post(name: .updateHistory, object: nil)
+
                             self.hideLoadingIndicator()
                         }
                     } else {
