@@ -412,7 +412,7 @@
 "LOCAL_SOURCE" = "本机来源";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本机文件导入";
-"LOCAL_FILE_IMPORT_TEXT" = "导入包含图像的 CBZ 或 ZIP 文件以阅读。";
+"LOCAL_FILE_IMPORT_TEXT" = "导入包含图像的 CBZ 或 ZIP 文件以供阅读。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
 "DESCRIPTION" = "简介";
@@ -511,7 +511,7 @@
 "UPSCALE_IMAGES" = "增强画质";
 "UPSCALING_MODELS" = "增强模型";
 "UPSCALE_MAX_IMAGE_HEIGHT" = "最大图像高度";
-"UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "大于最大图像高度的图片不会被放大。";
+"UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "图片高于最大图片高度将不会被放大。";
 "ENABLED_MODEL" = "已启用模型";
 "AVAILABLE_MODELS" = "可用模型";
 "NO_AVAILABLE_MODELS" = "暂无可用模型";
@@ -533,7 +533,7 @@
 "ZONE_L_SHAPED" = "L 型";
 "ZONE_KINDLE" = "Kindle";
 "ZONE_EDGE" = "两侧";
-"DISABLED" = "无法使用";
+"DISABLED" = "已禁用";
 "ANIMATE_PAGE_TRANSITIONS" = "页面过渡动画";
 "SET_COVER_IMAGE" = "设置封面图片";
 "UPLOAD_CUSTOM_COVER" = "上传自定义封面";
