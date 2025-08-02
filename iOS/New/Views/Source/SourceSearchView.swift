@@ -138,11 +138,7 @@ struct SourceSearchView: View {
                 .environmentObject(path)
             }
         }
-        if #available(iOS 26.0, *) {
-            group.padding(.top, 4)
-        } else {
-            group
-        }
+        group
     }
 }
 

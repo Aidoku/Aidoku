@@ -843,10 +843,7 @@ extension MangaViewController {
                     self.rootNavigation.navigationController?.isToolbarHidden = false
                     self.rootNavigation.navigationController?.toolbar.alpha = 1
 
-                    if #available(iOS 26.0, *) {
-                        // hide tab bar on iOS 26 (it covers the toolbar)
-                        self.rootNavigation.navigationController?.tabBarController?.isTabBarHidden = true
-                    }
+                    
                 }
             }
 
@@ -935,9 +932,7 @@ extension MangaViewController {
             UIView.animate(withDuration: 0.3) {
                 self.rootNavigation.navigationController?.toolbar.alpha = 0
 
-                if #available(iOS 26.0, *) {
-                    self.rootNavigation.navigationController?.tabBarController?.isTabBarHidden = false
-                }
+                
             } completion: { _ in
                 self.rootNavigation.navigationController?.isToolbarHidden = true
             }

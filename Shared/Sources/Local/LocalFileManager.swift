@@ -170,10 +170,10 @@ extension LocalFileManager {
         var shouldRemoveUrl = false
         if !url.path.contains(documentsDirectory.path) {
             // if the given url comes from an imported file, we need to do this
-            guard url.startAccessingSecurityScopedResource() else {
-                throw LocalFileManagerError.securityScopeDenied
-            }
-            defer { url.stopAccessingSecurityScopedResource() }
+            // guard url.startAccessingSecurityScopedResource() else {
+            //     throw LocalFileManagerError.securityScopeDenied
+            // }
+            // defer { url.stopAccessingSecurityScopedResource() }
 
             // create a temporary url to copy file to
             guard let tempUrl = FileManager.default.temporaryDirectory?.appendingPathComponent(url.lastPathComponent) else {

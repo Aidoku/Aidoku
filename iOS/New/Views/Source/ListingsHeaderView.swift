@@ -81,29 +81,26 @@ struct ListingsHeaderView: View {
     }
 
     var headerScrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
-                let options = if source.features.providesHome {
-                    [NSLocalizedString("HOME")] + listings.map { $0.name }
-                } else {
-                    listings.map { $0.name }
-                }
-                ForEach(options.indices, id: \.self) { offset in
-                    let option = options[offset]
-                    let active = selectedListing == offset
-                    Button {
-                        selectedListing = offset
-                    } label: {
-                        let label = Text(option)
-                            .padding(.horizontal, 13)
-                            .padding(.vertical, 8)
-                            .font(.footnote.weight(.medium))
-                            .foregroundStyle(active ? Color.white : Color.primary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    let options = if source.features.providesHome {
+                        [NSLocalizedString("HOME")] + listings.map { $0.name }
+                    } else {
+                        listings.map { $0.name }
+                    }
+                    
+                    ForEach(Array(options.enumerated()), id: \.offset) { offset, option in
+                        let active = selectedListing == offset
+                        Button {
+                            selectedListing = offset
+                        } label: {
+                            let label = Text(option)
+                                .padding(.horizontal, 13)
+                                .padding(.vertical, 8)
+                                .font(.footnote.weight(.medium))
+                                .foregroundStyle(active ? Color.white : Color.primary)
 
-                        if #available(iOS 26.0, *) {
-                            label
-                                .glassEffect(active ? .regular.tint(.accentColor) : .regular)
-                        } else {
+                            
                             label
                                 .background(
                                     RoundedRectangle(cornerRadius: 100)
@@ -118,12 +115,11 @@ struct ListingsHeaderView: View {
                         }
                     }
                 }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
+            .scrollClipDisabledPlease()
+            .padding(.top, -11)
         }
-        .scrollClipDisabledPlease()
-        .padding(.top, -11)
-    }
 
     static var placeholder: some View {
         // skeleton loading

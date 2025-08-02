@@ -43,12 +43,7 @@ struct AddSourceView: View {
                         Button {
                             importing = true
                         } label: {
-                            let padding: CGFloat = if #available(iOS 26.0, *) {
-                                // ios 26 uses larger list cells
-                                16
-                            } else {
-                                12
-                            }
+                            let padding: CGFloat = 12
                             HStack {
                                 if importing {
                                     ProgressView()

@@ -2806,7 +2806,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 648WP6YBU2;
+				DEVELOPMENT_TEAM = 6FMNV8TT73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
@@ -2827,6 +2827,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = app.aidoku.AidokuNightly;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -2848,7 +2849,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 648WP6YBU2;
+				DEVELOPMENT_TEAM = 6FMNV8TT73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
@@ -2869,6 +2870,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = app.aidoku.AidokuNightly;
 				PRODUCT_NAME = Aidoku;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;

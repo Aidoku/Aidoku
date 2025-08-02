@@ -65,13 +65,7 @@ struct SearchFilterHeaderView: View {
             guard filters == nil else { return }
             await self.loadFilters()
         }
-        .padding(.top, {
-            if #available(iOS 26.0, *) {
-                12
-            } else {
-                0
-            }
-        }())
+        .padding(.top, 0)
     }
 
     func loadFilters() async {

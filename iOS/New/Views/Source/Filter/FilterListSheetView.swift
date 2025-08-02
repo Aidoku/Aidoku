@@ -57,17 +57,12 @@ struct FilterListSheetView: View {
                 enabledFilters = newEnabledFilters
             }
 
-            if #available(iOS 26.0, *) {
-                scrollView
-                    .toolbar {
-                        toolbarContentiOS26
-                    }
-            } else {
-                scrollView
-                    .toolbar {
-                        toolbarContent
-                    }
-            }
+        
+            scrollView
+                .toolbar {
+                    toolbarContent
+                }
+        
         }
     }
 
@@ -91,30 +86,17 @@ struct FilterListSheetView: View {
 
         ToolbarItem(placement: .bottomBar) {
             if showResetButton {
-                if #available(iOS 26.0, *) {
+            
+                HStack {
                     Button(NSLocalizedString("RESET")) {
                         newEnabledFilters = []
                         dismiss()
                     }
-                } else {
-                    HStack {
-                        Button(NSLocalizedString("RESET")) {
-                            newEnabledFilters = []
-                            dismiss()
-                        }
-                        Spacer()
-                    }
+                    Spacer()
                 }
+            
             }
         }
-    }
-
-    @available(iOS 26.0, *)
-    @ToolbarContentBuilder
-    var toolbarContentiOS26: some ToolbarContent {
-        toolbarContent
-
-        ToolbarSpacer(.flexible, placement: .bottomBar)
     }
 }
 

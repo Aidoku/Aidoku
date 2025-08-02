@@ -120,35 +120,29 @@ struct FilterHeaderView: View {
             .padding(.vertical, 6)
             .font(.caption.weight(.medium))
 
-            if #available(iOS 26.0, *) {
-                if enabledFilters.isEmpty {
-                    label.glassEffect(.regular, in: .circle)
-                } else {
-                    label.glassEffect(.regular, in: .capsule)
-                }
-            } else {
-                label
-                    .background(
-                        Group {
-                            if enabledFilters.isEmpty {
-                                Circle()
-                            } else {
-                                // allow space for the badge
-                                RoundedRectangle(cornerRadius: 100)
-                            }
-                        }
-                            .foregroundColor(.init(uiColor: .secondarySystemFill))
-                    )
-                    .overlay {
+        
+            label
+                .background(
+                    Group {
                         if enabledFilters.isEmpty {
                             Circle()
-                                .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
                         } else {
+                            // allow space for the badge
                             RoundedRectangle(cornerRadius: 100)
-                                .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
                         }
                     }
-            }
+                        .foregroundColor(.init(uiColor: .secondarySystemFill))
+                )
+                .overlay {
+                    if enabledFilters.isEmpty {
+                        Circle()
+                            .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
+                    } else {
+                        RoundedRectangle(cornerRadius: 100)
+                            .stroke(Color(uiColor: .tertiarySystemFill), style: .init(lineWidth: 1))
+                    }
+                }
+        
         }
     }
 

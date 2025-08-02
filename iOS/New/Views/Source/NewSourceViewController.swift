@@ -709,10 +709,7 @@ extension NewSourceViewController {
 
     // toggles the navigation bar background to opaque or transparent
     private func setNavigationBarOpaque(_ opaque: Bool) {
-        if #available(iOS 26.0, *) {
-            // navigation bar should remain clear on ios 26
-            return
-        }
+        
 
         guard
             !onlySearch,
