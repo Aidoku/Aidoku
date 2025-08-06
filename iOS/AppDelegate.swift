@@ -465,6 +465,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             }
                             var newMangaIds: [String: String] = [:]
                             var newChapterIds: [String: String] = [:]
+                            if source.features.handlesNotifications {
+                                try? await source.handleNotification(notification: "system.startMigration")
+                            }
                             for oldId in libraryMangaIds {
                                 newMangaIds[oldId] = try? await source.handleMigration(kind: .manga, mangaKey: oldId, chapterKey: nil)
                             }
@@ -473,6 +476,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             }
                             for (mangaId, oldId) in libraryChaptersIds {
                                 newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
+                            }
+                            if source.features.handlesNotifications {
+                                try? await source.handleNotification(notification: "system.endMigration")
                             }
                             for (mangaId, oldId) in historyChapterIds where newChapterIds[oldId] == nil  {
                                 newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
