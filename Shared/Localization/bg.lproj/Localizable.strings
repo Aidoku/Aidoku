@@ -361,3 +361,16 @@
 "BOTH" = "И двете";
 "SCANLATOR" = "Сканлатор";
 "NO_SCANLATOR" = "Без сканлатор";
+"INVALID" = "Невалидно";
+"ENABLE_PERMISSION" = "Включване на разрешения";
+"CONTENT" = "Съдържание";
+"%@_EXPERIMENTAL" = "%@ (Експериментално)";
+"DOWNLOAD_MANAGER" = "Мениджър на свалянията";
+"NO_DOWNLOADS" = "Без сваляния";
+"NO_DOWNLOADS_TEXT" = "Изтегленото съдържание ще се появи тук.";
+"DOWNLOADED_CHAPTERS" = "Свалени глави";
+"TOTAL_DOWNLOADS" = "Всичко свалено";
+"IN_LIBRARY" = "В библиотека";
+"%i_SERIES" = "%i серии";
+"VIEW_SERIES" = "Преглед на серии";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Премахване на предмет от библиотека";
