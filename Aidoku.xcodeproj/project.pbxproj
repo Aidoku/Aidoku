@@ -180,6 +180,8 @@
 		FB4E579B2E352CAB006EF27C /* UIKeyModifierFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */; };
 		FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
 		FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
+		FB4EBFC22E450FCB00D83F9A /* ClearFieldButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */; };
+		FB4EBFC42E45124900D83F9A /* TextFieldWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
 		FB4EEBBD27A2F103005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -622,6 +624,8 @@
 		FB4E57982E3529BD006EF27C /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyModifierFlags.swift; sourceTree = "<group>"; };
 		FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Track.swift"; sourceTree = "<group>"; };
+		FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearFieldButton.swift; sourceTree = "<group>"; };
+		FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldWrapper.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBC127A34ED4005081A3 /* ChapterObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterObject.swift; sourceTree = "<group>"; };
@@ -1474,6 +1478,7 @@
 				FB662E932DA813E300007514 /* HCollectionGrid.swift */,
 				FB662EE22DA81A5C00007514 /* CollectionView.swift */,
 				FB662EE12DA81A5C00007514 /* CloseButton.swift */,
+				FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */,
 				FB14B1222DF4CF290067E4D4 /* ImagePicker.swift */,
 				FB662EDF2DA81A5C00007514 /* Carousel.swift */,
 				FB662E922DA813E300007514 /* ErrorView.swift */,
@@ -1482,6 +1487,7 @@
 				FB662E952DA813E300007514 /* MangaGridItem.swift */,
 				FB05182A2E09B05D00CEE275 /* GIFImage.swift */,
 				FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */,
+				FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -2154,6 +2160,7 @@
 				FB14B1242DF4CF2B0067E4D4 /* ImagePicker.swift in Sources */,
 				FB42751B29612A3000131377 /* SourceSectionHeaderView.swift in Sources */,
 				FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */,
+				FB4EBFC22E450FCB00D83F9A /* ClearFieldButton.swift in Sources */,
 				FB4EEBCA27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB7F05FA2DDE76450036B116 /* WKWebView.swift in Sources */,
 				48177B942B75F5E700AD41B4 /* MangaViewOld.swift in Sources */,
@@ -2464,6 +2471,7 @@
 				FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */,
 				FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */,
 				FBA498762A9A53F500D3F53E /* TouchDownGestureRecognizer.swift in Sources */,
+				FB4EBFC42E45124900D83F9A /* TextFieldWrapper.swift in Sources */,
 				FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */,
 				FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
