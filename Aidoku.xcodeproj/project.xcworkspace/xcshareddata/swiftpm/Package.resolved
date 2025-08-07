@@ -1,5 +1,5 @@
 {
-  "originHash" : "3954b3c01a48f73c6ddd251a45ec57d9ef2d8f683e44ce103d1558d25ce7cb95",
+  "originHash" : "fbee1fcd32ad03a92ffe9109e2bd94b400fad95c547fb7d3b5ec7a14031d23a7",
   "pins" : [
     {
       "identity" : "aidokurunner",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "61269aa29b75f011769fe47dad2a28c13f888364"
+        "revision" : "48018eb1ec4e61ecba7eb42dcd5b2c9da6042731"
       }
     },
     {
