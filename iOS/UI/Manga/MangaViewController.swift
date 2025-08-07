@@ -574,6 +574,8 @@ class MangaViewController: BaseTableViewController {
                 }
             }
             headerView.configure(with: manga)
+            // clear saved scanlator list for chapter filter menu
+            viewModel.savedScanlatorList = nil
             await viewModel.loadHistory(manga: manga)
             viewModel.filterChapterList()
             updateDataSource()
