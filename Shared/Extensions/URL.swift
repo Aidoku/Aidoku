@@ -47,3 +47,18 @@ extension URL {
         return URL(string: "aidoku-image://\(relativePath)")
     }
 }
+
+extension URL {
+    var domain: String? {
+        let host = if #available(iOS 16.0, *) {
+            host(percentEncoded: false)
+        } else {
+            host
+        }
+        if let host, host.hasPrefix("www.") {
+            return String(host.dropFirst(4))
+        } else {
+            return host
+        }
+    }
+}
