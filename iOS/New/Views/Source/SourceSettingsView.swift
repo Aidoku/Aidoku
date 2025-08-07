@@ -5,13 +5,15 @@
 //  Created by Skitty on 10/6/23.
 //
 
-import SwiftUI
 import AidokuRunner
+import SwiftUI
+import WebKit
 
 struct SourceSettingsView: View {
     let source: AidokuRunner.Source
 
     @State private var settings: [Setting] = []
+    @State private var showingClearCacheConfirm = false
     @State private var showingResetAlert = false
     @State private var error: Error?
 
@@ -53,9 +55,13 @@ struct SourceSettingsView: View {
                 }
             }
 
-            // reset button
-            if !settings.isEmpty || source.languages.count > 1 {
-                Section {
+            Section {
+                Button(NSLocalizedString("Clear Source Cache")) {
+                    showingClearCacheConfirm = true
+                }
+
+                // reset button
+                if !settings.isEmpty || source.languages.count > 1 {
                     Button(NSLocalizedString("RESET_SETTINGS")) {
                         showingResetAlert = true
                     }
@@ -95,6 +101,13 @@ struct SourceSettingsView: View {
         } message: {
             Text(String(format: NSLocalizedString("RESET_SETTINGS_CONFIRM_%@"), source.name))
         }
+        .confirmationDialog(NSLocalizedString("CLEAR_SOURCE_CACHE"), isPresented: $showingClearCacheConfirm, titleVisibility: .visible) {
+            Button(NSLocalizedString("CLEAR"), role: .destructive) {
+                clearCache()
+            }
+        } message: {
+            Text(NSLocalizedString("CLEAR_SOURCE_CACHE_TEXT"))
+        }
     }
 
     func loadSettings() async {
@@ -126,5 +139,29 @@ struct SourceSettingsView: View {
         for name in ["refresh-content", "refresh-settings", "refresh-listings", "refresh-filters"] {
             NotificationCenter.default.post(name: .init(name), object: nil)
         }
+    }
+
+    func clearCache() {
+        // remove cookies
+        for url in source.urls {
+            if let cookies = HTTPCookieStorage.shared.cookies(for: url) {
+                for cookie in cookies {
+                    HTTPCookieStorage.shared.deleteCookie(cookie)
+                }
+            }
+        }
+
+        // remove wkwebview data
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+            for record in records where source.urls.contains(where: { $0.domain == record.displayName }) {
+                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+            }
+        }
+
+        // remove cached home layout
+        UserDefaults.standard.removeObject(forKey: "\(source.key).homeComponents")
+
+        // reload source
+        NotificationCenter.default.post(name: .init("refresh-content"), object: nil)
     }
 }
