@@ -118,6 +118,8 @@
 "HOME" = "Home";
 "FILTERS" = "Filters";
 "APPLY" = "Apply";
+"RANGE_FROM" = "From";
+"RANGE_TO" = "To";
 "SOURCE_SETTINGS" = "Source Settings";
 "RESET_SETTINGS_CONFIRM_%@" = "Are you sure you want to reset all settings for %@?";
 "CANCEL_CONFIRM" = "Are you sure you want to cancel?";

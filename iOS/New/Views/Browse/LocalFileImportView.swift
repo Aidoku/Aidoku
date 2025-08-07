@@ -255,11 +255,11 @@ extension LocalFileImportView.ContentView {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(NSLocalizedString("CHAPTER_TITLE")).fontWeight(.medium)
 
-                    FieldView {
+                    TextFieldWrapper {
                         TextField(NSLocalizedString("CHAPTER_TITLE"), text: $name)
                             .autocorrectionDisabled()
                         if !name.isEmpty {
-                            ClearButton {
+                            ClearFieldButton {
                                 name = ""
                             }
                         }
@@ -272,11 +272,11 @@ extension LocalFileImportView.ContentView {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(NSLocalizedString("VOLUME")).fontWeight(.medium)
 
-                            FieldView(hasError: !volumeChapterValid || volumeChapterEmpty) {
+                            TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
                                 TextField(NSLocalizedString("VOLUME"), value: $volume, format: .number)
                                     .keyboardType(.decimalPad)
                                 if volume != nil {
-                                    ClearButton {
+                                    ClearFieldButton {
                                         volume = nil
                                     }
                                 }
@@ -286,10 +286,11 @@ extension LocalFileImportView.ContentView {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(NSLocalizedString("CHAPTER")).fontWeight(.medium)
 
-                            FieldView(hasError: !volumeChapterValid || volumeChapterEmpty) {
+                            TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
                                 TextField(NSLocalizedString("CHAPTER"), value: $chapter, format: .number)
+                                    .keyboardType(.decimalPad)
                                 if chapter != nil {
-                                    ClearButton {
+                                    ClearFieldButton {
                                         chapter = nil
                                     }
                                 }
@@ -320,7 +321,7 @@ extension LocalFileImportView.ContentView {
                             selectedMangaTitle: $selectedMangaTitle
                         )
                     } label: {
-                        FieldView {
+                        TextFieldWrapper {
                             Text(selectedMangaTitle.isEmpty ? NSLocalizedString("NEW_SERIES") : selectedMangaTitle)
                                 .lineLimit(1)
                             Spacer(minLength: 0)
@@ -382,41 +383,6 @@ extension LocalFileImportView.ContentView {
             .foregroundStyle(error ? .red : Color.secondary)
             .padding(.top, 2)
             .padding(.horizontal, 6)
-    }
-
-    struct FieldView<Content: View>: View {
-        var hasError: Bool = false
-        @ViewBuilder let content: Content
-
-        var body: some View {
-            HStack(spacing: 4) {
-                content
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 12)
-            .background(RoundedRectangle(cornerRadius: 10)
-                .fill(Color(uiColor: .secondarySystemBackground)))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay {
-                if hasError {
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.red, lineWidth: 1)
-                }
-            }
-        }
-    }
-
-    struct ClearButton: View {
-        let action: () -> Void
-
-        var body: some View {
-            Button {
-                action()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-            }
-            .tint(Color.secondary)
-        }
     }
 }
 
@@ -511,11 +477,11 @@ extension LocalFileImportView.ContentView {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(NSLocalizedString("SERIES_TITLE")).fontWeight(.medium)
 
-                    FieldView(hasError: !nameValid || nameEmpty) {
+                    TextFieldWrapper(hasError: !nameValid || nameEmpty) {
                         TextField(NSLocalizedString(NSLocalizedString("SERIES_TITLE")), text: $seriesName)
                             .autocorrectionDisabled()
                         if !seriesName.isEmpty {
-                            ClearButton {
+                            ClearFieldButton {
                                 seriesName = ""
                             }
                         }
@@ -536,7 +502,7 @@ extension LocalFileImportView.ContentView {
                     Text(NSLocalizedString("DESCRIPTION"))
                         .fontWeight(.medium)
 
-                    FieldView {
+                    TextFieldWrapper {
                         if #available(iOS 16.0, *) {
                             TextField(NSLocalizedString("DESCRIPTION"), text: $seriesDescription, axis: .vertical)
                                 .autocorrectionDisabled()
