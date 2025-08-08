@@ -9,7 +9,6 @@ import Foundation
 
 enum LocalFileManagerError: Error {
     case invalidFileType
-    case securityScopeDenied
     case tempDirectoryUnavailable
     case cannotReadArchive
     case noImagesFound
