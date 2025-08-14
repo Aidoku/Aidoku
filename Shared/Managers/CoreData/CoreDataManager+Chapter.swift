@@ -201,6 +201,7 @@ extension CoreDataManager {
                 AND lang == %@
                 AND ((scanlator IN %@) OR (scanlator == nil AND %@ CONTAINS ''))
                 AND (history == nil OR history.completed == false)
+                AND locked == false
                 """,
                 sourceId, mangaId, lang, scanlators, scanlators
             )
@@ -211,6 +212,7 @@ extension CoreDataManager {
                 AND mangaId == %@
                 AND ((scanlator IN %@) OR (scanlator == nil AND %@ CONTAINS ''))
                 AND (history == nil OR history.completed == false)
+                AND locked == false
                 """,
                 sourceId, mangaId, scanlators, scanlators
             )
@@ -221,12 +223,18 @@ extension CoreDataManager {
                 AND mangaId == %@
                 AND lang == %@
                 AND (history == nil OR history.completed == false)
+                AND locked == false
                 """,
                 sourceId, mangaId, lang
             )
         } else {
             request.predicate = NSPredicate(
-                format: "sourceId == %@ AND mangaId == %@ AND (history == nil OR history.completed == false)",
+                format: """
+                sourceId == %@
+                AND mangaId == %@
+                AND (history == nil OR history.completed == false)
+                AND locked == false
+                """,
                 sourceId, mangaId
             )
         }

@@ -118,6 +118,8 @@
 "HOME" = "Home";
 "FILTERS" = "Filters";
 "APPLY" = "Apply";
+"RANGE_FROM" = "From";
+"RANGE_TO" = "To";
 "SOURCE_SETTINGS" = "Source Settings";
 "RESET_SETTINGS_CONFIRM_%@" = "Are you sure you want to reset all settings for %@?";
 "CANCEL_CONFIRM" = "Are you sure you want to cancel?";
@@ -449,6 +451,8 @@
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "This action is irreversible. All read history excluding the library will be removed.";
 "RESET_SETTINGS" = "Reset Settings";
 "RESET_SETTINGS_TEXT" = "This action is irreversible. All app and source settings will be reset.";
+"CLEAR_SOURCE_CACHE" = "Clear Source Cache";
+"CLEAR_SOURCE_CACHE_TEXT" = "Cached network data for the source url(s) will be cleared. This may result in temporarily increased loading times.";
 "PAGE_X_OF_X" = "Page %i of %i";
 "LIBRARY_LOCKED" = "Library is locked.";
 "CATEGORY_LOCKED" = "Category is locked.";

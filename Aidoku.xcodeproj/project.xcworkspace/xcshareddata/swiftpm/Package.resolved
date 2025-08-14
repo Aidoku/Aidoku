@@ -1,5 +1,5 @@
 {
-  "originHash" : "cd1a24ffb99d83e6f767d734f47edd1204fb8c8bbfa462229dd2fe60a1fe5ccd",
+  "originHash" : "fbee1fcd32ad03a92ffe9109e2bd94b400fad95c547fb7d3b5ec7a14031d23a7",
   "pins" : [
     {
       "identity" : "aidokurunner",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "bda033c22aa0d73c33a87f6f1b525056ccb7de56"
+        "revision" : "6eee715fbb1273340b5e8103330bc4bc7536b54c"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "6b4930da67b462d3f200472c902dd016d37a554d",
-        "version" : "2.7.7"
+        "revision" : "04a5da442816f764b2a8513c38420b4e6605145b",
+        "version" : "2.10.1"
       }
     },
     {

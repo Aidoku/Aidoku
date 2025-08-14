@@ -458,24 +458,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                                     CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
                                         .compactMap { $0.manga?.id },
                                     CoreDataManager.shared.getChapters(sourceId: source.id, context: context)
-                                        .map { $0.id },
+                                        .map { ($0.mangaId, $0.id) },
                                     historyObjects.map { $0.mangaId },
-                                    historyObjects.map { $0.chapterId },
+                                    historyObjects.map { ($0.mangaId, $0.chapterId) },
                                 )
                             }
                             var newMangaIds: [String: String] = [:]
                             var newChapterIds: [String: String] = [:]
+                            if source.features.handlesNotifications {
+                                try? await source.handleNotification(notification: "system.startMigration")
+                            }
                             for oldId in libraryMangaIds {
-                                newMangaIds[oldId] = try? await source.handleMigration(id: oldId, kind: .manga)
+                                newMangaIds[oldId] = try? await source.handleMigration(kind: .manga, mangaKey: oldId, chapterKey: nil)
                             }
                             for oldId in historyMangaIds where newMangaIds[oldId] == nil  {
-                                newMangaIds[oldId] = try? await source.handleMigration(id: oldId, kind: .manga)
+                                newMangaIds[oldId] = try? await source.handleMigration(kind: .manga, mangaKey: oldId, chapterKey: nil)
                             }
-                            for oldId in libraryChaptersIds {
-                                newChapterIds[oldId] = try? await source.handleMigration(id: oldId, kind: .chapter)
+                            for (mangaId, oldId) in libraryChaptersIds {
+                                newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
                             }
-                            for oldId in historyChapterIds where newChapterIds[oldId] == nil  {
-                                newChapterIds[oldId] = try? await source.handleMigration(id: oldId, kind: .chapter)
+                            if source.features.handlesNotifications {
+                                try? await source.handleNotification(notification: "system.endMigration")
+                            }
+                            for (mangaId, oldId) in historyChapterIds where newChapterIds[oldId] == nil  {
+                                newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
                             }
                             await CoreDataManager.shared.container.performBackgroundTask { context in
                                 let libraryObjects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)

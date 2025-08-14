@@ -45,7 +45,7 @@ struct FilterHeaderView: View {
         enabledFilters
             .map {
                 switch $0 {
-                    case .text, .sort, .check, .select: 1
+                    case .text, .sort, .check, .select, .range: 1
                     case let .multiselect(_, included, excluded):
                         included.count + excluded.count
                 }

@@ -36,6 +36,7 @@ struct FilterListSheetView: View {
             let scrollView = ScrollView(.vertical) {
                 FilterListView(filters: filters, enabledFilters: $newEnabledFilters)
             }
+            .scrollDismissesKeyboardInteractively()
             .navigationTitle(NSLocalizedString("FILTERS"))
 #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -125,11 +126,15 @@ private struct FilterListView: View {
     @Binding var enabledFilters: [FilterValue]
 
     @State private var text: [String: String]
+    @State private var from: [String: Float]
+    @State private var to: [String: Float]
     @State private var includedOptions: [String: [String]]
     @State private var excludedOptions: [String: [String]]
     @State private var selectedOptions: [String: String]
     @State private var selectedIndexes: [String: Int]
     @State private var ascending: [String: Bool]
+
+    @State private var hasError: [String: Bool] = [:]
 
     init(filters: [AidokuRunner.Filter], showTitles: Bool = true, enabledFilters: Binding<[FilterValue]>) {
         self.filters = filters
@@ -137,6 +142,8 @@ private struct FilterListView: View {
         self._enabledFilters = enabledFilters
 
         var text: [String: String] = [:]
+        var from: [String: Float] = [:]
+        var to: [String: Float] = [:]
         var includedOptions: [String: [String]] = [:]
         var excludedOptions: [String: [String]] = [:]
         var selectedOptions: [String: String] = [:]
@@ -156,9 +163,14 @@ private struct FilterListView: View {
                 case let .multiselect(id, included, excluded):
                     includedOptions[id] = included
                     excludedOptions[id] = excluded
+                case let .range(id, fromValue, toValue):
+                    from[id] = fromValue
+                    to[id] = toValue
             }
         }
         self._text = State(initialValue: text)
+        self._from = State(initialValue: from)
+        self._to = State(initialValue: to)
         self._includedOptions = State(initialValue: includedOptions)
         self._excludedOptions = State(initialValue: excludedOptions)
         self._selectedOptions = State(initialValue: selectedOptions)
@@ -175,7 +187,7 @@ private struct FilterListView: View {
                             if showTitles {
                                 titleView(filter.title)
                             }
-                            Group {
+                            TextFieldWrapper {
                                 if #available(iOS 16.0, *) {
                                     TextField(
                                         "",
@@ -186,10 +198,6 @@ private struct FilterListView: View {
                                     TextField(placeholder ?? "", text: textBinding(for: filter.id))
                                 }
                             }
-                            .padding(10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .fill(Color(uiColor: .tertiarySystemFill)))
                             .padding(.horizontal)
 
                         case let .sort(_, _, defaultValue):
@@ -248,6 +256,12 @@ private struct FilterListView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .multilineTextAlignment(.leading)
                                 .padding(.horizontal)
+
+                        case let .range(min, max, decimal):
+                            if showTitles {
+                                titleView(filter.title)
+                            }
+                            rangeFilterView(filter: filter, min: min, max: max, decimal: decimal)
                     }
                 }
             }
@@ -280,6 +294,77 @@ private struct FilterListView: View {
             Spacer()
         }
         .padding(.horizontal)
+    }
+
+    private func textField<Content: View>(content: @escaping () -> Content) -> some View {
+        Group {
+            content()
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color(uiColor: .tertiarySystemFill))
+        )
+    }
+
+    private func rangeFilterView(filter: AidokuRunner.Filter, min: Float?, max: Float?, decimal: Bool) -> some View {
+        HStack {
+            TextFieldWrapper(hasError: hasError[filter.id + ".from", default: false]) {
+                let value = fromBinding(for: filter.id)
+                TextField(NSLocalizedString("RANGE_FROM"), value: value, format: .number)
+                    .keyboardType(decimal ? .decimalPad : .numberPad)
+                if value.wrappedValue != nil {
+                    ClearFieldButton {
+                        value.wrappedValue = nil
+                    }
+                }
+            }
+            TextFieldWrapper(hasError: hasError[filter.id + ".to", default: false]) {
+                let value = toBinding(for: filter.id)
+                TextField(NSLocalizedString("RANGE_TO"), value: value, format: .number)
+                    .keyboardType(decimal ? .decimalPad : .numberPad)
+                if value.wrappedValue != nil {
+                    ClearFieldButton {
+                        value.wrappedValue = nil
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+        .onChange(of: from[filter.id]) { value in
+            let error = if let value {
+                if let min, value < min {
+                    true
+                } else if let toValue = to[filter.id], value > toValue {
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+            hasError[filter.id + ".from"] = error
+            if !error {
+                updateRangeFilter(id: filter.id)
+            }
+        }
+        .onChange(of: to[filter.id]) { value in
+            let error = if let value {
+                if let max, value > max {
+                    true
+                } else if let fromValue = from[filter.id], value < fromValue {
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+            hasError[filter.id + ".to"] = error
+            if !error {
+                updateRangeFilter(id: filter.id)
+            }
+        }
     }
 
     private func updateMultiSelectFilters() {
@@ -405,10 +490,45 @@ private struct FilterListView: View {
         }
     }
 
+    private func updateRangeFilter(id: String) {
+        guard
+            let filter = filters.first(where: { $0.id == id }),
+            case .range = filter.value
+        else { return }
+
+        let fromValue = from[id]
+        let toValue = to[id]
+        let filterValue = FilterValue.range(id: id, from: fromValue, to: toValue)
+
+        if let filterIndex = enabledFilters.firstIndex(where: { $0.id == id }) {
+            if fromValue == nil && toValue == nil {
+                enabledFilters.remove(at: filterIndex)
+            } else {
+                enabledFilters[filterIndex] = filterValue
+            }
+        } else if fromValue != nil || toValue != nil {
+            enabledFilters.append(filterValue)
+        }
+    }
+
     private func textBinding(for id: String) -> Binding<String> {
         Binding(
             get: { text[id, default: ""] },
             set: { text[id] = $0 }
+        )
+    }
+
+    private func fromBinding(for id: String) -> Binding<Float?> {
+        Binding(
+            get: { from[id] },
+            set: { from[id] = $0 }
+        )
+    }
+
+    private func toBinding(for id: String) -> Binding<Float?> {
+        Binding(
+            get: { to[id] },
+            set: { to[id] = $0 }
         )
     }
 

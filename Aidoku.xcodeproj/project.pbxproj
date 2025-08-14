@@ -121,6 +121,7 @@
 		FB2BE5E82953851100FAD8A7 /* ZoomableCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */; };
 		FB2BE5EB295385B900FAD8A7 /* ZoomableLayoutProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5EA295385B900FAD8A7 /* ZoomableLayoutProtocol.swift */; };
 		FB2BE5ED2953872600FAD8A7 /* ZoomableCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5EC2953872600FAD8A7 /* ZoomableCollectionViewController.swift */; };
+		FB2C83992E43F074003CA85F /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB2C83982E43F074003CA85F /* SwiftSoup */; };
 		FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E024E286606FC00786F21 /* JsonAnyValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024C286606FC00786F21 /* JsonAnyValue.swift */; };
 		FB2E02502868A51C00786F21 /* TrackerModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2E024F2868A51C00786F21 /* TrackerModalViewController.swift */; };
@@ -133,7 +134,6 @@
 		FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0827ACBED700D50410 /* SearchViewController.swift */; };
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
-		FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FB31AD0E27AE18DA00D50410 /* SwiftSoup */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
 		FB3DDF7A2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
 		FB3DDF7B2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
@@ -180,6 +180,8 @@
 		FB4E579B2E352CAB006EF27C /* UIKeyModifierFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */; };
 		FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
 		FB4EB50028AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */; };
+		FB4EBFC22E450FCB00D83F9A /* ClearFieldButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */; };
+		FB4EBFC42E45124900D83F9A /* TextFieldWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */; };
 		FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */; };
 		FB4EEBBB27A2F0FC005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
 		FB4EEBBD27A2F103005081A3 /* LibraryMangaObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */; };
@@ -463,7 +465,6 @@
 		FBED232727BDB69B0095D0C0 /* SettingSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232627BDB69B0095D0C0 /* SettingSelectViewController.swift */; };
 		FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232827BDF4C90095D0C0 /* TextInputTableViewCell.swift */; };
 		FBED232B27BEAC980095D0C0 /* SettingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232A27BEAC980095D0C0 /* SettingItem.swift */; };
-		FBED233327C091D70095D0C0 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = FBED233227C091D70095D0C0 /* SwiftSoup */; };
 		FBED233427C095170095D0C0 /* SettingItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232A27BEAC980095D0C0 /* SettingItem.swift */; };
 		FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232227BB461D0095D0C0 /* SourceObject.swift */; };
 		FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
@@ -623,6 +624,8 @@
 		FB4E57982E3529BD006EF27C /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKeyModifierFlags.swift; sourceTree = "<group>"; };
 		FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Track.swift"; sourceTree = "<group>"; };
+		FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearFieldButton.swift; sourceTree = "<group>"; };
+		FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldWrapper.swift; sourceTree = "<group>"; };
 		FB4EEBB527A2F0FC005081A3 /* MangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBB727A2F0FC005081A3 /* LibraryMangaObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMangaObject.swift; sourceTree = "<group>"; };
 		FB4EEBC127A34ED4005081A3 /* ChapterObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterObject.swift; sourceTree = "<group>"; };
@@ -888,7 +891,7 @@
 				FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */,
 				FBE53F0C29CC015E00899601 /* AsyncDisplayKit in Frameworks */,
 				FB7B7ED8278CE949001E6EAF /* ZIPFoundation in Frameworks */,
-				FB31AD0F27AE18DA00D50410 /* SwiftSoup in Frameworks */,
+				FB2C83992E43F074003CA85F /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -897,7 +900,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */,
-				FBED233327C091D70095D0C0 /* SwiftSoup in Frameworks */,
 				FB14B1352DF4D4E70067E4D4 /* Nuke in Frameworks */,
 				FBFDF5FA2DF799340064F603 /* AidokuRunner in Frameworks */,
 			);
@@ -1476,6 +1478,7 @@
 				FB662E932DA813E300007514 /* HCollectionGrid.swift */,
 				FB662EE22DA81A5C00007514 /* CollectionView.swift */,
 				FB662EE12DA81A5C00007514 /* CloseButton.swift */,
+				FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */,
 				FB14B1222DF4CF290067E4D4 /* ImagePicker.swift */,
 				FB662EDF2DA81A5C00007514 /* Carousel.swift */,
 				FB662E922DA813E300007514 /* ErrorView.swift */,
@@ -1484,6 +1487,7 @@
 				FB662E952DA813E300007514 /* MangaGridItem.swift */,
 				FB05182A2E09B05D00CEE275 /* GIFImage.swift */,
 				FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */,
+				FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1979,7 +1983,6 @@
 			name = "Aidoku (iOS)";
 			packageProductDependencies = (
 				FB7B7ED7278CE949001E6EAF /* ZIPFoundation */,
-				FB31AD0E27AE18DA00D50410 /* SwiftSoup */,
 				FB17114A296770CC00AD523D /* NukeUI */,
 				FBE53F0B29CC015E00899601 /* AsyncDisplayKit */,
 				FB3737D02D17458400AB1551 /* AidokuRunner */,
@@ -1987,6 +1990,7 @@
 				FBFDF5F72DF799180064F603 /* AidokuRunner */,
 				FBBCB31C2E08D6B000ED5CAB /* Gifu */,
 				FBAED40B2E3A762800B81E74 /* SwiftUIIntrospect */,
+				FB2C83982E43F074003CA85F /* SwiftSoup */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -2007,7 +2011,6 @@
 			name = "Aidoku (macOS)";
 			packageProductDependencies = (
 				FB6340C8279246D50072A2A2 /* ZIPFoundation */,
-				FBED233227C091D70095D0C0 /* SwiftSoup */,
 				FB14B1342DF4D4E70067E4D4 /* Nuke */,
 				FBFDF5F92DF799340064F603 /* AidokuRunner */,
 			);
@@ -2086,13 +2089,13 @@
 			mainGroup = FB1B4825277CE18D0056D02C;
 			packageReferences = (
 				FB7B7ED6278CE949001E6EAF /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-				FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */,
 				FBE53F0A29CC015E00899601 /* XCRemoteSwiftPackageReference "Texture" */,
 				FB662EDC2DA816CF00007514 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 				FBFDF5F62DF799180064F603 /* XCRemoteSwiftPackageReference "AidokuRunner" */,
 				FBBCB31B2E08D6AF00ED5CAB /* XCRemoteSwiftPackageReference "Gifu" */,
 				FBAED40A2E3A762800B81E74 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
+				FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -2157,6 +2160,7 @@
 				FB14B1242DF4CF2B0067E4D4 /* ImagePicker.swift in Sources */,
 				FB42751B29612A3000131377 /* SourceSectionHeaderView.swift in Sources */,
 				FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */,
+				FB4EBFC22E450FCB00D83F9A /* ClearFieldButton.swift in Sources */,
 				FB4EEBCA27A35171005081A3 /* HistoryObject.swift in Sources */,
 				FB7F05FA2DDE76450036B116 /* WKWebView.swift in Sources */,
 				48177B942B75F5E700AD41B4 /* MangaViewOld.swift in Sources */,
@@ -2467,6 +2471,7 @@
 				FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */,
 				FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */,
 				FBA498762A9A53F500D3F53E /* TouchDownGestureRecognizer.swift in Sources */,
+				FB4EBFC42E45124900D83F9A /* TextFieldWrapper.swift in Sources */,
 				FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */,
 				FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
@@ -2805,7 +2810,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 648WP6YBU2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2847,7 +2852,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 648WP6YBU2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2985,12 +2990,12 @@
 				minimumVersion = 12.0.0;
 			};
 		};
-		FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+		FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			repositoryURL = "https://github.com/scinfu/SwiftSoup";
 			requirement = {
-				kind = exactVersion;
-				version = 2.7.7;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.1;
 			};
 		};
 		FB662EDC2DA816CF00007514 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
@@ -3054,9 +3059,9 @@
 			package = FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */;
 			productName = NukeUI;
 		};
-		FB31AD0E27AE18DA00D50410 /* SwiftSoup */ = {
+		FB2C83982E43F074003CA85F /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			package = FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
 		};
 		FB3737D02D17458400AB1551 /* AidokuRunner */ = {
@@ -3092,11 +3097,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FBE53F0A29CC015E00899601 /* XCRemoteSwiftPackageReference "Texture" */;
 			productName = AsyncDisplayKit;
-		};
-		FBED233227C091D70095D0C0 /* SwiftSoup */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = FB31AD0D27AE18DA00D50410 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
-			productName = SwiftSoup;
 		};
 		FBFDF5F72DF799180064F603 /* AidokuRunner */ = {
 			isa = XCSwiftPackageProductDependency;
