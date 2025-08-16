@@ -1,4 +1,4 @@
-name: 🐞 Bug report
+name: Bug report
 description: Create a report to help us improve
 labels: [bug]
 body:
@@ -17,15 +17,13 @@ body:
     id: reproduce-steps
     attributes:
       label: Steps to reproduce
-      description: Describe how one can reproduce the issue — this is crucial. Please use an ordered list.
+      description: Describe how one can reproduce the issue.
       placeholder: |
         Example:
           1. Open the app
           2. Navigate to library
           3. Tap on any manga
           4. App crashes
-    validations:
-      required: true
 
   - type: textarea
     id: current-behavior
@@ -34,8 +32,6 @@ body:
       description: Describe what actually happens.
       placeholder: |
         Example: "The app crashes and returns to home screen"
-    validations:
-      required: true
 
   - type: textarea
     id: expected-behavior
@@ -44,8 +40,6 @@ body:
       description: Describe what you should see instead.
       placeholder: |
         Example: "The manga details page should open normally"
-    validations:
-      required: true
 
   - type: textarea
     id: screenshots
@@ -62,8 +56,6 @@ body:
       description: What device are you using?
       placeholder: |
         Example: "iPhone 15 Pro, M1 iPad Pro, MacBook Air M2"
-    validations:
-      required: true
 
   - type: input
     id: os
@@ -71,8 +63,6 @@ body:
       label: Operating System
       placeholder: |
         Example: "iOS, iPadOS, macOS"
-    validations:
-      required: true
 
   - type: input
     id: os-version
@@ -80,8 +70,6 @@ body:
       label: OS Version
       placeholder: |
         Example: "18.6 or 15 Sequoia"
-    validations:
-      required: true
 
   - type: input
     id: app-version
@@ -89,8 +77,6 @@ body:
       label: App Version
       placeholder: |
         Example: "main branch, v0.7"
-    validations:
-      required: true
 
   - type: checkboxes
     id: acknowledgements
