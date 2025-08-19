@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an idea for this project
+labels: [enhancement]
+body:
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Feature Description
+      description: Provide a detailed description of the feature you'd like to see added, including the use case and how you envision it working.
+      placeholder: |
+        Example: "Add dark mode support for better reading experience in low light conditions. This would include dark themes for all UI elements and reading pages."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Acknowledgements
+      description: Your issue will be closed if you haven't done these steps.
+      options:
+        - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
+          required: true
+        - label: I have written a short but informative title.
+          required: true
+        - label: I will fill out all of the requested information in this form.
+          required: true
