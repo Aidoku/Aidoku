@@ -498,6 +498,10 @@ extension LibraryViewController {
                 UIView.animate(withDuration: 0.3) {
                     self.navigationController?.isToolbarHidden = false
                     self.navigationController?.toolbar.alpha = 1
+                    if #available(iOS 26.0, *) {
+                        // hide tab bar on iOS 26 (it covers the toolbar)
+                        self.tabBarController?.isTabBarHidden = true
+                    }
                 }
             }
             // show add to category button if categories exist
@@ -524,6 +528,10 @@ extension LibraryViewController {
             // fade out toolbar
             UIView.animate(withDuration: 0.3) {
                 self.navigationController?.toolbar.alpha = 0
+                if #available(iOS 26.0, *) {
+                    // reshow tab bar on iOS 26
+                    self.rootNavigation.navigationController?.tabBarController?.isTabBarHidden = false
+                }
             } completion: { _ in
                 self.navigationController?.isToolbarHidden = true
             }
