@@ -26,7 +26,6 @@ struct SettingItem: Codable {
     var requires: String?
     var requiresFalse: String?
 
-    var authToEnable: Bool?
     var authToDisable: Bool?
     var authToOpen: Bool?
 
@@ -70,7 +69,6 @@ struct SettingItem: Codable {
         case requires
         case requiresFalse
 
-        case authToEnable
         case authToDisable
         case authToOpen
 
