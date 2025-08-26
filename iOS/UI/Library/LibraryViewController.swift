@@ -530,7 +530,7 @@ extension LibraryViewController {
                 self.navigationController?.toolbar.alpha = 0
                 if #available(iOS 26.0, *) {
                     // reshow tab bar on iOS 26
-                    self.rootNavigation.navigationController?.tabBarController?.isTabBarHidden = false
+                    self.tabBarController?.isTabBarHidden = false
                 }
             } completion: { _ in
                 self.navigationController?.isToolbarHidden = true
