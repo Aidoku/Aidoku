@@ -521,19 +521,25 @@ extension BrowseViewController {
                 navigationItem.rightBarButtonItems = [UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(stopEditing))]
             }
         } else {
+            let addSourceBarButton = UIBarButtonItem(
+                image: UIImage(systemName: "plus"),
+                style: .plain,
+                target: self,
+                action: #selector(openAddSourcePage)
+            )
+            addSourceBarButton.title = NSLocalizedString("ADD_SOURCE")
+
+            let migrateSourcesBarButton = UIBarButtonItem(
+                image: UIImage(systemName: "arrow.left.arrow.right"),
+                style: .plain,
+                target: self,
+                action: #selector(openMigrateSourcePage)
+            )
+            migrateSourcesBarButton.title = NSLocalizedString("MIGRATE_SOURCES")
+
             navigationItem.rightBarButtonItems = [
-                UIBarButtonItem(
-                    image: UIImage(systemName: "plus"),
-                    style: .plain,
-                    target: self,
-                    action: #selector(openAddSourcePage)
-                ),
-                UIBarButtonItem(
-                    image: UIImage(systemName: "arrow.left.arrow.right"),
-                    style: .plain,
-                    target: self,
-                    action: #selector(openMigrateSourcePage)
-                )
+                addSourceBarButton,
+                migrateSourcesBarButton
             ]
         }
     }
