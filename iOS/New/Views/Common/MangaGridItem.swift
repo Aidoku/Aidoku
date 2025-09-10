@@ -23,7 +23,7 @@ struct MangaGridItem: View {
     )
 
     var body: some View {
-        Rectangle()
+        let view = Rectangle()
             .fill(Color.clear)
             .aspectRatio(2/3, contentMode: .fill)
             .background {
@@ -59,7 +59,12 @@ struct MangaGridItem: View {
                     .padding(8),
                 alignment: .bottomLeading
             )
-            .drawingGroup()
+        if coverImage.hasSuffix("gif") {
+            // if the image is a gif, we can't use drawingGroup (static image)
+            view
+        } else {
+            view.drawingGroup()
+        }
     }
 
     @ViewBuilder
