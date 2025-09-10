@@ -25,7 +25,7 @@ struct HistoryView: View {
 
     @State private var locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
 
-    @State private var selectedItems = Set<String>() // fix for list highlighting being buggy
+    @State private var listSelection: String? // fix for list highlighting being buggy
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -34,7 +34,7 @@ struct HistoryView: View {
             if locked {
                 lockedView
             } else {
-                List(selection: $selectedItems) {
+                List(selection: $listSelection) {
                     ForEach(viewModel.filteredHistory, id: \.daysAgo) { section in
                         if !section.entries.isEmpty {
                             Section {
