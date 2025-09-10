@@ -247,7 +247,7 @@ extension HistoryView.ViewModel {
             }
         }
 
-        for day in modifiedDays {
+        for day in modifiedDays where 0 <= day && day < filteredHistory.count {
             filteredHistory[day] = HistorySection(
                 daysAgo: day,
                 entries: filterDay(entries: historyData[day] ?? [])
