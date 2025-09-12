@@ -17,7 +17,7 @@ struct MangaKey: Hashable {
 extension HistoryView {
     @MainActor
     class ViewModel: ObservableObject {
-        @Published var filteredHistory: [HistorySection] = []
+        @Published var filteredHistory: [Int: HistorySection] = [:]
         @Published var mangaCache: [String: AidokuRunner.Manga] = [:]
         @Published var chapterCache: [String: AidokuRunner.Chapter] = [:]
 
@@ -56,7 +56,7 @@ extension HistoryView.ViewModel {
             .sink { [weak self] _ in
                 // reset all cached history entries
                 guard let self else { return }
-                self.filteredHistory = []
+                self.filteredHistory = [:]
                 self.historyData = [:]
                 self.offset = 0
                 self.loadingState = .idle
@@ -126,7 +126,25 @@ extension HistoryView.ViewModel {
         }
 
         loadTask = Task.detached {
-            let newObjectCount = await self.processHistoryObjects(limit: count, offset: 0)
+            // offset needs to be the number of items before today, in case of entries in the future
+            var offset = 0
+            for (_, section) in await self.filteredHistory.sorted(by: { $0.key < $1.key }) {
+                if section.daysAgo > 0 {
+                    break
+                } else if section.daysAgo == 0 {
+                    // find any items with a date before now
+                    let now = Date()
+                    for entry in section.entries {
+                        if entry.date < now {
+                            break
+                        }
+                        offset += 1
+                    }
+                    break
+                }
+                offset += section.entries.count
+            }
+            let newObjectCount = await self.processHistoryObjects(limit: count, offset: offset)
             await self.increaseOffset(by: newObjectCount)
             return false
         }
@@ -172,8 +190,7 @@ extension HistoryView.ViewModel {
 
     // refilter all of the existing cached history entries
     private func refilterHistory() {
-        for index in filteredHistory.indices {
-            let existingSection = filteredHistory[index]
+        for (index, existingSection) in filteredHistory {
             let newSection = HistorySection(
                 daysAgo: existingSection.daysAgo,
                 entries: filterDay(entries: historyData[existingSection.daysAgo] ?? [])
@@ -208,7 +225,7 @@ extension HistoryView.ViewModel {
                 CoreDataManager.shared.clearHistory(context: context)
                 try? context.save()
             }
-            filteredHistory = []
+            filteredHistory = [:]
             historyData = [:]
             offset = 0
             loadingState = .idle
@@ -363,12 +380,20 @@ extension HistoryView.ViewModel {
         var newChapterCacheItems: [String: AidokuRunner.Chapter] = [:]
 
         for obj in historyObj {
-            let days =
-                Calendar.autoupdatingCurrent.dateComponents(
-                    Set([Calendar.Component.day]),
-                    from: obj.dateRead ?? Date.distantPast,
-                    to: Date.endOfDay()
-                ).day ?? 0
+            let readDate = obj.dateRead ?? Date.distantPast
+            let endOfDay = Date.endOfDay()
+            let isInFuture = readDate > endOfDay
+            let endDate = if isInFuture {
+                // if the date is in the future, compare the difference to the start of the day instead of end
+                Date.startOfDay()
+            } else {
+                endOfDay
+            }
+            let days = Calendar.autoupdatingCurrent.dateComponents(
+                Set([Calendar.Component.day]),
+                from: readDate,
+                to: endDate
+            ).day ?? 0
 
             let mangaCacheKey = "\(obj.sourceId).\(obj.mangaId)"
             let chapterCacheKey = mangaCacheKey + ".\(obj.chapterId)"
@@ -420,33 +445,11 @@ extension HistoryView.ViewModel {
         var newFilteredHistory = await filteredHistory
 
         // update data
-        for sectionIndex in newFilteredHistory.indices {
-            let daysAgo = newFilteredHistory[sectionIndex].daysAgo
-            if modifiedDays.contains(daysAgo) {
-                modifiedDays.remove(daysAgo)
-                newFilteredHistory[sectionIndex] = HistorySection(
-                    daysAgo: daysAgo,
-                    entries: await filterDay(entries: newHistoryData[daysAgo] ?? [])
-                )
-            }
-        }
-
-        let topDay = newFilteredHistory.first?.daysAgo
-        var insertPosition = 0
-
-        for remainingDay in modifiedDays.sorted() {
-            let newSection = HistorySection(
-                daysAgo: remainingDay,
-                entries: await filterDay(entries: newHistoryData[remainingDay] ?? [])
+        for day in modifiedDays {
+            newFilteredHistory[day] = HistorySection(
+                daysAgo: day,
+                entries: await filterDay(entries: newHistoryData[day] ?? [])
             )
-            if let topDay, remainingDay < topDay {
-                // if we fetched new history, it needs to be inserted at the top
-                newFilteredHistory.insert(newSection, at: insertPosition)
-                insertPosition += 1  // if there's another section that doesn't exist, it should come after this one
-            } else {
-                // otherwise, we're loading more as we scroll, so append to the end
-                newFilteredHistory.append(newSection)
-            }
         }
 
         await addMangaCacheItems(newMangaCacheItems)
@@ -517,7 +520,7 @@ extension HistoryView.ViewModel {
         historyData = newHistoryData
     }
 
-    private func setFilteredHistory(_ newFilteredHistory: [HistorySection]) {
+    private func setFilteredHistory(_ newFilteredHistory: [Int: HistorySection]) {
         filteredHistory = newFilteredHistory
     }
 }

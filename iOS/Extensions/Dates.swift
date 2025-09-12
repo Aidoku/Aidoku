@@ -41,4 +41,9 @@ extension Date {
         let start = calendar.startOfDay(for: Date())
         return calendar.date(byAdding: .day, value: 1, to: start)!
     }
+
+    static func startOfDay() -> Date {
+        let calendar = Calendar.autoupdatingCurrent
+        return calendar.startOfDay(for: Date())
+    }
 }

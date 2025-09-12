@@ -35,7 +35,8 @@ struct HistoryView: View {
                 lockedView
             } else {
                 List(selection: $listSelection) {
-                    ForEach(viewModel.filteredHistory, id: \.daysAgo) { section in
+                    let sections = viewModel.filteredHistory.values.sorted { $0.daysAgo < $1.daysAgo }
+                    ForEach(sections, id: \.daysAgo) { section in
                         if !section.entries.isEmpty {
                             Section {
                                 ForEach(section.entries, id: \.key) { entry in
