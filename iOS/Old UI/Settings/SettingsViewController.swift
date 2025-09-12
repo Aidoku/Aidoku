@@ -126,7 +126,6 @@ class SettingsViewController: SettingsTableViewController {
                     key: "Library.lockLibrary",
                     title: NSLocalizedString("LOCK_LIBRARY", comment: ""),
                     notification: "updateLibraryLock",
-                    authToEnable: true,
                     authToDisable: true
                 )
             ]),
@@ -220,7 +219,6 @@ class SettingsViewController: SettingsTableViewController {
                     type: "switch",
                     key: "History.lockHistoryTab",
                     title: NSLocalizedString("LOCK_HISTORY_TAB", comment: ""),
-                    authToEnable: true,
                     authToDisable: true
                 )
             ]),

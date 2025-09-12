@@ -98,21 +98,6 @@ extension SettingsTableViewController {
                         }
                     }
                 }
-            } else if item.authToEnable ?? false && isOn {
-                let context = LAContext()
-                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-                    context.evaluatePolicy(
-                        .deviceOwnerAuthenticationWithBiometrics,
-                        localizedReason: NSLocalizedString("AUTH_TO_ENABLE", comment: "")
-                    ) { success, _ in
-                        if !success {
-                            Task { @MainActor in
-                                switchView.setOn(false, animated: true)
-                                switchView.sendActions(for: .valueChanged)
-                            }
-                        }
-                    }
-                }
             }
             if let notification = item.notification {
                 self.source?.performAction(key: notification)
