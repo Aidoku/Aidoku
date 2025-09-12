@@ -42,6 +42,8 @@ struct SettingView: View {
     @State private var loginReload = false
     @State private var session: ASWebAuthenticationSession?
 
+    @State private var valueChangeTask: Task<Void, Never>?
+
     @StateObject private var userDefaultsObserver: UserDefaultsObserver // causes view to refresh when setting changes (e.g. when resetting)
     @StateObject private var requiresObserver: UserDefaultsObserver
 
@@ -173,25 +175,28 @@ struct SettingView: View {
     }
 
     private func handleValueChange() {
-        func refresh() {
-            for refresh in setting.refreshes {
-                NotificationCenter.default.post(name: Notification.Name("refresh-\(refresh)"), object: nil)
+        valueChangeTask?.cancel()
+        valueChangeTask = Task {
+            // debounce change notification(s) with 500ms delay
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard !Task.isCancelled else { return }
+
+            func refresh() {
+                for refresh in setting.refreshes {
+                    NotificationCenter.default.post(name: Notification.Name("refresh-\(refresh)"), object: nil)
+                }
             }
-        }
-        if let source, let notification = setting.notification {
-            Task {
+            if let source, let notification = setting.notification {
                 do {
                     try await source.handleNotification(notification: notification)
                 } catch {
                     LogManager.logger.error("Error handling setting notification for \(source.key): \(error)")
                 }
-                refresh()
             }
-        } else {
             refresh()
+            let notificationName = setting.notification ?? key(setting.key)
+            NotificationCenter.default.post(name: .init(notificationName), object: nil)
         }
-        let notificationName = setting.notification ?? key(setting.key)
-        NotificationCenter.default.post(name: .init(notificationName), object: nil)
     }
 }
 
