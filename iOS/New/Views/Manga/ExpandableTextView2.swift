@@ -9,12 +9,6 @@ import MarkdownUI
 import SafariServices
 import SwiftUI
 
-#if os(macOS)
-typealias PlatformFont = NSFont
-#else
-typealias PlatformFont = UIFont
-#endif
-
 struct ExpandableTextView2: View {
     let text: String
     @Binding var expanded: Bool
@@ -83,6 +77,10 @@ struct ExpandableTextView2: View {
                             guard !expanded else { return }
                             self.determineTruncation(geometry)
                         }
+                        // when the text updates, it should re-determine if it was truncated
+                        .onChange(of: self.text) { newText in
+                            self.determineTruncation(geometry, newText: newText)
+                        }
                 })
 
             if truncated && !expanded {
@@ -131,19 +129,19 @@ struct ExpandableTextView2: View {
     }
 
     // determine if text has been truncated
-    private func determineTruncation(_ geometry: GeometryProxy) {
-        let total = text.boundingRect(
+    private func determineTruncation(_ geometry: GeometryProxy, newText: String? = nil) {
+        let total = (newText ?? text).boundingRect(
             with: CGSize(
                 width: geometry.size.width,
                 height: .greatestFiniteMagnitude
             ),
             options: .usesLineFragmentOrigin,
-            attributes: [.font: PlatformFont.preferredFont(forTextStyle: .subheadline)],
+            attributes: [.font: UIFont.preferredFont(forTextStyle: .subheadline)],
             context: nil
         )
 
         // the line height of the bounding box is slightly different than the actual line height,
-        // so we divide by approximately the appropritate line heights
+        // so we divide by approximately the appropriate line heights
         truncated = total.size.height / 19.6 > geometry.size.height / 18
     }
 }
