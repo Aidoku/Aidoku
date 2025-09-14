@@ -61,17 +61,15 @@ class TrackerManager {
             }
 
             // update reading state
-            if
-                case let lastReadChapter = Int(floor(chapterNum)),
-                let totalChapters = state.totalChapters,
-                lastReadChapter == totalChapters
-            {
+            let readLastChapter = state.totalChapters.flatMap { $0 == Int(floor(chapterNum)) } ?? false
+            if readLastChapter {
                 if state.finishReadDate == nil {
                     update.finishReadDate = Date()
                 }
                 update.status = .completed
             } else if state.status != .reading && state.status != .rereading {
-                if state.startReadDate == nil {
+                // if there's no start date, and the status is planning or null, set it to current date
+                if state.startReadDate == nil && state.status == nil || state.status == .planning {
                     update.startReadDate = Date()
                 }
                 update.status = state.status == .completed ? .rereading : .reading
