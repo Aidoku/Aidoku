@@ -82,6 +82,7 @@ class MultiArrayModel: ImageProcessingModel {
 
         // feed expanded image data into blocks of MLMultiArrays
         let multiArrayStream = AsyncStream<(Int, MLMultiArray)> { continuation in
+
             Task.detached {
                 for (i, rect) in rects.enumerated() {
                     let x = Int(rect.origin.x)
@@ -89,10 +90,10 @@ class MultiArrayModel: ImageProcessingModel {
                     let multi = getBuffer()
                     let floatPtr = multi.dataPointer.assumingMemoryBound(to: Float32.self)
                     for yExp in y..<(y + blockAndShrink) {
+                        guard yExp >= 0 else { continue }
                         for xExp in x..<(x + blockAndShrink) {
-                            let x_new = xExp - x
-                            let y_new = yExp - y
-                            let baseIdx = y_new * blockAndShrink + x_new
+                            guard xExp >= 0 else { continue }
+                            let baseIdx = (yExp - y) * blockAndShrink + (xExp - x)
                             // channel 0
                             floatPtr[baseIdx] = Float32(expanded[yExp * expwidth + xExp])
                             // channel 1
@@ -169,6 +170,7 @@ class MultiArrayModel: ImageProcessingModel {
                                 let destY = originY + srcY
                                 let destIndex = (destY * outWidth + destX) * channels + channel
                                 let srcIndex = srcY * outBlockSize + srcX
+                                guard destIndex >= 0, srcIndex >= 0 else { continue }
                                 imgData[destIndex] = tempBlock[srcIndex]
                             }
                         }
