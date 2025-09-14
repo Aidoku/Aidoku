@@ -311,4 +311,40 @@ extension CoreDataManager {
             historyObject.dateRead = date
         }
     }
+
+    /// Check if history exists for a manga.
+    func getEarliestReadDate(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Date? {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@ AND completed == true",
+            mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        request.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: true)]
+        let result = (try? context.fetch(request))?.first
+        return result?.dateRead
+    }
+
+    /// Get the highest chapter number from read chapters for a manga.
+    func getHighestChapterRead(
+        sourceId: String,
+        mangaId: String,
+        context: NSManagedObjectContext? = nil
+    ) -> Float? {
+        let context = context ?? self.context
+        let request = HistoryObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@ AND completed == true",
+            mangaId, sourceId
+        )
+        request.fetchLimit = 1
+        request.sortDescriptors = [NSSortDescriptor(key: "chapter.chapter", ascending: false)]
+        let result = (try? context.fetch(request))?.first
+        return result?.chapter?.chapter?.floatValue
+    }
 }

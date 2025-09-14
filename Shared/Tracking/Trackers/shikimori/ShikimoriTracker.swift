@@ -23,8 +23,8 @@ class ShikimoriTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
-    func register(trackId: String, hasReadChapters: Bool) async -> String? {
-        await api.register(trackId: trackId, hasReadChapters: hasReadChapters)
+    func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
+        await api.register(trackId: trackId, highestChapterRead: highestChapterRead, earliestReadDate: earliestReadDate)
     }
 
     func update(trackId: String, update: TrackUpdate) async {

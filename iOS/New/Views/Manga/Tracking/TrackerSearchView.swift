@@ -158,11 +158,26 @@ struct TrackerSearchView: View {
         loading = true
 
         Task {
-            let hasReadChapters = await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.hasHistory(sourceId: self.manga.sourceId, mangaId: self.manga.id, context: context)
+            let (highestChapterRead, earliestReadDate) = await CoreDataManager.shared.container.performBackgroundTask { context in
+                (
+                    CoreDataManager.shared.getHighestChapterRead(
+                        sourceId: self.manga.sourceId,
+                        mangaId: self.manga.id,
+                        context: context
+                    ),
+                    CoreDataManager.shared.getEarliestReadDate(
+                        sourceId: self.manga.sourceId,
+                        mangaId: self.manga.id,
+                        context: context
+                    )
+                )
             }
             do {
-                let id = try await tracker.register(trackId: result.id, hasReadChapters: hasReadChapters)
+                let id = try await tracker.register(
+                    trackId: result.id,
+                    highestChapterRead: highestChapterRead,
+                    earliestReadDate: earliestReadDate
+                )
                 await TrackerManager.shared.saveTrackItem(item: TrackItem(
                     id: id ?? result.id,
                     trackerId: tracker.id,

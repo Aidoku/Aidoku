@@ -80,14 +80,18 @@ class AniListTracker: OAuthTracker {
         }
     }
 
-    func register(trackId: String, hasReadChapters: Bool) async throws -> String? {
+    func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let id = Int(trackId) else {
             throw AniListTrackerError.invalidId
         }
         // set status to reading if status doesn't already exist
         let state = await api.getMediaState(id: id)
         if state?.mediaListEntry?.status == nil {
-            await api.update(media: id, update: TrackUpdate(status: hasReadChapters ? .reading : .planning))
+            await api.update(media: id, update: TrackUpdate(
+                status: earliestReadDate != nil ? .reading : .planning,
+                lastReadChapter: highestChapterRead,
+                startReadDate: earliestReadDate
+            ))
         }
         return nil
     }

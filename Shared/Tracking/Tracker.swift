@@ -32,8 +32,11 @@ protocol Tracker: AnyObject {
     ///
     /// - Returns: The id of tracker item, if it changes.
     ///
-    /// - Parameter trackId: The identifier for a tracker item.
-    func register(trackId: String, hasReadChapters: Bool) async throws -> String?
+    /// - Parameters:
+    ///   - trackId: The identifier for a tracker item.
+    ///   - highestChapterRead: The highest chapter number read, if it exists.
+    ///   - earliestReadDate: The earliest date for a read chapter, if it exists.
+    func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String?
 
     /// Update the state of a tracked title.
     ///

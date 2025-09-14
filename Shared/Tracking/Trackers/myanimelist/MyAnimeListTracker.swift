@@ -24,7 +24,7 @@ class MyAnimeListTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
-    func register(trackId: String, hasReadChapters: Bool) async throws -> String? {
+    func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let id = Int(trackId) else {
             throw MyAnimeListTrackerError.invalidId
         }
@@ -33,7 +33,11 @@ class MyAnimeListTracker: OAuthTracker {
         if status == nil {
             await api.updateMangaStatus(
                 id: id,
-                status: MyAnimeListMangaStatus(status: hasReadChapters ? "reading" : "plan_to_read")
+                status: MyAnimeListMangaStatus(
+                    numChaptersRead: highestChapterRead.flatMap { Int(floor($0)) },
+                    startDate: earliestReadDate?.dateString(format: "yyyy-MM-dd"),
+                    status: highestChapterRead != nil ? "reading" : "plan_to_read",
+                )
             )
         }
         return nil
