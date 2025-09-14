@@ -8,7 +8,6 @@
 import Foundation
 
 struct AniListQueries {
-
     static let searchQuery = """
     query ($search: String) {
       Page(perPage: 20) {

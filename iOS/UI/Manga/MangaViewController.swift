@@ -263,7 +263,8 @@ class MangaViewController: BaseTableViewController {
                 let hasUnreadChapters = self.viewModel.chapterList.contains {
                     self.viewModel.readingHistory[$0.id] == nil
                 }
-                let trackerState = await tracker.getState(trackId: item.id)
+
+                guard let trackerState = try? await tracker.getState(trackId: item.id) else { return }
 
                 if let trackerLastReadChapter = trackerState.lastReadChapter {
                     // check if latest read chapter is below tracker last read

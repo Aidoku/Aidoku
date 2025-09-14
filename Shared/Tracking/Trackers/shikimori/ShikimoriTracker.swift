@@ -77,12 +77,12 @@ private extension ShikimoriTracker {
 
     func getMediaType(typeString: String) -> MediaType {
         switch typeString {
-        case "manga": return .manga
-        case "novel", "light_novel": return .novel
-        case "one_shot": return .oneShot
-        case "manhwa": return .manhwa
-        case "manhua": return .manhua
-        default: return .unknown
+            case "manga": return .manga
+            case "novel", "light_novel": return .novel
+            case "one_shot": return .oneShot
+            case "manhwa": return .manhwa
+            case "manhua": return .manhua
+            default: return .unknown
         }
     }
 }

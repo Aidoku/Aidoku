@@ -172,44 +172,46 @@ struct TrackerView: View {
             stateUpdated = true
         }
         // fetch latest tracker state
-        .onAppear {
-            Task {
-                state = await tracker.getState(trackId: item.id)
-                guard let state = state else { return }
+        .task {
+            state = try? await tracker.getState(trackId: item.id)
+            guard let state else { return }
 
-                withAnimation {
-                    score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
-                    if tracker.scoreType == .optionList {
-                        let option = tracker.option(for: Int(state.score ?? 0))
-                        scoreOption = tracker.scoreOptions
-                            .firstIndex { $0.0 == option }
-                            .flatMap {
-                                tracker.supportedStatuses.distance(
-                                    from: tracker.supportedStatuses.startIndex,
-                                    to: $0
-                                )
-                            }
-                    }
-                    statusOption = tracker.supportedStatuses
-                        .firstIndex { $0.rawValue == state.status?.rawValue }
+            withAnimation {
+                score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
+                if tracker.scoreType == .optionList {
+                    let option = tracker.option(for: Int(state.score ?? 0))
+                    scoreOption = tracker.scoreOptions
+                        .firstIndex { $0.0 == option }
                         .flatMap {
                             tracker.supportedStatuses.distance(
                                 from: tracker.supportedStatuses.startIndex,
                                 to: $0
                             )
-                        } ?? 0
-                    lastReadChapter = state.lastReadChapter != nil ? Float(state.lastReadChapter!) : nil
-                    lastReadVolume = state.lastReadVolume != nil ? Float(state.lastReadVolume!) : nil
-                    startReadDate = state.startReadDate
-                    finishReadDate = state.finishReadDate
+                        }
                 }
+                statusOption = tracker.supportedStatuses
+                    .firstIndex { $0.rawValue == state.status?.rawValue }
+                    .flatMap {
+                        tracker.supportedStatuses.distance(
+                            from: tracker.supportedStatuses.startIndex,
+                            to: $0
+                        )
+                    } ?? 0
+                lastReadChapter = state.lastReadChapter != nil ? Float(state.lastReadChapter!) : nil
+                lastReadVolume = state.lastReadVolume != nil ? Float(state.lastReadVolume!) : nil
+                startReadDate = state.startReadDate
+                finishReadDate = state.finishReadDate
             }
         }
         // send tracker updated state
         .onDisappear {
             if stateUpdated {
                 Task {
-                    await tracker.update(trackId: item.id, update: update)
+                    do {
+                        try await tracker.update(trackId: item.id, update: update)
+                    } catch {
+                        LogManager.logger.error("Failed to update tracker \(tracker.id): \(error)")
+                    }
                 }
             }
         }

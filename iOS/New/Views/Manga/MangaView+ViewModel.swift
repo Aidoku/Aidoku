@@ -454,7 +454,8 @@ extension MangaView.ViewModel {
         let hasUnreadChapters = chapters.contains {
             readingHistory[$0.key] == nil
         }
-        let trackerState = await tracker.getState(trackId: item.id)
+
+        guard let trackerState = try? await tracker.getState(trackId: item.id) else { return nil }
 
         if let trackerLastReadChapter = trackerState.lastReadChapter {
             // check if latest read chapter is below tracker last read

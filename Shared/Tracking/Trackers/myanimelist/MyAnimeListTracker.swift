@@ -10,7 +10,6 @@ import AuthenticationServices
 
 /// MyAnimeList tracker for Aidoku.
 class MyAnimeListTracker: OAuthTracker {
-
     let id = "myanimelist"
     let name = "MyAnimeList"
     let icon = PlatformImage(named: "mal")
@@ -25,8 +24,10 @@ class MyAnimeListTracker: OAuthTracker {
 
     var oauthClient: OAuthClient { api.oauth }
 
-    func register(trackId: String, hasReadChapters: Bool) async -> String? {
-        guard let id = Int(trackId) else { return nil }
+    func register(trackId: String, hasReadChapters: Bool) async throws -> String? {
+        guard let id = Int(trackId) else {
+            throw MyAnimeListTrackerError.invalidId
+        }
         // set status to reading if status doesn't already exist
         let status = await api.getMangaStatus(id: id)
         if status == nil {
@@ -38,8 +39,10 @@ class MyAnimeListTracker: OAuthTracker {
         return nil
     }
 
-    func update(trackId: String, update: TrackUpdate) async {
-        guard let id = Int(trackId) else { return }
+    func update(trackId: String, update: TrackUpdate) async throws {
+        guard let id = Int(trackId) else {
+            throw MyAnimeListTrackerError.invalidId
+        }
         let status = MyAnimeListMangaStatus(
             isRereading: update.status != nil ? update.status?.rawValue == TrackStatus.rereading.rawValue : nil,
             numVolumesRead: update.lastReadVolume,
@@ -52,10 +55,14 @@ class MyAnimeListTracker: OAuthTracker {
         await api.updateMangaStatus(id: id, status: status)
     }
 
-    func getState(trackId: String) async -> TrackState {
-        guard let id = Int(trackId),
-              let manga = await api.getMangaWithStatus(id: id),
-              let status = manga.myListStatus else { return TrackState() }
+    func getState(trackId: String) async throws -> TrackState {
+        guard let id = Int(trackId) else {
+            throw MyAnimeListTrackerError.invalidId
+        }
+        guard let manga = await api.getMangaWithStatus(id: id) else {
+            throw MyAnimeListTrackerError.getStateFailed
+        }
+        guard let status = manga.myListStatus else { return TrackState() }
         return TrackState(
             score: status.score,
             status: getStatus(statusString: status.status ?? ""),
@@ -102,50 +109,54 @@ class MyAnimeListTracker: OAuthTracker {
 }
 
 private extension MyAnimeListTracker {
-
     func getStatus(statusString: String) -> TrackStatus? {
         switch statusString {
-        case "reading": return .reading
-        case "plan_to_read": return .planning
-        case "completed": return .completed
-        case "on_hold": return .paused
-        case "dropped": return .dropped
-        default: return nil
+            case "reading": return .reading
+            case "plan_to_read": return .planning
+            case "completed": return .completed
+            case "on_hold": return .paused
+            case "dropped": return .dropped
+            default: return nil
         }
     }
 
     func getStatusString(status: TrackStatus) -> String? {
         switch status.rawValue {
-        case 1: return "reading"
-        case 2: return "plan_to_read"
-        case 3: return "completed"
-        case 4: return "on_hold"
-        case 5: return "dropped"
-        default: return nil
+            case 1: return "reading"
+            case 2: return "plan_to_read"
+            case 3: return "completed"
+            case 4: return "on_hold"
+            case 5: return "dropped"
+            default: return nil
         }
     }
 
     func getPublishingStatus(statusString: String) -> PublishingStatus {
         switch statusString {
-        case "currently_publishing": return .ongoing
-        case "finished": return .completed
-        case "not_yet_published": return .notPublished
-        default: return .ongoing
+            case "currently_publishing": return .ongoing
+            case "finished": return .completed
+            case "not_yet_published": return .notPublished
+            default: return .ongoing
         }
     }
 
     func getMediaType(typeString: String) -> MediaType {
         switch typeString {
-        case "unknown": return .unknown
-        case "manga": return .manga
-        case "novel": return .novel
-        case "light_novel": return .novel
-        case "manhwa": return .manhwa
-        case "manhua": return .manhua
-        case "oel": return .oel
-        case "one_shot": return .oneShot
-        case "doujinshi": return .manga
-        default: return .manga
+            case "unknown": return .unknown
+            case "manga": return .manga
+            case "novel": return .novel
+            case "light_novel": return .novel
+            case "manhwa": return .manhwa
+            case "manhua": return .manhua
+            case "oel": return .oel
+            case "one_shot": return .oneShot
+            case "doujinshi": return .manga
+            default: return .manga
         }
     }
+}
+
+enum MyAnimeListTrackerError: Error {
+    case invalidId
+    case getStateFailed
 }

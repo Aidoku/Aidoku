@@ -13,7 +13,6 @@ import UIKit
 #endif
 
 class MyAnimeListApi {
-
     private let decoder = JSONDecoder()
 
     let baseApiUrl = "https://api.myanimelist.net/v2"
@@ -86,7 +85,6 @@ class MyAnimeListApi {
 
 // MARK: - Data
 extension MyAnimeListApi {
-
     func search(query: String) async -> MyAnimeListSearchResponse? {
         guard var url = URL(string: baseApiUrl + "/manga") else { return nil }
         url.queryParameters = [

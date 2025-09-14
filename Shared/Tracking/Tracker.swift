@@ -33,7 +33,7 @@ protocol Tracker: AnyObject {
     /// - Returns: The id of tracker item, if it changes.
     ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func register(trackId: String, hasReadChapters: Bool) async -> String?
+    func register(trackId: String, hasReadChapters: Bool) async throws -> String?
 
     /// Update the state of a tracked title.
     ///
@@ -43,7 +43,7 @@ protocol Tracker: AnyObject {
     /// - Parameters:
     ///   - trackId: The identifier for a tracker item.
     ///   - update: The update object with new state values for the tracker item.
-    func update(trackId: String, update: TrackUpdate) async
+    func update(trackId: String, update: TrackUpdate) async throws
 
     /// Get the current state of a tracked title from the tracker.
     ///
@@ -53,7 +53,7 @@ protocol Tracker: AnyObject {
     /// - Returns: The current state of the tracker item.
     ///
     /// - Parameter trackId: The identifier for a tracker item.
-    func getState(trackId: String) async -> TrackState
+    func getState(trackId: String) async throws -> TrackState
 
     /// Get the tracker web URL for a title.
     ///
@@ -71,7 +71,7 @@ protocol Tracker: AnyObject {
     ///
     /// - Parameter manga: The Manga object to find matches for.
     /// - Parameter includeNsfw: Whether NSFW search results should be included.
-    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem]
+    func search(for manga: Manga, includeNsfw: Bool) async throws -> [TrackSearchItem]
 
     /// Get search results for possible tracker matches for a title string.
     ///
@@ -81,7 +81,7 @@ protocol Tracker: AnyObject {
     ///
     /// - Parameter title: The title string to search with.
     /// - Parameter includeNsfw: Whether NSFW search results should be included.
-    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem]
+    func search(title: String, includeNsfw: Bool) async throws -> [TrackSearchItem]
 
     /// Log out from the tracker.
     func logout()

@@ -48,7 +48,7 @@ class TrackerManager {
         for item in trackItems {
             guard
                 let tracker = getTracker(id: item.trackerId),
-                case let state = await tracker.getState(trackId: item.id),
+                let state = try? await tracker.getState(trackId: item.id),
                 state.lastReadChapter ?? 0 < chapterNum
             else { continue }
 
@@ -75,7 +75,11 @@ class TrackerManager {
                 update.status = state.status == .completed ? .rereading : .reading
             }
 
-            await tracker.update(trackId: item.id, update: update)
+            do {
+                try await tracker.update(trackId: item.id, update: update)
+            } catch {
+                LogManager.logger.error("Failed to set tracker chapter as completed (\(tracker.id)): \(error)")
+            }
         }
     }
 
