@@ -18,11 +18,14 @@ struct MangaUpdatesView: View {
     }
 
     private let limit = 25
+
     @State var entries: [(Int, [(String, [MangaUpdateInfo])])] = []
     @State var offset = 0
     @State var loadingMore = false
     @State var reachedEnd = false
     @State var loadingTask: Task<(), Never>?
+
+    @EnvironmentObject var path: NavigationCoordinator
 
     var body: some View {
         Group {
@@ -84,7 +87,7 @@ struct MangaUpdatesView: View {
                     let updates = mangas[mangaIndex].1
                     if let manga = updates.first?.manga {
                         NavigationLink(
-                            destination: MangaViewOld(manga: manga)
+                            destination: MangaView(manga: manga.toNew(), path: path)
                                 .onAppear {
                                     setOpened(manga: manga)
                                 }

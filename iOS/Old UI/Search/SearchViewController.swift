@@ -207,7 +207,7 @@ class SearchViewController: UIViewController {
     }
 
     func openMangaView(for manga: AidokuRunner.Manga, source: AidokuRunner.Source) {
-        let viewController = NewMangaViewController(source: source, manga: manga, parent: self)
+        let viewController = MangaViewController(source: source, manga: manga, parent: self)
         navigationController?.pushViewController(viewController, animated: true)
     }
 

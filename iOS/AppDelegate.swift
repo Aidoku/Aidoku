@@ -276,20 +276,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             needsDetails: true,
                             needsChapters: false
                         ) {
-                            let scrollTo: Chapter?
-                            if let chapterId = url.pathComponents[safe: 2] {
-                                scrollTo = Chapter(
-                                    sourceId: source.id,
-                                    id: chapterId,
-                                    mangaId: manga.key,
-                                    title: nil,
-                                    sourceOrder: 0
+                            if let navigationController {
+                                navigationController.pushViewController(
+                                    MangaViewController(
+                                        source: source,
+                                        manga: manga,
+                                        parent: navigationController.topViewController,
+                                        scrollToChapterKey: url.pathComponents[safe: 2] // /sourceId/mangaId/chapterId
+                                    ),
+                                    animated: true
                                 )
-                            } else {
-                                scrollTo = nil
                             }
-                            let vc = MangaViewController(manga: manga.toOld(), scrollTo: scrollTo)
-                            navigationController?.pushViewController(vc, animated: true)
                         }
                     } else { // /sourceId
                         let vc: UIViewController = if let legacySource = source.legacySource {
@@ -403,20 +400,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         needsChapters: false
                     ) else { return false }
 
-                    let chapter: Chapter? = if let chapterId = link?.chapterKey {
-                        Chapter(
-                            sourceId: targetSource.id,
-                            id: chapterId,
-                            mangaId: mangaId,
-                            title: nil,
-                            sourceOrder: 0
-                        )
-                    } else {
-                        nil
-                    }
-
                     navigationController.pushViewController(
-                        MangaViewController(manga: manga.toOld(), scrollTo: chapter), animated: true
+                        MangaViewController(
+                            source: targetSource,
+                            manga: manga,
+                            parent: navigationController.topViewController,
+                            scrollToChapterKey: link?.chapterKey
+                        ),
+                        animated: true
                     )
 
                     return true

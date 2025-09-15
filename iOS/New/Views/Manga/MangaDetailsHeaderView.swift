@@ -151,22 +151,20 @@ struct MangaDetailsHeaderView: View {
                         } else {
                             label
                         }
-
                     }
 
                     labelsView
 
                     buttonsView
                 }
-
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(height: 174)
             .padding(.bottom, 14)
             .padding(.horizontal, 20)
 
             if let description = manga.description, !description.isEmpty {
-                ExpandableTextView2(text: description, expanded: $descriptionExpanded)
+                ExpandableTextView(text: description, expanded: $descriptionExpanded)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, 12)
                     .padding(.horizontal, 20)
@@ -255,15 +253,16 @@ struct MangaDetailsHeaderView: View {
                             : .red.opacity(0.3)
                     )
                 }
-//                if let source {
-//                    LabelView(
-//                        text: source.name,
-//                        background: Color(red: 0.25, green: 0.55, blue: 1).opacity(0.3)
-//                    )
-//                }
+                if let source, bookmarked {
+                    LabelView(
+                        text: source.name,
+                        background: Color(red: 0.25, green: 0.55, blue: 1).opacity(0.3)
+                    )
+                }
             }
             .padding(.bottom, 8)
             .animation(.default, value: manga.status)
+            .animation(.default, value: bookmarked)
         }
     }
 
@@ -453,6 +452,7 @@ struct LabelView: View {
 
     var body: some View {
         Text(text)
+            .lineLimit(1)
             .foregroundStyle(.secondary)
             .font(.caption2)
             .padding(.vertical, 4)
@@ -467,6 +467,7 @@ private struct TagView: View {
 
     var body: some View {
         Text(text)
+            .lineLimit(1)
             .foregroundStyle(.secondary)
             .font(.footnote)
             .padding(.horizontal, 12)

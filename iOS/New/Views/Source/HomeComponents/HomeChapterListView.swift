@@ -105,9 +105,7 @@ struct HomeChapterListView: View {
     @ViewBuilder
     func view(for entry: MangaWithChapter) -> some View {
         Button {
-#if !os(macOS)
-            path.push(NewMangaViewController(source: source, manga: entry.manga, parent: path.rootViewController))
-#endif
+            path.push(MangaViewController(source: source, manga: entry.manga, parent: path.rootViewController))
         } label: {
             HStack(spacing: 12) {
                 MangaCoverView(

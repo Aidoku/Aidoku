@@ -168,15 +168,7 @@ struct HistoryView: View {
             chapter: viewModel.chapterCache[entry.chapterCacheKey]
         ) {
             if let manga {
-                if let source = SourceManager.shared.source(for: manga.sourceKey) {
-                    path.push(NewMangaViewController(
-                        source: source,
-                        manga: manga,
-                        parent: path.rootViewController
-                    ))
-                } else {
-                    path.push(MangaViewController(manga: manga.toOld()))
-                }
+                path.push(MangaViewController(manga: manga, parent: path.rootViewController))
             }
         }
         .equatable()

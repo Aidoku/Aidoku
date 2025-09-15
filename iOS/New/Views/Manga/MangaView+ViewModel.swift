@@ -12,7 +12,7 @@ import SwiftUI
 extension MangaView {
     @MainActor
     class ViewModel: ObservableObject {
-        private let source: AidokuRunner.Source
+        weak var source: AidokuRunner.Source?
 
         @Published var manga: AidokuRunner.Manga
         @Published var chapters: [AidokuRunner.Chapter] = []
@@ -51,7 +51,7 @@ extension MangaView {
         private var fetchedDetails = false
         private var cancellables = Set<AnyCancellable>()
 
-        init(source: AidokuRunner.Source, manga: AidokuRunner.Manga) {
+        init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
             self.source = source
             self.manga = manga
             setupNotifications()
@@ -87,19 +87,18 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
-            // todo: can't change the source
-//            NotificationCenter.default.publisher(for: .migratedManga)
-//                .sink { [weak self] output in
-//                    guard
-//                        let self,
-//                        let migration = output.object as? (from: Manga, to: Manga),
-//                        migration.from.id == self.manga.key && migration.from.sourceId == source.key,
-//                        let newSource = SourceManager.shared.source(for: migration.to.sourceId)
-//                    else { return }
-//                    self.source = newSource
-//                    manga = migration.to.toNew()
-//                }
-//                .store(in: &cancellables)
+            NotificationCenter.default.publisher(for: .migratedManga)
+                .sink { [weak self] output in
+                    guard
+                        let self,
+                        let migration = output.object as? (from: Manga, to: Manga),
+                        migration.from.id == self.manga.key && migration.from.sourceId == manga.sourceKey,
+                        let newSource = SourceManager.shared.source(for: migration.to.sourceId)
+                    else { return }
+                    self.source = newSource
+                    manga = migration.to.toNew()
+                }
+                .store(in: &cancellables)
 
             // history
             NotificationCenter.default.publisher(for: .updateHistory)
@@ -133,7 +132,7 @@ extension MangaView {
                         }
                     } else if
                         let manga = output.object as? Manga,
-                        manga.id == self.manga.key && manga.sourceId == source.key
+                        manga.id == self.manga.key && manga.sourceId == source?.key
                     {
                         self.readingHistory = [:]
                     }
@@ -218,8 +217,12 @@ extension MangaView.ViewModel {
         guard !fetchedDetails else { return }
         fetchedDetails = true
 
+        if let cachedManga = CoreDataManager.shared.getManga(sourceId: self.manga.sourceKey, mangaId: self.manga.key) {
+            self.manga = self.manga.copy(from: cachedManga.toNewManga())
+        }
+
         let filters = CoreDataManager.shared.getMangaChapterFilters(
-            sourceId: source.key,
+            sourceId: manga.sourceKey,
             mangaId: manga.key
         )
         chapterSortOption = .init(flags: filters.flags)
@@ -242,32 +245,23 @@ extension MangaView.ViewModel {
         }
         if inLibrary {
             // load data from db
-            let (chapters, manga) = await CoreDataManager.shared.container.performBackgroundTask { context in
-                (
-                    CoreDataManager.shared.getChapters(
-                        sourceId: sourceKey,
-                        mangaId: mangaId,
-                        context: context
-                    ).map {
-                        $0.toNewChapter()
-                    },
-                    CoreDataManager.shared.getManga(
-                        sourceId: sourceKey,
-                        mangaId: mangaId,
-                        context: context
-                    )?.toNewManga()
-                )
+            let chapters = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getChapters(
+                    sourceId: sourceKey,
+                    mangaId: mangaId,
+                    context: context
+                ).map {
+                    $0.toNewChapter()
+                }
             }
+
             var newManga = self.manga
-            if let manga {
-                newManga = self.manga.copy(from: manga)
-            }
             newManga.chapters = chapters
             withAnimation {
                 self.manga = newManga
                 self.chapters = filteredChapters()
             }
-        } else {
+        } else if let source {
             // load new data from source
             await source.partialMangaPublisher?.sink { @Sendable newManga in
                 Task { @MainActor in
@@ -303,7 +297,7 @@ extension MangaView.ViewModel {
 
     // refresh manga and chapter data from source, updating db
     func refresh() async {
-        guard Reachability.getConnectionType() != .none else {
+        guard Reachability.getConnectionType() != .none, let source else {
             return
         }
 
@@ -375,7 +369,7 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        let sourceKey = source.key
+        let sourceKey = manga.sourceKey
         let mangaKey = manga.key
         // todo: downloadmanager needs to be moved off of mainactor since this causes hangs when loading large amounts of chapters
         for chapter in chapters {
@@ -386,7 +380,7 @@ extension MangaView.ViewModel {
     }
 
     private func loadBookmarked() async {
-        let sourceKey = source.key
+        let sourceKey = manga.sourceKey
         let mangaId = manga.key
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.hasLibraryManga(
@@ -400,7 +394,7 @@ extension MangaView.ViewModel {
 
     private func loadHistory() async {
         readingHistory = await CoreDataManager.shared.getReadingHistory(
-            sourceId: source.key,
+            sourceId: manga.sourceKey,
             mangaId: manga.key
         )
     }
@@ -413,7 +407,7 @@ extension MangaView.ViewModel {
         let chapters = chapters.filter { !$0.locked || downloadStatus[$0.key] == .finished }
 
         await HistoryManager.shared.addHistory(
-            sourceId: source.key,
+            sourceId: manga.sourceKey,
             mangaId: manga.key,
             chapters: chapters
         )
@@ -427,7 +421,7 @@ extension MangaView.ViewModel {
     // remove coredata history for given chapters
     func markUnread(chapters: [AidokuRunner.Chapter]) async {
         await HistoryManager.shared.removeHistory(
-            sourceId: source.key,
+            sourceId: manga.sourceKey,
             mangaId: manga.key,
             chapters: chapters
         )
@@ -440,7 +434,7 @@ extension MangaView.ViewModel {
     // returns the latest chapter read from a tracker if the local history needs to be synced
     func checkTrackerSync(item: TrackItem) async -> Float? {
         guard
-            item.mangaId == self.manga.key && item.sourceId == source.key,
+            item.mangaId == self.manga.key && item.sourceId == manga.sourceKey,
             let tracker = TrackerManager.shared.getTracker(id: item.trackerId),
             let chapters = manga.chapters
         else { return nil }
@@ -528,7 +522,7 @@ extension MangaView.ViewModel {
             }
         } else if
             let manga = notification.object as? Manga,
-            manga.id == self.manga.key && manga.sourceId == self.source.key
+            manga.id == self.manga.key && manga.sourceId == self.manga.sourceKey
         { // all chapters
             downloadProgress = [:]
             for chapter in self.manga.chapters ?? chapters {
@@ -583,7 +577,11 @@ extension MangaView.ViewModel {
             switch filter.type {
                 case .downloaded:
                     chapters = chapters.filter {
-                        let downloaded = !DownloadManager.shared.isChapterDownloaded(sourceId: source.key, mangaId: manga.key, chapterId: $0.key)
+                        let downloaded = !DownloadManager.shared.isChapterDownloaded(
+                            sourceId: manga.sourceKey,
+                            mangaId: manga.key,
+                            chapterId: $0.key
+                        )
                         return filter.exclude ? downloaded : !downloaded
                     }
                 case .unread:

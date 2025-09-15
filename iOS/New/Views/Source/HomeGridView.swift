@@ -82,7 +82,7 @@ struct HomeGridView: View {
             if let onSelect {
                 onSelect(entry)
             } else {
-                path.push(NewMangaViewController(source: source, manga: entry, parent: path.rootViewController))
+                path.push(MangaViewController(source: source, manga: entry, parent: path.rootViewController))
             }
         } label: {
             MangaGridItem(

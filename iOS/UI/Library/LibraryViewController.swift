@@ -574,7 +574,8 @@ extension LibraryViewController {
     }
 
     @objc func openMangaUpdates() {
-        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView())
+        let path = NavigationCoordinator(rootViewController: self)
+        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView().environmentObject(path))
         // configure navigation item before displaying to fix animation
         mangaUpdatesViewController.navigationItem.largeTitleDisplayMode = .never
         mangaUpdatesViewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES", comment: "")

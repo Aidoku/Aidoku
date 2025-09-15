@@ -1,5 +1,5 @@
 //
-//  ExpandableTextView2.swift
+//  ExpandableTextView.swift
 //  Aidoku
 //
 //  Created by Skitty on 8/18/23.
@@ -9,7 +9,7 @@ import MarkdownUI
 import SafariServices
 import SwiftUI
 
-struct ExpandableTextView2: View {
+struct ExpandableTextView: View {
     let text: String
     @Binding var expanded: Bool
 
