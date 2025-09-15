@@ -54,8 +54,8 @@ struct HomeGridView: View {
             columns: columns,
             spacing: Self.spacing
         ) {
-            ForEach(entries, id: \.hashValue) { entry in
-                mangaGridItem(entry: entry)
+            ForEach(entries.indices, id: \.self) { index in
+                mangaGridItem(entry: entries[index])
             }
             loadMoreView
         }
