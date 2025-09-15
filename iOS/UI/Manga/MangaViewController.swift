@@ -1100,6 +1100,82 @@ extension MangaViewController {
         }
     }
 
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        guard let chapter = dataSource.itemIdentifier(for: indexPath) else { return nil }
+        var actions: [UIContextualAction] = []
+
+        // marking actions
+        let markAction: UIContextualAction
+        let history = self.viewModel.readingHistory[chapter.id] ?? (0, -1)
+        if history.1 < 0 || history.0 != -1 { // not completed or has started
+            markAction = UIContextualAction(
+                style: .normal,
+                title: NSLocalizedString("MARK_READ", comment: "")
+            ) { _, _, complete in
+                Task {
+                    await self.markRead(chapters: [chapter])
+                    complete(true)
+                }
+            }
+            markAction.image = UIImage(systemName: "eye")
+            markAction.backgroundColor = .systemBlue
+            actions.append(markAction)
+        } else if history.1 > 0 { // has read date
+            markAction = UIContextualAction(
+                style: .normal,
+                title: NSLocalizedString("MARK_UNREAD", comment: "")
+            ) { _, _, complete in
+                Task {
+                    await self.markUnread(chapters: [chapter])
+                    complete(true)
+                }
+            }
+            markAction.image = UIImage(systemName: "eye.slash")
+            markAction.backgroundColor = .systemBlue
+            actions.append(markAction)
+        }
+
+        // download action
+        let downloadAction: UIContextualAction
+        let downloadStatus = DownloadManager.shared.getDownloadStatus(for: chapter)
+        if downloadStatus == .finished {
+            downloadAction = UIContextualAction(
+                style: .destructive,
+                title: NSLocalizedString("REMOVE_DOWNLOAD", comment: "")
+            ) { _, _, complete in
+                DownloadManager.shared.delete(chapters: [chapter])
+                complete(true)
+                self.reloadCells(for: [chapter])
+            }
+            downloadAction.image = UIImage(systemName: "trash")
+        } else if downloadStatus == .downloading {
+            downloadAction = UIContextualAction(
+                style: .destructive,
+                title: NSLocalizedString("CANCEL_DOWNLOAD", comment: "")
+            ) { _, _, complete in
+                DownloadManager.shared.cancelDownload(for: chapter)
+                complete(true)
+                self.reloadCells(for: [chapter])
+            }
+            downloadAction.image = UIImage(systemName: "xmark")
+        } else {
+            downloadAction = UIContextualAction(
+                style: .normal,
+                title: NSLocalizedString("DOWNLOAD", comment: "")
+            ) { _, _, complete in
+                DownloadManager.shared.download(chapters: [chapter], manga: self.manga)
+                complete(true)
+                self.reloadCells(for: [chapter])
+            }
+            downloadAction.image = UIImage(systemName: "arrow.down.circle")
+            downloadAction.backgroundColor = .systemGreen
+        }
+        actions.append(downloadAction)
+
+        let swipeConfiguration = UISwipeActionsConfiguration(actions: actions)
+        return swipeConfiguration
+    }
+
     /// Returns a "Mark Previous" submenu for the chapter cell at the specified index path.
     private func markPreviousSubmenu(at indexPath: IndexPath) -> UIMenu {
         func getChaptersToIndex() -> [Chapter] {
