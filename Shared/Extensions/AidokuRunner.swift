@@ -216,7 +216,7 @@ extension AidokuRunner.Chapter {
         var components: [String] = []
         // date
         if let dateUploaded {
-            components.append(DateFormatter.localizedString(from: dateUploaded, dateStyle: .medium, timeStyle: .none))
+            components.append(makeRelativeDate(for: dateUploaded))
         }
         // page (if reading in progress)
         if let page, page > 0 {
@@ -235,6 +235,41 @@ extension AidokuRunner.Chapter {
             components.append(language)
         }
         return components.isEmpty ? nil : components.joined(separator: " • ")
+    }
+
+    private func makeRelativeDate(for date: Date) -> String {
+        let endOfDay = Date.endOfDay()
+        let isInFuture = date > endOfDay
+        let endDate = if isInFuture {
+            // if the date is in the future, compare the difference to the start of the day instead of end
+            Date.startOfDay()
+        } else {
+            endOfDay
+        }
+        let difference = Calendar.autoupdatingCurrent.dateComponents(
+            Set([Calendar.Component.day]),
+            from: date,
+            to: endDate
+        )
+        let days = difference.day ?? 0
+
+        if days <= 1 {
+            // today or yesterday
+            let formatter = DateFormatter()
+            formatter.locale = Locale.autoupdatingCurrent
+            formatter.dateStyle = .medium
+            formatter.doesRelativeDateFormatting = true
+            return formatter.string(from: date)
+        } else if days < 7 {
+            // n days ago
+            let formatter = DateComponentsFormatter()
+            formatter.unitsStyle = .short
+            formatter.allowedUnits = .day
+            guard let timePhrase = formatter.string(from: difference) else { return "" }
+            return String(format: NSLocalizedString("%@_AGO", comment: ""), timePhrase)
+        } else {
+            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
+        }
     }
 
     func toOld(
