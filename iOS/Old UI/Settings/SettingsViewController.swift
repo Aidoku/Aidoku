@@ -284,6 +284,11 @@ class SettingsViewController: SettingsTableViewController {
                 ),
                 SettingItem(
                     type: "switch",
+                    key: "Reader.invertTapZones",
+                    title: NSLocalizedString("INVERT_TAP_ZONES")
+                ),
+                SettingItem(
+                    type: "switch",
                     key: "Reader.animatePageTransitions",
                     title: NSLocalizedString("ANIMATE_PAGE_TRANSITIONS")
                 )

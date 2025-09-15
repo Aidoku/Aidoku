@@ -704,9 +704,16 @@ extension ReaderViewController {
                 hideBars()
             }
             // handle page moving
-            switch type {
-                case .left: reader.moveLeft()
-                case .right: reader.moveRight()
+            if UserDefaults.standard.bool(forKey: "Reader.invertTapZones") {
+                switch type {
+                    case .left: reader.moveRight()
+                    case .right: reader.moveLeft()
+                }
+            } else {
+                switch type {
+                    case .left: reader.moveLeft()
+                    case .right: reader.moveRight()
+                }
             }
         } else {
             toggleBarVisibility()

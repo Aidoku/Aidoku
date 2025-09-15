@@ -130,6 +130,14 @@ struct ReaderSettingsView: View {
 
                     SettingView(
                         setting: .init(
+                            key: "Reader.invertTapZones",
+                            title: NSLocalizedString("INVERT_TAP_ZONES"),
+                            value: .toggle(.init())
+                        )
+                    )
+
+                    SettingView(
+                        setting: .init(
                             key: "Reader.animatePageTransitions",
                             title: NSLocalizedString("ANIMATE_PAGE_TRANSITIONS"),
                             value: .toggle(.init())

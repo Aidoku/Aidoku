@@ -411,6 +411,7 @@
 "ZONE_KINDLE" = "Kindle";
 "ZONE_EDGE" = "Edge";
 "DISABLED" = "Disabled";
+"INVERT_TAP_ZONES" = "Invert Tap Zones";
 "ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
 
 "BACKUPS" = "Backups";

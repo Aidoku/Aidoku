@@ -129,6 +129,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.cropBorders": false,
                 "Reader.disableQuickActions": false,
                 "Reader.tapZones": "disabled",
+                "Reader.invertTapZones": false,
                 "Reader.animatePageTransitions": true,
                 "Reader.backgroundColor": "black",
                 "Reader.pagesToPreload": 2,
