@@ -21,9 +21,9 @@ public class ChapterObject: NSManagedObject {
         self.mangaId = mangaId
         id = chapter.key
         title = chapter.title
-        scanlator = chapter.scanlators?.joined(separator: ", ")
+        scanlator = chapter.scanlators.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
         url = chapter.url?.absoluteString
-        lang = chapter.language ?? "en"
+        lang = chapter.language ?? ""
         self.chapter = chapter.chapterNumber != nil ? NSNumber(value: chapter.chapterNumber ?? -1) : nil
         volume = chapter.volumeNumber != nil ? NSNumber(value: chapter.volumeNumber ?? -1) : nil
         dateUploaded = chapter.dateUploaded

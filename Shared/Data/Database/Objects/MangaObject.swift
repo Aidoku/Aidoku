@@ -20,10 +20,10 @@ public class MangaObject: NSManagedObject {
             title = manga.title ?? ""
         }
         if override || !editedKeys.contains(.authors) {
-            author = manga.author ?? ""
+            author = manga.author
         }
         if override || !editedKeys.contains(.artists) {
-            artist = manga.artist ?? ""
+            artist = manga.artist
         }
         if override || !editedKeys.contains(.description) {
             desc = manga.description

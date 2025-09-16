@@ -91,7 +91,7 @@ extension Chapter {
             chapterNumber: chapterNum,
             volumeNumber: volumeNum,
             dateUploaded: dateUploaded,
-            scanlators: scanlator.map({ [$0] }),
+            scanlators: scanlator?.components(separatedBy: ", "),
             url: url.flatMap({ URL(string: $0) }),
             language: lang,
             thumbnail: thumbnail,
