@@ -239,6 +239,11 @@ class ReaderViewController: BaseObservingViewController {
                 statusBarHidden = false
             }
         }
+        if #available(iOS 26.0, *) {
+            addObserver(forName: UIScene.willEnterForegroundNotification) { [weak self] _ in
+                self?.hideBars()
+            }
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
