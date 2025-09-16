@@ -241,7 +241,9 @@ class ReaderViewController: BaseObservingViewController {
         }
         if #available(iOS 26.0, *) {
             addObserver(forName: UIScene.willEnterForegroundNotification) { [weak self] _ in
-                self?.hideBars()
+                if self?.navigationController?.toolbar.alpha == 0 {
+                    self?.hideBars()
+                }
             }
         }
     }
