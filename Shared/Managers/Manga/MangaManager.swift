@@ -59,6 +59,9 @@ extension MangaManager {
                 LogManager.logger.error("MangaManager.addToLibrary: \(error.localizedDescription)")
             }
         }
+        // add enhanced trackers
+        await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
+
         NotificationCenter.default.post(
             name: .addToLibrary,
             object: manga.toOld()

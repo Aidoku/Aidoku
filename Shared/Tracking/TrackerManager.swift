@@ -5,8 +5,9 @@
 //  Created by Skitty on 6/14/22.
 //
 
-import Foundation
+import AidokuRunner
 import CoreData
+import Foundation
 
 /// An interface to interact with title tracking services.
 class TrackerManager {
@@ -19,13 +20,15 @@ class TrackerManager {
     let myanimelist = MyAnimeListTracker()
     /// An instance of the Shikimori tracker.
     let shikimori = ShikimoriTracker()
+    /// An instance of the Komga tracker.
+    let komga = KomgaTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [anilist, myanimelist, shikimori]
+    lazy var trackers: [Tracker] = [anilist, myanimelist, shikimori, komga]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {
-        trackers.contains { $0.isLoggedIn }
+        trackers.filter { !($0 is EnhancedTracker) }.contains { $0.isLoggedIn }
     }
 
     /// Get the instance of the tracker with the specified id.
@@ -35,8 +38,10 @@ class TrackerManager {
 
     /// Send chapter read update to logged in trackers.
     func setCompleted(chapter: Chapter) async {
-        guard let chapterNum = chapter.chapterNum else { return }
-        let volumeNum = Int(floor(chapter.volumeNum ?? -1))
+        let chapterNum = chapter.chapterNum
+        let volumeNum = chapter.volumeNum.flatMap { Int(floor($0)) }
+        guard chapterNum != nil || volumeNum != nil else { return }
+
         let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getTracks(
                 sourceId: chapter.sourceId,
@@ -49,19 +54,26 @@ class TrackerManager {
             guard
                 let tracker = getTracker(id: item.trackerId),
                 let state = try? await tracker.getState(trackId: item.id),
-                state.lastReadChapter ?? 0 < chapterNum
+                state.lastReadChapter ?? 0 < chapterNum ?? 0 || state.lastReadVolume ?? 0 < volumeNum ?? 0
             else { continue }
 
             var update = TrackUpdate()
 
             // update last read chapter and volume
             update.lastReadChapter = chapterNum
-            if volumeNum > 0 && state.lastReadVolume ?? 0 < volumeNum {
+            if let volumeNum, volumeNum > 0 && state.lastReadVolume ?? 0 < volumeNum {
                 update.lastReadVolume = volumeNum
             }
 
             // update reading state
-            let readLastChapter = state.totalChapters.flatMap { $0 == Int(floor(chapterNum)) } ?? false
+            var readLastChapter = if let chapterNum {
+                state.totalChapters.flatMap { $0 == Int(floor(chapterNum)) } ?? false
+            } else {
+                false
+            }
+            if chapterNum == nil && update.lastReadVolume != nil {
+                readLastChapter = update.lastReadVolume == state.totalVolumes
+            }
             if readLastChapter {
                 if state.finishReadDate == nil {
                     update.finishReadDate = Date()
@@ -83,8 +95,42 @@ class TrackerManager {
         }
     }
 
+    /// Register a new track item to a manga and save to the data store.
+    func register(tracker: Tracker, manga: Manga, item: TrackSearchItem) async {
+        let (highestChapterRead, earliestReadDate) = await CoreDataManager.shared.container.performBackgroundTask { context in
+            (
+                CoreDataManager.shared.getHighestChapterRead(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
+                    context: context
+                ),
+                CoreDataManager.shared.getEarliestReadDate(
+                    sourceId: manga.sourceId,
+                    mangaId: manga.id,
+                    context: context
+                )
+            )
+        }
+        do {
+            let id = try await tracker.register(
+                trackId: item.id,
+                highestChapterRead: highestChapterRead,
+                earliestReadDate: earliestReadDate
+            )
+            await TrackerManager.shared.saveTrackItem(item: TrackItem(
+                id: id ?? item.id,
+                trackerId: tracker.id,
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                title: item.title ?? manga.title
+            ))
+        } catch {
+            LogManager.logger.error("Failed to register tracker \(tracker.id): \(error)")
+        }
+    }
+
     /// Saves a TrackItem to the data store.
-    func saveTrackItem(item: TrackItem) async {
+    private func saveTrackItem(item: TrackItem) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.createTrack(
                 id: item.id,
@@ -129,5 +175,29 @@ class TrackerManager {
     /// Checks if a manga is being tracked.
     func isTracking(sourceId: String, mangaId: String) -> Bool {
         CoreDataManager.shared.hasTrack(sourceId: sourceId, mangaId: mangaId)
+    }
+
+    /// Checks if there is a tracker that can be added to the given manga.
+    func hasAvailableTrackers(sourceKey: String, mangaKey: String) -> Bool {
+        trackers.contains { $0.canRegister(sourceKey: sourceKey, mangaKey: mangaKey) }
+    }
+
+    /// Add all applicable enhanced trackers to a given manga.
+    func bindEnhancedTrackers(manga: AidokuRunner.Manga) async {
+        for tracker in trackers where tracker is EnhancedTracker {
+            if tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key) {
+                let oldManga = manga.toOld()
+                do {
+                    let items = try await tracker.search(for: oldManga, includeNsfw: true)
+                    guard let item = items.first else {
+                        LogManager.logger.error("Unable to find track item from tracker \(tracker.id)")
+                        return
+                    }
+                    await TrackerManager.shared.register(tracker: tracker, manga: oldManga, item: item)
+                } catch {
+                    LogManager.logger.error("Unable to find track item from tracker \(tracker.id): \(error)")
+                }
+            }
+        }
     }
 }

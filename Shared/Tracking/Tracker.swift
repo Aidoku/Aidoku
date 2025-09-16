@@ -95,6 +95,15 @@ protocol Tracker: AnyObject {
     ///
     /// - Parameter score: The score to match to a corresponding value in scoreOptions.
     func option(for score: Int) -> String?
+
+    /// Check if a given manga can be registered with this tracker.
+    ///
+    /// - Returns: If the manga can be registered.
+    ///
+    /// - Parameters:
+    ///   - sourceKey: The source key for the given manga.
+    ///   - mangaKey: The  key for the given manga.
+    func canRegister(sourceKey: String, mangaKey: String) -> Bool
 }
 
 // Default values for optional properties
@@ -103,5 +112,9 @@ extension Tracker {
 
     func option(for score: Int) -> String? {
         scoreOptions.first { $0.1 == score }?.0
+    }
+
+    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
+        isLoggedIn
     }
 }

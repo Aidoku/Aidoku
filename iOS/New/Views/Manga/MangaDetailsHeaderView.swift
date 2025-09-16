@@ -301,7 +301,7 @@ struct MangaDetailsHeaderView: View {
                     }
             )
 
-            if TrackerManager.shared.hasAvailableTrackers {
+            if TrackerManager.shared.hasAvailableTrackers(sourceKey: manga.sourceKey, mangaKey: manga.key) {
                 Button {
                     onTrackerButtonPressed?()
                 } label: {

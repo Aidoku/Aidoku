@@ -89,6 +89,12 @@
 		FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */; };
 		FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1711472967444B00AD523D /* MigrateMangaView.swift */; };
 		FB17114B296770CC00AD523D /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = FB17114A296770CC00AD523D /* NukeUI */; };
+		FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */; };
+		FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */; };
+		FB1A4E642E78A831006F4BA8 /* EnhancedTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */; };
+		FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */; };
+		FB1A4E672E79B1A6006F4BA8 /* KomgaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E662E79B1A4006F4BA8 /* KomgaApi.swift */; };
+		FB1A4E682E79B1A6006F4BA8 /* KomgaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E662E79B1A4006F4BA8 /* KomgaApi.swift */; };
 		FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B483F277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */; };
 		FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1B482D277CE18D0056D02C /* AidokuApp.swift */; };
@@ -524,6 +530,9 @@
 		FB17005C2E39313700DBC4E4 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCategoryViewController.swift; sourceTree = "<group>"; };
 		FB1711472967444B00AD523D /* MigrateMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateMangaView.swift; sourceTree = "<group>"; };
+		FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaTracker.swift; sourceTree = "<group>"; };
+		FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedTracker.swift; sourceTree = "<group>"; };
+		FB1A4E662E79B1A4006F4BA8 /* KomgaApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaApi.swift; sourceTree = "<group>"; };
 		FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		FB1B482D277CE18D0056D02C /* AidokuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AidokuApp.swift; sourceTree = "<group>"; };
 		FB1B4830277CE1920056D02C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -1065,6 +1074,15 @@
 				FBE53F0F29CCFC1A00899601 /* SearchBar.swift */,
 			);
 			path = Migration;
+			sourceTree = "<group>";
+		};
+		FB1A4E5F2E78A817006F4BA8 /* komga */ = {
+			isa = PBXGroup;
+			children = (
+				FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */,
+				FB1A4E662E79B1A4006F4BA8 /* KomgaApi.swift */,
+			);
+			path = komga;
 			sourceTree = "<group>";
 		};
 		FB1B4825277CE18D0056D02C = {
@@ -1783,6 +1801,7 @@
 				FBD6A4072858D365007116C9 /* TrackerManager.swift */,
 				FBD6A40A2858D371007116C9 /* Tracker.swift */,
 				FB0E1CC9288AE50700B67BA9 /* OAuthTracker.swift */,
+				FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */,
 			);
 			path = Tracking;
 			sourceTree = "<group>";
@@ -1804,6 +1823,7 @@
 			isa = PBXGroup;
 			children = (
 				FB0E1CCC288AE8AD00B67BA9 /* anilist */,
+				FB1A4E5F2E78A817006F4BA8 /* komga */,
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
 				04B48CF62CD6835700F719D0 /* shikimori */,
 			);
@@ -2148,6 +2168,7 @@
 				FB82A5CA2DF8786C00366BC8 /* ObjectActorSerialExecutor.swift in Sources */,
 				FB4B0AE0285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
 				FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */,
+				FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
 				FBE3E4992DD4047100EF8145 /* ReaderTextViewModel.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */,
@@ -2192,6 +2213,7 @@
 				FB2E02542868B3D900786F21 /* TrackerSettingOptionView.swift in Sources */,
 				FB30958829CB3EEF00EF2B0A /* ReaderTransitionNode.swift in Sources */,
 				FBED232B27BEAC980095D0C0 /* SettingItem.swift in Sources */,
+				FB1A4E642E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
 				487484DB2A4112DD007DF0DF /* CropBordersProcessor.swift in Sources */,
 				FB7F05FC2DDE77B50036B116 /* WebView.swift in Sources */,
 				FB8E48D32DBD8E07002A3621 /* SourceImageView.swift in Sources */,
@@ -2360,6 +2382,7 @@
 				FB662ED22DA813E300007514 /* SearchFilterHeaderView.swift in Sources */,
 				FB662ED32DA813E300007514 /* ExpandableTextView.swift in Sources */,
 				FB662ED42DA813E300007514 /* HomeBigScrollerView.swift in Sources */,
+				FB1A4E682E79B1A6006F4BA8 /* KomgaApi.swift in Sources */,
 				FBAED40E2E3AE5C500B81E74 /* OnReportScrollVisibilityChange.swift in Sources */,
 				FB662ED52DA813E300007514 /* ErrorView.swift in Sources */,
 				FB8E48D72DBFD002002A3621 /* NavigationCoordinator.swift in Sources */,
@@ -2456,6 +2479,7 @@
 				FBE7A5952DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */,
 				FB58C6B32999B4AA00A6F49F /* WasmNetWebViewHandler.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
+				FB1A4E672E79B1A6006F4BA8 /* KomgaApi.swift in Sources */,
 				FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */,
 				FBED233427C095170095D0C0 /* SettingItem.swift in Sources */,
 				FB0CAA5E28A998690024561A /* CoreDataManager+History.swift in Sources */,
@@ -2476,6 +2500,7 @@
 				FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FBE7813028308DC60038C0E3 /* Download.swift in Sources */,
 				FB4B0AE4285CCC8E0066A13B /* URL.swift in Sources */,
+				FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
 				FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB14B12F2DF4D2E90067E4D4 /* AniListQueries.swift in Sources */,
 				FB0CAA6628A9B5540024561A /* MangaManager.swift in Sources */,
@@ -2563,6 +2588,7 @@
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
+				FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
 				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,

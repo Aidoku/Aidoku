@@ -432,26 +432,41 @@ extension MangaView.ViewModel {
     }
 
     // returns the latest chapter read from a tracker if the local history needs to be synced
-    func checkTrackerSync(item: TrackItem) async -> Float? {
+    func checkTrackerSync(item: TrackItem) async -> TrackerSyncResult? {
         guard
             item.mangaId == self.manga.key && item.sourceId == manga.sourceKey,
             let tracker = TrackerManager.shared.getTracker(id: item.trackerId),
             let chapters = manga.chapters
         else { return nil }
 
-        let latestChapterNum = chapters.max {
-            $0.chapterNumber ?? -1 > $1.chapterNumber ?? -1
-        }?.chapterNumber ?? -1
-        let lastReadChapterNum = chapters.first {
-            readingHistory[$0.key]?.page ?? 0 == -1
-        }?.chapterNumber ?? 0 // if not started, 0
-        let hasUnreadChapters = chapters.contains {
-            readingHistory[$0.key] == nil
-        }
-
         guard let trackerState = try? await tracker.getState(trackId: item.id) else { return nil }
 
-        if let trackerLastReadChapter = trackerState.lastReadChapter {
+        let shouldUseVolumes = trackerState.lastReadChapter == nil && trackerState.lastReadVolume != nil
+
+        if let trackerLastReadChapter = shouldUseVolumes ? trackerState.lastReadVolume.flatMap(Float.init) : trackerState.lastReadChapter {
+            let latestChapterNum = if shouldUseVolumes {
+                chapters.max {
+                    $0.volumeNumber ?? -1 > $1.volumeNumber ?? -1
+                }?.volumeNumber ?? -1
+            } else {
+                chapters.max {
+                    $0.chapterNumber ?? -1 > $1.chapterNumber ?? -1
+                }?.chapterNumber ?? -1
+            }
+            let lastReadChapterNum = {
+                let first = chapters.first {
+                    readingHistory[$0.key]?.page ?? 0 == -1
+                }
+                if shouldUseVolumes {
+                    return first?.volumeNumber ?? 0 // if not started, 0
+                } else {
+                    return first?.chapterNumber ?? 0
+                }
+            }()
+            let hasUnreadChapters = chapters.contains {
+                readingHistory[$0.key] == nil
+            }
+
             // check if latest read chapter is below tracker last read
             var shouldSync = (lastReadChapterNum < trackerLastReadChapter)
                 // check if there are chapters to actually mark read
@@ -459,19 +474,35 @@ extension MangaView.ViewModel {
 
             if !shouldSync && hasUnreadChapters {
                 // see if there are unread chapters under the last read that are unread and below tracker last read
-                shouldSync = chapters.contains {
-                    readingHistory[$0.key] == nil
-                    && $0.chapterNumber ?? 0 < trackerLastReadChapter
+                shouldSync = if shouldUseVolumes {
+                    chapters.contains {
+                        readingHistory[$0.key] == nil
+                            && $0.volumeNumber ?? 0 < trackerLastReadChapter
+                    }
+                } else {
+                    chapters.contains {
+                        readingHistory[$0.key] == nil
+                            && $0.chapterNumber ?? 0 < trackerLastReadChapter
+                    }
                 }
             }
 
             if shouldSync {
-//                    syncWithTracker(chapterNum: trackerLastReadChapter)
-                return trackerLastReadChapter
+                return TrackerSyncResult(
+                    tracker: tracker,
+                    volume: shouldUseVolumes,
+                    number: trackerLastReadChapter
+                )
             }
         }
 
         return nil
+    }
+
+    struct TrackerSyncResult {
+        let tracker: Tracker
+        let volume: Bool
+        let number: Float
     }
 
     private func resortChapters() {

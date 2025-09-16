@@ -31,7 +31,19 @@ struct TrackerAddView: View {
                         .progressViewStyle(.circular)
                 } else {
                     Button(NSLocalizedString("START_TRACKING")) {
-                        showSearchView = true
+                        if tracker is EnhancedTracker {
+                            isLoading = true
+                            Task {
+                                let items = try? await tracker.search(for: manga, includeNsfw: true)
+                                guard let item = items?.first else {
+                                    LogManager.logger.error("Unable to find track item from tracker \(tracker.id)")
+                                    return
+                                }
+                                await TrackerManager.shared.register(tracker: tracker, manga: manga, item: item)
+                            }
+                        } else {
+                            showSearchView = true
+                        }
                     }
                 }
             }

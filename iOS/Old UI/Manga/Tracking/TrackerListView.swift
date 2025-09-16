@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TrackerListView: View {
-
     let manga: Manga
 
     @State var refresh = false
@@ -17,7 +16,7 @@ struct TrackerListView: View {
     var body: some View {
         VStack {
             ForEach(TrackerManager.shared.trackers, id: \.id) { tracker in
-                if tracker.isLoggedIn {
+                if tracker.canRegister(sourceKey: manga.sourceId, mangaKey: manga.id) {
                     if let item = CoreDataManager.shared.getTrack(
                         trackerId: tracker.id,
                         sourceId: manga.sourceId,

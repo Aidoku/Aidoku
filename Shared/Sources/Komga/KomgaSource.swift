@@ -746,7 +746,7 @@ struct KomgaHelper: Sendable {
         return server
     }
 
-    private func getServerUrl(path: String) throws(SourceError) -> URL {
+    func getServerUrl(path: String) throws(SourceError) -> URL {
         let baseUrl = try getConfiguredServer()
         guard let serverUrl = URL(string: "\(baseUrl)\(path)") else {
             throw SourceError.message("INVALID_SERVER_URL")

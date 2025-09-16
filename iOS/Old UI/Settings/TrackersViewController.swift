@@ -40,7 +40,7 @@ class TrackersViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
         Task { @MainActor in
-            trackers = TrackerManager.shared.trackers
+            trackers = TrackerManager.shared.trackers.filter { !($0 is EnhancedTracker) }
             tableView.reloadSections(IndexSet(integer: 0), with: .fade)
         }
     }
