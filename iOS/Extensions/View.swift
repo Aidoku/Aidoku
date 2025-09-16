@@ -43,33 +43,6 @@ extension View {
 
 extension View {
     @ViewBuilder
-    func refreshableCompat(action: @Sendable @escaping () async -> Void) -> some View {
-        if #available(iOS 15.0, *) {
-            self.refreshable(action: action)
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
-    func hideListRowSeparator() -> some View {
-        if #available(iOS 15.0, *) {
-            self.listRowSeparator(.hidden)
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
-    func hideListSectionSeparator() -> some View {
-        if #available(iOS 15.0, *) {
-            self.listSectionSeparator(.hidden)
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
     func offsetListSeparator() -> some View {
         if #available(iOS 16.0, *) {
             self.alignmentGuide(.listRowSeparatorLeading) { d in
