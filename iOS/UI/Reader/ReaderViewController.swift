@@ -234,6 +234,17 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
             self.updateReadPosition()
+
+            if #available(iOS 26.0, *) {
+                statusBarHidden = false
+            }
+        }
+        if #available(iOS 26.0, *) {
+            addObserver(forName: UIScene.willEnterForegroundNotification) { [weak self] _ in
+                if self?.navigationController?.toolbar.alpha == 0 {
+                    self?.hideBars()
+                }
+            }
         }
     }
 
