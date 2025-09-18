@@ -355,3 +355,14 @@
 "SKIPPING_CHAPTERS" = "Salto %i capitoli, o mancano dalla fonte o sono stati filtrati";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "Nessuno scanlator";
+"DONE" = "Fatto";
+"INVALID" = "Non valido";
+"CONTENT" = "Contenuto";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Questa azione è irreversibile. Tutta la cronologia di lettura escludendo la libreria verrà cancelalta.";
+"RETRY" = "Riprova";
+"NO_AVAILABLE_SOURCES" = "Nessuna sorgente disponibile";
+"MORE_BARBUTTON" = "Altro";
+"SEARCH_OPTIONS" = "Opzioni di ricerca";
+"SHOW_NSFW_RESULTS" = "Mostra risultati per adulti";
+"BROWSE_NO_SOURCES_TEXT_NEW" = "Aggiungi una sorgente con il pulsante più.";
+"1_PAGE" = "1 pagina";

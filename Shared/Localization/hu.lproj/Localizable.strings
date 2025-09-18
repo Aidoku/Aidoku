@@ -49,7 +49,7 @@
 "LAST_OPENED" = "Utoljára megnyitva";
 "SELECT_ALL" = "Összes kijelölése";
 "LANDSCAPE" = "Fekvő";
-"REMOVE_FROM_LIBRARY" = "Eltávolítás a könyvtárból";
+"REMOVE_FROM_LIBRARY" = "Eltávolítás a Könyvtárból";
 "REMOVE_ALL_DOWNLOADS" = "Összes letöltés törlése";
 "PAGE_X" = "%i. oldal";
 "DOWNLOADED" = "Letöltve";
@@ -107,7 +107,7 @@
 "REMOVE" = "Eltávolítás";
 "DEFAULT" = "Alapértelmezett";
 "VERTICAL" = "Függőleges";
-"LIBRARY_EMPTY" = "Üres könyvtár";
+"LIBRARY_EMPTY" = "A könyvtár üres";
 "VERSION" = "Verzió";
 "EXPORT" = "Exportálás";
 "PIN_MANGA_UPDATED" = "Frissítve";
@@ -116,8 +116,8 @@
 "RENAME" = "Átnevezés";
 "GENERAL" = "Általános";
 "SELECT_CHAPTERS" = "Fejezetek kijelölése";
-"LIBRARY_ADD_FROM_BROWSE" = "Szerezzen mangákat a böngészés lapon";
-"CATEGORY_ADD_TEXT" = "Adja meg az új kategória címét, hogy létrejöjjön.";
+"LIBRARY_ADD_FROM_BROWSE" = "Adj hozzá mangát a \"Böngészés\" fülről";
+"CATEGORY_ADD_TEXT" = "Add meg az új kategória címét ahhoz, hogy létrejöjjön.";
 "BROWSE_NO_SOURCES_TEXT" = "Konfiguráljon saját forrás listát vagy\nnyisson meg egy forrást az Aidokuban a kezdéshez";
 "BUTTON_ERROR" = "HIBA";
 "UNPIN" = "Kitűzés visszavonása";
@@ -144,7 +144,7 @@
 "EXTERNAL" = "Külső";
 "UNINSTALL" = "Eltávolítás";
 "PIN" = "Kitűzés";
-"REORDER" = "Sorrendbe állítás";
+"REORDER" = "Rendezés";
 
 // Source
 "SOURCE_INFO" = "Forrás Infó";
@@ -158,7 +158,7 @@
 "SOURCE_ORDER" = "Forrás Rendezése";
 "VOLUME_X" = "%g. Kötet";
 "VOL_X" = "%g. Köt.";
-"CH_X" = "%g.Fej.";
+"CH_X" = "%g. Fej.";
 "NO_CHAPTERS_AVAILABLE" = "Nincs Elérhető Fejezet";
 "START_READING" = "Olvasás Kezdése";
 "FINISHED_COLON" = "Befejezve:";
@@ -192,7 +192,7 @@
 "WARNING" = "Figyelem";
 "NO_WIFI_ALERT_TITLE" = "Nincs Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "Csatlakozva kell lenned Wi-Fi-hez hogy letöltsd ezt a tartalmat. Kérlek csatlakozz egy Wi-Fi-re és próbáld újra.";
-"DOWNLOAD_ANYWAY_MESSAGE" = "Jelenleg nem vagy Wi-Fi-n. Mindenképpen letöltöd?";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Jelenleg nem vagy Wi-Fi hálózaton. Mindenképp le szeretnéd tölteni?";
 "LINK_COPIED_TEXT" = "A hivatkozás a vágólapra másolva.";
 "LINK_COPIED" = "Hivatkozás Másolva";
 "AUTH_FOR_HISTORY" = "Hitelesíts az olvasási előzmények megtekintéséhez.";
@@ -213,10 +213,10 @@
 "DONE" = "Kész";
 "INVALID" = "Érvénytelen";
 "ENABLE_PERMISSION" = "Engedély bekapcsolása";
-"PHOTOS_ACCESS_DENIED_TEXT" = "A hozzávérést korábbról meg van tagadva. Engedélyezze az Aidoku számára a fotóihoz való hozzáférést, hogy képeket menthessen el a fotóihoz. A hozzáférést az adatvédelmi beállításokban tudja szerkeszteni.";
+"PHOTOS_ACCESS_DENIED_TEXT" = "A hozzáférés korábbról meg van tagadva. Engedélyezze az Aidoku számára a fotóihoz való hozzáférést, hogy képeket menthessen el a fotóihoz. A hozzáférést az adatvédelmi beállításokban tudja szerkeszteni.";
 "CONTENT" = "Tartalom";
 "%@_EXPERIMENTAL" = "%@ (Kísérleti)";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Biztos benne, hogy törörlni szeretné az összes letöltést?";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "Biztos vagy benne, hogy törölni szeretnéd az összes letöltött fájlt?";
 "DOWNLOAD_MANAGER" = "Letöltéskezelő";
 "NO_DOWNLOADS" = "Nincsenek Letöltések";
 "NO_DOWNLOADS_TEXT" = "A letöltött tartalmak itt fognak megjelenni.";
@@ -225,11 +225,11 @@
 "%i_SERIES" = "%i sorozat";
 "IN_LIBRARY" = "Könyvtárban";
 "VIEW_SERIES" = "Sorozat Megtekintése";
-"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Elem Letörlése a Könyvtárból";
-"REMOVING_%i_ITEMS_FROM_LIBRARY" = "%i Elemek Letörlése a Könyvtárból";
-"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Eleme Letörölni %@ Kategóriából";
-"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "%i Elem Letörlése a(z) %@ Kategóriából";
-"BROWSE_NO_SOURCES_TEXT_NEW" = "Adjon hozzá egy forrást a hozzáadás gombbal.";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Elem törlése a Könyvtárból";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "%i Elem eltávolítása a Könyvtárból";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Elem eltávolítása %@ Kategóriából";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "%i Elemek eltávolítása a(z) %@ Kategóriából";
+"BROWSE_NO_SOURCES_TEXT_NEW" = "Adj hozzá egy forrást a hozzáadás gombbal.";
 "BUTTON_GET" = "MEGVESZEM";
 "BASE_URL" = "Alap URL";
 "SEE_ALL" = "Összes Megtekintése";
