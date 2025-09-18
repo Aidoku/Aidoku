@@ -341,3 +341,6 @@
 "CLEAR_MANGA_CACHE_TEXT" = "Tato akce je nevratná. Manga uložená v mezipaměti, která není ve vaší knihovně, bude odstraněna.";
 "MANHWA" = "Manhwa";
 "SYNC_WITH_TRACKER_INFO" = "Vypadá to, že poslední kapitola nastavená ve sledovači (%g) je vyšší než vaše poslední přečtená kapitola. Chtěli byste aktualizovat místní historii tak, aby odpovídala?";
+"DONE" = "Hotovo";
+"INVALID" = "Neplatné";
+"PAUSE" = "Pauza";

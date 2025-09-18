@@ -555,3 +555,8 @@
 "RESET_FOCUS" = "重置焦点";
 "CHAPTER_FORWARD" = "章节向前";
 "CHAPTER_BACKWARD" = "章节后退";
+"CLEAR_SOURCE_CACHE" = "清除来源缓存";
+"CLEAR_SOURCE_CACHE_TEXT" = "将清除来源网址的缓存网络数据。这可能会导致加载时间暂时增加。";
+"RANGE_FROM" = "从";
+"RANGE_TO" = "到";
+"INVERT_TAP_ZONES" = "反转点击区域";
