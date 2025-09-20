@@ -137,9 +137,6 @@
 "RENAME_BACKUP_TEXT" = "請輸入備份名稱";
 "CLEAR_READ_HISTORY" = "清除閱讀歷史";
 "ADVANCED" = "進階";
-"CLEAR_CHAPTER_CACHE" = "清除章節快取";
-"CLEAR_CHAPTER_CACHE_TEXT" = "不可逆的操作，已快取的章節會被清除並重新下載。";
-"CLEAR_MANGA_CACHE" = "清除漫畫快取";
 "CLEAR_READ_HISTORY_TEXT" = "不可逆的操作，所有閱讀歷史將被清除。";
 "RESET_SETTINGS" = "重設設定";
 "LOGOUT" = "登出";
@@ -183,10 +180,6 @@
 "AUTH_TO_ENABLE" = "解鎖以啟用。";
 "AUTH_TO_DISABLE" = "解鎖以禁用。";
 "GITHUB_REPO" = "GitHub 原始碼";
-"MANGA_PAGE" = "漫畫頁面";
-"SHOW_SOURCE_LABEL" = "顯示來源標籤";
-"USE_MANGA_TINT" = "使用漫畫色調";
-"USE_MANGA_TINT_INFO" = "基於封面圖片為漫畫頁面著色";
 "READER" = "閱讀";
 "PIN_MANGA_TYPE" = "釘選類型";
 "PIN_MANGA_UNREAD" = "未讀";
@@ -249,7 +242,6 @@
 "BACKUP_IMPORT_SUCCESS" = "備份匯入完成";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "如需用此備份復原，請到設定的備份頁面。";
 "IMPORT_FAIL" = "備份匯入失敗";
-"CLEAR_MANGA_CACHE_TEXT" = "不可逆的操作，不在書櫃中的漫畫快取將會被清除。";
 "CLEAR_NETWORK_CACHE_TEXT" = "不可逆的操作，網路請求和圖片快取將被清除。";
 "RESET_TEXT" = "不可逆的操作，所有資料、設定和快取將被清除及重設。";
 "VIEW_LIBRARY" = "查看書櫃";

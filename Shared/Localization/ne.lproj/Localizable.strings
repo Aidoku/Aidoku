@@ -46,9 +46,6 @@
 "INCOGNITO_MODE_TEXT" = "सक्षम हुँदा पढिएको इतिहास पज गर्छ";
 "ICLOUD_SYNC" = "iCloud सिंक";
 "APPEARANCE" = "थीम";
-"MANGA_PAGE" = "माङ्गा पृष्ठ";
-"USE_MANGA_TINT_INFO" = "आवरण छविको रङमा आधारित माङ्गा पृष्ठहरू टिन्ट गर्नुहोस्";
-"SHOW_SOURCE_LABEL" = "स्रोत लेबल देखाउनुहोस्";
 "MANGA_PER_ROW" = "माङ्गा प्रति रो";
 "PIN_MANGA" = "माङ्गा पिन गर्नुहोस्";
 "PIN_MANGA_TYPE" = "पिन प्रकार";
@@ -85,12 +82,8 @@
 "DISPLAY_LOGS" = "Logs देखानुहोस्";
 "LOGS" = "Logs";
 "ADVANCED" = "एड्वान्स्ड";
-"CLEAR_CHAPTER_CACHE" = "अध्याय cache खाली गर्नुहोस्";
 "CLEAR_READ_HISTORY" = "पढिएको इतिहास खाली गर्नुहोस्";
-"CLEAR_CHAPTER_CACHE_TEXT" = "यो कार्य अपरिवर्तनीय छ। Cache गरिएका अध्यायहरू खाली गरी पुन: डाउनलोड गरिनेछ।";
 "CLEAR_READ_HISTORY_TEXT" = "यो कार्य अपरिवर्तनीय छ। सबै पढिएको इतिहास हटाइनेछ।";
-"CLEAR_MANGA_CACHE" = "माङ्गा cache खाली गर्नुहोस्";
-"CLEAR_MANGA_CACHE_TEXT" = "यो कार्य अपरिवर्तनीय छ। तपाईंको पुस्तकालयमा cache नगरिएको माङ्गा हटाइनेछ।";
 "RESET_SETTINGS" = "सेटिंग्स रिसेट गर्नुहोस्";
 "PAGE_X_OF_X" = "पृष्ठ %i / %i";
 "RESET_SETTINGS_TEXT" = "यो कार्य अपरिवर्तनीय छ। सबै एप र स्रोत सेटिंग्स रिसेट हुनेछन्।";
@@ -257,7 +250,6 @@
 "VIEW_MORE" = "थप हेर्नुहोस्";
 "AUTH_TO_ENABLE" = "सक्षम गर्न प्रमाणीकरण गर्नुहोस्।";
 "AUTH_TO_DISABLE" = "असक्षम गर्न प्रमाणीकरण गर्नुहोस्।";
-"USE_MANGA_TINT" = "माङ्गा टिन्ट प्रयोग गर्नुहोस्";
 "SUPPPORT_DEVELOPMENT" = "एपको विकासलाई समर्थन गर्नुहोस्";
 "SOURCE_LIST_ADDED_TEXT" = "तपाईं अब ब्राउज ट्याबमा बाह्य स्रोतहरू ब्राउज गर्न सक्नुहुन्छ।";
 "SOURCE_LIST_URL" = "स्रोत सूची URL";

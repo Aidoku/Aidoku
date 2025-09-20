@@ -54,10 +54,6 @@
 "APPEARANCE_LIGHT" = "Luminos";
 "APPEARANCE_DARK" = "Întunecat";
 "USE_SYSTEM_APPEARANCE" = "Utilizați Aspectul sistemului";
-"MANGA_PAGE" = "Pagină Manga";
-"SHOW_SOURCE_LABEL" = "Afișați eticheta sursă";
-"USE_MANGA_TINT" = "Utilizați Manga Tint";
-"USE_MANGA_TINT_INFO" = "Colorați paginile manga pe baza culorii imaginii copertei";
 "MANGA_PER_ROW" = "Manga pe rând";
 "PORTRAIT" = "Portret";
 "LANDSCAPE" = "Peisaj";
@@ -107,8 +103,6 @@
 "LOG_SERVER" = "Server Jurnale";
 "ADVANCED" = "Avansat";
 "RESET_TEXT" = "Această acțiune este ireversibilă. Toate datele, setările și memoria cache vor fi șterse și resetate.";
-"CLEAR_CHAPTER_CACHE" = "Ștergeți memoria cache a capitolului";
-"CLEAR_MANGA_CACHE" = "Ștergeți Manga Cache";
 "CLEAR_NETWORK_CACHE" = "Ștergeți memoria cache de rețea";
 "CLEAR_READ_HISTORY" = "Ștergeți istoricul de citire";
 "CLEAR_READ_HISTORY_TEXT" = "Această acțiune este ireversibilă. Tot istoricul de citire va fi eliminat.";
@@ -308,11 +302,9 @@
 "BACKUP_INFO" = "Apăsați lung pe o copie de rezervă pentru a o exporta sau glisați spre stânga pentru a o șterge.";
 "RESTORE_BACKUP_TEXT" = "Toate datele actuale vor fi eliminate și înlocuite cu datele din această copie de rezervă.";
 "IMPORT_FAIL" = "Import eșuat";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Această acțiune este ireversibilă. Capitolele din memoria cache vor fi șterse și descărcate din nou.";
 "SET_AS_NORMAL_PAGE" = "Setați ca pagină normală";
 "CLEAR_NETWORK_CACHE_TEXT" = "Această acțiune este ireversibilă. Cererile de rețea și imaginile stocate în cache vor fi șterse.";
 "LOGGING" = "Jurnale";
-"CLEAR_MANGA_CACHE_TEXT" = "Această acțiune este ireversibilă. Manga din memoria cache care nu se află în biblioteca dvs. va fi eliminată.";
 "RESET_SETTINGS_TEXT" = "Această acțiune este ireversibilă. Toate setările aplicației și ale sursei vor fi resetate.";
 "LOGOUT_FROM_%@" = "Doriți să vă deconectați de la %@?";
 "SYNC_WITH_TRACKER_INFO" = "Se pare că ultimul capitol setat în tracker (%g) este mai mare decât ultimul capitol citit. Doriți să vă actualizați istoricul local pentru a se potrivi?";

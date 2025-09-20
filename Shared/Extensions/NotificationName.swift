@@ -9,6 +9,7 @@ import Foundation
 
 extension Notification.Name {
     static let updateSourceLists = Self("updateSourceLists")
+    static let updateBackupList = Self("updateBackupList")
 
     // library
     static let updateLibrary = Self("updateLibrary")
@@ -16,6 +17,7 @@ extension Notification.Name {
     static let removeFromLibrary = Self("removeFromLibrary")
     static let migratedManga = Self("migratedManga")
     static let updateMangaDetails = Self("updateMangaDetails")
+    static let updateCategories = Self("updateCategories")
 
     // history
     static let updateHistory = Self("updateHistory")

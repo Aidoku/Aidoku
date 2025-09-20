@@ -100,14 +100,14 @@ final class CoreDataManager {
         container.viewContext
     }
 
-//    func save() {
-//        do {
-//            try context.save()
-//        } catch {
-//            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
-//        }
-//    }
-//
+    func save() {
+        do {
+            try context.save()
+        } catch {
+            LogManager.logger.error("CoreDataManager.save: \(error.localizedDescription)")
+        }
+    }
+
 //    func saveIfNeeded() {
 //        if context.hasChanges {
 //            save()

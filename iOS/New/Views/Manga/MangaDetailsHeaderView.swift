@@ -391,7 +391,7 @@ struct MangaDetailsHeaderView: View {
             let categories = CoreDataManager.shared.getCategoryTitles()
             var shouldAskCategory = !categories.isEmpty
             if
-                let defaultCategory = UserDefaults.standard.stringArray(forKey: "Library.defaultCategory")?.first,
+                let defaultCategory = UserDefaults.standard.string(forKey: "Library.defaultCategory"),
                 defaultCategory == "none" || categories.contains(defaultCategory)
             {
                 shouldAskCategory = false

@@ -83,9 +83,6 @@
 "APPEARANCE_LIGHT" = "Lig";
 "APPEARANCE_DARK" = "Donker";
 "USE_SYSTEM_APPEARANCE" = "Gebruik Stelselvoorkoms";
-"MANGA_PAGE" = "Manga Bladsy";
-"SHOW_SOURCE_LABEL" = "Wys Bronetiket";
-"USE_MANGA_TINT" = "Gebruik Manga Tint";
 "MANGA_PER_ROW" = "Manga per ry";
 "ONLY_UPDATE_ON_WIFI" = "Dateer Slegs op Wi-Fi op";
 "EXCLUDED_CATEGORIES" = "Uitgeslote Kategorieë";
@@ -111,7 +108,6 @@
 "DISPLAY_LOGS" = "Wys Logs";
 "ADVANCED" = "Gevorderd";
 "RESET_TEXT" = "Hierdie aksie is onomkeerbaar. Alle data, instellings en kas sal uitgevee en teruggestel word.";
-"CLEAR_CHAPTER_CACHE" = "Vee Hoofstukkas Uit";
 // General
 "CONTINUE" = "Gaan voort";
 "REMOVE_DOWNLOADS_CONFIRM" = "Verwyder alle selekteerde aflaaisels?";
@@ -187,7 +183,6 @@
 "ABOUT" = "Meer Oor";
 "DISCORD_SERVER" = "Discord-Bediener";
 "GENERAL" = "Algemeen";
-"USE_MANGA_TINT_INFO" = "Tint manga bladsye gebaseer op die kleur van die voorbladprent";
 "READER" = "Leser";
 "PIN_MANGA_UPDATED" = "Opgedateer";
 "LIBRARY_UPDATING" = "Biblioteekopdatering";

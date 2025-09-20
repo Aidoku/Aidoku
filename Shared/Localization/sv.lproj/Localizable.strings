@@ -34,7 +34,6 @@
 "UNREAD_CHAPTERS" = "Olästa kapitel";
 "READING_MODE" = "Läsläge";
 "DESTINATION" = "Destination";
-"CLEAR_CHAPTER_CACHE" = "Frigör cacheminne för kapitel";
 "MIGRATE_SOURCES" = "Överför källor";
 "SELECTED" = "Valda";
 "APPEARANCE_LIGHT" = "Ljus";
@@ -90,8 +89,6 @@
 "UNREAD" = "Oläst";
 "PINNED" = "Fastmarkerad";
 "REMOVE_DOWNLOADS" = "Ta bort nedladdningar";
-"SHOW_SOURCE_LABEL" = "Visa källtagg";
-"USE_MANGA_TINT" = "Använd mangafärgton";
 "PAGED" = "Paginerat";
 "DATE_ADDED" = "Tilläggsdatum";
 "%i_CHAPTERS" = "%i kapitel";
@@ -101,7 +98,6 @@
 "DEFAULT_CATEGORY" = "Förvald kategori";
 "BUTTON_GET" = "HÄMTA";
 "SKIP_DUPLICATE_CHAPTERS" = "Hoppa över dubbletter av kapitel";
-"CLEAR_MANGA_CACHE" = "Frigör cacheminne för manga";
 "CHAPTER_X" = "Kapitel %g";
 "NONE" = "Inga";
 "NEVER" = "Aldrig";
@@ -151,7 +147,6 @@
 "REMOVE_FROM_LIBRARY" = "Ta bort från bibliotek";
 "LOCKED_CATEGORIES" = "Låsta kategorier";
 "REMOVE_ALL_DOWNLOADS" = "Ta bort alla nedladdningar";
-"MANGA_PAGE" = "Mangasida";
 "TITLES" = "Titlar";
 "CLEAR" = "Rensa";
 "CURRENT_COLON" = "Nuvarande:";
@@ -163,7 +158,6 @@
 "DOWNLOADED" = "Nedladdad";
 "BACKUP_NAME" = "Namn för säkerhetskopia";
 "PAGES_TO_PRELOAD" = "Sidor att förladda";
-"USE_MANGA_TINT_INFO" = "Väljer färgton för mangasidor baserat på omslagsbildens färg";
 
 // Manga
 "UNTITLED" = "Odöpt";
@@ -197,7 +191,6 @@
 "CORRUPTED_BACKUP" = "Korrupt säkerhetskopia";
 "UNKNOWN" = "Okänd";
 "TRACK_PLANNING" = "Planerar";
-"CLEAR_MANGA_CACHE_TEXT" = "Denna handling är oåterkallelig. Cachad manga som inte finns i ditt bibliotek kommer att tas bort.";
 "COMPLETED" = "Avslutad";
 "PILLARBOX_AMOUNT" = "Mängd svarta fält";
 "NEXT_COLON" = "Nästa:";
@@ -212,7 +205,6 @@
 "REMOVE_DOWNLOAD" = "Ta bort nedladdning";
 "%i_PAGES_LEFT" = "%i sidor kvar";
 "CATEGORY_TITLE" = "Titel för kategori";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Denna handling är oåterkallelig. Cachade kapitlen kommer att rensas och laddas ned igen.";
 "LANGUAGES" = "Språk";
 "VOL_X" = "Vol.%g";
 "LOGGING" = "Loggande";

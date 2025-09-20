@@ -154,10 +154,6 @@
 "APPEARANCE_LIGHT" = "浅色";
 "APPEARANCE_DARK" = "深色";
 "USE_SYSTEM_APPEARANCE" = "使用系统外观";
-"MANGA_PAGE" = "漫画页面";
-"SHOW_SOURCE_LABEL" = "显示来源标签";
-"USE_MANGA_TINT" = "使用漫画色调";
-"USE_MANGA_TINT_INFO" = "基于封面图像颜色为漫画页面上色";
 "MANGA_PER_ROW" = "每行漫画";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
@@ -217,10 +213,6 @@
 "DISPLAY_LOGS" = "显示日志";
 "ADVANCED" = "高级";
 "RESET_TEXT" = "此操作无法撤销。所有数据，设置和缓存将被清除和重置。";
-"CLEAR_CHAPTER_CACHE" = "清除章节缓存";
-"CLEAR_CHAPTER_CACHE_TEXT" = "此操作无法撤销。缓存的章节将被清除并重新下载。";
-"CLEAR_MANGA_CACHE" = "清除漫画缓存";
-"CLEAR_MANGA_CACHE_TEXT" = "此操作无法撤销。不在你书库中的缓存漫画将被删除。";
 "CLEAR_NETWORK_CACHE" = "清除网络缓存";
 "CLEAR_NETWORK_CACHE_TEXT" = "此操作无法撤销。缓存的网络请求和图像将被清除。";
 "CLEAR_READ_HISTORY" = "清除阅读历史";

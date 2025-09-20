@@ -133,10 +133,6 @@
 "RESTORE" = "Restaurar";
 "ADVANCED" = "Avançado";
 "RESET_TEXT" = "Essa ação é irreversível. Todos os dados, configurações e caches serão removidos e redefinidos.";
-"CLEAR_CHAPTER_CACHE" = "Limpar cache de capítulos";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Essa ação é irreversível. Capítulos em cache serão removidos e reinstalados.";
-"CLEAR_MANGA_CACHE" = "Limpar cache de Mangás";
-"CLEAR_MANGA_CACHE_TEXT" = "Essa ação é irreversível. Mangás em cache que não estão em sua biblioteca serão removidos.";
 "CLEAR_NETWORK_CACHE" = "Limpar cache de rede";
 "CLEAR_NETWORK_CACHE_TEXT" = "Essa ação é irreversível. Pedidos de Rede e imagens em cache serão removidos.";
 "CLEAR_READ_HISTORY" = "Remover histórico de leitura";
@@ -208,10 +204,6 @@
 "AUTH_TO_OPEN" = "Autenticar para abrir.";
 "AUTH_TO_DISABLE" = "Autenticar para desativar.";
 "INCOGNITO_MODE" = "Modo anônimo";
-"MANGA_PAGE" = "Página de mangás";
-"SHOW_SOURCE_LABEL" = "Mostrar rótulo da fonte";
-"USE_MANGA_TINT" = "Usar tonalidade do mangá";
-"USE_MANGA_TINT_INFO" = "Altera o tom das páginas de acordo com a cor da imagem da capa";
 "LIBRARY_UPDATING" = "Atualização da biblioteca";
 "UPDATE_INTERVAL" = "Intervalo de atualização";
 "SKIP_TITLES" = "Pular títulos";

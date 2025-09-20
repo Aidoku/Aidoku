@@ -7,7 +7,7 @@
 
 import CoreData
 
-struct BackupHistory: Codable {
+struct BackupHistory: Codable, Hashable {
     var dateRead: Date
     var sourceId: String
     var chapterId: String

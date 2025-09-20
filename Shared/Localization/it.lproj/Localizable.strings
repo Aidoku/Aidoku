@@ -151,10 +151,6 @@
 "APPEARANCE_LIGHT" = "Chiaro";
 "APPEARANCE_DARK" = "Scuro";
 "USE_SYSTEM_APPEARANCE" = "Usa l'aspetto del sistema";
-"MANGA_PAGE" = "Pagina del manga";
-"SHOW_SOURCE_LABEL" = "Mostra etichetta fonte";
-"USE_MANGA_TINT" = "Usa la tinta del manga";
-"USE_MANGA_TINT_INFO" = "Colora le pagine del manga in base al colore dell'immagine di copertina";
 "READER" = "Lettore";
 "OPEN_READER_VIEW" = "Apri la vista del lettore";
 "UNREAD_CHAPTER_BADGES" = "Badge dei capitoli non letti";
@@ -227,7 +223,6 @@
 "LOGS" = "Log";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "L'URL dell'elenco delle fonti non è valido o è già stato aggiunto.";
 "EXPORT_LOGS" = "Esportazione dei log";
-"CLEAR_MANGA_CACHE_TEXT" = "Questa azione è irreversibile. I manga non presenti nella libreria verranno rimossi.";
 "BACKUP_INFO" = "Premi a lungo su un backup per esportarlo o scorri verso sinistra per eliminarlo.";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Per ripristinare questo backup, trovalo nella pagina dei backup nelle impostazioni.";
 "EXPORT" = "Esporta";
@@ -238,9 +233,6 @@
 "ADVANCED" = "Avanzate";
 "RESET_TEXT" = "Questa azione è irreversibile. Tutti i dati, le impostazioni e le cache verranno cancellati e ripristinati.";
 "RESET_SETTINGS_TEXT" = "Questa azione è irreversibile. Tutte le impostazioni dell'applicazione e delle fonti verranno ripristinate.";
-"CLEAR_CHAPTER_CACHE" = "Cancella la cache del capitolo";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Questa azione è irreversibile. I capitoli memorizzati nella cache verranno cancellati e scaricati nuovamente.";
-"CLEAR_MANGA_CACHE" = "Cancella la cache dei manga";
 "CLEAR_READ_HISTORY_TEXT" = "Questa azione è irreversibile. Tutta la cronologia di lettura verrà rimossa.";
 "BUILD" = "Build";
 "SUGGESTIVE" = "Allusivo";

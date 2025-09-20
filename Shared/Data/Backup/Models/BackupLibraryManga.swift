@@ -7,7 +7,7 @@
 
 import CoreData
 
-struct BackupLibraryManga: Codable {
+struct BackupLibraryManga: Codable, Hashable {
     var lastOpened: Date
     var lastUpdated: Date
     var lastRead: Date?

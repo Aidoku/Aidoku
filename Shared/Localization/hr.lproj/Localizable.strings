@@ -163,11 +163,7 @@
 "APPEARANCE_LIGHT" = "Svijetao";
 "INCOGNITO_MODE_TEXT" = "Kada je omogućeno pauzira povijest čitanja";
 "APPEARANCE_DARK" = "Taman";
-"MANGA_PAGE" = "Manga stranica";
-"SHOW_SOURCE_LABEL" = "Prikaži oznaku izvora";
-"USE_MANGA_TINT" = "Koristi manga obojenje";
 "USE_SYSTEM_APPEARANCE" = "Koristi izgled sustava";
-"USE_MANGA_TINT_INFO" = "Oboji stranice na temelju boje naslovne stranice";
 "REFRESH_METADATA" = "Osvježi metapodatke";
 "EVERY_12_HOURS" = "Svakih 12 sati";
 "INCOGNITO_MODE" = "Inkognito modus";
@@ -208,9 +204,6 @@
 "DISPLAY_LOGS" = "Prikaži prijave";
 "ADVANCED" = "Napredno";
 "RESET_TEXT" = "Ova radnja je nepovratna. Svi podatci, postavke i predmemorije bit će izbrisani i poništeni.";
-"CLEAR_CHAPTER_CACHE" = "Očisti predmemoriju poglavlja";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Ova radnja je nepovratna. Predmemorirana poglavlja bit će izbrisana i ponovno preuzeta.";
-"CLEAR_MANGA_CACHE_TEXT" = "Ova radnja je nepovratna. Predmemorirana manga koja nije u vašoj knjižnici bit će uklonjena.";
 "CLEAR_NETWORK_CACHE" = "Očisti mrežnu predmemoriju";
 "CLEAR_READ_HISTORY" = "Obriši povijest čitanja";
 "WITH_UNREAD_CHAPTERS" = "S nepročitanim poglavljima";
@@ -229,7 +222,6 @@
 "MISSING_SOURCES_TEXT" = "Vraćena sigurnosna kopija može sadržavati podatke iz sljedećih izvora koji trenutno nisu instalirani:";
 "RESTORE_BACKUP" = "Vrati na ovu sigurnosnu kopiju?";
 "RESTORE_BACKUP_TEXT" = "Svi trenutni podaci bit će uklonjeni i zamijenjeni podacima iz ove sigurnosne kopije.";
-"CLEAR_MANGA_CACHE" = "Očisti predmemoriju mange";
 "CLEAR_READ_HISTORY_TEXT" = "Ova radnja je nepovratna. Sva povijest čitanja bit će uklonjena.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Ova radnja je nepovratna. Predmemorirani mrežni zahtjevi i slike bit će izbrisani.";
 "RESET_SETTINGS_TEXT" = "Ova radnja je nepovratna. Sve postavke aplikacije i izvora bit će poništene.";

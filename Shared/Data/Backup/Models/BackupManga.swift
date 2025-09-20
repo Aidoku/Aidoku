@@ -7,7 +7,7 @@
 
 import CoreData
 
-struct BackupManga: Codable {
+struct BackupManga: Codable, Hashable {
     var id: String
     var sourceId: String
     var title: String

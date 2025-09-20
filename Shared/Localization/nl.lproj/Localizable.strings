@@ -128,10 +128,6 @@
 "INCOGNITO_MODE" = "Incognito modus";
 "APPEARANCE" = "Uiterlijk";
 "USE_SYSTEM_APPEARANCE" = "Gebruik systeem weergave";
-"MANGA_PAGE" = "Manga pagina";
-"SHOW_SOURCE_LABEL" = "Bronlabel tonen";
-"USE_MANGA_TINT" = "Gebruik Manga tint";
-"USE_MANGA_TINT_INFO" = "Tint manga pagina op basis van omslag afbeelding";
 "MANGA_PER_ROW" = "Manga per rij";
 "PORTRAIT" = "Portret";
 "LANDSCAPE" = "Landschap";
@@ -167,8 +163,6 @@
 "DISPLAY_LOGS" = "Weergeef logs";
 "ADVANCED" = "Geavanceerd";
 "RESET_TEXT" = "Deze actie is onomkeerbaar. Alle gegevens, instellingen en caches worden gewist en opnieuw ingesteld.";
-"CLEAR_CHAPTER_CACHE" = "Wis hoofdstuk cache";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Deze actie is onomkeerbaar. Gecachte hoofdstukken worden gewist en opnieuw gedownload.";
 "CLEAR_READ_HISTORY_TEXT" = "Deze actie is onomkeerbaar. Alle leesgeschiedenis wordt verwijderd.";
 "RESET_SETTINGS" = "Reset instellingen";
 "RESET_SETTINGS_TEXT" = "Deze actie is onomkeerbaar. Alle app en bron instellingen worden gereset.";
@@ -316,8 +310,6 @@
 "RENAME_CATEGORY_FAIL" = "Kan de naam van de categorie niet wijzigen";
 "PIN_MANGA" = "Manga vastzetten";
 "ONLY_UPDATE_ON_WIFI" = "Alleen over Wifi updaten";
-"CLEAR_MANGA_CACHE" = "Manga-cache leegmaken";
-"CLEAR_MANGA_CACHE_TEXT" = "Deze actie is onomkeerbaar. Gecachte manga die niet in je bibliotheek staat, wordt verwijderd.";
 "CLEAR_NETWORK_CACHE" = "Netwerk-cache legen";
 "CLEAR_NETWORK_CACHE_TEXT" = "Deze actie is onomkeerbaar. Netwerkverzoeken en afbeeldingen in de cache worden verwijderd.";
 "CLEAR_READ_HISTORY" = "Leesgeschiedenis legen";

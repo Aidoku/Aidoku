@@ -13,13 +13,19 @@ class TabBarController: UITabBarController {
 
         let libraryViewController = SwiftUINavigationController(rootViewController: LibraryViewController())
         let browseViewController = UINavigationController(rootViewController: BrowseViewController())
+        let searchViewController = UINavigationController(rootViewController: SearchViewController())
+
         let historyPath = NavigationCoordinator(rootViewController: nil)
         let historyHostingController = UIHostingController(rootView: HistoryView()
             .environmentObject(historyPath))
         historyPath.rootViewController = historyHostingController
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
-        let searchViewController = UINavigationController(rootViewController: SearchViewController())
-        let settingsViewController = UINavigationController(rootViewController: SettingsViewController())
+
+        let settingsPath = NavigationCoordinator(rootViewController: nil)
+        let settingsHostingController = UIHostingController(rootView: SettingsView()
+            .environmentObject(settingsPath))
+        settingsPath.rootViewController = settingsHostingController
+        let settingsViewController = UINavigationController(rootViewController: settingsHostingController)
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true

@@ -177,7 +177,6 @@
 "NONE" = "Nincsen";
 "%@_AGO" = "%@ előtt";
 "SUPPPORT_DEVELOPMENT" = "Támogasd A Fejlesztést";
-"MANGA_PAGE" = "Manga Oldal";
 "OPEN_READER_VIEW" = "Olvasói Nézet Megnyitása";
 "UNREAD_CHAPTER_BADGES" = "Olvasatlan Fejezetjelvények";
 "PIN_MANGA" = "Manga Kitűzése";
@@ -202,9 +201,6 @@
 "ICLOUD_SYNC" = "iCloud Szinkronizálás";
 "INCOGNITO_MODE_TEXT" = "Ha engedélyezve van szünetelteti az olvasási előzményeket";
 "USE_SYSTEM_APPEARANCE" = "Rendszer Megjelenés Használata";
-"SHOW_SOURCE_LABEL" = "Forráscímke Megjelenítése";
-"USE_MANGA_TINT" = "Manga Szinezés Használata";
-"USE_MANGA_TINT_INFO" = "Manga oldalak szinezése a borítókép alapján";
 "MANGA_PER_ROW" = "Manga soronként";
 "ONLY_DOWNLOAD_ON_WIFI" = "Letöltés Csak Wi-Fi-n";
 "WITH_COMPLETED_STATUS" = "Befejezett státuszuak";

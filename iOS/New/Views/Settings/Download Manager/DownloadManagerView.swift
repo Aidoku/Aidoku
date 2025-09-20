@@ -58,18 +58,20 @@ struct DownloadManagerView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Image(systemName: "arrow.down.circle")
-                .font(.system(size: 60))
+                .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text(NSLocalizedString("NO_DOWNLOADS"))
-                .font(.title2)
-                .fontWeight(.semibold)
+            VStack(spacing: 4) {
+                Text(NSLocalizedString("NO_DOWNLOADS"))
+                    .font(.title2.weight(.bold))
 
-            Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

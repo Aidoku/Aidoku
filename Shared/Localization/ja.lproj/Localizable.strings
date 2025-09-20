@@ -162,10 +162,6 @@
 "APPEARANCE_LIGHT" = "ライト";
 "APPEARANCE_DARK" = "ダーク";
 "USE_SYSTEM_APPEARANCE" = "システムの外観を使用する";
-"MANGA_PAGE" = "漫画ページ";
-"SHOW_SOURCE_LABEL" = "ソースラベルを表示";
-"USE_MANGA_TINT" = "漫画の色合いを使用";
-"USE_MANGA_TINT_INFO" = "表紙画像の色に基づいて漫画のページを着色する";
 "MANGA_PER_ROW" = "一行に表示されるタイトルの数";
 "UNREAD_CHAPTER_BADGES" = "未読通知ドット";
 "READER" = "リーダー";
@@ -262,10 +258,6 @@
 "LOGGING" = "ログ";
 "LOG_SERVER" = "ログサーバー";
 "DISPLAY_LOGS" = "ログの表示";
-"CLEAR_CHAPTER_CACHE" = "章キャッシュをクリア";
-"CLEAR_CHAPTER_CACHE_TEXT" = "この操作は取り消せません。キャッシュされた章はクリアされ、再ダウンロードされます。";
-"CLEAR_MANGA_CACHE_TEXT" = "この操作は取り消せません。ライブラリにないキャッシュされた漫画は削除されます。";
-"CLEAR_MANGA_CACHE" = "漫画キャッシュをクリア";
 "CLEAR_NETWORK_CACHE" = "ネットワークキャッシュをクリア";
 "CLEAR_NETWORK_CACHE_TEXT" = "この操作は取り消せません。キャッシュされたネットワークリクエストと画像がクリアされます。";
 "CLEAR_READ_HISTORY" = "読み取り履歴のクリア";

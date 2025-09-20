@@ -159,10 +159,6 @@
 "APPEARANCE_LIGHT" = "Sáng";
 "APPEARANCE_DARK" = "Tối";
 "USE_SYSTEM_APPEARANCE" = "Dùng giao diện hệ thống";
-"MANGA_PAGE" = "Thông tin truyện";
-"SHOW_SOURCE_LABEL" = "Hiển thị nguồn";
-"USE_MANGA_TINT" = "Dùng tông màu của truyện";
-"USE_MANGA_TINT_INFO" = "Thay đổi tông màu của mục thông tin truyện tuỳ vào màu của ảnh bìa truyện";
 "MANGA_PER_ROW" = "Số truyện mỗi dòng";
 "PORTRAIT" = "Dọc";
 "LANDSCAPE" = "Ngang";
@@ -220,10 +216,6 @@
 "DISPLAY_LOGS" = "Hiển thị nhật kí";
 "ADVANCED" = "Nâng cao";
 "RESET_TEXT" = "Hành động này không thể phục hồi. Tất cả mọi dữ liệu, cài đặt và bộ đệm sẽ bị xoá.";
-"CLEAR_CHAPTER_CACHE" = "Xoá bộ đệm chương";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Hành động này không thể phục hồi. Những chương đã lưu trong bộ đệm sẽ bị xoá và tải lại.";
-"CLEAR_MANGA_CACHE" = "Xoá bộ đệm truyện";
-"CLEAR_MANGA_CACHE_TEXT" = "Hành động này không thể phục hồi. Những truyện đã lưu trong bộ đệm sẽ bị xoá, trừ truyện đã lưu vào thư viện.";
 "CLEAR_NETWORK_CACHE" = "Xoá bộ đệm mạng";
 "CLEAR_NETWORK_CACHE_TEXT" = "Hành động này không thể phục hồi. Ảnh và bộ đệm mạng sẽ bị xoá.";
 "CLEAR_READ_HISTORY" = "Xoá lịch sử đọc";

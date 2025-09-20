@@ -109,10 +109,6 @@
 "APPEARANCE_LIGHT" = "בהיר";
 "APPEARANCE_DARK" = "כהה";
 "USE_SYSTEM_APPEARANCE" = "השתמש במראה המערכת";
-"MANGA_PAGE" = "עמוד מנגה";
-"SHOW_SOURCE_LABEL" = "הצג תווית מקור";
-"USE_MANGA_TINT" = "השתמש בצבע המנגה";
-"USE_MANGA_TINT_INFO" = "צבע דפי מנגה על בסיס הצבע של תמונת הכריכה";
 "MANGA_PER_ROW" = "מספר מנגות בשורה";
 "PORTRAIT" = "אנכי";
 "READER" = "קורא";
@@ -208,7 +204,6 @@
 "IMPORT_FAIL" = "הייבוא נכשל";
 "RESTORE" = "שחזר";
 "LOGS" = "דוחות";
-"CLEAR_MANGA_CACHE" = "נקה מטמון מאנגה";
 "CLEAR_NETWORK_CACHE" = "נקה מטמון רשת";
 "CLEAR_NETWORK_CACHE_TEXT" = "פעולה זו היא בלתי הפיכה. בקשות ותמונות ברשת המאוחסנות במטמון יימחקו.";
 "CLEAR_READ_HISTORY" = "נקה את היסטוריית הקריאה";
@@ -286,8 +281,6 @@
 "CROP_BORDERS" = "חתוך את הגבולות";
 "ADVANCED" = "הגדרות מתקדמות";
 "RESET_TEXT" = "פעולה זו היא בלתי הפיכה. כל הנתונים, ההגדרות והמטמון ינוקו ויאופסו.";
-"CLEAR_CHAPTER_CACHE_TEXT" = "פעולה זו היא בלתי הפיכה. פרקים מאוחסנים במטמון יימחקו ויורידו מחדש.";
-"CLEAR_MANGA_CACHE_TEXT" = "פעולה זו היא בלתי הפיכה. מאנגה ששמורה במטמון שאינה בספרייה שלך תוסר.";
 "CLEAR_READ_HISTORY_TEXT" = "פעולה זו היא בלתי הפיכה. כל היסטוריית הקריאה תוסר.";
 "LIBRARY_LOCKED" = "הספרייה נעולה.";
 "CATEGORY_LOCKED" = "הקטגוריה נעולה.";

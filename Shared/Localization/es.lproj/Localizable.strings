@@ -132,10 +132,6 @@
 "RESTORE" = "Restaurar";
 "ADVANCED" = "Avanzado";
 "RESET_TEXT" = "Esta acción es irreversible. Todos los datos, configuraciones y cachés se borrarán y restablecerán.";
-"CLEAR_CHAPTER_CACHE" = "Borrar caché de capítulos";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Esta acción es irreversible. Los capítulos almacenados en el caché se borrarán y se volverán a descargar.";
-"CLEAR_MANGA_CACHE" = "Borrar caché de manga";
-"CLEAR_MANGA_CACHE_TEXT" = "Esta acción es irreversible. Se eliminará el manga almacenado en caché que no esté en tu biblioteca.";
 "CLEAR_NETWORK_CACHE" = "Borrar caché de red";
 "CLEAR_NETWORK_CACHE_TEXT" = "Esta acción es irreversible. Las solicitudes de red y las imágenes almacenadas en caché se borrarán.";
 "CLEAR_READ_HISTORY" = "Borrar historial de lectura";
@@ -211,7 +207,6 @@
 "NONE" = "Ninguna";
 "BUILD" = "Compilación";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Esto eliminará el historial de este capítulo. ¿Seguro que quieres continuar?";
-"USE_MANGA_TINT_INFO" = "Tinta las páginas del manga basado en el color de la imagen de portada";
 "WITH_UNREAD_CHAPTERS" = "Con capítulos no leídos";
 "WITH_COMPLETED_STATUS" = "Con estado completado";
 "THAT_HAVENT_BEEN_READ" = "No han sido leídos";
@@ -223,8 +218,6 @@
 "RESET_SETTINGS" = "Reiniciar configuración";
 "%@_AGO" = "hace %@";
 "RESET_SETTINGS_TEXT" = "Esta acción es irreversible. Se restablecerán todas las configuraciones de la aplicación y fuentes.";
-"MANGA_PAGE" = "Página de manga";
-"SHOW_SOURCE_LABEL" = "Mostrar etiqueta de fuente";
 "EXPORT_LOGS" = "Exportar registros";
 "LOG_SERVER" = "Servidor de registro";
 "PAGE_X_OF_X" = "Página %i de %i";
@@ -233,7 +226,6 @@
 "AUTH_FOR_LIBRARY" = "Identifícate para ver la biblioteca.";
 "REMOVE_ALL_MANGA_HISTORY" = "Eliminar todo el historial de manga";
 "HISTORY_LOCKED" = "El historial está bloqueado.";
-"USE_MANGA_TINT" = "Usar tinte en manga";
 "AUTH_FOR_HISTORY" = "Identifícate para ver el historial de lectura.";
 "AUTH_TO_DISABLE" = "Identifícate para deshabilitar.";
 "LIBRARY_LOCKED" = "La biblioteca está bloqueada.";

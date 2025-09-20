@@ -140,7 +140,6 @@
 "CORRUPTED_BACKUP" = "Poškozená záloha";
 "CORRUPTED_BACKUP_TEXT" = "Zdá se, že tato záloha obsahuje chybně nakonfigurovaná data. Přejmenování není možné.";
 "BACKUP_INFO" = "Dlouhým stisknutím zálohy ji můžete exportovat nebo přejetím doleva odstranit.";
-"CLEAR_CHAPTER_CACHE" = "Vymazat mezipaměť kapitol";
 "CLEAR_NETWORK_CACHE" = "Vymažte mezipaměť sítě";
 "CLEAR_NETWORK_CACHE_TEXT" = "Tato akce je nevratná. Síťové požadavky a obrázky uložené v mezipaměti budou vymazány.";
 "CLEAR_READ_HISTORY" = "Vymazat historii čtení";
@@ -195,7 +194,6 @@
 "AUTH_TO_ENABLE" = "Ověřte se pro povolení.";
 "AUTH_TO_DISABLE" = "Ověřte se pro vypnutí.";
 "APPEARANCE_LIGHT" = "Světlý";
-"USE_MANGA_TINT" = "Použití odstínu Mangy";
 "DAILY" = "Denně";
 "EVERY_2_DAYS" = "Každé 2 dny";
 "WEEKLY" = "Týdně";
@@ -240,8 +238,6 @@
 "SUPPPORT_DEVELOPMENT" = "Podpora vývoje";
 "GENERAL" = "Obecné";
 "ICLOUD_SYNC" = "Synchronizace s iCloudem";
-"MANGA_PAGE" = "Manga stránka";
-"USE_MANGA_TINT_INFO" = "Tónování stránek mangy podle barvy obrázku na obálce";
 "MANGA_PER_ROW" = "Manga na řádek";
 "PORTRAIT" = "Portrét";
 "LANDSCAPE" = "Na šířku";
@@ -271,8 +267,6 @@
 "EXPORT_LOGS" = "Exportovat protokoly";
 "DISPLAY_LOGS" = "Zobrazit protokoly";
 "ADVANCED" = "Pokročilé";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Tato akce je nevratná. Kapitoly uložené v mezipaměti budou vymazány a znovu staženy.";
-"CLEAR_MANGA_CACHE" = "Vymazat mezipaměť mangy";
 "CATEGORY_EMPTY" = "Kategorie je prázdná";
 "AUTH_TO_OPEN" = "Ověřte se pro otevření.";
 "LOCKED_CATEGORIES" = "Uzamčené kategorie";
@@ -331,13 +325,11 @@
 "PIN_MANGA_UNREAD" = "Nepřečteno";
 "ONGOING" = "Pokračující";
 "DISCORD_SERVER" = "Discord server";
-"SHOW_SOURCE_LABEL" = "Zobrazit štítek zdroje";
 "NEVER" = "Nikdy";
 "EVERY_12_HOURS" = "Každých 12 hodin";
 "WITH_UNREAD_CHAPTERS" = "S nepřečtenými kapitolami";
 "SOURCE_LIST_ADDED" = "Přidán seznam zdrojů";
 "SOURCE_LIST_ADD" = "Přidat seznam zdrojů";
 "MISSING_SOURCES_TEXT" = "Obnovená záloha může obsahovat data z následujících zdrojů, které nejsou aktuálně nainstalovány:";
-"CLEAR_MANGA_CACHE_TEXT" = "Tato akce je nevratná. Manga uložená v mezipaměti, která není ve vaší knihovně, bude odstraněna.";
 "MANHWA" = "Manhwa";
 "SYNC_WITH_TRACKER_INFO" = "Vypadá to, že poslední kapitola nastavená ve sledovači (%g) je vyšší než vaše poslední přečtená kapitola. Chtěli byste aktualizovat místní historii tak, aby odpovídala?";

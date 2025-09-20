@@ -113,7 +113,6 @@ class BackupManager {
 
     func removeBackup(url: URL) {
         try? FileManager.default.removeItem(at: url)
-        NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
     }
 
     enum BackupError: Error {

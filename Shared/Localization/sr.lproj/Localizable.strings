@@ -37,8 +37,6 @@
 "INCOGNITO_MODE_TEXT" = "Паузира читање историје када је омогућено";
 "APPEARANCE" = "Изглед";
 "USE_SYSTEM_APPEARANCE" = "Користи системски изглед";
-"MANGA_PAGE" = "Страница манге";
-"SHOW_SOURCE_LABEL" = "Прикажи ознаку извора";
 "READER" = "Читач";
 "MANGA_PER_ROW" = "Манга по реду";
 "PIN_MANGA_TYPE" = "Закачи тип";
@@ -71,9 +69,6 @@
 "RESTORE" = "Врати";
 "LOGS" = "Логови";
 "EXPORT_LOGS" = "Извези логове";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Ова акција је неповратна. Кеширана поглавља ће бити очишћена и поново преузета.";
-"CLEAR_MANGA_CACHE" = "Очисти кеш манге";
-"CLEAR_MANGA_CACHE_TEXT" = "Ова акција је неповратна. Кеширана манга која није у вашој библиотеци ће бити уклоњена.";
 "CLEAR_NETWORK_CACHE" = "Очисти кеш мреже";
 "CLEAR_NETWORK_CACHE_TEXT" = "Ова акција је неповратна. Кеширани мрежни захтеви и слике ће бити очишћени.";
 "CLEAR_READ_HISTORY" = "Очисти историју читања";
@@ -300,8 +295,6 @@
 "INCOGNITO_MODE" = "Инкогнито режим";
 "APPEARANCE_LIGHT" = "Светло";
 "APPEARANCE_DARK" = "Тамно";
-"USE_MANGA_TINT" = "Користи тинт манге";
-"USE_MANGA_TINT_INFO" = "Тинтуј странице манге на основу боје слике насловне стране";
 "LANDSCAPE" = "Пејзаж";
 "OPEN_READER_VIEW" = "Отвори приказ читача";
 "ONLY_DOWNLOAD_ON_WIFI" = "Преузимај само на Wi-Fi";
@@ -329,7 +322,6 @@
 "LOG_SERVER" = "Лог сервер";
 "DISPLAY_LOGS" = "Прикажи логове";
 "ADVANCED" = "Напредно";
-"CLEAR_CHAPTER_CACHE" = "Очисти кеш поглавља";
 "AUTOMATIC" = "Аутоматски";
 "PAGE_LAYOUT" = "Распоред страница";
 "TRACKERS" = "Трекери";

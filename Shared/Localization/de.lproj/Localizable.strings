@@ -168,12 +168,8 @@
 "APPEARANCE_LIGHT" = "Hell";
 "APPEARANCE_DARK" = "Dunkel";
 "LANDSCAPE" = "Querformat";
-"MANGA_PAGE" = "Manga-Seite";
-"USE_MANGA_TINT_INFO" = "Manga-Seiten basierend auf der Farbe des Titelbildes einfärben";
 "USE_SYSTEM_APPEARANCE" = "Systemerscheinungsbild verwenden";
 "PORTRAIT" = "Hochformat";
-"SHOW_SOURCE_LABEL" = "Quellennamen anzeigen";
-"USE_MANGA_TINT" = "Manga-Färbung verwenden";
 "MANGA_PER_ROW" = "Manga pro Zeile";
 "OPEN_READER_VIEW" = "Leseransicht öffnen";
 "READER" = "Leser";
@@ -212,10 +208,6 @@
 "SOURCE_LIST_ADD_FAIL" = "Quellenliste hinzufügen fehlgeschlagen";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Die angegebene Quellenliste-URL ist ungültig oder wurde bereits hinzugefügt.";
 "LOCK_HISTORY_TAB" = "Verlauf-Seite sperren";
-"CLEAR_CHAPTER_CACHE" = "Kapitel-Cache löschen";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Dieser Vorgang ist unumkehrbar. Zwischengespeicherte Kapitel werden geleert und erneut heruntergeladen.";
-"CLEAR_MANGA_CACHE" = "Manga-Cache löschen";
-"CLEAR_MANGA_CACHE_TEXT" = "Diese Aktion ist unumkehrbar. Im Cache gespeicherte Manga, die sich nicht in Ihrer Bibliothek befinden, werden entfernt.";
 "CLEAR_NETWORK_CACHE" = "Netzwerk-Cache löschen";
 "CLEAR_NETWORK_CACHE_TEXT" = "Dieser Vorgang ist unumkehrbar. Zwischengespeicherte Netzwerkanfragen und Bilder werden gelöscht.";
 "CLEAR_READ_HISTORY" = "Leseverlauf löschen";

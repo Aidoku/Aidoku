@@ -333,16 +333,14 @@
 "SUPPPORT_DEVELOPMENT" = "Support Development";
 "GENERAL" = "General";
 "ICLOUD_SYNC" = "iCloud Sync";
+"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "iCloud Sync is an experimental feature. Enabling or disabling it may trigger data loss.";
+"ICLOUD_SYNC_TEXT_SIDELOADED" = "iCloud Sync is only available when installed through TestFlight.";
 "INCOGNITO_MODE" = "Incognito Mode";
 "INCOGNITO_MODE_TEXT" = "Pauses reading history when enabled";
 "APPEARANCE" = "Appearance";
 "APPEARANCE_LIGHT" = "Light";
 "APPEARANCE_DARK" = "Dark";
 "USE_SYSTEM_APPEARANCE" = "Use System Appearance";
-"MANGA_PAGE" = "Manga Page";
-"SHOW_SOURCE_LABEL" = "Show Source Label";
-"USE_MANGA_TINT" = "Use Manga Tint";
-"USE_MANGA_TINT_INFO" = "Tint manga pages based on the color of the cover image";
 "MANGA_PER_ROW" = "Manga per row";
 "PORTRAIT" = "Portrait";
 "LANDSCAPE" = "Landscape";
@@ -369,6 +367,9 @@
 "WITH_UNREAD_CHAPTERS" = "With unread chapters";
 "WITH_COMPLETED_STATUS" = "With completed status";
 "THAT_HAVENT_BEEN_READ" = "That haven't been read";
+
+"NO_RESULTS_FOR_%@" = "No Results for “%@”";
+"NO_RESULTS_TEXT" = "Check the spelling or try a new search.";
 
 // Source Lists
 "SOURCE_LISTS" = "Source Lists";
@@ -431,6 +432,7 @@
 "BACKUP_IMPORT_FAIL_TEXT" = "Failed to save backup. Please ensure that your backup is in the proper format.";
 "SOURCE_IMPORT_FAIL_TEXT" = "Failed to import source. Please ensure that your aix file is valid.";
 "FILE_IMPORT_FAIL_TEXT" = "Failed to import file. Please ensure it is a valid CBZ or ZIP archive that contains images.";
+"BACKUP_%@" = "Backup %@";
 "EXPORT" = "Export";
 "RESTORE" = "Restore";
 "LOGS" = "Logs";
@@ -440,10 +442,6 @@
 "DISPLAY_LOGS" = "Display Logs";
 "ADVANCED" = "Advanced";
 "RESET_TEXT" = "This action is irreversible. All data, settings, and caches will be cleared and reset.";
-"CLEAR_CHAPTER_CACHE" = "Clear Chapter Cache";
-"CLEAR_CHAPTER_CACHE_TEXT" = "This action is irreversible. Cached chapters will be cleared and redownloaded.";
-"CLEAR_MANGA_CACHE" = "Clear Manga Cache";
-"CLEAR_MANGA_CACHE_TEXT" = "This action is irreversible. Cached Manga not in your library will be removed.";
 "CLEAR_NETWORK_CACHE" = "Clear Network Cache";
 "CLEAR_NETWORK_CACHE_TEXT" = "This action is irreversible. Cached network requests and images will be cleared.";
 "CLEAR_READ_HISTORY" = "Clear Read History";

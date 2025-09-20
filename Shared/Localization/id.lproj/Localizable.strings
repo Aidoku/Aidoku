@@ -109,8 +109,6 @@
 "INCOGNITO_MODE_TEXT" = "Jeda riwayat membaca saat diaktifkan";
 "APPEARANCE" = "Tampilan";
 "APPEARANCE_LIGHT" = "Terang";
-"USE_MANGA_TINT" = "Gunakan Warna Manga";
-"USE_MANGA_TINT_INFO" = "Warnai halaman manga berdasarkan warna gambar sampul";
 "MANGA_PER_ROW" = "Manga per baris";
 "PORTRAIT" = "Portrait";
 "LANDSCAPE" = "Lanskap";
@@ -148,9 +146,6 @@
 "LOG_SERVER" = "Catatan Server";
 "EXPORT_LOGS" = "Ekspor Catatan";
 "ADVANCED" = "Opsi Lanjutan";
-"CLEAR_CHAPTER_CACHE" = "Hapus Chapter Cache";
-"CLEAR_MANGA_CACHE" = "Hapus Manga Cache";
-"CLEAR_MANGA_CACHE_TEXT" = "Tindakan ini tidak dapat diubah. Manga yang di-cache yang tidak ada di perpustakaan Anda akan dihapus.";
 "CLEAR_READ_HISTORY_TEXT" = "Tindakan ini tidak dapat diubah. Semua riwayat baca akan dihapus.";
 "LIBRARY_LOCKED" = "Perpustakaan terkunci.";
 "VIEW_LIBRARY" = "Lihat Perpustakaan";
@@ -211,11 +206,9 @@
 // Search
 "SEARCH" = "Cari";
 "APPEARANCE_DARK" = "Gelap";
-"MANGA_PAGE" = "Halaman Manga";
 "AUTH_TO_DISABLE" = "Otentikasi untuk menonaktifkan.";
 "GITHUB_REPO" = "GitHub Repository";
 "USE_SYSTEM_APPEARANCE" = "Gunakan Tampilan Sistem";
-"SHOW_SOURCE_LABEL" = "Tampilkan Label Sumber";
 "REMOVE_ALL_MANGA_HISTORY" = "Hapus Semua Riwayat Manga";
 "VIEW_HISTORY" = "Lihat Riwayat";
 "AUTH_FOR_HISTORY" = "Otentikasi untuk melihat riwayat membaca.";
@@ -239,7 +232,6 @@
 "IMPORT_FAIL" = "Impor Gagal";
 "EXPORT" = "Ekspor";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "URL daftar sumber yang diberikan tidak valid atau telah ditambahkan.";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Tindakan ini tidak dapat diubah. Chapter yang di-cache akan dihapus dan diunduh ulang.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Tindakan ini tidak dapat diubah. Permintaan jaringan dan gambar yang di-cache akan dihapus.";
 "RESET_SETTINGS_TEXT" = "Tindakan ini tidak dapat diubah. Semua pengaturan aplikasi dan sumber akan diatur ulang.";
 "DISPLAY_LOGS" = "Tampilkan Catatan";

@@ -7,7 +7,7 @@
 
 import CoreData
 
-struct BackupTrackItem: Codable {
+struct BackupTrackItem: Codable, Hashable {
     var id: String
     var trackerId: String
     var mangaId: String

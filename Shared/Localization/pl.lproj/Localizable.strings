@@ -153,10 +153,6 @@
 "APPEARANCE" = "Wygląd";
 "APPEARANCE_LIGHT" = "Jasny";
 "USE_SYSTEM_APPEARANCE" = "Użyj wyglądu systemu";
-"MANGA_PAGE" = "Strona mangi";
-"SHOW_SOURCE_LABEL" = "Pokaż etykietę źródła";
-"USE_MANGA_TINT" = "Użyj odcienia mangi";
-"USE_MANGA_TINT_INFO" = "Odcień mangi będzie taki jak okładka mangi";
 "MANGA_PER_ROW" = "Manga na wiersz";
 "PORTRAIT" = "Portret";
 "LANDSCAPE" = "Krajobraz";
@@ -204,7 +200,6 @@
 "DISPLAY_LOGS" = "Wyświetl dzienniki";
 "ADVANCED" = "Zaawansowane";
 "RESET_TEXT" = "Tej czynności nie da się odwrócić. Wszystkie dane, ustawienia i pamięć podręczna zostaną usunięte.";
-"CLEAR_MANGA_CACHE_TEXT" = "Ta czynność jest nieodwracalna. Pamięć podręczna mang, które nie są w twojej bibliotece zostanie usunięta.";
 "CLEAR_NETWORK_CACHE" = "Wyczyść pamięć podręczną sieci";
 "CLEAR_READ_HISTORY" = "Wyczyść historię czytania";
 "SINGLE_PAGE" = "Pojedyncza strona";
@@ -224,13 +219,10 @@
 "LOCK_HISTORY_TAB" = "Zablokuj zakładkę Historia";
 "DOWNSAMPLE_IMAGES" = "Zmniejsz jakość zdjęć";
 "LOG_SERVER" = "Dziennik serwera";
-"CLEAR_CHAPTER_CACHE" = "Wyczyść pamięć podręczną rozdziału";
 "RESTORE_BACKUP_TEXT" = "Wszystkie obecne dane zostaną usunięte i zamienione na te z kopii zapasowej.";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Żeby przywrócić tę kopie zapasową, znajdź ją na stronie kopii w ustawieniach.";
 "BACKUP_IMPORT_FAIL_TEXT" = "Nie udało się przywrócić. Upewnij się, że kopia zapasowa jest w odpowiednim formacie.";
 "LOGS" = "Dzienniki";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Ta czynność jest nieodwracalna. Pamięć podręczna rozdziałów zostanie wyczyszczona i pobrana ponownie.";
-"CLEAR_MANGA_CACHE" = "Wyczyść pamięć podręczną mangi";
 "PAGE_X_OF_X" = "Strona %i z %i";
 "LIBRARY_LOCKED" = "Biblioteka jest zablokowana.";
 "CLEAR_NETWORK_CACHE_TEXT" = "Ta czynność jest nieodwracalna. Pamięć podręczna sieci i obrazków zostanie wyczyszczona.";

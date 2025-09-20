@@ -8,6 +8,7 @@
 import AidokuRunner
 import AuthenticationServices
 import CommonCrypto
+import LocalAuthentication
 import SafariServices
 import SwiftUI
 
@@ -16,14 +17,19 @@ struct SettingView: View {
     let source: AidokuRunner.Source?
     let setting: Setting
     var namespace: String?
+    var onChange: ((String) -> Void)?
 
     @Binding var hidden: Bool
+
+    @Environment(\.settingPageContent) private var pageContentHandler
+    @Environment(\.settingCustomContent) private var customContentHandler
 
     @Binding private var stringListBinding: [String]
     @Binding private var doubleBinding: Double
 
     @State private var requires: Bool
     @State private var requiresFalse: Bool
+    @State private var toggleValue: Bool
 
     @State private var showAddAlert = false
     @State private var showLoginAlert = false
@@ -41,6 +47,7 @@ struct SettingView: View {
     @State private var loginLoading = false
     @State private var loginReload = false
     @State private var session: ASWebAuthenticationSession?
+    @State private var pageIsActive = false
 
     @State private var valueChangeTask: Task<Void, Never>?
 
@@ -50,7 +57,13 @@ struct SettingView: View {
     // empty view controller to support login view presentation
     private static var loginShimController = LoginShimViewController()
 
-    init(source: AidokuRunner.Source? = nil, setting: Setting, namespace: String? = nil, hidden: Binding<Bool> = .constant(false)) {
+    init(
+        source: AidokuRunner.Source? = nil,
+        setting: Setting,
+        namespace: String? = nil,
+        hidden: Binding<Bool> = .constant(false),
+        onChange: ((String) -> Void)? = nil
+    ) {
         self.source = source
 
         // localize the setting title
@@ -60,6 +73,7 @@ struct SettingView: View {
 
         self.setting = setting
         self.namespace = namespace
+        self.onChange = onChange
         self._hidden = hidden
 
         // need to use this before all properties are initialized
@@ -113,55 +127,65 @@ struct SettingView: View {
                 _stringListBinding = Binding.constant([])
                 _doubleBinding = Binding.constant(0)
         }
+        if case .toggle = setting.value {
+            _toggleValue = State(initialValue: SettingsStore.shared.get(key: key(setting.key)))
+        } else {
+            _toggleValue = State(initialValue: false)
+        }
     }
 
     var body: some View {
-        Group {
-            switch setting.value {
-                case let .group(value):
-                    groupView(value: value)
-                case let .select(value):
-                    selectView(value: value)
-                case let .multiselect(value):
-                    multiSelectView(value: value)
-                case let .toggle(value):
-                    toggleView(value: value)
-                case let .stepper(value):
-                    stepperView(value: value)
-                case let .segment(value):
-                    segmentView(value: value)
-                case let .text(value):
-                    textView(value: value)
-                case let .button(value):
-                    buttonView(value: value)
-                case let .link(value):
-                    linkView(value: value)
-                case let .login(value):
-                    loginView(value: value)
-                case let .page(value):
-                    pageView(value: value)
-                case let .editableList(value):
-                    editableListView(value: value)
+        content
+            .id(key(setting.key))
+            .onReceive(userDefaultsObserver.$observedValues) { _ in
+                // skip the initial value load
+                if !skippedFirst {
+                    skippedFirst = true
+                    return
+                }
+                handleValueChange()
             }
-        }
-        .id(key(setting.key))
-        .onReceive(userDefaultsObserver.$observedValues) { _ in
-            // skip the initial value load
-            if !skippedFirst {
-                skippedFirst = true
-                return
+            .onReceive(requiresObserver.$observedValues) { _ in
+                if let requires = setting.requires {
+                    let value = UserDefaults.standard.string(forKey: key(requires))
+                    self.requires = value != nil && value != "0"
+                }
+                if let requiresFalse = setting.requiresFalse {
+                    let value = UserDefaults.standard.string(forKey: key(requiresFalse))
+                    self.requiresFalse = value != nil && value != "0"
+                }
             }
-            handleValueChange()
-        }
-        .onReceive(requiresObserver.$observedValues) { _ in
-            if let requires = setting.requires {
-                let value = UserDefaults.standard.string(forKey: key(requires))
-                self.requires = value != nil && value != "0"
-            }
-            if let requiresFalse = setting.requiresFalse {
-                let value = UserDefaults.standard.string(forKey: key(requiresFalse))
-                self.requiresFalse = value != nil && value != "0"
-            }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch setting.value {
+            case let .group(value):
+                groupView(value: value)
+            case let .select(value):
+                selectView(value: value)
+            case let .multiselect(value):
+                multiSelectView(value: value)
+            case let .toggle(value):
+                toggleView(value: value)
+            case let .stepper(value):
+                stepperView(value: value)
+            case let .segment(value):
+                segmentView(value: value)
+            case let .text(value):
+                textView(value: value)
+            case let .button(value):
+                buttonView(value: value)
+            case let .link(value):
+                linkView(value: value)
+            case let .login(value):
+                loginView(value: value)
+            case let .page(value):
+                pageView(value: value)
+            case let .editableList(value):
+                editableListView(value: value)
+            case .custom:
+                customView()
         }
     }
 
@@ -175,6 +199,8 @@ struct SettingView: View {
     }
 
     private func handleValueChange() {
+        onChange?(key(setting.key))
+
         valueChangeTask?.cancel()
         valueChangeTask = Task {
             // debounce change notification(s) with 500ms delay
@@ -198,6 +224,28 @@ struct SettingView: View {
             NotificationCenter.default.post(name: .init(notificationName), object: nil)
         }
     }
+
+    private func auth() async -> Bool {
+        let context = LAContext()
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+            return await withCheckedContinuation { continuation in
+                context.evaluatePolicy(
+                    .deviceOwnerAuthenticationWithBiometrics,
+                    localizedReason: NSLocalizedString("AUTH_TO_OPEN")
+                ) { success, _ in
+                    continuation.resume(returning: success)
+                }
+            }
+        } else {
+            return false
+        }
+    }
+
+    private var disabled: Bool {
+        !requires || requiresFalse
+    }
+
+    private let disabledOpacity: CGFloat = 0.5
 }
 
 // MARK: Group View
@@ -206,7 +254,8 @@ extension SettingView {
     func groupView(value: GroupSetting) -> some View {
         let body = ForEach(value.items.indices, id: \.self) { offset in
             let setting = value.items[offset]
-            SettingView(source: source, setting: setting, namespace: namespace)
+            SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
+                .tag(setting.key.isEmpty ? UUID().uuidString : key(setting.key))
         }
         if let footer = value.footer.flatMap({ NSLocalizedString($0) }) {
             if !setting.title.isEmpty {
@@ -240,83 +289,144 @@ extension SettingView {
 extension SettingView {
     @ViewBuilder
     func selectView(value: SelectSetting) -> some View {
-        NavigationLink {
-            List {
-                ForEach(value.values.indices, id: \.self) { offset in
-                    let item = value.values[offset]
-                    let selected = stringListBinding.contains(item)
-                    Button {
-                        stringListBinding = [item]
-                    } label: {
-                        HStack {
-                            Text(value.titles?[safe: offset] ?? item)
-                            Spacer()
-                            if selected {
-                                Image(systemName: "checkmark")
-                                     .foregroundStyle(.tint)
+        Button {
+            if value.authToOpen ?? false {
+                Task {
+                    let success = await auth()
+                    if success {
+                        pageIsActive = true
+                    }
+                }
+            } else {
+                pageIsActive = true
+            }
+        } label: {
+            NavigationLink(
+                destination: Group {
+                    if let content = pageContentHandler?(setting.key) {
+                        content
+                    } else {
+                        List {
+                            ForEach(value.values.indices, id: \.self) { offset in
+                                let item = value.values[offset]
+                                let selected = stringListBinding.contains(item)
+                                Button {
+                                    stringListBinding = [item]
+                                } label: {
+                                    HStack {
+                                        Text(value.titles?[safe: offset] ?? item)
+                                        Spacer()
+                                        if selected {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(.tint)
+                                        }
+                                    }
+                                }
+                                .foregroundStyle(.primary)
+                            }
+                        }
+                        .onChange(of: stringListBinding) { _ in
+                            if let item = stringListBinding.first {
+                                SettingsStore.shared.set(key: key(setting.key), value: item)
                             }
                         }
                     }
-                    .foregroundStyle(.primary)
+                }
+                .navigationTitle(setting.title),
+                isActive: $pageIsActive
+            ) {
+                HStack {
+                    Text(setting.title)
+                    Spacer()
+                    if let item = stringListBinding.first {
+                        let title = value.values
+                            .firstIndex { $0 == item }
+                            .flatMap { value.titles?[safe: $0] }
+                        Text(title ?? item)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
-            .onChange(of: stringListBinding) { _ in
-                if let item = stringListBinding.first {
-                    SettingsStore.shared.set(key: key(setting.key), value: item)
-                }
-            }
-            .navigationTitle(setting.title)
-        } label: {
-            HStack {
-                Text(setting.title)
-                Spacer()
-                if let item = stringListBinding.first {
-                    let title = value.values
-                        .firstIndex { $0 == item }
-                        .flatMap { value.titles?[safe: $0] }
-                    Text(title ?? item)
-                        .foregroundStyle(.secondary)
-                }
-            }
+            .environment(\.isEnabled, true) // remove double disabled effect
         }
+        .foregroundStyle(.primary)
+        .disabled(disabled)
+        .opacity({
+            if #available(iOS 26.0, *) {
+                1 // ios 26 has the correct disabled style
+            } else {
+                disabled ? disabledOpacity : 1
+            }
+        }())
     }
 
     @ViewBuilder
     func multiSelectView(value: MultiSelectSetting) -> some View {
-        NavigationLink(setting.title) {
-            List {
-                ForEach(value.values.indices, id: \.self) { offset in
-                    let item = value.values[offset]
-                    let selected = stringListBinding.contains(item)
-                    Button {
-                        if !selected {
-                            stringListBinding.append(item)
-                        } else {
-                            stringListBinding.removeAll { $0 == item }
-                        }
-                    } label: {
-                        HStack {
-                            Text(value.titles?[safe: offset] ?? item)
-                            Spacer()
-                            if selected {
-                                Image(systemName: "checkmark")
-                                     .foregroundStyle(.tint)
+        Button {
+            if value.authToOpen ?? false {
+                Task {
+                    let success = await auth()
+                    if success {
+                        pageIsActive = true
+                    }
+                }
+            } else {
+                pageIsActive = true
+            }
+        } label: {
+            NavigationLink(
+                setting.title,
+                destination: Group {
+                    if let content = pageContentHandler?(setting.key) {
+                        content
+                    } else {
+                        List {
+                            ForEach(value.values.indices, id: \.self) { offset in
+                                let item = value.values[offset]
+                                let selected = stringListBinding.contains(item)
+                                Button {
+                                    if !selected {
+                                        stringListBinding.append(item)
+                                    } else {
+                                        stringListBinding.removeAll { $0 == item }
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(value.titles?[safe: offset] ?? item)
+                                        Spacer()
+                                        if selected {
+                                            Image(systemName: "checkmark")
+                                                .foregroundStyle(.tint)
+                                        }
+                                    }
+                                }
+                                .foregroundStyle(.primary)
                             }
                         }
+                        .onChange(of: stringListBinding) { _ in
+                            SettingsStore.shared.set(key: key(setting.key), value: stringListBinding)
+                        }
                     }
-                    .foregroundStyle(.primary)
                 }
-            }
-            .onChange(of: stringListBinding) { _ in
-                SettingsStore.shared.set(key: key(setting.key), value: stringListBinding)
-            }
-            .navigationTitle(setting.title)
+                .navigationTitle(setting.title),
+                isActive: $pageIsActive
+            )
+            .environment(\.isEnabled, true) // remove double disabled effect
         }
+        .foregroundStyle(.primary)
+        .disabled(disabled)
+        .opacity({
+            if #available(iOS 26.0, *) {
+                1
+            } else {
+                disabled ? disabledOpacity : 1
+            }
+        }())
     }
 }
 
 // MARK: Toggle View
-extension SettingView {
+extension (SettingView) {
     @ViewBuilder
     func toggleView(value: ToggleSetting) -> some View {
         HStack {
@@ -330,13 +440,39 @@ extension SettingView {
                         .lineLimit(1)
                 }
             }
+            .opacity(disabled ? disabledOpacity : 1)
+            .padding(.vertical, {
+                if #available(iOS 26.0, *) {
+                    0
+                } else if value.subtitle != nil {
+                    2
+                } else {
+                    0
+                }
+            }())
+
             Spacer()
-            Toggle(isOn: SettingsStore.shared.binding(key: key(setting.key))) {
+
+            Toggle(isOn: $toggleValue) {
                 EmptyView()
             }
             .labelsHidden()
+            .onChange(of: toggleValue) { _ in
+                if (value.authToDisable ?? false) && !toggleValue {
+                    Task {
+                        let success = await auth()
+                        if success {
+                            SettingsStore.shared.set(key: key(setting.key), value: false)
+                        } else {
+                            toggleValue = true
+                        }
+                    }
+                } else {
+                    SettingsStore.shared.set(key: key(setting.key), value: toggleValue)
+                }
+            }
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
@@ -362,7 +498,8 @@ extension SettingView {
                 Text("Error: Invalid stepper range")
             }
         }
-        .disabled(!requires || requiresFalse)
+        .opacity(disabled ? disabledOpacity : 1)
+        .disabled(disabled)
         .transition(.opacity)
     }
 }
@@ -373,6 +510,7 @@ extension SettingView {
     func segmentView(value: SegmentSetting) -> some View {
         HStack {
             Text(setting.title)
+                .opacity(disabled ? disabledOpacity : 1)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
             Picker("", selection: SettingsStore.shared.binding(key: key(setting.key)) as Binding<Int>) {
@@ -383,7 +521,7 @@ extension SettingView {
             }
             .pickerStyle(.segmented)
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
@@ -884,17 +1022,81 @@ extension SettingView {
 extension SettingView {
     @ViewBuilder
     func pageView(value: PageSetting) -> some View {
-        NavigationLink(setting.title) {
-            List {
-                ForEach(value.items.indices, id: \.self) { offset in
-                    let setting = value.items[offset]
-                    SettingView(source: source, setting: setting, namespace: namespace)
+        Button {
+            if value.authToOpen ?? false {
+                Task {
+                    let success = await auth()
+                    if success {
+                        pageIsActive = true
+                    }
+                }
+            } else {
+                pageIsActive = true
+            }
+        } label: {
+            NavigationLink(
+                destination: Group {
+                    if let content = pageContentHandler?(setting.key) {
+                        content
+                    } else {
+                        List {
+                            ForEach(value.items.indices, id: \.self) { offset in
+                                let setting = value.items[offset]
+                                SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
+                                    .environment(\.settingPageContent, pageContentHandler)
+                                    .environment(\.settingCustomContent, customContentHandler)
+                            }
+                        }
+                    }
+                }
+                .navigationTitle(setting.title)
+                .navigationBarTitleDisplayMode((value.inlineTitle ?? false) ? .inline : .automatic),
+                isActive: $pageIsActive
+            ) {
+                if let icon = value.icon {
+                    HStack(spacing: 15) {
+                        let iconSize: CGFloat = 29
+                        switch icon {
+                            case .system(let name, let color, let inset):
+                                Image(systemName: name)
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .foregroundStyle(.white)
+                                    .aspectRatio(contentMode: .fit)
+                                    .padding(CGFloat(inset))
+                                    .frame(width: iconSize, height: iconSize)
+                                    .background(color.toColor())
+                                    .clipShape(RoundedRectangle(cornerRadius: 6.5))
+                            case .url(let string):
+                                SourceImageView(
+                                    source: source,
+                                    imageUrl: string,
+                                    width: iconSize,
+                                    height: iconSize,
+                                    downsampleWidth: iconSize * 2
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 6.5))
+                        }
+
+                        Text(setting.title)
+
+                        Spacer()
+                    }
+                } else {
+                    Text(setting.title)
                 }
             }
-            .navigationTitle(setting.title)
-            .navigationBarTitleDisplayMode((value.inlineTitle ?? false) ? .inline : .automatic)
+            .environment(\.isEnabled, true) // remove double disabled effect
         }
+        .foregroundStyle(.primary)
         .disabled(!requires || requiresFalse)
+        .opacity({
+            if #available(iOS 26.0, *) {
+                1
+            } else {
+                disabled ? disabledOpacity : 1
+            }
+        }())
     }
 }
 
@@ -966,20 +1168,21 @@ extension SettingView {
     }
 }
 
-// MARK: Login Shim View Controller
-#if os(macOS)
-private class LoginShimViewController: NSViewController, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        ASPresentationAnchor()
+// MARK: Editable List View
+extension SettingView {
+    @ViewBuilder
+    func customView() -> some View {
+        Group {
+            if let customContentHandler {
+                customContentHandler(setting)
+            } else {
+                Text("Missing custom content handler for key \(setting.key)")
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .disabled(!requires || requiresFalse)
     }
 }
-#else
-private class LoginShimViewController: UIViewController, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        ASPresentationAnchor()
-    }
-}
-#endif
 
 #Preview {
     let settings: [Setting] = [

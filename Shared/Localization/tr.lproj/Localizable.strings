@@ -126,7 +126,6 @@
 "SUPPPORT_DEVELOPMENT" = "Geliştirmeyi Destekle";
 "CHAPTER_X" = "Bölüm %g";
 "RENAME_BACKUP_TEXT" = "Yedek için yeni bir isim gir";
-"MANGA_PAGE" = "Manga Sayfası";
 "SHOW_NSFW_SOURCES" = "İş İçin Uygun Olmayan Kaynakları Göster";
 "SOURCE_LIST_ADD" = "Kaynak Listesi Ekle";
 "LIBRARY_ADD_FROM_BROWSE" = "Gözatma kısmından manga ekle";
@@ -162,9 +161,6 @@
 "APPEARANCE_LIGHT" = "Açık";
 "APPEARANCE_DARK" = "Kapalı";
 "USE_SYSTEM_APPEARANCE" = "Sistem Görünüşünü Kullan";
-"SHOW_SOURCE_LABEL" = "Kaynak Etiketini Göster";
-"USE_MANGA_TINT" = "Manga Tonunu Kullan";
-"USE_MANGA_TINT_INFO" = "Manga sayfalarını kapak resminin rengine göre tonla";
 "MANGA_PER_ROW" = "Sıra başı manga";
 "PORTRAIT" = "Portre";
 "LANDSCAPE" = "Yatay";
@@ -220,10 +216,6 @@
 "EXPORT_LOGS" = "Sistem Günlüklerini Dışa Aktar";
 "ADVANCED" = "Gelişmiş";
 "RESET_TEXT" = "Bu aksiyon geri döndürülemez. Bütün veri, ayarlar ve önbellek silinecek ve resetlenecek.";
-"CLEAR_CHAPTER_CACHE" = "Bölüm Önbelleğini Temizle";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Bu aksiyon geri döndürülemez. Önbelleklenen bölümler silinecek ve yeniden indirilecek.";
-"CLEAR_MANGA_CACHE" = "Manga Önbelleğini Temizle";
-"CLEAR_MANGA_CACHE_TEXT" = "Bu aksiyon geri döndürülemez. Kütüphanenizde olmayan önbelleklenmiş mangalar silinecek.";
 "CLEAR_NETWORK_CACHE" = "Ağ Önbelleğini Temizle";
 "CLEAR_NETWORK_CACHE_TEXT" = "Bu aksiyon geri döndürülemez. Önbelleklenmiş ağ istekleri ve resimler silinecek.";
 "CLEAR_READ_HISTORY" = "Okuma Geçmişini Temizle";

@@ -101,9 +101,6 @@
 // Settings
 "SETTINGS" = "Paramètres";
 "USE_SYSTEM_APPEARANCE" = "Utiliser l'apparence du système";
-"MANGA_PAGE" = "Page du manga";
-"SHOW_SOURCE_LABEL" = "Afficher l'étiquette de la source";
-"USE_MANGA_TINT" = "Utiliser la teinte du manga";
 "MANGA_PER_ROW" = "Mangas par rangée";
 "PIN_MANGA" = "Épingler le manga";
 "SKIP_TITLES" = "Ignorer les titres";
@@ -193,15 +190,11 @@
 "APPEARANCE_LIGHT" = "Clair";
 "LANDSCAPE" = "Paysage";
 "ADVANCED" = "Avancé";
-"CLEAR_CHAPTER_CACHE_TEXT" = "Cette action est irréversible. Les chapitres mis en cache seront effacés et retéléchargés.";
-"USE_MANGA_TINT_INFO" = "Teinter les pages des mangas en fonction de la couleur de l'image de couverture";
 "PORTRAIT" = "Portrait";
 "READER" = "Lecteur";
 "NEVER" = "Jamais";
 "SOURCE_LIST_ADDED" = "Ajout de la liste des sources";
 "EXPORT_LOGS" = "Exporter les journaux";
-"CLEAR_CHAPTER_CACHE" = "Effacer le cache du chapitre";
-"CLEAR_MANGA_CACHE_TEXT" = "Cette action est irréversible. Les mangas en cache qui ne sont pas dans votre bibliothèque seront supprimés.";
 "PIN_MANGA_UNREAD" = "Non lu";
 "LIBRARY_UPDATING" = "Mise à jour de la bibliothèque";
 "OPEN_READER_VIEW" = "Ouvrir la vue du lecteur";
@@ -230,7 +223,6 @@
 "LOG_SERVER" = "Serveur de journalisation";
 "DISPLAY_LOGS" = "Afficher les journaux";
 "RESET_TEXT" = "Cette action est irréversible. Toutes les données, les paramètres et les caches seront effacés et réinitialisés.";
-"CLEAR_MANGA_CACHE" = "Effacer le cache des mangas";
 "CLEAR_NETWORK_CACHE" = "Effacer le cache du réseau";
 "CLEAR_READ_HISTORY" = "Effacer l'historique de lecture";
 "CLEAR_READ_HISTORY_TEXT" = "Cette action est irréversible. Tout l'historique de lecture sera supprimé.";
