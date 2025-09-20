@@ -39,7 +39,7 @@ struct HistoryView: View {
                     ForEach(sections, id: \.daysAgo) { section in
                         if !section.entries.isEmpty {
                             Section {
-                                ForEach(section.entries, id: \.key) { entry in
+                                ForEach(section.entries, id: \.chapterCacheKey) { entry in
                                     cellView(entry: entry)
                                 }
                             } header: {
@@ -188,8 +188,8 @@ struct HistoryView: View {
             }
             .tint(.red)
         }
-        .id(entry.key)
-        .tag(entry.key)
+        .id(entry.chapterCacheKey)
+        .tag(entry.chapterCacheKey)
 
         if #available(iOS 16.0, *) {
             return view

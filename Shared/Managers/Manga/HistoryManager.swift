@@ -105,30 +105,30 @@ extension HistoryManager {
 
     func removeHistory(chapters: [Chapter]) async {
         await CoreDataManager.shared.removeHistory(chapters: chapters)
-        NotificationCenter.default.post(name: NSNotification.Name("historyRemoved"), object: chapters)
+        NotificationCenter.default.post(name: .historyRemoved, object: chapters)
     }
 
     func removeHistory(
         sourceId: String,
         mangaId: String,
-        chapters: [AidokuRunner.Chapter]
+        chapterIds: [String]
     ) async {
         await CoreDataManager.shared.removeHistory(
             sourceId: sourceId,
             mangaId: mangaId,
-            chapterIds: chapters.map { $0.key }
+            chapterIds: chapterIds
         )
         NotificationCenter.default.post(
-            name: NSNotification.Name("historyRemoved"),
-            object: chapters.map { $0.toOld(sourceId: sourceId, mangaId: mangaId) }
+            name: .historyRemoved,
+            object: chapterIds.map { Chapter(sourceId: sourceId, id: $0, mangaId: mangaId, title: "", sourceOrder: -1) }
         )
     }
 
-    func removeHistory(manga: Manga) async {
+    func removeHistory(sourceId: String, mangaId: String) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeHistory(sourceId: manga.sourceId, mangaId: manga.id, context: context)
+            CoreDataManager.shared.removeHistory(sourceId: sourceId, mangaId: mangaId, context: context)
             try? context.save()
         }
-        NotificationCenter.default.post(name: NSNotification.Name("historyRemoved"), object: manga)
+        NotificationCenter.default.post(name: .historyRemoved, object: Manga(sourceId: sourceId, id: mangaId))
     }
 }

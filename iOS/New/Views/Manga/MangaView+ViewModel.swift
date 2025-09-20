@@ -423,7 +423,7 @@ extension MangaView.ViewModel {
         await HistoryManager.shared.removeHistory(
             sourceId: manga.sourceKey,
             mangaId: manga.key,
-            chapters: chapters
+            chapterIds: chapters.map { $0.key }
         )
         for chapter in chapters {
             readingHistory[chapter.key] = nil

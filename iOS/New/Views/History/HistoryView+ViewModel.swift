@@ -205,15 +205,16 @@ extension HistoryView.ViewModel {
     // remove history linked to an entry
     // if all is true, removes all history for the associated manga
     func removeHistory(entry: HistoryEntry, all: Bool = false) async {
-        guard let manga = mangaCache[entry.mangaCacheKey] else { return }
         if all {
-            await HistoryManager.shared.removeHistory(manga: manga.toOld())
-        } else {
-            guard let chapter = chapterCache[entry.chapterCacheKey] else { return }
             await HistoryManager.shared.removeHistory(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
-                chapters: [chapter]
+                sourceId: entry.sourceKey,
+                mangaId: entry.mangaKey
+            )
+        } else {
+            await HistoryManager.shared.removeHistory(
+                sourceId: entry.sourceKey,
+                mangaId: entry.mangaKey,
+                chapterIds: [entry.chapterKey]
             )
         }
     }
@@ -264,7 +265,7 @@ extension HistoryView.ViewModel {
             }
         }
 
-        for day in modifiedDays where 0 <= day && day < filteredHistory.count {
+        for day in modifiedDays {
             filteredHistory[day] = HistorySection(
                 daysAgo: day,
                 entries: filterDay(entries: historyData[day] ?? [])
@@ -395,9 +396,6 @@ extension HistoryView.ViewModel {
                 to: endDate
             ).day ?? 0
 
-            let mangaCacheKey = "\(obj.sourceId).\(obj.mangaId)"
-            let chapterCacheKey = mangaCacheKey + ".\(obj.chapterId)"
-
             let (manga, chapter) = await CoreDataManager.shared.container.performBackgroundTask { context in
                 (
                     CoreDataManager.shared.getManga(
@@ -421,12 +419,15 @@ extension HistoryView.ViewModel {
                 await addToQueue(mangaKey: key, chapterKey: shortChapterKey)
             }
 
+            let mangaCacheKey = "\(obj.sourceId).\(obj.mangaId)"
+            let chapterCacheKey = mangaCacheKey + ".\(obj.chapterId)"
             if let manga { newMangaCacheItems[mangaCacheKey] = manga }
             if let chapter { newChapterCacheItems[chapterCacheKey] = chapter }
 
             let newEntry = HistoryEntry(
-                mangaCacheKey: mangaCacheKey,
-                chapterCacheKey: chapterCacheKey,
+                sourceKey: obj.sourceId,
+                mangaKey: obj.mangaId,
+                chapterKey: obj.chapterId,
                 date: obj.dateRead ?? Date.distantPast,
                 currentPage: obj.completed ? -1 : Int(obj.progress),
                 totalPages: Int(obj.total)
