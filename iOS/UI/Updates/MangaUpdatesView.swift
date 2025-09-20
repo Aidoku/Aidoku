@@ -5,27 +5,36 @@
 //  Created by axiel7 on 09/02/2024.
 //
 
+import AidokuRunner
 import SwiftUI
 
 struct MangaUpdatesView: View {
-
-    struct MangaUpdateInfo: Identifiable {
+    struct UpdateSection: Hashable {
+        let day: Int
+        var items: [Item]
+    }
+    struct Item: Hashable {
+        let mangaKey: String
+        var updates: [UpdateInfo]
+    }
+    struct UpdateInfo: Identifiable, Hashable {
         let id: String
         let date: Date
-        let manga: Manga
+        let manga: AidokuRunner.Manga
         let chapter: Chapter?
         var viewed: Bool
     }
 
     private let limit = 25
 
-    @State var entries: [(Int, [(String, [MangaUpdateInfo])])] = []
-    @State var offset = 0
-    @State var loadingMore = false
-    @State var reachedEnd = false
-    @State var loadingTask: Task<(), Never>?
+    @State private var entries: [UpdateSection] = []
+    @State private var offset = 0
+    @State private var loadingMore = false
+    @State private var reachedEnd = false
+    @State private var hasNoUpdates = false
+    @State private var loadingTask: Task<(), Never>?
 
-    @EnvironmentObject var path: NavigationCoordinator
+    @EnvironmentObject private var path: NavigationCoordinator
 
     var body: some View {
         Group {
@@ -49,30 +58,27 @@ struct MangaUpdatesView: View {
             }
             .listStyle(.plain)
             .overlay {
-                if reachedEnd && entries.isEmpty {
+                if hasNoUpdates {
                     VStack(alignment: .center) {
                         Spacer()
-                        Text(NSLocalizedString("NO_UPDATES", comment: ""))
-                            .foregroundColor(.secondary)
+                        Text(NSLocalizedString("NO_UPDATES"))
+                            .foregroundStyle(.secondary)
                         Spacer()
                     }
                 }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(NSLocalizedString("MANGA_UPDATES", comment: ""))
-        .refreshable {
-            await reload()
-        }
+        .navigationTitle(NSLocalizedString("MANGA_UPDATES"))
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { notification in
             guard let objects = notification.object as? [MangaUpdateItem] else { return }
 
             for section in 0..<entries.count {
-                for item in 0..<entries[section].1.count {
-                    guard let manga = entries[section].1[item].1.first?.manga else { continue }
-                    if objects.contains(where: { $0.sourceId == manga.sourceId && $0.mangaId == manga.id }) {
-                        for i in 0..<entries[section].1[item].1.count {
-                            entries[section].1[item].1[i].viewed = true
+                for item in 0..<entries[section].items.count {
+                    guard let manga = entries[section].items[item].updates.first?.manga else { continue }
+                    if objects.contains(where: { $0.sourceId == manga.sourceKey && $0.mangaId == manga.key }) {
+                        for i in 0..<entries[section].items[item].updates.count {
+                            entries[section].items[item].updates[i].viewed = true
                         }
                     }
                 }
@@ -81,14 +87,14 @@ struct MangaUpdatesView: View {
     }
 
     var listItemsWithSections: some View {
-        ForEach(entries.indices, id: \.self) { index in
+        ForEach(entries, id: \.day) { entry in
             Section {
-                let mangas = entries[index].1
-                ForEach(mangas.indices, id: \.self) { mangaIndex in
-                    let updates = mangas[mangaIndex].1
+                let items = entry.items
+                ForEach(items, id: \.mangaKey) { item in
+                    let updates = item.updates
                     if let manga = updates.first?.manga {
                         NavigationLink(
-                            destination: MangaView(manga: manga.toNew(), path: path)
+                            destination: MangaView(manga: manga, path: path)
                                 .onAppear {
                                     setOpened(manga: manga)
                                 }
@@ -96,12 +102,13 @@ struct MangaUpdatesView: View {
                             MangaUpdateItemView(updates: updates)
                         }
                         .offsetListSeparator()
+                        .id(item.mangaKey)
                     }
                 }
             } header: {
-                Text(Date.makeRelativeDate(days: entries[index].0))
-                    .foregroundColor(.primary)
-                    .font(.system(size: 16, weight: .medium))
+                Text(Date.makeRelativeDate(days: entry.day))
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
             }
             .listRowSeparator(.hidden)
         }
@@ -116,19 +123,21 @@ struct MangaUpdatesView: View {
         }
         .listRowSeparator(.hidden)
     }
+}
 
+extension MangaUpdatesView {
     private func loadNewEntries() async {
-        let mangaUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let newUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getRecentMangaUpdates(limit: limit, offset: offset, context: context).compactMap {
                 if let mangaObj = CoreDataManager.shared.getManga(
                     sourceId: $0.sourceId ?? "",
                     mangaId: $0.mangaId ?? "",
                     context: context
                 ) {
-                    return MangaUpdateInfo(
+                    return UpdateInfo(
                         id: $0.id,
                         date: $0.date ?? Date(),
-                        manga: mangaObj.toManga(),
+                        manga: mangaObj.toNewManga(),
                         chapter: $0.chapter?.toChapter(),
                         viewed: $0.viewed
                     )
@@ -137,17 +146,20 @@ struct MangaUpdatesView: View {
                 }
             }
         }
-        if mangaUpdates.isEmpty {
-            await MainActor.run {
-                self.reachedEnd = true
-                self.loadingMore = false
-            }
+        guard !newUpdates.isEmpty else {
+            reachedEnd = true
+            loadingMore = false
             return
         }
-        let updatesGrouped = Dictionary(grouping: mangaUpdates, by: \.manga.id)
-        var updatesDict: [Int: [String: [MangaUpdateInfo]]] = entries
-            .reduce(into: [:]) { $0[$1.0] = $1.1.reduce(into: [:]) { $0[$1.0] = $1.1 } }
-        for obj in updatesGrouped {
+
+        let newUpdatesGrouped = Dictionary(grouping: newUpdates, by: \.manga.uniqueKey)
+        var updatesDict: [Int: [String: [UpdateInfo]]] = entries
+            .reduce(into: [:]) {
+                $0[$1.day] = $1.items.reduce(into: [:]) {
+                    $0[$1.mangaKey] = $1.updates
+                }
+            }
+        for obj in newUpdatesGrouped {
             for info in obj.value.sorted(by: { $0.date < $1.date }) {
                 let day = Calendar.autoupdatingCurrent.dateComponents(
                     Set([Calendar.Component.day]),
@@ -162,39 +174,35 @@ struct MangaUpdatesView: View {
                 updatesDict[day] = updatesOfTheDay
             }
         }
-        let finalUpdatesDict = updatesDict
-        await MainActor.run {
-            self.entries = finalUpdatesDict
-                .map {
-                    ($0.key,
-                     $0.value
-                        .map { ($0.key, $0.value) }
-                        .sorted { ($0.1.first?.date ?? Date()) > ($1.1.first?.date ?? Date()) }
-                    )
-                }
-                .sorted { $0.0 < $1.0 }
-            self.reachedEnd = mangaUpdates.count < limit
-            self.offset += limit
-            self.loadingMore = false
+        let newEntries: [UpdateSection] = updatesDict
+            .map {
+                .init(
+                    day: $0.key,
+                    items: $0.value
+                        .map { .init(mangaKey: $0.key, updates: $0.value) }
+                        .sorted { ($0.updates.first?.date ?? Date()) > ($1.updates.first?.date ?? Date()) }
+                )
+            }
+            .sorted { $0.day < $1.day }
+
+        guard !Task.isCancelled else { return }
+
+        offset += limit
+        reachedEnd = newUpdates.count < limit
+
+        withAnimation {
+            entries = newEntries
+            loadingMore = false
+            if reachedEnd && newEntries.isEmpty {
+                hasNoUpdates = true
+            }
         }
     }
 
-    private func reload() async {
-        if loadingMore {
-            loadingTask?.cancel()
-            loadingTask = nil
-        }
-        loadingMore = true
-        entries = []
-        offset = 0
-        reachedEnd = true
-        await loadNewEntries()
-    }
-
-    private func setOpened(manga: Manga) {
+    private func setOpened(manga: AidokuRunner.Manga) {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await CoreDataManager.shared.setOpened(sourceId: manga.sourceId, mangaId: manga.id)
+                await CoreDataManager.shared.setOpened(sourceId: manga.sourceKey, mangaId: manga.key)
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
             }
         }

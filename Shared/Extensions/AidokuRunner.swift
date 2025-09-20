@@ -151,6 +151,10 @@ extension AidokuRunner.Manga {
     func isLocal() -> Bool {
         sourceKey == LocalSourceRunner.sourceKey
     }
+
+    var uniqueKey: String {
+        "\(sourceKey).\(key)"
+    }
 }
 
 extension AidokuRunner.MangaStatus {
