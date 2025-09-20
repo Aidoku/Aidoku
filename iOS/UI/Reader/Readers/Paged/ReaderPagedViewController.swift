@@ -141,6 +141,9 @@ extension ReaderPagedViewController {
             } else {
                 let page = ReaderPageViewController(type: .page)
                 page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                page.onAspectRatioUpdated = { [weak self] in
+                    self?.handleAspectRatioUpdate()
+                }
                 pageViewControllers.append(page)
             }
         }
@@ -163,6 +166,9 @@ extension ReaderPagedViewController {
         for _ in startPos..<endPos {
             let page = ReaderPageViewController(type: .page)
             page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+            page.onAspectRatioUpdated = { [weak self] in
+                self?.handleAspectRatioUpdate()
+            }
             pageViewControllers.append(page)
         }
 
@@ -185,6 +191,9 @@ extension ReaderPagedViewController {
             } else {
                 let page = ReaderPageViewController(type: .page)
                 page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                page.onAspectRatioUpdated = { [weak self] in
+                    self?.handleAspectRatioUpdate()
+                }
                 pageViewControllers.append(page)
             }
         }
@@ -200,11 +209,17 @@ extension ReaderPagedViewController {
             let firstPage = pageViewControllers[vcIndex]
             let secondPage = pageViewControllers[vcIndex + 1]
             if case .page = firstPage.type, case .page = secondPage.type {
-                targetViewController = ReaderDoublePageViewController(
-                    firstPage: firstPage,
-                    secondPage: secondPage,
-                    direction: readingMode == .rtl ? .rtl : .ltr
-                )
+                // Check if double page controller should be created (wide images don't combine with other pages)
+                if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: page) {
+                    targetViewController = ReaderDoublePageViewController(
+                        firstPage: firstPage,
+                        secondPage: secondPage,
+                        direction: readingMode == .rtl ? .rtl : .ltr
+                    )
+                } else {
+                    // If double page should not be created, use first page
+                    targetViewController = firstPage
+                }
             }
         } else {
             targetViewController = pageViewControllers[vcIndex]
@@ -275,6 +290,33 @@ extension ReaderPagedViewController {
 
     func pageIndex(from index: Int) -> Int {
         index + (previousChapter != nil ? -1 : 0)
+    }
+
+    /// Check if double page controller should be created (wide images don't combine with other pages)
+    private func shouldCreateDoublePageController(firstPage: ReaderPageViewController, secondPage: ReaderPageViewController, page: Int) -> Bool {
+        // If either page is wide image, don't create double page
+        if firstPage.isWideImage || secondPage.isWideImage {
+            return false
+        }
+        return true
+    }
+
+    /// Handle aspect ratio update - reload current page if wide image detected in double page view
+    private func handleAspectRatioUpdate() {
+        guard
+            let currentViewController = pageViewController.viewControllers?.first,
+            let currentIndex = getIndex(of: currentViewController)
+        else { return }
+
+        // Check if current view is a double page controller
+        if let doublePageController = currentViewController as? ReaderDoublePageViewController {
+            // Check if either page in the double page is now detected as wide
+            if doublePageController.firstPageController.isWideImage || doublePageController.secondPageController.isWideImage {
+                // Reload current page to show single page instead
+                let page = pageIndex(from: currentIndex)
+                move(toPage: page, animated: false)
+            }
+        }
     }
 }
 
@@ -499,11 +541,17 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 let secondPage = pageViewControllers[currentIndex + 2]
                 // make sure both pages are not info pages
                 if case .page = firstPage.type, case .page = secondPage.type {
-                    return ReaderDoublePageViewController(
-                        firstPage: firstPage,
-                        secondPage: secondPage,
-                        direction: readingMode == .rtl ? .rtl : .ltr
-                    )
+                    // Check if double page controller should be created
+                    if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: pageIndex(from: currentIndex + 1)) {
+                        return ReaderDoublePageViewController(
+                            firstPage: firstPage,
+                            secondPage: secondPage,
+                            direction: readingMode == .rtl ? .rtl : .ltr
+                        )
+                    } else {
+                        // If double page should not be created, use first page
+                        return firstPage
+                    }
                 }
             }
             return pageViewControllers[currentIndex + 1]
@@ -522,11 +570,17 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 let secondPage = pageViewControllers[currentIndex - 1]
                 // make sure both pages are not info pages
                 if case .page = firstPage.type, case .page = secondPage.type {
-                    return ReaderDoublePageViewController(
-                        firstPage: firstPage,
-                        secondPage: secondPage,
-                        direction: readingMode == .rtl ? .rtl : .ltr
-                    )
+                    // Check if double page controller should be created
+                    if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: pageIndex(from: currentIndex - 1)) {
+                        return ReaderDoublePageViewController(
+                            firstPage: firstPage,
+                            secondPage: secondPage,
+                            direction: readingMode == .rtl ? .rtl : .ltr
+                        )
+                    } else {
+                        // If double page should not be created, use second page
+                        return secondPage
+                    }
                 }
             }
             return pageViewControllers[currentIndex - 1]

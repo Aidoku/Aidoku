@@ -52,6 +52,10 @@ class ReaderPageViewController: BaseViewController {
     private var pageSet = false
     private var page: Page?
     private var sourceId: String?
+    var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
+
+    /// Callback when image aspect ratio is updated
+    var onAspectRatioUpdated: (() -> Void)?
 
     init(type: PageType) {
         self.type = type
@@ -131,6 +135,18 @@ class ReaderPageViewController: BaseViewController {
             let result = await pageView.setPage(page, sourceId: sourceId)
             zoomView?.zoomEnabled = result
             reloadButton.isHidden = result
+            // Update aspect ratio
+            let oldAspectRatio = imageAspectRatio
+            if result, let image = pageView.imageView.image {
+                imageAspectRatio = image.size.width / image.size.height
+            } else {
+                imageAspectRatio = nil
+            }
+
+            // Notify if aspect ratio changed and became wide image
+            if oldAspectRatio != imageAspectRatio && imageAspectRatio != nil && imageAspectRatio! > 1 {
+                onAspectRatioUpdated?()
+            }
         }
     }
 
@@ -147,5 +163,12 @@ class ReaderPageViewController: BaseViewController {
         pageSet = false
         pageView?.imageView.image = nil
         zoomView?.zoomEnabled = false
+        imageAspectRatio = nil
+    }
+
+    /// Check if this is a wide image (aspect ratio > 1)
+    var isWideImage: Bool {
+        guard let aspectRatio = imageAspectRatio else { return false }
+        return aspectRatio > 1
     }
 }
