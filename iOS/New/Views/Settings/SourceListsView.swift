@@ -16,10 +16,12 @@ struct SourceListsView: View {
 
     var body: some View {
         List {
-            ForEach(sourceLists, id: \.url) { sourceList in
-                listItem(name: sourceList.name, url: sourceList.url)
+            Section {
+                ForEach(sourceLists, id: \.url) { sourceList in
+                    listItem(name: sourceList.name, url: sourceList.url)
+                }
+                .onDelete(perform: delete)
             }
-            .onDelete(perform: delete)
 
             if !missingSourceLists.isEmpty {
                 Section {
@@ -30,6 +32,16 @@ struct SourceListsView: View {
                     Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS"))
                 } footer: {
                     Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS_TEXT"))
+                }
+            }
+
+            if !sourceLists.isEmpty {
+                Section {
+                    SettingView(setting: .init(
+                        key: "Browse.showNsfwSources",
+                        title: NSLocalizedString("SHOW_NSFW_SOURCES"),
+                        value: .toggle(.init())
+                    ))
                 }
             }
         }

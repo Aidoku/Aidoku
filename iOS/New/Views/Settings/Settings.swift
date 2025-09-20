@@ -171,11 +171,18 @@ extension Settings {
                     NSLocalizedString("PIN_MANGA_UNREAD"),
                     NSLocalizedString("PIN_MANGA_UPDATED")
                 ]))
-            ),
+            )
+        ]))),
+        .init(value: .group(.init(items: [
             .init(
                 key: "Library.lockLibrary",
                 title: NSLocalizedString("LOCK_LIBRARY"),
                 notification: "updateLibraryLock",
+                value: .toggle(.init(authToDisable: true))
+            ),
+            .init(
+                key: "History.lockHistoryTab",
+                title: NSLocalizedString("LOCK_HISTORY_TAB"),
                 value: .toggle(.init(authToDisable: true))
             )
         ]))),
