@@ -20,9 +20,12 @@ struct BackupManga: Codable, Hashable {
     var status: Int
     var nsfw: Int
     var viewer: Int
+    var neverUpdate: Bool?
+    var nextUpdateTime: Date?
     var chapterFlags: Int?
     var langFilter: String?
     var scanlatorFilter: [String]?
+    var editedKeys: Int?
 
     init(mangaObject: MangaObject) {
         id = mangaObject.id
@@ -37,9 +40,12 @@ struct BackupManga: Codable, Hashable {
         status = Int(mangaObject.status)
         nsfw = Int(mangaObject.nsfw)
         viewer = Int(mangaObject.viewer)
+        neverUpdate = mangaObject.neverUpdate
+        nextUpdateTime = mangaObject.nextUpdateTime
         chapterFlags = Int(mangaObject.chapterFlags)
         langFilter = mangaObject.langFilter
         scanlatorFilter = mangaObject.scanlatorFilter
+        editedKeys = Int(mangaObject.editedKeys)
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> MangaObject {
@@ -61,9 +67,12 @@ struct BackupManga: Codable, Hashable {
         obj.status = Int16(status)
         obj.nsfw = Int16(nsfw)
         obj.viewer = Int16(viewer)
+        obj.neverUpdate = neverUpdate ?? false
+        obj.nextUpdateTime = nextUpdateTime
         obj.chapterFlags = Int16(chapterFlags ?? 0)
         obj.langFilter = langFilter
         obj.scanlatorFilter = scanlatorFilter
+        obj.editedKeys = Int32(editedKeys ?? 0)
         return obj
     }
 }

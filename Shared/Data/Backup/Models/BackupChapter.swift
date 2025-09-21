@@ -13,10 +13,13 @@ struct BackupChapter: Codable, Hashable {
     var id: String
     var title: String?
     var scanlator: String?
+    var url: String?
     var lang: String
     var chapter: Float?
     var volume: Float?
     var dateUploaded: Date?
+    var thumbnail: String?
+    var locked: Bool?
     var sourceOrder: Int
 
     init(chapterObject: ChapterObject) {
@@ -25,10 +28,13 @@ struct BackupChapter: Codable, Hashable {
         id = chapterObject.id
         title = chapterObject.title
         scanlator = chapterObject.scanlator
+        url = chapterObject.url
         lang = chapterObject.lang
         chapter = chapterObject.chapter?.floatValue
         volume = chapterObject.volume?.floatValue
         dateUploaded = chapterObject.dateUploaded
+        thumbnail = chapterObject.thumbnail
+        locked = chapterObject.locked
         sourceOrder = Int(chapterObject.sourceOrder)
     }
 
@@ -44,6 +50,7 @@ struct BackupChapter: Codable, Hashable {
         obj.id = id
         obj.title = title
         obj.scanlator = scanlator
+        obj.url = url
         obj.lang = lang
         if let chapter = chapter {
             obj.chapter = NSNumber(value: chapter)
@@ -56,6 +63,8 @@ struct BackupChapter: Codable, Hashable {
             obj.volume = nil
         }
         obj.dateUploaded = dateUploaded
+        obj.thumbnail = thumbnail
+        obj.locked = locked ?? false
         obj.sourceOrder = Int16(sourceOrder)
         return obj
     }

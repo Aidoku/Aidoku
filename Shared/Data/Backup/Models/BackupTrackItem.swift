@@ -20,7 +20,6 @@ struct BackupTrackItem: Codable, Hashable {
         mangaId = trackObject.mangaId ?? ""
         sourceId = trackObject.sourceId ?? ""
         title = trackObject.title
-
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> TrackObject {
