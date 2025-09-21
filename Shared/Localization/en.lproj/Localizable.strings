@@ -503,6 +503,7 @@
 "CLEAR_TRACKED_MANGA_TEXT" = "This action is irreversible. Tracking for all trackers added to manga will be removed.";
 "SEARCH_OPTIONS" = "Search Options";
 "SHOW_NSFW_RESULTS" = "Show NSFW Results";
+"UPDATE_AFTER_READING" = "Update After Reading";
 
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";

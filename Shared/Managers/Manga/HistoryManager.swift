@@ -31,7 +31,7 @@ extension HistoryManager {
                 LogManager.logger.error("HistoryManager.setProgress: \(error.localizedDescription)")
             }
         }
-        NotificationCenter.default.post(name: NSNotification.Name("historySet"), object: (chapter, progress))
+        NotificationCenter.default.post(name: .historySet, object: (chapter, progress))
     }
 
     func addHistory(chapters: [Chapter], date: Date = Date()) async {
@@ -54,11 +54,13 @@ extension HistoryManager {
                 LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
             }
         }
-        // update tracker with chapter with largest number
-        if let maxChapter = chapters.max(by: { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }) {
-            await TrackerManager.shared.setCompleted(chapter: maxChapter)
+        if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
+            // update tracker with chapter with largest number
+            if let maxChapter = chapters.max(by: { $0.chapterNum ?? 0 < $1.chapterNum ?? 0 }) {
+                await TrackerManager.shared.setCompleted(chapter: maxChapter)
+            }
         }
-        NotificationCenter.default.post(name: NSNotification.Name("historyAdded"), object: chapters)
+        NotificationCenter.default.post(name: .historyAdded, object: chapters)
     }
 
     func addHistory(
@@ -88,17 +90,19 @@ extension HistoryManager {
                 LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
             }
         }
-        // update tracker with chapter with largest number
-        if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
-            await TrackerManager.shared.setCompleted(
-                chapter: maxChapter.toOld(
-                    sourceId: sourceId,
-                    mangaId: mangaId
+        if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
+            // update tracker with chapter with largest number
+            if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
+                await TrackerManager.shared.setCompleted(
+                    chapter: maxChapter.toOld(
+                        sourceId: sourceId,
+                        mangaId: mangaId
+                    )
                 )
-            )
+            }
         }
         NotificationCenter.default.post(
-            name: NSNotification.Name("historyAdded"),
+            name: .historyAdded,
             object: chapters.map { $0.toOld(sourceId: sourceId, mangaId: mangaId) }
         )
     }
@@ -120,7 +124,15 @@ extension HistoryManager {
         )
         NotificationCenter.default.post(
             name: .historyRemoved,
-            object: chapterIds.map { Chapter(sourceId: sourceId, id: $0, mangaId: mangaId, title: "", sourceOrder: -1) }
+            object: chapterIds.map {
+                Chapter(
+                    sourceId: sourceId,
+                    id: $0,
+                    mangaId: mangaId,
+                    title: "",
+                    sourceOrder: -1
+                )
+            }
         )
     }
 

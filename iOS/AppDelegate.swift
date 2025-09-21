@@ -87,7 +87,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "General.icloudSync": false,
                 "General.appearance": 0,
                 "General.useSystemAppearance": true,
-                "General.useMangaTint": true,
                 "General.portraitRows": UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2,
                 "General.landscapeRows": UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4,
 
@@ -136,7 +135,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarbox": false,
                 "Reader.pillarboxAmount": 15,
                 "Reader.pillarboxOrientation": "both",
-                "Reader.orientation": "device"
+                "Reader.orientation": "device",
+
+                "Tracking.updateAfterReading": true
             ]
         )
 

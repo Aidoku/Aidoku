@@ -27,7 +27,13 @@ struct SettingsTrackingView: View {
 
     var body: some View {
         List {
-            Section {}
+            Section {
+                SettingView(setting: .init(
+                    key: "Tracking.updateAfterReading",
+                    title: NSLocalizedString("UPDATE_AFTER_READING"),
+                    value: .toggle(.init())
+                ))
+            }
             Section {
                 ForEach(trackers.indices, id: \.self) { index in
                     let tracker = trackers[index]
