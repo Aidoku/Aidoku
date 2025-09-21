@@ -190,6 +190,7 @@ extension BackupsView {
 
     func restore(backup: Backup) {
         (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+        UIApplication.shared.isIdleTimerDisabled = true
         Task {
             do {
                 try await BackupManager.shared.restore(from: backup)
@@ -208,6 +209,7 @@ extension BackupsView {
                 restoreError = (error as? BackupManager.BackupError)?.stringValue ?? "Unknown"
                 showRestoreErrorAlert = true
             }
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
 
