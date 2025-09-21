@@ -335,45 +335,6 @@ extension SettingsView {
                 return setting
             }()
             SettingView(setting: newSetting)
-        } else {
-            VStack(spacing: 10) {
-                let (icon, color) = switch setting.key {
-                    case "iCloud": ("icloud.fill", Color.blue)
-                    default: ("questionmark", Color.gray)
-                }
-                Image(systemName: icon)
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundStyle(.white)
-                    .aspectRatio(contentMode: .fit)
-                    .padding(12)
-                    .frame(width: 60, height: 60)
-                    .background(color)
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
-
-                Text(setting.title)
-                    .font(.title2.weight(.bold))
-
-                let subtitle: String? = {
-                    switch setting.key {
-                        case "iCloud":
-                            NSLocalizedString(
-                                UserDefaults.standard.bool(forKey: "isSideloaded")
-                                    ? "ICLOUD_SYNC_TEXT_SIDELOADED"
-                                    : "ICLOUD_SYNC_TEXT_EXPERIMENTAL"
-                            )
-                        default: nil
-                    }
-                }()
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 15))
-                        .lineSpacing(2)
-                        .multilineTextAlignment(.center)
-                }
-            }
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 }
@@ -501,27 +462,19 @@ extension SettingsView {
             findTargetSetting(title: targetSettingTitle, in: targetPage.items)
         }
 
-        let content = ScrollViewReader { proxy in
-            List {
-                ForEach(targetPage.items.indices, id: \.self) { offset in
-                    let setting = targetPage.items[offset]
-                    SettingView(setting: setting, onChange: onSettingChange)
-                        .settingPageContent(pageContentHandler)
-                        .settingCustomContent(customContentHandler)
-                        .tag(setting.key.isEmpty ? UUID().uuidString : setting.key)
-                }
-            }
-            .onAppear {
-                if let targetSetting {
-                    proxy.scrollTo(targetSetting.key, anchor: .center)
-                }
-            }
-        }
-        .navigationTitle(targetPageSetting.title)
-        .navigationBarTitleDisplayMode((targetPage.inlineTitle ?? false) ? .inline : .automatic)
+        let content = SettingPageDestination(
+            setting: targetPageSetting,
+            onChange: onSettingChange,
+            value: targetPage,
+            scrollTo: targetSetting
+        )
+        .settingPageContent(pageContentHandler)
+        .settingCustomContent(customContentHandler)
 
         let controller = UIHostingController(rootView: content)
-        controller.title = targetPageSetting.title
+        let hasHeaderView = targetPage.icon != nil && targetPage.info != nil
+        controller.title = hasHeaderView ? nil : targetPageSetting.title
+        controller.navigationItem.largeTitleDisplayMode = .never
         path.push(controller)
     }
 }

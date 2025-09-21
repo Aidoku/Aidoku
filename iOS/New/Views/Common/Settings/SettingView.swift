@@ -31,6 +31,7 @@ struct SettingView: View {
     @State private var requiresFalse: Bool
     @State private var toggleValue: Bool
 
+    @State private var valueChangeTask: Task<Void, Never>?
     @State private var showAddAlert = false
     @State private var showLoginAlert = false
     @State private var showLogoutAlert = false
@@ -48,8 +49,6 @@ struct SettingView: View {
     @State private var loginReload = false
     @State private var session: ASWebAuthenticationSession?
     @State private var pageIsActive = false
-
-    @State private var valueChangeTask: Task<Void, Never>?
 
     @StateObject private var userDefaultsObserver: UserDefaultsObserver // causes view to refresh when setting changes (e.g. when resetting)
     @StateObject private var requiresObserver: UserDefaultsObserver
@@ -1035,48 +1034,20 @@ extension SettingView {
             }
         } label: {
             NavigationLink(
-                destination: Group {
-                    if let content = pageContentHandler?(setting.key) {
-                        content
-                    } else {
-                        List {
-                            ForEach(value.items.indices, id: \.self) { offset in
-                                let setting = value.items[offset]
-                                SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
-                                    .environment(\.settingPageContent, pageContentHandler)
-                                    .environment(\.settingCustomContent, customContentHandler)
-                            }
-                        }
-                    }
-                }
-                .navigationTitle(setting.title)
-                .navigationBarTitleDisplayMode((value.inlineTitle ?? false) ? .inline : .automatic),
+                destination: SettingPageDestination(
+                    source: source,
+                    setting: setting,
+                    namespace: namespace,
+                    onChange: onChange,
+                    value: value
+                )
+                .environment(\.settingPageContent, pageContentHandler)
+                .environment(\.settingCustomContent, customContentHandler),
                 isActive: $pageIsActive
             ) {
                 if let icon = value.icon {
                     HStack(spacing: 15) {
-                        let iconSize: CGFloat = 29
-                        switch icon {
-                            case .system(let name, let color, let inset):
-                                Image(systemName: name)
-                                    .resizable()
-                                    .renderingMode(.template)
-                                    .foregroundStyle(.white)
-                                    .aspectRatio(contentMode: .fit)
-                                    .padding(CGFloat(inset))
-                                    .frame(width: iconSize, height: iconSize)
-                                    .background(color.toColor())
-                                    .clipShape(RoundedRectangle(cornerRadius: 6.5))
-                            case .url(let string):
-                                SourceImageView(
-                                    source: source,
-                                    imageUrl: string,
-                                    width: iconSize,
-                                    height: iconSize,
-                                    downsampleWidth: iconSize * 2
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 6.5))
-                        }
+                        Self.iconView(source: source, icon: icon, size: 29)
 
                         Text(setting.title)
 
@@ -1095,6 +1066,132 @@ extension SettingView {
                 1
             } else {
                 disabled ? disabledOpacity : 1
+            }
+        }())
+    }
+
+    @ViewBuilder
+    static func iconView(source: AidokuRunner.Source?, icon: PageSetting.Icon, size: CGFloat) -> some View {
+        switch icon {
+            case .system(let name, let color, let inset):
+                Image(systemName: name)
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundStyle(.white)
+                    .aspectRatio(contentMode: .fit)
+                    .padding(CGFloat(inset) / 29 * size)
+                    .frame(width: size, height: size)
+                    .background(color.toColor())
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.225))
+            case .url(let string):
+                SourceImageView(
+                    source: source,
+                    imageUrl: string,
+                    width: size,
+                    height: size,
+                    downsampleWidth: size * 2
+                )
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.225))
+        }
+    }
+}
+
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue = CGFloat.zero
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value += nextValue()
+    }
+}
+
+struct SettingPageDestination: View {
+    var source: AidokuRunner.Source?
+    let setting: Setting
+    var namespace: String?
+    var onChange: ((String) -> Void)?
+
+    let value: PageSetting
+    var scrollTo: Setting?
+
+    @Environment(\.settingPageContent) private var pageContentHandler
+    @Environment(\.settingCustomContent) private var customContentHandler
+
+    @State private var hidePageNavbarTitle = false
+
+    @Namespace private var scrollSpace
+
+    init(
+        source: AidokuRunner.Source? = nil,
+        setting: Setting,
+        namespace: String? = nil,
+        onChange: ((String) -> Void)? = nil,
+        value: PageSetting,
+        scrollTo: Setting? = nil
+    ) {
+        self.source = source
+        self.setting = setting
+        self.namespace = namespace
+        self.onChange = onChange
+        self.value = value
+        self.scrollTo = scrollTo
+
+        // init with hidden navbar title when header view will exist
+        self._hidePageNavbarTitle = State(initialValue: value.icon != nil && value.info != nil)
+    }
+
+    var body: some View {
+        Group {
+            if let content = pageContentHandler?(setting.key) {
+                content
+            } else {
+                ScrollViewReader { proxy in
+                    List {
+                        if let icon = value.icon, let subtitle = value.info {
+                            VStack(spacing: 10) {
+                                SettingView.iconView(source: source, icon: icon, size: 60)
+
+                                Text(setting.title)
+                                    .font(.title2.weight(.bold))
+                                Text(subtitle)
+                                    .font(.system(size: 15))
+                                    .lineSpacing(2)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .background(GeometryReader { geo in
+                                let offset = -geo.frame(in: .named(scrollSpace)).minY
+                                Color.clear
+                                    .preference(key: ScrollOffsetPreferenceKey.self, value: offset)
+                            })
+                        }
+                        ForEach(value.items.indices, id: \.self) { offset in
+                            let setting = value.items[offset]
+                            SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
+                                .environment(\.settingPageContent, pageContentHandler)
+                                .environment(\.settingCustomContent, customContentHandler)
+                                .tag(setting.key.isEmpty ? UUID().uuidString : setting.key)
+                        }
+                    }
+                    .coordinateSpace(name: scrollSpace)
+                    .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                        hidePageNavbarTitle = value < 0
+                    }
+                    .onAppear {
+                        if let scrollTo {
+                            proxy.scrollTo(scrollTo.key, anchor: .center)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(hidePageNavbarTitle ? "" : setting.title)
+        .navigationBarTitleDisplayMode({
+            let hasHeaderView = value.icon != nil && value.info != nil
+            if hasHeaderView || (value.inlineTitle ?? false) {
+                return .inline
+            } else {
+                return .automatic
             }
         }())
     }

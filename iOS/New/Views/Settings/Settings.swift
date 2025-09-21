@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+import Foundation
 
 enum Settings {
     static let settings: [Setting] = [
@@ -21,6 +22,7 @@ enum Settings {
                 title: NSLocalizedString("APPEARANCE"),
                 value: .page(.init(
                     items: appearanceSettings,
+                    inlineTitle: true,
                     icon: .system(name: "textformat.size", color: "blue")
                 ))
             ),
@@ -28,6 +30,7 @@ enum Settings {
                 title: NSLocalizedString("LIBRARY"),
                 value: .page(.init(
                     items: librarySettings,
+                    inlineTitle: true,
                     icon: .system(name: "books.vertical.fill", color: "red")
                 ))
             ),
@@ -35,6 +38,7 @@ enum Settings {
                 title: NSLocalizedString("READER"),
                 value: .page(.init(
                     items: readerSettings,
+                    inlineTitle: true,
                     icon: .system(name: "book.fill", color: "green")
                 ))
             ),
@@ -43,6 +47,7 @@ enum Settings {
                 title: NSLocalizedString("TRACKING"),
                 value: .page(.init(
                     items: [],
+                    inlineTitle: true,
                     icon: .system(name: "clock.arrow.2.circlepath", color: "orange", inset: 4)
                 ))
             ),
@@ -52,13 +57,6 @@ enum Settings {
                     items: [
                         .init(value: .group(.init(items: [
                             .init(
-                                key: "iCloud",
-                                title: NSLocalizedString("ICLOUD_SYNC"),
-                                value: .custom
-                            )
-                        ]))),
-                        .init(value: .group(.init(items: [
-                            .init(
                                 key: "General.icloudSync",
                                 title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("ICLOUD_SYNC")),
                                 requiresFalse: "isSideloading",
@@ -66,13 +64,19 @@ enum Settings {
                             )
                         ])))
                     ],
-                    icon: .system(name: "icloud.fill", color: "blue")
+                    icon: .system(name: "icloud.fill", color: "blue"),
+                    info: NSLocalizedString(
+                        UserDefaults.standard.bool(forKey: "isSideloaded")
+                            ? "ICLOUD_SYNC_TEXT_SIDELOADED"
+                            : "ICLOUD_SYNC_TEXT_EXPERIMENTAL"
+                    )
                 ))
             ),
             .init(
                 title: NSLocalizedString("ADVANCED"),
                 value: .page(.init(
                     items: advancedSettings,
+                    inlineTitle: true,
                     icon: .system(name: "gearshape.2.fill", color: "gray", inset: 4)
                 ))
             )
@@ -83,6 +87,7 @@ enum Settings {
                 title: NSLocalizedString("ABOUT"),
                 value: .page(.init(
                     items: [],
+                    inlineTitle: true,
                     icon: .system(name: "info.circle.fill", color: "gray", inset: 6)
                 ))
             ),
@@ -91,6 +96,7 @@ enum Settings {
                 title: NSLocalizedString("SOURCE_LISTS"),
                 value: .page(.init(
                     items: [],
+                    inlineTitle: true,
                     icon: .system(name: "globe", color: "green")
                 ))
             ),
@@ -99,6 +105,7 @@ enum Settings {
                 title: NSLocalizedString("BACKUPS"),
                 value: .page(.init(
                     items: [],
+                    inlineTitle: true,
                     icon: .system(name: "externaldrive.fill", color: "red")
                 ))
             ),
@@ -107,6 +114,7 @@ enum Settings {
                 title: NSLocalizedString("DOWNLOAD_MANAGER"),
                 value: .page(.init(
                     items: [],
+                    inlineTitle: true,
                     icon: .system(name: "arrow.down.circle.fill", color: "blue", inset: 6)
                 ))
             )
