@@ -59,7 +59,7 @@ enum Settings {
                             .init(
                                 key: "General.icloudSync",
                                 title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("ICLOUD_SYNC")),
-                                requiresFalse: "isSideloading",
+                                requires: "isiCloudAvailable",
                                 value: .toggle(.init())
                             )
                         ])))

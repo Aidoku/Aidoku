@@ -17,6 +17,10 @@ final class CoreDataManager {
     private var observers: [NSObjectProtocol] = []
     private var lastHistoryToken: NSPersistentHistoryToken?
 
+    private var shouldUseiCloud: Bool {
+        UserDefaults.standard.bool(forKey: "General.icloudSync") && FileManager.default.ubiquityIdentityToken != nil
+    }
+
     deinit {
         for observer in observers {
             NotificationCenter.default.removeObserver(observer)
@@ -33,8 +37,11 @@ final class CoreDataManager {
         observers.append(NotificationCenter.default.addObserver(
             forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
         ) { [weak self] _ in
-            guard let cloudDescription = self?.container.persistentStoreDescriptions.first else { return }
-            if UserDefaults.standard.bool(forKey: "General.icloudSync") {
+            guard
+                let self,
+                let cloudDescription = self.container.persistentStoreDescriptions.first
+            else { return }
+            if self.shouldUseiCloud {
                 cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: CoreDataManager.containerID)
             } else {
                 cloudDescription.cloudKitContainerOptions = nil
@@ -60,7 +67,7 @@ final class CoreDataManager {
         localDescription.shouldMigrateStoreAutomatically = true
         localDescription.shouldInferMappingModelAutomatically = true
 
-        if UserDefaults.standard.bool(forKey: "General.icloudSync") {
+        if shouldUseiCloud {
             cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
                 containerIdentifier: CoreDataManager.containerID)
         } else {

@@ -19,6 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 #endif
 
     static let isSideloaded = Bundle.main.bundleIdentifier != canonicalID
+    static let isiCloudAvailable = FileManager.default.ubiquityIdentityToken != nil
+
     private var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
@@ -82,6 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.register(
             defaults: [
                 "isSideloaded": Self.isSideloaded, // for icloud sync setting
+                "isiCloudAvailable": Self.isiCloudAvailable,
 
                 "General.incognitoMode": false,
                 "General.icloudSync": false,
