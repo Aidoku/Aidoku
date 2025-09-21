@@ -301,37 +301,13 @@ extension SettingView {
             }
         } label: {
             NavigationLink(
-                destination: Group {
-                    if let content = pageContentHandler?(setting.key) {
-                        content
-                    } else {
-                        List {
-                            ForEach(value.values.indices, id: \.self) { offset in
-                                let item = value.values[offset]
-                                let selected = stringListBinding.contains(item)
-                                Button {
-                                    stringListBinding = [item]
-                                } label: {
-                                    HStack {
-                                        Text(value.titles?[safe: offset] ?? item)
-                                        Spacer()
-                                        if selected {
-                                            Image(systemName: "checkmark")
-                                                .foregroundStyle(.tint)
-                                        }
-                                    }
-                                }
-                                .foregroundStyle(.primary)
-                            }
-                        }
-                        .onChange(of: stringListBinding) { _ in
-                            if let item = stringListBinding.first {
-                                SettingsStore.shared.set(key: key(setting.key), value: item)
-                            }
-                        }
-                    }
-                }
-                .navigationTitle(setting.title),
+                destination: SelectDestination(
+                    setting: setting,
+                    value: value,
+                    key: key(setting.key),
+                    stringListBinding: $stringListBinding
+                )
+                .environment(\.settingPageContent, pageContentHandler),
                 isActive: $pageIsActive
             ) {
                 HStack {
@@ -359,6 +335,52 @@ extension SettingView {
         }())
     }
 
+    private struct SelectDestination: View {
+        let setting: Setting
+        let value: SelectSetting
+        let key: String
+
+        @Binding var stringListBinding: [String]
+
+        @Environment(\.settingPageContent) private var pageContentHandler
+
+        var body: some View {
+            Group {
+                if let content = pageContentHandler?(setting.key) {
+                    content
+                } else {
+                    List {
+                        ForEach(value.values.indices, id: \.self) { offset in
+                            let item = value.values[offset]
+                            let selected = stringListBinding.contains(item)
+                            Button {
+                                stringListBinding = [item]
+                            } label: {
+                                HStack {
+                                    Text(value.titles?[safe: offset] ?? item)
+                                    Spacer()
+                                    if selected {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.tint)
+                                    }
+                                }
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                    .onChange(of: stringListBinding) { _ in
+                        if let item = stringListBinding.first {
+                            SettingsStore.shared.set(key: key, value: item)
+                        }
+                    }
+                }
+            }
+            .navigationTitle(setting.title)
+        }
+    }
+}
+
+extension SettingView {
     @ViewBuilder
     func multiSelectView(value: MultiSelectSetting) -> some View {
         Button {
@@ -375,39 +397,13 @@ extension SettingView {
         } label: {
             NavigationLink(
                 setting.title,
-                destination: Group {
-                    if let content = pageContentHandler?(setting.key) {
-                        content
-                    } else {
-                        List {
-                            ForEach(value.values.indices, id: \.self) { offset in
-                                let item = value.values[offset]
-                                let selected = stringListBinding.contains(item)
-                                Button {
-                                    if !selected {
-                                        stringListBinding.append(item)
-                                    } else {
-                                        stringListBinding.removeAll { $0 == item }
-                                    }
-                                } label: {
-                                    HStack {
-                                        Text(value.titles?[safe: offset] ?? item)
-                                        Spacer()
-                                        if selected {
-                                            Image(systemName: "checkmark")
-                                                .foregroundStyle(.tint)
-                                        }
-                                    }
-                                }
-                                .foregroundStyle(.primary)
-                            }
-                        }
-                        .onChange(of: stringListBinding) { _ in
-                            SettingsStore.shared.set(key: key(setting.key), value: stringListBinding)
-                        }
-                    }
-                }
-                .navigationTitle(setting.title),
+                destination: MultiSelectDestination(
+                    setting: setting,
+                    value: value,
+                    key: key(setting.key),
+                    stringListBinding: $stringListBinding
+                )
+                .environment(\.settingPageContent, pageContentHandler),
                 isActive: $pageIsActive
             )
             .environment(\.isEnabled, true) // remove double disabled effect
@@ -421,6 +417,52 @@ extension SettingView {
                 disabled ? disabledOpacity : 1
             }
         }())
+    }
+
+    private struct MultiSelectDestination: View {
+        let setting: Setting
+        let value: MultiSelectSetting
+        let key: String
+
+        @Binding var stringListBinding: [String]
+
+        @Environment(\.settingPageContent) private var pageContentHandler
+
+        var body: some View {
+            Group {
+                if let content = pageContentHandler?(setting.key) {
+                    content
+                } else {
+                    List {
+                        ForEach(value.values.indices, id: \.self) { offset in
+                            let item = value.values[offset]
+                            let selected = stringListBinding.contains(item)
+                            Button {
+                                if !selected {
+                                    stringListBinding.append(item)
+                                } else {
+                                    stringListBinding.removeAll { $0 == item }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(value.titles?[safe: offset] ?? item)
+                                    Spacer()
+                                    if selected {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.tint)
+                                    }
+                                }
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                    }
+                    .onChange(of: stringListBinding) { _ in
+                        SettingsStore.shared.set(key: key, value: stringListBinding)
+                    }
+                }
+            }
+            .navigationTitle(setting.title)
+        }
     }
 }
 
