@@ -33,6 +33,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 
     var usesDoublePages = false
     var usesAutoPageLayout = false
+    var isolateFirstPageEnabled = UserDefaults.standard.bool(forKey: "Reader.pagedIsolateFirstPage")
     lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
     private var previousChapter: AidokuRunner.Chapter?
@@ -66,6 +67,35 @@ class ReaderPagedViewController: BaseObservingViewController {
             guard let self = self else { return }
             self.updatePageLayout()
             self.move(toPage: self.currentPage, animated: false)
+        }
+        addObserver(forName: "Reader.pagedIsolateFirstPage") { [weak self] _ in
+            guard let self = self else { return }
+            let oldValue = self.isolateFirstPageEnabled
+            let newValue = UserDefaults.standard.bool(forKey: "Reader.pagedIsolateFirstPage")
+            self.isolateFirstPageEnabled = newValue
+
+            // Calculate page offset when isolate first page setting changes
+            let offset = newValue ? 1 : -1
+            var adjustedPage = self.currentPage
+
+            if oldValue != newValue {
+                if newValue && self.currentPage >= 1 {
+                    // Enabling isolate first page: shift page forward
+                    adjustedPage = self.currentPage + 1
+                } else if !newValue && self.currentPage > 1 {
+                    // Disabling isolate first page: shift page backward
+                    adjustedPage = self.currentPage - 1
+                }
+
+                // Ensure page stays within valid range
+                adjustedPage = max(1, min(adjustedPage, self.viewModel.pages.count))
+            }
+
+            if let chapter = self.chapter {
+                Task {
+                    await self.loadChapter(startPage: adjustedPage)
+                }
+            }
         }
         addObserver(forName: "Reader.pagesToPreload") { [weak self] notification in
             self?.pagesToPreload = notification.object as? Int
@@ -211,11 +241,17 @@ extension ReaderPagedViewController {
             if case .page = firstPage.type, case .page = secondPage.type {
                 // Check if double page controller should be created (wide images don't combine with other pages)
                 if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: page) {
-                    targetViewController = ReaderDoublePageViewController(
-                        firstPage: firstPage,
-                        secondPage: secondPage,
-                        direction: readingMode == .rtl ? .rtl : .ltr
-                    )
+                    if self.isolateFirstPageEnabled && page == 1 {
+                        // For isolate first page: show single page for page 1
+                        targetViewController = firstPage
+                    } else {
+                        // Normal double page combination
+                        targetViewController = ReaderDoublePageViewController(
+                            firstPage: firstPage,
+                            secondPage: secondPage,
+                            direction: readingMode == .rtl ? .rtl : .ltr
+                        )
+                    }
                 } else {
                     // If double page should not be created, use first page
                     targetViewController = firstPage
@@ -543,11 +579,18 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 if case .page = firstPage.type, case .page = secondPage.type {
                     // Check if double page controller should be created
                     if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: pageIndex(from: currentIndex + 1)) {
-                        return ReaderDoublePageViewController(
-                            firstPage: firstPage,
-                            secondPage: secondPage,
-                            direction: readingMode == .rtl ? .rtl : .ltr
-                        )
+                        let targetPage = pageIndex(from: currentIndex + 1)
+                        if self.isolateFirstPageEnabled && targetPage == 1 {
+                            // For isolate first page: show single page for page 1
+                            return firstPage
+                        } else {
+                            // Normal double page combination
+                            return ReaderDoublePageViewController(
+                                firstPage: firstPage,
+                                secondPage: secondPage,
+                                direction: readingMode == .rtl ? .rtl : .ltr
+                            )
+                        }
                     } else {
                         // If double page should not be created, use first page
                         return firstPage
@@ -572,11 +615,18 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                 if case .page = firstPage.type, case .page = secondPage.type {
                     // Check if double page controller should be created
                     if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: pageIndex(from: currentIndex - 1)) {
-                        return ReaderDoublePageViewController(
-                            firstPage: firstPage,
-                            secondPage: secondPage,
-                            direction: readingMode == .rtl ? .rtl : .ltr
-                        )
+                        let targetPage = pageIndex(from: currentIndex - 1)
+                        if self.isolateFirstPageEnabled && targetPage == 1 {
+                            // For isolate first page: show single page for page 1
+                            return secondPage
+                        } else {
+                            // Normal double page combination
+                            return ReaderDoublePageViewController(
+                                firstPage: firstPage,
+                                secondPage: secondPage,
+                                direction: readingMode == .rtl ? .rtl : .ltr
+                            )
+                        }
                     } else {
                         // If double page should not be created, use second page
                         return secondPage

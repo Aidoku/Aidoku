@@ -247,6 +247,7 @@
 "VIEW_LIBRARY" = "查看書櫃";
 "LIBRARY_LOCKED" = "書櫃已上鎖。";
 "DOUBLE_PAGE" = "雙頁";
+"ISOLATE_FIRST_PAGE" = "首頁總是單獨顯示";
 "SCORE" = "評分";
 "LOGOUT_FROM_%@" = "從 %@ 登出？";
 "TRACK" = "追蹤";

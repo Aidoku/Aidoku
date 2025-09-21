@@ -469,6 +469,7 @@
 "PAGED" = "Paged";
 "PAGE_LAYOUT" = "Page Layout";
 "DOUBLE_PAGE" = "Double Page";
+"ISOLATE_FIRST_PAGE" = "Always Isolate First Page";
 "MULTI_LANGUAGE" = "Multi-Language";
 
 // Tracking

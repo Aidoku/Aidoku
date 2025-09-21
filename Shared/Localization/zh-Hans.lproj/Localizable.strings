@@ -242,6 +242,7 @@
 "SINGLE_PAGE" = "单页";
 "PAGED" = "分页";
 "DOUBLE_PAGE" = "双页";
+"ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "跟踪器";
 "LOGOUT" = "退出";

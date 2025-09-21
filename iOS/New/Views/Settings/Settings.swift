@@ -414,6 +414,12 @@ extension Settings {
                             NSLocalizedString("AUTOMATIC")
                         ]
                     ))
+                ),
+                .init(
+                    key: "Reader.pagedIsolateFirstPage",
+                    title: NSLocalizedString("ISOLATE_FIRST_PAGE"),
+                    notification: .init("Reader.pagedIsolateFirstPage"),
+                    value: .toggle(.init())
                 )
             ]))
         ),
