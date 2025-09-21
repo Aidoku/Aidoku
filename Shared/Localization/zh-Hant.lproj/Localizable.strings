@@ -299,6 +299,7 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "您確定要移除所有下載內容嗎？";
 "CACHE_SIZE_%@" = "快取大小：%@";
 "UNREAD_CHAPTERS" = "未讀章節";
+"SET_AS_SINGLE_PAGE" = "作爲單獨頁面顯示";
 "%i_OF_%i" = "%i 的 %i";
 "%i_PAGES_LEFT" = "剩餘 %i 頁";
 "WEBTOON" = "條漫";

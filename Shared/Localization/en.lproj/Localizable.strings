@@ -509,6 +509,7 @@
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
 "UNREAD_CHAPTERS" = "Unread Chapters";
+"SET_AS_SINGLE_PAGE" = "Set as Single Page";
 "RELOAD" = "Reload";
 "RELOAD_FAILED" = "Reload Failed";
 "RELOAD_FAILED_TEXT" = "Failed to reload the image. Please try again.";

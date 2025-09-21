@@ -34,6 +34,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     var usesDoublePages = false
     var usesAutoPageLayout = false
     var isolateFirstPageEnabled = UserDefaults.standard.bool(forKey: "Reader.pagedIsolateFirstPage")
+    var isolatedPages: Set<Int> = []
     lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
     private var previousChapter: AidokuRunner.Chapter?
@@ -243,6 +244,9 @@ extension ReaderPagedViewController {
                 if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: page) {
                     if self.isolateFirstPageEnabled && page == 1 {
                         // For isolate first page: show single page for page 1
+                        targetViewController = firstPage
+                    } else if self.isolatedPages.contains(page) {
+                        // For isolated page: show single page
                         targetViewController = firstPage
                     } else {
                         // Normal double page combination
@@ -583,6 +587,9 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                         if self.isolateFirstPageEnabled && targetPage == 1 {
                             // For isolate first page: show single page for page 1
                             return firstPage
+                        } else if self.isolatedPages.contains(targetPage) {
+                            // For isolated page: show single page
+                            return firstPage
                         } else {
                             // Normal double page combination
                             return ReaderDoublePageViewController(
@@ -618,6 +625,9 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                         let targetPage = pageIndex(from: currentIndex - 1)
                         if self.isolateFirstPageEnabled && targetPage == 1 {
                             // For isolate first page: show single page for page 1
+                            return secondPage
+                        } else if self.isolatedPages.contains(targetPage) {
+                            // For isolated page: show single page
                             return secondPage
                         } else {
                             // Normal double page combination
@@ -687,7 +697,36 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 }
             }
 
-            return UIMenu(title: "", children: [saveToPhotosAction, shareAction, reloadAction])
+            var actions = [saveToPhotosAction, shareAction, reloadAction]
+
+            // Only show isolate page action if using double pages and page is not already isolated
+            if self.usesDoublePages {
+                var isAlreadyIsolated = false
+                for (index, pageViewController) in self.pageViewControllers.enumerated() {
+                    if case .page = pageViewController.type,
+                        let readerPageView = pageViewController.pageView,
+                        readerPageView.imageView == pageView {
+                        let page = self.pageIndex(from: index)
+                        if self.isolatedPages.contains(page) {
+                            isAlreadyIsolated = true
+                        }
+                        break
+                    }
+                }
+                if !isAlreadyIsolated {
+                    let isolatePageAction = UIAction(
+                        title: NSLocalizedString("SET_AS_SINGLE_PAGE", comment: ""),
+                        image: UIImage(systemName: "rectangle.portrait")
+                    ) { _ in
+                        Task { @MainActor in
+                            self.isolateCurrentPage(for: pageView)
+                        }
+                    }
+                    actions.insert(isolatePageAction, at: 2)
+                }
+            }
+
+            return UIMenu(title: "", children: actions)
         })
     }
 
@@ -700,6 +739,22 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 let success = await readerPageView.reloadCurrentImage()
                 if !success {
                     showReloadError()
+                }
+                return
+            }
+        }
+    }
+
+    @MainActor
+    private func isolateCurrentPage(for imageView: UIImageView) {
+        for (index, pageViewController) in pageViewControllers.enumerated() {
+            if case .page = pageViewController.type,
+                let readerPageView = pageViewController.pageView,
+                readerPageView.imageView == imageView {
+                let page = pageIndex(from: index)
+                isolatedPages.insert(page)
+                Task {
+                    await loadChapter(startPage: page)
                 }
                 return
             }
