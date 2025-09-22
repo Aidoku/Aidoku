@@ -20,11 +20,13 @@ class TrackerManager {
     let myanimelist = MyAnimeListTracker()
     /// An instance of the Shikimori tracker.
     let shikimori = ShikimoriTracker()
+    /// An instance of the Bangumi tracker.
+    let bangumi = BangumiTracker()
     /// An instance of the Komga tracker.
     let komga = KomgaTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [anilist, myanimelist, shikimori, komga]
+    lazy var trackers: [Tracker] = [anilist, myanimelist, shikimori, bangumi, komga]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {
