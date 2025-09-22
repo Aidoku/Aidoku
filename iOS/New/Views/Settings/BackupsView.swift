@@ -233,8 +233,9 @@ private struct CreateBackupView: View {
     @State private var tracking = true
     @State private var history = true
     @State private var categories = true
-//    @State private var settings = true
-//    @State private var sensitiveSettings = false
+    @State private var settings = true
+    @State private var sourceLists = true
+    @State private var sensitiveSettings = false
 
     var body: some View {
         PlatformNavigationStack {
@@ -248,12 +249,13 @@ private struct CreateBackupView: View {
                 } header: {
                     Text(NSLocalizedString("LIBRARY"))
                 }
-//                Section {
-//                    Toggle(NSLocalizedString("SETTINGS"), isOn: $settings)
-//                    Toggle(NSLocalizedString("SENSITIVE_SETTINGS"), isOn: $sensitiveSettings)
-//                } header: {
-//                    Text(NSLocalizedString("SETTINGS"))
-//                }
+                Section {
+                    Toggle(NSLocalizedString("SETTINGS"), isOn: $settings)
+                    Toggle(NSLocalizedString("SOURCE_LISTS"), isOn: $sourceLists)
+                    Toggle(NSLocalizedString("SENSITIVE_SETTINGS"), isOn: $sensitiveSettings)
+                } header: {
+                    Text(NSLocalizedString("SETTINGS"))
+                }
             }
             .navigationTitle(NSLocalizedString("CREATE_BACKUP"))
             .navigationBarTitleDisplayMode(.inline)
@@ -270,9 +272,10 @@ private struct CreateBackupView: View {
                             history: history,
                             chapters: chapters,
                             tracking: tracking,
-                            categories: categories
-//                            settings: settings,
-//                            sensitiveSettings: sensitiveSettings
+                            categories: categories,
+                            settings: settings,
+                            sourceLists: sourceLists,
+                            sensitiveSettings: sensitiveSettings
                         ))
                         dismiss()
                     }

@@ -18,17 +18,32 @@ enum JsonAnyType: Int {
     case intArray = 8
 }
 
-struct JsonAnyValue: Codable {
+struct JsonAnyValue: Hashable {
     let type: JsonAnyType
 
-    let boolValue: Bool?
-    let intValue: Int?
-    let doubleValue: Double?
-    let stringValue: String?
-    let intArrayValue: [Int]?
-    let stringArrayValue: [String]?
-    let objectValue: [String: JsonAnyValue]?
+    var boolValue: Bool?
+    var intValue: Int?
+    var doubleValue: Double?
+    var stringValue: String?
+    var intArrayValue: [Int]?
+    var stringArrayValue: [String]?
+    var objectValue: [String: JsonAnyValue]?
 
+    func toRaw() -> Any? {
+        switch type {
+        case .null: return nil
+        case .int: return intValue
+        case .string: return stringValue
+        case .bool: return boolValue
+        case .array: return stringArrayValue
+        case .object: return objectValue?.mapValues { $0.toRaw() }
+        case .double: return doubleValue
+        case .intArray: return intArrayValue
+        }
+    }
+}
+
+extension JsonAnyValue: Codable {
     init(from decoder: Decoder) throws {
         let container =  try decoder.singleValueContainer()
 
@@ -129,17 +144,38 @@ struct JsonAnyValue: Codable {
         case .intArray: try container.encode(intArrayValue)
         }
     }
+}
 
-    func toRaw() -> Any? {
-        switch type {
-        case .null: return nil
-        case .int: return intValue
-        case .string: return stringValue
-        case .bool: return boolValue
-        case .array: return stringArrayValue
-        case .object: return objectValue?.mapValues { $0.toRaw() }
-        case .double: return doubleValue
-        case .intArray: return intArrayValue
-        }
+extension JsonAnyValue {
+    static func null() -> JsonAnyValue {
+        .init(type: .null)
+    }
+
+    static func string(_ value: String) -> JsonAnyValue {
+        .init(type: .string, stringValue: value)
+    }
+
+    static func int(_ value: Int) -> JsonAnyValue {
+        .init(type: .int, intValue: value, doubleValue: Double(value))
+    }
+
+    static func double(_ value: Double) -> JsonAnyValue {
+        .init(type: .double, intValue: Int(value), doubleValue: value)
+    }
+
+    static func bool(_ value: Bool) -> JsonAnyValue {
+        .init(type: .bool, boolValue: value)
+    }
+
+    static func array(_ value: [String]) -> JsonAnyValue {
+        .init(type: .array, stringArrayValue: value)
+    }
+
+    static func intArray(_ value: [Int]) -> JsonAnyValue {
+        .init(type: .intArray, intArrayValue: value)
+    }
+
+    static func object(_ value: [String: JsonAnyValue]) -> JsonAnyValue {
+        .init(type: .object, objectValue: value)
     }
 }

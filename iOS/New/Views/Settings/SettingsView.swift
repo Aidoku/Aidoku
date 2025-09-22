@@ -265,10 +265,10 @@ extension SettingsView {
                     Task {
                         await CoreDataManager.shared.container.performBackgroundTask { context in
                             CoreDataManager.shared.clearLibrary(context: context)
+                            CoreDataManager.shared.clearManga(context: context)
                             CoreDataManager.shared.clearHistory(context: context)
                             CoreDataManager.shared.clearChapters(context: context)
                             CoreDataManager.shared.clearCategories(context: context)
-                            CoreDataManager.shared.clearTracks(context: context)
                             CoreDataManager.shared.clearTracks(context: context)
                             try? context.save()
                         }

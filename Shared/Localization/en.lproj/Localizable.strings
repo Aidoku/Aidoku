@@ -437,6 +437,7 @@
 "RESTORE" = "Restore";
 "CREATE_BACKUP" = "Create Backup";
 "LIBRARY_ENTRIES" = "Library Entries";
+"SENSITIVE_SETTINGS" = "Sensitive Settings";
 
 "LOGS" = "Logs";
 "LOGGING" = "Logging";

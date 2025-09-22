@@ -16,6 +16,7 @@ struct Backup: Codable, Hashable {
     var categories: [String]?
     var sources: [String]?
     var sourceLists: [String]?
+    var settings: [String: JsonAnyValue]?
     var date: Date
     var name: String?
     var version: String?
