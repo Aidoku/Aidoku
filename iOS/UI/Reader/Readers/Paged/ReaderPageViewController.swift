@@ -135,6 +135,7 @@ class ReaderPageViewController: BaseViewController {
             let result = await pageView.setPage(page, sourceId: sourceId)
             zoomView?.zoomEnabled = result
             reloadButton.isHidden = result
+
             // Update aspect ratio
             let oldAspectRatio = imageAspectRatio
             if result, let image = pageView.imageView.image {
@@ -144,7 +145,7 @@ class ReaderPageViewController: BaseViewController {
             }
 
             // Notify if aspect ratio changed and became wide image
-            if oldAspectRatio != imageAspectRatio && imageAspectRatio != nil && imageAspectRatio! > 1 {
+            if oldAspectRatio != imageAspectRatio && isWideImage {
                 onAspectRatioUpdated?()
             }
         }
@@ -168,7 +169,7 @@ class ReaderPageViewController: BaseViewController {
 
     /// Check if this is a wide image (aspect ratio > 1)
     var isWideImage: Bool {
-        guard let aspectRatio = imageAspectRatio else { return false }
-        return aspectRatio > 1
+        guard let imageAspectRatio else { return false }
+        return imageAspectRatio > 1
     }
 }
