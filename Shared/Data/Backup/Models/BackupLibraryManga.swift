@@ -12,19 +12,21 @@ struct BackupLibraryManga: Codable, Hashable {
     var lastUpdated: Date
     var lastRead: Date?
     var dateAdded: Date
-    var categories: [String]
+    var categories: [String]?
 
     var mangaId: String
     var sourceId: String
 
-    init(libraryObject: LibraryMangaObject) {
+    init(libraryObject: LibraryMangaObject, skipCategories: Bool = false) {
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
         lastRead = libraryObject.lastRead
         dateAdded = libraryObject.dateAdded
         mangaId = libraryObject.manga?.id ?? ""
         sourceId = libraryObject.manga?.sourceId ?? ""
-        categories = (libraryObject.categories?.allObjects as? [CategoryObject])?.compactMap { $0.title } ?? []
+        if !skipCategories {
+            categories = (libraryObject.categories?.allObjects as? [CategoryObject])?.compactMap { $0.title } ?? []
+        }
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> LibraryMangaObject {

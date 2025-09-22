@@ -38,9 +38,9 @@ class BackupManager {
         }
     }
 
-    func saveNewBackup() {
+    func saveNewBackup(options: BackupOptions) {
         Task {
-            save(backup: await createBackup())
+            save(backup: await createBackup(options: options))
         }
     }
 
@@ -67,24 +67,58 @@ class BackupManager {
         }
     }
 
-    func createBackup() async -> Backup {
+    struct BackupOptions {
+        let libraryEntries: Bool
+        let history: Bool
+        let chapters: Bool
+        let tracking: Bool
+        let categories: Bool
+//        let settings: Bool
+//        let sensitiveSettings: Bool
+    }
+
+    func createBackup(options: BackupOptions) async -> Backup {
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            let library = CoreDataManager.shared.getLibraryManga(context: context).map {
-                BackupLibraryManga(libraryObject: $0)
+            let library: [BackupLibraryManga] = if options.libraryEntries {
+                CoreDataManager.shared.getLibraryManga(context: context).map {
+                    BackupLibraryManga(libraryObject: $0, skipCategories: !options.categories)
+                }
+            } else {
+                []
             }
-            let history = CoreDataManager.shared.getHistory(context: context).map {
-                BackupHistory(historyObject: $0)
+            let history: [BackupHistory] = if options.history {
+                CoreDataManager.shared.getHistory(context: context).map {
+                    BackupHistory(historyObject: $0)
+                }
+            } else {
+                []
             }
-            let manga = CoreDataManager.shared.getManga(context: context).map {
-                BackupManga(mangaObject: $0)
+            let manga: [BackupManga] = if options.libraryEntries {
+                CoreDataManager.shared.getManga(context: context).map {
+                    BackupManga(mangaObject: $0)
+                }
+            } else {
+                []
             }
-            let chapters = CoreDataManager.shared.getChapters(context: context).map {
-                BackupChapter(chapterObject: $0)
+            let chapters: [BackupChapter] = if options.chapters {
+                CoreDataManager.shared.getChapters(context: context).map {
+                    BackupChapter(chapterObject: $0)
+                }
+            } else {
+                []
             }
-            let trackItems = CoreDataManager.shared.getTracks(context: context).compactMap {
-                BackupTrackItem(trackObject: $0)
+            let trackItems: [BackupTrackItem] = if options.tracking {
+                CoreDataManager.shared.getTracks(context: context).compactMap {
+                    BackupTrackItem(trackObject: $0)
+                }
+            } else {
+                []
             }
-            let categories = CoreDataManager.shared.getCategoryTitles(context: context)
+            let categories: [String] = if options.categories {
+                CoreDataManager.shared.getCategoryTitles(context: context)
+            } else {
+                []
+            }
             let sources = CoreDataManager.shared.getSources(context: context).compactMap {
                 $0.id
             }
@@ -195,11 +229,11 @@ class BackupManager {
                             $0.id == libraryBackupItem.mangaId && $0.sourceId == libraryBackupItem.sourceId
                         }) {
                             libraryObject.manga = manga
-                            if !libraryBackupItem.categories.isEmpty {
+                            if let categories = libraryBackupItem.categories, !categories.isEmpty {
                                 CoreDataManager.shared.addCategoriesToManga(
                                     sourceId: libraryBackupItem.sourceId,
                                     mangaId: libraryBackupItem.mangaId,
-                                    categories: libraryBackupItem.categories,
+                                    categories: categories,
                                     context: context
                                 )
                             }

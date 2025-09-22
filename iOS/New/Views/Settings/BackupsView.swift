@@ -18,6 +18,7 @@ struct BackupsView: View {
     @State private var backupName: String = ""
     @State private var restoreError: String?
     @State private var missingSources: [String] = []
+    @State private var showCreateSheet = false
     @State private var showRestoreAlert = false
     @State private var showRenameAlert = false
     @State private var showRestoreErrorAlert = false
@@ -106,11 +107,14 @@ struct BackupsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    createBackup()
+                    showCreateSheet = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
+        }
+        .sheet(isPresented: $showCreateSheet) {
+            CreateBackupView()
         }
         .alert(NSLocalizedString("RESTORE_BACKUP"), isPresented: $showRestoreAlert) {
             Button(NSLocalizedString("CANCEL"), role: .cancel) {
@@ -184,10 +188,6 @@ extension BackupsView {
         }
     }
 
-    func createBackup() {
-        BackupManager.shared.saveNewBackup()
-    }
-
     func restore(backup: Backup) {
         (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
         UIApplication.shared.isIdleTimerDisabled = true
@@ -222,5 +222,62 @@ extension BackupsView {
         guard let sourceView = path.rootViewController?.view else { return }
         vc.popoverPresentationController?.sourceView = sourceView
         path.present(vc)
+    }
+}
+
+private struct CreateBackupView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var libraryEntries = true
+    @State private var chapters = true
+    @State private var tracking = true
+    @State private var history = true
+    @State private var categories = true
+//    @State private var settings = true
+//    @State private var sensitiveSettings = false
+
+    var body: some View {
+        PlatformNavigationStack {
+            List {
+                Section {
+                    Toggle(NSLocalizedString("LIBRARY_ENTRIES"), isOn: $libraryEntries)
+                    Toggle(NSLocalizedString("CHAPTERS"), isOn: $chapters)
+                    Toggle(NSLocalizedString("TRACKING"), isOn: $tracking)
+                    Toggle(NSLocalizedString("HISTORY"), isOn: $history)
+                    Toggle(NSLocalizedString("CATEGORIES"), isOn: $categories)
+                } header: {
+                    Text(NSLocalizedString("LIBRARY"))
+                }
+//                Section {
+//                    Toggle(NSLocalizedString("SETTINGS"), isOn: $settings)
+//                    Toggle(NSLocalizedString("SENSITIVE_SETTINGS"), isOn: $sensitiveSettings)
+//                } header: {
+//                    Text(NSLocalizedString("SETTINGS"))
+//                }
+            }
+            .navigationTitle(NSLocalizedString("CREATE_BACKUP"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    DoneButton {
+                        BackupManager.shared.saveNewBackup(options: .init(
+                            libraryEntries: libraryEntries,
+                            history: history,
+                            chapters: chapters,
+                            tracking: tracking,
+                            categories: categories
+//                            settings: settings,
+//                            sensitiveSettings: sensitiveSettings
+                        ))
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
