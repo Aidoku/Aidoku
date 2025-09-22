@@ -332,15 +332,16 @@ extension ReaderPagedViewController {
     private func createPageController(
         firstPage: ReaderPageViewController,
         secondPage: ReaderPageViewController,
-        page: Int
+        page: Int,
+        forBefore: Bool = false
     ) -> UIViewController {
         if shouldCreateDoublePageController(firstPage: firstPage, secondPage: secondPage, page: page) {
             if isolateFirstPageEnabled && page == 1 {
                 // For isolate first page: show single page for page 1
-                return firstPage
+                return forBefore ? secondPage : firstPage
             } else if isolatedPages.contains(page) {
                 // For isolated page: show single page
-                return firstPage
+                return forBefore ? secondPage : firstPage
             } else {
                 // Normal double page combination
                 return ReaderDoublePageViewController(
@@ -351,7 +352,7 @@ extension ReaderPagedViewController {
             }
         } else {
             // If double page should not be created, use first page
-            return firstPage
+            return forBefore ? secondPage : firstPage
         }
     }
 
@@ -634,7 +635,8 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
                     return createPageController(
                         firstPage: firstPage,
                         secondPage: secondPage,
-                        page: pageIndex(from: currentIndex + 1)
+                        page: pageIndex(from: currentIndex - 1),
+                        forBefore: true
                     )
                 }
             }
