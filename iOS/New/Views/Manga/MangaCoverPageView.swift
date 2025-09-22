@@ -81,11 +81,9 @@ struct MangaCoverPageView: View {
             .navigationTitle(NSLocalizedString("COVER"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
                         dismiss()
-                    } label: {
-                        Text(NSLocalizedString("DONE")).bold()
                     }
                 }
             }

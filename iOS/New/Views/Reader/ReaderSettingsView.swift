@@ -265,11 +265,9 @@ struct ReaderSettingsView: View {
             .animation(.default, value: upscaleImages.value)
             .navigationTitle(NSLocalizedString("READER_SETTINGS"))
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
                         dismiss()
-                    } label: {
-                        Text(NSLocalizedString("DONE")).bold()
                     }
                 }
             }

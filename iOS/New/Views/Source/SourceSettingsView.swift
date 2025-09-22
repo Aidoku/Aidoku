@@ -75,11 +75,9 @@ struct SourceSettingsView: View {
                 .ignoresSafeArea()
         )
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
+            ToolbarItem(placement: .cancellationAction) {
+                CloseButton {
                     path.dismiss()
-                } label: {
-                    Text(NSLocalizedString("DONE")).bold()
                 }
             }
         }

@@ -486,6 +486,7 @@
 		FBFDF5FA2DF799340064F603 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FBFDF5F92DF799340064F603 /* AidokuRunner */; };
 		FBFF58912E7F2642009367B7 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFF58902E7F2641009367B7 /* Settings.swift */; };
 		FBFF58932E7F2BF5009367B7 /* SettingView+Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFF58922E7F2BEF009367B7 /* SettingView+Environment.swift */; };
+		FBFF58952E807282009367B7 /* DoneButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFF58942E807280009367B7 /* DoneButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -885,6 +886,7 @@
 		FBFDD40227838AB90055ED9F /* Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
 		FBFF58902E7F2641009367B7 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FBFF58922E7F2BEF009367B7 /* SettingView+Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingView+Environment.swift"; sourceTree = "<group>"; };
+		FBFF58942E807280009367B7 /* DoneButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1501,6 +1503,7 @@
 				FB662E932DA813E300007514 /* HCollectionGrid.swift */,
 				FB662EE22DA81A5C00007514 /* CollectionView.swift */,
 				FB662EE12DA81A5C00007514 /* CloseButton.swift */,
+				FBFF58942E807280009367B7 /* DoneButton.swift */,
 				FB4EBFC12E450FC800D83F9A /* ClearFieldButton.swift */,
 				FB14B1222DF4CF290067E4D4 /* ImagePicker.swift */,
 				FB662EDF2DA81A5C00007514 /* Carousel.swift */,
@@ -2382,6 +2385,7 @@
 				FBED232127BB2BBE0095D0C0 /* FilterModalViewController.swift in Sources */,
 				FB9A483B2967E47200FFC414 /* MigrationState.swift in Sources */,
 				FB1B4853277CE4510056D02C /* AppDelegate.swift in Sources */,
+				FBFF58952E807282009367B7 /* DoneButton.swift in Sources */,
 				FB72502227CBE9170037F1C9 /* SourceInfoHeaderView.swift in Sources */,
 				FBD6A411285B7789007116C9 /* TrackItem.swift in Sources */,
 				FBD6A416285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,

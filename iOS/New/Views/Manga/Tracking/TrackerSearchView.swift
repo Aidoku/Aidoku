@@ -62,22 +62,18 @@ struct TrackerSearchView: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
                         if searchBarFocused == true {
                             searchBarFocused = false
                         } else {
                             dismiss()
                         }
-                    } label: {
-                        Text(NSLocalizedString("CANCEL"))
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                ToolbarItem(placement: .confirmationAction) {
+                    DoneButton {
                         track()
-                    } label: {
-                        Text(NSLocalizedString("TRACK"))
                     }
                     .disabled(selectedItem == nil)
                 }

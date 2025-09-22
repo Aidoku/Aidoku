@@ -91,20 +91,14 @@ extension LocalFileImportView.ContentView {
             }
             .padding(.horizontal)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if fullyPresented {
-                        Button(NSLocalizedString("CANCEL")) {
-                            dismiss()
-                        }
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
+                        dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    if !fullyPresented {
-                        CloseButton {
-                            dismiss()
-                        }
-                    } else {
+                    if fullyPresented {
                         Button {
                             if selectedMangaId.isEmpty {
                                 showSeriesConfigurePage = true

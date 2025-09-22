@@ -12,11 +12,8 @@ struct CloseButton: View {
 
     var body: some View {
         if #available(iOS 26.0, *) {
-            // ios 26 doesn't have a special close button style
-            Button {
+            Button(role: .close) {
                 action()
-            } label: {
-                Image(systemName: "xmark")
             }
         } else {
             CloseButtonUIKit(action: action)

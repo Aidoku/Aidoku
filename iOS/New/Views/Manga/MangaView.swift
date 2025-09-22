@@ -462,12 +462,10 @@ extension MangaView {
                 Image(systemName: "ellipsis")
             }
         } else {
-            Button {
+            DoneButton {
                 withAnimation {
                     editMode = .inactive
                 }
-            } label: {
-                Text(NSLocalizedString("DONE")).bold()
             }
         }
     }

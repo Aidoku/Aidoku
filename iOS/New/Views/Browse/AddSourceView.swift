@@ -190,21 +190,18 @@ struct AddSourceView: View {
                     .ignoresSafeArea()
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     if !allExternalSources.isEmpty {
                         Button {
                             showLanguageSelectSheet = true
                         } label: {
                             Image(systemName: "globe.americas.fill")
                         }
-                    }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Text(NSLocalizedString("DONE")).bold()
                     }
                 }
             }

@@ -844,7 +844,7 @@ extension SettingView {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button {
                         showLoginWebView = false
                     } label: {
