@@ -13,8 +13,8 @@ class BangumiApi {
 
     let oauth = OAuthClient(
         id: "bangumi",
-        clientId: "bgm478768d0daf063854",
-        clientSecret: "2d78114dc16ea3a4786de4f7c6afa3e1",
+        clientId: "bgm479068d16523bfca2",
+        clientSecret: "d6328f094c5e43a082b6141ab1f4ecc5",
         baseUrl: "https://bgm.tv/oauth"
     )
 
