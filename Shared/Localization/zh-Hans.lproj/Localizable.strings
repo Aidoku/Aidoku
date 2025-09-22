@@ -242,6 +242,7 @@
 "SINGLE_PAGE" = "单页";
 "PAGED" = "分页";
 "DOUBLE_PAGE" = "双页";
+"ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "跟踪器";
 "LOGOUT" = "退出";
@@ -279,6 +280,7 @@
 "FAILED_CHAPTER_LOAD" = "加载章节失败";
 "TOTAL_CHAPTERS" = "总章节数";
 "UNREAD_CHAPTERS" = "未读章节";
+"SET_AS_SINGLE_PAGE" = "作为单独页面显示";
 "FAILED_CHAPTER_LOAD_INFO" = "你可能离线了或者来源网站出现问题。";
 "%i_PAGES_LEFT" = "剩余 %i 页";
 "REMOVE_FROM_CATEGORY" = "从分类中移除";
