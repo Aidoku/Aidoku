@@ -133,22 +133,22 @@ extension Settings {
             ),
             .init(
                 key: "General.useSystemAppearance",
-                title: "Use System Appearance",
+                title: NSLocalizedString("USE_SYSTEM_APPEARANCE"),
                 value: .toggle(.init())
             )
         ]))),
         .init(
-            title: "Manga Per Row",
+            title: NSLocalizedString("MANGA_PER_ROW"),
             value: .group(.init(items: [
                 .init(
                     key: "General.portraitRows",
                     title: NSLocalizedString("PORTRAIT"),
-                    value: .stepper(.init(minimumValue: 1, maximumValue: 1))
+                    value: .stepper(.init(minimumValue: 1, maximumValue: 15))
                 ),
                 .init(
                     key: "General.landscapeRows",
                     title: NSLocalizedString("LANDSCAPE"),
-                    value: .stepper(.init(minimumValue: 1, maximumValue: 1))
+                    value: .stepper(.init(minimumValue: 1, maximumValue: 15))
                 )
             ]))
         )

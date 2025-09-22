@@ -341,7 +341,7 @@
 "APPEARANCE_LIGHT" = "Light";
 "APPEARANCE_DARK" = "Dark";
 "USE_SYSTEM_APPEARANCE" = "Use System Appearance";
-"MANGA_PER_ROW" = "Manga per row";
+"MANGA_PER_ROW" = "Manga Per Row";
 "PORTRAIT" = "Portrait";
 "LANDSCAPE" = "Landscape";
 "READER" = "Reader";
