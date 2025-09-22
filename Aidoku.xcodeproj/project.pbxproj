@@ -14,6 +14,12 @@
 		04B48CFE2CD6B3B000F719D0 /* ShikimoriQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */; };
 		04B48CFF2CD6B3B000F719D0 /* ShikimoriQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */; };
 		0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */; };
+		1871B4752E81241200C272AD /* BangumiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4722E81241200C272AD /* BangumiModels.swift */; };
+		1871B4762E81241200C272AD /* BangumiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4722E81241200C272AD /* BangumiModels.swift */; };
+		1871B4772E81241200C272AD /* BangumiApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4732E81241200C272AD /* BangumiApi.swift */; };
+		1871B4782E81241200C272AD /* BangumiApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4732E81241200C272AD /* BangumiApi.swift */; };
+		1871B4792E81241200C272AD /* BangumiTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4742E81241200C272AD /* BangumiTracker.swift */; };
+		1871B47A2E81241200C272AD /* BangumiTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1871B4742E81241200C272AD /* BangumiTracker.swift */; };
 		37F3E66D2850F62100A944E0 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F3E66C2850F62100A944E0 /* Collection.swift */; };
 		48177B8E2B75C40400AD41B4 /* MangaUpdatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48177B8D2B75C40400AD41B4 /* MangaUpdatesView.swift */; };
 		48177B902B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48177B8F2B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift */; };
@@ -487,6 +493,9 @@
 		04B48CFA2CD6838600F719D0 /* ShikimoriApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShikimoriApi.swift; sourceTree = "<group>"; };
 		04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShikimoriQueries.swift; sourceTree = "<group>"; };
 		0C807DDC27D47C2D0042EE7B /* CircularProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
+		1871B4722E81241200C272AD /* BangumiModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BangumiModels.swift; sourceTree = "<group>"; };
+		1871B4732E81241200C272AD /* BangumiApi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BangumiApi.swift; sourceTree = "<group>"; };
+		1871B4742E81241200C272AD /* BangumiTracker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BangumiTracker.swift; sourceTree = "<group>"; };
 		37F3E66C2850F62100A944E0 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		48177B8D2B75C40400AD41B4 /* MangaUpdatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaUpdatesView.swift; sourceTree = "<group>"; };
 		48177B8F2B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+MangaUpdates.swift"; sourceTree = "<group>"; };
@@ -917,6 +926,16 @@
 				04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */,
 			);
 			path = shikimori;
+			sourceTree = "<group>";
+		};
+		1871B4712E81241200C272AD /* bangumi */ = {
+			isa = PBXGroup;
+			children = (
+				1871B4722E81241200C272AD /* BangumiModels.swift */,
+				1871B4732E81241200C272AD /* BangumiApi.swift */,
+				1871B4742E81241200C272AD /* BangumiTracker.swift */,
+			);
+			path = bangumi;
 			sourceTree = "<group>";
 		};
 		48177B8C2B75C29200AD41B4 /* Updates */ = {
@@ -1840,6 +1859,7 @@
 		FBD6A413285B7CAF007116C9 /* Trackers */ = {
 			isa = PBXGroup;
 			children = (
+				1871B4712E81241200C272AD /* bangumi */,
 				FB0E1CCC288AE8AD00B67BA9 /* anilist */,
 				FB1A4E5F2E78A817006F4BA8 /* komga */,
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
@@ -2229,6 +2249,7 @@
 				FB7F06002DDF79420036B116 /* KomgaSource.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
+				1871B4792E81241200C272AD /* BangumiTracker.swift in Sources */,
 				FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */,
 				FB2E02542868B3D900786F21 /* TrackerSettingOptionView.swift in Sources */,
 				FB30958829CB3EEF00EF2B0A /* ReaderTransitionNode.swift in Sources */,
@@ -2261,6 +2282,7 @@
 				FB3F49E52B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */,
 				FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
+				1871B4752E81241200C272AD /* BangumiModels.swift in Sources */,
 				FB1B483E277CE1920056D02C /* Aidoku.xcdatamodeld in Sources */,
 				FB90F6CC2899867D000C37E6 /* CoreDataManager.swift in Sources */,
 				FB72501327CAAC9F0037F1C9 /* Backup.swift in Sources */,
@@ -2329,6 +2351,7 @@
 				FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,
 				FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */,
 				FBFF58912E7F2642009367B7 /* Settings.swift in Sources */,
+				1871B4772E81241200C272AD /* BangumiApi.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
@@ -2527,6 +2550,7 @@
 				FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
 				FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB14B12F2DF4D2E90067E4D4 /* AniListQueries.swift in Sources */,
+				1871B47A2E81241200C272AD /* BangumiTracker.swift in Sources */,
 				FB0CAA6628A9B5540024561A /* MangaManager.swift in Sources */,
 				723D3AF92E0DC5A5003ED4CF /* DownloadedMangaInfo.swift in Sources */,
 				FB72501727CAACAB0037F1C9 /* BackupManga.swift in Sources */,
@@ -2563,6 +2587,7 @@
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
 				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
+				1871B4782E81241200C272AD /* BangumiApi.swift in Sources */,
 				04B48CFB2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */,
 				FB72501027CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
 				4875B8262BA6F2C3001E39CA /* MangaUpdateManager.swift in Sources */,
@@ -2612,6 +2637,7 @@
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
+				1871B4762E81241200C272AD /* BangumiModels.swift in Sources */,
 				FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
 				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
