@@ -47,26 +47,6 @@ class DownloadManager {
         await queue.queue
     }
 
-//    func getDownloadedPages(for chapter: Chapter) -> [Page] {
-//        var pages: [Page] = []
-//        let pageUrls = cache.directory(for: chapter).contents
-//        for page in pageUrls {
-//            if let data = try? Data(contentsOf: page) {
-//                pages.append(
-//                    Page(
-//                        sourceId: chapter.sourceId,
-//                        chapterId: chapter.id,
-//                        index: (Int(page.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-//                        imageURL: nil,
-//                        base64: page.pathExtension == "txt" ? String(data: data, encoding: .utf8) : data.base64EncodedString(),
-//                        text: nil
-//                    )
-//                )
-//            }
-//        }
-//        return pages.sorted { $0.index < $1.index }
-//    }
-
     func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
         var descriptionFiles: [URL] = []
 
@@ -316,7 +296,7 @@ extension DownloadManager {
                 let storedMetadata = loadMangaMetadata(from: mangaDirectory)
 
                 // Fallback to CoreData only if no stored metadata exists
-                let mangaMetadata = if let storedMetadata = storedMetadata {
+                let mangaMetadata = if let storedMetadata {
                     (
                         title: storedMetadata.title,
                         coverUrl: storedMetadata.thumbnailBase64 != nil ?
@@ -325,56 +305,56 @@ extension DownloadManager {
                             CoreDataManager.shared.container.performBackgroundTask { context in
                                 let isInLibrary = CoreDataManager.shared.hasLibraryManga(
                                     sourceId: sourceId,
-                                    mangaId: mangaId,
+                                    mangaId: storedMetadata.mangaId ?? mangaId,
                                     context: context
                                 )
                                 continuation.resume(returning: isInLibrary)
                             }
                         },
-                        actualMangaId: mangaId
+                        actualMangaId: storedMetadata.mangaId ?? mangaId
                     )
                 } else {
                     await withCheckedContinuation { continuation in
-                    CoreDataManager.shared.container.performBackgroundTask { context in
-                        // First try direct lookup with the directory name
-                        var mangaObject = CoreDataManager.shared.getManga(
-                            sourceId: sourceId,
-                            mangaId: mangaId,
-                            context: context
-                        )
-                        var isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                            sourceId: sourceId,
-                            mangaId: mangaId,
-                            context: context
-                        )
+                        CoreDataManager.shared.container.performBackgroundTask { context in
+                            // First try direct lookup with the directory name
+                            var mangaObject = CoreDataManager.shared.getManga(
+                                sourceId: sourceId,
+                                mangaId: mangaId,
+                                context: context
+                            )
+                            var isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                sourceId: sourceId,
+                                mangaId: mangaId,
+                                context: context
+                            )
 
-                        // If not found, try to find a manga whose sanitized ID matches the directory name
-                        if mangaObject == nil {
-                            let allMangaForSource = CoreDataManager.shared.getManga(context: context)
-                                .filter { $0.sourceId == sourceId }
+                            // If not found, try to find a manga whose sanitized ID matches the directory name
+                            if mangaObject == nil {
+                                let allMangaForSource = CoreDataManager.shared.getManga(context: context)
+                                    .filter { $0.sourceId == sourceId }
 
-                            for candidateManga in allMangaForSource {
-                                let candidateId = candidateManga.id
-                                if candidateId.directoryName == mangaId {
-                                    mangaObject = candidateManga
-                                    isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                                        sourceId: sourceId,
-                                        mangaId: candidateId,
-                                        context: context
-                                    )
-                                    break
+                                for candidateManga in allMangaForSource {
+                                    let candidateId = candidateManga.id
+                                    if candidateId.directoryName == mangaId {
+                                        mangaObject = candidateManga
+                                        isInLibrary = CoreDataManager.shared.hasLibraryManga(
+                                            sourceId: sourceId,
+                                            mangaId: candidateId,
+                                            context: context
+                                        )
+                                        break
+                                    }
                                 }
                             }
-                        }
 
-                        let result = (
-                            title: mangaObject?.title,
-                            coverUrl: mangaObject?.cover,
-                            isInLibrary: isInLibrary,
-                            actualMangaId: mangaObject?.id ?? mangaId
-                        )
-                        continuation.resume(returning: result)
-                    }
+                            let result = (
+                                title: mangaObject?.title,
+                                coverUrl: mangaObject?.cover,
+                                isInLibrary: isInLibrary,
+                                actualMangaId: mangaObject?.id ?? mangaId
+                            )
+                            continuation.resume(returning: result)
+                        }
                     }
                 }
 
@@ -490,6 +470,7 @@ extension DownloadManager {
         }
 
         let metadata = MangaMetadata(
+            mangaId: manga.id,
             title: manga.title,
             cover: manga.coverUrl?.absoluteString,
             thumbnailBase64: thumbnailBase64,
@@ -546,6 +527,7 @@ extension DownloadManager {
 
     /// Simple manga metadata structure
     private struct MangaMetadata: Codable {
+        let mangaId: String?
         let title: String?
         let cover: String?
         let thumbnailBase64: String?
