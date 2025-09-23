@@ -13,6 +13,7 @@ import Foundation
 actor DownloadQueue {
 
     private let cache: DownloadCache
+    private var onCompletion: (() -> Void)?
 
     var queue: [String: [Download]] = [:] // all queued downloads stored under source id
     var tasks: [String: DownloadTask] = [:] // tasks for each source
@@ -22,8 +23,13 @@ actor DownloadQueue {
 
     private var sendCancelNotification = true
 
-    init(cache: DownloadCache) {
+    init(cache: DownloadCache, onCompletion: (() -> Void)? = nil) {
         self.cache = cache
+        self.onCompletion = onCompletion
+    }
+
+    func setOnCompletion(_ onCompletion: (() -> Void)?) {
+        self.onCompletion = onCompletion
     }
 
     func start() async {
@@ -180,6 +186,7 @@ extension DownloadQueue: DownloadTaskDelegate {
 
     func downloadFinished(download: Download) async {
         await downloadCancelled(download: download)
+        onCompletion?()
         NotificationCenter.default.post(name: NSNotification.Name("downloadFinished"), object: download)
     }
 

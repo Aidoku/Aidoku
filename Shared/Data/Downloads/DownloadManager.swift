@@ -41,6 +41,11 @@ class DownloadManager {
         if !Self.directory.exists {
             Self.directory.createDirectory()
         }
+        Task {
+            await self.queue.setOnCompletion { [weak self] in
+                self?.invalidateDownloadedMangaCache()
+            }
+        }
     }
 
     func getDownloadQueue() async -> [String: [Download]] {
