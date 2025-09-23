@@ -177,11 +177,10 @@ extension BangumiApi {
                 if !oauth.tokens!.askedForRefresh {
                     oauth.tokens!.askedForRefresh = true
                     oauth.saveTokens()
-
 #if !os(macOS)
                     await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "Bangumi"),
-                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "Bangumi")
+                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "Bangumi"),
+                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "Bangumi")
                     )
 #endif
                 }

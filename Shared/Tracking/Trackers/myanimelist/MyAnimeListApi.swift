@@ -56,15 +56,14 @@ class MyAnimeListApi {
         // check if token expired
         if statusCode == 400 || statusCode == 401 || statusCode == 403 || oauth.tokens!.expired {
             // ensure we have a refresh token, otherwise we need to fully re-auth
-            guard let refreshToken = oauth.tokens?.refreshToken else {
+            guard oauth.tokens?.refreshToken != nil else {
                 if !oauth.tokens!.askedForRefresh {
                     oauth.tokens!.askedForRefresh = true
                     oauth.saveTokens()
-
 #if !os(macOS)
                     await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "MyAnimeList"),
-                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "MyAnimeList")
+                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "MyAnimeList"),
+                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "MyAnimeList")
                     )
 #endif
                 }
@@ -74,7 +73,9 @@ class MyAnimeListApi {
             // refresh access token
             if await refreshAccessToken() != nil {
                 // try request again with refreshed token
-                if let newAuthorization = oauth.authorizedRequest(for: URL(string: oauth.baseUrl + "/token")!).value(forHTTPHeaderField: "Authorization") {
+                let newAuthorization = oauth.authorizedRequest(for: URL(string: oauth.baseUrl + "/token")!)
+                    .value(forHTTPHeaderField: "Authorization")
+                if let newAuthorization {
                     var newRequest = urlRequest
                     newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
                     (data, _) = try await URLSession.shared.data(for: newRequest)

@@ -93,11 +93,10 @@ extension AniListApi {
             if isLoggedIn && !oauth.tokens!.askedForRefresh {
                 oauth.tokens!.askedForRefresh = true
                 oauth.saveTokens()
-
 #if !os(macOS)
                 await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                    title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "AniList"),
-                    message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "AniList")
+                    title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "AniList"),
+                    message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "AniList")
                 )
 #endif
             }

@@ -251,15 +251,14 @@ private extension ShikimoriApi {
         // check if token expired
         if statusCode == 401 || oauth.tokens!.expired {
             // ensure we have a refresh token, otherwise we need to fully re-auth
-            guard let refreshToken = oauth.tokens?.refreshToken else {
+            guard oauth.tokens?.refreshToken != nil else {
                 if !oauth.tokens!.askedForRefresh {
                     oauth.tokens!.askedForRefresh = true
                     oauth.saveTokens()
-
 #if !os(macOS)
                     await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "Shikimori"),
-                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "Shikimori")
+                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "Shikimori"),
+                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "Shikimori")
                     )
 #endif
                 }
