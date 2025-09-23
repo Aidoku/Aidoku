@@ -329,13 +329,9 @@
 "REORDER" = "Riordina";
 "PIN" = "Fissa";
 "UNPIN" = "Rimuovi";
-"ANILIST_LOGIN_NEEDED" = "Login AniList necessario";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Il token di AniList è scaduto, il tracker di AniList non funzionerà finché non si ri-accede dalle impostazioni.";
-"MAL_LOGIN_NEEDED" = "Login MyAnimeList necessario";
 "NO_WIFI_ALERT_MESSAGE" = "Devi essere connesso al Wi-Fi per scaricare questo contenuto. Connettiti prima al Wi-Fi e riprova.";
 "READER_BG_COLOR_SYSTEM" = "Sistema";
 "READER_BG_COLOR_WHITE" = "Bianco";
-"MAL_LOGIN_NEEDED_TEXT" = "Il token di MyAnimeList è scaduto, il tracker di MyAnimeList non funzionerà finché non si ri-accede dalle impostazioni.";
 "BACKUP_ERROR" = "Errore Ripristino Backup";
 "PAUSE" = "Pausa";
 "RESUME" = "Riprendi";

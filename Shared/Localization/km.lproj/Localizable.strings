@@ -1,9 +1,5 @@
 
 
-"ANILIST_LOGIN_NEEDED_TEXT" = "AniList Token របស់អ្នកបានផុតកំណត់ កម្មវិធីតាមដាន AniList របស់អ្នកនឹងមិនដំណើរការទេ រហូតដល់អ្នកចូល Login ម្តងទៀតនៅក្នុងការកំណត់។";
-"ANILIST_LOGIN_NEEDED" = "តម្រូវឱ្យ Login ចូល AniList";
-"MAL_LOGIN_NEEDED" = "តម្រូវឱ្យ Login ចូល MyAnimeList";
-"MAL_LOGIN_NEEDED_TEXT" = "MyAnimeList Token របស់អ្នកបានផុតកំណត់ កម្មវិធីតាមដាន MyAnimeList របស់អ្នកនឹងមិនដំណើរការទេ រហូតដល់អ្នកចូល Login ម្តងទៀតនៅក្នុងការកំណត់។";
 "RELOAD" = "ផ្ទុកឡើងវិញ";
 "%i_OF_%i" = "%i of %i";
 "%i_PAGES_LEFT" = "នៅសល់ %i ទំព័រ";

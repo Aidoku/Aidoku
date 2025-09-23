@@ -329,10 +329,6 @@
 "REORDER" = "Reordenar";
 "PIN" = "Fixar";
 "UNPIN" = "Desfixar";
-"ANILIST_LOGIN_NEEDED" = "Login no AniList necessário";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Seu token AniList expirou, então o rastreamento do AniList irá parar de funcionar até que você faça login novamente nas configurações.";
-"MAL_LOGIN_NEEDED" = "Login no MyAnimeList necessário";
-"MAL_LOGIN_NEEDED_TEXT" = "Seu token MyAnimeList expirou, então o rastreamento do MyAnimeList irá parar de funcionar até que você faça login novamente nas configurações.";
 "BACKUP_ERROR" = "Erro ao restaurar o backup";
 "BACKUP_ERROR_TEXT" = "Um erro foi encontrado ao restaurar: %@. O backup pode ser inválido.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "No momento, você não está conectado ao Wi-Fi. Baixar mesmo assim?";

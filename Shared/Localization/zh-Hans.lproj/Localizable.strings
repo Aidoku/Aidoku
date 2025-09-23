@@ -244,7 +244,7 @@
 "DOUBLE_PAGE" = "双页";
 "ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
-"TRACKERS" = "跟踪器";
+"TRACKERS" = "追踪器";
 "LOGOUT" = "退出";
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";
@@ -317,7 +317,7 @@
 "SYNC_WITH_TRACKER" = "与追踪器同步";
 "SYNC_WITH_TRACKER_INFO" = "追踪器中的最新章节（%g）高于您已读的最新章节。是否同步本机历史？";
 "UPLOAD_DATE" = "上传日期";
-"TRACKING" = "跟踪";
+"TRACKING" = "追踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
 "DEFAULT_READING_MODE" = "默认阅读模式";
 "PILLARBOX_AMOUNT" = "填充比例";
@@ -331,11 +331,9 @@
 "COPY" = "复制";
 "PIN" = "置顶";
 "UNPIN" = "取消置顶";
-"ANILIST_LOGIN_NEEDED" = "需要AniList登录";
-"ANILIST_LOGIN_NEEDED_TEXT" = "您的AniList令牌已过期，因此AniList将停止工作，直到您在设置中重新登录。";
+"%@_TRACKER_LOGIN_NEEDED" = "需要 %@ 登录";
+"%@_TRACKER_LOGIN_NEEDED_TEXT" = "您的 %@ 令牌已过期，因此该追踪器将停止工作，直到您在设置中重新登录。";
 "BACKUP_ERROR" = "备份恢复错误";
-"MAL_LOGIN_NEEDED" = "MyAnimeList 需要登录";
-"MAL_LOGIN_NEEDED_TEXT" = "您的 MyAnimeList 令牌已过期，因此 MyAnimeList 跟踪器将停止工作，直到您在设置中重新登录。";
 "BACKUP_ERROR_TEXT" = "恢复 %@ 时遇到错误。备份可能无效。";
 "PAUSE" = "暂停";
 "RESUME" = "继续";

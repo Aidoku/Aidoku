@@ -21,8 +21,7 @@ class BangumiTracker: OAuthTracker {
 
     let callbackHost = "bangumi-auth"
     lazy var authenticationUrl: String = {
-        guard let baseUrl = api.oauth.getAuthenticationUrl(responseType: "code") else { return "" }
-        return baseUrl + "&redirect_uri=aidoku://bangumi-auth"
+        api.oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://bangumi-auth") ?? ""
     }()
 
     var oauthClient: OAuthClient { api.oauth }

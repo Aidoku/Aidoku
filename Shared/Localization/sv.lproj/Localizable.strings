@@ -327,8 +327,6 @@
 "LIST_ALL" = "Alla";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Lägger till källguide";
 "COPY" = "Kopiera";
-"ANILIST_LOGIN_NEEDED" = "AniList inloggning krävs";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Din AniList-token har gått ut, därmed kommer AniList att sluta fungera tills du loggar in igen i inställningarna.";
 "WARNING" = "Varning";
 "NO_WIFI_ALERT_TITLE" = "Inget Wi-Fi";
 "PAUSE" = "Paus";
@@ -491,8 +489,6 @@
 "SOURCE_BREAKING_CHANGE" = "Källbrytande förändring";
 "SOURCE_BREAKING_CHANGE_TEXT" = "Denna källa har uppdaterats på ett sätt som kräver migrering för att behålla bibliotek och historik.";
 "ALL_CHAPTERS_LOCKED" = "Alla kapitel är låsta";
-"MAL_LOGIN_NEEDED" = "MyAnimeList-inloggning krävs";
-"MAL_LOGIN_NEEDED_TEXT" = "Din MyAnimeList-token har gått ut, därmed kommer MyAnimeList att sluta fungera tills du loggar in igen i inställningarna.";
 "BACKUP_ERROR" = "Backup-återställningsfel";
 "BACKUP_ERROR_TEXT" = "Ett fel uppstod under återställning: %@. Backupen kan vara korrupt.";
 "READER_ORIENTATION" = "Riktning";

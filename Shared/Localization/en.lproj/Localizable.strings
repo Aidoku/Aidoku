@@ -573,10 +573,8 @@
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
 "BOTH" = "Both";
-"ANILIST_LOGIN_NEEDED" = "AniList Login Needed";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Your AniList token has expired, so the AniList tracker will stop working until you re-login in settings.";
-"MAL_LOGIN_NEEDED" = "MyAnimeList Login Needed";
-"MAL_LOGIN_NEEDED_TEXT" = "Your MyAnimeList token has expired, so the MyAnimeList tracker will stop working until you re-login in settings.";
+"%@_TRACKER_LOGIN_NEEDED" = "%@ Login Needed";
+"%@_TRACKER_LOGIN_NEEDED_TEXT" = "Your %@ token has expired, so the associated tracker will stop working until you re-login in settings.";
 "BACKUP_ERROR" = "Backup Restore Error";
 "BACKUP_ERROR_TEXT" = "An error was encountering while restoring: %@. The backup may be invalid.";
 "READER_ORIENTATION" = "Orientation";

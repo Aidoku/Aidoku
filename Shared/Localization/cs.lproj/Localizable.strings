@@ -304,7 +304,6 @@
 "PILLARBOX_ORIENTATION" = "Orientace pillarboxu";
 "PILLARBOX_AMOUNT" = "Hodnota pillarboxu";
 "TRACKING" = "Sledováno";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Platnost vašeho tokenu AniList vypršela, takže sledovací služba AniList přestane fungovat, dokud se znovu nepřihlásíte v nastavení.";
 "BACKUP_ERROR" = "Chyba obnovení zálohy";
 "BACKUP_ERROR_TEXT" = "Při obnově došlo k chybě: %@. Záloha může být neplatná.";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Zadaná adresa URL seznamu zdrojů je neplatná nebo již byla přidána.";
@@ -315,9 +314,6 @@
 "NOT_FOUND" = "Nenalezeno";
 "MOST_CHAPTERS_SLOWER" = "Většina kapitol (pomalejší)";
 "FIRST_ALTERNATIVE" = "První alternativa";
-"ANILIST_LOGIN_NEEDED" = "Potřebné přihlášení do AniListu";
-"MAL_LOGIN_NEEDED" = "Je potřeba přihlášení na MyAnimeList";
-"MAL_LOGIN_NEEDED_TEXT" = "Platnost vašeho tokenu MyAnimeList vypršela, takže sledovací služba MyAnimeList přestane fungovat, dokud se znovu nepřihlásíte v nastavení.";
 "PILLARBOX" = "Pillarbox";
 "RESET_TEXT" = "Tato akce je nevratná. Všechna data, nastavení a mezipaměť budou vymazány a resetovány.";
 "GITHUB_REPO" = "Úložiště GitHub";

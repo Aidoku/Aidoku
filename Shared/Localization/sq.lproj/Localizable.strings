@@ -123,9 +123,6 @@
 "DEFAULT_READING_MODE" = "Mënyra Standarde e Leximit";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Sasia e Pillarbox";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Nevojitet hyrja në AniList për të vazhduar.";
-"MAL_LOGIN_NEEDED" = "Nevojitet Hyrja në MyAnimeList";
-"MAL_LOGIN_NEEDED_TEXT" = "Nevojitet hyrja në MyAnimeList për të vazhduar.";
 "BACKUP_ERROR_TEXT" = "Një gabim u has gjatë rikthimit: %@. Kopja rezervë mund të jetë e pavlefshme.";
 "REMOVE_DOWNLOADS_CONFIRM" = "Hiqi të gjitha shkarkimet e zgjedhura?";
 "NO_WIFI_ALERT_TITLE" = "Pa Wi-Fi";
@@ -159,7 +156,6 @@
 "MIGRATION" = "Migrimi";
 "PILLARBOX_ORIENTATION" = "Orientimi i Pillarbox";
 "BOTH" = "Të dyja";
-"ANILIST_LOGIN_NEEDED" = "Nevojitet Hyrja në AniList";
 "PILLARBOX_ORIENTATION_INFO" = "Orientimi përcakton për cilat orientime duhet të aktivizohet pillarboxing.";
 "BACKUP_ERROR" = "Gabim në Kopjen Rezervë";
 "ADD_TO_CATEGORIES" = "Shto në Kategoriat";

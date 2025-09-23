@@ -202,8 +202,6 @@
 "RESTORE" = "रिस्टोर गर्नुहोस्";
 "BACKUP_IMPORT_SUCCESS" = "ब्याकअप आयात गरियो";
 "SYNC_WITH_TRACKER_INFO" = "यस्तो देखिन्छ कि ट्र्याकरमा सेट गरिएको पछिल्लो अध्याय (%g) तपाइँको पछिल्लो पढिएको अध्याय भन्दा बढी छ। के तपाईं आफ्नो लोकल इतिहास मिलाउनको लागि अपडेट गर्न चाहनुहुन्छ?";
-"ANILIST_LOGIN_NEEDED" = "AniList लगइन आवश्यक छ";
-"ANILIST_LOGIN_NEEDED_TEXT" = "तपाइँको AniList टोकनको म्याद सकिएको छ, त्यसैले तपाइँ सेटिङ्समा पुन: लगइन नगरेसम्म AniList ट्र्याकरले काम गर्न बन्द गर्नेछ।";
 "BACKUP_ERROR_TEXT" = "रिस्टोर गर्दा एउटा त्रुटि देखा पर्‍यो: %@। ब्याकअप अमान्य हुन सक्छ।";
 "SELECT_CHAPTERS" = "अध्यायहरू चयन गर्नुहोस्";
 "SELECT_ALL" = "सबै चयन गर्नुहोस्";
@@ -327,8 +325,6 @@
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation ले कुन orientation का लागि pillarboxing सक्षम हुनुपर्छ भनेर निर्धारण गर्छ।";
-"MAL_LOGIN_NEEDED" = "MyAnimeList लगइन आवश्यक छ";
-"MAL_LOGIN_NEEDED_TEXT" = "तपाइँको MyAnimeList टोकनको म्याद सकिएको छ, त्यसैले तपाइँ सेटिङ्समा पुन: लगइन नगरेसम्म MyAnimeList ट्र्याकरले काम गर्न छोड्नेछ।";
 "BACKUP_ERROR" = "ब्याकअप रिस्टोर त्रुटि";
 "NO_SCANLATOR" = "कुनै स्क्यानलेटर हैन";
 "SCANLATOR" = "सक्यानलेटर";
