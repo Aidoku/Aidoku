@@ -237,10 +237,6 @@
 "MIGRATE_%i_ITEMS?" = "%i items migreren?";
 "DEFAULT_READING_MODE" = "Standaard leesmodus";
 "BOTH" = "Beide";
-"ANILIST_LOGIN_NEEDED" = "AniList Login nodig";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Uw AniList-token is verlopen, dus de AniList-tracker werkt niet meer totdat u opnieuw inlogt in de instellingen.";
-"MAL_LOGIN_NEEDED" = "MyAnimeList Login nodig";
-"MAL_LOGIN_NEEDED_TEXT" = "Uw MyAnimeList token is verlopen, dus de MyAnimeList-tracker werkt niet meer totdat u zich opnieuw aanmeldt bij de instellingen.";
 "BACKUP_ERROR" = "Back-up herstel fout";
 // General
 "CONTINUE" = "Doorgaan";

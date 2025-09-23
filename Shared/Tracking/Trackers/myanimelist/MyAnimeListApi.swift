@@ -29,6 +29,22 @@ class MyAnimeListApi {
         try await requestData(urlRequest: oauth.authorizedRequest(for: url))
     }
 
+    func refreshAccessToken() async -> OAuthResponse? {
+        guard let refreshToken = oauth.tokens?.refreshToken else { return nil }
+
+        guard let url = URL(string: oauth.baseUrl + "/token") else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = [
+            "client_id": oauth.clientId,
+            "refresh_token": refreshToken,
+            "grant_type": "refresh_token"
+        ].percentEncoded()
+        oauth.tokens = try? await URLSession.shared.object(from: request)
+        oauth.saveTokens()
+        return oauth.tokens
+    }
+
     private func requestData(urlRequest: URLRequest) async throws -> Data {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
         let statusCode = (response as? HTTPURLResponse)?.statusCode
@@ -47,8 +63,8 @@ class MyAnimeListApi {
 
 #if !os(macOS)
                     await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: NSLocalizedString("MAL_LOGIN_NEEDED", comment: ""),
-                        message: NSLocalizedString("MAL_LOGIN_NEEDED_TEXT", comment: "")
+                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "MyAnimeList"),
+                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "MyAnimeList")
                     )
 #endif
                 }
@@ -56,22 +72,13 @@ class MyAnimeListApi {
             }
 
             // refresh access token
-            guard let url = URL(string: oauth.baseUrl + "/token") else { return data }
-            var request = oauth.authorizedRequest(for: url)
-            request.httpMethod = "POST"
-            request.httpBody = [
-                "client_id": oauth.clientId,
-                "refresh_token": refreshToken,
-                "grant_type": "refresh_token"
-            ].percentEncoded()
-            oauth.tokens = try await URLSession.shared.object(from: request)
-            oauth.saveTokens()
-
-            // try request again
-            if let newAuthorization = oauth.authorizedRequest(for: url).value(forHTTPHeaderField: "Authorization") {
-                var newRequest = urlRequest
-                newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
-                (data, _) = try await URLSession.shared.data(for: newRequest)
+            if await refreshAccessToken() != nil {
+                // try request again with refreshed token
+                if let newAuthorization = oauth.authorizedRequest(for: URL(string: oauth.baseUrl + "/token")!).value(forHTTPHeaderField: "Authorization") {
+                    var newRequest = urlRequest
+                    newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
+                    (data, _) = try await URLSession.shared.data(for: newRequest)
+                }
             }
         }
 

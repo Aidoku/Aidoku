@@ -327,11 +327,7 @@
 "PIN" = "ピン留め";
 "UNPIN" = "ピン留めを解除";
 "CROP_BORDERS" = "クロップボーダー";
-"ANILIST_LOGIN_NEEDED" = "AniListへのログインが必要です";
 "BACKUP_ERROR" = "バックアップ復元エラー";
-"ANILIST_LOGIN_NEEDED_TEXT" = "AniListトークンの有効期限が切れたため、設定で再ログインするまでAniListトラッカーは動作しません。";
-"MAL_LOGIN_NEEDED" = "MyAnimeListへのログインが必要です";
-"MAL_LOGIN_NEEDED_TEXT" = "MyAnimeListトークンの有効期限が切れたため、設定で再ログインするまでMyAnimeListトラッカーは動作しません。";
 "BACKUP_ERROR_TEXT" = "復元中にエラーが発生しました：％@。 バックアップが利用不可かもしれません。";
 "PAUSE" = "一時停止";
 "RESUME" = "再生";

@@ -327,12 +327,8 @@
 "PIN" = "Fixar";
 "UNPIN" = "Desfixar";
 "COPY" = "Copiar";
-"ANILIST_LOGIN_NEEDED" = "Necessário iniciar sessão na AniList";
-"ANILIST_LOGIN_NEEDED_TEXT" = "O seu token AniList expirou, pelo que o localizador AniList deixará de funcionar até voltar a iniciar sessão nas definições.";
-"MAL_LOGIN_NEEDED_TEXT" = "O teu token MyAnimeList expirou, pelo que o localizador MyAnimeList deixará de funcionar até voltares a iniciar sessão nas definições.";
 "BACKUP_ERROR" = "Erro de restauro de backup";
 "BACKUP_ERROR_TEXT" = "Foi encontrado um erro durante o restauro: %@. O backup pode ser inválido.";
-"MAL_LOGIN_NEEDED" = "MyAnimeList Necessário iniciar sessão";
 "DELETE_DOWNLOAD_AFTER_READING" = "Apagar download após leitura";
 "READER_BG_COLOR_WHITE" = "Branco";
 "SCANLATOR" = "Escâner";

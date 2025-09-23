@@ -144,11 +144,7 @@
 "DEFAULT_READING_MODE" = "Подразумевани режим читања";
 "PILLARBOX_AMOUNT" = "Количина пиларбокса";
 "PILLARBOX_ORIENTATION" = "Оријентација пиларбокса";
-"ANILIST_LOGIN_NEEDED" = "Потребна је пријава на AniList";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Ваш AniList токен је истекао, тако да ће AniList трекер престати да ради док се поново не пријавите у подешавањима.";
-"MAL_LOGIN_NEEDED" = "Потребна је пријава на MyAnimeList";
 "BACKUP_ERROR" = "Грешка при враћању резервне копије";
-"MAL_LOGIN_NEEDED_TEXT" = "Ваш MyAnimeList токен је истекао, тако да ће MyAnimeList трекер престати да ради док се поново не пријавите у подешавањима.";
 "READER_BG_COLOR" = "Боја позадине";
 "READER_BG_COLOR_BLACK" = "Црна";
 "BACKUP_INFO" = "Дугим притиском на резервну копију је извозите, или превуците улево да је обришете.";

@@ -327,10 +327,7 @@
 "PIN" = "Przypnij";
 "UNPIN" = "Odepnij";
 "CROP_BORDERS" = "Przytnij ramki";
-"ANILIST_LOGIN_NEEDED_TEXT" = "Twój token AniList wygasł, więc moduł śledzący AniList przestanie działać do momentu ponownego zalogowania w ustawieniach.";
-"ANILIST_LOGIN_NEEDED" = "Potrzebny Login AniListy";
 "DELETE_DOWNLOAD_AFTER_READING" = "Usuń plik po przeczytaniu";
-"MAL_LOGIN_NEEDED_TEXT" = "Twój token MyAnimeList wygasł, więc moduł śledzący MyAnimeList przestanie działać do momentu ponownego zalogowania w ustawieniach.";
 "LINK_COPIED" = "Link skopiowany";
 "LINK_COPIED_TEXT" = "Link został skopiowany do schowka.";
 "%lld_PLUS_MORE" = "+%lld więcej";
@@ -343,7 +340,6 @@
 "READER_BG_COLOR_SYSTEM" = "System";
 "READER_BG_COLOR_WHITE" = "Biały";
 "READER_BG_COLOR_BLACK" = "Czarny";
-"MAL_LOGIN_NEEDED" = "Wymagane logowanie do MyAnimeList";
 "PAUSE" = "pauza";
 "RESUME" = "Wznawiać";
 "WARNING" = "Ostrzeżenie";

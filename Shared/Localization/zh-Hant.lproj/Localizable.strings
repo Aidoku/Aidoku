@@ -264,7 +264,6 @@
 "ONESHOT" = "短篇";
 "FAILED_CHAPTER_LOAD_INFO" = "您可能處於離線狀態或來源出現問題。";
 "RENAME_CATEGORY_INFO" = "為此類別輸入一個新名稱。";
-"MAL_LOGIN_NEEDED" = "需要登入 MyAnimeList";
 "REORDER" = "重新排序";
 "UNPIN" = "取消釘選";
 "LINK_COPIED_TEXT" = "已複製連結到剪貼簿。";
@@ -333,7 +332,6 @@
 "SKIP_DUPLICATE_CHAPTERS" = "跳過重複章節";
 "SYNC_WITH_TRACKER_INFO" = "看起來進度追蹤器中的最新進度（%g）比本機來的更新。是否與其同步？";
 "1_CHAPTER" = "共一章";
-"MAL_LOGIN_NEEDED_TEXT" = "您的 MyAnimeList 權杖已過期，因此 MyAnimeList 將停止運作，直到您在設定中重新登入。";
 "COVER" = "封面";
 "PAGE_LAYOUT" = "頁面佈局";
 "PAUSE" = "擱置";
@@ -349,8 +347,8 @@
 "MIGRATE_ONE_ITEM?" = "遷移此項目？";
 "PILLARBOX" = "頁緣留白";
 "PILLARBOX_AMOUNT" = "留白比例";
-"ANILIST_LOGIN_NEEDED" = "需要登入 AniList";
-"ANILIST_LOGIN_NEEDED_TEXT" = "您的 AniList 權杖已過期，因此 AniList 將停止運作，直到您在設定中重新登入。";
+"%@_TRACKER_LOGIN_NEEDED" = "需要登入 %@";
+"%@_TRACKER_LOGIN_NEEDED_TEXT" = "您的 %@ 權杖已過期，因此該追蹤器將停止運作，直到您在設定中重新登入。";
 "COPY" = "複製";
 "READER_BG_COLOR_WHITE" = "白色";
 "READER_BG_COLOR_BLACK" = "黑色";

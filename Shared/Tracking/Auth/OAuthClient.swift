@@ -39,13 +39,16 @@ class OAuthClient {
         self.challengeMethod = challengeMethod
     }
 
-    func getAuthenticationUrl(responseType: String = "code") -> String? {
+    func getAuthenticationUrl(responseType: String = "code", redirectUri: String? = nil) -> String? {
         guard let url = URL(string: baseUrl + "/authorize") else { return nil }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         var queryItems = [
             URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "response_type", value: responseType)
         ]
+        if let redirectUri {
+            queryItems.append(URLQueryItem(name: "redirect_uri", value: redirectUri))
+        }
         if challengeMethod != .none {
             queryItems.append(URLQueryItem(name: "code_challenge", value: generatePkceChallenge(method: challengeMethod)))
         }
@@ -98,7 +101,7 @@ extension OAuthClient {
         UserDefaults.standard.set(try? JSONEncoder().encode(tokens), forKey: "Token.\(id).oauth")
     }
 
-    func authorizedRequest(for url: URL) -> URLRequest {
+    func authorizedRequest(for url: URL, additionalHeaders: [String: String]? = nil) -> URLRequest {
         if tokens == nil { loadTokens() }
 
         var request = URLRequest(url: url)
@@ -106,6 +109,14 @@ extension OAuthClient {
             "\(tokens?.tokenType ?? "Bearer") \(tokens?.accessToken ?? "")",
             forHTTPHeaderField: "Authorization"
         )
+
+        // Add any additional headers
+        if let additionalHeaders {
+            for (key, value) in additionalHeaders {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
+        }
+
         return request
     }
 }

@@ -96,8 +96,8 @@ extension AniListApi {
 
 #if !os(macOS)
                 await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                    title: NSLocalizedString("ANILIST_LOGIN_NEEDED", comment: ""),
-                    message: NSLocalizedString("ANILIST_LOGIN_NEEDED_TEXT", comment: "")
+                    title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED", comment: ""), "AniList"),
+                    message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT", comment: ""), "AniList")
                 )
 #endif
             }

@@ -88,6 +88,10 @@ struct SettingsTrackingView: View {
             Button(NSLocalizedString("LOGOUT"), role: .destructive) {
                 if let name = logoutTrackerName, let tracker = trackers.first(where: { $0.name == name }) {
                     Task {
+                        // Call tracker logout to clear authentication data
+                        tracker.logout()
+                        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+                        // Remove all tracked items for this tracker
                         await CoreDataManager.shared.container.performBackgroundTask { context in
                             CoreDataManager.shared.removeTracks(trackerId: tracker.id, context: context)
                             try? context.save()
