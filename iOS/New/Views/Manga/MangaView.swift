@@ -112,6 +112,7 @@ struct MangaView: View {
                 )
             }
             .task {
+                await viewModel.markOpened()
                 await viewModel.fetchDetails()
                 if let scrollToChapterKey {
                     withAnimation {

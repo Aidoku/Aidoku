@@ -212,6 +212,12 @@ extension MangaView {
 }
 
 extension MangaView.ViewModel {
+    func markOpened() async {
+        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            await MangaUpdateManager.shared.viewAllUpdates(of: manga)
+        }
+    }
+
     // fetch complete info for manga, called when view appears
     func fetchDetails() async {
         guard !fetchedDetails else { return }
