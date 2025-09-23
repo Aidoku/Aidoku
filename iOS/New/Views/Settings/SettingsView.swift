@@ -114,22 +114,7 @@ extension SettingsView {
         }
         .overlay {
             if let searchResult, searchResult.sections.isEmpty {
-                VStack(spacing: 16) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.secondary)
-
-                    VStack(spacing: 4) {
-                        Text(String(format: NSLocalizedString("NO_RESULTS_FOR_%@"), searchText))
-                            .font(.title2.weight(.bold))
-                            .multilineTextAlignment(.center)
-                        Text(NSLocalizedString("NO_RESULTS_TEXT"))
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .frame(maxWidth: .infinity)
+                UnavailableView.search(text: searchText)
             }
         }
         .searchable(text: $searchText)

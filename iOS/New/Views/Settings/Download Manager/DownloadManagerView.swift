@@ -35,7 +35,7 @@ struct DownloadManagerView: View {
                             Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
+                        MoreIcon()
                     }
                 }
             }
@@ -57,22 +57,11 @@ struct DownloadManagerView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "arrow.down.circle")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-
-            VStack(spacing: 4) {
-                Text(NSLocalizedString("NO_DOWNLOADS"))
-                    .font(.title2.weight(.bold))
-
-                Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        UnavailableView(
+            NSLocalizedString("NO_DOWNLOADS"),
+            systemImage: "arrow.down.circle",
+            description: Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
+        )
     }
 
     private var downloadsList: some View {

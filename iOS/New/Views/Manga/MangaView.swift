@@ -459,7 +459,7 @@ extension MangaView {
                     }
                 }
             } label: {
-                Image(systemName: "ellipsis")
+                MoreIcon()
             }
         } else {
             DoneButton {

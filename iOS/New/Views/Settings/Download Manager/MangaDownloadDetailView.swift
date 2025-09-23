@@ -32,7 +32,6 @@ struct MangaDownloadDetailView: View {
             }
         }
         .navigationTitle(viewModel.manga.displayTitle)
-        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if viewModel.manga.isInLibrary || !viewModel.chapters.isEmpty {
@@ -51,7 +50,7 @@ struct MangaDownloadDetailView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
+                        MoreIcon()
                     }
                 }
             }
@@ -70,20 +69,11 @@ struct MangaDownloadDetailView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "doc.text")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-
-            Text(NSLocalizedString("NO_DOWNLOADS"))
-                .font(.title2)
-                .fontWeight(.semibold)
-
-            Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        UnavailableView(
+            NSLocalizedString("NO_DOWNLOADS"),
+            systemImage: "arrow.down.circle",
+            description: Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
+        )
     }
 
     private var chaptersList: some View {
