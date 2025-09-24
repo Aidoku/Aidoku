@@ -33,6 +33,8 @@ struct MangaDetailsHeaderView: View {
 
     @Binding var descriptionExpanded: Bool
 
+    let displayMode: MangaDisplayMode
+
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
 
@@ -64,6 +66,7 @@ struct MangaDetailsHeaderView: View {
         langFilter: Binding<String?>,
         scanlatorFilter: Binding<[String]>,
         descriptionExpanded: Binding<Bool>,
+        displayMode: MangaDisplayMode,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
@@ -83,6 +86,7 @@ struct MangaDetailsHeaderView: View {
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
         self._descriptionExpanded = descriptionExpanded
+        self.displayMode = displayMode
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
 
@@ -431,11 +435,28 @@ struct MangaDetailsHeaderView: View {
                 } else {
                     title = NSLocalizedString("CONTINUE_READING", comment: "")
                 }
-                if let volumeNum = chapter.volumeNumber {
-                    title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
-                }
-                if let chapterNum = chapter.chapterNumber {
-                    title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                switch displayMode {
+                case .volume:
+                    if let volumeNum = chapter.volumeNumber {
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                    } else if let chapterNum = chapter.chapterNumber {
+                        // Force display as volume if no volume number
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), chapterNum)
+                    }
+                case .chapter:
+                    if let chapterNum = chapter.chapterNumber {
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                    } else if let volumeNum = chapter.volumeNumber {
+                        // Force display as chapter if no chapter number
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), volumeNum)
+                    }
+                case .default:
+                    if let volumeNum = chapter.volumeNumber {
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                    }
+                    if let chapterNum = chapter.chapterNumber {
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                    }
                 }
             } else {
                 title = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
@@ -533,5 +554,6 @@ private struct MangaActionButtonStyle: ButtonStyle {
         langFilter: $langFilter,
         scanlatorFilter: $scanlatorFilter,
         descriptionExpanded: Binding.constant(false),
+        displayMode: .default,
     )
 }

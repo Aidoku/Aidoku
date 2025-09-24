@@ -192,7 +192,9 @@
 "SERVER_ERROR_AUTHENTICATION" = "Unable to log in. Ensure your credentials are entered correctly.";
 "KOMGA_SETUP" = "Komga Setup";
 "OTHER_SETTINGS" = "Other Settings";
+"USE_VOLUMES" = "Use Volumes";
 "USE_CHAPTERS" = "Use Chapters";
+"USE_DEFAULT" = "Use Default";
 "USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
 
 "ON_DECK" = "On Deck";
@@ -478,6 +480,7 @@
 
 // Tracking
 "TRACKERS" = "Trackers";
+"SYNC_FROM_TRACKER" = "Sync from Tracker";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
 "START_TRACKING" = "Start Tracking";
@@ -491,6 +494,7 @@
 "STARTED" = "Started";
 "FINISHED" = "Finished";
 "STOP_TRACKING" = "Stop Tracking";
+"FORCE_MODE" = "Force Mode";
 "NOT_PUBLISHED" = "Not Published";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";

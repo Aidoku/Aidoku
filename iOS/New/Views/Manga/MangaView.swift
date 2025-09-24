@@ -9,6 +9,12 @@ import AidokuRunner
 import NukeUI
 import SwiftUI
 
+enum MangaDisplayMode {
+    case `default`
+    case volume
+    case chapter
+}
+
 struct MangaView: View {
     @StateObject private var viewModel: ViewModel
 
@@ -25,6 +31,16 @@ struct MangaView: View {
 
     @State private var loadingAlert: UIAlertController?
 
+    @State private var displayMode: MangaDisplayMode = .default
+
+    private var isVolumeMode: Bool {
+        displayMode == .volume
+    }
+
+    private var isChapterModeActive: Bool {
+        displayMode == .chapter
+    }
+
     private var path: NavigationCoordinator
 
     init(
@@ -37,6 +53,15 @@ struct MangaView: View {
         self._viewModel = StateObject(wrappedValue: ViewModel(source: source, manga: manga))
         self.path = path
         self._scrollToChapterKey = State(initialValue: scrollToChapterKey)
+        let volumeMangas = UserDefaults.standard.array(forKey: "VolumeModeMangas") as? [String] ?? []
+        let chapterMangas = UserDefaults.standard.array(forKey: "ChapterModeMangas") as? [String] ?? []
+        if chapterMangas.contains(manga.key) {
+            self._displayMode = State(initialValue: .chapter)
+        } else if volumeMangas.contains(manga.key) {
+            self._displayMode = State(initialValue: .volume)
+        } else {
+            self._displayMode = State(initialValue: .default)
+        }
     }
 
     var body: some View {
@@ -143,19 +168,15 @@ struct MangaView: View {
                     }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .trackItemAdded)) { output in
-                guard let item = output.object as? TrackItem else { return }
-                Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
-                    }
-                }
-            }
             .onReceive(NotificationCenter.default.publisher(for: .syncTrackItem)) { output in
                 guard let item = output.object as? TrackItem else { return }
                 Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
+                    if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
+                        await TrackerManager.shared.syncProgressFromTracker(
+                            tracker: tracker,
+                            trackId: item.id,
+                            manga: viewModel.manga.toOld()
+                        )
                     }
                 }
             }
@@ -202,6 +223,7 @@ extension MangaView {
                 langFilter: $viewModel.chapterLangFilter,
                 scanlatorFilter: $viewModel.chapterScanlatorFilter,
                 descriptionExpanded: $descriptionExpanded,
+                displayMode: displayMode,
                 onTrackerButtonPressed: {
                     let vc = TrackerModalViewController(manga: viewModel.manga.toOld())
                     vc.modalPresentationStyle = .overFullScreen
@@ -240,6 +262,8 @@ extension MangaView {
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
             downloadProgress: viewModel.downloadProgress[chapter.key],
+            isVolumeMode: isVolumeMode,
+            isChapterMode: isChapterModeActive,
         ) {
             if editMode == .inactive {
                 openReaderView(chapter: chapter)
@@ -406,6 +430,31 @@ extension MangaView {
                     } label: {
                         Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
                     }
+                }
+                Menu {
+                    Button {
+                        displayMode = .volume
+                        UserDefaults.standard.set([viewModel.manga.key], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_VOLUMES"), systemImage: "book")
+                    }
+                    Button {
+                        displayMode = .chapter
+                        UserDefaults.standard.set([], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([viewModel.manga.key], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_CHAPTERS"), systemImage: "doc.text")
+                    }
+                    Button {
+                        displayMode = .default
+                        UserDefaults.standard.set([], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_DEFAULT"), systemImage: "arrow.counterclockwise")
+                    }
+                } label: {
+                    Label(NSLocalizedString("FORCE_MODE"), systemImage: "arrow.triangle.branch")
                 }
                 Button {
                     withAnimation {
@@ -633,50 +682,6 @@ extension MangaView {
         path.present(activityViewController)
     }
 
-    func syncWithTracker(result: MangaView.ViewModel.TrackerSyncResult) {
-        func sync() {
-            guard
-                let chapters = viewModel.manga.chapters,
-                let lastReadChapter = {
-                    if result.volume {
-                        chapters.firstIndex(where: {
-                            $0.volumeNumber != nil && floor($0.volumeNumber!) <= result.number
-                        })
-                    } else {
-                        chapters.firstIndex(where: {
-                            $0.chapterNumber != nil && floor($0.chapterNumber!) <= result.number
-                        })
-                    }
-                }()
-            else {
-                return
-            }
-            let syncChapters = Array(chapters[lastReadChapter...])
-            Task {
-                await viewModel.markRead(chapters: syncChapters)
-            }
-        }
-
-        if result.tracker is EnhancedTracker {
-            // we don't need to confirm syncing with enhanced trackers
-            sync()
-        } else {
-            // there's a bug where swiftui alert isn't shown so using uikit alert instead
-            let alert = UIAlertController(
-                title: NSLocalizedString("SYNC_WITH_TRACKER"),
-                message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO"), result.number),
-                preferredStyle: .alert
-            )
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel) { _ in })
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
-            })
-
-            path.present(alert)
-        }
-    }
-
     func showLoadingIndicator() {
         guard loadingAlert == nil else { return }
         loadingAlert = UIAlertController(
@@ -708,6 +713,8 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let page: Int?
     let downloaded: Bool
     let downloadProgress: Float?
+    let isVolumeMode: Bool
+    let isChapterMode: Bool
 
     var onPressed: (() -> Void)?
     var contextMenu: (() -> T)?
@@ -728,7 +735,9 @@ private struct ChapterCellView<T: View>: View, Equatable {
                     read: read,
                     page: page,
                     downloaded: downloaded,
-                    downloadProgress: downloadProgress
+                    downloadProgress: downloadProgress,
+                    isVolumeMode: isVolumeMode,
+                    isChapterMode: isChapterMode
                 )
             }
         }
@@ -746,5 +755,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
             && lhs.page == rhs.page
             && lhs.downloaded == rhs.downloaded
             && lhs.downloadProgress == rhs.downloadProgress
+            && lhs.isVolumeMode == rhs.isVolumeMode
+            && lhs.isChapterMode == rhs.isChapterMode
     }
 }
