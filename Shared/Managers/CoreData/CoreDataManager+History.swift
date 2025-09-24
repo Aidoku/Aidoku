@@ -330,21 +330,51 @@ extension CoreDataManager {
         return result?.dateRead
     }
 
-    /// Get the highest chapter number from read chapters for a manga.
-    func getHighestChapterRead(
+    /// Get the highest read number (chapter or volume) based on forced mode for a manga.
+    func getHighestReadNumber(
         sourceId: String,
         mangaId: String,
         context: NSManagedObjectContext? = nil
     ) -> Float? {
         let context = context ?? self.context
+
+        // Check for forced mode
+        let volumeModeMangas = UserDefaults.standard.array(forKey: "VolumeModeMangas") as? [String] ?? []
+        let chapterModeMangas = UserDefaults.standard.array(forKey: "ChapterModeMangas") as? [String] ?? []
+        let mangaVolumeMode = volumeModeMangas.contains(mangaId)
+        let mangaChapterMode = chapterModeMangas.contains(mangaId)
+
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND completed == true",
             mangaId, sourceId
         )
-        request.fetchLimit = 1
-        request.sortDescriptors = [NSSortDescriptor(key: "chapter.chapter", ascending: false)]
-        let result = (try? context.fetch(request))?.first
-        return result?.chapter?.chapter?.floatValue
+
+        if mangaVolumeMode {
+            // Forced volume mode: return highest volume number, fallback to chapter as volume
+            request.sortDescriptors = [NSSortDescriptor(key: "chapter.volume", ascending: false)]
+            let result = (try? context.fetch(request))?.first
+            if let volume = result?.chapter?.volume?.floatValue, volume > 0 {
+                return volume
+            } else if let chapter = result?.chapter?.chapter?.floatValue {
+                return chapter // Use chapter number as volume
+            }
+        } else if mangaChapterMode {
+            // Forced chapter mode: return highest chapter number, fallback to volume as chapter
+            request.sortDescriptors = [NSSortDescriptor(key: "chapter.chapter", ascending: false)]
+            let result = (try? context.fetch(request))?.first
+            if let chapter = result?.chapter?.chapter?.floatValue, chapter > 0 {
+                return chapter
+            } else if let volume = result?.chapter?.volume?.floatValue {
+                return volume // Use volume number as chapter
+            }
+        } else {
+            // Default mode: return highest chapter number
+            request.sortDescriptors = [NSSortDescriptor(key: "chapter.chapter", ascending: false)]
+            let result = (try? context.fetch(request))?.first
+            return result?.chapter?.chapter?.floatValue
+        }
+
+        return nil
     }
 }

@@ -9,6 +9,12 @@ import AidokuRunner
 import NukeUI
 import SwiftUI
 
+enum MangaDisplayMode {
+    case `default`
+    case volume
+    case chapter
+}
+
 struct MangaView: View {
     @StateObject private var viewModel: ViewModel
 
@@ -25,6 +31,16 @@ struct MangaView: View {
 
     @State private var loadingAlert: UIAlertController?
 
+    @State private var displayMode: MangaDisplayMode = .default
+
+    private var isVolumeMode: Bool {
+        displayMode == .volume
+    }
+
+    private var isChapterModeActive: Bool {
+        displayMode == .chapter
+    }
+
     private var path: NavigationCoordinator
 
     init(
@@ -37,6 +53,15 @@ struct MangaView: View {
         self._viewModel = StateObject(wrappedValue: ViewModel(source: source, manga: manga))
         self.path = path
         self._scrollToChapterKey = State(initialValue: scrollToChapterKey)
+        let volumeMangas = UserDefaults.standard.array(forKey: "VolumeModeMangas") as? [String] ?? []
+        let chapterMangas = UserDefaults.standard.array(forKey: "ChapterModeMangas") as? [String] ?? []
+        if chapterMangas.contains(manga.key) {
+            self._displayMode = State(initialValue: .chapter)
+        } else if volumeMangas.contains(manga.key) {
+            self._displayMode = State(initialValue: .volume)
+        } else {
+            self._displayMode = State(initialValue: .default)
+        }
     }
 
     var body: some View {
@@ -198,6 +223,7 @@ extension MangaView {
                 langFilter: $viewModel.chapterLangFilter,
                 scanlatorFilter: $viewModel.chapterScanlatorFilter,
                 descriptionExpanded: $descriptionExpanded,
+                displayMode: displayMode,
                 onTrackerButtonPressed: {
                     let vc = TrackerModalViewController(manga: viewModel.manga.toOld())
                     vc.modalPresentationStyle = .overFullScreen
@@ -236,6 +262,8 @@ extension MangaView {
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
             downloadProgress: viewModel.downloadProgress[chapter.key],
+            isVolumeMode: isVolumeMode,
+            isChapterMode: isChapterModeActive,
         ) {
             if editMode == .inactive {
                 openReaderView(chapter: chapter)
@@ -402,6 +430,31 @@ extension MangaView {
                     } label: {
                         Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
                     }
+                }
+                Menu {
+                    Button {
+                        displayMode = .volume
+                        UserDefaults.standard.set([viewModel.manga.key], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_VOLUMES"), systemImage: "book")
+                    }
+                    Button {
+                        displayMode = .chapter
+                        UserDefaults.standard.set([], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([viewModel.manga.key], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_CHAPTERS"), systemImage: "doc.text")
+                    }
+                    Button {
+                        displayMode = .default
+                        UserDefaults.standard.set([], forKey: "VolumeModeMangas")
+                        UserDefaults.standard.set([], forKey: "ChapterModeMangas")
+                    } label: {
+                        Label(NSLocalizedString("USE_DEFAULT"), systemImage: "arrow.counterclockwise")
+                    }
+                } label: {
+                    Label(NSLocalizedString("FORCE_MODE"), systemImage: "arrow.triangle.branch")
                 }
                 Button {
                     withAnimation {
@@ -660,6 +713,8 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let page: Int?
     let downloaded: Bool
     let downloadProgress: Float?
+    let isVolumeMode: Bool
+    let isChapterMode: Bool
 
     var onPressed: (() -> Void)?
     var contextMenu: (() -> T)?
@@ -680,7 +735,9 @@ private struct ChapterCellView<T: View>: View, Equatable {
                     read: read,
                     page: page,
                     downloaded: downloaded,
-                    downloadProgress: downloadProgress
+                    downloadProgress: downloadProgress,
+                    isVolumeMode: isVolumeMode,
+                    isChapterMode: isChapterMode
                 )
             }
         }
@@ -698,5 +755,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
             && lhs.page == rhs.page
             && lhs.downloaded == rhs.downloaded
             && lhs.downloadProgress == rhs.downloadProgress
+            && lhs.isVolumeMode == rhs.isVolumeMode
+            && lhs.isChapterMode == rhs.isChapterMode
     }
 }

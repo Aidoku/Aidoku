@@ -291,6 +291,7 @@
 "PAGE_X_OF_X" = "第 %i 頁，共 %i 頁";
 "CATEGORY_EMPTY" = "類別為空";
 "VOLUMES" = "冊數";
+"FORCE_MODE" = "强制模式";
 "STARTED" = "已開始";
 "TRACK_REREADING" = "重溫中";
 "TRACK_PLANNING" = "待閱讀";
@@ -364,6 +365,10 @@
 "MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "將%i個項目從類別%@中移除";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "將項目從類別%@中移除";
+"USE_VOLUMES" = "使用冊";
+"USE_CHAPTERS" = "使用章節";
+"USE_DEFAULT" = "使用預設";
+"USE_CHAPTERS_TEXT" = "將書籍視爲章節而非冊";
 "CONTENT" = "漫畫";
 "DONE" = "完成";
 "INVALID" = "無效";
