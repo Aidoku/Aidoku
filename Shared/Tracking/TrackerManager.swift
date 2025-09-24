@@ -126,6 +126,11 @@ class TrackerManager {
                 mangaId: manga.id,
                 title: item.title ?? manga.title
             ))
+
+            // Sync progress from tracker if enabled or is enhanced tracker
+            if UserDefaults.standard.bool(forKey: "Tracking.syncFromTracker") || (tracker is EnhancedTracker) {
+                await syncProgressFromTracker(tracker: tracker, trackId: id ?? item.id, manga: manga)
+            }
         } catch {
             LogManager.logger.error("Failed to register tracker \(tracker.id): \(error)")
         }
@@ -182,6 +187,48 @@ class TrackerManager {
     /// Checks if there is a tracker that can be added to the given manga.
     func hasAvailableTrackers(sourceKey: String, mangaKey: String) -> Bool {
         trackers.contains { $0.canRegister(sourceKey: sourceKey, mangaKey: mangaKey) }
+    }
+
+    /// Sync progress from tracker to local history
+    func syncProgressFromTracker(tracker: Tracker, trackId: String, manga: Manga) async {
+        guard let state = try? await tracker.getState(trackId: trackId) else { return }
+        let trackerLastReadChapter = state.lastReadChapter ?? 0
+        let trackerLastReadVolume = state.lastReadVolume ?? 0
+
+        if trackerLastReadChapter <= 0 && trackerLastReadVolume <= 0 { return }
+
+        let currentHighestRead = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getHighestChapterRead(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                context: context
+            ) ?? 0
+        }
+
+        // Get chapters from source
+        guard
+            let source = SourceManager.shared.source(for: manga.sourceId),
+            let chapters = try? await source.getMangaUpdate(manga: manga.toNew(), needsDetails: false, needsChapters: true).chapters
+        else { return }
+
+        var chaptersToMark: [AidokuRunner.Chapter] = []
+
+        if trackerLastReadChapter > currentHighestRead {
+            // Mark chapters as read up to trackerLastReadChapter
+            chaptersToMark = chapters.filter { $0.chapterNumber ?? 0 <= trackerLastReadChapter }
+        } 
+        if trackerLastReadVolume > 0 {
+            // If no chapter progress but has volume progress, mark chapters in volumes up to trackerLastReadVolume
+            chaptersToMark = chapters.filter { ($0.volumeNumber ?? 0) <= Float(trackerLastReadVolume) }
+        }
+
+        if !chaptersToMark.isEmpty {
+            await HistoryManager.shared.addHistory(
+                sourceId: manga.sourceId,
+                mangaId: manga.id,
+                chapters: chaptersToMark
+            )
+        }
     }
 
     /// Add all applicable enhanced trackers to a given manga.

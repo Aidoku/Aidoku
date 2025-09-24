@@ -478,6 +478,7 @@
 
 // Tracking
 "TRACKERS" = "Trackers";
+"SYNC_FROM_TRACKER" = "Sync from Tracker";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
 "START_TRACKING" = "Start Tracking";

@@ -143,19 +143,15 @@ struct MangaView: View {
                     }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .trackItemAdded)) { output in
-                guard let item = output.object as? TrackItem else { return }
-                Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
-                    }
-                }
-            }
             .onReceive(NotificationCenter.default.publisher(for: .syncTrackItem)) { output in
                 guard let item = output.object as? TrackItem else { return }
                 Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
+                    if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
+                        await TrackerManager.shared.syncProgressFromTracker(
+                            tracker: tracker,
+                            trackId: item.id,
+                            manga: viewModel.manga.toOld()
+                        )
                     }
                 }
             }
@@ -631,50 +627,6 @@ extension MangaView {
             height: 0
         )
         path.present(activityViewController)
-    }
-
-    func syncWithTracker(result: MangaView.ViewModel.TrackerSyncResult) {
-        func sync() {
-            guard
-                let chapters = viewModel.manga.chapters,
-                let lastReadChapter = {
-                    if result.volume {
-                        chapters.firstIndex(where: {
-                            $0.volumeNumber != nil && floor($0.volumeNumber!) <= result.number
-                        })
-                    } else {
-                        chapters.firstIndex(where: {
-                            $0.chapterNumber != nil && floor($0.chapterNumber!) <= result.number
-                        })
-                    }
-                }()
-            else {
-                return
-            }
-            let syncChapters = Array(chapters[lastReadChapter...])
-            Task {
-                await viewModel.markRead(chapters: syncChapters)
-            }
-        }
-
-        if result.tracker is EnhancedTracker {
-            // we don't need to confirm syncing with enhanced trackers
-            sync()
-        } else {
-            // there's a bug where swiftui alert isn't shown so using uikit alert instead
-            let alert = UIAlertController(
-                title: NSLocalizedString("SYNC_WITH_TRACKER"),
-                message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO"), result.number),
-                preferredStyle: .alert
-            )
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel) { _ in })
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
-            })
-
-            path.present(alert)
-        }
     }
 
     func showLoadingIndicator() {

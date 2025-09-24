@@ -245,6 +245,7 @@
 "ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "追踪器";
+"SYNC_FROM_TRACKER" = "从追踪器同步";
 "LOGOUT" = "退出";
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";
@@ -296,7 +297,7 @@
 "MIGRATE_SOURCES" = "迁移来源";
 "MIGRATE" = "迁移";
 "START_MATCHING" = "开始匹配";
-"SYNC_LOCAL_HISTORY" = "同步本机历史";
+"SYNC_LOCAL_HISTORY" = "同步至本机历史";
 "MIGRATION" = "迁移";
 "OPTIONS" = "选项";
 "SELECTED" = "已选择";
