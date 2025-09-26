@@ -552,3 +552,12 @@
 "RANGE_FROM" = "从";
 "RANGE_TO" = "到";
 "INVERT_TAP_ZONES" = "反转点击区域";
+"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "iCloud Sync是一项实验性功能。启用或禁用它可能会触发数据丢失。";
+"ICLOUD_SYNC_TEXT_SIDELOADED" = "iCloud 同步仅通过 TestFlight 安装时可用。";
+"NO_RESULTS_FOR_%@" = "“%@”没有结果";
+"NO_RESULTS_TEXT" = "检查拼写或尝试新的搜索。";
+"BACKUP_%@" = "备份 %@";
+"UPDATE_AFTER_READING" = "阅读后更新";
+"CREATE_BACKUP" = "创建备份";
+"LIBRARY_ENTRIES" = "书架条目";
+"SENSITIVE_SETTINGS" = "敏感设置";
