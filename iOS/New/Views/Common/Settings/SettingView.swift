@@ -251,34 +251,36 @@ struct SettingView: View {
 extension SettingView {
     @ViewBuilder
     func groupView(value: GroupSetting) -> some View {
-        let body = ForEach(value.items.indices, id: \.self) { offset in
-            let setting = value.items[offset]
-            SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
-                .tag(setting.key.isEmpty ? UUID().uuidString : key(setting.key))
-        }
-        if let footer = value.footer.flatMap({ NSLocalizedString($0) }) {
-            if !setting.title.isEmpty {
-                Section {
+        if !disabled {
+            let body = ForEach(value.items.indices, id: \.self) { offset in
+                let setting = value.items[offset]
+                SettingView(source: source, setting: setting, namespace: namespace, onChange: onChange)
+                    .tag(setting.key.isEmpty ? UUID().uuidString : key(setting.key))
+            }
+            if let footer = value.footer.flatMap({ NSLocalizedString($0) }) {
+                if !setting.title.isEmpty {
+                    Section {
+                        body
+                    } header: {
+                        Text(setting.title)
+                    } footer: {
+                        Text(footer)
+                    }
+                } else {
+                    Section {
+                        body
+                    } footer: {
+                        Text(footer)
+                    }
+                }
+            } else if !setting.title.isEmpty {
+                Section(setting.title) {
                     body
-                } header: {
-                    Text(setting.title)
-                } footer: {
-                    Text(footer)
                 }
             } else {
                 Section {
                     body
-                } footer: {
-                    Text(footer)
                 }
-            }
-        } else if !setting.title.isEmpty {
-            Section(setting.title) {
-                body
-            }
-        } else {
-            Section {
-                body
             }
         }
     }
@@ -609,7 +611,7 @@ extension SettingView {
         .autocorrectionDisabled(value.autocorrectionDisabled ?? false)
         .keyboardType(value.keyboardType.flatMap { UIKeyboardType(rawValue: $0) } ?? .default)
         .submitLabel(returnKeyType)
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
@@ -638,7 +640,7 @@ extension SettingView {
                 Text(text)
             }
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
@@ -653,7 +655,7 @@ extension SettingView {
             SafariView(url: Binding.constant(URL(string: value.url)))
                 .ignoresSafeArea()
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
@@ -694,7 +696,7 @@ extension SettingView {
                 Text(loggedIn ? value.logoutTitle ?? NSLocalizedString("LOGOUT") : setting.title)
             }
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
         .alert(setting.title, isPresented: $showLoginAlert) {
             // todo: if useEmail is true, we could verify that the email entered is valid before enabling the log in button
             let useEmail = value.useEmail ?? false
@@ -1102,7 +1104,7 @@ extension SettingView {
             .environment(\.isEnabled, true) // remove double disabled effect
         }
         .foregroundStyle(.primary)
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
         .opacity({
             if #available(iOS 26.0, *) {
                 1
@@ -1278,7 +1280,7 @@ extension SettingView {
                     Text(NSLocalizedString("ADD"))
                 }
             }
-            .disabled(!requires || requiresFalse)
+            .disabled(disabled)
         } else {
             NavigationLink {
                 List {
@@ -1302,7 +1304,7 @@ extension SettingView {
             } label: {
                 Text(setting.title)
             }
-            .disabled(!requires || requiresFalse)
+            .disabled(disabled)
         }
     }
 }
@@ -1319,7 +1321,7 @@ extension SettingView {
                     .foregroundStyle(.secondary)
             }
         }
-        .disabled(!requires || requiresFalse)
+        .disabled(disabled)
     }
 }
 
