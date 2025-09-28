@@ -16,13 +16,8 @@ struct BackupsView: View {
     @State private var targetRestoreBackup: Backup?
     @State private var targetRenameBackupUrl: URL?
     @State private var backupName: String = ""
-    @State private var restoreError: String?
-    @State private var missingSources: [String] = []
     @State private var showCreateSheet = false
-    @State private var showRestoreAlert = false
     @State private var showRenameAlert = false
-    @State private var showRestoreErrorAlert = false
-    @State private var showMissingSourcesAlert = false
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -39,7 +34,6 @@ struct BackupsView: View {
                     if let backup {
                         Button {
                             targetRestoreBackup = backup
-                            showRestoreAlert = true
                         } label: {
                             HStack {
                                 let date = DateFormatter.localizedString(from: backup.date, dateStyle: .short, timeStyle: .short)
@@ -114,20 +108,10 @@ struct BackupsView: View {
             }
         }
         .sheet(isPresented: $showCreateSheet) {
-            CreateBackupView()
+            BackupCreateView()
         }
-        .alert(NSLocalizedString("RESTORE_BACKUP"), isPresented: $showRestoreAlert) {
-            Button(NSLocalizedString("CANCEL"), role: .cancel) {
-                self.targetRestoreBackup = nil
-            }
-            Button(NSLocalizedString("RESTORE"), role: .destructive) {
-                if let targetRestoreBackup {
-                    restore(backup: targetRestoreBackup)
-                    self.targetRestoreBackup = nil
-                }
-            }
-        } message: {
-            Text(NSLocalizedString("RESTORE_BACKUP_TEXT"))
+        .sheet(item: $targetRestoreBackup) { backup in
+            BackupContentView(backup: backup)
         }
         .alert(NSLocalizedString("RENAME_BACKUP"), isPresented: $showRenameAlert) {
             TextField(NSLocalizedString("BACKUP_NAME"), text: $backupName)
@@ -144,16 +128,6 @@ struct BackupsView: View {
             }
         } message: {
             Text(NSLocalizedString("RENAME_BACKUP_TEXT"))
-        }
-        .alert(NSLocalizedString("BACKUP_ERROR"), isPresented: $showRestoreErrorAlert) {
-            Button(NSLocalizedString("OK"), role: .cancel) {}
-        } message: {
-            Text(String(format: NSLocalizedString("BACKUP_ERROR_TEXT"), restoreError ?? NSLocalizedString("UNKNOWN")))
-        }
-        .alert(NSLocalizedString("MISSING_SOURCES"), isPresented: $showMissingSourcesAlert) {
-            Button(NSLocalizedString("OK"), role: .cancel) {}
-        } message: {
-            Text(NSLocalizedString("MISSING_SOURCES_TEXT") + missingSources.map { "\n- \($0)" }.joined())
         }
         .onAppear {
             guard !loadedInitialBackupInfo else { return }
@@ -182,34 +156,13 @@ extension BackupsView {
             for backupUrl in backupUrls {
                 let backup = Backup.load(from: backupUrl)
                 await MainActor.run {
-                    self.backups[backupUrl] = backup
+                    if let backup {
+                        self.backups[backupUrl] = backup
+                    } else {
+                        self.invalidBackups.insert(backupUrl)
+                    }
                 }
             }
-        }
-    }
-
-    func restore(backup: Backup) {
-        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
-        UIApplication.shared.isIdleTimerDisabled = true
-        Task {
-            do {
-                try await BackupManager.shared.restore(from: backup)
-                (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
-
-                let missingSources = (backup.sources ?? []).filter {
-                    !CoreDataManager.shared.hasSource(id: $0)
-                }
-                if !missingSources.isEmpty {
-                    self.missingSources = missingSources
-                    showMissingSourcesAlert = true
-                }
-            } catch {
-                (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
-
-                restoreError = (error as? BackupManager.BackupError)?.stringValue ?? "Unknown"
-                showRestoreErrorAlert = true
-            }
-            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
 
@@ -222,65 +175,5 @@ extension BackupsView {
         guard let sourceView = path.rootViewController?.view else { return }
         vc.popoverPresentationController?.sourceView = sourceView
         path.present(vc)
-    }
-}
-
-private struct CreateBackupView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    @State private var libraryEntries = true
-    @State private var chapters = true
-    @State private var tracking = true
-    @State private var history = true
-    @State private var categories = true
-    @State private var settings = true
-    @State private var sourceLists = true
-    @State private var sensitiveSettings = false
-
-    var body: some View {
-        PlatformNavigationStack {
-            List {
-                Section {
-                    Toggle(NSLocalizedString("LIBRARY_ENTRIES"), isOn: $libraryEntries)
-                    Toggle(NSLocalizedString("CHAPTERS"), isOn: $chapters)
-                    Toggle(NSLocalizedString("TRACKING"), isOn: $tracking)
-                    Toggle(NSLocalizedString("HISTORY"), isOn: $history)
-                    Toggle(NSLocalizedString("CATEGORIES"), isOn: $categories)
-                } header: {
-                    Text(NSLocalizedString("LIBRARY"))
-                }
-                Section {
-                    Toggle(NSLocalizedString("SETTINGS"), isOn: $settings)
-                    Toggle(NSLocalizedString("SOURCE_LISTS"), isOn: $sourceLists)
-                    Toggle(NSLocalizedString("SENSITIVE_SETTINGS"), isOn: $sensitiveSettings)
-                } header: {
-                    Text(NSLocalizedString("SETTINGS"))
-                }
-            }
-            .navigationTitle(NSLocalizedString("CREATE_BACKUP"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    CloseButton {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    DoneButton {
-                        BackupManager.shared.saveNewBackup(options: .init(
-                            libraryEntries: libraryEntries,
-                            history: history,
-                            chapters: chapters,
-                            tracking: tracking,
-                            categories: categories,
-                            settings: settings,
-                            sourceLists: sourceLists,
-                            sensitiveSettings: sensitiveSettings
-                        ))
-                        dismiss()
-                    }
-                }
-            }
-        }
     }
 }

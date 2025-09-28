@@ -350,6 +350,9 @@
 		FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */; };
 		FB7C288A2E8310AD009FF6AF /* MoreIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28892E8310AA009FF6AF /* MoreIcon.swift */; };
 		FB7C288C2E8312D0009FF6AF /* UnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C288B2E8312CB009FF6AF /* UnavailableView.swift */; };
+		FB7C288E2E84420F009FF6AF /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C288D2E84420D009FF6AF /* LargeButton.swift */; };
+		FB7C28912E898D95009FF6AF /* BackupContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28902E898D94009FF6AF /* BackupContentView.swift */; };
+		FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */; };
 		FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */; };
 		FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F52DDCDC900036B116 /* HostingNode.swift */; };
 		FB7F05F82DDD6CA60036B116 /* MarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F72DDD6CA30036B116 /* MarkdownView.swift */; };
@@ -762,6 +765,9 @@
 		FB7B7EDC278CEAA2001E6EAF /* URLSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSession.swift; sourceTree = "<group>"; };
 		FB7C28892E8310AA009FF6AF /* MoreIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreIcon.swift; sourceTree = "<group>"; };
 		FB7C288B2E8312CB009FF6AF /* UnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableView.swift; sourceTree = "<group>"; };
+		FB7C288D2E84420D009FF6AF /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
+		FB7C28902E898D94009FF6AF /* BackupContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupContentView.swift; sourceTree = "<group>"; };
+		FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCreateView.swift; sourceTree = "<group>"; };
 		FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageDescriptionButtonView.swift; sourceTree = "<group>"; };
 		FB7F05F52DDCDC900036B116 /* HostingNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingNode.swift; sourceTree = "<group>"; };
 		FB7F05F72DDD6CA30036B116 /* MarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownView.swift; sourceTree = "<group>"; };
@@ -1520,6 +1526,7 @@
 				FB4EBFC32E45123D00D83F9A /* TextFieldWrapper.swift */,
 				FB7C28892E8310AA009FF6AF /* MoreIcon.swift */,
 				FB7C288B2E8312CB009FF6AF /* UnavailableView.swift */,
+				FB7C288D2E84420D009FF6AF /* LargeButton.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -1717,6 +1724,7 @@
 		FB7984152E0C9F4D000761A9 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				FB7C288F2E898D85009FF6AF /* Backups */,
 				FBB516482E2F057200749F4E /* Download Manager */,
 				FBFF58902E7F2641009367B7 /* Settings.swift */,
 				FB1A4E692E7AFEC0006F4BA8 /* SettingsView.swift */,
@@ -1725,7 +1733,6 @@
 				FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */,
 				FB077DA72E7DC5F700C9C214 /* CategoriesView.swift */,
 				FB55C0AE2DF1E2650019A551 /* SourceListsView.swift */,
-				FB077DAD2E7DC85800C9C214 /* BackupsView.swift */,
 				FB7984132E0C9F1D000761A9 /* UpscaleModelListView.swift */,
 				FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */,
 			);
@@ -1763,6 +1770,16 @@
 				FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */,
 			);
 			path = Browse;
+			sourceTree = "<group>";
+		};
+		FB7C288F2E898D85009FF6AF /* Backups */ = {
+			isa = PBXGroup;
+			children = (
+				FB077DAD2E7DC85800C9C214 /* BackupsView.swift */,
+				FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */,
+				FB7C28902E898D94009FF6AF /* BackupContentView.swift */,
+			);
+			path = Backups;
 			sourceTree = "<group>";
 		};
 		FB7F05FD2DDF79390036B116 /* Komga */ = {
@@ -2213,6 +2230,7 @@
 				FBB5164A2E2F231F00749F4E /* DownloadManagerView+ViewModel.swift in Sources */,
 				FB662F1B2DA81B8200007514 /* DownsampleProcessor.swift in Sources */,
 				FB82A5CA2DF8786C00366BC8 /* ObjectActorSerialExecutor.swift in Sources */,
+				FB7C288E2E84420F009FF6AF /* LargeButton.swift in Sources */,
 				FB4B0AE0285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
 				FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */,
 				FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
@@ -2254,6 +2272,7 @@
 				FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */,
 				FB077DAA2E7DC77300C9C214 /* SettingsAboutView.swift in Sources */,
 				FB1B51B528E35BEA00D3CE0E /* BaseCollectionViewController.swift in Sources */,
+				FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */,
 				FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
 				FB7F06002DDF79420036B116 /* KomgaSource.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
@@ -2502,6 +2521,7 @@
 				FB0CAA6528A9B5440024561A /* MangaManager.swift in Sources */,
 				FB1B4866277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB7984112E0C8068000761A9 /* ModelManager.swift in Sources */,
+				FB7C28912E898D95009FF6AF /* BackupContentView.swift in Sources */,
 				FBE7A5942DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */,
 				FB4B0AF1285D46BF0066A13B /* Date.swift in Sources */,
 				FB9A484029688B5300FFC414 /* MigrateSourcesView.swift in Sources */,
