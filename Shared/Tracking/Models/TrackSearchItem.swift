@@ -11,8 +11,6 @@ import Foundation
 struct TrackSearchItem: Equatable {
     /// A unique identifier of the tracker item.
     let id: String
-    /// The identifier for the item's tracker.
-    let trackerId: String
     /// The title of the tracker item.
     var title: String?
     /// The URL for the cover image of the tracker item.

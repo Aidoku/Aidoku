@@ -26,7 +26,11 @@ class KomgaTracker: EnhancedTracker {
 
             let state = try? await api.getState(sourceKey: split[0], url: split[1])
             if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
-                try await api.update(sourceKey: split[0], url: split[1], update: .init(lastReadVolume: Int(floor(highestChapterRead))))
+                try await api.update(
+                    sourceKey: split[0],
+                    url: split[1],
+                    update: .init(lastReadVolume: Int(floor(highestChapterRead)))
+                )
             }
         }
         return nil
@@ -56,7 +60,7 @@ class KomgaTracker: EnhancedTracker {
 
         let state = try await api.getState(sourceKey: manga.sourceId, url: apiUrl)
         if state != nil {
-            return [.init(id: "\(manga.sourceId)\(idSeparator)\(apiUrl)", trackerId: id, tracked: true)]
+            return [.init(id: "\(manga.sourceId)\(idSeparator)\(apiUrl)", tracked: true)]
         } else {
             return []
         }

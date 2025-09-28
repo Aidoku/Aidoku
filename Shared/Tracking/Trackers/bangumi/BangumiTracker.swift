@@ -102,7 +102,6 @@ class BangumiTracker: OAuthTracker {
             guard let subject = await api.getSubject(id: id) else { return [] }
             return [TrackSearchItem(
                 id: String(subject.id),
-                trackerId: self.id,
                 title: getDisplayTitle(for: subject),
                 coverUrl: getCoverUrl(for: subject),
                 description: subject.summary,
@@ -123,7 +122,6 @@ class BangumiTracker: OAuthTracker {
         return subjects.map {
             TrackSearchItem(
                 id: String($0.id),
-                trackerId: self.id,
                 title: getDisplayTitle(for: $0),
                 coverUrl: getCoverUrl(for: $0),
                 description: $0.summary,

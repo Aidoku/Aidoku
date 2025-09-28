@@ -66,7 +66,6 @@ private extension ShikimoriTracker {
         return result.data.mangas.map {
             TrackSearchItem(
                 id: $0.id,
-                trackerId: self.id,
                 title: $0.russian ?? $0.name,
                 coverUrl: $0.poster.mini2xUrl,
                 type: getMediaType(typeString: $0.kind),
