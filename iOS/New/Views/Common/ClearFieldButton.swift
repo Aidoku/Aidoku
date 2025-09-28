@@ -16,6 +16,6 @@ struct ClearFieldButton: View {
         } label: {
             Image(systemName: "xmark.circle.fill")
         }
-        .tint(Color.secondary)
+        .tint(Color.tertiaryLabel)
     }
 }

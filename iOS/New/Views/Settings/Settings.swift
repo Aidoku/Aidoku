@@ -468,10 +468,12 @@ extension Settings {
             value: .group(.init(items: [
                 .init(
                     key: "Logs.logServer",
+                    title: NSLocalizedString("LOG_SERVER"),
                     value: .text(.init(
-                        placeholder: NSLocalizedString("LOG_SERVER"),
+                        placeholder: "http://127.0.0.1",
                         autocapitalizationType: 0,
                         keyboardType: 3,
+                        returnKeyType: 9,
                         autocorrectionDisabled: true,
                     ))
                 ),

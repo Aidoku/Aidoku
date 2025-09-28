@@ -379,6 +379,7 @@
 		FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */; };
 		FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
 		FB94E3162DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
+		FB9691562E89971F00BC0587 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9691552E89971D00BC0587 /* Color.swift */; };
 		FB98ECAF2DE64779002FB089 /* HomeGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB98ECAE2DE64777002FB089 /* HomeGridView.swift */; };
 		FB9A48332967E41400FFC414 /* MigrateSourceSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */; };
 		FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */; };
@@ -792,6 +793,7 @@
 		FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaInfo.swift; sourceTree = "<group>"; };
 		FB94E3142DF9DE9C00784556 /* SourceList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceList.swift; sourceTree = "<group>"; };
+		FB9691552E89971D00BC0587 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		FB98ECAE2DE64777002FB089 /* HomeGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGridView.swift; sourceTree = "<group>"; };
 		FB9A48322967E41400FFC414 /* MigrateSourceSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSourceSelectionView.swift; sourceTree = "<group>"; };
 		FB9A48342967E42B00FFC414 /* MangaToMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaToMangaView.swift; sourceTree = "<group>"; };
@@ -1614,6 +1616,7 @@
 			isa = PBXGroup;
 			children = (
 				FB8E48DC2DC04E17002A3621 /* Array.swift */,
+				FB9691552E89971D00BC0587 /* Color.swift */,
 				FB662EF42DA81B8200007514 /* EdgeInsets.swift */,
 				FB662EF92DA81B8200007514 /* UIApplication.swift */,
 				FB55C0AC2DEFC4340019A551 /* UIHostingController+SafeArea.swift */,
@@ -2493,6 +2496,7 @@
 				FB7B7E9827877416001E6EAF /* WasmNet.swift in Sources */,
 				FBBE0FD02886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift in Sources */,
 				FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */,
+				FB9691562E89971F00BC0587 /* Color.swift in Sources */,
 				FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */,
 				FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,

@@ -53,6 +53,8 @@ struct SettingView: View {
     @StateObject private var userDefaultsObserver: UserDefaultsObserver // causes view to refresh when setting changes (e.g. when resetting)
     @StateObject private var requiresObserver: UserDefaultsObserver
 
+    @FocusState private var fieldFocused: Bool
+
     // empty view controller to support login view presentation
     private static var loginShimController = LoginShimViewController()
 
@@ -320,7 +322,7 @@ extension SettingView {
                             .firstIndex { $0 == item }
                             .flatMap { value.titles?[safe: $0] }
                         Text(title ?? item)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.secondaryLabel)
                     }
                 }
             }
@@ -529,7 +531,7 @@ extension SettingView {
             Spacer()
             if value.maximumValue >= value.minimumValue {
                 Text(String(format: "%g", doubleBinding))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.secondaryLabel)
                 Stepper(
                     "",
                     value: $doubleBinding,
@@ -600,18 +602,38 @@ extension SettingView {
             }
         } ?? .return
 
-        Group {
-            if value.secure ?? false {
-                SecureField(value.placeholder ?? "", text: SettingsStore.shared.binding(key: key(setting.key)))
-            } else {
-                TextField(value.placeholder ?? "", text: SettingsStore.shared.binding(key: key(setting.key)))
+        HStack {
+            if !setting.title.isEmpty {
+                Text(setting.title)
+                    .opacity(disabled ? disabledOpacity : 1)
+                Spacer()
+            }
+            let text: Binding<String> = SettingsStore.shared.binding(key: key(setting.key))
+
+            HStack(spacing: 4) {
+                Group {
+                    if value.secure ?? false {
+                        SecureField(value.placeholder ?? "", text: text)
+                    } else {
+                        TextField(value.placeholder ?? "", text: text)
+                    }
+                }
+                .focused($fieldFocused)
+                .foregroundStyle(Color.secondaryLabel)
+                .multilineTextAlignment(setting.title.isEmpty ? .leading : .trailing)
+                .textInputAutocapitalization(autocapitalizationType)
+                .autocorrectionDisabled(value.autocorrectionDisabled ?? false)
+                .keyboardType(value.keyboardType.flatMap { UIKeyboardType(rawValue: $0) } ?? .default)
+                .submitLabel(returnKeyType)
+                .disabled(disabled)
+
+                if !text.wrappedValue.isEmpty && fieldFocused {
+                    ClearFieldButton {
+                        text.wrappedValue = ""
+                    }
+                }
             }
         }
-        .textInputAutocapitalization(autocapitalizationType)
-        .autocorrectionDisabled(value.autocorrectionDisabled ?? false)
-        .keyboardType(value.keyboardType.flatMap { UIKeyboardType(rawValue: $0) } ?? .default)
-        .submitLabel(returnKeyType)
-        .disabled(disabled)
     }
 }
 
@@ -1226,6 +1248,7 @@ struct SettingPageDestination: View {
                             proxy.scrollTo(scrollTo.key, anchor: .center)
                         }
                     }
+                    .scrollDismissesKeyboardInteractively()
                 }
             }
         }
