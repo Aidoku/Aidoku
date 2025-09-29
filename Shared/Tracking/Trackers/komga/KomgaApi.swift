@@ -8,7 +8,7 @@
 import Foundation
 
 class KomgaApi {
-    func getState(sourceKey: String, url: String) async throws -> TrackState? {
+    func getState(sourceKey: String, url: String, mangaId: String? = nil) async throws -> TrackState? {
         guard let url = URL(string: "\(url)/read-progress/tachiyomi")
         else { return nil }
 
@@ -22,7 +22,23 @@ class KomgaApi {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let data: KomgaReadProgress = try await URLSession.shared.object(from: request)
-        let useChapters = UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+
+        // Check for display mode
+        let uniqueKey = "\(sourceKey).\(mangaId ?? "")"
+        let key = "Manga.chapterDisplayMode.\(uniqueKey)"
+        let displayMode = MangaDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+        let mangaVolumeMode = displayMode == .volume
+        let mangaChapterMode = displayMode == .chapter
+
+        let useChapters: Bool
+        if mangaChapterMode {
+            useChapters = true
+        } else if mangaVolumeMode {
+            useChapters = false
+        } else {
+            useChapters = UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+        }
+
         if useChapters {
             return .init(
                 lastReadChapter: data.lastReadContinuousNumberSort,
@@ -36,8 +52,23 @@ class KomgaApi {
         }
     }
 
-    func update(sourceKey: String, url: String, update: TrackUpdate) async throws {
-        let useChapters = UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+    func update(sourceKey: String, url: String, update: TrackUpdate, mangaId: String? = nil) async throws {
+        // Check for display mode
+        let uniqueKey = "\(sourceKey).\(mangaId ?? "")"
+        let key = "Manga.chapterDisplayMode.\(uniqueKey)"
+        let displayMode = MangaDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+        let mangaVolumeMode = displayMode == .volume
+        let mangaChapterMode = displayMode == .chapter
+
+        let useChapters: Bool
+        if mangaChapterMode {
+            useChapters = true
+        } else if mangaVolumeMode {
+            useChapters = false
+        } else {
+            useChapters = UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+        }
+
         guard
             let lastReadVolume = useChapters ? update.lastReadChapter.flatMap({ Int(floor($0)) }) : update.lastReadVolume,
             let url = URL(string: "\(url)/read-progress/tachiyomi")

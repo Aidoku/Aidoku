@@ -33,6 +33,8 @@ struct MangaDetailsHeaderView: View {
 
     @Binding var descriptionExpanded: Bool
 
+    @Binding var displayMode: MangaDisplayMode
+
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
 
@@ -64,6 +66,7 @@ struct MangaDetailsHeaderView: View {
         langFilter: Binding<String?>,
         scanlatorFilter: Binding<[String]>,
         descriptionExpanded: Binding<Bool>,
+        displayMode: Binding<MangaDisplayMode>,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
@@ -83,6 +86,7 @@ struct MangaDetailsHeaderView: View {
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
         self._descriptionExpanded = descriptionExpanded
+        self._displayMode = displayMode
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
 
@@ -198,7 +202,9 @@ struct MangaDetailsHeaderView: View {
                 sortAscending: $chapterSortAscending,
                 filters: $filters,
                 langFilter: $langFilter,
-                scanlatorFilter: $scanlatorFilter
+                scanlatorFilter: $scanlatorFilter,
+                displayMode: $displayMode,
+                mangaUniqueKey: manga.uniqueKey
             )
             .padding(.horizontal, 20)
 
@@ -431,11 +437,28 @@ struct MangaDetailsHeaderView: View {
                 } else {
                     title = NSLocalizedString("CONTINUE_READING", comment: "")
                 }
-                if let volumeNum = chapter.volumeNumber {
-                    title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
-                }
-                if let chapterNum = chapter.chapterNumber {
-                    title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                switch displayMode {
+                case .volume:
+                    if let volumeNum = chapter.volumeNumber {
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                    } else if let chapterNum = chapter.chapterNumber {
+                        // Force display as volume if no volume number
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), chapterNum)
+                    }
+                case .chapter:
+                    if let chapterNum = chapter.chapterNumber {
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                    } else if let volumeNum = chapter.volumeNumber {
+                        // Force display as chapter if no chapter number
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), volumeNum)
+                    }
+                case .default:
+                    if let volumeNum = chapter.volumeNumber {
+                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                    }
+                    if let chapterNum = chapter.chapterNumber {
+                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                    }
                 }
             } else {
                 title = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
@@ -509,6 +532,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
     @Previewable @State var filters: [ChapterFilterOption] = []
     @Previewable @State var langFilter: String?
     @Previewable @State var scanlatorFilter: [String] = []
+    @Previewable @State var displayMode = MangaDisplayMode.default
 
     MangaDetailsHeaderView(
         source: AidokuRunner.Source.demo(),
@@ -533,5 +557,6 @@ private struct MangaActionButtonStyle: ButtonStyle {
         langFilter: $langFilter,
         scanlatorFilter: $scanlatorFilter,
         descriptionExpanded: Binding.constant(false),
+        displayMode: $displayMode,
     )
 }

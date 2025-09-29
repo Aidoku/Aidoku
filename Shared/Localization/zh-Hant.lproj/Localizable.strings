@@ -275,6 +275,7 @@
 "LAST_UPDATED" = "最後更新";
 "LINK_COPIED" = "已複製連結";
 "TRACKERS" = "進度追蹤器";
+"AUTO_SYNC_FROM_TRACKER" = "自動從追蹤器同步";
 "UPCOMING" = "即將到來";
 "ADD_TO_CATEGORIES" = "新增至類別";
 "SELECTED" = "已選取";
@@ -290,6 +291,7 @@
 "PAGE_X_OF_X" = "第 %i 頁，共 %i 頁";
 "CATEGORY_EMPTY" = "類別為空";
 "VOLUMES" = "冊數";
+"TITLE_DISPLAY_MODE" = "標題顯示模式";
 "STARTED" = "已開始";
 "TRACK_REREADING" = "重溫中";
 "TRACK_PLANNING" = "待閱讀";
@@ -313,7 +315,7 @@
 "SYNC_WITH_TRACKER" = "與進度追蹤器同步";
 "MIGRATE_SOURCES" = "遷移來源";
 "START_MATCHING" = "開始匹配";
-"SYNC_LOCAL_HISTORY" = "同步本機歷史紀錄";
+"SYNC_LOCAL_HISTORY" = "同步至本機歷史紀錄";
 "MIGRATE" = "遷移";
 "MIGRATION" = "遷移";
 "OPTIONS" = "選項";
@@ -363,6 +365,11 @@
 "MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "將%i個項目從類別%@中移除";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "將項目從類別%@中移除";
+"DISPLAY_VOLUMES" = "冊";
+"DISPLAY_DEFAULT" = "預設";
+"DISPLAY_CHAPTERS" = "章節";
+"USE_CHAPTERS" = "使用章節";
+"USE_CHAPTERS_TEXT" = "將書籍視爲章節而非冊";
 "CONTENT" = "漫畫";
 "DONE" = "完成";
 "INVALID" = "無效";

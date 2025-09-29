@@ -180,39 +180,78 @@ extension AidokuRunner.MangaContentRating {
     }
 }
 
+enum ChapterDisplayMode: Int {
+    case `default` = 0
+    case volume = 1
+    case chapter = 2
+}
+
 extension AidokuRunner.Chapter {
-    func formattedTitle() -> String {
-        if volumeNumber == nil && (title?.isEmpty ?? true) {
-            // Chapter X
-            return if let chapterNumber {
-                String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)
-            } else {
-                NSLocalizedString("UNTITLED")
-            }
-        } else if let volumeNumber, chapterNumber == nil && title == nil {
-            return String(format: NSLocalizedString("VOLUME_X"), volumeNumber)
-        } else {
+    func formattedTitle(forceMode: ChapterDisplayMode = .default) -> String {
+        switch forceMode {
+        case .chapter:
+            // Force display as chapter format
             var components: [String] = []
-            // Vol.X
-            if let volumeNumber {
-                components.append(
-                    String(format: NSLocalizedString("VOL_X"), volumeNumber)
-                )
-            }
-            // Ch.X
             if let chapterNumber {
-                components.append(
-                    String(format: NSLocalizedString("CH_X"), chapterNumber)
-                )
+                components.append(String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)) 
+            } else if let volumeNumber {
+                components.append(String(format: NSLocalizedString("CHAPTER_X"), volumeNumber))
+            } else {
+                components.append(NSLocalizedString("UNTITLED"))
             }
-            // title
             if let title, !title.isEmpty {
-                if !components.isEmpty {
-                    components.append("-")
-                }
+                components.append("-")
                 components.append(title)
             }
             return components.joined(separator: " ")
+        case .volume:
+            // Force display as volume format
+            var components: [String] = []
+            if let volumeNumber {
+                components.append(String(format: NSLocalizedString("VOLUME_X"), volumeNumber))
+            } else if let chapterNumber {
+                components.append(String(format: NSLocalizedString("VOLUME_X"), chapterNumber))
+            } else {
+                components.append(NSLocalizedString("UNTITLED"))
+            }
+            if let title, !title.isEmpty {
+                components.append("-")
+                components.append(title)
+            }
+            return components.joined(separator: " ")
+        case .default:
+            if volumeNumber == nil && (title?.isEmpty ?? true) {
+                // Chapter X
+                return if let chapterNumber {
+                    String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)
+                } else {
+                    NSLocalizedString("UNTITLED")
+                }
+            } else if let volumeNumber, chapterNumber == nil && title == nil {
+                return String(format: NSLocalizedString("VOLUME_X"), volumeNumber)
+            } else {
+                var components: [String] = []
+                // Vol.X
+                if let volumeNumber {
+                    components.append(
+                        String(format: NSLocalizedString("VOL_X"), volumeNumber)
+                    )
+                }
+                // Ch.X
+                if let chapterNumber {
+                    components.append(
+                        String(format: NSLocalizedString("CH_X"), chapterNumber)
+                    )
+                }
+                // title
+                if let title, !title.isEmpty {
+                    if !components.isEmpty {
+                        components.append("-")
+                    }
+                    components.append(title)
+                }
+                return components.joined(separator: " ")
+            }
         }
     }
 

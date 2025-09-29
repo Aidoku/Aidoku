@@ -140,7 +140,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarboxOrientation": "both",
                 "Reader.orientation": "device",
 
-                "Tracking.updateAfterReading": true
+                "Tracking.updateAfterReading": true,
+                "Tracking.autoSyncFromTracker": false
             ]
         )
 

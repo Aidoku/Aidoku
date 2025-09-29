@@ -33,6 +33,11 @@ struct SettingsTrackingView: View {
                     title: NSLocalizedString("UPDATE_AFTER_READING"),
                     value: .toggle(.init())
                 ))
+                SettingView(setting: .init(
+                    key: "Tracking.autoSyncFromTracker",
+                    title: NSLocalizedString("AUTO_SYNC_FROM_TRACKER"),
+                    value: .toggle(.init())
+                ))
             }
             Section {
                 ForEach(trackers.indices, id: \.self) { index in

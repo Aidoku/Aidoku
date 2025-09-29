@@ -51,7 +51,10 @@ class BangumiTracker: OAuthTracker {
         guard let id = Int(trackId) else {
             throw BangumiTrackerError.invalidId
         }
-        await api.update(subject: id, update: update)
+        let success = await api.update(subject: id, update: update)
+        if !success {
+            throw BangumiTrackerError.updateFailed
+        }
     }
 
     func getState(trackId: String) async throws -> TrackState {
@@ -227,4 +230,5 @@ enum BangumiTrackerError: Error {
     case invalidId
     case getStateFailed
     case notLoggedIn
+    case updateFailed
 }
