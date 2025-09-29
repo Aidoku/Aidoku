@@ -297,8 +297,6 @@
 "%i_CHAPTERS" = "%i Chapitres";
 "1_CHAPTER" = "1 Chapitre";
 "RENAME_CATEGORY_FAIL_INFO" = "Les noms de catégorie doivent être uniques.";
-"SYNC_WITH_TRACKER" = "Synchroniser avec le traqueur";
-"SYNC_WITH_TRACKER_INFO" = "Il semble que le dernier chapitre défini dans le traqueur (%g) soit plus élevé que votre dernier chapitre lu. Voulez-vous mettre à jour votre historique local pour qu'il corresponde ?";
 "CATEGORY_NAME" = "Nom de la catégorie";
 "MIGRATE_SOURCES" = "Migrer les sources";
 "START_MATCHING" = "Démarrer la correspondance";

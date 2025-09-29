@@ -484,7 +484,6 @@
 
 // Tracking
 "TRACKERS" = "Trackers";
-"AUTO_SYNC_FROM_TRACKER" = "Auto Sync from Tracker";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
 "START_TRACKING" = "Start Tracking";
@@ -517,6 +516,9 @@
 "SEARCH_OPTIONS" = "Search Options";
 "SHOW_NSFW_RESULTS" = "Show NSFW Results";
 "UPDATE_AFTER_READING" = "Update After Reading";
+"UPDATE_AFTER_READING_INFO" = "After reading a chapter, update the tracker to match the currently read chapter and/or volume.";
+"AUTO_SYNC_HISTORY" = "Automatically Sync History";
+"AUTO_SYNC_HISTORY_INFO" = "When a newer chapter and/or volume is detected on the tracker, update the local history to match.";
 
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
@@ -549,8 +551,6 @@
 "RENAME_CATEGORY" = "Rename Category";
 "RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
 "CATEGORY_NAME" = "Category Name";
-"SYNC_WITH_TRACKER" = "Sync with Tracker";
-"SYNC_WITH_TRACKER_INFO" = "It looks like the latest chapter set in the tracker (%g) is higher than your latest read chapter. Would you like to update your local history to match?";
 
 // Migration
 "MIGRATE_SOURCES" = "Migrate Sources";

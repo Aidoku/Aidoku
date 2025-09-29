@@ -275,7 +275,7 @@
 "LAST_UPDATED" = "最後更新";
 "LINK_COPIED" = "已複製連結";
 "TRACKERS" = "進度追蹤器";
-"AUTO_SYNC_FROM_TRACKER" = "自動從追蹤器同步";
+"AUTO_SYNC_HISTORY" = "自動從追蹤器同步";
 "UPCOMING" = "即將到來";
 "ADD_TO_CATEGORIES" = "新增至類別";
 "SELECTED" = "已選取";
@@ -312,7 +312,6 @@
 "RENAME_CATEGORY" = "重新命名類別";
 "RENAME_CATEGORY_FAIL_INFO" = "類別名稱不可重複。";
 "CATEGORY_NAME" = "類別名稱";
-"SYNC_WITH_TRACKER" = "與進度追蹤器同步";
 "MIGRATE_SOURCES" = "遷移來源";
 "START_MATCHING" = "開始匹配";
 "SYNC_LOCAL_HISTORY" = "同步至本機歷史紀錄";
@@ -332,7 +331,6 @@
 "READER_BG_COLOR_SYSTEM" = "系統";
 "RENAME_CATEGORY_FAIL" = "無法重新命名類別";
 "SKIP_DUPLICATE_CHAPTERS" = "跳過重複章節";
-"SYNC_WITH_TRACKER_INFO" = "看起來進度追蹤器中的最新進度（%g）比本機來的更新。是否與其同步？";
 "1_CHAPTER" = "共一章";
 "COVER" = "封面";
 "PAGE_LAYOUT" = "頁面佈局";

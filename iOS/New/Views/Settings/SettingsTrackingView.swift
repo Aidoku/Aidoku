@@ -33,13 +33,19 @@ struct SettingsTrackingView: View {
                     title: NSLocalizedString("UPDATE_AFTER_READING"),
                     value: .toggle(.init())
                 ))
-                SettingView(setting: .init(
-                    key: "Tracking.autoSyncFromTracker",
-                    title: NSLocalizedString("AUTO_SYNC_FROM_TRACKER"),
-                    value: .toggle(.init())
-                ))
+            } footer: {
+                Text(NSLocalizedString("UPDATE_AFTER_READING_INFO"))
             }
             Section {
+                SettingView(setting: .init(
+                    key: "Tracking.autoSyncFromTracker",
+                    title: NSLocalizedString("AUTO_SYNC_HISTORY"),
+                    value: .toggle(.init())
+                ))
+            } footer: {
+                Text(NSLocalizedString("AUTO_SYNC_HISTORY_INFO"))
+            }
+            Section(NSLocalizedString("TRACKERS")) {
                 ForEach(trackers.indices, id: \.self) { index in
                     let tracker = trackers[index]
                     let needsRelogin = if let tracker = tracker as? OAuthTracker, tracker.oauthClient.tokens?.askedForRefresh == true {

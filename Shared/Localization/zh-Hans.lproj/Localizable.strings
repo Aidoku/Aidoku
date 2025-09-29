@@ -245,7 +245,7 @@
 "ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "追踪器";
-"AUTO_SYNC_FROM_TRACKER" = "自动从追踪器同步";
+"AUTO_SYNC_HISTORY" = "自动从追踪器同步";
 "LOGOUT" = "退出";
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";
@@ -316,8 +316,6 @@
 "AVAILABLE" = "可用";
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
-"SYNC_WITH_TRACKER" = "与追踪器同步";
-"SYNC_WITH_TRACKER_INFO" = "追踪器中的最新章节（%g）高于您已读的最新章节。是否同步本机历史？";
 "UPLOAD_DATE" = "上传日期";
 "TRACKING" = "追踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";

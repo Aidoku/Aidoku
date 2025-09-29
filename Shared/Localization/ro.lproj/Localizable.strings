@@ -173,7 +173,6 @@
 "RENAME_CATEGORY" = "Redenumiți categoria";
 "RENAME_CATEGORY_FAIL_INFO" = "Numele categoriilor trebuie să fie unice.";
 "CATEGORY_NAME" = "Denumirea categoriei";
-"SYNC_WITH_TRACKER" = "Sincronizare cu Tracker";
 "MIGRATE_SOURCES" = "Migrează sursele";
 "START_MATCHING" = "Începeți potrivirea";
 "SYNC_LOCAL_HISTORY" = "Sincronizează cu istoricului local";
@@ -307,7 +306,6 @@
 "LOGGING" = "Jurnale";
 "RESET_SETTINGS_TEXT" = "Această acțiune este ireversibilă. Toate setările aplicației și ale sursei vor fi resetate.";
 "LOGOUT_FROM_%@" = "Doriți să vă deconectați de la %@?";
-"SYNC_WITH_TRACKER_INFO" = "Se pare că ultimul capitol setat în tracker (%g) este mai mare decât ultimul capitol citit. Doriți să vă actualizați istoricul local pentru a se potrivi?";
 "NOT_PUBLISHED" = "Nepublicat";
 "CLEAR_TRACKED_MANGA" = "Șterge lista de manga urmărite";
 "CLEAR_TRACKED_MANGA_TEXT" = "Această acțiune este ireversibilă. Urmărirea tuturor urmăritorilor adăugați la manga va fi eliminată.";

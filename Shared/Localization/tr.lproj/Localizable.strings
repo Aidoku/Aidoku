@@ -293,8 +293,6 @@
 "1_CHAPTER" = "1 Bölüm";
 "UPCOMING" = "Yaklaşan";
 "RENAME_CATEGORY_FAIL_INFO" = "Kategori adları benzersiz olmalı.";
-"SYNC_WITH_TRACKER" = "İzleyicilerle Senkronize Et";
-"SYNC_WITH_TRACKER_INFO" = "İzleyicideki son bölüm senin (%g) okuduğun son bölümden daha yüksek. Yerel geçmişini aynı olması için güncellemek ister misin?";
 "ADD_TO_CATEGORY" = "Kategoriye Ekle";
 "RENAME_CATEGORY_INFO" = "Bu kategori için yeni bir isim gir.";
 "MIGRATE" = "Taşı";
