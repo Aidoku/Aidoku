@@ -193,8 +193,8 @@
 "KOMGA_SETUP" = "Komga Setup";
 "OTHER_SETTINGS" = "Other Settings";
 "DISPLAY_DEFAULT" = "Default";
-"DISPLAY_VOLUMES" = "Volumes";
-"DISPLAY_CHAPTERS" = "Use Chapters";
+"DISPLAY_CHAPTER" = "Chapter";
+"DISPLAY_VOLUME" = "Volume";
 "USE_CHAPTERS" = "Use Chapters";
 "USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
 

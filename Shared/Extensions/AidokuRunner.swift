@@ -180,46 +180,9 @@ extension AidokuRunner.MangaContentRating {
     }
 }
 
-enum ChapterDisplayMode: Int {
-    case `default` = 0
-    case volume = 1
-    case chapter = 2
-}
-
 extension AidokuRunner.Chapter {
-    func formattedTitle(forceMode: ChapterDisplayMode = .default) -> String {
-        switch forceMode {
-        case .chapter:
-            // Force display as chapter format
-            var components: [String] = []
-            if let chapterNumber {
-                components.append(String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)) 
-            } else if let volumeNumber {
-                components.append(String(format: NSLocalizedString("CHAPTER_X"), volumeNumber))
-            } else {
-                components.append(NSLocalizedString("UNTITLED"))
-            }
-            if let title, !title.isEmpty {
-                components.append("-")
-                components.append(title)
-            }
-            return components.joined(separator: " ")
-        case .volume:
-            // Force display as volume format
-            var components: [String] = []
-            if let volumeNumber {
-                components.append(String(format: NSLocalizedString("VOLUME_X"), volumeNumber))
-            } else if let chapterNumber {
-                components.append(String(format: NSLocalizedString("VOLUME_X"), chapterNumber))
-            } else {
-                components.append(NSLocalizedString("UNTITLED"))
-            }
-            if let title, !title.isEmpty {
-                components.append("-")
-                components.append(title)
-            }
-            return components.joined(separator: " ")
-        case .default:
+    func formattedTitle(forceMode: ChapterTitleDisplayMode = .default) -> String {
+        if forceMode == .default {
             if volumeNumber == nil && (title?.isEmpty ?? true) {
                 // Chapter X
                 return if let chapterNumber {
@@ -252,6 +215,28 @@ extension AidokuRunner.Chapter {
                 }
                 return components.joined(separator: " ")
             }
+        } else {
+            var components: [String] = []
+            if forceMode == .chapter {
+                if let chapterNumber {
+                    components.append(String(format: NSLocalizedString("CHAPTER_X"), chapterNumber))
+                } else if let volumeNumber {
+                    components.append(String(format: NSLocalizedString("CHAPTER_X"), volumeNumber))
+                }
+            } else {
+                if let volumeNumber {
+                    components.append(String(format: NSLocalizedString("VOLUME_X"), volumeNumber))
+                } else if let chapterNumber {
+                    components.append(String(format: NSLocalizedString("VOLUME_X"), chapterNumber))
+                }
+            }
+            if let title, !title.isEmpty {
+                if !components.isEmpty {
+                    components.append("-")
+                }
+                components.append(title)
+            }
+            return components.joined(separator: " ")
         }
     }
 

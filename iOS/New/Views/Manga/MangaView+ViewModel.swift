@@ -46,6 +46,8 @@ extension MangaView {
             didSet { refilterChapters() }
         }
 
+        @Published var chapterTitleDisplayMode: ChapterTitleDisplayMode
+
         @Published var error: Error?
 
         private var fetchedDetails = false
@@ -54,6 +56,10 @@ extension MangaView {
         init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
             self.source = source
             self.manga = manga
+
+            let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
+            self.chapterTitleDisplayMode = .init(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+
             setupNotifications()
         }
 

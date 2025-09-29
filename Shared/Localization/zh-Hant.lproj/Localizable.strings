@@ -365,9 +365,9 @@
 "MARK_DUPLICATE_CHAPTERS" = "將重複章節標記為已讀";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "將%i個項目從類別%@中移除";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "將項目從類別%@中移除";
-"DISPLAY_VOLUMES" = "冊";
+"DISPLAY_VOLUME" = "冊";
 "DISPLAY_DEFAULT" = "預設";
-"DISPLAY_CHAPTERS" = "章節";
+"DISPLAY_CHAPTER" = "章節";
 "USE_CHAPTERS" = "使用章節";
 "USE_CHAPTERS_TEXT" = "將書籍視爲章節而非冊";
 "CONTENT" = "漫畫";

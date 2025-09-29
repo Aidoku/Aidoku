@@ -492,9 +492,9 @@
 "LOCAL_FILES_TAGLINE" = "读取本机文件";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "从书架删除项目";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "从书架删除 %i 项目";
-"DISPLAY_VOLUMES" = "卷";
+"DISPLAY_VOLUME" = "卷";
 "DISPLAY_DEFAULT" = "默认";
-"DISPLAY_CHAPTERS" = "章节";
+"DISPLAY_CHAPTER" = "章节";
 "USE_CHAPTERS" = "使用章节";
 "USE_CHAPTERS_TEXT" = "将书籍视为章节而非卷册";
 "OTHER_SETTINGS" = "其他设置";

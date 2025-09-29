@@ -5,6 +5,7 @@
 //  Created by dyphire on 22/9/2025.
 //
 
+import AidokuRunner
 import Foundation
 
 /// Bangumi tracker for Aidoku.
@@ -88,8 +89,8 @@ class BangumiTracker: OAuthTracker {
         URL(string: "https://bgm.tv/subject/\(trackId)")
     }
 
-    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
-        await search(title: manga.title ?? "", nsfw: includeNsfw)
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await search(title: manga.title, nsfw: includeNsfw)
     }
 
     func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {

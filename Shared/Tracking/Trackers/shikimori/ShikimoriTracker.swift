@@ -5,6 +5,7 @@
 //  Created by Vova Lapskiy on 02.11.2024.
 //
 
+import AidokuRunner
 import Foundation
 
 /// Shikimori tracker for Aidoku.
@@ -41,8 +42,8 @@ class ShikimoriTracker: OAuthTracker {
         return URL(string: oauthClient.baseUrl + "/mangas/\(id)")
     }
 
-    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
-        await getSearch(query: manga.title ?? "", includeNsfw: includeNsfw)
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await getSearch(query: manga.title, includeNsfw: includeNsfw)
     }
 
     func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {

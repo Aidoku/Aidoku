@@ -16,8 +16,7 @@ struct ChapterTableCell: View {
     let page: Int?
     let downloaded: Bool
     var downloadProgress: Float?
-    let isVolumeMode: Bool
-    let isChapterMode: Bool
+    let displayMode: ChapterTitleDisplayMode
 
     var locked: Bool {
         chapter.locked && !downloaded
@@ -35,14 +34,7 @@ struct ChapterTableCell: View {
             }
 
             VStack(alignment: .leading, spacing: 8 / 3) {
-                let forceMode: ChapterDisplayMode = if isChapterMode {
-                    .chapter
-                } else if isVolumeMode {
-                    .volume
-                } else {
-                    .default
-                }
-                let title = chapter.formattedTitle(forceMode: forceMode)
+                let title = chapter.formattedTitle(forceMode: displayMode)
                 Text(title)
                     .foregroundStyle(locked || read ? .secondary : .primary)
                     .font(.system(size: 16))

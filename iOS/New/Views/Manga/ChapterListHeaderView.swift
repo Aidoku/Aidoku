@@ -18,12 +18,12 @@ struct ChapterListHeaderView: View {
     @Binding var langFilter: String?
     @Binding var scanlatorFilter: [String]
 
-    @Binding var displayMode: MangaDisplayMode
+    @Binding var displayMode: ChapterTitleDisplayMode
 
     private var showMenu: Bool = false
     private var languages: [String] = []
     private var scanlators: [String] = []
-    private var mangaUniqueKey: String = ""
+    private var mangaUniqueKey: String
 
     init(
         allChapters: [AidokuRunner.Chapter]? = nil,
@@ -33,8 +33,8 @@ struct ChapterListHeaderView: View {
         filters: Binding<[ChapterFilterOption]>,
         langFilter: Binding<String?>,
         scanlatorFilter: Binding<[String]>,
-        displayMode: Binding<MangaDisplayMode>,
-        mangaUniqueKey: String = ""
+        displayMode: Binding<ChapterTitleDisplayMode>,
+        mangaUniqueKey: String
     ) {
         self.chapterCount = filteredChapters?.count
         self._sortOption = sortOption
@@ -43,6 +43,7 @@ struct ChapterListHeaderView: View {
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
         self._displayMode = displayMode
+        self.mangaUniqueKey = mangaUniqueKey
 
         if let allChapters, !allChapters.isEmpty {
             var languages: Set<String> = []
@@ -57,7 +58,6 @@ struct ChapterListHeaderView: View {
             }
             self.languages = languages.sorted()
             self.scanlators = scanlators.sorted()
-            self.mangaUniqueKey = mangaUniqueKey
             self.showMenu = true
         }
     }
@@ -177,42 +177,22 @@ struct ChapterListHeaderView: View {
                 }
             }
             Section(NSLocalizedString("TITLE_DISPLAY_MODE")) {
-                Button {
-                    displayMode = .default
-                    let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
-                    UserDefaults.standard.removeObject(forKey: key)
-                } label: {
-                    Label {
-                        Text(NSLocalizedString("DISPLAY_DEFAULT"))
-                    } icon: {
-                        if displayMode == .default {
-                            Image(systemName: "checkmark")
+                ForEach(ChapterTitleDisplayMode.allCases, id: \.rawValue) { mode in
+                    Button {
+                        displayMode = mode
+                        let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
+                        if mode == .default {
+                            UserDefaults.standard.removeObject(forKey: key)
+                        } else {
+                            UserDefaults.standard.set(mode.rawValue, forKey: key)
                         }
-                    }
-                }
-                Button {
-                    displayMode = .chapter
-                    let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
-                    UserDefaults.standard.set(MangaDisplayMode.chapter.rawValue, forKey: key)
-                } label: {
-                    Label {
-                        Text(NSLocalizedString("DISPLAY_CHAPTERS"))
-                    } icon: {
-                        if displayMode == .chapter {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-                Button {
-                    displayMode = .volume
-                    let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
-                    UserDefaults.standard.set(MangaDisplayMode.volume.rawValue, forKey: key)
-                } label: {
-                    Label {
-                        Text(NSLocalizedString("DISPLAY_VOLUMES"))
-                    } icon: {
-                        if displayMode == .volume {
-                            Image(systemName: "checkmark")
+                    } label: {
+                        Label {
+                            Text(mode.localizedTitle)
+                        } icon: {
+                            if displayMode == mode {
+                                Image(systemName: "checkmark")
+                            }
                         }
                     }
                 }

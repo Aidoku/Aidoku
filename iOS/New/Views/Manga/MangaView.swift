@@ -9,12 +9,6 @@ import AidokuRunner
 import NukeUI
 import SwiftUI
 
-enum MangaDisplayMode: Int {
-    case `default` = 0
-    case volume = 1
-    case chapter = 2
-}
-
 struct MangaView: View {
     @StateObject private var viewModel: ViewModel
 
@@ -31,16 +25,6 @@ struct MangaView: View {
 
     @State private var loadingAlert: UIAlertController?
 
-    @State private var displayMode: MangaDisplayMode = .default
-
-    private var isVolumeMode: Bool {
-        displayMode == .volume
-    }
-
-    private var isChapterModeActive: Bool {
-        displayMode == .chapter
-    }
-
     private var path: NavigationCoordinator
 
     init(
@@ -53,9 +37,6 @@ struct MangaView: View {
         self._viewModel = StateObject(wrappedValue: ViewModel(source: source, manga: manga))
         self.path = path
         self._scrollToChapterKey = State(initialValue: scrollToChapterKey)
-        let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
-        let displayMode = MangaDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
-        self._displayMode = State(initialValue: displayMode)
     }
 
     var body: some View {
@@ -169,7 +150,7 @@ struct MangaView: View {
                         await TrackerManager.shared.syncProgressFromTracker(
                             tracker: tracker,
                             trackId: item.id,
-                            manga: viewModel.manga.toOld()
+                            manga: viewModel.manga
                         )
                     }
                 }
@@ -217,9 +198,9 @@ extension MangaView {
                 langFilter: $viewModel.chapterLangFilter,
                 scanlatorFilter: $viewModel.chapterScanlatorFilter,
                 descriptionExpanded: $descriptionExpanded,
-                displayMode: $displayMode,
+                chapterTitleDisplayMode: $viewModel.chapterTitleDisplayMode,
                 onTrackerButtonPressed: {
-                    let vc = TrackerModalViewController(manga: viewModel.manga.toOld())
+                    let vc = TrackerModalViewController(manga: viewModel.manga)
                     vc.modalPresentationStyle = .overFullScreen
                     path.present(vc, animated: false)
                 },
@@ -256,8 +237,7 @@ extension MangaView {
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
             downloadProgress: viewModel.downloadProgress[chapter.key],
-            isVolumeMode: isVolumeMode,
-            isChapterMode: isChapterModeActive,
+            displayMode: viewModel.chapterTitleDisplayMode
         ) {
             if editMode == .inactive {
                 openReaderView(chapter: chapter)
@@ -682,8 +662,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let page: Int?
     let downloaded: Bool
     let downloadProgress: Float?
-    let isVolumeMode: Bool
-    let isChapterMode: Bool
+    let displayMode: ChapterTitleDisplayMode
 
     var onPressed: (() -> Void)?
     var contextMenu: (() -> T)?
@@ -705,8 +684,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
                     page: page,
                     downloaded: downloaded,
                     downloadProgress: downloadProgress,
-                    isVolumeMode: isVolumeMode,
-                    isChapterMode: isChapterMode
+                    displayMode: displayMode
                 )
             }
         }
@@ -724,7 +702,6 @@ private struct ChapterCellView<T: View>: View, Equatable {
             && lhs.page == rhs.page
             && lhs.downloaded == rhs.downloaded
             && lhs.downloadProgress == rhs.downloadProgress
-            && lhs.isVolumeMode == rhs.isVolumeMode
-            && lhs.isChapterMode == rhs.isChapterMode
+            && lhs.displayMode == rhs.displayMode
     }
 }

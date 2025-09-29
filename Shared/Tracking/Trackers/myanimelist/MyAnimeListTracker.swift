@@ -5,8 +5,9 @@
 //  Created by Skitty on 6/16/22.
 //
 
-import Foundation
+import AidokuRunner
 import AuthenticationServices
+import Foundation
 
 /// MyAnimeList tracker for Aidoku.
 class MyAnimeListTracker: OAuthTracker {
@@ -83,8 +84,8 @@ class MyAnimeListTracker: OAuthTracker {
         URL(string: "https://myanimelist.net/manga/\(trackId)")
     }
 
-    func search(for manga: Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
-        await search(title: manga.title ?? "", includeNsfw: includeNsfw)
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
+        await search(title: manga.title, includeNsfw: includeNsfw)
     }
 
     func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {

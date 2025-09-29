@@ -125,6 +125,8 @@
 		FB1BEF8E2E3BFFF800098D21 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1BEF8D2E3BFFF400098D21 /* HistoryEntry.swift */; };
 		FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */; };
 		FB1F553428AFE78600CFE182 /* ReaderDoublePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */; };
+		FB252DA62E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
+		FB252DA72E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
 		FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */; };
@@ -587,6 +589,7 @@
 		FB24530A2A2BA50600716677 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB24530B2A2BA52100716677 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB24530C2A2BA52600716677 /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTitleDisplayMode.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
 		FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderChapterListView.swift; sourceTree = "<group>"; };
 		FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableCollectionView.swift; sourceTree = "<group>"; };
@@ -1011,6 +1014,7 @@
 				FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */,
 				FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */,
 				FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */,
+				FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */,
 				FB63D5002E38124A004FF4DC /* EditedKeys.swift */,
 				FB02E1F3288D7C0C00B9E2DE /* Manga.swift */,
 				FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */,
@@ -2467,6 +2471,7 @@
 				FBAED40E2E3AE5C500B81E74 /* OnReportScrollVisibilityChange.swift in Sources */,
 				FB662ED52DA813E300007514 /* ErrorView.swift in Sources */,
 				FB8E48D72DBFD002002A3621 /* NavigationCoordinator.swift in Sources */,
+				FB252DA72E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */,
 				FB662ED62DA813E300007514 /* CheckFilterView.swift in Sources */,
 				FB662ED72DA813E300007514 /* HCollectionGrid.swift in Sources */,
 				FB662ED82DA813E300007514 /* MangaGridItem.swift in Sources */,
@@ -2554,6 +2559,7 @@
 				FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */,
 				FBD6A412285B7789007116C9 /* TrackItem.swift in Sources */,
 				04B48CF82CD6836100F719D0 /* ShikimoriTracker.swift in Sources */,
+				FB252DA62E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */,
 				FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB14B1332DF4D4CD0067E4D4 /* PageInterceptorProcessor.swift in Sources */,
 				FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */,

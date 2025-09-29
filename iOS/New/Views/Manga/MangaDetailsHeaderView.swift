@@ -33,7 +33,7 @@ struct MangaDetailsHeaderView: View {
 
     @Binding var descriptionExpanded: Bool
 
-    @Binding var displayMode: MangaDisplayMode
+    @Binding var chapterTitleDisplayMode: ChapterTitleDisplayMode
 
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
@@ -66,7 +66,7 @@ struct MangaDetailsHeaderView: View {
         langFilter: Binding<String?>,
         scanlatorFilter: Binding<[String]>,
         descriptionExpanded: Binding<Bool>,
-        displayMode: Binding<MangaDisplayMode>,
+        chapterTitleDisplayMode: Binding<ChapterTitleDisplayMode>,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
@@ -86,7 +86,7 @@ struct MangaDetailsHeaderView: View {
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
         self._descriptionExpanded = descriptionExpanded
-        self._displayMode = displayMode
+        self._chapterTitleDisplayMode = chapterTitleDisplayMode
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
 
@@ -203,7 +203,7 @@ struct MangaDetailsHeaderView: View {
                 filters: $filters,
                 langFilter: $langFilter,
                 scanlatorFilter: $scanlatorFilter,
-                displayMode: $displayMode,
+                displayMode: $chapterTitleDisplayMode,
                 mangaUniqueKey: manga.uniqueKey
             )
             .padding(.horizontal, 20)
@@ -437,28 +437,28 @@ struct MangaDetailsHeaderView: View {
                 } else {
                     title = NSLocalizedString("CONTINUE_READING", comment: "")
                 }
-                switch displayMode {
-                case .volume:
-                    if let volumeNum = chapter.volumeNumber {
-                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
-                    } else if let chapterNum = chapter.chapterNumber {
-                        // Force display as volume if no volume number
-                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), chapterNum)
-                    }
-                case .chapter:
-                    if let chapterNum = chapter.chapterNumber {
-                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
-                    } else if let volumeNum = chapter.volumeNumber {
-                        // Force display as chapter if no chapter number
-                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), volumeNum)
-                    }
-                case .default:
-                    if let volumeNum = chapter.volumeNumber {
-                        title += " " + String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
-                    }
-                    if let chapterNum = chapter.chapterNumber {
-                        title += " " + String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
-                    }
+                switch chapterTitleDisplayMode {
+                    case .volume:
+                        if let volumeNum = chapter.volumeNumber {
+                            title += " " + String(format: NSLocalizedString("VOL_X"), volumeNum)
+                        } else if let chapterNum = chapter.chapterNumber {
+                            // Force display as volume if no volume number
+                            title += " " + String(format: NSLocalizedString("VOL_X"), chapterNum)
+                        }
+                    case .chapter:
+                        if let chapterNum = chapter.chapterNumber {
+                            title += " " + String(format: NSLocalizedString("CH_X"), chapterNum)
+                        } else if let volumeNum = chapter.volumeNumber {
+                            // Force display as chapter if no chapter number
+                            title += " " + String(format: NSLocalizedString("CH_X"), volumeNum)
+                        }
+                    case .default:
+                        if let volumeNum = chapter.volumeNumber {
+                            title += " " + String(format: NSLocalizedString("VOL_X"), volumeNum)
+                        }
+                        if let chapterNum = chapter.chapterNumber {
+                            title += " " + String(format: NSLocalizedString("CH_X"), chapterNum)
+                        }
                 }
             } else {
                 title = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
@@ -532,7 +532,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
     @Previewable @State var filters: [ChapterFilterOption] = []
     @Previewable @State var langFilter: String?
     @Previewable @State var scanlatorFilter: [String] = []
-    @Previewable @State var displayMode = MangaDisplayMode.default
+    @Previewable @State var chapterTitleDisplayMode = ChapterTitleDisplayMode.default
 
     MangaDetailsHeaderView(
         source: AidokuRunner.Source.demo(),
@@ -557,6 +557,6 @@ private struct MangaActionButtonStyle: ButtonStyle {
         langFilter: $langFilter,
         scanlatorFilter: $scanlatorFilter,
         descriptionExpanded: Binding.constant(false),
-        displayMode: $displayMode,
+        chapterTitleDisplayMode: $chapterTitleDisplayMode,
     )
 }
