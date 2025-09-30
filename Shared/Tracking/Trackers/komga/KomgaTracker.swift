@@ -21,26 +21,25 @@ class KomgaTracker: EnhancedTracker {
     private let idSeparator: Character = "|"
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
-        if let highestChapterRead {
-            let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
-            if split.count >= 2 {
-                let sourceKey = split[0]
-                let url = split[1]
-                let mangaKey = split[safe: 2] ?? "" // backwards compatibility
+        guard let highestChapterRead else { return nil }
 
-                let state = try? await api.getState(sourceKey: sourceKey, mangaKey: mangaKey, url: url)
-                if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
-                    try await api.update(
-                        sourceKey: sourceKey,
-                        mangaKey: mangaKey,
-                        url: url,
-                        update: .init(lastReadVolume: Int(floor(highestChapterRead)))
-                    )
-                }
-            } else {
-                throw KomgaTrackerError.invalidId
-            }
+        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
+        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
+
+        let sourceKey = split[0]
+        let url = split[1]
+        let mangaKey = split[safe: 2] ?? "" // backwards compatibility
+
+        let state = try? await api.getState(sourceKey: sourceKey, mangaKey: mangaKey, url: url)
+        if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
+            try await api.update(
+                sourceKey: sourceKey,
+                mangaKey: mangaKey,
+                url: url,
+                update: .init(lastReadVolume: Int(floor(highestChapterRead)))
+            )
         }
+
         return nil
     }
 

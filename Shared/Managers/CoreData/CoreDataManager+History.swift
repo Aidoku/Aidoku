@@ -337,12 +337,12 @@ extension CoreDataManager {
         context: NSManagedObjectContext? = nil
     ) -> Float? {
         let context = context ?? self.context
-
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND completed == true",
             mangaId, sourceId
         )
+        request.fetchLimit = 1
 
         let uniqueKey = "\(sourceId).\(mangaId)"
         let key = "Manga.chapterDisplayMode.\(uniqueKey)"
