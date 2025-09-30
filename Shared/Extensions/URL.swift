@@ -50,7 +50,7 @@ extension URL {
 
 extension URL {
     var domain: String? {
-        let host = if #available(iOS 16.0, *) {
+        let host = if #available(iOS 16.0, macOS 13.0, *) {
             host(percentEncoded: false)
         } else {
             host
