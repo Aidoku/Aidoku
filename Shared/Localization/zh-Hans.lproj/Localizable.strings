@@ -245,7 +245,10 @@
 "ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "追踪器";
+"UPDATE_AFTER_READING" = "阅读后自动更新进度";
+"UPDATE_AFTER_READING_INFO" = "阅读一章后，更新跟踪器以匹配当前读取的章节和（或）卷";
 "AUTO_SYNC_HISTORY" = "自动从追踪器同步";
+"AUTO_SYNC_HISTORY_INFO" = "在追踪器上检测到较新的章节和（或）卷时，自动更新匹配的本地历史记录";
 "LOGOUT" = "退出";
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";

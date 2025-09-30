@@ -275,7 +275,10 @@
 "LAST_UPDATED" = "最後更新";
 "LINK_COPIED" = "已複製連結";
 "TRACKERS" = "進度追蹤器";
+"UPDATE_AFTER_READING" = "閱讀後自動更新進度";
+"UPDATE_AFTER_READING_INFO" = "閱讀一章後，更新跟蹤器以匹配當前讀取的章節和（或）卷";
 "AUTO_SYNC_HISTORY" = "自動從追蹤器同步";
+"AUTO_SYNC_HISTORY_INFO" = "在追蹤器上檢測到較新的章節和（或）卷時，自動更新匹配的本地歷史記錄";
 "UPCOMING" = "即將到來";
 "ADD_TO_CATEGORIES" = "新增至類別";
 "SELECTED" = "已選取";
