@@ -215,8 +215,6 @@
 "RENAME_CATEGORY" = "Hernoem categorie";
 "RENAME_CATEGORY_FAIL_INFO" = "Categorie namen moeten uniek zijn.";
 "CATEGORY_NAME" = "Categorie naam";
-"SYNC_WITH_TRACKER" = "Synchroniseer met Tracker";
-"SYNC_WITH_TRACKER_INFO" = "Het lijkt erop dat het laatste hoofdstuk dat in de tracker (%g) is ingesteld hoger is dan het laatst gelezen hoofdstuk. Wilt u uw lokale geschiedenis hierop aanpassen?";
 "MIGRATE_SOURCES" = "Migreer Bronnen";
 "START_MATCHING" = "Begin met matchen";
 "SYNC_LOCAL_HISTORY" = "Synchroniseer lokale geschiedenis";

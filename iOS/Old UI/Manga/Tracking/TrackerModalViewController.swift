@@ -5,14 +5,14 @@
 //  Created by Skitty on 6/26/22.
 //
 
+import AidokuRunner
 import UIKit
 
 class TrackerModalViewController: MiniModalViewController {
-
-    let manga: Manga
+    let manga: AidokuRunner.Manga
     var swiftuiViewController: HostingController<TrackerListView>
 
-    init(manga: Manga) {
+    init(manga: AidokuRunner.Manga) {
         self.manga = manga
         swiftuiViewController = HostingController(rootView: TrackerListView(manga: manga))
         swiftuiViewController.view.backgroundColor = .clear

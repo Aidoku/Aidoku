@@ -143,19 +143,15 @@ struct MangaView: View {
                     }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .trackItemAdded)) { output in
-                guard let item = output.object as? TrackItem else { return }
-                Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
-                    }
-                }
-            }
             .onReceive(NotificationCenter.default.publisher(for: .syncTrackItem)) { output in
                 guard let item = output.object as? TrackItem else { return }
                 Task {
-                    if let result = await viewModel.checkTrackerSync(item: item) {
-                        syncWithTracker(result: result)
+                    if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
+                        await TrackerManager.shared.syncProgressFromTracker(
+                            tracker: tracker,
+                            trackId: item.id,
+                            manga: viewModel.manga
+                        )
                     }
                 }
             }
@@ -202,8 +198,9 @@ extension MangaView {
                 langFilter: $viewModel.chapterLangFilter,
                 scanlatorFilter: $viewModel.chapterScanlatorFilter,
                 descriptionExpanded: $descriptionExpanded,
+                chapterTitleDisplayMode: $viewModel.chapterTitleDisplayMode,
                 onTrackerButtonPressed: {
-                    let vc = TrackerModalViewController(manga: viewModel.manga.toOld())
+                    let vc = TrackerModalViewController(manga: viewModel.manga)
                     vc.modalPresentationStyle = .overFullScreen
                     path.present(vc, animated: false)
                 },
@@ -240,6 +237,7 @@ extension MangaView {
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
             downloadProgress: viewModel.downloadProgress[chapter.key],
+            displayMode: viewModel.chapterTitleDisplayMode
         ) {
             if editMode == .inactive {
                 openReaderView(chapter: chapter)
@@ -633,50 +631,6 @@ extension MangaView {
         path.present(activityViewController)
     }
 
-    func syncWithTracker(result: MangaView.ViewModel.TrackerSyncResult) {
-        func sync() {
-            guard
-                let chapters = viewModel.manga.chapters,
-                let lastReadChapter = {
-                    if result.volume {
-                        chapters.firstIndex(where: {
-                            $0.volumeNumber != nil && floor($0.volumeNumber!) <= result.number
-                        })
-                    } else {
-                        chapters.firstIndex(where: {
-                            $0.chapterNumber != nil && floor($0.chapterNumber!) <= result.number
-                        })
-                    }
-                }()
-            else {
-                return
-            }
-            let syncChapters = Array(chapters[lastReadChapter...])
-            Task {
-                await viewModel.markRead(chapters: syncChapters)
-            }
-        }
-
-        if result.tracker is EnhancedTracker {
-            // we don't need to confirm syncing with enhanced trackers
-            sync()
-        } else {
-            // there's a bug where swiftui alert isn't shown so using uikit alert instead
-            let alert = UIAlertController(
-                title: NSLocalizedString("SYNC_WITH_TRACKER"),
-                message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO"), result.number),
-                preferredStyle: .alert
-            )
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel) { _ in })
-
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
-            })
-
-            path.present(alert)
-        }
-    }
-
     func showLoadingIndicator() {
         guard loadingAlert == nil else { return }
         loadingAlert = UIAlertController(
@@ -708,6 +662,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let page: Int?
     let downloaded: Bool
     let downloadProgress: Float?
+    let displayMode: ChapterTitleDisplayMode
 
     var onPressed: (() -> Void)?
     var contextMenu: (() -> T)?
@@ -728,7 +683,8 @@ private struct ChapterCellView<T: View>: View, Equatable {
                     read: read,
                     page: page,
                     downloaded: downloaded,
-                    downloadProgress: downloadProgress
+                    downloadProgress: downloadProgress,
+                    displayMode: displayMode
                 )
             }
         }
@@ -746,5 +702,6 @@ private struct ChapterCellView<T: View>: View, Equatable {
             && lhs.page == rhs.page
             && lhs.downloaded == rhs.downloaded
             && lhs.downloadProgress == rhs.downloadProgress
+            && lhs.displayMode == rhs.displayMode
     }
 }

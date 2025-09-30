@@ -5,6 +5,7 @@
 //  Created by Skitty on 9/15/25.
 //
 
+import AidokuRunner
 import Foundation
 
 class KomgaTracker: EnhancedTracker {
@@ -20,47 +21,63 @@ class KomgaTracker: EnhancedTracker {
     private let idSeparator: Character = "|"
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
-        if let highestChapterRead {
-            let split = trackId.split(separator: idSeparator, maxSplits: 1).map(String.init)
-            guard split.count == 2 else { throw KomgaTrackerError.invalidId }
+        guard let highestChapterRead else { return nil }
 
-            let state = try? await api.getState(sourceKey: split[0], url: split[1])
-            if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
-                try await api.update(
-                    sourceKey: split[0],
-                    url: split[1],
-                    update: .init(lastReadVolume: Int(floor(highestChapterRead)))
-                )
-            }
+        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
+        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
+
+        let sourceKey = split[0]
+        let url = split[1]
+        let mangaKey = split[safe: 2] ?? "" // backwards compatibility
+
+        let state = try? await api.getState(sourceKey: sourceKey, mangaKey: mangaKey, url: url)
+        if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
+            try await api.update(
+                sourceKey: sourceKey,
+                mangaKey: mangaKey,
+                url: url,
+                update: .init(lastReadVolume: Int(floor(highestChapterRead)))
+            )
         }
+
         return nil
     }
 
     func update(trackId: String, update: TrackUpdate) async throws {
-        let split = trackId.split(separator: idSeparator, maxSplits: 1).map(String.init)
-        guard split.count == 2 else { throw KomgaTrackerError.invalidId }
-        try await api.update(sourceKey: split[0], url: split[1], update: update)
+        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
+        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
+
+        try await api.update(
+            sourceKey: split[0],
+            mangaKey: split[safe: 2] ?? "",
+            url: split[1],
+            update: update
+        )
     }
 
     func getState(trackId: String) async throws -> TrackState {
-        let split = trackId.split(separator: idSeparator, maxSplits: 1).map(String.init)
-        guard split.count == 2 else { throw KomgaTrackerError.invalidId }
+        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
+        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
 
-        if let state = try await api.getState(sourceKey: split[0], url: split[1]) {
+        if let state = try await api.getState(
+            sourceKey: split[0],
+            mangaKey: split[safe: 2] ?? "",
+            url: split[1]
+        ) {
             return state
         } else {
             throw KomgaTrackerError.getStateFailed
         }
     }
 
-    func search(for manga: Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
-        let helper = KomgaHelper(sourceKey: manga.sourceId)
-        let url = try helper.getServerUrl(path: "/api/v2/series/\(manga.id)")
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
+        let helper = KomgaHelper(sourceKey: manga.sourceKey)
+        let url = try helper.getServerUrl(path: "/api/v2/series/\(manga.key)")
         let apiUrl = url.absoluteString
 
-        let state = try await api.getState(sourceKey: manga.sourceId, url: apiUrl)
+        let state = try await api.getState(sourceKey: manga.sourceKey, mangaKey: manga.key, url: apiUrl)
         if state != nil {
-            return [.init(id: "\(manga.sourceId)\(idSeparator)\(apiUrl)", tracked: true)]
+            return [.init(id: "\(manga.sourceKey)\(idSeparator)\(apiUrl)\(idSeparator)\(manga.key)", tracked: true)]
         } else {
             return []
         }

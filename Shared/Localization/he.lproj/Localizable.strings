@@ -263,7 +263,6 @@
 "RENAME_CATEGORY_FAIL" = "שינוי שם הקטגוריה נכשל";
 "SKIP_DUPLICATE_CHAPTERS" = "דלג על פרקים כפולים";
 "CATEGORY_NAME" = "שם קטגוריה";
-"SYNC_WITH_TRACKER" = "סנכרון עם העוקב";
 "MIGRATE_SOURCES" = "העברת מקורות";
 "MIGRATE" = "העברה";
 "MIGRATION" = "העברה";
@@ -286,7 +285,6 @@
 "CATEGORY_LOCKED" = "הקטגוריה נעולה.";
 "NOT_PUBLISHED" = "לא יצא לאור";
 "TYPE_COLON_%@" = "סוג: %@";
-"SYNC_WITH_TRACKER_INFO" = "נראה שהפרק האחרון שהוגדר במעקב (%g) גבוה יותר מהפרק האחרון שנקרא. האם תרצה לעדכן את ההיסטוריה המקומית שלך כך שתתאים?";
 "RENAME_CATEGORY_FAIL_INFO" = "שמות קטגוריה חייבים להיות מיוחדים.";
 "MIGRATE_%i_ITEMS?" = "להעביר %i פריטים?";
 "MIGRATE_ONE_ITEM?" = "להעביר פריט אחד?";

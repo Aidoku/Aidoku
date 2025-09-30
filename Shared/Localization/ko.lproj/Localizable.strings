@@ -313,8 +313,6 @@
 "PINNED" = "고정됨";
 "%i_CHAPTERS" = "%i 장";
 "RENAME_CATEGORY_FAIL_INFO" = "범주 이름은 고유해야 합니다.";
-"SYNC_WITH_TRACKER" = "트래커와 동기화";
-"SYNC_WITH_TRACKER_INFO" = "트래커 (%g)에 설정된 최신 장이 최근에 읽은 장보다 높은 것 같습니다. 일치하도록 로컬 기록을 업데이트하겠습니까?";
 "ALL_CHAPTERS_READ" = "모든 장 읽기";
 "TRACKING" = "트래킹";
 "DEFAULT_READING_MODE" = "기본 읽기 모드";

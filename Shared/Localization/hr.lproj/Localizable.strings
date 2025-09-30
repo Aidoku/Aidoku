@@ -311,9 +311,7 @@
 "RENAME_CATEGORY" = "Preimenuj kategoriju";
 "ADD_TO_CATEGORIES" = "Dodaj u kategorije";
 "RENAME_CATEGORY_INFO" = "Unesi novo ime za ovu kategoriju.";
-"SYNC_WITH_TRACKER" = "Sinkronizacija s servisima za praćenje";
 "AVAILABLE" = "Dostupno";
-"SYNC_WITH_TRACKER_INFO" = "Čini se da je najnovije poglavlje postavljeno u tragaču (%g) veće od posljednjeg pročitanog poglavlja. Želiš li ažurirati lokalnu povijest kako bi odgovarala?";
 "FIRST_ALTERNATIVE" = "Prva alternativa";
 "MIGRATE_%i_ITEMS?" = "Premjestiti %i stavke(i)?";
 "MIGRATE_ONE_ITEM?" = "Premjestiti jednu stavku?";

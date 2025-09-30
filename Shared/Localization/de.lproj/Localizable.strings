@@ -280,7 +280,6 @@
 "MIGRATE" = "Migrieren";
 "AVAILABLE" = "Verfügbar";
 "SYNC_LOCAL_HISTORY" = "Lokalen Verlauf synchronisieren";
-"SYNC_WITH_TRACKER" = "Mit Tracker synchronisieren";
 "MIGRATE_SOURCES" = "Quellen Migrieren";
 "START_MATCHING" = "Vergleich starten";
 "SELECT" = "Auswählen";
@@ -312,7 +311,6 @@
 "1_CHAPTER" = "1 Kapitel";
 "UPCOMING" = "Demnächst";
 "RENAME_CATEGORY_FAIL_INFO" = "Kategorienamen müssen eindeutig sein.";
-"SYNC_WITH_TRACKER_INFO" = "Anscheinend ist das letzte im Tracker gespeicherte Kapitel (%g) höher als das zuletzt gelesene. Möchtest du deinen lokalen Verlauf übereinstimmend aktualisieren?";
 "SCORE" = "Bewertung";
 "CLEAR_TRACKED_MANGA_TEXT" = "Diese Aktion ist unumkehrbar. Das Tracking für alle Tracker, die dem Manga hinzugefügt wurden, wird entfernt.";
 "ALL_CHAPTERS_READ" = "Alle Kapitel gelesen";

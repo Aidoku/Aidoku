@@ -245,6 +245,10 @@
 "ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "追踪器";
+"UPDATE_AFTER_READING" = "阅读后自动更新进度";
+"UPDATE_AFTER_READING_INFO" = "阅读一章后，更新跟踪器以匹配当前读取的章节和（或）卷";
+"AUTO_SYNC_HISTORY" = "自动从追踪器同步";
+"AUTO_SYNC_HISTORY_INFO" = "在追踪器上检测到较新的章节和（或）卷时，自动更新匹配的本地历史记录";
 "LOGOUT" = "退出";
 "LOGOUT_FROM_%@" = "从 %@ 注销？";
 "STATUS" = "状态";
@@ -273,6 +277,7 @@
 "CACHE_SIZE_%@" = "缓存大小：%@";
 "SUPPORT_VIA_KOFI" = "通过 Ko-Fi 支持";
 "VOLUMES" = "卷数";
+"TITLE_DISPLAY_MODE" = "标题显示模式";
 "VIEW_ON_WEBSITE" = "在网站上查看";
 "LAST_UPDATED" = "最后更新";
 "RELOAD" = "重新加载";
@@ -296,7 +301,7 @@
 "MIGRATE_SOURCES" = "迁移来源";
 "MIGRATE" = "迁移";
 "START_MATCHING" = "开始匹配";
-"SYNC_LOCAL_HISTORY" = "同步本机历史";
+"SYNC_LOCAL_HISTORY" = "同步至本机历史";
 "MIGRATION" = "迁移";
 "OPTIONS" = "选项";
 "SELECTED" = "已选择";
@@ -314,8 +319,6 @@
 "AVAILABLE" = "可用";
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
-"SYNC_WITH_TRACKER" = "与追踪器同步";
-"SYNC_WITH_TRACKER_INFO" = "追踪器中的最新章节（%g）高于您已读的最新章节。是否同步本机历史？";
 "UPLOAD_DATE" = "上传日期";
 "TRACKING" = "追踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
@@ -490,6 +493,9 @@
 "LOCAL_FILES_TAGLINE" = "读取本机文件";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "从书架删除项目";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "从书架删除 %i 项目";
+"DISPLAY_VOLUME" = "卷";
+"DISPLAY_DEFAULT" = "默认";
+"DISPLAY_CHAPTER" = "章节";
 "USE_CHAPTERS" = "使用章节";
 "USE_CHAPTERS_TEXT" = "将书籍视为章节而非卷册";
 "OTHER_SETTINGS" = "其他设置";

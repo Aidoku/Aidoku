@@ -5,10 +5,11 @@
 //  Created by Skitty on 7/19/22.
 //
 
+import AidokuRunner
 import SwiftUI
 
 struct TrackerListView: View {
-    let manga: Manga
+    let manga: AidokuRunner.Manga
 
     @State var refresh = false
     let refreshPublisher = NotificationCenter.default.publisher(for: Notification.Name("updateTrackers"))
@@ -16,11 +17,11 @@ struct TrackerListView: View {
     var body: some View {
         VStack {
             ForEach(TrackerManager.shared.trackers, id: \.id) { tracker in
-                if tracker.canRegister(sourceKey: manga.sourceId, mangaKey: manga.id) {
+                if tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key) {
                     if let item = CoreDataManager.shared.getTrack(
                         trackerId: tracker.id,
-                        sourceId: manga.sourceId,
-                        mangaId: manga.id
+                        sourceId: manga.sourceKey,
+                        mangaId: manga.key
                     )?.toItem() {
                         TrackerView(tracker: tracker, item: item, refresh: $refresh)
                             .transition(.opacity)

@@ -152,7 +152,6 @@
 "CURRENT_COLON" = "Nuvarande:";
 "AUTH_TO_DISABLE" = "Autentisera för att avaktivera.";
 "GITHUB_REPO" = "Github-förråd";
-"SYNC_WITH_TRACKER_INFO" = "Det verkar som att det senaste kapitlet i spåraren (%g) är högre än ditt senast lästa kapitel. Vill du uppdatera din lokala historik för att matcha?";
 "RENAME_CATEGORY_FAIL" = "Kunde ej döpa om kategorin";
 "PAGE_X" = "Sida %i";
 "DOWNLOADED" = "Nedladdad";
@@ -305,7 +304,6 @@
 "START_READING" = "Börja läsa";
 "LIBRARY_EMPTY" = "Tomt bibliotek";
 "MISSING_SOURCE_TEXT" = "Den ursprungliga källan tycks saknas för denna manga. Ladda ned igen eller ta bort denna titel från ditt bibliotek.";
-"SYNC_WITH_TRACKER" = "Synkronisera med spårare";
 "VERSION" = "Version";
 "EXPORT" = "Exportera";
 "CLEAR_TRACKED_MANGA_TEXT" = "Denna handling är oåterkallelig. Spårning för alla spårare tillagda i manga kommer att tas bort.";

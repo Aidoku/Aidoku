@@ -295,13 +295,11 @@
 "1_CHAPTER" = "1 Chương";
 "UPCOMING" = "Sắp tới";
 "RENAME_CATEGORY_FAIL_INFO" = "Tên thư viện không được trùng lặp.";
-"SYNC_WITH_TRACKER" = "Đồng bộ với Tracker";
 "MIGRATE_SOURCES" = "Chuyển nguồn";
 "ADD_TO_CATEGORIES" = "Thêm vào thư viện";
 "LAST_UPDATED" = "Lần cuối cập nhật";
 "PIN" = "Ghim";
 "COVER" = "Bìa";
-"SYNC_WITH_TRACKER_INFO" = "Dường như chương mới nhất được đặt trong tracker (%g) cao hơn chương bạn đã đọc gần đây nhất. Bạn có muốn cập nhật lịch sử cục bộ của mình để khớp không?";
 "OPTIONS" = "Tùy chọn";
 "TITLES" = "Tiêu đề";
 "COPY" = "Sao chép";

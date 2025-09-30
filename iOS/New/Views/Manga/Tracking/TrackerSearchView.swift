@@ -5,11 +5,12 @@
 //  Created by Skitty on 7/29/25.
 //
 
+import AidokuRunner
 import SwiftUI
 
 struct TrackerSearchView: View {
     let tracker: Tracker
-    let manga: Manga
+    let manga: AidokuRunner.Manga
 
     @State private var query: String
     @State private var includeNsfw: Bool
@@ -23,11 +24,11 @@ struct TrackerSearchView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(tracker: Tracker, manga: Manga) {
+    init(tracker: Tracker, manga: AidokuRunner.Manga) {
         self.tracker = tracker
         self.manga = manga
-        self._query = State(initialValue: manga.title ?? "")
-        self._includeNsfw = State(initialValue: manga.nsfw != .safe)
+        self._query = State(initialValue: manga.title)
+        self._includeNsfw = State(initialValue: manga.contentRating != .safe)
     }
 
     var body: some View {

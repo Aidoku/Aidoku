@@ -312,7 +312,6 @@
 "TOTAL_CHAPTERS" = "Capítulos totais";
 "%i_OF_%i" = "%i de %i";
 "UPCOMING" = "A seguir";
-"SYNC_WITH_TRACKER_INFO" = "Parece que o capítulo mais recente definido no rastreador (%g) é superior ao seu último capítulo lido. Gostaria de atualizar seu histórico local para corresponder?";
 "OPTIONS" = "Opções";
 "DESTINATION" = "Destino";
 "SELECTED" = "Selecionado";
@@ -323,7 +322,6 @@
 "PILLARBOX_AMOUNT" = "Quantidade de Pillarbox";
 "PILLARBOX_ORIENTATION" = "Orientação Pillarbox";
 "RENAME_CATEGORY_FAIL_INFO" = "Os nomes das categorias devem ser exclusivos.";
-"SYNC_WITH_TRACKER" = "Sincronizar com rastreador";
 "COVER" = "Capa";
 "CROP_BORDERS" = "Cortar bordas";
 "REORDER" = "Reordenar";

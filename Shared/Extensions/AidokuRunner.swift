@@ -181,31 +181,55 @@ extension AidokuRunner.MangaContentRating {
 }
 
 extension AidokuRunner.Chapter {
-    func formattedTitle() -> String {
-        if volumeNumber == nil && (title?.isEmpty ?? true) {
-            // Chapter X
-            return if let chapterNumber {
-                String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)
+    func formattedTitle(forceMode: ChapterTitleDisplayMode = .default) -> String {
+        if forceMode == .default {
+            if volumeNumber == nil && (title?.isEmpty ?? true) {
+                // Chapter X
+                return if let chapterNumber {
+                    String(format: NSLocalizedString("CHAPTER_X"), chapterNumber)
+                } else {
+                    NSLocalizedString("UNTITLED")
+                }
+            } else if let volumeNumber, chapterNumber == nil && title == nil {
+                return String(format: NSLocalizedString("VOLUME_X"), volumeNumber)
             } else {
-                NSLocalizedString("UNTITLED")
+                var components: [String] = []
+                // Vol.X
+                if let volumeNumber {
+                    components.append(
+                        String(format: NSLocalizedString("VOL_X"), volumeNumber)
+                    )
+                }
+                // Ch.X
+                if let chapterNumber {
+                    components.append(
+                        String(format: NSLocalizedString("CH_X"), chapterNumber)
+                    )
+                }
+                // title
+                if let title, !title.isEmpty {
+                    if !components.isEmpty {
+                        components.append("-")
+                    }
+                    components.append(title)
+                }
+                return components.joined(separator: " ")
             }
-        } else if let volumeNumber, chapterNumber == nil && title == nil {
-            return String(format: NSLocalizedString("VOLUME_X"), volumeNumber)
         } else {
             var components: [String] = []
-            // Vol.X
-            if let volumeNumber {
-                components.append(
-                    String(format: NSLocalizedString("VOL_X"), volumeNumber)
-                )
+            if forceMode == .chapter {
+                if let chapterNumber {
+                    components.append(String(format: NSLocalizedString("CHAPTER_X"), chapterNumber))
+                } else if let volumeNumber {
+                    components.append(String(format: NSLocalizedString("CHAPTER_X"), volumeNumber))
+                }
+            } else {
+                if let volumeNumber {
+                    components.append(String(format: NSLocalizedString("VOLUME_X"), volumeNumber))
+                } else if let chapterNumber {
+                    components.append(String(format: NSLocalizedString("VOLUME_X"), chapterNumber))
+                }
             }
-            // Ch.X
-            if let chapterNumber {
-                components.append(
-                    String(format: NSLocalizedString("CH_X"), chapterNumber)
-                )
-            }
-            // title
             if let title, !title.isEmpty {
                 if !components.isEmpty {
                     components.append("-")

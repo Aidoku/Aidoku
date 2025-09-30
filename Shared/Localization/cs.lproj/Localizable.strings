@@ -175,7 +175,6 @@
 "RENAME_CATEGORY" = "Přejmenovat kategorii";
 "RENAME_CATEGORY_FAIL_INFO" = "Názvy kategorií musí být jedinečné.";
 "CATEGORY_NAME" = "Název kategorie";
-"SYNC_WITH_TRACKER" = "Synchronizace se sledovačem";
 "MIGRATE_SOURCES" = "Migrace zdrojů";
 "AVAILABLE" = "K dispozici";
 "NONE" = "Žádné";
@@ -328,7 +327,6 @@
 "SOURCE_LIST_ADD" = "Přidat seznam zdrojů";
 "MISSING_SOURCES_TEXT" = "Obnovená záloha může obsahovat data z následujících zdrojů, které nejsou aktuálně nainstalovány:";
 "MANHWA" = "Manhwa";
-"SYNC_WITH_TRACKER_INFO" = "Vypadá to, že poslední kapitola nastavená ve sledovači (%g) je vyšší než vaše poslední přečtená kapitola. Chtěli byste aktualizovat místní historii tak, aby odpovídala?";
 "DONE" = "Hotovo";
 "INVALID" = "Neplatné";
 "PAUSE" = "Pauza";

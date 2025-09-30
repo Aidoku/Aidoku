@@ -302,8 +302,6 @@
 "CACHE_SIZE_%@" = "キャッシュサイズ：%@";
 "1_CHAPTER" = "1章";
 "RENAME_CATEGORY_FAIL_INFO" = "本棚名は一意である必要があります。";
-"SYNC_WITH_TRACKER" = "トラッカーと同期する";
-"SYNC_WITH_TRACKER_INFO" = "トラッカーに設定された最新の章（%g）が、あなたが最後に読んだ章よりも高いようです。一致させるためにローカルの履歴を更新しますか？";
 "OPTIONS" = "オプション";
 "MIGRATE" = "移行";
 "MIGRATION" = "移行";

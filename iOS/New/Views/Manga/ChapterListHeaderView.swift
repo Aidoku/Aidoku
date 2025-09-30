@@ -18,9 +18,12 @@ struct ChapterListHeaderView: View {
     @Binding var langFilter: String?
     @Binding var scanlatorFilter: [String]
 
+    @Binding var displayMode: ChapterTitleDisplayMode
+
     private var showMenu: Bool = false
     private var languages: [String] = []
     private var scanlators: [String] = []
+    private var mangaUniqueKey: String
 
     init(
         allChapters: [AidokuRunner.Chapter]? = nil,
@@ -29,7 +32,9 @@ struct ChapterListHeaderView: View {
         sortAscending: Binding<Bool>,
         filters: Binding<[ChapterFilterOption]>,
         langFilter: Binding<String?>,
-        scanlatorFilter: Binding<[String]>
+        scanlatorFilter: Binding<[String]>,
+        displayMode: Binding<ChapterTitleDisplayMode>,
+        mangaUniqueKey: String
     ) {
         self.chapterCount = filteredChapters?.count
         self._sortOption = sortOption
@@ -37,6 +42,8 @@ struct ChapterListHeaderView: View {
         self._filters = filters
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
+        self._displayMode = displayMode
+        self.mangaUniqueKey = mangaUniqueKey
 
         if let allChapters, !allChapters.isEmpty {
             var languages: Set<String> = []
@@ -164,6 +171,27 @@ struct ChapterListHeaderView: View {
                                         Image(systemName: "checkmark")
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            Section(NSLocalizedString("TITLE_DISPLAY_MODE")) {
+                ForEach(ChapterTitleDisplayMode.allCases, id: \.rawValue) { mode in
+                    Button {
+                        displayMode = mode
+                        let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
+                        if mode == .default {
+                            UserDefaults.standard.removeObject(forKey: key)
+                        } else {
+                            UserDefaults.standard.set(mode.rawValue, forKey: key)
+                        }
+                    } label: {
+                        Label {
+                            Text(mode.localizedTitle)
+                        } icon: {
+                            if displayMode == mode {
+                                Image(systemName: "checkmark")
                             }
                         }
                     }
