@@ -20,6 +20,26 @@ extension Sequence where Self: Sendable, Element: Sendable {
             try await task.value
         }
     }
+
+    func concurrentFilter(
+        _ predicate: @escaping (Element) async -> Bool
+    ) async -> [Element] {
+        await withTaskGroup(of: Element?.self) { group in
+            for element in self {
+                group.addTask {
+                    await predicate(element) ? element : nil
+                }
+            }
+
+            var results: [Element] = []
+            for await result in group {
+                if let value = result {
+                    results.append(value)
+                }
+            }
+            return results
+        }
+    }
 }
 
 extension Sequence where Element: Sendable {

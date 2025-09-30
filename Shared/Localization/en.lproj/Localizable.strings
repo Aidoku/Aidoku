@@ -74,6 +74,7 @@
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "Removing %i Items from Library";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
+"REFRESHING_LIBRARY" = "Refreshing Library...";
 
 // Categories
 "ALL" = "All";

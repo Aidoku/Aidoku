@@ -9,8 +9,7 @@
 import UIKit
 
 class CircularProgressView: UIView {
-    // You can set this value directly, but it's better to use setProgress
-    var progress: CGFloat = 0 {
+    private var progress: CGFloat = 0 {
         willSet(newValue) {
             progressLayer.strokeEnd = newValue
         }
@@ -37,8 +36,10 @@ class CircularProgressView: UIView {
         }
     }
     var lineWidth: CGFloat = 3
+    var radius: CGFloat = 20
 
-    lazy var radius: CGFloat = 20
+    private var progressQueue: [Float] = []
+    private var isAnimating = false
 
     override func draw(_ rect: CGRect) {
         layer.cornerRadius = radius
@@ -66,20 +67,44 @@ class CircularProgressView: UIView {
     }
 
     func setProgress(value: Float, withAnimation: Bool) {
-        if value < oldProgress || value > 1 {
-            return
-        }
+        guard value >= oldProgress, value <= 1 else { return }
 
         if withAnimation {
-            let endAnimation = CABasicAnimation(keyPath: "strokeEnd")
-            endAnimation.duration = 1
-            endAnimation.fromValue = oldProgress
-            endAnimation.toValue = value
-            endAnimation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
-            progressLayer.add(endAnimation, forKey: "animateProgress")
+            progressQueue.append(value)
+            startNextAnimationIfNeeded()
+        } else {
+            progress = CGFloat(value)
+            oldProgress = value
+            progressQueue.removeAll()
+            isAnimating = false
         }
+    }
 
-        progress = CGFloat(value)
-        oldProgress = value
+    private func startNextAnimationIfNeeded() {
+        guard !isAnimating, !progressQueue.isEmpty else { return }
+
+        let nextValue = progressQueue.removeFirst()
+
+        let animation = CABasicAnimation(keyPath: "strokeEnd")
+        animation.duration = 0.5
+        animation.fromValue = oldProgress
+        animation.toValue = nextValue
+        animation.timingFunction = CAMediaTimingFunction(name: .linear)
+        animation.delegate = self
+        progressLayer.add(animation, forKey: "animateProgress")
+
+        CATransaction.setDisableActions(true)
+        progress = CGFloat(nextValue)
+        CATransaction.setDisableActions(false)
+
+        oldProgress = nextValue
+        isAnimating = true
+    }
+}
+
+extension CircularProgressView: CAAnimationDelegate {
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        isAnimating = false
+        startNextAnimationIfNeeded()
     }
 }

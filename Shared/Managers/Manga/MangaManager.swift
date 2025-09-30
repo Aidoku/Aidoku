@@ -13,6 +13,8 @@ class MangaManager {
     static let shared = MangaManager()
 
     private var libraryRefreshTask: Task<(), Never>?
+    private var libraryRefreshProgressTask: Task<(), Never>?
+    private var onLibraryRefreshProgress: ((Float) -> Void)?
 }
 
 // MARK: - Library Managing
@@ -228,6 +230,10 @@ extension MangaManager {
         ) == 0 {
             return true
         }
+        // source is missing
+        if SourceManager.shared.source(for: manga.sourceId) == nil {
+            return true
+        }
 
         if !excludedCategories.isEmpty {
             // check if excluded via category
@@ -278,7 +284,8 @@ extension MangaManager {
     }
 
     /// Refresh manga objects in library.
-    func refreshLibrary(category: String? = nil, forceAll: Bool = false) async {
+    func refreshLibrary(category: String? = nil, forceAll: Bool = false, onProgress: ((Float) -> Void)? = nil) async {
+        onLibraryRefreshProgress = onProgress
         if libraryRefreshTask != nil {
             // wait for already running library refresh
             await libraryRefreshTask?.value
@@ -314,19 +321,24 @@ extension MangaManager {
             await updateMangaDetails(manga: allManga)
         }
 
+        // filter items that we should skip
+        let context = CoreDataManager.shared.container.newBackgroundContext()
+        let filteredManga = await allManga.concurrentFilter { manga in
+            !self.shouldSkip(
+                manga: manga,
+                options: skipOptions,
+                excludedCategories: excludedCategories,
+                context: context
+            )
+        }
+
+        let total = filteredManga.count
+        var completed = 0
+
         await withTaskGroup(of: Void.self) { group in
-            for manga in allManga {
+            for manga in filteredManga {
                 group.addTask {
-                    let shouldSkip = await CoreDataManager.shared.container.performBackgroundTask { context in
-                        self.shouldSkip(
-                            manga: manga,
-                            options: skipOptions,
-                            excludedCategories: excludedCategories,
-                            context: context
-                        )
-                    }
                     guard
-                        !shouldSkip,
                         let chapters = try? await SourceManager.shared.source(for: manga.sourceId)?
                             .getMangaUpdate(manga: manga.toNew(), needsDetails: false, needsChapters: true)
                             .chapters
@@ -377,9 +389,27 @@ extension MangaManager {
                     }
                 }
             }
+
+            for await _ in group {
+                completed += 1
+                let progress = Float(completed) / Float(total)
+                updateLibraryRefreshProgress(progress)
+            }
         }
 
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
+    }
+
+    private func updateLibraryRefreshProgress(_ progress: Float) {
+        libraryRefreshProgressTask?.cancel()
+        libraryRefreshProgressTask = Task {
+            // buffer progress updates by 100ms
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                onLibraryRefreshProgress?(progress)
+            }
+        }
     }
 }
 

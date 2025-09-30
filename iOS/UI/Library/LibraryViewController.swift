@@ -561,11 +561,25 @@ extension LibraryViewController {
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
-        Task { @MainActor in
-            await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory)
+        Task {
+            // delay hiding refresh control to avoid buggy animation
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            refreshControl?.endRefreshing()
+        }
+
+        Task {
+            let tabController = UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
+            tabController?.showLibraryRefreshView()
+
+            await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory) { progress in
+                tabController?.setLibraryRefreshProgress(progress)
+            }
             await viewModel.loadLibrary()
             updateDataSource()
-            refreshControl?.endRefreshing()
+
+            // wait 0.5s for final progress animation to complete
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            tabController?.hideAccessoryView()
         }
     }
 

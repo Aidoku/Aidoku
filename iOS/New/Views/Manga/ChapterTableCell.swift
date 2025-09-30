@@ -52,7 +52,7 @@ struct ChapterTableCell: View {
                     .imageScale(.small)
                     .foregroundStyle(.tertiary)
             } else if let downloadProgress {
-                DownloadProgressView(progress: CGFloat(downloadProgress))
+                DownloadProgressView(progress: downloadProgress)
                     .frame(width: 13, height: 13)
             } else if locked {
                 Image(systemName: "lock.fill")
@@ -68,7 +68,7 @@ struct ChapterTableCell: View {
 }
 
 private struct DownloadProgressView: UIViewRepresentable {
-    var progress: CGFloat
+    var progress: Float
 
     func makeUIView(context: Context) -> CircularProgressView {
         let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 13, height: 13))
@@ -79,6 +79,6 @@ private struct DownloadProgressView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: CircularProgressView, context: Context) {
-        uiView.progress = progress
+        uiView.setProgress(value: progress, withAnimation: false)
     }
 }
