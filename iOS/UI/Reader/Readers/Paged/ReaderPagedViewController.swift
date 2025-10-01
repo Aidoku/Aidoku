@@ -32,19 +32,19 @@ class ReaderPagedViewController: BaseObservingViewController {
     var usesDoublePages = false
     var usesAutoPageLayout = false
     var isolateFirstPageEnabled = UserDefaults.standard.bool(forKey: "Reader.pagedIsolateFirstPage")
+    var splitWideImages = UserDefaults.standard.bool(forKey: "Reader.splitWideImages")
     var isolatedPages: Set<Int> = []
     lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
 
     // Split pages tracking
     var splitPages: [Int: [Page]] = [:]
+    var previousPreviewSplitPages: [Page]?
+    var nextPreviewSplitPages: [Page]?
 
-    // Prevent concurrent split operations
-    private var isSplitting = false
-    
     // Track navigation direction for smart split page selection
     private var lastPageIndex = 0
     private var navigationDirection: NavigationDirection = .unknown
-    
+
     private enum NavigationDirection {
         case forward    // increasing index
         case backward   // decreasing index
@@ -131,8 +131,9 @@ class ReaderPagedViewController: BaseObservingViewController {
                 controller.clearPage()
             }
         }
-        addObserver(forName: "Reader.splitWideImages") { [weak self] _ in
+        let refreshSplitPages: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
+            splitWideImages = UserDefaults.standard.bool(forKey: "Reader.splitWideImages")
             if self.chapter != nil {
                 // Calculate the original page index before clearing splits
                 let originalPage = self.actualPageIndex(from: self.currentPage)
@@ -142,17 +143,8 @@ class ReaderPagedViewController: BaseObservingViewController {
                 self.refreshChapter(startPage: originalPage)
             }
         }
-        addObserver(forName: "Reader.reverseSplitOrder") { [weak self] _ in
-            guard let self else { return }
-            if self.chapter != nil {
-                // Calculate the original page index before clearing splits
-                let originalPage = self.actualPageIndex(from: self.currentPage)
-                // Clear existing split pages when setting changes
-                self.splitPages.removeAll()
-                // Jump to the original page (keep the same page index)
-                self.refreshChapter(startPage: originalPage)
-            }
-        }
+        addObserver(forName: "Reader.splitWideImages", using: refreshSplitPages)
+        addObserver(forName: "Reader.reverseSplitOrder", using: refreshSplitPages)
     }
 
     func updatePageLayout() {
@@ -180,7 +172,7 @@ class ReaderPagedViewController: BaseObservingViewController {
 }
 
 extension ReaderPagedViewController {
-
+    // swiftlint:disable:next cyclomatic_complexity
     func loadPageControllers(chapter: AidokuRunner.Chapter) {
         guard !viewModel.pages.isEmpty else { return } // TODO: handle zero pages
 
@@ -192,15 +184,19 @@ extension ReaderPagedViewController {
         if chapter == previousChapter {
             lastPageController = pageViewControllers.first
             nextChapterPreviewController = pageViewControllers[2]
+
+            if let previousPreviewSplitPages {
+                splitPages[viewModel.pages.count] = previousPreviewSplitPages
+                self.previousPreviewSplitPages = nil
+            }
         } else if chapter == nextChapter {
             firstPageController = pageViewControllers.last
             previousChapterPreviewController = pageViewControllers[pageViewControllers.count - 3]
-        }
 
-        // reset isolated pages and split pages when switching to a new chapter
-        if chapter != self.chapter {
-            isolatedPages = []
-            splitPages = [:]
+            if let nextPreviewSplitPages {
+                splitPages[1] = nextPreviewSplitPages
+                self.nextPreviewSplitPages = nil
+            }
         }
 
         pageViewControllers = []
@@ -209,15 +205,29 @@ extension ReaderPagedViewController {
 
         // last page of previous chapter
         if previousChapter != nil {
-            if let previousChapterPreviewController = previousChapterPreviewController {
+            if let previousChapterPreviewController {
                 pageViewControllers.append(previousChapterPreviewController)
             } else {
                 let page = ReaderPageViewController(type: .page)
                 page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
-                // Only set aspect ratio callback for double page layout
-                if usesDoublePages {
-                    page.onAspectRatioUpdated = { [weak self] in
-                        self?.handleAspectRatioUpdate()
+                if let previousPreviewSplitPages, let splitPage = previousPreviewSplitPages.last {
+                    // if we have split pages for the preview, use the last split page
+                    page.setPage(splitPage, sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey)
+                } else {
+                    // Only set aspect ratio callback for double page layout
+                    if usesDoublePages {
+                        page.onAspectRatioUpdated = { [weak self] in
+                            self?.handleAspectRatioUpdate()
+                        }
+                    } else if splitWideImages {
+                        // Set up image load completion callback for splitting
+                        let originalPageIndex = 0
+                        page.onImageisWideImage = { [weak self, weak page] isWide in
+                            guard let self, let page else { return }
+                            if isWide && self.splitPages[originalPageIndex] == nil {
+                                self.checkAndSplitWideImage(at: originalPageIndex, controller: page)
+                            }
+                        }
                     }
                 }
                 pageViewControllers.append(page)
@@ -235,8 +245,17 @@ extension ReaderPagedViewController {
         let startPos = firstPageController != nil ? 1 : 0
         let endPos = viewModel.pages.count - (lastPageController != nil ? 1 : 0)
 
-        if let firstPageController = firstPageController {
-            pageViewControllers.append(firstPageController)
+        if let firstPageController {
+            if let splitPageArray = splitPages[1] {
+                for splitPage in splitPageArray {
+                    let page = ReaderPageViewController(type: .page)
+                    page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                    page.setPage(splitPage, sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey)
+                    pageViewControllers.append(page)
+                }
+            } else {
+                pageViewControllers.append(firstPageController)
+            }
         }
 
         for i in startPos..<endPos {
@@ -261,11 +280,10 @@ extension ReaderPagedViewController {
                     page.onAspectRatioUpdated = { [weak self] in
                         self?.handleAspectRatioUpdate()
                     }
-                }
-                // Set up image load completion callback for splitting
-                if !usesDoublePages && UserDefaults.standard.bool(forKey: "Reader.splitWideImages") {
+                } else if splitWideImages {
+                    // Set up image load completion callback for splitting
                     page.onImageisWideImage = { [weak self, weak page] isWide in
-                        guard let self = self, let page = page else { return }
+                        guard let self, let page else { return }
                         if isWide && self.splitPages[originalPageIndex] == nil {
                             self.checkAndSplitWideImage(at: originalPageIndex, controller: page)
                         }
@@ -275,8 +293,17 @@ extension ReaderPagedViewController {
             }
         }
 
-        if let lastPageController = lastPageController {
-            pageViewControllers.append(lastPageController)
+        if let lastPageController {
+            if let splitPageArray = splitPages[viewModel.pages.count] {
+                for splitPage in splitPageArray {
+                    let page = ReaderPageViewController(type: .page)
+                    page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+                    page.setPage(splitPage, sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey)
+                    pageViewControllers.append(page)
+                }
+            } else {
+                pageViewControllers.append(lastPageController)
+            }
         }
 
         nextChapter = delegate?.getNextChapter()
@@ -289,15 +316,28 @@ extension ReaderPagedViewController {
 
         // first page of next chapter
         if nextChapter != nil {
-            if let nextChapterPreviewController = nextChapterPreviewController {
+            if let nextChapterPreviewController {
                 pageViewControllers.append(nextChapterPreviewController)
             } else {
                 let page = ReaderPageViewController(type: .page)
                 page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
-                // Only set aspect ratio callback for double page layout
-                if usesDoublePages {
-                    page.onAspectRatioUpdated = { [weak self] in
-                        self?.handleAspectRatioUpdate()
+                if let nextPreviewSplitPages, let splitPage = nextPreviewSplitPages.first {
+                    page.setPage(splitPage, sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey)
+                } else {
+                    // Only set aspect ratio callback for double page layout
+                    if usesDoublePages {
+                        page.onAspectRatioUpdated = { [weak self] in
+                            self?.handleAspectRatioUpdate()
+                        }
+                    } else if splitWideImages {
+                        // Set up image load completion callback for splitting
+                        let originalPageIndex = endPos + 3
+                        page.onImageisWideImage = { [weak self, weak page] isWide in
+                            guard let self, let page else { return }
+                            if isWide && self.splitPages[originalPageIndex] == nil {
+                                self.checkAndSplitWideImage(at: originalPageIndex, controller: page)
+                            }
+                        }
                     }
                 }
                 pageViewControllers.append(page)
@@ -505,18 +545,17 @@ extension ReaderPagedViewController {
     /// Check if a wide image should be split and handle the splitting
     private func checkAndSplitWideImage(at pageIndex: Int, controller: UIViewController) {
         guard
-            !isSplitting,
             !usesDoublePages,
-            UserDefaults.standard.bool(forKey: "Reader.splitWideImages"),
+            splitWideImages,
             let pageController = controller as? ReaderPageViewController,
             pageController.isWideImage,
             splitPages[pageIndex] == nil,
             let splitResult = pageController.pageView?.splitImage(),
             let leftImage = splitResult.left,
             let rightImage = splitResult.right
-        else { return }
-
-        isSplitting = true
+        else {
+            return
+        }
 
         // Create split pages
         let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
@@ -526,48 +565,56 @@ extension ReaderPagedViewController {
         let leftPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: leftImage)
         let rightPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: rightImage)
 
-        // Store split pages (reverse order if needed)
-        splitPages[pageIndex] = reverseOrder ? [leftPage, rightPage] : [rightPage, leftPage]
+        let splitPagesGroup = reverseOrder ? [leftPage, rightPage] : [rightPage, leftPage]
+
+        if pageIndex <= 0 {
+            previousPreviewSplitPages = splitPagesGroup
+            return
+        } else if pageIndex >= displayPageCount {
+            nextPreviewSplitPages = splitPagesGroup
+            return
+        } else {
+            splitPages[pageIndex] = splitPagesGroup
+        }
 
         // After splitting, we need to maintain the user's current viewing position
         // Since the page structure has changed, we refresh and stay at the current display position
-        if self.chapter != nil {
+        if chapter != nil {
             // Calculate the correct display page after splitting
-            let currentActualPage = actualPageIndex(from: self.currentPage)
-            var targetDisplayPage = self.currentPage
-            
-            if pageIndex == self.viewModel.pages.count {
+            let currentActualPage = actualPageIndex(from: currentPage)
+            var targetDisplayPage = currentPage
+
+            if pageIndex == viewModel.pages.count {
                 // For last page, jump to last split page
-                targetDisplayPage = self.currentPage + (self.splitPages[pageIndex]?.count ?? 1)
+                targetDisplayPage = currentPage + (splitPages[pageIndex]?.count ?? 1)
             } else if pageIndex == currentActualPage {
                 // We're splitting the current page
                 // Smart jump based on navigation direction (index size)
                 switch navigationDirection {
-                case .forward:
-                    // User came from smaller index
-                    // Jump to first split page
-                    targetDisplayPage = self.currentPage
-                case .backward:
-                    // User came from larger index
-                    // Jump to second split page
-                    targetDisplayPage = self.currentPage + 1
-                case .unknown:
-                    // Default to first split page when direction is unknown
-                    targetDisplayPage = self.currentPage
+                    case .forward:
+                        // User came from smaller index
+                        // Jump to first split page
+                        targetDisplayPage = currentPage
+                    case .backward:
+                        // User came from larger index
+                        // Jump to second split page
+                        targetDisplayPage = currentPage + 1
+                    case .unknown:
+                        // Default to first split page when direction is unknown
+                        targetDisplayPage = currentPage
                 }
             } else if pageIndex < currentActualPage {
                 // We're splitting a page before the current page
                 // The split adds one extra page, so increment display position
-                targetDisplayPage = self.currentPage + 1
+                targetDisplayPage = currentPage + 1
             }
 
             // Store the target page before refresh
             let targetPage = targetDisplayPage
-            
+
             // Refresh chapter to rebuild page controllers with split pages
-            self.refreshChapter(startPage: targetPage)
+            refreshChapter(startPage: targetPage)
         }
-        self.isSplitting = false
     }
 }
 
@@ -634,27 +681,31 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
     }
 
     func loadChapter(startPage: Int) async {
-        guard let chapter = chapter else { return }
+        guard let chapter else { return }
         await viewModel.loadPages(chapter: chapter)
         delegate?.setPages(viewModel.pages)
         if !viewModel.pages.isEmpty {
             await MainActor.run {
-                // Reset split pages state when loading a new chapter
-                self.splitPages.removeAll()
-                self.isolatedPages.removeAll()
-                self.currentPage = 0
-                self.lastPageIndex = 0
-                self.navigationDirection = .unknown
+                // clear isolated and split pages when switching chapters
+                isolatedPages = []
+                splitPages = [:]
 
-                self.loadPageControllers(chapter: chapter)
+                loadPageControllers(chapter: chapter)
+
+                let displayPageCount = displayPageCount
                 var startPage = startPage
                 if startPage < 1 {
                     startPage = 1
-                } else if startPage > self.viewModel.pages.count {
-                    // Use actual page count, not displayPageCount since splitPages is empty
-                    startPage = self.viewModel.pages.count
+                } else if startPage > displayPageCount {
+                    startPage = displayPageCount
                 }
-                self.move(toPage: startPage, animated: false)
+                // if we're moving to the previous chapter and the final page is split, move to the true final page
+                if let targetSplitPages = splitPages[startPage] {
+                    if navigationDirection == .backward {
+                        startPage += targetSplitPages.count - 1
+                    }
+                }
+                move(toPage: startPage, animated: false)
             }
         }
     }
@@ -663,6 +714,7 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         guard let chapter else { return }
 
         loadPageControllers(chapter: chapter)
+        let displayPageCount = displayPageCount
         var startPage = startPage
         if startPage < 1 {
             startPage = 1
@@ -674,13 +726,15 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
     }
 
     func loadPreviousChapter() {
-        guard let previousChapter = previousChapter else { return }
+        guard let previousChapter else { return }
+        nextPreviewSplitPages = splitPages[1]
         delegate?.setChapter(previousChapter)
         setChapter(previousChapter, startPage: Int.max)
     }
 
     func loadNextChapter() {
-        guard let nextChapter = nextChapter else { return }
+        guard let nextChapter else { return }
+        previousPreviewSplitPages = splitPages[viewModel.pages.count]
         delegate?.setChapter(nextChapter)
         setChapter(nextChapter, startPage: 1)
     }
