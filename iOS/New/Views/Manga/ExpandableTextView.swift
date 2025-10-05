@@ -24,7 +24,7 @@ struct ExpandableTextView: View {
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .prefix(4)
             .prefix { !$0.isEmpty && !$0.contains("___") }
-            .joined(separator: "\n")
+            .joined(separator: "  \n")
     }
 
     static let markdownTheme = Theme()
@@ -67,6 +67,7 @@ struct ExpandableTextView: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
                 .id(expanded ? "1" : "0") // removes sliding from animation
                 .background(GeometryReader { geometry in
                     Color.clear

@@ -136,6 +136,7 @@ struct MangaDetailsHeaderView: View {
                             .foregroundStyle(.secondary)
                             .font(.callout)
                             .padding(.bottom, 6)
+                            .textSelection(.enabled)
                             .transition(.opacity)
 
                         if let source, source.supportsAuthorSearch {
@@ -495,6 +496,7 @@ private struct TagView: View {
             .font(.footnote)
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
+            .textSelection(.enabled)
             .background(Color(UIColor.tertiarySystemFill))
             .clipShape(RoundedRectangle(cornerRadius: 100))
     }
