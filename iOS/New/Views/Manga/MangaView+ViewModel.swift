@@ -162,6 +162,23 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
+            // tracking
+            NotificationCenter.default.publisher(for: .syncTrackItem)
+                .sink { [weak self] output in
+                    guard let self, let item = output.object as? TrackItem else { return }
+                    Task {
+                        if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
+                            await TrackerManager.shared.syncProgressFromTracker(
+                                tracker: tracker,
+                                trackId: item.id,
+                                manga: self.manga,
+                                chapters: self.chapters
+                            )
+                        }
+                    }
+                }
+                .store(in: &cancellables)
+
             // downloads
             NotificationCenter.default.publisher(for: .downloadsQueued)
                 .sink { [weak self] output in
@@ -305,6 +322,34 @@ extension MangaView.ViewModel {
         await loadDownloadStatus()
         updateReadButton()
         initialDataLoaded = true
+    }
+
+    func syncTrackerProgress() async {
+        // sync progress from page trackers
+        await TrackerManager.shared.syncPageTrackerHistory(
+            manga: manga,
+            chapters: chapters
+        )
+
+        // sync progress from regular trackers if auto sync enabled
+        if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") {
+            let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { [manga] context in
+                CoreDataManager.shared.getTracks(
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    context: context
+                ).map { $0.toItem() }
+            }
+            for trackItem in trackItems {
+                guard let tracker = TrackerManager.shared.getTracker(id: trackItem.trackerId) else { continue }
+                await TrackerManager.shared.syncProgressFromTracker(
+                    tracker: tracker,
+                    trackId: trackItem.id,
+                    manga: manga,
+                    chapters: chapters
+                )
+            }
+        }
     }
 
     // refresh manga and chapter data from source, updating db

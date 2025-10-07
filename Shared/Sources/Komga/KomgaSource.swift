@@ -796,6 +796,11 @@ struct KomgaHelper: Sendable {
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
             let formatter = DateFormatter()
+            formatter.timeZone = if #available(iOS 16.0, *) {
+                .gmt
+            } else {
+                .init(secondsFromGMT: 0)
+            }
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             var date = formatter.date(from: string)
             if date == nil {

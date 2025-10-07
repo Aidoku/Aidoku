@@ -22,21 +22,21 @@ class KomgaApi {
         }
     }
 
-    func getState(sourceKey: String, mangaKey: String, url: String) async throws -> TrackState? {
-        guard let url = URL(string: "\(url)/read-progress/tachiyomi")
-        else { return nil }
-
+    func getState(sourceKey: String, seriesId: String) async throws -> TrackState? {
         let helper = KomgaHelper(sourceKey: sourceKey)
+
         guard let auth = helper.getAuthorizationHeader() else {
             throw KomgaTrackerError.notLoggedIn
         }
+
+        let url = try helper.getServerUrl(path: "/api/v2/series/\(seriesId)/read-progress/tachiyomi")
 
         var request = URLRequest(url: url)
         request.setValue(auth, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let data: KomgaReadProgress = try await URLSession.shared.object(from: request)
-        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: mangaKey)
+        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
 
         if useChapters {
             return .init(
@@ -51,17 +51,17 @@ class KomgaApi {
         }
     }
 
-    func update(sourceKey: String, mangaKey: String, url: String, update: TrackUpdate) async throws {
-        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: mangaKey)
-        guard
-            let lastReadVolume = useChapters ? update.lastReadChapter.flatMap({ Int(floor($0)) }) : update.lastReadVolume,
-            let url = URL(string: "\(url)/read-progress/tachiyomi")
+    func update(sourceKey: String, seriesId: String, update: TrackUpdate) async throws {
+        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
+        guard let lastReadVolume = useChapters ? update.lastReadChapter.flatMap({ Int(floor($0)) }) : update.lastReadVolume
         else { return }
 
         let helper = KomgaHelper(sourceKey: sourceKey)
         guard let auth = helper.getAuthorizationHeader() else {
             throw KomgaTrackerError.notLoggedIn
         }
+
+        let url = try helper.getServerUrl(path: "/api/v2/series/\(seriesId)/read-progress/tachiyomi")
 
         var request = URLRequest(url: url)
         request.setValue(auth, forHTTPHeaderField: "Authorization")
@@ -72,6 +72,71 @@ class KomgaApi {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         _ = try await URLSession.shared.data(for: request)
+    }
+
+    func updateReadProgress(
+        sourceKey: String,
+        bookId: String,
+        progress: ChapterReadProgress
+    ) async throws {
+        let helper = KomgaHelper(sourceKey: sourceKey)
+        let bookUrl = try helper.getServerUrl(path: "/api/v1/books/\(bookId)")
+
+        guard let url = URL(string: "\(bookUrl)/read-progress") else { return }
+
+        guard let auth = helper.getAuthorizationHeader() else {
+            throw KomgaTrackerError.notLoggedIn
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue(auth, forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if !progress.completed && progress.page <= 0 {
+            // mark book as unread: https://komga.org/docs/openapi/delete-book-read-progress
+            request.httpMethod = "DELETE"
+        } else {
+            // mark book read progress: https://komga.org/docs/openapi/mark-book-read-progress
+            request.httpMethod = "PATCH"
+
+            let page = try await {
+                if progress.completed {
+                    // if marking completed, we need to set the page to the total pages
+                    let book: KomgaBook = try await helper.request(path: "/api/v1/books/\(bookId)")
+                    return book.media.pagesCount
+                } else {
+                    return progress.page
+                }
+            }()
+
+            request.httpBody = try? JSONEncoder().encode(KomgaBookReadProgressUpdate(
+                page: page,
+                completed: progress.completed
+            ))
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+
+        _ = try await URLSession.shared.data(for: request)
+    }
+
+    func getSeriesReadProgress(sourceKey: String, seriesId: String) async throws -> [String: ChapterReadProgress] {
+        let helper = KomgaHelper(sourceKey: sourceKey)
+        let response: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: "/api/v1/series/\(seriesId)/books?unpaged=true")
+
+        var progressMap: [String: ChapterReadProgress] = [:]
+
+        for book in response.content {
+            guard let readProgress = book.readProgress else {
+                continue
+            }
+            progressMap[book.id] = .init(
+                completed: readProgress.completed,
+                page: readProgress.page,
+                date: readProgress.lastModified
+            )
+        }
+
+        return progressMap
     }
 }
 
@@ -88,4 +153,9 @@ private struct KomgaReadProgress: Codable {
 
 private struct KomgaReadProgressUpdate: Codable {
     let lastBookNumberSortRead: Float
+}
+
+private struct KomgaBookReadProgressUpdate: Codable {
+    let page: Int
+    let completed: Bool
 }

@@ -8,7 +8,7 @@
 import AidokuRunner
 import Foundation
 
-class KomgaTracker: EnhancedTracker {
+class KomgaTracker: EnhancedTracker, PageTracker {
     let id = "komga"
     let name = NSLocalizedString("KOMGA")
     let icon = PlatformImage(named: "komga")
@@ -23,19 +23,13 @@ class KomgaTracker: EnhancedTracker {
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let highestChapterRead else { return nil }
 
-        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
-        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
+        let (sourceKey, seriesId) = try getIdParts(from: trackId)
 
-        let sourceKey = split[0]
-        let url = split[1]
-        let mangaKey = split[safe: 2] ?? "" // backwards compatibility
-
-        let state = try? await api.getState(sourceKey: sourceKey, mangaKey: mangaKey, url: url)
+        let state = try? await api.getState(sourceKey: sourceKey, seriesId: seriesId)
         if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
             try await api.update(
                 sourceKey: sourceKey,
-                mangaKey: mangaKey,
-                url: url,
+                seriesId: seriesId,
                 update: .init(lastReadVolume: Int(floor(highestChapterRead)))
             )
         }
@@ -44,26 +38,17 @@ class KomgaTracker: EnhancedTracker {
     }
 
     func update(trackId: String, update: TrackUpdate) async throws {
-        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
-        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
-
+        let (sourceKey, seriesId) = try getIdParts(from: trackId)
         try await api.update(
-            sourceKey: split[0],
-            mangaKey: split[safe: 2] ?? "",
-            url: split[1],
+            sourceKey: sourceKey,
+            seriesId: seriesId,
             update: update
         )
     }
 
     func getState(trackId: String) async throws -> TrackState {
-        let split = trackId.split(separator: idSeparator, maxSplits: 2).map(String.init)
-        guard split.count >= 2 else { throw KomgaTrackerError.invalidId }
-
-        if let state = try await api.getState(
-            sourceKey: split[0],
-            mangaKey: split[safe: 2] ?? "",
-            url: split[1]
-        ) {
+        let (sourceKey, seriesId) = try getIdParts(from: trackId)
+        if let state = try await api.getState(sourceKey: sourceKey, seriesId: seriesId) {
             return state
         } else {
             throw KomgaTrackerError.getStateFailed
@@ -71,24 +56,42 @@ class KomgaTracker: EnhancedTracker {
     }
 
     func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
-        let helper = KomgaHelper(sourceKey: manga.sourceKey)
-        let url = try helper.getServerUrl(path: "/api/v2/series/\(manga.key)")
-        let apiUrl = url.absoluteString
-
-        let state = try await api.getState(sourceKey: manga.sourceKey, mangaKey: manga.key, url: apiUrl)
+        let state = try await api.getState(sourceKey: manga.sourceKey, seriesId: manga.key)
         if state != nil {
-            return [.init(id: "\(manga.sourceKey)\(idSeparator)\(apiUrl)\(idSeparator)\(manga.key)", tracked: true)]
+            return [.init(id: "\(manga.sourceKey)\(idSeparator)\(manga.key)", tracked: true)]
         } else {
             return []
         }
     }
 
     func getUrl(trackId: String) async -> URL? {
-        nil
+        nil // url is the same as the series url, so it's not necessary to provide
     }
 
     func canRegister(sourceKey: String, mangaKey: String) -> Bool {
         sourceKey.hasPrefix("komga")
+    }
+
+    func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
+        let (sourceKey, _) = try getIdParts(from: trackId)
+        try await api.updateReadProgress(
+            sourceKey: sourceKey,
+            bookId: chapter.key,
+            progress: progress
+        )
+    }
+
+    func getProgress(trackId: String, chapters: [AidokuRunner.Chapter]) async throws -> [String: ChapterReadProgress] {
+        let (sourceKey, seriesId) = try getIdParts(from: trackId)
+        return try await api.getSeriesReadProgress(sourceKey: sourceKey, seriesId: seriesId)
+    }
+}
+
+extension KomgaTracker {
+    func getIdParts(from id: String) throws -> (sourceKey: String, seriesId: String) {
+        let split = id.split(separator: idSeparator, maxSplits: 2).map(String.init)
+        guard split.count == 2 else { throw KomgaTrackerError.invalidId }
+        return (sourceKey: split[0], seriesId: split[1])
     }
 }
 

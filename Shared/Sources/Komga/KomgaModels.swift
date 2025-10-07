@@ -205,6 +205,7 @@ struct KomgaBook: Codable, Sendable {
     struct Media: Codable, Sendable {
         let mediaProfile: String
         let epubDivinaCompatible: Bool
+        let pagesCount: Int
     }
 
     struct Metadata: Codable, Sendable {
@@ -226,6 +227,13 @@ struct KomgaBook: Codable, Sendable {
     let name: String
     let media: Media
     let metadata: Metadata
+    let readProgress: KomgaBookReadProgress?
+}
+
+struct KomgaBookReadProgress: Codable {
+    let page: Int
+    let completed: Bool
+    let lastModified: Date?
 }
 
 extension KomgaBook {

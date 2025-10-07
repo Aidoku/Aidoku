@@ -1099,7 +1099,11 @@ extension LibraryViewController {
                             let manga = manga.toManga()
                             let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
 
-                            await HistoryManager.shared.addHistory(chapters: chapters)
+                            await HistoryManager.shared.addHistory(
+                                sourceId: manga.sourceId,
+                                mangaId: manga.id,
+                                chapters: chapters.map { $0.toNew() }
+                            )
                         }
 
                         self.hideLoadingIndicator()
@@ -1114,7 +1118,11 @@ extension LibraryViewController {
                             let manga = manga.toManga()
                             let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
 
-                            await HistoryManager.shared.removeHistory(chapters: chapters)
+                            await HistoryManager.shared.removeHistory(
+                                sourceId: manga.sourceId,
+                                mangaId: manga.id,
+                                chapterIds: chapters.map { $0.id }
+                            )
                         }
 
                         self.hideLoadingIndicator()

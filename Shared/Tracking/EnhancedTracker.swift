@@ -5,8 +5,8 @@
 //  Created by Skitty on 9/15/25.
 //
 
-protocol EnhancedTracker: Tracker {
-}
+/// A tracker that automatically registers and tracks supported series.
+protocol EnhancedTracker: Tracker {}
 
 extension EnhancedTracker {
     var isLoggedIn: Bool { true }

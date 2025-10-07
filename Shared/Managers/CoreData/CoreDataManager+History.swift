@@ -258,6 +258,8 @@ extension CoreDataManager {
         mangaId: String,
         chapterId: String,
         totalPages: Int? = nil,
+        dateRead: Date? = nil,
+        completed: Bool? = nil,
         context: NSManagedObjectContext? = nil
     ) {
         let historyObject = self.getOrCreateHistory(
@@ -267,9 +269,12 @@ extension CoreDataManager {
             context: context
         )
         historyObject.progress = Int16(progress)
-        historyObject.dateRead = Date()
-        if let totalPages = totalPages {
+        historyObject.dateRead = dateRead ?? Date()
+        if let totalPages {
             historyObject.total = Int16(totalPages)
+        }
+        if let completed {
+            historyObject.completed = completed
         }
     }
 

@@ -289,16 +289,19 @@ class ReaderViewController: BaseObservingViewController {
             // don't add history if there is none and we're at the first page
             let sourceId = source?.key ?? manga.sourceKey
             let mangaId = manga.key
+
+            let chapterId = chapter.key
+            let (completed, progress) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+                CoreDataManager.shared.getProgress(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    chapterId: chapterId,
+                    context: context
+                )
+            }
+            let hasHistory = completed || progress != nil
+
             if currentPage == 1 {
-                let chapterId = chapter.key
-                let hasHistory = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-                    !CoreDataManager.shared.hasHistory(
-                        sourceId: sourceId,
-                        mangaId: mangaId,
-                        chapterId: chapterId,
-                        context: context
-                    )
-                }
                 if hasHistory {
                     return
                 }
@@ -306,7 +309,8 @@ class ReaderViewController: BaseObservingViewController {
             await HistoryManager.shared.setProgress(
                 chapter: chapter.toOld(sourceId: sourceId, mangaId: mangaId),
                 progress: currentPage,
-                totalPages: toolbarView.totalPages
+                totalPages: toolbarView.totalPages,
+                completed: completed
             )
         }
     }
@@ -661,9 +665,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
                 await HistoryManager.shared.addHistory(
-                    chapters: chaptersToMark.map {
-                        $0.toOld(sourceId: source?.key ?? manga.sourceKey, mangaId: manga.key)
-                    }
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    chapters: chaptersToMark
                 )
             }
         }

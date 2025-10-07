@@ -21,6 +21,7 @@ struct MangaView: View {
     @State private var showRemoveAllConfirm = false
     @State private var showConnectionAlert = false
 
+    @State private var detailsLoaded = false
     @State private var descriptionExpanded = false
 
     @State private var loadingAlert: UIAlertController?
@@ -112,6 +113,7 @@ struct MangaView: View {
                 )
             }
             .task {
+                guard !detailsLoaded else { return }
                 await viewModel.markOpened()
                 await viewModel.fetchDetails()
                 if let scrollToChapterKey {
@@ -120,6 +122,8 @@ struct MangaView: View {
                     }
                     self.scrollToChapterKey = nil
                 }
+                await viewModel.syncTrackerProgress()
+                detailsLoaded = true
             }
             .onChange(of: editMode) { mode in
                 guard let navigationController = path.rootViewController?.navigationController
@@ -140,18 +144,6 @@ struct MangaView: View {
                         }
                     } completion: { _ in
                         navigationController.isToolbarHidden = true
-                    }
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .syncTrackItem)) { output in
-                guard let item = output.object as? TrackItem else { return }
-                Task {
-                    if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
-                        await TrackerManager.shared.syncProgressFromTracker(
-                            tracker: tracker,
-                            trackId: item.id,
-                            manga: viewModel.manga
-                        )
                     }
                 }
             }
