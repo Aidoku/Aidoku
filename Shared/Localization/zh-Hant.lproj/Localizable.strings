@@ -248,6 +248,8 @@
 "LIBRARY_LOCKED" = "書櫃已上鎖。";
 "DOUBLE_PAGE" = "雙頁";
 "ISOLATE_FIRST_PAGE" = "首頁總是單獨顯示";
+"SPLIT_WIDE_IMAGES" = "切割寬圖";
+"REVERSE_SPLIT_ORDER" = "交換切割順序";
 "SCORE" = "評分";
 "LOGOUT_FROM_%@" = "從 %@ 登出？";
 "TRACK" = "追蹤";

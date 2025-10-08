@@ -420,6 +420,19 @@ extension Settings {
                     title: NSLocalizedString("ISOLATE_FIRST_PAGE"),
                     notification: .init("Reader.pagedIsolateFirstPage"),
                     value: .toggle(.init())
+                ),
+                .init(
+                    key: "Reader.splitWideImages",
+                    title: NSLocalizedString("SPLIT_WIDE_IMAGES"),
+                    notification: .init("Reader.splitWideImages"),
+                    value: .toggle(.init())
+                ),
+                .init(
+                    key: "Reader.reverseSplitOrder",
+                    title: NSLocalizedString("REVERSE_SPLIT_ORDER"),
+                    notification: .init("Reader.reverseSplitOrder"),
+                    requires: "Reader.splitWideImages",
+                    value: .toggle(.init())
                 )
             ]))
         ),
