@@ -302,3 +302,9 @@
 "THAT_HAVENT_BEEN_READ" = "שלא נקראו";
 "LOGOUT_FROM_%@" = "להתנתק מ %@?";
 "CLEAR_TRACKED_MANGA_TEXT" = "פעולה זו היא בלתי הפיכה. המעקב אחר כל העוקבים שנוספו למאנגה יוסר.";
+"DONE" = "הסתיים";
+"INVALID" = "לא תקין";
+"PAUSE" = "הפסק";
+"RESUME" = "חדש";
+"COPY" = "העתק";
+"WARNING" = "אזהרה";

@@ -6,7 +6,7 @@
 "BUTTON_FILTER" = "Filtriraj";
 "SUGGESTIVE" = "Sugestivno";
 "CANCELLED" = "Otkazano";
-"MISSING_SOURCE_TEXT" = "Čini se da za ovu mangu nedostaje originalni izvor. Molim ponovno preuzmi ili ukloni naslov iz knjiznice.";
+"MISSING_SOURCE_TEXT" = "Čini se da za ovu mangu nedostaje originalni izvor. Ponovo preuzmi ili ukloni naslov iz biblioteke.";
 "MARK_READ" = "Označi kao pročitano";
 "SELECT_ALL" = "Odaberi sve";
 "UNREAD" = "Nepročitano";
@@ -28,8 +28,8 @@
 "REMOVE_DOWNLOADS_CONFIRM" = "Ukloniti sva odabrana preuzimanja?";
 
 // Library
-"LIBRARY" = "Knjižnica";
-"LIBRARY_SEARCH" = "Pronađi u knjižnici";
+"LIBRARY" = "Biblioteka";
+"LIBRARY_SEARCH" = "Pronađi u biblioteci";
 "MANGA_INFO" = "Informacije o mangi";
 "SORT_BY" = "Poredaj po";
 "FILTER_BY" = "Filtriraj po";
@@ -53,7 +53,7 @@
 "ADDING_SOURCES_GUIDE_BUTTON" = "Dodavanje vodiča za izvore";
 "INSTALLED" = "Instalirano";
 "EXTERNAL" = "Vanjski";
-"BUTTON_UPDATE" = "AŽURIRAJ";
+"BUTTON_UPDATE" = "AKTUALIZIRAJ";
 "BUTTON_GET" = "DOBIJ";
 "BUTTON_ERROR" = "GREŠKA";
 "UNINSTALL" = "Deinstaliraj";
@@ -99,14 +99,14 @@
 "CATEGORY_ADD" = "Dodaj kategoriju";
 "REMOVE" = "Ukloni";
 "DOWNLOAD_QUEUE" = "Red čekanja za preuzimanje";
-"ADD_TO_LIBRARY" = "Dodaj u knjižnicu";
+"ADD_TO_LIBRARY" = "Dodaj u biblioteku";
 "LIBRARY_ADD_FROM_BROWSE" = "Dodaj mangu s kartice pregledavanja";
-"LIBRARY_EMPTY" = "Knjižnica je prazna";
-"REMOVE_FROM_LIBRARY" = "Ukloni iz knjižnice";
+"LIBRARY_EMPTY" = "Biblioteka je prazna";
+"REMOVE_FROM_LIBRARY" = "Ukloni iz biblioteke";
 "LATEST_CHAPTER" = "Najnovije poglavlje";
 "CATEGORY_ADD_TEXT" = "Unesi naslov nove kategorije za stvaranje.";
 "BROWSE_NO_SOURCES_TEXT" = "Konfigurirajte svoj popis izvora ili otvorite\nizvor u Aidoku za početak rada";
-"UPDATES" = "Ažuriranja";
+"UPDATES" = "Aktualiziranja";
 "VOLUME_X" = "Svezak %g";
 "COVER" = "Naslovnica";
 "HIATUS" = "Pauza";
@@ -127,8 +127,8 @@
 "HISTORY" = "Povijest";
 "REMOVE_ALL_MANGA_HISTORY" = "Ukloni cijelu manga povijest";
 "HISTORY_LOCKED" = "Povijest je zaključana.";
-"VIEW_HISTORY" = "Pregledaj povijest";
-"AUTH_FOR_HISTORY" = "Autentificiraj se za pregled povijesti čitanja.";
+"VIEW_HISTORY" = "Prikaži povijest";
+"AUTH_FOR_HISTORY" = "Autentificiraj se za prikaz povijesti čitanja.";
 
 // Settings
 "SETTINGS" = "Postavke";
@@ -137,7 +137,7 @@
 
 // Search
 "SEARCH" = "Traži";
-"VIEW_MORE" = "Vidi više";
+"VIEW_MORE" = "Prikaži više";
 "AUTH_TO_DISABLE" = "Autentificiraj za onemogućavanje.";
 "BUILD" = "Izgraditi";
 "VOL_X" = "Svezak %g";
@@ -152,32 +152,32 @@
 "GENERAL" = "Općenito";
 "ICLOUD_SYNC" = "iCloud sinkronizacija";
 "MANGA_PER_ROW" = "Broj mangi po redu";
-"PORTRAIT" = "Portret";
-"LANDSCAPE" = "Vodoravno";
+"PORTRAIT" = "Uspravno";
+"LANDSCAPE" = "Položeno";
 "READER" = "Čitač";
 "OPEN_READER_VIEW" = "Otvori prikaz čitača";
 "UNREAD_CHAPTER_BADGES" = "Oznake nepročitanih poglavlja";
 "ABOUT" = "O";
 "DISCORD_SERVER" = "Discord server";
 "APPEARANCE" = "Izgled";
-"APPEARANCE_LIGHT" = "Svijetao";
+"APPEARANCE_LIGHT" = "Svijetlo";
 "INCOGNITO_MODE_TEXT" = "Kada je omogućeno pauzira povijest čitanja";
-"APPEARANCE_DARK" = "Taman";
+"APPEARANCE_DARK" = "Tamno";
 "USE_SYSTEM_APPEARANCE" = "Koristi izgled sustava";
 "REFRESH_METADATA" = "Osvježi metapodatke";
 "EVERY_12_HOURS" = "Svakih 12 sati";
 "INCOGNITO_MODE" = "Inkognito modus";
 "PIN_MANGA_TYPE" = "Prikvači tip";
 "PIN_MANGA_UNREAD" = "Nepročitano";
-"UPDATE_INTERVAL" = "Ažuriraj interval";
-"ONLY_UPDATE_ON_WIFI" = "Ažuriraj samo na Wi-Fi vezi";
+"UPDATE_INTERVAL" = "Interval aktualiziranja";
+"ONLY_UPDATE_ON_WIFI" = "Aktualiziraj samo na Wi-Fi vezi";
 "EXCLUDED_CATEGORIES" = "Isključene kategorije";
 "NEVER" = "Nikada";
 "DAILY" = "Dnevno";
 "EVERY_2_DAYS" = "Svaka 2 dana";
 "PIN_MANGA" = "Prikvači mangu";
-"PIN_MANGA_UPDATED" = "Ažurirano";
-"LIBRARY_UPDATING" = "Knjižnica se ažurira";
+"PIN_MANGA_UPDATED" = "Aktualizirano";
+"LIBRARY_UPDATING" = "Aktualiziranje biblioteke";
 "SKIP_TITLES" = "Preskoči naslove";
 "SOURCE_LIST_ADDED" = "Popis izvora dodan";
 "LOCK_HISTORY_TAB" = "Zaključaj karticu povijesti";
@@ -226,9 +226,9 @@
 "CLEAR_NETWORK_CACHE_TEXT" = "Ovo je nepovratna radnja. Predmemorirani mrežni zahtjevi i slike će se izbrisati.";
 "RESET_SETTINGS_TEXT" = "Ovo je nepovratna radnja. Sve postavke aplikacije i izvora će se resetirati.";
 "PAGE_X_OF_X" = "Stranica %i od %i";
-"LIBRARY_LOCKED" = "Knjižnica je zaključana.";
+"LIBRARY_LOCKED" = "Biblioteka je zaključana.";
 "CATEGORY_LOCKED" = "Kategorija je zaključana.";
-"AUTH_FOR_LIBRARY" = "Autentificiraj za pregled knjižnice.";
+"AUTH_FOR_LIBRARY" = "Autentificiraj se za prikaz biblioteke.";
 "SINGLE_PAGE" = "Jedna stranica";
 "LOGOUT" = "Odjavi se";
 "LOGOUT_FROM_%@" = "Odjaviti se s %@?";
@@ -239,11 +239,11 @@
 "TRACK_PAUSED" = "Pauzirano";
 "FINISHED" = "Završeno";
 "TRACK_READING" = "Čitanje";
-"VIEW_LIBRARY" = "Pregledaj knjižnicu";
+"VIEW_LIBRARY" = "Prikaži biblioteku";
 "CATEGORY_EMPTY" = "Kategorija je prazna";
 "AUTH_TO_OPEN" = "Autentificiraj za otvaranje.";
 "LOCKED_CATEGORIES" = "Zaključane kategorije";
-"LOCK_LIBRARY" = "Zaključaj knjižnicu";
+"LOCK_LIBRARY" = "Zaključaj biblioteku";
 "SET_AS_WIDE_PAGE" = "Postavi kao široku stranicu";
 "AUTOMATIC" = "Automatski";
 "SET_AS_NORMAL_PAGE" = "Postavi kao normalnu stranicu";
@@ -264,7 +264,7 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Sigurno želiš ukloniti sva preuzimanja?";
 "UNREAD_CHAPTERS" = "Nepročitana poglavlja";
 "FAILED_CHAPTER_LOAD" = "Učitavanje poglavlja nije uspjelo";
-"LAST_UPDATED" = "Zadnje ažurirano";
+"LAST_UPDATED" = "Zadnje aktualiziranje";
 "RELOAD" = "Ponovno učitaj";
 "%i_OF_%i" = "%i od %i";
 "WEBTOON" = "Webtoon";
@@ -277,7 +277,7 @@
 "%i_CHAPTERS" = "%i poglavlja";
 "1_CHAPTER" = "1 poglavlje";
 "UPCOMING" = "Nadolazeće";
-"VIEW_ON_WEBSITE" = "Pregledaj na web stranici";
+"VIEW_ON_WEBSITE" = "Prikaži na web stranici";
 "ONESHOT" = "Samostalna priča";
 "TRACK" = "Prati";
 "CLEAR_TRACKED_MANGA_TEXT" = "Ovo je nepovratna radnja. Praćenje za sva praćenja koja su dodana mangi će se ukloniti.";
@@ -342,8 +342,8 @@
 "READER_BG_COLOR_BLACK" = "Crna";
 
 // Manga Updates
-"MANGA_UPDATES" = "Ažuriranja";
-"NO_UPDATES" = "Nema ažuriranja";
+"MANGA_UPDATES" = "Aktualiziranja";
+"NO_UPDATES" = "Nema aktualiziranja";
 "%lld_PLUS_MORE" = "+%lld više";
 "SKIPPING_CHAPTERS" = "Preskakaču se %i poglavlja, nedostaju u izvoru ili su izdvojena filtrom";
 "DELETE_DOWNLOAD_AFTER_READING" = "Izbriši preuzimanje nakon čitanja";
@@ -367,7 +367,7 @@
 "DOWNLOADED_CHAPTERS" = "Preuzeta poglavlja";
 "TOTAL_DOWNLOADS" = "Ukupna preuzimanja";
 "%i_SERIES" = "%i serije";
-"IN_LIBRARY" = "U knjižnici";
+"IN_LIBRARY" = "U biblioteci";
 "VIEW_SERIES" = "Prikaži serije";
 "SORT_DATE_ADDED" = "Datum dodavanja";
 "AUTHOR" = "Autor";
@@ -463,8 +463,8 @@
 "DEMO_KOMGA_SERVER_INFO" = "Na demo Komga server se možeš prijaviti putem e-maila `demo@komga.org` i lozinke `komga-demo`.";
 "LOCKED" = "Zaključano";
 "TOGGLE_LOCK" = "Uklj./Isklj. lokot";
-"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Uklanjanje stavke iz knjižnice";
-"REMOVING_%i_ITEMS_FROM_LIBRARY" = "Uklanjaju se %i stavke(i) iz knjižnice";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Uklanjanje stavke iz biblioteke";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "Uklanjaju se %i stavke iz biblioteke";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Uklanjanje stavke iz kategorije %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Uklanjaju se %i stavke(i) iz kategorije %@";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Dodaj izvor pomoću gumba plus.";
@@ -478,7 +478,7 @@
 "RESET_SETTINGS_CONFIRM_%@" = "Stvarno želiš resetirati sve postavke za %@?";
 "CANCEL_CONFIRM" = "Stvarno želiš prekinuti?";
 "NO_EXTERNAL_SOURCES_INFO" = "Konfiguriraj popise izvora u kartici postavki za instaliranje eksternih izvora.";
-"LOCAL_SOURCE_INFO" = "Lokalni izvor omogućuje prijenos i upravljanje vlastitom knjižnicom za čitanje izravno unutar Aidokua.";
+"LOCAL_SOURCE_INFO" = "Lokalni izvor omogućuje prijenos i upravljanje vlastitom bibliotekom za čitanje izravno unutar Aidokua.";
 "OPEN_WEBSITE" = "Otvori web stranicu";
 "SET_COVER_IMAGE" = "Postavi sliku omota";
 "UPLOAD_CUSTOM_COVER" = "Prenesi prilagođeni omot";
@@ -507,7 +507,7 @@
 "ZONE_KINDLE" = "Kindle";
 "DISABLED" = "Isključeno";
 "ANIMATE_PAGE_TRANSITIONS" = "Animiraj prijelaze stranica";
-"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Ovo je nepovratna radnja. Sva povijest čitanja osim knjižnice će se ukloniti.";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "Ovo je nepovratna radnja. Sva povijest čitanja osim za biblioteku će se ukloniti.";
 "OEL" = "Original na engleskom jeziku (OEL)";
 "COMIC" = "Strip";
 "BOOK" = "Knjiga";
@@ -520,7 +520,7 @@
 "FILE_IMPORT_FAIL_TEXT" = "Uvoz datoteke nije uspio. Osiguraj da se radi o valjanoj CBZ ili ZIP arhivi koja sadrži slike.";
 "ADD" = "Dodaj";
 "MARK_DUPLICATE_CHAPTERS" = "Označi dupla poglavlja kao pročitana";
-"SOURCE_BREAKING_CHANGE_TEXT" = "Ovaj izvor je imao promjenu koja uzrokuje nekompatibilnost i zahtijeva migraciju kako bi se tvoja knjižnica i povijest sačuvali.";
+"SOURCE_BREAKING_CHANGE_TEXT" = "Ovaj izvor je imao promjenu koja uzrokuje nekompatibilnost i zahtijeva migraciju kako bi se tvoja biblioteka i povijest sačuvali.";
 "SOURCE_BREAKING_CHANGE" = "Izvor s promjenom koja uzrokuje nekompatibilnost";
 "ALL_CHAPTERS_LOCKED" = "Sva poglavlja su zaključana";
 "READER_ORIENTATION" = "Orijentacija";
@@ -537,8 +537,36 @@
 "TURN_PAGE_RIGHT" = "Okreni stranicu udesno";
 "CHAPTER_FORWARD" = "Poglavlje naprijed";
 "CHAPTER_BACKWARD" = "Poglavlje natrag";
-"CLEAR_EXCLUDING_LIBRARY" = "Očisti povijest čitanja osim knjižnice";
+"CLEAR_EXCLUDING_LIBRARY" = "Očisti povijest čitanja osim za biblioteku";
 "CLEAR_SOURCE_CACHE" = "Očisti predmemoriju izvora";
 "CLEAR_SOURCE_CACHE_TEXT" = "Predmemorirani mrežni podaci za izvorne URL-ove će se izbrisati. To može prouzročiti privremeno povećano vrijeme učitavanja.";
 "OPEN_CHAPTER_LIST" = "Otori popis poglavlja";
 "CLOSE_READER" = "Zatvori čitač";
+"REFRESHING_LIBRARY" = "Aktualiziranje biblioteke …";
+"HOME" = "Doma";
+"DISPLAY_DEFAULT" = "Zadano";
+"DISPLAY_CHAPTER" = "Poglavlje";
+"DISPLAY_VOLUME" = "Svezak";
+"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "iCloud sinkronizacija je eksperimentalna funkcija. Njeno aktiviranje ili deaktiviranje može uzrokovati gubitak podataka.";
+"ICLOUD_SYNC_TEXT_SIDELOADED" = "iCloud sinkronizacija je dostupna samo kada je instalirana putem TestFlighta.";
+"NO_RESULTS_FOR_%@" = "Nema rezultata za „%@”";
+"NO_RESULTS_TEXT" = "Provjeri pravopis ili pokušaj s novom pretragom.";
+"ZONE_EDGE" = "Rub";
+"INVERT_TAP_ZONES" = "Zamijeni zone dodira";
+"BACKUP_%@" = "Sigurnosna kopija %@";
+"CREATE_BACKUP" = "Izradi sigurnosnu kopiju";
+"LIBRARY_ENTRIES" = "Unosi u biblioteci";
+"SENSITIVE_SETTINGS" = "Osjetljive postavke";
+"NAME" = "Ime";
+"DATE" = "Datum";
+"BACKUP_INFO_TITLE" = "Informacije o sigurnosnoj kopiji";
+"ISOLATE_FIRST_PAGE" = "Uvijek izoliraj prvu stranicu";
+"TITLE_DISPLAY_MODE" = "Modus prikaza naslova";
+"UPDATE_AFTER_READING" = "Aktualiziraj nakon čitanja";
+"UPDATE_AFTER_READING_INFO" = "Nakon čitanja poglavlja, aktualiziraj praćenje kako bi odgovaralo trenutačno pročitanom poglavlju i/ili svesku.";
+"AUTO_SYNC_HISTORY" = "Automatski sinkroniziraj povijesti";
+"AUTO_SYNC_HISTORY_INFO" = "Kada se u praćenju otkrije novije poglavlje i/ili svezak, aktualiziraj lokalnu povijest kako bi se podudarala.";
+"SET_AS_SINGLE_PAGE" = "Postavi kao jednu stranicu";
+"%@_TRACKER_LOGIN_NEEDED" = "Potrebna je %@ prijava";
+"%@_TRACKER_LOGIN_NEEDED_TEXT" = "Tvoj je %@ token istekao, stoga će povezano praćenje prestati raditi sve dok se ponovo ne prijaviš u postavkama.";
+"ON_DECK" = "Za čitanje";
