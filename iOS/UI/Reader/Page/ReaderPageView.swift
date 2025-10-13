@@ -486,4 +486,35 @@ class ReaderPageView: UIView {
             ImagePipeline.shared.cache.removeCachedImage(for: request)
         }
     }
+
+    /// Splits the current image into left and right halves
+    func splitImage() -> (left: UIImage?, right: UIImage?) {
+        guard let image = imageView.image else { return (nil, nil) }
+
+        let imageSize = image.size
+        let imageScale = image.scale
+
+        // Calculate the split point (middle of the image)
+        let splitX = imageSize.width / 2
+
+        // Create left half rect
+        let leftRect = CGRect(x: 0, y: 0, width: splitX, height: imageSize.height)
+
+        // Create right half rect
+        let rightRect = CGRect(x: splitX, y: 0, width: splitX, height: imageSize.height)
+
+        // Extract left half
+        guard let leftCGImage = image.cgImage?.cropping(to: leftRect) else {
+            return (nil, nil)
+        }
+        let leftImage = UIImage(cgImage: leftCGImage, scale: imageScale, orientation: image.imageOrientation)
+
+        // Extract right half
+        guard let rightCGImage = image.cgImage?.cropping(to: rightRect) else {
+            return (nil, nil)
+        }
+        let rightImage = UIImage(cgImage: rightCGImage, scale: imageScale, orientation: image.imageOrientation)
+
+        return (leftImage, rightImage)
+    }
 }

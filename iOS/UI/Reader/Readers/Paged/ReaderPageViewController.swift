@@ -57,6 +57,9 @@ class ReaderPageViewController: BaseViewController {
     /// Callback when image aspect ratio is updated
     var onAspectRatioUpdated: (() -> Void)?
 
+    /// Callback when image loading is complete and wide image status is determined
+    var onImageisWideImage: ((Bool) -> Void)?
+
     init(type: PageType) {
         self.type = type
         super.init()
@@ -148,6 +151,9 @@ class ReaderPageViewController: BaseViewController {
             if oldAspectRatio != imageAspectRatio && isWideImage {
                 onAspectRatioUpdated?()
             }
+
+            // Notify when image loading is complete with wide image status
+            onImageisWideImage?(isWideImage)
         }
     }
 
