@@ -263,6 +263,7 @@ extension ReaderWebtoonPageNode {
         let shouldCropBorders = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
         let width = await UIScreen.main.bounds.width
         var processors: [ImageProcessing] = []
+        var usePageProcessor = false
         if
             let source,
             source.features.processesPages,
@@ -270,6 +271,7 @@ extension ReaderWebtoonPageNode {
         {
             // only process pages if the source supports it and the image isn't downloaded
             processors.append(PageInterceptorProcessor(source: source))
+            usePageProcessor = true
         }
         if shouldCropBorders {
             processors.append(CropBordersProcessor())
@@ -283,7 +285,7 @@ extension ReaderWebtoonPageNode {
         let request = ImageRequest(
             urlRequest: urlRequest,
             processors: processors,
-            userInfo: [.contextKey: context ?? [:], .processesKey: true]
+            userInfo: [.contextKey: context ?? [:], .processesKey: usePageProcessor]
         )
 
         // Store current image request for reload functionality

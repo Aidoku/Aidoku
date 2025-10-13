@@ -43,7 +43,15 @@ struct PageInterceptorProcessor: ImageProcessing {
                     .compactMapValues { $0 as? String }
             }
 
-            let imageDescriptor = try await source.store(value: container.image)
+            let imageDescriptor = if container.image.size == .zero, let data = container.data {
+                if let image = PlatformImage(data: data) {
+                    try await source.store(value: image)
+                } else {
+                    try await source.store(value: data)
+                }
+            } else {
+                try await source.store(value: container.image)
+            }
 
             let response = Response(
                 code: code,
@@ -63,7 +71,9 @@ struct PageInterceptorProcessor: ImageProcessing {
         }.get()
 
         var container = container
-        container.image = output?.image ?? container.image
+        container.image = output?.image
+            ?? container.data.flatMap { PlatformImage(data: $0) }
+            ?? container.image
         return container
     }
 

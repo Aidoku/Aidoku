@@ -150,7 +150,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         DataLoader.sharedUrlCache.diskCapacity = 0
 
-        let pipeline = ImagePipeline {
+        let pipeline = ImagePipeline(delegate: self) {
             let dataLoader: DataLoader = {
                 let config = URLSessionConfiguration.default
                 config.urlCache = nil
@@ -557,5 +557,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         topViewController?.present(alertController, animated: true, completion: completion)
+    }
+}
+
+extension AppDelegate: ImagePipelineDelegate {
+    func imageDecoder(for context: ImageDecodingContext, pipeline: ImagePipeline) -> (any ImageDecoding)? {
+        if context.request.userInfo[.processesKey] as? Bool == true {
+            // when using a page processor, don't decode data as an image since it may be invalid
+            ImageDecoders.Empty.init()
+        } else {
+            pipeline.configuration.makeImageDecoder(context)
+        }
     }
 }

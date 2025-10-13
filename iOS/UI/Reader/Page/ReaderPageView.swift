@@ -141,6 +141,7 @@ class ReaderPageView: UIView {
             }
 
             var processors: [ImageProcessing] = []
+            var usePageProcessor = false
             if
                 let sourceId,
                 let newSource = SourceManager.shared.source(for: sourceId)
@@ -148,6 +149,7 @@ class ReaderPageView: UIView {
                 // only process pages if the source supports it and the image isn't downloaded
                 if newSource.features.processesPages, !url.isFileURL {
                     processors.append(PageInterceptorProcessor(source: newSource))
+                    usePageProcessor = true
                 }
             }
             if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
@@ -162,7 +164,7 @@ class ReaderPageView: UIView {
             request = ImageRequest(
                 urlRequest: urlRequest,
                 processors: processors,
-                userInfo: [.contextKey: context ?? [:], .processesKey: true]
+                userInfo: [.contextKey: context ?? [:], .processesKey: usePageProcessor]
             )
         }
 
@@ -205,28 +207,30 @@ class ReaderPageView: UIView {
             return true
         } catch {
             let error = error as? ImagePipeline.Error
-            switch error {
-                case .dataLoadingFailed, .dataIsEmpty:
-                    // we can still send to image processor even if the request failed
-                    if request.userInfo[.processesKey] as? Bool == true {
-                        let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
-                        if let processor {
-                            let result = await Task.detached {
+
+            // we can still send to image processor even if the request failed
+            if request.userInfo[.processesKey] as? Bool == true {
+                let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
+                if let processor {
+                    let result: Nuke.ImageContainer?
+                    switch error {
+                        case .dataLoadingFailed, .dataIsEmpty, .decodingFailed:
+                            result = await Task.detached {
                                 try? processor.processWithoutImage(request: request)
                             }.value
-                            if let result {
-                                imageView.image = result.image
-                                if result.type == .gif, let data = result.data {
-                                    imageView.animate(withGIFData: data)
-                                }
-                                fixImageSize()
-                                completion?(true)
-                                return true
-                            }
-                        }
+                        default:
+                            result = nil
                     }
-                default:
-                    break
+                    if let result {
+                        imageView.image = result.image
+                        if result.type == .gif, let data = result.data {
+                            imageView.animate(withGIFData: data)
+                        }
+                        fixImageSize()
+                        completion?(true)
+                        return true
+                    }
+                }
             }
             completion?(false)
             return false
