@@ -631,6 +631,7 @@ extension SettingView {
                     ClearFieldButton {
                         text.wrappedValue = ""
                     }
+                    .buttonStyle(.borderless)
                 }
             }
         }

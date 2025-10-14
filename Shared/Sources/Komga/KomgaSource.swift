@@ -86,7 +86,6 @@ extension AidokuRunner.Source {
                         items: [
                             .init(
                                 key: "server",
-                                title: "SERVER_URL",
                                 value: .text(.init(
                                     placeholder: "https://demo.komga.org",
                                     autocapitalizationType: UITextAutocapitalizationType.none.rawValue,
