@@ -1251,6 +1251,44 @@ extension SettingView {
             }
             stringListBinding = newValues
         }
+        Group {
+            if value.inline ?? false {
+                items
+                Button {
+                    showAddAlert = true
+                } label: {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text(NSLocalizedString("ADD"))
+                    }
+                }
+                .disabled(disabled)
+            } else {
+                NavigationLink {
+                    List {
+                        items
+                    }
+                    .navigationTitle(setting.title)
+                    .toolbar {
+#if !os(macOS)
+                        let placement = ToolbarItemPlacement.topBarTrailing
+#else
+                        let placement = ToolbarItemPlacement.primaryAction
+#endif
+                        ToolbarItem(placement: placement) {
+                            Button {
+                                showAddAlert = true
+                            } label: {
+                                Image(systemName: "plus")
+                            }
+                        }
+                    }
+                } label: {
+                    Text(setting.title)
+                }
+                .disabled(disabled)
+            }
+        }
         .alert(setting.title, isPresented: $showAddAlert) {
             TextField(value.placeholder ?? "", text: $listAddItem)
             Button(NSLocalizedString("CANCEL"), role: .cancel) {
@@ -1261,42 +1299,6 @@ extension SettingView {
                 listAddItem = ""
             }
             .disabled(listAddItem.isEmpty)
-        }
-        if value.inline ?? false {
-            items
-            Button {
-                showAddAlert = true
-            } label: {
-                HStack {
-                    Image(systemName: "plus")
-                    Text(NSLocalizedString("ADD"))
-                }
-            }
-            .disabled(disabled)
-        } else {
-            NavigationLink {
-                List {
-                    items
-                }
-                .navigationTitle(setting.title)
-                .toolbar {
-#if !os(macOS)
-                    let placement = ToolbarItemPlacement.topBarTrailing
-#else
-                    let placement = ToolbarItemPlacement.primaryAction
-#endif
-                    ToolbarItem(placement: placement) {
-                        Button {
-                            showAddAlert = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
-                }
-            } label: {
-                Text(setting.title)
-            }
-            .disabled(disabled)
         }
     }
 }
