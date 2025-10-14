@@ -1113,7 +1113,7 @@ extension SettingView {
             ) {
                 if let icon = value.icon {
                     HStack(spacing: 15) {
-                        Self.iconView(source: source, icon: icon, size: 29)
+                        SettingHeaderView.iconView(source: source, icon: SettingHeaderView.Icon.from(icon), size: 29)
 
                         Text(setting.title)
 
@@ -1134,31 +1134,6 @@ extension SettingView {
                 disabled ? disabledOpacity : 1
             }
         }())
-    }
-
-    @ViewBuilder
-    static func iconView(source: AidokuRunner.Source?, icon: PageSetting.Icon, size: CGFloat) -> some View {
-        switch icon {
-            case .system(let name, let color, let inset):
-                Image(systemName: name)
-                    .resizable()
-                    .renderingMode(.template)
-                    .foregroundStyle(.white)
-                    .aspectRatio(contentMode: .fit)
-                    .padding(CGFloat(inset) / 29 * size)
-                    .frame(width: size, height: size)
-                    .background(color.toColor())
-                    .clipShape(RoundedRectangle(cornerRadius: size * 0.225))
-            case .url(let string):
-                SourceImageView(
-                    source: source,
-                    imageUrl: string,
-                    width: size,
-                    height: size,
-                    downsampleWidth: size * 2
-                )
-                .clipShape(RoundedRectangle(cornerRadius: size * 0.225))
-        }
     }
 }
 
@@ -1213,18 +1188,12 @@ struct SettingPageDestination: View {
                 ScrollViewReader { proxy in
                     List {
                         if let icon = value.icon, let subtitle = value.info {
-                            VStack(spacing: 10) {
-                                SettingView.iconView(source: source, icon: icon, size: 60)
-
-                                Text(setting.title)
-                                    .font(.title2.weight(.bold))
-                                Text(subtitle)
-                                    .font(.system(size: 15))
-                                    .lineSpacing(2)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .padding(.vertical, 10)
-                            .frame(maxWidth: .infinity, alignment: .center)
+                            SettingHeaderView(
+                                source: source,
+                                icon: SettingHeaderView.Icon.from(icon),
+                                title: setting.title,
+                                subtitle: subtitle
+                            )
                             .background(GeometryReader { geo in
                                 let offset = -geo.frame(in: .named(scrollSpace)).minY
                                 Color.clear

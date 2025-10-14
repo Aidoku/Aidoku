@@ -66,9 +66,11 @@ struct KomgaSetupView: View {
         let submitDisabled = submitDisabled
         List {
             Section {
-                LocalSetupView.infoView(
-                    title: LocalizedStringKey(NSLocalizedString("KOMGA")),
-                    subtitle: LocalizedStringKey(NSLocalizedString("KOMGA_INFO"))
+                SettingHeaderView(
+                    icon: .raw(Image(.komga)),
+                    title: NSLocalizedString("KOMGA"),
+                    subtitle: NSLocalizedString("KOMGA_INFO"),
+                    learnMoreUrl: URL(string: "https://komga.org/docs/introduction")
                 )
             }
 

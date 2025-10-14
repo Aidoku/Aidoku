@@ -227,6 +227,7 @@
 		FB5E5D012E32BFC700843E27 /* TapZonesSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */; };
 		FB619E3F2E94A62000E3B565 /* PageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB619E3E2E94A61D00E3B565 /* PageTracker.swift */; };
 		FB619E402E94A62000E3B565 /* PageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB619E3E2E94A61D00E3B565 /* PageTracker.swift */; };
+		FB619E512E9E90F000E3B565 /* SettingHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB619E502E9E90EB00E3B565 /* SettingHeaderView.swift */; };
 		FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B4278F89930072A2A2 /* Filter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B2278F898E0072A2A2 /* Filter.swift */; };
 		FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6340B52791DA130072A2A2 /* KVCObject.swift */; };
@@ -677,6 +678,7 @@
 		FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewViewController.swift; sourceTree = "<group>"; };
 		FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapZonesSelectView.swift; sourceTree = "<group>"; };
 		FB619E3E2E94A61D00E3B565 /* PageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTracker.swift; sourceTree = "<group>"; };
+		FB619E502E9E90EB00E3B565 /* SettingHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingHeaderView.swift; sourceTree = "<group>"; };
 		FB6340B2278F898E0072A2A2 /* Filter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Filter.swift; sourceTree = "<group>"; };
 		FB6340B52791DA130072A2A2 /* KVCObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KVCObject.swift; sourceTree = "<group>"; };
 		FB6340BA2792202B0072A2A2 /* Listing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listing.swift; sourceTree = "<group>"; };
@@ -1505,6 +1507,7 @@
 			children = (
 				FB662E902DA813E300007514 /* SettingView.swift */,
 				FBFF58922E7F2BEF009367B7 /* SettingView+Environment.swift */,
+				FB619E502E9E90EB00E3B565 /* SettingHeaderView.swift */,
 				FB7F05FB2DDE77B30036B116 /* WebView.swift */,
 			);
 			path = Settings;
@@ -2432,6 +2435,7 @@
 				FB72501F27CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB4B0ADD285C2C570066A13B /* TrackSearchItem.swift in Sources */,
 				FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */,
+				FB619E512E9E90F000E3B565 /* SettingHeaderView.swift in Sources */,
 				FB55C0AD2DEFC43A0019A551 /* UIHostingController+SafeArea.swift in Sources */,
 				FB8E48DB2DC00783002A3621 /* SelectHighlightButtonStyle.swift in Sources */,
 				FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */,

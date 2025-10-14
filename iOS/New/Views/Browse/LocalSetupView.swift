@@ -13,17 +13,28 @@ struct LocalSetupView: View {
     var body: some View {
         List {
             Section {
-                Self.infoView(
-                    title: LocalizedStringKey(NSLocalizedString("LOCAL_SOURCE")),
-                    subtitle: LocalizedStringKey(NSLocalizedString("LOCAL_SOURCE_INFO"))
+                SettingHeaderView(
+                    icon: .raw(Image(.local)),
+                    title: NSLocalizedString("LOCAL_SOURCE"),
+                    subtitle: NSLocalizedString("LOCAL_SOURCE_INFO")
                 )
             }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(NSLocalizedString("CONTINUE")) {
-                    Task {
-                        await submit()
+                if #available(iOS 26.0, *) {
+                    Button(role: .confirm) {
+                        Task {
+                            await submit()
+                        }
+                    }
+                } else {
+                    Button {
+                        Task {
+                            await submit()
+                        }
+                    } label: {
+                        Text(NSLocalizedString("ADD")).bold()
                     }
                 }
             }
