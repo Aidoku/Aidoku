@@ -767,13 +767,7 @@ struct KomgaHelper: Sendable {
         var request = URLRequest(url: url)
         request.setValue(auth, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        switch method {
-            case .GET: request.httpMethod = "GET"
-            case .POST: request.httpMethod = "POST"
-            case .HEAD: request.httpMethod = "HEAD"
-            case .PUT: request.httpMethod = "PUT"
-            case .DELETE: request.httpMethod = "DELETE"
-        }
+        request.httpMethod = method.stringValue
         if let body {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .custom({ date, encoder in

@@ -15,6 +15,24 @@ enum HttpMethod: Int {
     case HEAD = 2
     case PUT = 3
     case DELETE = 4
+    case PATCH = 5
+    case OPTIONS = 6
+    case CONNECT = 7
+    case TRACE = 8
+
+    var stringValue: String {
+        switch self {
+            case .GET: "GET"
+            case .POST: "POST"
+            case .PUT: "PUT"
+            case .HEAD: "HEAD"
+            case .DELETE: "DELETE"
+            case .PATCH: "PATCH"
+            case .OPTIONS: "OPTIONS"
+            case .CONNECT: "CONNECT"
+            case .TRACE: "TRACE"
+        }
+    }
 }
 
 class WasmResponseObject: KVCObject {
@@ -261,14 +279,8 @@ extension WasmNet {
 
             // set body
             if let body = request.body { urlRequest.httpBody = body }
-            switch request.method {
-            case .GET: urlRequest.httpMethod = "GET"
-            case .POST: urlRequest.httpMethod = "POST"
-            case .HEAD: urlRequest.httpMethod = "HEAD"
-            case .PUT: urlRequest.httpMethod = "PUT"
-            case .DELETE: urlRequest.httpMethod = "DELETE"
-            default: break
-            }
+
+            urlRequest.httpMethod = request.method?.stringValue
 
             let response = self.performRequest(urlRequest, cloudflare: true)
             self.globalStore.requests[descriptor]?.response = response
