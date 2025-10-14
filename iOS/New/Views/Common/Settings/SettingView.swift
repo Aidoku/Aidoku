@@ -1294,11 +1294,15 @@ extension SettingView {
             Button(NSLocalizedString("CANCEL"), role: .cancel) {
                 listAddItem = ""
             }
+            let is16 = UIDevice.current.systemVersion.hasPrefix("16.")
             Button(NSLocalizedString("ADD")) {
-                stringListBinding.append(listAddItem)
-                listAddItem = ""
+                if !listAddItem.isEmpty {
+                    stringListBinding.append(listAddItem)
+                    listAddItem = ""
+                }
             }
-            .disabled(listAddItem.isEmpty)
+            // the disabled modifier just hides the button on iOS 15/16, so don't use it if we're on those versions
+            .disabled(!is16 && listAddItem.isEmpty)
         }
     }
 }
