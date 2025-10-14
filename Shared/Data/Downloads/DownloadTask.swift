@@ -190,10 +190,24 @@ actor DownloadTask: Identifiable {
                     failedPages += 1
                     LogManager.logger.error("Error downloading image with url \(urlRequest)")
                 }
-            } else if let base64 = page.base64, let data = Data(base64Encoded: base64) {
-                try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
-            } else if let text = page.text, let data = text.data(using: .utf8) {
-                try? data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("txt"))
+            } else {
+                do {
+                    if let base64 = page.base64, let data = Data(base64Encoded: base64) {
+                        try data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
+                    } else if let text = page.text, let data = text.data(using: .utf8) {
+                        try data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("txt"))
+                    } else if let image = page.image {
+                        let data = image.pngData()
+                        try data?.write(
+                            to: tmpDirectory
+                                .appendingPathComponent(pageNumber)
+                                .appendingPathExtension("png")
+                        )
+                    }
+                } catch {
+                    failedPages += 1
+                    LogManager.logger.error("Error writing page data: \(error)")
+                }
             }
 
             if page.hasDescription {
