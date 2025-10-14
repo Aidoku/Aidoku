@@ -3,26 +3,18 @@ name: SwiftLint
 on:
   pull_request:
     paths:
-      - '.github/workflows/swiftlint.yml'
-      - '.swiftlint.yml'
-      - '**/*.swift'
+      - ".github/workflows/lint.yml"
+      - ".swiftlint.yml"
+      - "**/*.swift"
 
 jobs:
-  SwiftLint:
-    runs-on: ubuntu-latest
+  lint:
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: GitHub Action for SwiftLint
-        uses: norio-nomura/action-swiftlint@3.2.1
-      - name: GitHub Action for SwiftLint with --strict
-        uses: norio-nomura/action-swiftlint@3.2.1
-        with:
-          args: --strict
-      - name: GitHub Action for SwiftLint (Only files changed in the PR)
-        uses: norio-nomura/action-swiftlint@3.2.1
-        env:
-          DIFF_BASE: ${{ github.base_ref }}
-      - name: GitHub Action for SwiftLint (Different working directory)
-        uses: norio-nomura/action-swiftlint@3.2.1
-        env:
-          WORKING_DIRECTORY: Source
+      - uses: actions/checkout@v5
+
+      - name: Install SwiftLint
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
