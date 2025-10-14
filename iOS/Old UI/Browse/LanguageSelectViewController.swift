@@ -19,7 +19,7 @@ class LanguageSelectViewController: SettingSelectViewController {
         })
 
         // bring local language to top
-        languageCodes.removeAll { $0 == Locale.current.languageCode }
+        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" }
         if let code = Locale.current.languageCode {
             languageCodes.insert(code, at: 0)
         }
