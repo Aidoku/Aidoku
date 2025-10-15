@@ -174,6 +174,35 @@ struct HomeListView: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
+
+                if case .manga(let manga) = entry.value, let tags = manga.tags, !tags.isEmpty {
+                    if pageSize != nil {
+                        GeometryReader { geo in
+                            HStack(spacing: 4) {
+                                let availableTags = numberOfItemsThatFit(in: geo.size.width, items: tags)
+                                let tagCount = min(availableTags, tags.count)
+
+                                if tagCount > 0 {
+                                    ForEach(tags.prefix(tagCount), id: \.self) { tag in
+                                        LabelView(text: tag)
+                                    }
+                                }
+
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        .frame(height: 20)
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 4) {
+                                ForEach(tags, id: \.self) { tag in
+                                    LabelView(text: tag)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
             }
 
             if ranking {
@@ -239,6 +268,26 @@ struct HomeListView: View {
             return keys
         }
         loadedBookmarks = true
+    }
+
+    private func numberOfItemsThatFit(in availableWidth: CGFloat, items: [String]) -> Int {
+        var totalWidth: CGFloat = 0
+        var count = 0
+
+        for item in items {
+            // padding of 8 on both sides, plus 8 for the spacing in between
+            let padding: CGFloat = 8 + 8 + 8
+            let itemWidth = item
+                .size(withAttributes: [.font: UIFont.preferredFont(forTextStyle: .caption2)])
+                .width + padding
+            if totalWidth + itemWidth > availableWidth {
+                break
+            }
+            totalWidth += itemWidth
+            count += 1
+        }
+
+        return count
     }
 }
 
