@@ -43,10 +43,23 @@ extension InterpreterConfiguration {
 
                     return (data, response)
                 } catch {
+                    LogManager.logger.error("Error performing network request for \(sourceId): \(error)")
                     throw error
                 }
             }
         )
+    }
+}
+
+private final class URLSessionUnsecureDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge
+    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+        if let trust = challenge.protectionSpace.serverTrust {
+            return (.useCredential, URLCredential(trust: trust))
+        }
+        return (.performDefaultHandling, nil)
     }
 }
 
