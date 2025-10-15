@@ -74,7 +74,7 @@
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "Removing %i Items from Library";
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
-"REFRESHING_LIBRARY" = "Refreshing Library...";
+"REFRESHING_LIBRARY" = "Refreshing Library…";
 
 // Categories
 "ALL" = "All";
@@ -135,7 +135,6 @@
 "NETWORK_ERROR" = "Network Error";
 "DECODING_ERROR" = "Decoding Error";
 "UNKNOWN_ERROR" = "Unknown Error";
-
 "ADD_SOURCE" = "Add Source";
 "IMPORT_SOURCE" = "Import Source";
 "BUILT_IN_SOURCES" = "Built-in Sources";
@@ -198,7 +197,6 @@
 "DISPLAY_VOLUME" = "Volume";
 "USE_CHAPTERS" = "Use Chapters";
 "USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
-
 "%@_BOOKS" = "%@ Books";
 "1_BOOK" = "1 Book";
 "ON_DECK" = "On Deck";
@@ -226,7 +224,6 @@
 "AGE_RATING" = "Age Rating";
 "RELEASE_DATE" = "Release Date";
 "SHARING_LABEL" = "Sharing Label";
-
 "NOT_LOGGED_IN" = "Not logged in";
 "NO_SERVER_CONFIGURED" = "No server configured";
 "INVALID_SERVER_URL" = "Invalid server URL";
@@ -373,7 +370,6 @@
 "WITH_UNREAD_CHAPTERS" = "With unread chapters";
 "WITH_COMPLETED_STATUS" = "With completed status";
 "THAT_HAVENT_BEEN_READ" = "That haven't been read";
-
 "NO_RESULTS_FOR_%@" = "No Results for “%@”";
 "NO_RESULTS_TEXT" = "Check the spelling or try a new search.";
 "LEARN_MORE" = "Learn more…";
@@ -403,9 +399,7 @@
 "NO_AVAILABLE_MODELS" = "No Available Models";
 "NO_AVAILABLE_MODELS_TEXT" = "Failed to fetch available models. Check your network connection and ensure your app is running the latest version.";
 "MODEL_INFO" = "Model Info";
-
 "LOCK_HISTORY_TAB" = "Lock History Tab";
-
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "DISABLE_QUICK_ACTIONS" = "Disable Quick Actions";
@@ -421,7 +415,6 @@
 "DISABLED" = "Disabled";
 "INVERT_TAP_ZONES" = "Invert Tap Zones";
 "ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
-
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";
@@ -448,7 +441,6 @@
 "NAME" = "Name";
 "DATE" = "Date";
 "BACKUP_INFO_TITLE" = "Backup Info";
-
 "LOGS" = "Logs";
 "LOGGING" = "Logging";
 "LOG_SERVER" = "Log Server";
@@ -525,7 +517,6 @@
 "UPDATE_AFTER_READING_INFO" = "After reading a chapter, update the tracker to match the currently read chapter and/or volume.";
 "AUTO_SYNC_HISTORY" = "Automatically Sync History";
 "AUTO_SYNC_HISTORY_INFO" = "When a newer chapter and/or volume is detected on the tracker, update the local history to match.";
-
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
 "UNREAD_CHAPTERS" = "Unread Chapters";
@@ -576,7 +567,6 @@
 "MIGRATE_ONE_ITEM?" = "Migrate 1 item?";
 "SOURCE_BREAKING_CHANGE" = "Source Breaking Change";
 "SOURCE_BREAKING_CHANGE_TEXT" = "This source had a breaking change and requires migration to keep your library and history.";
-
 "UPLOAD_DATE" = "Upload Date";
 "TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
