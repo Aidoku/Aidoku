@@ -77,17 +77,32 @@ struct HomeScrollerView: View {
                                     bookmarked: mangaKey.flatMap { bookmarkedItems.contains($0) } ?? false
                                 )
 
-                                Group {
-                                    if #available(iOS 16.0, *) {
-                                        Text(entry.title)
-                                            .lineLimit(2, reservesSpace: true)
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(entry.title)
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+
+                                    if let subtitle = entry.subtitle {
+                                        Text(subtitle)
+                                            .foregroundStyle(.secondary)
+                                            .font(.footnote)
+                                            .lineLimit(1)
+                                            .padding(.top, 2)
                                     } else {
-                                        Text(entry.title + "\n")
-                                            .lineLimit(2)
+                                        Text("empty")
+                                            .font(.footnote)
+                                            .lineLimit(1)
+                                            .opacity(0)
+                                    }
+
+                                    // Add empty line only when title shows 1 line
+                                    if shouldAddEmptyLine(for: entry.title) {
+                                        Text("empty")
+                                            .lineLimit(1)
+                                            .opacity(0)
                                     }
                                 }
                                 .padding(.horizontal, 4)
-                                .multilineTextAlignment(.leading)
                                 .fixedSize(horizontal: false, vertical: true)
                             }
                             .frame(width: Self.coverHeight * 2/3)
@@ -157,6 +172,14 @@ struct HomeScrollerView: View {
             return keys
         }
         loadedBookmarks = true
+    }
+
+    private func shouldAddEmptyLine(for title: String) -> Bool {
+        // Calculate if title fits in one line based on current font size
+        let font = UIFont.preferredFont(forTextStyle: .body)
+        let maxWidth = Self.coverHeight * 2/3 - 8 // subtract padding
+        let titleWidth = title.size(withAttributes: [.font: font]).width
+        return titleWidth <= maxWidth && !title.contains("\n")
     }
 }
 

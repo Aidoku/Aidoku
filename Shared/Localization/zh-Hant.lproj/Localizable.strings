@@ -162,6 +162,8 @@
 "BUTTON_FILTER" = "篩選";
 "LIST_HEADER" = "列表";
 "LIST_ALL" = "全部";
+"%@_BOOKS" = "%@ 圖書";
+"1_BOOK" = "1 本書";
 
 // Manga
 "UNTITLED" = "無標題";

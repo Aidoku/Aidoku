@@ -12,6 +12,174 @@ import Foundation
 import UIKit
 #endif
 
+enum HomeListingType {
+    case onDeck
+    case keepReading
+    case recentlyAddedBooks
+    case recentlyAddedSeries
+    case recentlyUpdatedSeries
+    case recentlyReadBooks
+
+    var id: String {
+        switch self {
+            case .onDeck: "on_deck"
+            case .keepReading: "keep_reading"
+            case .recentlyAddedBooks: "recently_added_books"
+            case .recentlyAddedSeries: "recently_added_series"
+            case .recentlyUpdatedSeries: "recently_updated_series"
+            case .recentlyReadBooks: "recently_read_books"
+        }
+    }
+
+    var name: String {
+        switch self {
+            case .onDeck: NSLocalizedString("ON_DECK")
+            case .keepReading: NSLocalizedString("KEEP_READING")
+            case .recentlyAddedBooks: NSLocalizedString("RECENTLY_ADDED_BOOKS")
+            case .recentlyAddedSeries: NSLocalizedString("RECENTLY_ADDED_SERIES")
+            case .recentlyUpdatedSeries: NSLocalizedString("RECENTLY_UPDATED_SERIES")
+            case .recentlyReadBooks: NSLocalizedString("RECENTLY_READ_BOOKS")
+        }
+    }
+
+    var isBookBased: Bool {
+        switch self {
+            case .onDeck, .keepReading, .recentlyAddedBooks, .recentlyReadBooks: true
+            case .recentlyAddedSeries, .recentlyUpdatedSeries: false
+        }
+    }
+}
+
+extension KomgaSourceRunner {
+    func createLinks<T: Codable>(
+        for items: [T],
+        sourceKey: String,
+        baseUrl: String,
+        isBookBased: Bool
+    ) async throws -> [HomeComponent.Value.Link] {
+        var links: [HomeComponent.Value.Link?] = Array(repeating: nil, count: items.count)
+        try await withThrowingTaskGroup(of: (Int, HomeComponent.Value.Link).self) { [helper] taskGroup in
+            for (index, item) in items.enumerated() {
+                taskGroup.addTask {
+                    let link: HomeComponent.Value.Link
+                    if isBookBased, let book = item as? KomgaBook {
+                        let series: KomgaSeries = try await helper.request(path: "/api/v1/series/\(book.seriesId)")
+                        let manga = book.intoManga(sourceKey: sourceKey, baseUrl: baseUrl)
+                        let bookTitle = book.metadata.title.isEmpty ? book.name : book.metadata.title
+                        let subtitle = "\(book.metadata.number) - \(bookTitle)"
+                        link = HomeComponent.Value.Link(
+                            title: series.metadata.title.isEmpty ? series.name : series.metadata.title,
+                            imageUrl: manga.cover,
+                            subtitle: subtitle,
+                            value: .manga(manga)
+                        )
+                    } else if let series = item as? KomgaSeries {
+                        let manga = series.intoManga(sourceKey: sourceKey, baseUrl: baseUrl)
+                        let subtitle = series.booksCount == 1
+                            ? NSLocalizedString("1_BOOK", comment: "")
+                            : String(format: NSLocalizedString("%@_BOOKS", comment: ""), String(series.booksCount))
+                        link = HomeComponent.Value.Link(
+                            title: series.metadata.title.isEmpty ? series.name : series.metadata.title,
+                            imageUrl: manga.cover,
+                            subtitle: subtitle,
+                            value: .manga(manga)
+                        )
+                    } else {
+                        throw SourceError.message("Invalid item type")
+                    }
+                    return (index, link)
+                }
+            }
+            for try await (index, link) in taskGroup {
+                links[index] = link
+            }
+        }
+        return links.compactMap { $0 }
+    }
+
+    func getHome() async throws -> Home {
+        let listingTypes: [HomeListingType] = [
+            .keepReading,
+            .onDeck,
+            .recentlyAddedBooks,
+            .recentlyAddedSeries,
+            .recentlyUpdatedSeries,
+            .recentlyReadBooks
+        ]
+        var components: [HomeComponent?] = Array(repeating: nil, count: listingTypes.count)
+
+        try await withThrowingTaskGroup(of: (Int, AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { [helper, sourceKey] taskGroup in
+            for (index, listingType) in listingTypes.enumerated() {
+                taskGroup.addTask { [self] in
+                    let listing = AidokuRunner.Listing(id: listingType.id, name: listingType.name, kind: .default)
+                    let baseUrl = try helper.getConfiguredServer()
+
+                    if listingType.isBookBased {
+                        let path: String
+                        let method: HttpMethod
+                        let body: KomgaSearchBody?
+
+                        switch listingType {
+                            case .onDeck:
+                                path = "/api/v1/books/ondeck?sort=createdDate%2Cdesc"
+                                method = .GET
+                                body = nil
+                            case .keepReading:
+                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                method = .POST
+                                body = .init(condition: .allOf([.readStatus(.inProgress), .deleted(false)]))
+                            case .recentlyAddedBooks:
+                                path = "/api/v1/books/list?page=0&size=20&sort=createdDate%2Cdesc"
+                                method = .POST
+                                body = .init(condition: .allOf([.deleted(false)]))
+                            case .recentlyReadBooks:
+                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                method = .POST
+                                body = .init(condition: .allOf([.readStatus(.read), .deleted(false)]))
+                            default:
+                                throw SourceError.message("Invalid listing type")
+                        }
+
+                        let res: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: path, method: method, body: body)
+                        let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: true)
+                        return (index, listing, links)
+                    } else {
+                        let path: String
+                        let method: HttpMethod
+
+                        switch listingType {
+                            case .recentlyAddedSeries:
+                                path = "/api/v1/series/new?page=0&size=20&oneshot=false&oneshot=false&deleted=false"
+                                method = .GET
+                            case .recentlyUpdatedSeries:
+                                path = "/api/v1/series/updated?page=0&size=20&oneshot=false&deleted=false"
+                                method = .GET
+                            default:
+                                throw SourceError.message("Invalid listing type")
+                        }
+
+                        let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(path: path, method: method)
+                        let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: false)
+                        return (index, listing, links)
+                    }
+                }
+            }
+
+            for try await (index, listing, entries) in taskGroup where !entries.isEmpty {
+                components[index] = .init(
+                    title: listing.name,
+                    value: .scroller(
+                        entries: entries,
+                        listing: listing
+                    )
+                )
+            }
+        }
+
+        return .init(components: components.compactMap { $0 })
+    }
+}
+
 extension AidokuRunner.Source {
     static func komga(
         key: String = "komga",
@@ -186,7 +354,18 @@ actor KomgaSourceRunner: Runner {
                     sort.ascending = value.ascending
 
                 case let .multiselect(filterId, included, excluded):
-                    if filterId == "genre"  || filterId == "tag" {
+                    if filterId == "library" {
+                        let includedConditions: [KomgaSearchCondition] = included
+                            .map { .libraryId($0, exclude: false) }
+                        let excludedConditions: [KomgaSearchCondition] = excluded
+                            .map { .libraryId($0, exclude: true) }
+                        let condition: KomgaSearchCondition = if excluded.isEmpty {
+                            .anyOf(includedConditions)
+                        } else {
+                            .allOf(includedConditions + excludedConditions)
+                        }
+                        conditions.append(condition)
+                    } else if filterId == "genre"  || filterId == "tag" {
                         let includedConditions: [KomgaSearchCondition] = included
                             .map { filterId == "genre" ? .genre($0) : .tag($0) }
                         let excludedConditions: [KomgaSearchCondition] = excluded
@@ -269,7 +448,7 @@ actor KomgaSourceRunner: Runner {
             path: "/api/v1/series/list?page=\(page - 1)&size=20&sort=\(sortOption)%2C\(sort.ascending ? "asc" : "desc")",
             method: .POST,
             body: .init(
-                condition: .allOf(conditions),
+                condition: .allOf([.deleted(false)] + conditions),
                 fullTextSearch: (query?.isEmpty ?? true) ? nil : query
             )
         )
@@ -338,123 +517,9 @@ actor KomgaSourceRunner: Runner {
         try await helper.getMangaList(listing: listing, page: page)
     }
 
-    func getHome() async throws -> Home {
-        var components: [HomeComponent] = [
-            .init(
-                title: NSLocalizedString("KEEP_READING"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "keep_reading",
-                        name: NSLocalizedString("KEEP_READING"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_added_books",
-                        name: NSLocalizedString("RECENTLY_ADDED_BOOKS"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_ADDED_SERIES"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_added_series",
-                        name: NSLocalizedString("RECENTLY_ADDED_SERIES"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_updated_series",
-                        name: NSLocalizedString("RECENTLY_UPDATED_SERIES"),
-                        kind: .default
-                    )
-                )
-            ),
-            .init(
-                title: NSLocalizedString("RECENTLY_READ_BOOKS"),
-                value: .scroller(
-                    entries: [],
-                    listing: .init(
-                        id: "recently_read_books",
-                        name: NSLocalizedString("RECENTLY_READ_BOOKS"),
-                        kind: .default
-                    )
-                )
-            )
-        ]
-
-//        homeSubject.send(.init(components: components))
-
-        try await withThrowingTaskGroup(of: (AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { [helper, sourceKey] taskGroup in
-            // on deck
-            taskGroup.addTask {
-                let listing = AidokuRunner.Listing(id: "on_deck", name: NSLocalizedString("ON_DECK"), kind: .default)
-                let onDeck: KomgaPageResponse<[KomgaBook]> = try await helper.request(
-                    path: "/api/v1/books/ondeck?sort=createdDate%2Cdesc",
-                    method: .GET
-                )
-                let baseUrl = try helper.getConfiguredServer()
-                return (listing, onDeck.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl).intoLink() })
-            }
-
-            let listings: [AidokuRunner.Listing] = [
-                .init(id: "keep_reading", name: NSLocalizedString("KEEP_READING"), kind: .default),
-                .init(id: "recently_added_books", name: NSLocalizedString("RECENTLY_ADDED_BOOKS"), kind: .default),
-                .init(id: "recently_added_series", name: NSLocalizedString("RECENTLY_ADDED_SERIES"), kind: .default),
-                .init(id: "recently_updated_series", name: NSLocalizedString("RECENTLY_UPDATED_SERIES"), kind: .default),
-                .init(id: "recently_read_books", name: NSLocalizedString("RECENTLY_READ_BOOKS"), kind: .default)
-            ]
-
-            for listing in listings {
-                taskGroup.addTask {
-                    let result = try await helper.getMangaList(listing: listing, page: 1)
-                    return (listing, result.entries.map { $0.intoLink() })
-                }
-            }
-
-            for try await (listing, entries) in taskGroup {
-                if let index = components.firstIndex(where: { $0.title == listing.name }) {
-                    if entries.isEmpty {
-                        components.remove(at: index)
-                    } else {
-                        components[index].value = .scroller(
-                            entries: entries,
-                            listing: listing
-                        )
-                    }
-//                    self.homeSubject.send(.init(components: components))
-                } else if !entries.isEmpty {
-                    // insert on deck listing
-                    components.insert(.init(
-                        title: listing.name,
-                        value: .scroller(
-                            entries: entries,
-                            listing: listing
-                        )
-                    ), at: 1)
-                }
-            }
-        }
-
-        return .init(components: components)
-    }
-
     func getSearchFilters() async throws -> [AidokuRunner.Filter] {
         enum ResultType: String, CaseIterable {
+            case libraries
             case genres
             case tags
             case publishers
@@ -464,21 +529,42 @@ actor KomgaSourceRunner: Runner {
             case sharingLabels = "sharing-labels"
         }
         let helper = self.helper // capture the helper
-        let result = try await withThrowingTaskGroup(of: (ResultType, [String]).self, returning: [ResultType: [String]].self) { taskGroup in
+        let result = try await withThrowingTaskGroup(of: (ResultType, Any).self, returning: [ResultType: Any].self) { taskGroup in
             for type in ResultType.allCases {
                 taskGroup.addTask {
-                    let result: [String] = try await helper.request(path: "/api/v1/\(type.rawValue)")
-                    return (type, result)
+                    if type == .libraries {
+                        let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/\(type.rawValue)")
+                        return (type, libraries)
+                    } else {
+                        let result: [String] = try await helper.request(path: "/api/v1/\(type.rawValue)")
+                        return (type, result)
+                    }
                 }
             }
-            var result: [ResultType: [String]] = [:]
+            var result: [ResultType: Any] = [:]
             for try await value in taskGroup {
                 result[value.0] = value.1
             }
             return result
         }
         var filters: [AidokuRunner.Filter] = []
-        if let genres = result[.genres], !genres.isEmpty {
+
+        if let libraryObjects = result[.libraries] as? [KomgaLibrary], libraryObjects.count > 1 {
+            filters.append(
+                .init(
+                    id: "library",
+                    title: NSLocalizedString("LIBRARY"),
+                    value: .multiselect(.init(
+                        canExclude: true,
+                        usesTagStyle: false,
+                        options: [NSLocalizedString("ALL")] + libraryObjects.map { $0.name },
+                        ids: [""] + libraryObjects.map { $0.id }
+                    ))
+                )
+            )
+        }
+
+        if let genres = result[.genres] as? [String], !genres.isEmpty {
             filters.append(
                 .init(
                     id: "genre",
@@ -493,7 +579,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let tags = result[.tags], !tags.isEmpty {
+        if let tags = result[.tags] as? [String], !tags.isEmpty {
             storedKomgaTags = tags
             filters.append(
                 .init(
@@ -509,7 +595,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let publishers = result[.publishers], !publishers.isEmpty {
+        if let publishers = result[.publishers] as? [String], !publishers.isEmpty {
             filters.append(
                 .init(
                     id: "publisher",
@@ -523,7 +609,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let languages = result[.languages], !languages.isEmpty {
+        if let languages = result[.languages] as? [String], !languages.isEmpty {
             filters.append(
                 .init(
                     id: "language",
@@ -543,7 +629,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let ratings = result[.ageRatings], ratings.count > 1 {
+        if let ratings = result[.ageRatings] as? [String], ratings.count > 1 {
             filters.append(
                 .init(
                     id: "age_rating",
@@ -551,12 +637,12 @@ actor KomgaSourceRunner: Runner {
                     value: .multiselect(.init(
                         canExclude: true,
                         usesTagStyle: false,
-                        options: result[.ageRatings, default: []]
+                        options: ratings
                     ))
                 )
             )
         }
-        if let releaseDates = result[.releaseDates], !releaseDates.isEmpty {
+        if let releaseDates = result[.releaseDates] as? [String], !releaseDates.isEmpty {
             filters.append(
                 .init(
                     id: "release_date",
@@ -570,7 +656,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let labels = result[.sharingLabels], !labels.isEmpty {
+        if let labels = result[.sharingLabels] as? [String], !labels.isEmpty {
             filters.append(
                 .init(
                     id: "sharing_label",
@@ -664,7 +750,7 @@ struct KomgaHelper: Sendable {
                 let res: KomgaPageResponse<[KomgaBook]> = try await request(
                     path: "/api/v1/books/list?page=\(page - 1)&size=20&sort=createdDate%2Cdesc",
                     method: .POST,
-                    body: .init(condition: .allOf([])) // needs to have some condition
+                    body: .init(condition: .allOf([.deleted(false)]))
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -673,7 +759,7 @@ struct KomgaHelper: Sendable {
 
             case "recently_added_series":
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/new?page=\(page - 1)&size=20&oneshot=false",
+                    path: "/api/v1/series/new?page=\(page - 1)&size=20&oneshot=false&deleted=false",
                     method: .GET
                 )
                 return .init(
@@ -683,7 +769,7 @@ struct KomgaHelper: Sendable {
 
             case "recently_updated_series":
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/updated?page=\(page - 1)&size=20&oneshot=false",
+                    path: "/api/v1/series/updated?page=\(page - 1)&size=20&oneshot=false&deleted=false",
                     method: .GET
                 )
                 return .init(

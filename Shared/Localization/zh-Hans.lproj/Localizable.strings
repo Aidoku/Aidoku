@@ -440,6 +440,8 @@
 "SERVER_ERROR_CONNECTION" = "无法连接到指定服务器。确保 Komga 实例正在运行且网址输入正确。";
 "SERVER_ERROR_AUTHENTICATION" = "无法登录。请确保你的凭据输入正确。";
 "KOMGA_SETUP" = "Komga 设置";
+"%@_BOOKS" = "%@ 图书";
+"1_BOOK" = "1 本书";
 "ON_DECK" = "待读";
 "KEEP_READING" = "继续阅读";
 "RECENTLY_ADDED_BOOKS" = "最近添加图书";

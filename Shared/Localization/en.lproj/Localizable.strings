@@ -197,6 +197,8 @@
 "DISPLAY_VOLUME" = "Volume";
 "USE_CHAPTERS" = "Use Chapters";
 "USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
+"%@_BOOKS" = "%@ Books";
+"1_BOOK" = "1 Book";
 "ON_DECK" = "On Deck";
 "KEEP_READING" = "Keep Reading";
 "RECENTLY_ADDED_BOOKS" = "Recently Added Books";
