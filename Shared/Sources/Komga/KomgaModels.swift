@@ -215,6 +215,7 @@ struct KomgaBook: Codable, Sendable {
         }
 
         let title: String
+        let number: String
         let numberSort: Float
         let authors: [Author]
         let tags: [String]
@@ -224,6 +225,7 @@ struct KomgaBook: Codable, Sendable {
 
     let id: String
     let seriesId: String
+    let libraryId: String
     let name: String
     let media: Media
     let metadata: Metadata
@@ -305,9 +307,11 @@ struct KomgaSeries: Codable, Sendable {
     }
 
     let id: String
+    let libraryId: String
     let name: String
     let metadata: Metadata
     let booksMetadata: BooksMetadata
+    let booksCount: Int
 }
 
 extension KomgaSeries {
@@ -354,7 +358,8 @@ extension KomgaSeries {
                     nil
                 }
             },
-            description: metadata.summary.isEmpty ? booksMetadata.summary : metadata.summary,
+            description: (metadata.summary.isEmpty ? booksMetadata.summary : metadata.summary)?
+                .replacingOccurrences(of: "\n", with: "  \n"),
             url: URL(string: "\(baseUrl)/series/\(id)"),
             tags: (metadata.genres + metadata.tags).sorted(),
             status: status,
