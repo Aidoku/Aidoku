@@ -50,10 +50,10 @@
 "SAVE_TO_PHOTOS" = "儲存至相簿";
 
 // History
-"HISTORY" = "歷史記錄";
+"HISTORY" = "閱讀記錄";
 "%@_AGO" = "%@前";
 "PAGE_X" = "第 %i 頁";
-"VIEW_HISTORY" = "查看歷史記錄";
+"VIEW_HISTORY" = "查看閱讀記錄";
 "VIEW_MORE" = "查看更多";
 
 // Settings
@@ -111,16 +111,16 @@
 "UNREAD" = "未讀";
 "PREVIOUS_COLON" = "前一章：";
 "NEXT_COLON" = "下一頁：";
-"NO_NEXT_CHAPTER" = "沒有後一章";
-"NO_PREVIOUS_CHAPTER" = "沒有前一章";
+"NO_NEXT_CHAPTER" = "沒有下一章";
+"NO_PREVIOUS_CHAPTER" = "沒有上一章";
 "READER_SETTINGS" = "閱讀設定";
 "EXPERIMENTAL" = "實驗性";
-"REMOVE_ALL_MANGA_HISTORY" = "清空漫畫閱讀歷史";
+"REMOVE_ALL_MANGA_HISTORY" = "清空漫畫閱讀記錄";
 "APPEARANCE" = "外觀";
 "APPEARANCE_LIGHT" = "淺色";
 "APPEARANCE_DARK" = "深色";
 "USE_SYSTEM_APPEARANCE" = "使用系統外觀";
-"MANGA_PER_ROW" = "每行漫畫";
+"MANGA_PER_ROW" = "漫畫欄數";
 "PORTRAIT" = "直向";
 "PIN_MANGA" = "釘選漫畫";
 "ONLY_UPDATE_ON_WIFI" = "只在使用 Wi-Fi 時更新";
@@ -135,9 +135,9 @@
 "SOURCE_LISTS" = "來源清單";
 "RENAME_BACKUP" = "重新命名備份";
 "RENAME_BACKUP_TEXT" = "請輸入備份名稱";
-"CLEAR_READ_HISTORY" = "清除閱讀歷史";
+"CLEAR_READ_HISTORY" = "清除閱讀記錄";
 "ADVANCED" = "進階";
-"CLEAR_READ_HISTORY_TEXT" = "不可逆的操作，所有閱讀歷史將被清除。";
+"CLEAR_READ_HISTORY_TEXT" = "不可逆的操作，所有閱讀記錄將被清除。";
 "RESET_SETTINGS" = "重設設定";
 "LOGOUT" = "登出";
 "MULTI_LANGUAGE" = "多語言";
@@ -178,7 +178,7 @@
 "FINISHED_COLON" = "完成：";
 "CURRENT_COLON" = "當前：";
 "INFINITE_VERTICAL_SCROLL" = "連續上到下滾動";
-"HISTORY_LOCKED" = "已上鎖歷史紀錄。";
+"HISTORY_LOCKED" = "閱讀記錄已鎖定。";
 "AUTH_TO_ENABLE" = "解鎖以啟用。";
 "AUTH_TO_DISABLE" = "解鎖以禁用。";
 "GITHUB_REPO" = "GitHub 原始碼";
@@ -188,18 +188,18 @@
 "PIN_MANGA_UPDATED" = "更新";
 "SKIP_TITLES" = "跳過類型";
 "EXCLUDED_CATEGORIES" = "排除類別";
-"REFRESH_METADATA" = "重新整理中繼資料";
+"REFRESH_METADATA" = "更新漫畫資訊";
 "WITH_UNREAD_CHAPTERS" = "包含未讀章節";
 "WITH_COMPLETED_STATUS" = "已完結";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "輸入的來源列表連結無效或已添加。";
-"LOCK_HISTORY_TAB" = "鎖定歷史記錄標籤頁";
+"LOCK_HISTORY_TAB" = "鎖定閱讀記錄標籤頁";
 "MISSING_SOURCE_TEXT" = "此漫畫來源不可用。 請重新下載或從您的書櫃刪除。";
 
 // Source
 "SOURCE_INFO" = "來源資訊";
 "SOURCE_ORDER" = "來源順序";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "這會刪除此章節的歷史紀錄。 確定要繼續嗎？";
-"AUTH_FOR_HISTORY" = "解鎖以查看閱讀歷史紀錄。";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "這會刪除此章節的閱讀記錄。 確定要繼續嗎？";
+"AUTH_FOR_HISTORY" = "解鎖以查看閱讀記錄。";
 "BUILD" = "建置版本";
 "MISSING_SOURCE" = "缺少來源";
 "SUPPPORT_DEVELOPMENT" = "支持開發";
@@ -282,7 +282,7 @@
 "UPDATE_AFTER_READING" = "閱讀後自動更新進度";
 "UPDATE_AFTER_READING_INFO" = "閱讀一章後，更新跟蹤器以匹配當前讀取的章節和（或）卷";
 "AUTO_SYNC_HISTORY" = "自動從追蹤器同步";
-"AUTO_SYNC_HISTORY_INFO" = "在追蹤器上檢測到較新的章節和（或）卷時，自動更新匹配的本地歷史記錄";
+"AUTO_SYNC_HISTORY_INFO" = "在追蹤器上偵測到新章節和（或）冊時，自動更新本機閱讀記錄。";
 "UPCOMING" = "即將到來";
 "ADD_TO_CATEGORIES" = "新增至類別";
 "SELECTED" = "已選取";
@@ -321,7 +321,7 @@
 "CATEGORY_NAME" = "類別名稱";
 "MIGRATE_SOURCES" = "遷移來源";
 "START_MATCHING" = "開始匹配";
-"SYNC_LOCAL_HISTORY" = "同步至本機歷史紀錄";
+"SYNC_LOCAL_HISTORY" = "同步至本機閱讀記錄";
 "MIGRATE" = "遷移";
 "MIGRATION" = "遷移";
 "OPTIONS" = "選項";
@@ -333,7 +333,7 @@
 "UPLOAD_DATE" = "上傳日期";
 "SCANLATOR" = "掃譯者";
 "NO_SCANLATOR" = "沒有掃譯者";
-"MANGA_UPDATES" = "通知";
+"MANGA_UPDATES" = "更新";
 "ONLY_DOWNLOAD_ON_WIFI" = "只在使用 Wi-Fi 時下載";
 "READER_BG_COLOR_SYSTEM" = "系統";
 "RENAME_CATEGORY_FAIL" = "無法重新命名類別";
@@ -360,8 +360,8 @@
 "READER_BG_COLOR_WHITE" = "白色";
 "READER_BG_COLOR_BLACK" = "黑色";
 "AUTH_TO_OPEN" = "驗證以開啟。";
-"CLEAR_EXCLUDING_LIBRARY" = "清除不在書櫃的閱讀歷史";
-"CLEAR_EXCLUDING_LIBRARY_TEXT" = "不可逆的操作，將清除除了書櫃外的所有閱讀歷史。";
+"CLEAR_EXCLUDING_LIBRARY" = "清除不在書櫃的閱讀記錄";
+"CLEAR_EXCLUDING_LIBRARY_TEXT" = "不可逆的操作，將清除除了書櫃外的所有閱讀記錄。";
 "ENABLE_PERMISSION" = "啟用權限";
 "PHOTOS_ACCESS_DENIED_TEXT" = "先前已拒絕存取。請允許 Aidoku 存取您的相片，以便將圖片儲存到您的相機膠卷。您可以在隱私設定中啟用存取權限。";
 "OPEN_WEBSITE" = "打開網站";
@@ -409,8 +409,8 @@
 "NETWORK_ERROR" = "網路錯誤";
 "DECODING_ERROR" = "解碼錯誤";
 "UNKNOWN_ERROR" = "未知錯誤";
-"ADD_SOURCE" = "添加來源";
-"IMPORT_SOURCE" = "導入來源";
+"ADD_SOURCE" = "加入來源";
+"IMPORT_SOURCE" = "輸入來源";
 "BUILT_IN_SOURCES" = "内建來源";
 "EXTERNAL_SOURCES" = "外置來源";
 "NO_RESULTS" = "無結果";
@@ -423,12 +423,12 @@
 "LOCAL_SOURCE" = "本地來源";
 "LOCAL_SOURCE_INFO" = "本地來源允許你在Aidoku裏添加和管理你的個人書櫃。";
 "LOCAL_SOURCE_SETUP" = "本地來源設定";
-"LOCAL_FILES" = "本地文件";
+"LOCAL_FILES" = "本機檔案";
 "LOCAL_FILES_TAGLINE" = "閲讀本地文件";
-"IMPORT" = "導入";
-"IMPORT_FILE" = "導入文件";
-"LOCAL_FILE_IMPORT" = "導入本地文件";
-"LOCAL_FILE_IMPORT_TEXT" = "導入包含圖片的CBZ或ZIP文件以閲讀。";
+"IMPORT" = "輸入";
+"IMPORT_FILE" = "輸入檔案";
+"LOCAL_FILE_IMPORT" = "輸入本機檔案";
+"LOCAL_FILE_IMPORT_TEXT" = "輸入包含圖片的CBZ或ZIP檔案以閲讀。";
 "CHAPTER_TITLE" = "章節標題";
 "SERIES_TITLE" = "系列標題";
 "DESCRIPTION" = "簡介";
@@ -447,5 +447,6 @@
 "CBZ_NAME" = "Comic Book Zip壓縮檔";
 "ZIP_NAME" = "Zip壓縮檔";
 "KOMGA" = "Komga";
-"KOMGA_TAGLINE" = "自托管媒體伺服器";
+"KOMGA_TAGLINE" = "自架媒體伺服器";
 "REFRESHING_LIBRARY" = "正在更新書櫃⋯";
+"DISABLE_QUICK_ACTIONS" = "停用快速動作";
