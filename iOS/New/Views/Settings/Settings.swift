@@ -129,7 +129,10 @@ extension Settings {
                 key: "General.appearance",
                 title: NSLocalizedString("APPEARANCE"),
                 requiresFalse: "General.useSystemAppearance",
-                value: .segment(.init(options: ["Light", "Dark"]))
+                value: .segment(.init(options: [
+                    NSLocalizedString("APPEARANCE_LIGHT"),
+                    NSLocalizedString("APPEARANCE_DARK")
+                ]))
             ),
             .init(
                 key: "General.useSystemAppearance",
