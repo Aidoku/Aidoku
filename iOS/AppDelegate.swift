@@ -5,9 +5,9 @@
 //  Created by Skitty on 12/29/21.
 //
 
-import UIKit
-import Nuke
 import AidokuRunner
+import CloudKit
+import Nuke
 import SwiftUI
 
 @UIApplicationMain
@@ -19,7 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 #endif
 
     static let isSideloaded = Bundle.main.bundleIdentifier != canonicalID
-    static let isiCloudAvailable = FileManager.default.ubiquityIdentityToken != nil
 
     private var networkObserverId: UUID?
 
@@ -84,7 +83,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.register(
             defaults: [
                 "isSideloaded": Self.isSideloaded, // for icloud sync setting
-                "isiCloudAvailable": Self.isiCloudAvailable,
 
                 "General.incognitoMode": false,
                 "General.icloudSync": false,
@@ -147,6 +145,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Tracking.autoSyncFromTracker": false
             ]
         )
+
+        // check for icloud availability
+        // https://developer.apple.com/documentation/foundation/filemanager/url(forubiquitycontaineridentifier:)
+        // Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of
+        // time to set up iCloud and return the requested URL, you should always call it from a secondary thread.
+        Task.detached {
+            let isiCloudAvailable = FileManager.default.url(forUbiquityContainerIdentifier: nil) != nil
+            await MainActor.run {
+                if !isiCloudAvailable {
+                    LogManager.logger.info("iCloud unavailable")
+                }
+                UserDefaults.standard.register(defaults: ["isiCloudAvailable": isiCloudAvailable])
+            }
+        }
 
         DataLoader.sharedUrlCache.diskCapacity = 0
 
