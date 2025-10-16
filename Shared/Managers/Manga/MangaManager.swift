@@ -322,14 +322,15 @@ extension MangaManager {
         }
 
         // filter items that we should skip
-        let context = CoreDataManager.shared.container.newBackgroundContext()
-        let filteredManga = await allManga.concurrentFilter { manga in
-            !self.shouldSkip(
-                manga: manga,
-                options: skipOptions,
-                excludedCategories: excludedCategories,
-                context: context
-            )
+        let filteredManga = await CoreDataManager.shared.container.performBackgroundTask { context in
+            allManga.filter { manga in
+                !self.shouldSkip(
+                    manga: manga,
+                    options: skipOptions,
+                    excludedCategories: excludedCategories,
+                    context: context
+                )
+            }
         }
 
         let total = filteredManga.count
