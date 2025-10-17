@@ -102,6 +102,7 @@ struct SourceHomeContentView: View {
                                     HomeScrollerView(source: source, component: component, partial: !homeFullyLoaded)
                                 case .mangaList:
                                     HomeListView(source: source, component: component, partial: !homeFullyLoaded)
+                                        .id("home-\(offset)") // Force recreation for home components
                                 case .mangaChapterList:
                                     HomeChapterListView(source: source, component: component, partial: !homeFullyLoaded)
                                 case .filters:
@@ -133,6 +134,7 @@ struct SourceHomeContentView: View {
                                     }
                                 }
                                 .padding(.bottom)
+                                .id(listingSelection) // Force recreation on listing change
                         }
                     }
                     .transition(.opacity)
