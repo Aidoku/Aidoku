@@ -222,7 +222,7 @@ struct SourceHomeContentView: View {
                 let component = home.components[offset]
                 switch component.value {
                     case .imageScroller:
-                        HomeImageScrollerView(source: source, component: component, partial:partial)
+                        HomeImageScrollerView(source: source, component: component, partial: partial)
                     case .bigScroller:
                         HomeBigScrollerView(source: source, component: component, partial: partial)
                     case .scroller:
