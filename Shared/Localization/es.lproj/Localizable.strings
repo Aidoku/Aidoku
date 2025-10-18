@@ -313,7 +313,7 @@
 "MIGRATION" = "Migración";
 "START_MATCHING" = "Empezar a emparejar";
 "UPLOAD_DATE" = "Fecha de subida";
-"TRACKING" = "Seguimiento";
+"IS_TRACKING" = "Seguimiento";
 "ALL_CHAPTERS_READ" = "Todos los capítulos leídos";
 "DEFAULT_READING_MODE" = "Modo de lectura por defecto";
 "PILLARBOX_ORIENTATION" = "Orientación del Pillarbox";

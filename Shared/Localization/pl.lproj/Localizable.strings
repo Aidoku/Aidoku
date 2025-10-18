@@ -314,7 +314,7 @@
 "FIRST_ALTERNATIVE" = "Pierwsza Alternatywa";
 "DEFAULT_READING_MODE" = "Domyślny Tryb Czytania";
 "BOTH" = "Oba";
-"TRACKING" = "Śledzenie";
+"IS_TRACKING" = "Śledzenie";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_ORIENTATION_INFO" = "Orientacja pillarboxa określa, dla jakich orientacji pillarbox powinien być włączony.";
 "PILLARBOX_ORIENTATION" = "Orientacja pillarboxa";

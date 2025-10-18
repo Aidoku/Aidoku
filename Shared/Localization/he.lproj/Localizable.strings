@@ -290,7 +290,7 @@
 "MIGRATE_ONE_ITEM?" = "להעביר פריט אחד?";
 "ALL_CHAPTERS_READ" = "כל הפרקים נקראו";
 "UPLOAD_DATE" = "תאריך העלאה";
-"TRACKING" = "מעקב";
+"IS_TRACKING" = "מעקב";
 "PIN_MANGA" = "להצמיד מאנגה";
 "PIN_MANGA_TYPE" = "סוג הצמדה";
 "EVERY_12_HOURS" = "כל 12 שעות";

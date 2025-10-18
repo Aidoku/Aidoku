@@ -300,7 +300,7 @@
 "SELECTED" = "Выбран";
 "NOT_FOUND" = "Не найден";
 "FIRST_ALTERNATIVE" = "Первая альтернатива";
-"TRACKING" = "Отслеживаемые";
+"IS_TRACKING" = "Отслеживаемые";
 "MIGRATE_%i_ITEMS?" = "Мигрировать %i штук?";
 "AVAILABLE" = "Доступен";
 "DEFAULT_READING_MODE" = "Режим чтения по умолчанию";

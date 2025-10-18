@@ -223,7 +223,7 @@
 "LOCKED_CATEGORIES" = "ロックされた本棚";
 "LIBRARY_LOCKED" = "ライブラリはロックされています。";
 "CATEGORY_LOCKED" = "本棚はロックされています。";
-"TRACKING" = "追跡";
+"IS_TRACKING" = "追跡";
 "SET_AS_WIDE_PAGE" = "ワイドページにする";
 "AUTOMATIC" = "自動";
 "SET_AS_NORMAL_PAGE" = "通常ページにする";

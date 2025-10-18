@@ -316,7 +316,7 @@
 "ALL_CHAPTERS_READ" = "Alle Kapitel gelesen";
 "DEFAULT_READING_MODE" = "Standard Lesemodus";
 "PILLARBOX" = "Pillarbox";
-"TRACKING" = "Tracking";
+"IS_TRACKING" = "Tracking";
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientierung";
 "BOTH" = "Beide";
 "PILLARBOX_AMOUNT" = "Randgröße";

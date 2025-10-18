@@ -189,7 +189,7 @@
 "MIGRATE_%i_ITEMS?" = "Migrați %i elemente?";
 "MIGRATE_ONE_ITEM?" = "Migrați 1 element?";
 "UPLOAD_DATE" = "Data încărcării";
-"TRACKING" = "Urmărire";
+"IS_TRACKING" = "Urmărire";
 "INSTALLED" = "Instalate";
 "UNREAD" = "Necitit";
 "CANCEL" = "Anulează";

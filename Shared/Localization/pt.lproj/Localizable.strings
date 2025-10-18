@@ -296,7 +296,7 @@
 "WEBTOON" = "Webtoon";
 "AVAILABLE" = "Disponível";
 "FIRST_ALTERNATIVE" = "Pirmeira Alternativa";
-"TRACKING" = "Tracking";
+"IS_TRACKING" = "Tracking";
 "PILLARBOX" = "Efeito Pillarbox";
 "PILLARBOX_ORIENTATION" = "Orientação Pillarbox";
 "PILLARBOX_ORIENTATION_INFO" = "A Orientação Pillarbox determina que orientações deve ser habilitada.";

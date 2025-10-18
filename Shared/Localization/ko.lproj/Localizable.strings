@@ -314,7 +314,7 @@
 "%i_CHAPTERS" = "%i 장";
 "RENAME_CATEGORY_FAIL_INFO" = "범주 이름은 고유해야 합니다.";
 "ALL_CHAPTERS_READ" = "모든 장 읽기";
-"TRACKING" = "트래킹";
+"IS_TRACKING" = "트래킹";
 "DEFAULT_READING_MODE" = "기본 읽기 모드";
 "PILLARBOX" = "필라박스";
 "PILLARBOX_AMOUNT" = "필라박스 금액";

@@ -316,7 +316,7 @@
 "MOST_CHAPTERS_SLOWER" = "معظم الفصول (أبطأ)";
 "RENAME_CATEGORY_FAIL_INFO" = "يجب أن يكون اسم الفئة فريدًا.";
 "ALL_CHAPTERS_READ" = "جميع الفصول مقروءة";
-"TRACKING" = "تتبع";
+"IS_TRACKING" = "تتبع";
 "DEFAULT_READING_MODE" = "وضع القراءة الافتراضي";
 "PILLARBOX" = "عمود";
 "BOTH" = "كلاهما";

@@ -539,7 +539,7 @@
 "SOURCE_BREAKING_CHANGE" = "Perubahan Sumber yang Signifikan";
 "SOURCE_BREAKING_CHANGE_TEXT" = "Sumber ini mengalami perubahan signifikan dan memerlukan migrasi untuk menjaga perpustakaan dan riwayat Anda.";
 "UPLOAD_DATE" = "Tanggal Unggah";
-"TRACKING" = "Pelacakan";
+"IS_TRACKING" = "Pelacakan";
 "ALL_CHAPTERS_READ" = "Semua Bab Telah Dibaca";
 "ALL_CHAPTERS_LOCKED" = "Semua Bab Terkunci";
 "DEFAULT_READING_MODE" = "Mode Baca Default";

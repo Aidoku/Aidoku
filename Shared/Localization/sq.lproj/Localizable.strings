@@ -116,7 +116,7 @@
 "MIGRATE_%i_ITEMS?" = "Migro %i artikuj?";
 "MIGRATE_ONE_ITEM?" = "Migro një artikull?";
 "UPLOAD_DATE" = "Data e Ngarkimit";
-"TRACKING" = "Gjurmimi";
+"IS_TRACKING" = "Gjurmimi";
 "ALL_CHAPTERS_READ" = "Të gjithë kapitujt e lexuar";
 "DEFAULT_READING_MODE" = "Mënyra Standarde e Leximit";
 "PILLARBOX" = "Pillarbox";

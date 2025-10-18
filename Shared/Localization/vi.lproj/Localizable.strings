@@ -336,7 +336,7 @@
 "READER_BG_COLOR_BLACK" = "Đen";
 "AVAILABLE" = "Có thể sử dụng";
 "UPLOAD_DATE" = "Ngày tải lên";
-"TRACKING" = "Truy dấu";
+"IS_TRACKING" = "Truy dấu";
 "ALL_CHAPTERS_READ" = "Đã đọc xong tất cả các chương";
 "PILLARBOX_AMOUNT" = "Lượng Pillarbox";
 "PILLARBOX" = "Hiệu ứng cột đen";

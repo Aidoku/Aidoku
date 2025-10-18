@@ -323,7 +323,7 @@
 "CATEGORY_NAME" = "வகை பெயர்";
 "MIGRATE" = "இடம்பெயர்வு";
 "SELECTED" = "தேர்ந்தெடுக்கப்பட்டது";
-"TRACKING" = "கண்காணிப்பு";
+"IS_TRACKING" = "கண்காணிப்பு";
 "ALL_CHAPTERS_READ" = "எல்லா அத்தியாயங்களும் படித்தன";
 "DEFAULT_READING_MODE" = "இயல்புநிலை வாசிப்பு முறை";
 "OPEN_WEBSITE" = "திறந்த வலைத்தளம்";

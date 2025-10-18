@@ -278,7 +278,7 @@
 "NOT_FOUND" = "Не знайдено";
 "FIRST_ALTERNATIVE" = "Перша альтернатива";
 "OPTIONS" = "Параметри";
-"TRACKING" = "Відстеження";
+"IS_TRACKING" = "Відстеження";
 "ALL_CHAPTERS_READ" = "Усі глави прочитані";
 "SELECT" = "Обрати";
 "DESTINATION" = "Цілі";

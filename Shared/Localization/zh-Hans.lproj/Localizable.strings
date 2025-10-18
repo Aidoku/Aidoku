@@ -322,7 +322,7 @@
 "FIRST_ALTERNATIVE" = "第一个选择";
 "RENAME_CATEGORY_FAIL_INFO" = "分类名称必须唯一。";
 "UPLOAD_DATE" = "上传日期";
-"TRACKING" = "追踪";
+"IS_TRACKING" = "追踪";
 "ALL_CHAPTERS_READ" = "所有章节已读";
 "DEFAULT_READING_MODE" = "默认阅读模式";
 "PILLARBOX_AMOUNT" = "填充比例";

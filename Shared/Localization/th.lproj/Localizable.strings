@@ -345,7 +345,7 @@
 "MIGRATE_%i_ITEMS?" = "โอนย้าย %i อย่าง?";
 "SYNC_LOCAL_HISTORY" = "ซิงค์ประวัติในเครื่อง";
 "DESTINATION" = "จุดหมายปลายทาง";
-"TRACKING" = "การค้นติดตาม";
+"IS_TRACKING" = "การค้นติดตาม";
 "ALL_CHAPTERS_READ" = "อ่านแล้วทุกตอน";
 "SCANLATOR" = "ทีมแปลภาษา";
 "NO_SCANLATOR" = "ไม่มีทีมแปลภาษา";

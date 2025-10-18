@@ -314,7 +314,7 @@
 "FIRST_ALTERNATIVE" = "Première alternative";
 "MIGRATE_%i_ITEMS?" = "Migrer %i éléments ?";
 "MIGRATE_ONE_ITEM?" = "Migrer 1 élément ?";
-"TRACKING" = "Suivi";
+"IS_TRACKING" = "Suivi";
 "ALL_CHAPTERS_READ" = "Tous les chapitres lus";
 "BOTH" = "Les deux";
 "DEFAULT_READING_MODE" = "Mode de lecture par défaut";

@@ -230,7 +230,7 @@
 "FIRST_ALTERNATIVE" = "Eerste alternatief";
 "MIGRATE_ONE_ITEM?" = "Migreer 1 deel?";
 "UPLOAD_DATE" = "Upload datum";
-"TRACKING" = "Tracking";
+"IS_TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "Alle hoofdstukken gelezen";
 "MIGRATE_%i_ITEMS?" = "%i items migreren?";
 "DEFAULT_READING_MODE" = "Standaard leesmodus";

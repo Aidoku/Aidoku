@@ -302,7 +302,7 @@
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientace určuje, pro které orientace má být pillarboxing povolen.";
 "PILLARBOX_ORIENTATION" = "Orientace pillarboxu";
 "PILLARBOX_AMOUNT" = "Hodnota pillarboxu";
-"TRACKING" = "Sledováno";
+"IS_TRACKING" = "Sledováno";
 "BACKUP_ERROR" = "Chyba obnovení zálohy";
 "BACKUP_ERROR_TEXT" = "Při obnově došlo k chybě: %@. Záloha může být neplatná.";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Zadaná adresa URL seznamu zdrojů je neplatná nebo již byla přidána.";

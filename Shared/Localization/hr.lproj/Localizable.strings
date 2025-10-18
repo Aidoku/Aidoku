@@ -315,7 +315,7 @@
 "FIRST_ALTERNATIVE" = "Prva alternativa";
 "MIGRATE_%i_ITEMS?" = "Premjestiti %i stavke(i)?";
 "MIGRATE_ONE_ITEM?" = "Premjestiti jednu stavku?";
-"TRACKING" = "Praćenje";
+"IS_TRACKING" = "Praćenje";
 "DEFAULT_READING_MODE" = "Zadani način čitanja";
 "UPLOAD_DATE" = "Datum učitavanja";
 "ALL_CHAPTERS_READ" = "Sva poglavlja su pročitana";

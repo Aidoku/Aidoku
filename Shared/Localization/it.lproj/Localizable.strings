@@ -314,7 +314,7 @@
 "%i_CHAPTERS" = "%i Capitoli";
 "RENAME_CATEGORY_FAIL_INFO" = "I nomi delle categorie devono essere unici.";
 "ALL_CHAPTERS_READ" = "Tutti i capitoli letti";
-"TRACKING" = "Tracciamento";
+"IS_TRACKING" = "Tracciamento";
 "DEFAULT_READING_MODE" = "Modalità di lettura predefinita";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Totale Pillarbox";

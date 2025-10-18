@@ -313,7 +313,7 @@
 "UPLOAD_DATE" = "Yükleme Zamanı";
 "ALL_CHAPTERS_READ" = "Bütün Bölümleri Oku";
 "DEFAULT_READING_MODE" = "Varsayılan Okuma Modu";
-"TRACKING" = "Takip Ediliyor";
+"IS_TRACKING" = "Takip Ediliyor";
 "PILLARBOX" = "Çerçeve";
 "PILLARBOX_AMOUNT" = "Çerçeve Boyutu";
 "PILLARBOX_ORIENTATION" = "Çerçeve Yönü";

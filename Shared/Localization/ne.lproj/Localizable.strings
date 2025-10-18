@@ -317,7 +317,7 @@
 "MOST_CHAPTERS_SLOWER" = "धेरै अध्याय (ढिलो)";
 "FIRST_ALTERNATIVE" = "पहिलो विकल्प";
 "UPLOAD_DATE" = "अपलोड मिति";
-"TRACKING" = "ट्र्यकिङ";
+"IS_TRACKING" = "ट्र्यकिङ";
 "ALL_CHAPTERS_READ" = "सबै अध्याय पढिएको";
 "PILLARBOX" = "Pillarbox";
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";

@@ -80,7 +80,7 @@
 "%@_AGO" = "%@ sen";
 "SHARE" = "Dela";
 "INCOGNITO_MODE" = "Inkognitoläge";
-"TRACKING" = "Spårning";
+"IS_TRACKING" = "Spårning";
 "LAST_UPDATED" = "Senast uppdaterad";
 "RESTORE_BACKUP" = "Återställ till denna säkerhetskopia?";
 "FAILED_CHAPTER_LOAD" = "Kunde ej ladda kapitlet";

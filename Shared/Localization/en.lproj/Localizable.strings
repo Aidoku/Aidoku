@@ -481,6 +481,7 @@
 "MULTI_LANGUAGE" = "Multi-Language";
 
 // Tracking
+"TRACKING" = "Tracking";
 "TRACKERS" = "Trackers";
 "STATUS" = "Status";
 "VOLUMES" = "Volumes";
@@ -568,7 +569,7 @@
 "SOURCE_BREAKING_CHANGE" = "Source Breaking Change";
 "SOURCE_BREAKING_CHANGE_TEXT" = "This source had a breaking change and requires migration to keep your library and history.";
 "UPLOAD_DATE" = "Upload Date";
-"TRACKING" = "Tracking";
+"IS_TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
 "ALL_CHAPTERS_LOCKED" = "All Chapters Locked";
 "DEFAULT_READING_MODE" = "Default Reading Mode";

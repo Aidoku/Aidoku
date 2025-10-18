@@ -299,7 +299,7 @@
 "DEFAULT_READING_MODE" = "Modo de leitura padrão";
 "PILLARBOX" = "Efeito Pillarbox";
 "BOTH" = "Ambos";
-"TRACKING" = "Seguindo";
+"IS_TRACKING" = "Seguindo";
 "PINNED" = "Fixado";
 "REMOVE_FROM_CATEGORY" = "Remover da categoria";
 "%i_CHAPTERS" = "%i capítulos";

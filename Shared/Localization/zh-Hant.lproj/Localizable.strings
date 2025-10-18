@@ -329,7 +329,7 @@
 "MOST_CHAPTERS_SLOWER" = "最多章節（較慢）";
 "FIRST_ALTERNATIVE" = "第一個選擇";
 "MIGRATE_%i_ITEMS?" = "遷移 %i 個項目？";
-"TRACKING" = "追蹤進度中";
+"IS_TRACKING" = "追蹤進度中";
 "UPLOAD_DATE" = "上傳日期";
 "SCANLATOR" = "掃譯者";
 "NO_SCANLATOR" = "沒有掃譯者";
