@@ -155,7 +155,7 @@ class AniListTracker: OAuthTracker {
             guard let media = await api.getMedia(id: id) else { return [] }
             return [TrackSearchItem(
                 id: String(media.id ?? 0),
-                title: media.title?.english ?? media.title?.romaji,
+                title: media.title?.userPreferred,
                 coverUrl: media.coverImage?.medium,
                 description: media.description,
                 status: getPublishingStatus(statusString: media.status ?? ""),
@@ -175,7 +175,7 @@ class AniListTracker: OAuthTracker {
         return page.media.map {
             TrackSearchItem(
                 id: String($0.id ?? 0),
-                title: $0.title?.english ?? $0.title?.romaji,
+                title: $0.title?.userPreferred,
                 coverUrl: $0.coverImage?.medium,
                 description: $0.description,
                 status: getPublishingStatus(statusString: $0.status ?? ""),

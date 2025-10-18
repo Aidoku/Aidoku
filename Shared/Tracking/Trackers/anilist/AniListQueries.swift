@@ -14,8 +14,7 @@ struct AniListQueries {
         media(search: $search, type: MANGA, isAdult: false) {
           id
           title {
-            english
-            romaji
+            userPreferred
           }
           description
           status
@@ -37,8 +36,7 @@ struct AniListQueries {
         media(search: $search, type: MANGA) {
           id
           title {
-            english
-            romaji
+            userPreferred
           }
           description
           status
@@ -59,8 +57,7 @@ struct AniListQueries {
       Media(id: $id) {
         id
         title {
-          english
-          romaji
+          userPreferred
         }
         description
         status
@@ -207,8 +204,7 @@ struct Media: Codable {
 }
 
 struct MediaTitle: Codable {
-    var english: String?
-    var romaji: String?
+    var userPreferred: String?
 }
 
 struct MediaImage: Codable {
