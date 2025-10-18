@@ -91,58 +91,12 @@ struct SourceHomeContentView: View {
                         .frame(maxWidth: .infinity)
                 } else if let home, listingSelection == 0 {
                     // home page
-                    VStack(spacing: 24) {
-                        ForEach(home.components.indices, id: \.self) { offset in
-                            let component = home.components[offset]
-                            switch component.value {
-                                case .imageScroller:
-                                    HomeImageScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .bigScroller:
-                                    HomeBigScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .scroller:
-                                    HomeScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .mangaList:
-                                    HomeListView(source: source, component: component, partial: !homeFullyLoaded)
-                                        .id("home-\(offset)") // Force recreation for home components
-                                case .mangaChapterList:
-                                    HomeChapterListView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .filters:
-                                    HomeFiltersView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .links:
-                                    HomeLinksView(source: source, component: component, partial: !homeFullyLoaded)
-                            }
-                        }
-                        .transition(.opacity)
-                    }
-                    .padding(.bottom)
+                    homeView(for: home, partial: !homeFullyLoaded)
                 } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
                     // listing page - check if source provides custom Home-like layout
                     if let listingHome {
-                        // Display listing with Home-style layout (multiple components)
-                        VStack(spacing: 24) {
-                            ForEach(listingHome.components.indices, id: \.self) { offset in
-                                let component = listingHome.components[offset]
-                                switch component.value {
-                                    case .imageScroller:
-                                        HomeImageScrollerView(source: source, component: component, partial: false)
-                                    case .bigScroller:
-                                        HomeBigScrollerView(source: source, component: component, partial: false)
-                                    case .scroller:
-                                        HomeScrollerView(source: source, component: component, partial: false)
-                                    case .mangaList:
-                                        HomeListView(source: source, component: component, partial: false, bookmarkedItems: $bookmarkedItems)
-                                            .id("listing-\(offset)") // Force recreation for listing components
-                                    case .mangaChapterList:
-                                        HomeChapterListView(source: source, component: component, partial: false)
-                                    case .filters:
-                                        HomeFiltersView(source: source, component: component, partial: false)
-                                    case .links:
-                                        HomeLinksView(source: source, component: component, partial: false)
-                                }
-                            }
-                        }
-                        .padding(.bottom)
-                        .transition(.opacity)
+                        homeView(for: listingHome, partial: false)
+                            .transition(.opacity)
                     } else {
                         // Display listing with listing.kind
                         Group {
@@ -230,7 +184,6 @@ struct SourceHomeContentView: View {
                     }
                 }
             }
-
         }
         .onChange(of: listings) { value in
             // reset listing selection to the first if the selected one disappears
@@ -261,6 +214,33 @@ struct SourceHomeContentView: View {
             await reload(initial: true)
         }
         .environmentObject(path)
+    }
+
+    func homeView(for home: Home, partial: Bool) -> some View {
+        VStack(spacing: 24) {
+            ForEach(home.components.indices, id: \.self) { offset in
+                let component = home.components[offset]
+                switch component.value {
+                    case .imageScroller:
+                        HomeImageScrollerView(source: source, component: component, partial:partial)
+                    case .bigScroller:
+                        HomeBigScrollerView(source: source, component: component, partial: partial)
+                    case .scroller:
+                        HomeScrollerView(source: source, component: component, partial: partial)
+                    case .mangaList:
+                        HomeListView(source: source, component: component, partial: partial)
+                            .id("listing-\(offset)") // Force recreation for listing components
+                    case .mangaChapterList:
+                        HomeChapterListView(source: source, component: component, partial: partial)
+                    case .filters:
+                        HomeFiltersView(source: source, component: component, partial: partial)
+                    case .links:
+                        HomeLinksView(source: source, component: component, partial: partial)
+                }
+            }
+            .transition(.opacity)
+        }
+        .padding(.bottom)
     }
 
     func reload(initial: Bool = false) async {

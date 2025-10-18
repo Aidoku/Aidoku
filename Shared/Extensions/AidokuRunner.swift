@@ -121,12 +121,11 @@ extension AidokuRunner.Source {
     /// Returns nil if source doesn't provide custom Home-like layout.
     /// For now, only used internally by KomgaSourceRunner
     func getListingHome(listing: AidokuRunner.Listing) async throws -> Home? {
-        // Check if runner is KomgaSourceRunner
-        if let komgaRunner = runner as? KomgaSourceRunner {
-            return try await komgaRunner.getListingHome(listing: listing, source: self)
+        if let runner = runner as? KomgaSourceRunner {
+            try await runner.getListingHome(listing: listing)
+        } else {
+            nil
         }
-
-        return nil
     }
 }
 

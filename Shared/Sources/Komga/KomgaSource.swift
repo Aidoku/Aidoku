@@ -179,7 +179,7 @@ extension KomgaSourceRunner {
         return .init(components: components.compactMap { $0 })
     }
 
-    func getListingHome(listing: AidokuRunner.Listing, source: AidokuRunner.Source) async throws -> Home? {
+    func getListingHome(listing: AidokuRunner.Listing) async throws -> Home? {
         // Check if there are multiple libraries
         let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/libraries")
 
