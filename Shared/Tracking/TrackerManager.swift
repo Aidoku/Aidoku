@@ -282,9 +282,9 @@ class TrackerManager {
     ) async {
         guard
             let state = try? await tracker.getState(trackId: trackId),
-            let trackerLastReadChapter = state.lastReadChapter,
-            let trackerLastReadVolume = state.lastReadVolume,
-            trackerLastReadChapter > 0 || trackerLastReadVolume > 0
+            case let trackerLastReadChapter = state.lastReadChapter,
+            case let trackerLastReadVolume = state.lastReadVolume,
+            (trackerLastReadChapter ?? 0) > 0 || (trackerLastReadVolume ?? 0) > 0
         else {
             return
         }
@@ -313,21 +313,37 @@ class TrackerManager {
         // Determine what to sync based on tracker progress and forced mode
         if displayMode == .chapter {
             // Forced chapter mode: sync chapter progress
-            if trackerLastReadChapter > currentHighestRead {
+            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
                 chaptersToMark = chapters.filter { ($0.chapterNumber ?? $0.volumeNumber ?? 0) <= trackerLastReadChapter }
             }
         } else if displayMode == .volume {
             // Forced volume mode: sync volume progress
-            if trackerLastReadVolume > 0 && Float(trackerLastReadVolume) > currentHighestRead {
+            if let trackerLastReadVolume, trackerLastReadVolume > 0 && Float(trackerLastReadVolume) > currentHighestRead {
                 chaptersToMark = chapters.filter { ($0.volumeNumber ?? $0.chapterNumber ?? 0) <= Float(trackerLastReadVolume) }
             }
         } else {
             // Default mode: sync both chapter and volume progress
-            if trackerLastReadChapter > currentHighestRead {
-                chaptersToMark = chapters.filter { $0.chapterNumber ?? 0 <= trackerLastReadChapter }
+            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
+                // find all chapters with a chapter number less than or equal to the last tracker chapter
+                chaptersToMark = chapters.filter {
+                    // floor the chapter number so partial chapters are marked (e.g. 10.1 and 10.2 will be marked if the tracker is at 10)
+                    if let chapter = $0.chapterNumber, floor(chapter) <= trackerLastReadChapter {
+                        true
+                    } else {
+                        false
+                    }
+                }
             }
-            if trackerLastReadVolume > 0 && chaptersToMark.isEmpty {
-                chaptersToMark = chapters.filter { ($0.volumeNumber ?? 0) <= Float(trackerLastReadVolume) }
+            // otherwise, if we didn't find any chapters, try using the volume number instead
+            if let trackerLastReadVolume, trackerLastReadVolume > 0 && chaptersToMark.isEmpty {
+                // find all chapters with a volume number less than or equal to the last tracker volume
+                chaptersToMark = chapters.filter {
+                    if let volume = $0.volumeNumber, volume <= Float(trackerLastReadVolume) {
+                        true
+                    } else {
+                        false
+                    }
+                }
             }
         }
 
