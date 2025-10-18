@@ -15,6 +15,7 @@ struct SourceHomeContentView: View {
     @Binding var headerListingSelection: Int // used only for listing header
 
     @State private var home: Home?
+    @State private var listingHome: Home? // Home-like layout for current listing
     @State private var entries: [AidokuRunner.Manga] = []
 
     @State private var hasLoaded = false
@@ -90,54 +91,37 @@ struct SourceHomeContentView: View {
                         .frame(maxWidth: .infinity)
                 } else if let home, listingSelection == 0 {
                     // home page
-                    VStack(spacing: 24) {
-                        ForEach(home.components.indices, id: \.self) { offset in
-                            let component = home.components[offset]
-                            switch component.value {
-                                case .imageScroller:
-                                    HomeImageScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .bigScroller:
-                                    HomeBigScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .scroller:
-                                    HomeScrollerView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .mangaList:
-                                    HomeListView(source: source, component: component, partial: !homeFullyLoaded)
-                                        .id("home-\(offset)") // Force recreation for home components
-                                case .mangaChapterList:
-                                    HomeChapterListView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .filters:
-                                    HomeFiltersView(source: source, component: component, partial: !homeFullyLoaded)
-                                case .links:
-                                    HomeLinksView(source: source, component: component, partial: !homeFullyLoaded)
+                    homeView(for: home, partial: !homeFullyLoaded)
+                } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
+                    // listing page - check if source provides custom Home-like layout
+                    if let listingHome {
+                        homeView(for: listingHome, partial: false)
+                            .transition(.opacity)
+                    } else {
+                        // Display listing with listing.kind
+                        Group {
+                            switch listing.kind {
+                                case .default:
+                                    HomeGridView(source: source, entries: entries, bookmarkedItems: $bookmarkedItems) {
+                                        if hasMore && listingLoadState != .loading {
+                                            await loadEntries()
+                                        }
+                                    }
+                                case .list:
+                                    HomeListView(
+                                        source: source,
+                                        component: .init(title: nil, value: .mangaList(entries: entries.map { $0.intoLink() }))
+                                    ) {
+                                        if hasMore && listingLoadState != .loading {
+                                            await loadEntries()
+                                        }
+                                    }
+                                    .id(listingSelection) // Force recreation on listing change
+                                    .padding(.bottom)
                             }
                         }
                         .transition(.opacity)
                     }
-                    .padding(.bottom)
-                } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
-                    // listing page
-                    Group {
-                        switch listing.kind {
-                            case .default:
-                                HomeGridView(source: source, entries: entries, bookmarkedItems: $bookmarkedItems) {
-                                    if hasMore && listingLoadState != .loading {
-                                        await loadEntries()
-                                    }
-                                }
-                            case .list:
-                                HomeListView(
-                                    source: source,
-                                    component: .init(title: nil, value: .mangaList(entries: entries.map { $0.intoLink() }))
-                                ) {
-                                    if hasMore && listingLoadState != .loading {
-                                        await loadEntries()
-                                    }
-                                }
-                                .padding(.bottom)
-                                .id(listingSelection) // Force recreation on listing change
-                        }
-                    }
-                    .transition(.opacity)
                 }
             }
             .overlay {
@@ -173,19 +157,18 @@ struct SourceHomeContentView: View {
 
                     if value != 0 || !source.features.providesHome {
                         // load listing
-                        var setListingSelection: Int? = value
-                        if listingSelection == 0 {
-                            await animate(duration: 0.2, options: .easeOut) {
-                                listingSelection = value
-                            }
-                            setListingSelection = nil
+                        // Always set listing selection and pass the new value
+                        await animate(duration: 0.2, options: .easeOut) {
+                            listingSelection = value
+                            loading = true  // Show loading when switching
                         }
-                        await loadListing(setListingSelection: setListingSelection)
+                        await loadListing(setListingSelection: value)
                     } else {
                         // switch to home
                         await animate(duration: 0.2, options: .easeOut) {
                             loading = false
                             entries = []
+                            listingHome = nil
                         }
                         withAnimation(.easeIn(duration: 0.2)) {
                             listingSelection = value
@@ -201,7 +184,6 @@ struct SourceHomeContentView: View {
                     }
                 }
             }
-
         }
         .onChange(of: listings) { value in
             // reset listing selection to the first if the selected one disappears
@@ -232,6 +214,33 @@ struct SourceHomeContentView: View {
             await reload(initial: true)
         }
         .environmentObject(path)
+    }
+
+    func homeView(for home: Home, partial: Bool) -> some View {
+        VStack(spacing: 24) {
+            ForEach(home.components.indices, id: \.self) { offset in
+                let component = home.components[offset]
+                switch component.value {
+                    case .imageScroller:
+                        HomeImageScrollerView(source: source, component: component, partial: partial)
+                    case .bigScroller:
+                        HomeBigScrollerView(source: source, component: component, partial: partial)
+                    case .scroller:
+                        HomeScrollerView(source: source, component: component, partial: partial)
+                    case .mangaList:
+                        HomeListView(source: source, component: component, partial: partial)
+                            .id("listing-\(offset)") // Force recreation for listing components
+                    case .mangaChapterList:
+                        HomeChapterListView(source: source, component: component, partial: partial)
+                    case .filters:
+                        HomeFiltersView(source: source, component: component, partial: partial)
+                    case .links:
+                        HomeLinksView(source: source, component: component, partial: partial)
+                }
+            }
+            .transition(.opacity)
+        }
+        .padding(.bottom)
     }
 
     func reload(initial: Bool = false) async {
@@ -308,6 +317,7 @@ struct SourceHomeContentView: View {
 
     func loadListing(setListingSelection: Int? = nil) async {
         page = 1
+        listingHome = nil  // Clear previous listing home when loading new listing
         await loadEntries(initial: true, setListingSelection: setListingSelection)
     }
 
@@ -317,6 +327,40 @@ struct SourceHomeContentView: View {
             else { return }
 
             listingLoadState = .loading
+
+            // Try to get Home-like layout first
+            if initial {
+                if let home = try await source.getListingHome(listing: listing) {
+                    // Source provides custom Home-like layout for this listing
+                    listingHome = home
+
+                    // fade out existing items and show new Home-like layout
+                    await animate(duration: 0.2, options: .easeOut) {
+                        entries = []
+                    }
+
+                    // switch the listing selection, if specified
+                    if let setListingSelection {
+                        await animate(duration: 0.1, options: .easeInOut) {
+                            listingSelection = setListingSelection
+                        }
+                    }
+
+                    await animate(duration: 0.2, options: .easeIn) {
+                        loading = false
+                    }
+
+                    listingLoadState = .allLoaded
+                    return
+                } else {
+                    // No custom layout, use default pagination
+                    listingHome = nil
+                }
+            } else if listingHome != nil {
+                // If we have a listing home (Home-like layout), we shouldn't paginate
+                // This prevents loading more when scrolling in Home-like view
+                return
+            }
 
             var resultsLoaded = false
 

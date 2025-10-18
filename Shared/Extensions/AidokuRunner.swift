@@ -116,6 +116,17 @@ extension AidokuRunner.Source {
         }
         return request
     }
+
+    /// Attempt to get a custom Home-like layout for listings.
+    /// Returns nil if source doesn't provide custom Home-like layout.
+    /// For now, only used internally by KomgaSourceRunner
+    func getListingHome(listing: AidokuRunner.Listing) async throws -> Home? {
+        if let runner = runner as? KomgaSourceRunner {
+            try await runner.getListingHome(listing: listing)
+        } else {
+            nil
+        }
+    }
 }
 
 extension AidokuRunner.Manga {
