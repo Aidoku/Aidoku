@@ -229,7 +229,8 @@ extension MangaView {
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
             downloadProgress: viewModel.downloadProgress[chapter.key],
-            displayMode: viewModel.chapterTitleDisplayMode
+            displayMode: viewModel.chapterTitleDisplayMode,
+            isEditing: editMode == .active
         ) {
             if editMode == .inactive {
                 openReaderView(chapter: chapter)
@@ -655,6 +656,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let downloaded: Bool
     let downloadProgress: Float?
     let displayMode: ChapterTitleDisplayMode
+    let isEditing: Bool
 
     var onPressed: (() -> Void)?
     var contextMenu: (() -> T)?
@@ -664,26 +666,31 @@ private struct ChapterCellView<T: View>: View, Equatable {
     }
 
     var body: some View {
-        Button {
-            onPressed?()
-        } label: {
-            HStack {
-                ChapterTableCell(
-                    source: source,
-                    sourceKey: sourceKey,
-                    chapter: chapter,
-                    read: read,
-                    page: page,
-                    downloaded: downloaded,
-                    downloadProgress: downloadProgress,
-                    displayMode: displayMode
-                )
-            }
+        let view = HStack {
+            ChapterTableCell(
+                source: source,
+                sourceKey: sourceKey,
+                chapter: chapter,
+                read: read,
+                page: page,
+                downloaded: downloaded,
+                downloadProgress: downloadProgress,
+                displayMode: displayMode
+            )
         }
-        .tint(.primary)
-        .contextMenu {
-            if !locked {
-                contextMenu?()
+        if isEditing {
+            view
+        } else {
+            Button {
+                onPressed?()
+            } label: {
+                view
+            }
+            .tint(.primary)
+            .contextMenu {
+                if !locked {
+                    contextMenu?()
+                }
             }
         }
     }
@@ -695,5 +702,6 @@ private struct ChapterCellView<T: View>: View, Equatable {
             && lhs.downloaded == rhs.downloaded
             && lhs.downloadProgress == rhs.downloadProgress
             && lhs.displayMode == rhs.displayMode
+            && lhs.isEditing == rhs.isEditing
     }
 }
