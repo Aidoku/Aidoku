@@ -177,6 +177,8 @@
 "MARK_PREVIOUS" = "標記之前為";
 "FINISHED_COLON" = "完成：";
 "CURRENT_COLON" = "當前：";
+"NEXT_CHAPTER_LOCKED" = "下一章已被鎖定";
+"PREVIOUS_CHAPTER_LOCKED" = "上一章已被鎖定";
 "INFINITE_VERTICAL_SCROLL" = "連續上到下滾動";
 "HISTORY_LOCKED" = "已上鎖歷史紀錄。";
 "AUTH_TO_ENABLE" = "解鎖以啟用。";

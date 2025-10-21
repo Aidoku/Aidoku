@@ -30,6 +30,16 @@ class ReaderInfoPageView: UIView {
             updateLabelText()
         }
     }
+    var nextChapterLocked: Bool = false {
+        didSet {
+            updateLabelText()
+        }
+    }
+    var previousChapterLocked: Bool = false {
+        didSet {
+            updateLabelText()
+        }
+    }
 
     let noChapterLabel = UILabel()
     let skippingChaptersView = UIStackView()
@@ -186,8 +196,14 @@ class ReaderInfoPageView: UIView {
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else {
-            noChapterLabel.text = type == .previous ? NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
-                : NSLocalizedString("NO_NEXT_CHAPTER", comment: "")
+            if type == .next && nextChapterLocked {
+                noChapterLabel.text = NSLocalizedString("NEXT_CHAPTER_LOCKED", comment: "")
+            } else if type == .previous && previousChapterLocked {
+                noChapterLabel.text = NSLocalizedString("PREVIOUS_CHAPTER_LOCKED", comment: "")
+            } else {
+                noChapterLabel.text = type == .previous ? NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
+                    : NSLocalizedString("NO_NEXT_CHAPTER", comment: "")
+            }
             stackView.isHidden = true
             noChapterLabel.isHidden = false
             skippingChaptersView.isHidden = true

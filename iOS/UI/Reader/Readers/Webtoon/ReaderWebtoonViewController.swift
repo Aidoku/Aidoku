@@ -643,7 +643,9 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                     to: to?.toOld(
                         sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,
                         mangaId: self.viewModel.manga.key
-                    )
+                    ),
+                    isNextLocked: page.type == .nextInfoPage && (to?.locked ?? false),
+                    isPreviousLocked: page.type == .prevInfoPage && (to?.locked ?? false)
                 ))
             }
         }

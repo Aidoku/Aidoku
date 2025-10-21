@@ -239,6 +239,7 @@ extension ReaderPagedViewController {
         let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
         previousInfoController.currentChapter = chapter.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
         previousInfoController.previousChapter = previousChapter?.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
+        previousInfoController.previousChapterLocked = previousChapter?.locked ?? false
         pageViewControllers.append(previousInfoController)
 
         // chapter pages
@@ -312,6 +313,7 @@ extension ReaderPagedViewController {
         let nextInfoController = ReaderPageViewController(type: .info(.next))
         nextInfoController.currentChapter = chapter.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
         nextInfoController.nextChapter = nextChapter?.toOld(sourceId: sourceId, mangaId: viewModel.manga.key)
+        nextInfoController.nextChapterLocked = nextChapter?.locked ?? false
         pageViewControllers.append(nextInfoController)
 
         // first page of next chapter

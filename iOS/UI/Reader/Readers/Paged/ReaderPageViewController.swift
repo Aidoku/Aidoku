@@ -48,6 +48,14 @@ class ReaderPageViewController: BaseViewController {
         get { infoView?.nextChapter }
         set { infoView?.nextChapter = newValue }
     }
+    var nextChapterLocked: Bool {
+        get { infoView?.nextChapterLocked ?? false }
+        set { infoView?.nextChapterLocked = newValue }
+    }
+    var previousChapterLocked: Bool {
+        get { infoView?.previousChapterLocked ?? false }
+        set { infoView?.previousChapterLocked = newValue }
+    }
 
     private var pageSet = false
     private var page: Page?

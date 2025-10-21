@@ -15,6 +15,8 @@ struct Transition {
     var type: TransitionType
     var from: Chapter
     var to: Chapter?
+    var isNextLocked: Bool
+    var isPreviousLocked: Bool
 }
 
 class ReaderTransitionNode: ASDisplayNode {
@@ -114,10 +116,20 @@ class ReaderTransitionNode: ASDisplayNode {
 
     lazy var noChapterTextNode: ASTextNode = {
         let node = ASTextNode()
+        let message: String
+        if transition.type == .prev {
+            if transition.isPreviousLocked {
+                message = NSLocalizedString("PREVIOUS_CHAPTER_LOCKED", comment: "")
+            } else {
+                message = NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
+            }
+        } else if transition.isNextLocked {
+            message = NSLocalizedString("NEXT_CHAPTER_LOCKED", comment: "")
+        } else {
+            message = NSLocalizedString("NO_NEXT_CHAPTER", comment: "")
+        }
         node.attributedText = NSAttributedString(
-            string: transition.type == .prev
-                ? NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
-                : NSLocalizedString("NO_NEXT_CHAPTER", comment: ""),
+            string: message,
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize)

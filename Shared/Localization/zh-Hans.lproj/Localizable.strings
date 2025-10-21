@@ -115,8 +115,10 @@
 "NEXT_COLON" = "下一页：";
 "FINISHED_COLON" = "完成：";
 "CURRENT_COLON" = "当前：";
+"NEXT_CHAPTER_LOCKED" = "下一章已被锁定";
 "NO_NEXT_CHAPTER" = "没有下一章";
 "NO_PREVIOUS_CHAPTER" = "没有上一章";
+"PREVIOUS_CHAPTER_LOCKED" = "上一章已被锁定";
 "READER_SETTINGS" = "阅读设置";
 "READING_MODE" = "阅读模式";
 "DEFAULT" = "默认";

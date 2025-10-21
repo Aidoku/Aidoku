@@ -275,8 +275,10 @@
 "NEXT_COLON" = "Next:";
 "FINISHED_COLON" = "Finished:";
 "CURRENT_COLON" = "Current:";
+"NEXT_CHAPTER_LOCKED" = "Next chapter is locked";
 "NO_NEXT_CHAPTER" = "There is no next chapter";
 "NO_PREVIOUS_CHAPTER" = "There is no previous chapter";
+"PREVIOUS_CHAPTER_LOCKED" = "Previous chapter is locked";
 "SKIPPING_CHAPTERS" = "Skipping %i chapters, either the source is missing them or they have been filtered out";
 "READER_SETTINGS" = "Reader Settings";
 "READING_MODE" = "Reading Mode";
