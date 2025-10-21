@@ -795,6 +795,7 @@ actor KomgaSourceRunner: Runner {
         guard let url = URL(string: url) else { throw SourceError.message("Invalid URL") }
         var request = URLRequest(url: url)
         request.setValue(helper.getAuthorizationHeader(), forHTTPHeaderField: "Authorization")
+        request.setValue("image/*", forHTTPHeaderField: "Accept")
         return request
     }
 
