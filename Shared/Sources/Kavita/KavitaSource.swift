@@ -224,25 +224,69 @@ actor KavitaSourceRunner: Runner {
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
-        if listing.id.hasPrefix("library-") {
-            let id = String(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 8)...])
+        let baseUrl = try helper.getConfiguredServer()
+        let apiKey = helper.getApiKey()
 
-            let filter = KavitaFilterV2(
-                statements: [.init(comparison: .equal, field: .libraries, value: id)],
-            )
-            let res: [KavitaSeries] = try await helper.request(
-                path: "/api/series/v2",
-                method: .POST,
-                body: JSONEncoder().encode(filter)
-            )
-            let baseUrl = try helper.getConfiguredServer()
-            let apiKey = helper.getApiKey()
-            return .init(
-                entries: res.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
-                hasNextPage: false
-            )
+        switch listing.id {
+            case "on_deck":
+                let series = try await helper.getOnDeck(pageNum: page)
+                return .init(
+                    entries: series.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: series.count == 20
+                )
+
+            case "recently_updated":
+                let series = try await helper.getRecentlyUpdatedSeries()
+                return .init(
+                    entries: series.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: false
+                )
+
+            case "recently_added":
+                let series = try await helper.getRecentlyAdded(pageNum: page)
+                return .init(
+                    entries: series.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: series.count == 20
+                )
+
+            case _ where listing.id.hasPrefix("morein-"):
+                guard let genreId = Int(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 7)...]) else {
+                    throw SourceError.message("Invalid genre id")
+                }
+                let series = try await helper.getMoreIn(genreId: genreId, pageNum: page)
+                return .init(
+                    entries: series.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: series.count == 20
+                )
+
+            case _ where listing.id.hasPrefix("filter-"):
+                let encodedFilter = String(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 7)...])
+                let filter = try await helper.decodeFilter(encodedFilter)
+                let series = try await helper.getAllSeriesV2(pageNum: page, filter: filter, context: .dashboard)
+                return .init(
+                    entries: series.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: series.count == 20
+                )
+
+            case _ where listing.id.hasPrefix("library-"):
+                let id = String(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 8)...])
+
+                let filter = KavitaFilterV2(
+                    statements: [.init(comparison: .equal, field: .libraries, value: id)],
+                )
+                let res: [KavitaSeries] = try await helper.request(
+                    path: "/api/series/v2",
+                    method: .POST,
+                    body: JSONEncoder().encode(filter)
+                )
+                return .init(
+                    entries: res.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey) },
+                    hasNextPage: false
+                )
+
+            default:
+                throw SourceError.message("Invalid listing")
         }
-        throw SourceError.message("Invalid listing")
     }
 
     func getSearchFilters() async throws -> [AidokuRunner.Filter] {
@@ -544,46 +588,46 @@ extension KavitaSourceRunner {
 
         var components: [HomeComponent?] = Array(repeating: nil, count: dashComponents.count)
 
-        try await withThrowingTaskGroup(of: (Int, String, [KavitaSeries]).self) { [helper, sourceKey] taskGroup in
+        try await withThrowingTaskGroup(of: (Int, String, String, [KavitaSeries]).self) { [helper, sourceKey] taskGroup in
             for (index, c) in dashComponents.enumerated() {
                 taskGroup.addTask {
                     switch c.streamType {
                         case .onDeck:
                             let series = try await helper.getOnDeck()
-                            return (index, NSLocalizedString("ON_DECK"), series)
+                            return (index, NSLocalizedString("ON_DECK"), "on_deck", series)
                         case .recentlyUpdated:
                             let series = try await helper.getRecentlyUpdatedSeries()
-                            return (index, NSLocalizedString("RECENTLY_UPDATED_SERIES"), series)
+                            return (index, NSLocalizedString("RECENTLY_UPDATED_SERIES"), "recently_updated", series)
                         case .newlyAdded:
                             let series = try await helper.getRecentlyAdded()
-                            return (index, NSLocalizedString("RECENTLY_ADDED_SERIES"), series)
+                            return (index, NSLocalizedString("RECENTLY_ADDED_SERIES"), "recently_added", series)
                         case .smartFilter:
                             if let encodedFilter = c.smartFilterEncoded {
                                 let filter = try await helper.decodeFilter(encodedFilter)
                                 let series = try await helper.getAllSeriesV2(filter: filter, context: .dashboard)
-                                return (index, c.name, series)
+                                return (index, c.name, "filter-\(encodedFilter)", series)
                             } else {
-                                return (index, "", [])
+                                return (index, "", "", [])
                             }
                         case .moreInGenre:
                             let genres = try await helper.getAllGenres()
                             guard let randomGenre = genres.randomElement() else {
-                                return (index, "", [])
+                                return (index, "", "", [])
                             }
                             let series = try await helper.getMoreIn(genreId: randomGenre.id, pageNum: 0, itemsPerPage: 30)
-                            return (index, String(format: NSLocalizedString("MORE_IN_%@"), randomGenre.title), series)
+                            return (index, String(format: NSLocalizedString("MORE_IN_%@"), randomGenre.title), "morein-\(randomGenre.id)", series)
                     }
                 }
             }
 
-            for try await (index, title, series) in taskGroup where !series.isEmpty {
+            for try await (index, title, listingId, series) in taskGroup where !series.isEmpty {
                 components[index] = .init(
                     title: title,
                     value: .scroller(
                         entries: series.map {
                             $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl, apiKey: apiKey).intoLink()
                         },
-                        listing: nil
+                        listing: .init(id: listingId, name: title)
                     )
                 )
             }
