@@ -16,6 +16,7 @@ struct HomeScrollerView: View {
 
     private let entries: [HomeComponent.Value.Link]
     private let listing: AidokuRunner.Listing?
+    private let hasSubtitles: Bool
 
     static let coverHeight: CGFloat = 180
 
@@ -38,6 +39,7 @@ struct HomeScrollerView: View {
         }
         self.entries = entries
         self.listing = listing
+        self.hasSubtitles = entries.contains(where: { $0.subtitle != nil })
     }
 
     var body: some View {
@@ -88,7 +90,7 @@ struct HomeScrollerView: View {
                                             .font(.footnote)
                                             .lineLimit(1)
                                             .padding(.top, 2)
-                                    } else {
+                                    } else if hasSubtitles {
                                         Text("empty")
                                             .font(.footnote)
                                             .lineLimit(1)
