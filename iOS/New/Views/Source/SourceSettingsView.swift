@@ -56,7 +56,7 @@ struct SourceSettingsView: View {
             }
 
             Section {
-                Button(NSLocalizedString("Clear Source Cache")) {
+                Button(NSLocalizedString("CLEAR_SOURCE_CACHE")) {
                     showingClearCacheConfirm = true
                 }
 
