@@ -20,6 +20,7 @@ struct AddSourceView: View {
     @State private var searchText = ""
     @State private var showLocalSetup = false
     @State private var showKomgaSetup = false
+    @State private var showKavitaSetup = false
     @State private var showImportFailAlert = false
     @State private var showLanguageSelectSheet = false
 
@@ -261,22 +262,21 @@ struct AddSourceView: View {
             )
             .background(NavigationLink("", destination: KomgaSetupView(), isActive: $showKomgaSetup).hidden())
 
-            // todo: kavita support
-//            ExternalSourceTableCell(
-//                source: .init(
-//                    sourceId: "kavita",
-//                    name: NSLocalizedString("KAVITA"),
-//                    languages: ["multi"],
-//                    version: 1,
-//                    contentRating: .safe
-//                ),
-//                subtitle: "Self-hosted digital library",
-//                onGet: {
-//                    showKavitaSetup = true
-//                    return true
-//                }
-//            )
-//            .background(NavigationLink("", destination: KavitaSetupView(), isActive: $showKavitaSetup).hidden())
+            ExternalSourceTableCell(
+                source: .init(
+                    sourceId: "kavita",
+                    name: NSLocalizedString("KAVITA"),
+                    languages: ["multi"],
+                    version: 1,
+                    contentRating: .safe
+                ),
+                subtitle: NSLocalizedString("KAVITA_TAGLINE"),
+                onGet: {
+                    showKavitaSetup = true
+                    return true
+                }
+            )
+            .background(NavigationLink("", destination: KavitaSetupView(), isActive: $showKavitaSetup).hidden())
         }
     }
 

@@ -1,16 +1,30 @@
 //
-//  KomgaSetupView.swift
+//  SelfHostedSourceSetupView.swift
 //  Aidoku
 //
-//  Created by Skitty on 5/24/25.
+//  Created by Skitty on 10/19/25.
 //
 
 import SwiftUI
 
-struct KomgaSetupView: View {
+struct SelfHostedSourceSetupView: View {
+    let icon: Image
+    let title: String
+    let sourceName: String
+    let info: String
+    let learnMoreUrl: URL?
+    let useEmail: Bool
+
+    let demoServer: String
+    let demoTitle: String
+    let demoInfo: String
+
+    let checkHandler: (String) async -> Bool
+    let logInHandler: (String, String, String, String) async -> Bool
+
     @State private var name: String
     @State private var server: String = ""
-    @State private var email: String = ""
+    @State private var username: String = ""
     @State private var password: String = ""
 
     enum ViewState {
@@ -34,31 +48,54 @@ struct KomgaSetupView: View {
     enum Field: Int, Hashable {
         case name
         case server
-        case email
+        case username
         case password
     }
 
     @FocusState private var focusedField: Field?
 
-    private var existingKomgaServers: Set<String>
+    private var existingServers: Set<String>
 
     @EnvironmentObject private var path: NavigationCoordinator
 
-    static private let demoKomgaServer = "https://demo.komga.org"
+    init(
+        icon: Image,
+        title: String,
+        sourceName: String,
+        info: String,
+        learnMoreUrl: URL?,
+        sourceKeyPrefix: String,
+        useEmail: Bool,
+        demoServer: String,
+        demoTitle: String,
+        demoInfo: String,
+        checkServer: @escaping (String) async -> Bool,
+        logIn: @escaping (String, String, String, String) async -> Bool
+    ) {
+        self.icon = icon
+        self.title = title
+        self.sourceName = sourceName
+        self.info = info
+        self.learnMoreUrl = learnMoreUrl
+        self.useEmail = useEmail
+        self.demoServer = demoServer
+        self.demoTitle = demoTitle
+        self.demoInfo = demoInfo
+        self.checkHandler = checkServer
+        self.logInHandler = logIn
 
-    init() {
         // find unique default name
-        var defaultName = NSLocalizedString("KOMGA")
+        var defaultName = sourceName
         var counter = 2
         while SourceManager.shared.sources.contains(where: { $0.name == defaultName }) {
-            defaultName = "Komga \(counter)"
+            defaultName = "\(sourceName) \(counter)"
             counter += 1
         }
         self._name = State(initialValue: defaultName)
 
         // store existing komga servers to check against for uniqueness
-        let komgaSources = SourceManager.shared.sources.filter({ $0.id.hasPrefix("komga.") })
-        self.existingKomgaServers = Set(komgaSources.compactMap { UserDefaults.standard.string(forKey: "\($0.key).server") })
+        let relatedSources = SourceManager.shared.sources.filter({ $0.id.hasPrefix(sourceKeyPrefix) })
+        self.existingServers = Set(relatedSources.compactMap { UserDefaults.standard.string(forKey: "\($0.key).server") })
     }
 
     var body: some View {
@@ -67,15 +104,15 @@ struct KomgaSetupView: View {
         List {
             Section {
                 SettingHeaderView(
-                    icon: .raw(Image(.komga)),
-                    title: NSLocalizedString("KOMGA"),
-                    subtitle: NSLocalizedString("KOMGA_INFO"),
-                    learnMoreUrl: URL(string: "https://komga.org/docs/introduction")
+                    icon: .raw(icon),
+                    title: sourceName,
+                    subtitle: info,
+                    learnMoreUrl: learnMoreUrl
                 )
             }
 
             Section {
-                TextField(NSLocalizedString("KOMGA"), text: $name)
+                TextField(sourceName, text: $name)
                     .autocorrectionDisabled()
                     .submitLabel(.next)
                     .focused($focusedField, equals: .name)
@@ -92,7 +129,7 @@ struct KomgaSetupView: View {
                 }
             }
             Section {
-                TextField(String(Self.demoKomgaServer), text: $server)
+                TextField(demoServer, text: $server)
                     .keyboardType(.URL)
                     .textContentType(.URL)
                     .textInputAutocapitalization(.never)
@@ -123,14 +160,22 @@ struct KomgaSetupView: View {
 
             if state == .logIn || state == .loadingLogin {
                 Section(NSLocalizedString("LOGIN")) {
-                    TextField(NSLocalizedString("EMAIL"), text: $email)
-                        .textInputAutocapitalization(.never)
-                        .textContentType(.emailAddress)
-                        .autocorrectionDisabled()
-                        .submitLabel(.next)
-                        .focused($focusedField, equals: .email)
-                        .onSubmit { self.focusNextField($focusedField) }
-                        .disabled(isLoading)
+                    Group {
+                        if useEmail {
+                            TextField(NSLocalizedString("EMAIL"), text: $username)
+                                .textContentType(.emailAddress)
+                        } else {
+                            TextField(NSLocalizedString("USERNAME"), text: $username)
+                                .textContentType(.username)
+                        }
+                    }
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.next)
+                    .focused($focusedField, equals: .username)
+                    .onSubmit { self.focusNextField($focusedField) }
+                    .disabled(isLoading)
+
                     SecureField(NSLocalizedString("PASSWORD"), text: $password)
                         .textContentType(.password)
                         .submitLabel(.done)
@@ -144,11 +189,11 @@ struct KomgaSetupView: View {
                 }
             }
 
-            if (state == .logIn || state == .loadingLogin) && server == Self.demoKomgaServer {
+            if (state == .logIn || state == .loadingLogin) && server == demoServer {
                 Section {
                     LocalSetupView.infoView(
-                        title: LocalizedStringKey(NSLocalizedString("DEMO_KOMGA_SERVER")),
-                        subtitle: LocalizedStringKey(NSLocalizedString("DEMO_KOMGA_SERVER_INFO"))
+                        title: LocalizedStringKey(demoTitle),
+                        subtitle: LocalizedStringKey(demoInfo)
                     )
                 }
             }
@@ -204,7 +249,7 @@ struct KomgaSetupView: View {
                 .disabled(submitDisabled)
             }
         }
-        .navigationTitle(NSLocalizedString("KOMGA_SETUP"))
+        .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -212,7 +257,7 @@ struct KomgaSetupView: View {
         server.isEmpty || name.isEmpty
             || !uniqueName || !uniqueServer
             || state == .loading || state == .loadingLogin
-            || (state == .logIn && (email.isEmpty || password.isEmpty))
+            || (state == .logIn && (username.isEmpty || password.isEmpty))
     }
 
     func submit() {
@@ -238,7 +283,7 @@ struct KomgaSetupView: View {
     func ensureUniqueServer() {
         let serverString = (server.last == "/" ? String(server[..<server.index(before: server.endIndex)]) : server)
             .trimmingCharacters(in: .whitespaces)
-        uniqueServer = !existingKomgaServers.contains(serverString)
+        uniqueServer = !existingServers.contains(serverString)
     }
 
     func checkServer() async {
@@ -254,20 +299,8 @@ struct KomgaSetupView: View {
             server.removeLast()
         }
 
-        // ensure url is valid (shouldn't fail)
-        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
-            state = .initial
-            error = .connection
-            return
-        }
-
-        // request the user info endpoint to ensure it gives us an komga auth error
-        var request = URLRequest(url: testUrl)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        let response: KomgaError? = try? await URLSession.shared.object(from: testUrl)
-
-        guard let response, response.error == "Unauthorized" else {
+        let isValidServer = await checkHandler(server)
+        guard isValidServer else {
             state = .initial
             error = .connection
             return
@@ -283,15 +316,59 @@ struct KomgaSetupView: View {
         // trim whitespace (again, in case name was changed)
         name = name.trimmingCharacters(in: .whitespaces)
 
-        // request the user info endpoint to ensure we can authenticate
-        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
-            state = .initial
-            error = .connection
+        let didLogIn = await logInHandler(name, server, username, password)
+        guard didLogIn else {
+            state = .logIn
+            error = .authorization
             return
         }
 
+        path.dismiss()
+    }
+}
+
+struct KomgaSetupView: View {
+    var body: some View {
+        SelfHostedSourceSetupView(
+            icon: Image(.komga),
+            title: NSLocalizedString("KOMGA_SETUP"),
+            sourceName: NSLocalizedString("KOMGA"),
+            info: NSLocalizedString("KOMGA_INFO"),
+            learnMoreUrl: URL(string: "https://komga.org/docs/introduction"),
+            sourceKeyPrefix: "komga.",
+            useEmail: true,
+            demoServer: "https://demo.komga.org",
+            demoTitle: NSLocalizedString("DEMO_KOMGA_SERVER"),
+            demoInfo: NSLocalizedString("DEMO_KOMGA_SERVER_INFO"),
+            checkServer: check(server:),
+            logIn: logIn(name:server:username:password:)
+        )
+    }
+
+    func check(server: String) async -> Bool {
+        // ensure url is valid (shouldn't fail)
+        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
+            return false
+        }
+
+        // request the user info endpoint to ensure it gives us an komga auth error
+        let response: KomgaError? = try? await URLSession.shared.object(from: testUrl)
+
+        guard let response, response.error == "Unauthorized" else {
+            return false
+        }
+
+        return true
+    }
+
+    func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+        // request the user info endpoint to ensure we can authenticate
+        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
+            return false
+        }
+
         var request = URLRequest(url: testUrl)
-        let auth = Data("\(email):\(password)".utf8).base64EncodedString()
+        let auth = Data("\(username):\(password)".utf8).base64EncodedString()
         request.setValue("Basic \(auth)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
@@ -300,20 +377,99 @@ struct KomgaSetupView: View {
         }
         let response: Response? = try? await URLSession.shared.object(from: request)
 
-        guard let response, response.email == email else {
-            state = .logIn
-            error = .authorization
-            return
+        guard let response, response.email == username else {
+            return false
         }
 
-        await SourceManager.shared.createKomgaSource(
+        await SourceManager.shared.createCustomSource(
+            kind: .komga,
             name: name,
             server: server,
-            email: email,
+            username: username,
             password: password
         )
 
-        path.dismiss()
+        return true
+    }
+}
+
+struct KavitaSetupView: View {
+    var body: some View {
+        SelfHostedSourceSetupView(
+            icon: Image(.kavita),
+            title: NSLocalizedString("KAVITA_SETUP"),
+            sourceName: NSLocalizedString("KAVITA"),
+            info: NSLocalizedString("KAVITA_INFO"),
+            learnMoreUrl: URL(string: "https://wiki.kavitareader.com/getting-started/"),
+            sourceKeyPrefix: "kavita.",
+            useEmail: false,
+            demoServer: "https://demo.kavitareader.com",
+            demoTitle: NSLocalizedString("DEMO_KAVITA_SERVER"),
+            demoInfo: NSLocalizedString("DEMO_KAVITA_SERVER_INFO"),
+            checkServer: check(server:),
+            logIn: logIn(name:server:username:password:)
+        )
+    }
+
+    func check(server: String) async -> Bool {
+        // ensure url is valid (shouldn't fail)
+        guard let testUrl = URL(string: server + "/api/admin/exists") else {
+            return false
+        }
+
+        let response: Bool? = try? await URLSession.shared.object(from: testUrl)
+
+        guard response == true else {
+            return false
+        }
+
+        return true
+    }
+
+    func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+        guard let loginUrl = URL(string: server + "/api/account/login") else {
+            return false
+        }
+
+        struct Payload: Encodable {
+            let username: String
+            let password: String
+            let apiKey: String
+        }
+
+        let payload = Payload(username: username, password: password, apiKey: "")
+
+        var request = URLRequest(url: loginUrl)
+        request.httpMethod = "POST"
+        request.httpBody = try? JSONEncoder().encode(payload)
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        struct Response: Decodable {
+            let apiKey: String
+            let username: String
+            let token: String
+            let refreshToken: String
+        }
+        let response: Response? = try? await URLSession.shared.object(from: request)
+
+        guard let response, response.username == username else {
+            return false
+        }
+
+        let key = await SourceManager.shared.createCustomSource(
+            kind: .kavita,
+            name: name,
+            server: server,
+            username: username,
+            password: password
+        )
+
+        UserDefaults.standard.setValue(response.apiKey, forKey: "\(key).apiKey")
+        UserDefaults.standard.setValue(response.token, forKey: "\(key).token")
+        UserDefaults.standard.setValue(response.refreshToken, forKey: "\(key).refreshToken")
+
+        return true
     }
 }
 

@@ -124,6 +124,15 @@
 		FB1BEF8E2E3BFFF800098D21 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1BEF8D2E3BFFF400098D21 /* HistoryEntry.swift */; };
 		FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */; };
 		FB1F553428AFE78600CFE182 /* ReaderDoublePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */; };
+		FB248CC12EA55D0600BECD2E /* KavitaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC02EA55D0400BECD2E /* KavitaSource.swift */; };
+		FB248CC22EA55D0600BECD2E /* KavitaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC02EA55D0400BECD2E /* KavitaSource.swift */; };
+		FB248CC42EA55D8D00BECD2E /* KomgaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC32EA55D8B00BECD2E /* KomgaHelper.swift */; };
+		FB248CC52EA55D8D00BECD2E /* KomgaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC32EA55D8B00BECD2E /* KomgaHelper.swift */; };
+		FB248CC72EA55E3400BECD2E /* SelfHostedSourceSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */; };
+		FB248CC92EA5818400BECD2E /* KavitaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC82EA5818200BECD2E /* KavitaHelper.swift */; };
+		FB248CCA2EA5818400BECD2E /* KavitaHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC82EA5818200BECD2E /* KavitaHelper.swift */; };
+		FB248CCC2EA58CEE00BECD2E /* KavitaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CCB2EA58CEB00BECD2E /* KavitaModels.swift */; };
+		FB248CCD2EA58CEE00BECD2E /* KavitaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CCB2EA58CEB00BECD2E /* KavitaModels.swift */; };
 		FB252DA62E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
 		FB252DA72E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
 		FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
@@ -465,7 +474,6 @@
 		FBE7A58B2DE11A5500CA5B60 /* CustomSearchable.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A58A2DE11A5300CA5B60 /* CustomSearchable.swift */; };
 		FBE7A58D2DE1213500CA5B60 /* GetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A58C2DE1213400CA5B60 /* GetButton.swift */; };
 		FBE7A58F2DE1214F00CA5B60 /* ExternalSourceTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */; };
-		FBE7A5912DE2130700CA5B60 /* KomgaSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A5902DE2130400CA5B60 /* KomgaSetupView.swift */; };
 		FBE7A5942DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */; };
 		FBE7A5952DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */; };
 		FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE88BEF2886FC5800A61122 /* TrackerListView.swift */; };
@@ -590,6 +598,11 @@
 		FB24530A2A2BA50600716677 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB24530B2A2BA52100716677 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB24530C2A2BA52600716677 /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB248CC02EA55D0400BECD2E /* KavitaSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaSource.swift; sourceTree = "<group>"; };
+		FB248CC32EA55D8B00BECD2E /* KomgaHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaHelper.swift; sourceTree = "<group>"; };
+		FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfHostedSourceSetupView.swift; sourceTree = "<group>"; };
+		FB248CC82EA5818200BECD2E /* KavitaHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaHelper.swift; sourceTree = "<group>"; };
+		FB248CCB2EA58CEB00BECD2E /* KavitaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaModels.swift; sourceTree = "<group>"; };
 		FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTitleDisplayMode.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
 		FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderChapterListView.swift; sourceTree = "<group>"; };
@@ -876,7 +889,6 @@
 		FBE7A58A2DE11A5300CA5B60 /* CustomSearchable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSearchable.swift; sourceTree = "<group>"; };
 		FBE7A58C2DE1213400CA5B60 /* GetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetButton.swift; sourceTree = "<group>"; };
 		FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSourceTableCell.swift; sourceTree = "<group>"; };
-		FBE7A5902DE2130400CA5B60 /* KomgaSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaSetupView.swift; sourceTree = "<group>"; };
 		FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceConfig.swift; sourceTree = "<group>"; };
 		FBE88BEF2886FC5800A61122 /* TrackerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListView.swift; sourceTree = "<group>"; };
 		FBECCECE2DE0C842007D5467 /* KomgaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaModels.swift; sourceTree = "<group>"; };
@@ -1244,6 +1256,7 @@
 			children = (
 				FB55C0B02DF2444F0019A551 /* Local */,
 				FB7F05FD2DDF79390036B116 /* Komga */,
+				FB248CBF2EA55CFB00BECD2E /* Kavita */,
 				FB7B7ED0278CE670001E6EAF /* SourceManager.swift */,
 				FB7B7ED3278CE692001E6EAF /* Source.swift */,
 				FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */,
@@ -1344,6 +1357,16 @@
 				FB1BEF8D2E3BFFF400098D21 /* HistoryEntry.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		FB248CBF2EA55CFB00BECD2E /* Kavita */ = {
+			isa = PBXGroup;
+			children = (
+				FB248CC02EA55D0400BECD2E /* KavitaSource.swift */,
+				FB248CC82EA5818200BECD2E /* KavitaHelper.swift */,
+				FB248CCB2EA58CEB00BECD2E /* KavitaModels.swift */,
+			);
+			path = Kavita;
 			sourceTree = "<group>";
 		};
 		FB2BE5E92953855000FAD8A7 /* Zooming */ = {
@@ -1497,7 +1520,7 @@
 				FB662E8E2DA813E300007514 /* SourceTableCell.swift */,
 				FBD245A82DF3826900F591E4 /* LocalFileImportView.swift */,
 				FB55C0B42DF247940019A551 /* LocalSetupView.swift */,
-				FBE7A5902DE2130400CA5B60 /* KomgaSetupView.swift */,
+				FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */,
 			);
 			path = Browse;
 			sourceTree = "<group>";
@@ -1796,6 +1819,7 @@
 			isa = PBXGroup;
 			children = (
 				FB7F05FE2DDF79400036B116 /* KomgaSource.swift */,
+				FB248CC32EA55D8B00BECD2E /* KomgaHelper.swift */,
 				FBECCECE2DE0C842007D5467 /* KomgaModels.swift */,
 			);
 			path = Komga;
@@ -2230,6 +2254,7 @@
 				FB0E1CD4288AEA8A00B67BA9 /* AniListQueries.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */,
+				FB248CC42EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
 				FB8E318B2DB98AFE0084F899 /* ChapterListHeaderView.swift in Sources */,
 				FB662F0D2DA81B8200007514 /* MangaGridButtonStyle.swift in Sources */,
 				FB662F0E2DA81B8200007514 /* AidokuRunner.swift in Sources */,
@@ -2343,10 +2368,12 @@
 				FB1B486A277CE76B0056D02C /* Page.swift in Sources */,
 				FB3F49E82B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */,
 				FB0E1CC7288A5A2300B67BA9 /* TrackUpdate.swift in Sources */,
+				FB248CCD2EA58CEE00BECD2E /* KavitaModels.swift in Sources */,
 				FB4EEBE227A5AB4E005081A3 /* MangaListSelectionHeader.swift in Sources */,
 				FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */,
 				FB0E1CD8288AEAF700B67BA9 /* OAuthClient.swift in Sources */,
 				FBD245A92DF3826D00F591E4 /* LocalFileImportView.swift in Sources */,
+				FB248CC12EA55D0600BECD2E /* KavitaSource.swift in Sources */,
 				FB1B51A828E3405D00D3CE0E /* ReaderSettingsView.swift in Sources */,
 				FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */,
 				FB427514295FBFF900131377 /* SourceTableViewCell.swift in Sources */,
@@ -2437,6 +2464,7 @@
 				FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */,
 				FB619E512E9E90F000E3B565 /* SettingHeaderView.swift in Sources */,
 				FB55C0AD2DEFC43A0019A551 /* UIHostingController+SafeArea.swift in Sources */,
+				FB248CC92EA5818400BECD2E /* KavitaHelper.swift in Sources */,
 				FB8E48DB2DC00783002A3621 /* SelectHighlightButtonStyle.swift in Sources */,
 				FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */,
 				FB662EB92DA813E300007514 /* SelectFilterView.swift in Sources */,
@@ -2492,7 +2520,6 @@
 				FBECCED02DE0C845007D5467 /* KomgaModels.swift in Sources */,
 				FBAE7BEE2AF2DC5D00D530EE /* LegacySource.swift in Sources */,
 				FBCA1B272888ACA4007149C5 /* HostingController.swift in Sources */,
-				FBE7A5912DE2130700CA5B60 /* KomgaSetupView.swift in Sources */,
 				FBE7A58D2DE1213500CA5B60 /* GetButton.swift in Sources */,
 				FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */,
 				FBE53F1229CDDCD300899601 /* BaseObservingCellNode.swift in Sources */,
@@ -2513,6 +2540,7 @@
 				FB55C0B32DF244580019A551 /* LocalSource.swift in Sources */,
 				FBD6A4052857AF2C007116C9 /* UIImage.swift in Sources */,
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
+				FB248CC72EA55E3400BECD2E /* SelfHostedSourceSetupView.swift in Sources */,
 				FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */,
 				FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */,
 				FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */,
@@ -2593,10 +2621,13 @@
 				FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */,
 				FB3F49E92B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */,
 				FBA748A42E81C11C00D9BE86 /* BangumiApi.swift in Sources */,
+				FB248CCA2EA5818400BECD2E /* KavitaHelper.swift in Sources */,
 				FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */,
+				FB248CC22EA55D0600BECD2E /* KavitaSource.swift in Sources */,
 				FBE7813028308DC60038C0E3 /* Download.swift in Sources */,
 				FB4B0AE4285CCC8E0066A13B /* URL.swift in Sources */,
 				FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
+				FB248CC52EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
 				FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB14B12F2DF4D2E90067E4D4 /* AniListQueries.swift in Sources */,
 				FB0CAA6628A9B5540024561A /* MangaManager.swift in Sources */,
@@ -2604,6 +2635,7 @@
 				FB72501727CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB0CAA5B28A998630024561A /* CoreDataManager.swift in Sources */,
 				FB4EEBCB27A35171005081A3 /* HistoryObject.swift in Sources */,
+				FB248CCC2EA58CEE00BECD2E /* KavitaModels.swift in Sources */,
 				FB7983FA2E0C663B000761A9 /* MultiArrayModel.swift in Sources */,
 				FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB0E1CCB288AE50700B67BA9 /* OAuthTracker.swift in Sources */,
@@ -2895,7 +2927,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Aidoku needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Aidoku needs permission to connect to local Komga servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Aidoku needs permission to connect to local Komga and Kavita servers";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aidoku needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -2937,7 +2969,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = NO;
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Aidoku needs FaceID permissions for user-defined settings";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Aidoku needs permission to connect to local Komga servers";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Aidoku needs permission to connect to local Komga and Kavita servers";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aidoku needs permission to save pages in your photo library";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

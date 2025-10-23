@@ -179,18 +179,18 @@
 "KOMGA" = "Komga";
 "KOMGA_TAGLINE" = "Self-hosted media server";
 "KOMGA_INFO" = "Komga is a self-hosted media server for comics and manga. You will need a Komga server set up and running in order to use this source.";
+"KOMGA_SETUP" = "Komga Setup";
+"DEMO_KOMGA_SERVER" = "Demo Komga Server";
+"DEMO_KOMGA_SERVER_INFO" = "You can log in to the demo Komga server using the email `demo@komga.org` and password `komga-demo`.";
 "SOURCE_NAME" = "Source Name";
 "SOURCE_NAME_INFO" = "The name the source will show in the browse tab.";
 "SOURCE_NAME_UNIQUE_ERROR" = "Please choose a unique source name.";
 "SERVER_URL" = "Server URL";
-"SERVER_URL_INFO" = "The base URL of a Komga server to connect to.";
-"SERVER_URL_UNIQUE_ERROR" = "A Komga source configured with that server already exists.";
-"DEMO_KOMGA_SERVER" = "Demo Komga Server";
-"DEMO_KOMGA_SERVER_INFO" = "You can log in to the demo Komga server using the email `demo@komga.org` and password `komga-demo`.";
+"SERVER_URL_INFO" = "The base URL of a server to connect to.";
+"SERVER_URL_UNIQUE_ERROR" = "A source configured with that server already exists.";
 "SERVER_ERROR" = "Server Error";
-"SERVER_ERROR_CONNECTION" = "Unable to connect to the given server. Ensure a Komga instance is running and the URL is entered correctly.";
+"SERVER_ERROR_CONNECTION" = "Unable to connect to the given server. Ensure a server instance is running and the URL is entered correctly.";
 "SERVER_ERROR_AUTHENTICATION" = "Unable to log in. Ensure your credentials are entered correctly.";
-"KOMGA_SETUP" = "Komga Setup";
 "OTHER_SETTINGS" = "Other Settings";
 "DISPLAY_DEFAULT" = "Default";
 "DISPLAY_CHAPTER" = "Chapter";
@@ -227,6 +227,24 @@
 "NOT_LOGGED_IN" = "Not logged in";
 "NO_SERVER_CONFIGURED" = "No server configured";
 "INVALID_SERVER_URL" = "Invalid server URL";
+
+// Kavita
+"KAVITA" = "Kavita";
+"KAVITA_TAGLINE" = "Self-hosted digital library";
+"KAVITA_INFO" = "Kavita is a self-hosted media server for comics and manga. You will need a Kavita server set up and running in order to use this source.";
+"KAVITA_SETUP" = "Kavita Setup";
+"DEMO_KAVITA_SERVER" = "Demo Kavita Server";
+"DEMO_KAVITA_SERVER_INFO" = "You can log in to the demo Kavita server using the username `demouser` and password `Demouser64`.";
+"MORE_IN_%@" = "More In %@";
+"SORT_CHAPTER_ADDED" = "Chapter Added";
+"SORT_TIME_TO_READ" = "Time to Read";
+"SORT_AVERAGE_RATING" = "Average Rating";
+"ENDED" = "Ended";
+"FORMAT" = "Format";
+"FORMAT_IMAGE" = "Image";
+"FORMAT_EPUB" = "EPUB";
+"FORMAT_PDF" = "PDF";
+"FORMAT_ARCHIVE" = "Archive";
 
 // Manga
 "UNTITLED" = "Untitled";

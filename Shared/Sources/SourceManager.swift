@@ -231,23 +231,37 @@ extension SourceManager {
         return result
     }
 
-    func createKomgaSource(
+    enum CustomSourceKind {
+        case komga
+        case kavita
+    }
+
+    @discardableResult
+    func createCustomSource(
+        kind: CustomSourceKind,
         name: String,
         server: String,
-        email: String,
-        password: String
-    ) async {
+        username: String,
+        password: String,
+    ) async -> String {
+        let keyPrefix = switch kind {
+            case .komga: "komga."
+            case .kavita: "kavita."
+        }
         let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
-        var key = "komga.\(nameEncoded)"
+        var key = "\(keyPrefix)\(nameEncoded)"
 
         // make sure key is unique
         var counter = 1
         while SourceManager.shared.hasSourceInstalled(id: key) {
-            key = "komga.\(nameEncoded)-\(counter)"
+            key = "\(keyPrefix)\(nameEncoded)-\(counter)"
             counter += 1
         }
 
-        let config = CustomSourceConfig.komga(key: key, name: name, server: server)
+        let config = switch kind {
+            case .komga: CustomSourceConfig.komga(key: key, name: name, server: server)
+            case .kavita: CustomSourceConfig.kavita(key: key, name: name, server: server)
+        }
         let source = config.toSource()
 
         // add to coredata
@@ -260,13 +274,15 @@ extension SourceManager {
         // register details
         UserDefaults.standard.setValue(server, forKey: "\(key).server")
         UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
-        UserDefaults.standard.setValue(email, forKey: "\(key).login.username")
+        UserDefaults.standard.setValue(username, forKey: "\(key).login.username")
         UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
 
         sources.append(source)
         sortSources()
 
         NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+
+        return key
     }
 
     func sortSources() {
