@@ -245,6 +245,7 @@
 "FORMAT_EPUB" = "EPUB";
 "FORMAT_PDF" = "PDF";
 "FORMAT_ARCHIVE" = "Archive";
+"LOGIN_VIA_OIDC" = "Log In via OIDC";
 
 // Manga
 "UNTITLED" = "Untitled";

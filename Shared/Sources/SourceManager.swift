@@ -241,8 +241,8 @@ extension SourceManager {
         kind: CustomSourceKind,
         name: String,
         server: String,
-        username: String,
-        password: String,
+        username: String? = nil,
+        password: String? = nil,
     ) async -> String {
         let keyPrefix = switch kind {
             case .komga: "komga."
@@ -273,9 +273,15 @@ extension SourceManager {
 
         // register details
         UserDefaults.standard.setValue(server, forKey: "\(key).server")
-        UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
-        UserDefaults.standard.setValue(username, forKey: "\(key).login.username")
-        UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
+        if username != nil || password != nil {
+            UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
+        }
+        if let username {
+            UserDefaults.standard.setValue(username, forKey: "\(key).login.username")
+        }
+        if let password {
+            UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
+        }
 
         sources.append(source)
         sortSources()

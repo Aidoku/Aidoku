@@ -30,6 +30,7 @@
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
+		FB034E942EAAB6A90072EEEB /* OIDCLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */; };
 		FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182A2E09B05D00CEE275 /* GIFImage.swift */; };
 		FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */; };
 		FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */; };
@@ -531,6 +532,7 @@
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
+		FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OIDCLoginController.swift; sourceTree = "<group>"; };
 		FB05182A2E09B05D00CEE275 /* GIFImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImage.swift; sourceTree = "<group>"; };
 		FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImageNode.swift; sourceTree = "<group>"; };
 		FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpscaleProcessor.swift; sourceTree = "<group>"; };
@@ -1517,10 +1519,11 @@
 				FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */,
 				FBE7A58C2DE1213400CA5B60 /* GetButton.swift */,
 				FB662E8D2DA813E300007514 /* IconView.swift */,
-				FB662E8E2DA813E300007514 /* SourceTableCell.swift */,
 				FBD245A82DF3826900F591E4 /* LocalFileImportView.swift */,
 				FB55C0B42DF247940019A551 /* LocalSetupView.swift */,
+				FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */,
 				FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */,
+				FB662E8E2DA813E300007514 /* SourceTableCell.swift */,
 			);
 			path = Browse;
 			sourceTree = "<group>";
@@ -2410,6 +2413,7 @@
 				FB1BEF8E2E3BFFF800098D21 /* HistoryEntry.swift in Sources */,
 				FBD0F2EF2D923E14009CB0C4 /* UserAgentProvider.swift in Sources */,
 				FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */,
+				FB034E942EAAB6A90072EEEB /* OIDCLoginController.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,

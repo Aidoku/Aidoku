@@ -114,19 +114,6 @@ extension AidokuRunner.Source {
                             )
                         ]
                     ))
-                ),
-                .init(
-                    value: .group(.init(
-                        items: [
-                            .init(
-                                key: "login",
-                                title: "LOGIN",
-                                requires: "server",
-                                refreshes: ["content", "listings", "filters"],
-                                value: .login(.init(method: .basic))
-                            )
-                        ]
-                    ))
                 )
             ],
             runner: KavitaSourceRunner(sourceKey: key)
@@ -142,10 +129,13 @@ actor KavitaSourceRunner: Runner {
         providesListings: true,
         providesHome: true,
         dynamicFilters: true,
+        dynamicSettings: true,
         dynamicListings: true,
         providesImageRequests: true,
         providesBaseUrl: true,
-        handlesBasicLogin: true
+        handlesNotifications: true,
+        handlesBasicLogin: true,
+        handlesWebLogin: true
     )
 
     init(sourceKey: String) {
@@ -405,9 +395,66 @@ actor KavitaSourceRunner: Runner {
     func getImageRequest(url: String, context: PageContext?) async throws -> URLRequest {
         guard let url = URL(string: url) else { throw SourceError.message("Invalid URL") }
         var request = URLRequest(url: url)
-//        request.setValue(helper.getAuthorizationHeader(), forHTTPHeaderField: "Authorization")
         request.setValue("image/*", forHTTPHeaderField: "Accept")
         return request
+    }
+
+    func getSettings() async throws -> [Setting] {
+        // check for oidc support
+        let server = try helper.getConfiguredServer()
+        guard let oidcCheckUrl = URL(string: server + "/api/settings/oidc") else {
+            return []
+        }
+
+        struct OIDCResponse: Decodable {
+            let disablePasswordAuthentication: Bool
+            let enabled: Bool
+            let providerName: String
+        }
+        let response: OIDCResponse? = try? await URLSession.shared.object(from: oidcCheckUrl)
+        guard let response else { return [] }
+
+        var settings: [Setting] = []
+
+        let isBasicLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login") != nil
+        let isOidcLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login_oidc") != nil
+
+        if !response.disablePasswordAuthentication && !isOidcLoggedIn {
+            settings.append(.init(
+                value: .group(.init(
+                    items: [
+                        .init(
+                            key: "login",
+                            title: "LOGIN",
+                            notification: "login",
+                            requires: "server",
+                            requiresFalse: "login_oidc",
+                            refreshes: ["content", "listings", "filters", "settings"],
+                            value: .login(.init(method: .basic))
+                        )
+                    ]
+                ))
+            ))
+        }
+        if response.enabled && !isBasicLoggedIn {
+            settings.append(.init(
+                value: .group(.init(
+                    items: [
+                        .init(
+                            key: "login_oidc",
+                            title: "LOGIN_VIA_OIDC",
+                            notification: "login_oidc",
+                            requires: "server",
+                            requiresFalse: "login",
+                            refreshes: ["content", "listings", "filters", "settings"],
+                            value: .login(.init(method: .web, url: server + "/oidc/login"))
+                        )
+                    ]
+                ))
+            ))
+        }
+
+        return settings
     }
 
     func getBaseUrl() async throws -> URL? {
@@ -416,42 +463,75 @@ actor KavitaSourceRunner: Runner {
 
     func handleBasicLogin(key _: String, username: String, password: String) async throws -> Bool {
         let server = try helper.getConfiguredServer()
+        let response = await KavitaSetupView.getLoginResponse(server: server, username: username, password: password)
 
-        guard let loginUrl = URL(string: server + "/api/account/login") else {
-            return false
-        }
-
-        struct Payload: Encodable {
-            let username: String
-            let password: String
-            let apiKey: String
-        }
-
-        let payload = Payload(username: username, password: password, apiKey: "")
-
-        var request = URLRequest(url: loginUrl)
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONEncoder().encode(payload)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        struct Response: Decodable {
-            let apiKey: String
-            let username: String
-            let token: String
-            let refreshToken: String
-        }
-        let response: Response? = try? await URLSession.shared.object(from: request)
-
-        guard let response, response.username == username else {
+        guard
+            let response,
+            let token = response.token,
+            let refreshToken = response.refreshToken,
+            response.username == username
+        else {
             return false
         }
 
         UserDefaults.standard.setValue(response.apiKey, forKey: "\(sourceKey).apiKey")
-        UserDefaults.standard.setValue(response.token, forKey: "\(sourceKey).token")
-        UserDefaults.standard.setValue(response.refreshToken, forKey: "\(sourceKey).refreshToken")
+        UserDefaults.standard.setValue(token, forKey: "\(sourceKey).token")
+        UserDefaults.standard.setValue(refreshToken, forKey: "\(sourceKey).refreshToken")
 
         return true
+    }
+
+    func handleWebLogin(key: String, cookies: [String: String]) async throws -> Bool {
+        let server = try helper.getConfiguredServer()
+
+        guard
+            let cookie = cookies[".AspNetCore.Cookies"],
+            let httpCookie = HTTPCookie(properties: [
+                .name: ".AspNetCore.Cookies",
+                .value: cookie,
+                .domain: URL(string: server)?.domain ?? "",
+                .path: "/"
+            ])
+        else {
+            return false
+        }
+
+        let response = await KavitaSetupView.getLoginResponse(server: server, cookies: [httpCookie])
+
+        guard
+            let response,
+            let cookie = response.cookie
+        else {
+            return false
+        }
+
+        UserDefaults.standard.setValue(response.apiKey, forKey: "\(sourceKey).apiKey")
+        UserDefaults.standard.setValue(cookie, forKey: "\(sourceKey).cookie")
+
+        return true
+    }
+
+    func handleNotification(notification: String) async throws {
+        // clear additional login values when logging out
+        switch notification {
+            case "login":
+                let isLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login") != nil
+                if !isLoggedIn {
+                    UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).apiKey")
+                    UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).token")
+                    UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).refreshToken")
+                }
+
+            case "login_oidc":
+                let isLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login_oidc") != nil
+                if !isLoggedIn {
+                    UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).apiKey")
+                    UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).cookie")
+                }
+
+            default:
+                break
+        }
     }
 }
 

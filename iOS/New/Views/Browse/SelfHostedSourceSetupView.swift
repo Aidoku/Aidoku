@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+private struct ServerCheck: Hashable {
+    let canLoginBasic: Bool
+    var canLoginOIDC: Bool = false
+    var oidcLoginURL: URL?
+}
+
 struct SelfHostedSourceSetupView: View {
     let icon: Image
     let title: String
@@ -19,28 +25,47 @@ struct SelfHostedSourceSetupView: View {
     let demoTitle: String
     let demoInfo: String
 
-    let checkHandler: (String) async -> Bool
-    let logInHandler: (String, String, String, String) async -> Bool
+    private let checkHandler: (String) async -> ServerCheck
+    private let logInHandler: (String, String, String, String) async -> Bool
+    private let oidcLogInHandler: ((String, String, [HTTPCookie]) async -> Bool)?
 
     @State private var name: String
     @State private var server: String = ""
     @State private var username: String = ""
     @State private var password: String = ""
 
-    enum ViewState {
+    private enum ViewState: Equatable {
         case initial
         case loading
-        case logIn
-        case loadingLogin
+        case logIn(ServerCheck)
+        case loadingLogin(ServerCheck)
     }
 
-    enum ServerError {
+    private enum ServerError {
         case connection
         case authorization
     }
 
     @State private var state: ViewState = .initial
     @State private var error: ServerError?
+    @State private var showLoginSheet = false
+
+    private var isLogInState: Bool {
+        if case .logIn = state { return true }
+        return false
+    }
+    private var isLoadingLoginState: Bool {
+        if case .loadingLogin = state { return true }
+        return false
+    }
+    private var loginCheck: ServerCheck? {
+        if case let .logIn(check) = state {
+            return check
+        } else if case let .loadingLogin(check) = state {
+            return check
+        }
+        return nil
+    }
 
     @State private var uniqueName = true
     @State private var uniqueServer = true
@@ -58,7 +83,7 @@ struct SelfHostedSourceSetupView: View {
 
     @EnvironmentObject private var path: NavigationCoordinator
 
-    init(
+    fileprivate init(
         icon: Image,
         title: String,
         sourceName: String,
@@ -69,8 +94,9 @@ struct SelfHostedSourceSetupView: View {
         demoServer: String,
         demoTitle: String,
         demoInfo: String,
-        checkServer: @escaping (String) async -> Bool,
-        logIn: @escaping (String, String, String, String) async -> Bool
+        checkServer: @escaping (String) async -> ServerCheck,
+        logIn: @escaping (String, String, String, String) async -> Bool,
+        oidcLogIn: ((String, String, [HTTPCookie]) async -> Bool)? = nil
     ) {
         self.icon = icon
         self.title = title
@@ -83,6 +109,7 @@ struct SelfHostedSourceSetupView: View {
         self.demoInfo = demoInfo
         self.checkHandler = checkServer
         self.logInHandler = logIn
+        self.oidcLogInHandler = oidcLogIn
 
         // find unique default name
         var defaultName = sourceName
@@ -99,7 +126,7 @@ struct SelfHostedSourceSetupView: View {
     }
 
     var body: some View {
-        let isLoading = state == .loading || state == .loadingLogin
+        let isLoading = state == .loading || isLoadingLoginState
         let submitDisabled = submitDisabled
         List {
             Section {
@@ -143,7 +170,7 @@ struct SelfHostedSourceSetupView: View {
                     .submitLabel(.done)
                     .disabled(isLoading)
                     .onChange(of: server) { _ in
-                        if state == .logIn {
+                        if isLogInState {
                             state = .initial
                         }
                     }
@@ -158,38 +185,55 @@ struct SelfHostedSourceSetupView: View {
                 }
             }
 
-            if state == .logIn || state == .loadingLogin {
-                Section(NSLocalizedString("LOGIN")) {
-                    Group {
-                        if useEmail {
-                            TextField(NSLocalizedString("EMAIL"), text: $username)
-                                .textContentType(.emailAddress)
-                        } else {
-                            TextField(NSLocalizedString("USERNAME"), text: $username)
-                                .textContentType(.username)
-                        }
-                    }
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .submitLabel(.next)
-                    .focused($focusedField, equals: .username)
-                    .onSubmit { self.focusNextField($focusedField) }
-                    .disabled(isLoading)
-
-                    SecureField(NSLocalizedString("PASSWORD"), text: $password)
-                        .textContentType(.password)
-                        .submitLabel(.done)
-                        .focused($focusedField, equals: .password)
-                        .onSubmit {
-                            if !submitDisabled {
-                                submit()
+            if let check = loginCheck {
+                if check.canLoginBasic {
+                    Section(NSLocalizedString("LOGIN")) {
+                        Group {
+                            if useEmail {
+                                TextField(NSLocalizedString("EMAIL"), text: $username)
+                                    .textContentType(.emailAddress)
+                            } else {
+                                TextField(NSLocalizedString("USERNAME"), text: $username)
+                                    .textContentType(.username)
                             }
                         }
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .submitLabel(.next)
+                        .focused($focusedField, equals: .username)
+                        .onSubmit { self.focusNextField($focusedField) }
                         .disabled(isLoading)
+
+                        SecureField(NSLocalizedString("PASSWORD"), text: $password)
+                            .textContentType(.password)
+                            .submitLabel(.done)
+                            .focused($focusedField, equals: .password)
+                            .onSubmit {
+                                if !submitDisabled {
+                                    submit()
+                                }
+                            }
+                            .disabled(isLoading)
+                    }
+                }
+                if check.canLoginOIDC, let loginURL = check.oidcLoginURL {
+                    Section {
+                        Button(NSLocalizedString("LOGIN_VIA_OIDC")) {
+                            showLoginSheet = true
+                        }
+                        .sheet(isPresented: $showLoginSheet) {
+                            OIDCLoginView(loginURL: loginURL) { cookies in
+                                Task {
+                                    await logIn(cookies: cookies)
+                                }
+                            }
+                            .interactiveDismissDisabled()
+                        }
+                    }
                 }
             }
 
-            if (state == .logIn || state == .loadingLogin) && server == demoServer {
+            if (isLogInState || isLoadingLoginState) && server == demoServer {
                 Section {
                     LocalSetupView.infoView(
                         title: LocalizedStringKey(demoTitle),
@@ -256,8 +300,8 @@ struct SelfHostedSourceSetupView: View {
     var submitDisabled: Bool {
         server.isEmpty || name.isEmpty
             || !uniqueName || !uniqueServer
-            || state == .loading || state == .loadingLogin
-            || (state == .logIn && (username.isEmpty || password.isEmpty))
+            || state == .loading || isLoadingLoginState
+            || (isLogInState && (username.isEmpty || password.isEmpty))
     }
 
     func submit() {
@@ -299,26 +343,34 @@ struct SelfHostedSourceSetupView: View {
             server.removeLast()
         }
 
-        let isValidServer = await checkHandler(server)
-        guard isValidServer else {
+        let serverCheck = await checkHandler(server)
+        guard serverCheck.canLoginBasic || serverCheck.canLoginOIDC else {
             state = .initial
             error = .connection
             return
         }
 
-        state = .logIn
+        state = .logIn(serverCheck)
     }
 
-    func logIn() async {
+    func logIn(cookies: [HTTPCookie] = []) async {
+        guard case let .logIn(check) = state else {
+            return
+        }
         error = nil
-        state = .loadingLogin
+        state = .loadingLogin(check)
 
         // trim whitespace (again, in case name was changed)
         name = name.trimmingCharacters(in: .whitespaces)
 
-        let didLogIn = await logInHandler(name, server, username, password)
+        let didLogIn = if !cookies.isEmpty, let oidcLogInHandler {
+            await oidcLogInHandler(name, server, cookies)
+        } else {
+            await logInHandler(name, server, username, password)
+        }
+
         guard didLogIn else {
-            state = .logIn
+            state = .logIn(check)
             error = .authorization
             return
         }
@@ -345,23 +397,23 @@ struct KomgaSetupView: View {
         )
     }
 
-    func check(server: String) async -> Bool {
+    private func check(server: String) async -> ServerCheck {
         // ensure url is valid (shouldn't fail)
         guard let testUrl = URL(string: server + "/api/v2/users/me") else {
-            return false
+            return ServerCheck(canLoginBasic: false)
         }
 
         // request the user info endpoint to ensure it gives us an komga auth error
         let response: KomgaError? = try? await URLSession.shared.object(from: testUrl)
 
         guard let response, response.error == "Unauthorized" else {
-            return false
+            return ServerCheck(canLoginBasic: false)
         }
 
-        return true
+        return ServerCheck(canLoginBasic: true)
     }
 
-    func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+    private func logIn(name: String, server: String, username: String, password: String) async -> Bool {
         // request the user info endpoint to ensure we can authenticate
         guard let testUrl = URL(string: server + "/api/v2/users/me") else {
             return false
@@ -407,28 +459,99 @@ struct KavitaSetupView: View {
             demoTitle: NSLocalizedString("DEMO_KAVITA_SERVER"),
             demoInfo: NSLocalizedString("DEMO_KAVITA_SERVER_INFO"),
             checkServer: check(server:),
-            logIn: logIn(name:server:username:password:)
+            logIn: logIn(name:server:username:password:),
+            oidcLogIn: logIn(name:server:cookies:)
         )
     }
 
-    func check(server: String) async -> Bool {
+    private func check(server: String) async -> ServerCheck {
         // ensure url is valid (shouldn't fail)
-        guard let testUrl = URL(string: server + "/api/admin/exists") else {
+        guard
+            let testUrl = URL(string: server + "/api/admin/exists"),
+            let oidcCheckUrl = URL(string: server + "/api/settings/oidc")
+        else {
+            return ServerCheck(canLoginBasic: false)
+        }
+
+        let check: Bool? = try? await URLSession.shared.object(from: testUrl)
+        guard check == true else {
+            return ServerCheck(canLoginBasic: false)
+        }
+
+        struct OIDCResponse: Decodable {
+            let disablePasswordAuthentication: Bool
+            let enabled: Bool
+            let providerName: String
+        }
+        let response: OIDCResponse? = try? await URLSession.shared.object(from: oidcCheckUrl)
+
+        guard let response else {
+            return ServerCheck(canLoginBasic: false)
+        }
+
+        return ServerCheck(
+            canLoginBasic: !response.disablePasswordAuthentication,
+            canLoginOIDC: response.enabled,
+            oidcLoginURL: URL(string: server + "/oidc/login?returnURL=aidoku://oidc-auth")
+        )
+    }
+
+    private func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+        let response = await Self.getLoginResponse(server: server, username: username, password: password)
+
+        guard
+            let response,
+            let token = response.token,
+            let refreshToken = response.refreshToken,
+            response.username == username
+        else {
             return false
         }
 
-        let response: Bool? = try? await URLSession.shared.object(from: testUrl)
+        let key = await SourceManager.shared.createCustomSource(
+            kind: .kavita,
+            name: name,
+            server: server,
+            username: username,
+            password: password
+        )
 
-        guard response == true else {
-            return false
-        }
+        UserDefaults.standard.setValue(response.apiKey, forKey: "\(key).apiKey")
+        UserDefaults.standard.setValue(token, forKey: "\(key).token")
+        UserDefaults.standard.setValue(refreshToken, forKey: "\(key).refreshToken")
 
         return true
     }
 
-    func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+    private func logIn(name: String, server: String, cookies: [HTTPCookie]) async -> Bool {
+        let response = await Self.getLoginResponse(server: server, cookies: cookies)
+
+        guard let response, let cookie = response.cookie else { return false }
+
+        let key = await SourceManager.shared.createCustomSource(
+            kind: .kavita,
+            name: name,
+            server: server
+        )
+
+        UserDefaults.standard.setValue("logged_in", forKey: "\(key).login_oidc")
+        UserDefaults.standard.setValue(response.apiKey, forKey: "\(key).apiKey")
+        UserDefaults.standard.setValue(cookie, forKey: "\(key).cookie")
+
+        return true
+    }
+
+    struct LoginResponse: Decodable {
+        let apiKey: String
+        let username: String
+        let token: String?
+        let refreshToken: String?
+        var cookie: String?
+    }
+
+    static func getLoginResponse(server: String, username: String, password: String) async -> LoginResponse? {
         guard let loginUrl = URL(string: server + "/api/account/login") else {
-            return false
+            return nil
         }
 
         struct Payload: Encodable {
@@ -445,31 +568,27 @@ struct KavitaSetupView: View {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        struct Response: Decodable {
-            let apiKey: String
-            let username: String
-            let token: String
-            let refreshToken: String
+        return try? await URLSession.shared.object(from: request)
+    }
+
+    static func getLoginResponse(server: String, cookies: [HTTPCookie]) async -> LoginResponse? {
+        guard
+            let cookie = cookies.first(where: { $0.name == ".AspNetCore.Cookies" }),
+            let accountUrl = URL(string: server + "/api/account")
+        else {
+            return nil
         }
-        let response: Response? = try? await URLSession.shared.object(from: request)
 
-        guard let response, response.username == username else {
-            return false
+        var request = URLRequest(url: accountUrl)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        for (key, value) in HTTPCookie.requestHeaderFields(with: [cookie]) {
+            request.setValue(value, forHTTPHeaderField: key)
         }
 
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
-
-        UserDefaults.standard.setValue(response.apiKey, forKey: "\(key).apiKey")
-        UserDefaults.standard.setValue(response.token, forKey: "\(key).token")
-        UserDefaults.standard.setValue(response.refreshToken, forKey: "\(key).refreshToken")
-
-        return true
+        var response: LoginResponse? = try? await URLSession.shared.object(from: request)
+        response?.cookie = request.value(forHTTPHeaderField: "Cookie")
+        return response
     }
 }
 

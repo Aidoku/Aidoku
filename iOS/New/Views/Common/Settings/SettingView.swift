@@ -774,8 +774,9 @@ extension SettingView {
             // todo: we can show message from source if they return an error message
             Text(NSLocalizedString("LOGIN_FAILED_TEXT"))
         }
-        .fullScreenCover(isPresented: $showLoginWebView) {
+        .sheet(isPresented: $showLoginWebView) {
             loginWebSheetView(value: value)
+                .interactiveDismissDisabled()
         }
         .onAppear {
             username = SettingsStore.shared.get(key: key + Self.usernameKeySuffix)
@@ -870,10 +871,8 @@ extension SettingView {
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button {
+                    CloseButton {
                         showLoginWebView = false
-                    } label: {
-                        Text(NSLocalizedString("CANCEL")).bold()
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {

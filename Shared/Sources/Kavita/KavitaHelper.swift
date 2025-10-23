@@ -15,12 +15,16 @@ struct KavitaHelper: Sendable {
         UserDefaults.standard.string(forKey: "\(sourceKey).apiKey") ?? ""
     }
 
-    func getAuthorizationHeader() -> String? {
-        let token = UserDefaults.standard.string(forKey: "\(sourceKey).token")
-        guard let token else {
-            return nil
+    func authorize(request: inout URLRequest) -> Bool {
+        if let token = UserDefaults.standard.string(forKey: "\(sourceKey).token") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            return true
+        } else if let cookie = UserDefaults.standard.string(forKey: "\(sourceKey).cookie") {
+            request.setValue(cookie, forHTTPHeaderField: "Cookie")
+            return true
+        } else {
+            return false
         }
-        return "Bearer \(token)"
     }
 
     func getConfiguredServer() throws(SourceError) -> String {
@@ -47,13 +51,12 @@ struct KavitaHelper: Sendable {
         body: Data? = nil,
     ) async throws(SourceError) -> T {
         func doRequest() async throws(SourceError) -> T? {
-            guard let auth = getAuthorizationHeader() else {
-                throw SourceError.message("NOT_LOGGED_IN")
-            }
 
             let url = try getServerUrl(path: path)
             var request = URLRequest(url: url)
-            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            guard authorize(request: &request) else {
+                throw SourceError.message("NOT_LOGGED_IN")
+            }
             request.setValue("application/json", forHTTPHeaderField: "Accept")
             request.httpMethod = method.stringValue
             if let body {
