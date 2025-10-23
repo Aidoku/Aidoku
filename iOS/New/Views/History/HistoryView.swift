@@ -99,14 +99,14 @@ struct HistoryView: View {
                 }
             }
         }
-        .confirmationDialog(NSLocalizedString("CLEAR_READ_HISTORY"), isPresented: $showClearHistoryConfirm, titleVisibility: .visible) {
+        .confirmationDialogOrAlert(NSLocalizedString("CLEAR_READ_HISTORY"), isPresented: $showClearHistoryConfirm, titleVisibility: .visible) {
             Button(NSLocalizedString("CLEAR"), role: .destructive) {
                 viewModel.clearHistory()
             }
         } message: {
             Text(NSLocalizedString("CLEAR_READ_HISTORY_TEXT"))
         }
-        .confirmationDialog(NSLocalizedString("CLEAR_READ_HISTORY"), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+        .confirmationDialogOrAlert(NSLocalizedString("CLEAR_READ_HISTORY"), isPresented: $showDeleteConfirm, titleVisibility: .visible) {
             Button(NSLocalizedString("REMOVE"), role: .destructive) {
                 if let entryToDelete {
                     Task {

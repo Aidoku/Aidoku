@@ -99,7 +99,7 @@ struct SourceSettingsView: View {
         } message: {
             Text(String(format: NSLocalizedString("RESET_SETTINGS_CONFIRM_%@"), source.name))
         }
-        .confirmationDialog(NSLocalizedString("CLEAR_SOURCE_CACHE"), isPresented: $showingClearCacheConfirm, titleVisibility: .visible) {
+        .confirmationDialogOrAlert(NSLocalizedString("CLEAR_SOURCE_CACHE"), isPresented: $showingClearCacheConfirm, titleVisibility: .visible) {
             Button(NSLocalizedString("CLEAR"), role: .destructive) {
                 clearCache()
             }

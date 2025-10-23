@@ -649,12 +649,13 @@ extension SettingView {
                 handleValueChange()
             }
         }
-        .confirmationDialog(
+        .disabled(disabled)
+        .confirmationDialogOrAlert(
             value.confirmTitle ?? "",
             isPresented: $showButtonConfirm,
             titleVisibility: value.confirmTitle != nil ? .visible : .hidden
         ) {
-            Button(NSLocalizedString("OK")) {
+            Button(NSLocalizedString("OK"), role: value.destructive ?? false ? .destructive : nil) {
                 handleValueChange()
             }
             Button(NSLocalizedString("CANCEL"), role: .cancel) {}
@@ -663,7 +664,6 @@ extension SettingView {
                 Text(text)
             }
         }
-        .disabled(disabled)
     }
 }
 

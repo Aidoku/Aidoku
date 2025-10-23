@@ -41,7 +41,7 @@ struct FilterListSheetView: View {
 #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
 #endif
-            .confirmationDialog(
+            .confirmationDialogOrAlert(
                 NSLocalizedString("CANCEL_CONFIRM"),
                 isPresented: $showConfirm,
                 titleVisibility: .visible

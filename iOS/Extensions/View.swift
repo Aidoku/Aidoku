@@ -238,3 +238,31 @@ extension View {
         }
     }
 }
+
+extension View {
+    @ViewBuilder
+    func confirmationDialogOrAlert<S, A, M>(
+        _ title: S,
+        isPresented: Binding<Bool>,
+        titleVisibility: Visibility = .automatic,
+        @ViewBuilder actions: () -> A,
+        @ViewBuilder message: () -> M
+    ) -> some View where S: StringProtocol, A: View, M: View {
+        if #available(iOS 26.0, *) {
+            self.alert(
+                title,
+                isPresented: isPresented,
+                actions: actions,
+                message: message
+            )
+        } else {
+            self.confirmationDialog(
+                title,
+                isPresented: isPresented,
+                titleVisibility: titleVisibility,
+                actions: actions,
+                message: message
+            )
+        }
+    }
+}

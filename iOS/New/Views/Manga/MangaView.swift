@@ -81,7 +81,7 @@ struct MangaView: View {
                 await viewModel.refresh()
             }
             .navigationBarTitleDisplayMode(.inline)
-            .confirmationDialog(
+            .confirmationDialogOrAlert(
                 NSLocalizedString("REMOVE_ALL_DOWNLOADS"),
                 isPresented: $showRemoveAllConfirm,
                 actions: {
