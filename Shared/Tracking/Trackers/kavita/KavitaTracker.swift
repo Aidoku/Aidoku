@@ -1,23 +1,23 @@
 //
-//  KomgaTracker.swift
+//  KavitaTracker.swift
 //  Aidoku
 //
-//  Created by Skitty on 9/15/25.
+//  Created by Skitty on 10/23/25.
 //
 
 import AidokuRunner
 import Foundation
 
-class KomgaTracker: EnhancedTracker, PageTracker {
-    let id = "komga"
-    let name = NSLocalizedString("KOMGA")
-    let icon = PlatformImage(named: "komga")
+class KavitaTracker: EnhancedTracker, PageTracker {
+    let id = "kavita"
+    let name = NSLocalizedString("KAVITA")
+    let icon = PlatformImage(named: "kavita")
 
     let supportedStatuses: [TrackStatus] = []
     let scoreType: TrackScoreType = .tenPoint
     let isLoggedIn = true
 
-    private let api = KomgaApi()
+    private let api = KavitaApi()
 
     private let idSeparator: Character = "|"
 
@@ -70,14 +70,21 @@ class KomgaTracker: EnhancedTracker, PageTracker {
     }
 
     func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix("komga")
+        sourceKey.hasPrefix("kavita")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
-        let (sourceKey, _) = try getIdParts(from: trackId)
+        let (sourceKey, seriesId) = try getIdParts(from: trackId)
+        guard
+            let seriesId = Int(seriesId),
+            let chapterId = Int(chapter.key)
+        else {
+            return
+        }
         try await api.updateReadProgress(
             sourceKey: sourceKey,
-            bookId: chapter.key,
+            seriesId: seriesId,
+            chapterId: chapterId,
             progress: progress
         )
     }
@@ -92,7 +99,7 @@ class KomgaTracker: EnhancedTracker, PageTracker {
     }
 }
 
-extension KomgaTracker {
+extension KavitaTracker {
     private func getIdParts(from id: String) throws -> (sourceKey: String, seriesId: String) {
         let split = id.split(separator: idSeparator, maxSplits: 2).map(String.init)
         guard split.count == 2 else { throw KomgaTrackerError.invalidId }
@@ -100,7 +107,7 @@ extension KomgaTracker {
     }
 }
 
-enum KomgaTrackerError: Error {
+enum KavitaTrackerError: Error {
     case invalidId
     case getStateFailed
     case notLoggedIn

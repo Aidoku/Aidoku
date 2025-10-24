@@ -14,6 +14,10 @@ class TrackerManager {
     /// The shared tracker mangaer instance.
     static let shared = TrackerManager()
 
+    /// An instance of the Komga tracker.
+    let komga = KomgaTracker()
+    /// An instance of the Komga tracker.
+    let kavita = KavitaTracker()
     /// An instance of the AniList tracker.
     let anilist = AniListTracker()
     /// An instance of the MyAnimeList tracker.
@@ -22,11 +26,9 @@ class TrackerManager {
     let shikimori = ShikimoriTracker()
     /// An instance of the Bangumi tracker.
     let bangumi = BangumiTracker()
-    /// An instance of the Komga tracker.
-    let komga = KomgaTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [anilist, myanimelist, shikimori, bangumi, komga]
+    lazy var trackers: [Tracker] = [komga, kavita, anilist, myanimelist, shikimori, bangumi]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     var hasAvailableTrackers: Bool {
@@ -438,7 +440,7 @@ class TrackerManager {
                             context: context
                         )
                     }
-                } else {
+                } else if progress.page != 0 {
                     progressed[chapterKey] = progress.page
                     CoreDataManager.shared.setProgress(
                         progress.page,
