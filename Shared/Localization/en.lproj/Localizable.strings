@@ -620,4 +620,5 @@
 "CHAPTER_FORWARD" = "Chapter forward";
 "CHAPTER_BACKWARD" = "Chapter backward";
 "OPEN_CHAPTER_LIST" = "Open chapter list";
+"TOGGLE_BARS" = "Toggle bar visibility";
 "CLOSE_READER" = "Close reader";

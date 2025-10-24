@@ -738,7 +738,7 @@ extension ReaderViewController {
 
 // MARK: - Bar Visibility
 extension ReaderViewController {
-    func toggleBarVisibility() {
+    @objc func toggleBarVisibility() {
         guard let navigationController else { return }
         if navigationController.navigationBar.alpha > 0 {
             hideBars()
@@ -824,80 +824,45 @@ extension ReaderViewController {
     override var canBecomeFirstResponder: Bool { true }
 
     override var keyCommands: [UIKeyCommand]? {
-        [
+        let commands = [
             UIKeyCommand(
                 title: NSLocalizedString("TURN_PAGE_LEFT"),
                 action: #selector(moveLeft),
-                input: UIKeyCommand.inputLeftArrow,
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: UIKeyCommand.inputLeftArrow
             ),
             UIKeyCommand(
                 title: NSLocalizedString("TURN_PAGE_RIGHT"),
                 action: #selector(moveRight),
-                input: UIKeyCommand.inputRightArrow,
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: UIKeyCommand.inputRightArrow
             ),
-//            UIKeyCommand(
-//                title: "Scroll up",
-//                action: #selector(scrollUp),
-//                input: UIKeyCommand.inputUpArrow,
-//                modifierFlags: [],
-//                alternates: [],
-//                attributes: [],
-//                state: .off
-//            ),
-//            UIKeyCommand(
-//                title: "Scroll down",
-//                action: #selector(scrollDown),
-//                input: UIKeyCommand.inputDownArrow,
-//                modifierFlags: [],
-//                alternates: [],
-//                attributes: [],
-//                state: .off
-//            ),
             UIKeyCommand(
                 title: NSLocalizedString("CHAPTER_FORWARD"),
                 action: #selector(nextChapter),
-                input: ",",
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: ","
             ),
             UIKeyCommand(
                 title: NSLocalizedString("CHAPTER_BACKWARD"),
                 action: #selector(previousChapter),
-                input: ".",
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: "."
             ),
             UIKeyCommand(
                 title: NSLocalizedString("OPEN_CHAPTER_LIST"),
                 action: #selector(openChapterList),
-                input: "\t",
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: "\t"
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("TOGGLE_BARS"),
+                action: #selector(toggleBarVisibility),
+                input: " "
             ),
             UIKeyCommand(
                 title: NSLocalizedString("CLOSE_READER"),
                 action: #selector(close),
-                input: UIKeyCommand.inputEscape,
-                modifierFlags: [],
-                alternates: [],
-                attributes: [],
-                state: .off
+                input: UIKeyCommand.inputEscape
             )
         ]
+        commands.forEach { $0.wantsPriorityOverSystemBehavior = true }
+        return commands
     }
 
     @objc func moveLeft() {
