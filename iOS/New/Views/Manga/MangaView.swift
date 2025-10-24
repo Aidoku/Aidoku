@@ -19,6 +19,7 @@ struct MangaView: View {
 
     @State private var showingCoverView = false
     @State private var showRemoveAllConfirm = false
+    @State private var showRemoveSelectedConfirm = false
     @State private var showConnectionAlert = false
 
     @State private var detailsLoaded = false
@@ -92,6 +93,30 @@ struct MangaView: View {
                 },
                 message: {
                     Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
+                }
+            )
+            .confirmationDialogOrAlert(
+                NSLocalizedString("REMOVE_DOWNLOADS"),
+                isPresented: $showRemoveSelectedConfirm,
+                actions: {
+                    Button(NSLocalizedString("CANCEL"), role: .cancel) {}
+                    Button(NSLocalizedString("REMOVE"), role: .destructive) {
+                        DownloadManager.shared.delete(chapters: selectedChapters.map {
+                            Chapter(
+                                sourceId: viewModel.manga.sourceKey,
+                                id: $0,
+                                mangaId: viewModel.manga.key,
+                                title: nil,
+                                sourceOrder: 0
+                            )
+                        })
+                        withAnimation {
+                            editMode = .inactive
+                        }
+                    }
+                },
+                message: {
+                    Text(NSLocalizedString("REMOVE_DOWNLOADS_CONFIRM"))
                 }
             )
             .alert(
@@ -560,36 +585,50 @@ extension MangaView {
         .disabled(selectedChapters.isEmpty)
     }
 
+    @ViewBuilder
     var toolbarDownloadButton: some View {
-        Button(NSLocalizedString("DOWNLOAD")) {
-            let downloadChapters = selectedChapters
-                .compactMap { id in
-                    viewModel.chapters.first(where: { $0.key == id })?
-                        .toOld(
-                            sourceId: viewModel.manga.sourceKey,
-                            mangaId: viewModel.manga.key
-                        )
-                }
-                .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
-                .sorted { $0.sourceOrder > $1.sourceOrder }
+        let allChaptersDownloaded = !selectedChapters.contains(where: {
+            !DownloadManager.shared.isChapterDownloaded(
+                sourceId: viewModel.manga.sourceKey,
+                mangaId: viewModel.manga.key,
+                chapterId: $0
+            )
+        })
+        if !selectedChapters.isEmpty && allChaptersDownloaded {
+            Button(NSLocalizedString("REMOVE")) {
+                showRemoveSelectedConfirm = true
+            }
+        } else {
+            Button(NSLocalizedString("DOWNLOAD")) {
+                let downloadChapters = selectedChapters
+                    .compactMap { id in
+                        viewModel.chapters.first(where: { $0.key == id })?
+                            .toOld(
+                                sourceId: viewModel.manga.sourceKey,
+                                mangaId: viewModel.manga.key
+                            )
+                    }
+                    .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
+                    .sorted { $0.sourceOrder > $1.sourceOrder }
 
-            let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
-            if
-                downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
-                    || !downloadOnlyOnWifi
-            {
-                DownloadManager.shared.download(
-                    chapters: downloadChapters,
-                    manga: viewModel.manga.toOld()
-                )
-            } else {
-                showConnectionAlert = true
+                let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
+                if
+                    downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
+                        || !downloadOnlyOnWifi
+                {
+                    DownloadManager.shared.download(
+                        chapters: downloadChapters,
+                        manga: viewModel.manga.toOld()
+                    )
+                } else {
+                    showConnectionAlert = true
+                }
+                withAnimation {
+                    editMode = .inactive
+                }
             }
-            withAnimation {
-                editMode = .inactive
-            }
+            .disabled(viewModel.manga.isLocal() || selectedChapters.isEmpty)
         }
-        .disabled(viewModel.manga.isLocal() || selectedChapters.isEmpty)
     }
 }
 
