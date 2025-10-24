@@ -398,9 +398,8 @@
 "NO_AVAILABLE_SOURCES_INFO" = "더 많은 외부 소스를 보려면 필터를 조정하세요.";
 "ALL_SOURCES_INSTALLED" = "모든 소스 설치됨";
 "ALL_SOURCES_INSTALLED_INFO" = "모든 소스가 설치되었습니다.";
-"LOCAL_SOURCE" = "로컬 소스";
-"LOCAL_SOURCE_INFO" = "Aidoku 안에서 직접 독서 라이브러리를 업로드하고 로컬 소스를 관리할 수 있습니다.";
-"LOCAL_SOURCE_SETUP" = "로컬 소스 설정";
+"LOCAL_FILES_INFO" = "Aidoku 안에서 직접 독서 라이브러리를 업로드하고 로컬 소스를 관리할 수 있습니다.";
+"LOCAL_FILES_SETUP" = "로컬 소스 설정";
 "LOCAL_FILES" = "로컬 파일";
 "LOCAL_FILES_TAGLINE" = "로컬 파일에서 읽기";
 "IMPORT" = "가져오기";

@@ -420,9 +420,8 @@
 "NO_AVAILABLE_SOURCES_INFO" = "調整篩選條件以查看更多外置來源。";
 "ALL_SOURCES_INSTALLED" = "已安裝全部來源";
 "ALL_SOURCES_INSTALLED_INFO" = "已無外置來源可供安裝。";
-"LOCAL_SOURCE" = "本地來源";
-"LOCAL_SOURCE_INFO" = "本地來源允許你在Aidoku裏添加和管理你的個人書櫃。";
-"LOCAL_SOURCE_SETUP" = "本地來源設定";
+"LOCAL_FILES_INFO" = "本地來源允許你在Aidoku裏添加和管理你的個人書櫃。";
+"LOCAL_FILES_SETUP" = "本地來源設定";
 "LOCAL_FILES" = "本機檔案";
 "LOCAL_FILES_TAGLINE" = "閲讀本地文件";
 "IMPORT" = "輸入";

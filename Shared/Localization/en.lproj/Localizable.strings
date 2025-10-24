@@ -148,11 +148,10 @@
 "ALL_SOURCES_INSTALLED_INFO" = "There are no remaining external sources to install.";
 
 // Local Source
-"LOCAL_SOURCE" = "Local Source";
-"LOCAL_SOURCE_INFO" = "The local source allows you to upload and manage your own reading library directly within Aidoku.";
-"LOCAL_SOURCE_SETUP" = "Local Source Setup";
 "LOCAL_FILES" = "Local Files";
 "LOCAL_FILES_TAGLINE" = "Read from local files";
+"LOCAL_FILES_INFO" = "The local files source allows you to upload and manage your own reading library directly within Aidoku.";
+"LOCAL_FILES_SETUP" = "Local Files Setup";
 "IMPORT" = "Import";
 "IMPORT_FILE" = "Import File";
 "LOCAL_FILE_IMPORT" = "Local File Import";

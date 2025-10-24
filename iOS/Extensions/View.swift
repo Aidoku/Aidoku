@@ -129,6 +129,18 @@ extension View {
         }
     }
 
+    func contentMarginsPlease(
+        _ edges: Edge.Set = .all,
+        _ length: CGFloat?,
+    ) -> some View {
+        if #available(iOS 17.0, *) {
+            return self.contentMargins(edges, length)
+        } else {
+            return self
+        }
+
+    }
+
     @ViewBuilder
     func tag<T: Hashable>(_ tag: T, selectable: Bool) -> some View {
         if #available(iOS 17.0, macOS 14.0, *) {

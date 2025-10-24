@@ -15,8 +15,8 @@ struct LocalSetupView: View {
             Section {
                 SettingHeaderView(
                     icon: .raw(Image(.local)),
-                    title: NSLocalizedString("LOCAL_SOURCE"),
-                    subtitle: NSLocalizedString("LOCAL_SOURCE_INFO")
+                    title: NSLocalizedString("LOCAL_FILES"),
+                    subtitle: NSLocalizedString("LOCAL_FILES_INFO")
                 )
             }
         }
@@ -39,7 +39,7 @@ struct LocalSetupView: View {
                 }
             }
         }
-        .navigationTitle(NSLocalizedString("LOCAL_SOURCE_SETUP"))
+        .navigationTitle(NSLocalizedString("LOCAL_FILES_SETUP"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

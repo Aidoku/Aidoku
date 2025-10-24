@@ -329,9 +329,8 @@
 "NO_AVAILABLE_SOURCES_INFO" = "Sesuaikan filter Anda untuk melihat lebih banyak sumber eksternal.";
 "ALL_SOURCES_INSTALLED" = "Semua Sumber Telah Diinstal";
 "ALL_SOURCES_INSTALLED_INFO" = "Tidak ada sumber eksternal yang tersisa untuk diinstal.";
-"LOCAL_SOURCE" = "Sumber Lokal";
-"LOCAL_SOURCE_INFO" = "Sumber lokal memungkinkan Anda untuk mengunggah dan mengelola perpustakaan bacaan Anda sendiri langsung di dalam Aidoku.";
-"LOCAL_SOURCE_SETUP" = "Pengaturan Sumber Lokal";
+"LOCAL_FILES_INFO" = "Sumber lokal memungkinkan Anda untuk mengunggah dan mengelola perpustakaan bacaan Anda sendiri langsung di dalam Aidoku.";
+"LOCAL_FILES_SETUP" = "Pengaturan Sumber Lokal";
 "LOCAL_FILES" = "Berkas Lokal";
 "LOCAL_FILES_TAGLINE" = "Membaca dari berkas lokal";
 "IMPORT" = "Impor";

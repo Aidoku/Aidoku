@@ -368,7 +368,6 @@
 "NO_AVAILABLE_SOURCES_INFO" = "Passe deine Filter an, um mehr externe Quellen zu sehen.";
 "ALL_SOURCES_INSTALLED" = "Alle Quellen installiert";
 "ALL_SOURCES_INSTALLED_INFO" = "Es gibt keine weiteren externen Quellen zum installieren.";
-"LOCAL_SOURCE" = "Lokale Quelle";
 "INVALID_URL" = "Ungültige URL";
 "MORE_BARBUTTON" = "Mehr";
 "NETWORK_ERROR" = "Netzwerkfehler";
