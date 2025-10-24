@@ -284,6 +284,7 @@ struct ReaderSettingsView: View {
             .animation(.default, value: upscaleImages.value)
             .animation(.default, value: splitWideImages.value)
             .navigationTitle(NSLocalizedString("READER_SETTINGS"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CloseButton {

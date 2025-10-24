@@ -123,6 +123,7 @@ struct AddSourceView: View {
                     }
                 }
             }
+            .contentMarginsPlease(.top, 4)
             .customSearchable(
                 text: $searchText,
                 enabled: $searching,
@@ -185,6 +186,7 @@ struct AddSourceView: View {
                 }
             }
             .navigationTitle(NSLocalizedString("ADD_SOURCE"))
+            .navigationBarTitleDisplayMode(.inline)
             .onReceive(NotificationCenter.default.publisher(for: .browseLanguages)) { _ in
                 // re-filter external sources when selected languages change
                 let result = filterExternalSources()

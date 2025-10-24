@@ -69,6 +69,7 @@ struct SourceSettingsView: View {
             }
         }
         .navigationTitle(NSLocalizedString("SOURCE_SETTINGS"))
+        .navigationBarTitleDisplayMode(.inline)
         // for ios 15
         .background(
             Color(uiColor: .systemGroupedBackground)
