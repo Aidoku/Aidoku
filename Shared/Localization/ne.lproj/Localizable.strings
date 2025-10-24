@@ -136,7 +136,6 @@
 "APPEARANCE_LIGHT" = "उज्यालो";
 "APPEARANCE_DARK" = "अँध्यारो";
 "USE_SYSTEM_APPEARANCE" = "सिस्टम थीम प्रयोग गर्नुहोस्";
-"SHOW_NSFW_SOURCES" = "NSFW स्रोतहरू देखाउनुहोस्";
 "LOCK_LIBRARY" = "पुस्तकालय लक गर्नुहोस्";
 "ALWAYS_ASK" = "सधैं सोध्नुहोस्";
 "UPDATE_INTERVAL" = "अपडेट अन्तराल";

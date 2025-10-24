@@ -35,6 +35,7 @@
 		FB034E992EAAFA850072EEEB /* KavitaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E962EAAFA850072EEEB /* KavitaApi.swift */; };
 		FB034E9A2EAAFA850072EEEB /* KavitaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E962EAAFA850072EEEB /* KavitaApi.swift */; };
 		FB034E9B2EAAFA850072EEEB /* KavitaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E952EAAFA850072EEEB /* KavitaTracker.swift */; };
+		FB034E9D2EABE6DA0072EEEB /* AddSourceFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E9C2EABE6D90072EEEB /* AddSourceFilterView.swift */; };
 		FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182A2E09B05D00CEE275 /* GIFImage.swift */; };
 		FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */; };
 		FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */; };
@@ -309,7 +310,6 @@
 		FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */; };
 		FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34CB279E189300BFE54B /* GetButtonView.swift */; };
 		FB716DE5283B024100F1BB5D /* DownloadTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE4283B024100F1BB5D /* DownloadTableViewCell.swift */; };
-		FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */; };
 		FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
 		FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
 		FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFB283DA2D400F1BB5D /* Logger.swift */; };
@@ -539,6 +539,7 @@
 		FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OIDCLoginController.swift; sourceTree = "<group>"; };
 		FB034E952EAAFA850072EEEB /* KavitaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaTracker.swift; sourceTree = "<group>"; };
 		FB034E962EAAFA850072EEEB /* KavitaApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaApi.swift; sourceTree = "<group>"; };
+		FB034E9C2EABE6D90072EEEB /* AddSourceFilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSourceFilterView.swift; sourceTree = "<group>"; };
 		FB05182A2E09B05D00CEE275 /* GIFImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImage.swift; sourceTree = "<group>"; };
 		FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImageNode.swift; sourceTree = "<group>"; };
 		FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpscaleProcessor.swift; sourceTree = "<group>"; };
@@ -759,7 +760,6 @@
 		FB6E34CB279E189300BFE54B /* GetButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetButtonView.swift; sourceTree = "<group>"; };
 		FB6F1E782B7AF63D006FAA2E /* 0.6.7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.7.xcdatamodel; sourceTree = "<group>"; };
 		FB716DE4283B024100F1BB5D /* DownloadTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadTableViewCell.swift; sourceTree = "<group>"; };
-		FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectViewController.swift; sourceTree = "<group>"; };
 		FB716DE9283D5F3E00F1BB5D /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		FB716DFB283DA2D400F1BB5D /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		FB716DFE283DA2D900F1BB5D /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
@@ -1531,6 +1531,7 @@
 			isa = PBXGroup;
 			children = (
 				FBE7A5882DE0D64300CA5B60 /* AddSourceView.swift */,
+				FB034E9C2EABE6D90072EEEB /* AddSourceFilterView.swift */,
 				FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */,
 				FBE7A58C2DE1213400CA5B60 /* GetButton.swift */,
 				FB662E8D2DA813E300007514 /* IconView.swift */,
@@ -1818,7 +1819,6 @@
 				FBED232E27C08F940095D0C0 /* SourceCell */,
 				FBED232F27C08FA80095D0C0 /* Filters */,
 				FBD6A3FA2850D586007116C9 /* SourceSectionHeaderView.swift */,
-				FB716DE6283C597F00F1BB5D /* LanguageSelectViewController.swift */,
 			);
 			path = Browse;
 			sourceTree = "<group>";
@@ -2318,7 +2318,6 @@
 				FB4E57992E3529C0006EF27C /* TabBarController.swift in Sources */,
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FBE7A58F2DE1214F00CA5B60 /* ExternalSourceTableCell.swift in Sources */,
-				FB716DE7283C597F00F1BB5D /* LanguageSelectViewController.swift in Sources */,
 				FB2BE5E229527A6100FAD8A7 /* ZoomableScrollView.swift in Sources */,
 				FB1B4856277CE5560056D02C /* SceneDelegate.swift in Sources */,
 				FB0CAA6A28A9BB9C0024561A /* ReaderViewController.swift in Sources */,
@@ -2451,6 +2450,7 @@
 				FB2E02522868A67500786F21 /* TrackerView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
+				FB034E9D2EABE6DA0072EEEB /* AddSourceFilterView.swift in Sources */,
 				FB0518322E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB42750B295FB7B400131377 /* BrowseViewController.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,

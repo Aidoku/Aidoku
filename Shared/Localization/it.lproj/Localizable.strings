@@ -160,7 +160,6 @@
 "SOURCE_LISTS" = "Elenchi delle fonti";
 "SOURCE_LIST_ADDED" = "Elenco fonti aggiunto";
 "SOURCE_LIST_ADDED_TEXT" = "È ora possibile sfogliare le fonti esterne nella scheda Sfoglia.";
-"SHOW_NSFW_SOURCES" = "Mostra fonti per adulti";
 "SOURCE_LIST_URL" = "URL dell'elenco delle fonti";
 "SOURCE_LIST_ADD" = "Aggiungi elenco fonti";
 "SOURCE_LIST_ADD_TEXT" = "Immetti l'URL dell'elenco delle fonti";

@@ -196,7 +196,6 @@
 "EVERY_12_HOURS" = "12時間ごと";
 "EVERY_2_DAYS" = "2日ごと";
 "SOURCE_LIST_URL" = "ソースリスト URL";
-"SHOW_NSFW_SOURCES" = "NSFW ソースを表示";
 "SOURCE_LIST_ADDED_TEXT" = "ブラウザタブで外部ソースを参照できるようになりました。";
 "SOURCE_LIST_ADD" = "ソースリスト追加";
 "SOURCE_LIST_ADD_TEXT" = "ソースリストのURLを入力";

@@ -148,7 +148,6 @@
 "WITH_UNREAD_CHAPTERS" = "З непрочитаними главами";
 "THAT_HAVENT_BEEN_READ" = "Що не були прочитані";
 "SOURCE_LIST_ADDED_TEXT" = "Тепер ви можете переглядати зовнішні джерела на вкладці \"Перегляд\".";
-"SHOW_NSFW_SOURCES" = "Показувати NSFW джерела";
 "SOURCE_LIST_ADD" = "Додати список джерел";
 "SOURCE_LIST_ADD_TEXT" = "Введіть URL-адресу джерела";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Надана URL-адреса джерела є невірною або вже додана.";

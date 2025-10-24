@@ -181,7 +181,7 @@ extension AidokuRunner.Manga {
     }
 }
 
-extension AidokuRunner.MangaStatus {
+extension AidokuRunner.PublishingStatus {
     var title: String {
         switch self {
             case .unknown: NSLocalizedString("UNKNOWN")
@@ -193,13 +193,40 @@ extension AidokuRunner.MangaStatus {
     }
 }
 
-extension AidokuRunner.MangaContentRating {
+extension AidokuRunner.ContentRating {
     var title: String {
         switch self {
             case .unknown: NSLocalizedString("UNKNOWN")
             case .safe: NSLocalizedString("SAFE")
             case .suggestive: NSLocalizedString("SUGGESTIVE")
             case .nsfw: NSLocalizedString("NSFW")
+        }
+    }
+}
+
+extension AidokuRunner.SourceContentRating {
+    var title: String {
+        switch self {
+            case .safe: NSLocalizedString("SAFE")
+            case .containsNsfw: NSLocalizedString("CONTAINS_NSFW")
+            case .primarilyNsfw: NSLocalizedString("PRIMARILY_NSFW")
+        }
+    }
+
+    var stringValue: String {
+        switch self {
+            case .safe: "safe"
+            case .containsNsfw: "containsNsfw"
+            case .primarilyNsfw: "primarilyNsfw"
+        }
+    }
+
+    init?(stringValue: String) {
+        switch stringValue {
+            case "safe": self = .safe
+            case "containsNsfw": self = .containsNsfw
+            case "primarilyNsfw": self = .primarilyNsfw
+            default: return nil
         }
     }
 }

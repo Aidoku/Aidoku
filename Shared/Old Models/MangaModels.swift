@@ -34,7 +34,7 @@ enum PublishingStatus: Int, Codable {
         }
     }
 
-    func toNew() -> AidokuRunner.MangaStatus {
+    func toNew() -> AidokuRunner.PublishingStatus {
         switch self {
             case .unknown: .unknown
             case .ongoing: .ongoing
@@ -77,7 +77,7 @@ enum MangaContentRating: Int, Codable {
     case suggestive = 1
     case nsfw = 2
 
-    func toNew() -> AidokuRunner.MangaContentRating {
+    func toNew() -> AidokuRunner.ContentRating {
         switch self {
             case .safe: .safe
             case .suggestive: .suggestive

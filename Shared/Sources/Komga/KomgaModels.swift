@@ -316,13 +316,13 @@ struct KomgaSeries: Codable, Sendable {
 
 extension KomgaSeries {
     func intoManga(sourceKey: String, baseUrl: String) -> AidokuRunner.Manga {
-        let status: AidokuRunner.MangaStatus = switch metadata.status {
+        let status: AidokuRunner.PublishingStatus = switch metadata.status {
             case .ended: .completed
             case .ongoing: .ongoing
             case .abandoned: .cancelled
             case .hiatus: .hiatus
         }
-        let contentRating: AidokuRunner.MangaContentRating = metadata.ageRating.flatMap {
+        let contentRating: AidokuRunner.ContentRating = metadata.ageRating.flatMap {
             if $0 >= 18 {
                 .nsfw
             } else if $0 >= 16 {

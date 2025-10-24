@@ -129,7 +129,6 @@
 "EVERY_12_HOURS" = "每半天";
 "DAILY" = "每天";
 "WEEKLY" = "每禮拜";
-"SHOW_NSFW_SOURCES" = "顯示成人來源";
 "SOURCE_LIST_URL" = "來源清單網址";
 "SOURCE_LIST_ADDED" = "已新增來源清單";
 "SOURCE_LISTS" = "來源清單";

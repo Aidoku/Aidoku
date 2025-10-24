@@ -46,7 +46,6 @@
 "RESET_SETTINGS_TEXT" = "Denna handling är oåterkallelig. Alla app- och källinställningar kommer att återställas.";
 "NO_CHAPTERS_AVAILABLE" = "Inga kapitel finns tillgängliga";
 "EXTERNAL" = "Extern";
-"SHOW_NSFW_SOURCES" = "Visa NSFW-källor";
 "UPLOAD_DATE" = "Uppladdningsdatum";
 "SOURCE_LIST_ADD_FAIL" = "Kunde ej lägga till källistan";
 "1_CHAPTER" = "1 kapitel";

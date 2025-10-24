@@ -103,6 +103,10 @@
 "PIN" = "Pin";
 "UNPIN" = "Unpin";
 "REORDER" = "Reorder";
+"CONTENT_RATING" = "Content Rating";
+"SAFE" = "Safe";
+"CONTAINS_NSFW" = "Contains NSFW";
+"PRIMARILY_NSFW" = "Primarily NSFW";
 
 // Source
 "SOURCE_INFO" = "Source Info";
@@ -396,7 +400,6 @@
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";
 "SOURCE_LIST_ADDED_TEXT" = "You can now browse external sources in the Browse tab.";
-"SHOW_NSFW_SOURCES" = "Show NSFW Sources";
 "SOURCE_LIST_URL" = "Source List URL";
 "SOURCE_LIST_ADD" = "Add Source List";
 "SOURCE_LIST_ADD_TEXT" = "Enter the source list URL";

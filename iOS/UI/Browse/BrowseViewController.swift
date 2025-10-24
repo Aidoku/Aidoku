@@ -72,6 +72,7 @@ class BrowseViewController: BaseTableViewController {
         updateDataSource()
         Task {
             await viewModel.loadExternalSources()
+            viewModel.loadUpdates()
             updateDataSource()
         }
     }
@@ -92,7 +93,7 @@ class BrowseViewController: BaseTableViewController {
             Task { @MainActor in
                 self.viewModel.loadInstalledSources()
                 self.viewModel.loadPinnedSources()
-                self.viewModel.filterExternalSources()
+                self.viewModel.loadUpdates()
                 if let query = self.navigationItem.searchController?.searchBar.text, !query.isEmpty {
                     self.viewModel.search(query: query)
                 }
@@ -104,22 +105,7 @@ class BrowseViewController: BaseTableViewController {
             guard let self = self else { return }
             Task {
                 await self.viewModel.loadExternalSources()
-                self.updateDataSource()
-            }
-        }
-        // show nsfw sources setting
-        addObserver(forName: "Browse.showNsfwSources") { [weak self] _ in
-            guard let self = self else { return }
-            Task {
-                self.viewModel.filterExternalSources()
-                self.updateDataSource()
-            }
-        }
-        // browse language selection
-        addObserver(forName: "Browse.languages") { [weak self] _ in
-            guard let self = self else { return }
-            Task {
-                self.viewModel.filterExternalSources()
+                self.viewModel.loadUpdates()
                 self.updateDataSource()
             }
         }
@@ -136,7 +122,6 @@ class BrowseViewController: BaseTableViewController {
             Task { @MainActor in
                 self.viewModel.loadInstalledSources()
                 self.viewModel.loadPinnedSources()
-                self.viewModel.filterExternalSources()
                 self.updateDataSource()
             }
         }
@@ -172,6 +157,7 @@ class BrowseViewController: BaseTableViewController {
     @objc func refreshSourceLists(_ refreshControl: UIRefreshControl? = nil) {
         Task {
             await viewModel.loadExternalSources(reload: true)
+            self.viewModel.loadUpdates()
             updateExternalSources()
             refreshControl?.endRefreshing()
         }

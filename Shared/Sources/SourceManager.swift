@@ -430,6 +430,8 @@ extension SourceManager {
             for source in sourceList.sources {
                 if let sourceLanguages = source.languages {
                     languages.formUnion(sourceLanguages)
+                } else if let sourceLanguage = source.lang {
+                    languages.insert(sourceLanguage)
                 }
             }
         }

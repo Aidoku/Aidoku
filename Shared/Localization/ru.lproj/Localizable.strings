@@ -231,7 +231,6 @@
 "MANGA_PER_ROW" = "Манга в ряд";
 "UPDATE_INTERVAL" = "Интервал обновлений";
 "WITH_COMPLETED_STATUS" = "С завершенным статусом";
-"SHOW_NSFW_SOURCES" = "Показывать источники NSFW";
 "SOURCE_LIST_URL" = "URL-адрес списка источников";
 "SOURCE_LIST_ADD_FAIL" = "Не удалось добавить список источников";
 "LIBRARY_UPDATING" = "Обновление библиотеки";

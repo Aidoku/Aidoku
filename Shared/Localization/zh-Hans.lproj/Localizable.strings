@@ -181,7 +181,6 @@
 "SOURCE_LISTS" = "来源列表";
 "SOURCE_LIST_ADDED" = "已添加来源列表";
 "SOURCE_LIST_ADDED_TEXT" = "你可在浏览页中查看外部来源。";
-"SHOW_NSFW_SOURCES" = "显示 NSFW 来源";
 "SOURCE_LIST_URL" = "来源列表网址";
 "SOURCE_LIST_ADD" = "添加来源列表";
 "SOURCE_LIST_ADD_TEXT" = "输入来源列表网址";

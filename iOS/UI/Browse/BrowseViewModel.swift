@@ -13,7 +13,6 @@ class BrowseViewModel {
     var updatesSources: [SourceInfo2] = []
     var pinnedSources: [SourceInfo2] = []
     var installedSources: [SourceInfo2] = []
-    var externalSources: [SourceInfo2] = []
 
     var unfilteredExternalSources: [ExternalSourceInfo] = []
 
@@ -90,41 +89,13 @@ class BrowseViewModel {
         }
 
         unfilteredExternalSources = Array(sourceById.values)
-
-        filterExternalSources()
     }
 
-    // filter external sources and updates
-    func filterExternalSources() {
-        guard
-            let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        else { return }
+    func loadUpdates() {
+        guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
         let appVersion = SemanticVersion(appVersionString)
-        let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-        let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
 
-        var updatesSources: [SourceInfo2] = []
-
-        var externalSources: [SourceInfo2] = unfilteredExternalSources.compactMap { info -> SourceInfo2? in
-            var update = false
-            // strip installed sources from external list
-            if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
-                // check if it's an update
-                if info.version > installedSource.version {
-                    update = true
-                } else {
-                    return nil
-                }
-            }
-            // remove pinned sources from external list
-            if let pinnedSource = pinnedSources.first(where: { $0.sourceId == info.id }) {
-                // check if it's an update
-                if info.version > pinnedSource.version {
-                    update = true
-                } else {
-                    return nil
-                }
-            }
+        updatesSources = unfilteredExternalSources.compactMap { info -> SourceInfo2? in
             // check version availability
             if let minAppVersion = info.minAppVersion {
                 let minAppVersion = SemanticVersion(minAppVersion)
@@ -138,41 +109,22 @@ class BrowseViewModel {
                     return nil
                 }
             }
-            // add to updates after checking version
-            if update {
-                updatesSources.append(info.toInfo())
+
+            if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
+                if info.version > installedSource.version {
+                    return info.toInfo()
+                }
                 return nil
             }
-            // hide nsfw sources
-            let contentRating = info.resolvedContentRating
-            if !showNsfw && contentRating == .primarilyNsfw {
+            if let pinnedSource = pinnedSources.first(where: { $0.sourceId == info.id }) {
+                if info.version > pinnedSource.version {
+                    return info.toInfo()
+                }
                 return nil
             }
-            // hide unselected languages
-            if !selectedLanguages.contains(where: { info.languages?.contains($0) ?? (info.lang == $0) }) {
-                return nil
-            }
-            return info.toInfo()
+            return nil
         }
 
-        // sort first by name, then by language
-        externalSources.sort { $0.name < $1.name }
-        externalSources.sort {
-            let lhsLang = $0.languages.count == 1 ? $0.languages[0] : "multi"
-            let rhsLang = $1.languages.count == 1 ? $1.languages[0] : "multi"
-            let lhs = SourceManager.languageCodes.firstIndex(of: lhsLang) ?? Int.max
-            let rhs = SourceManager.languageCodes.firstIndex(of: rhsLang) ?? Int.max
-            return lhs < rhs
-        }
-
-        if storedExternalSources != nil {
-            storedUpdatesSources = updatesSources
-            storedExternalSources = externalSources
-            search(query: query)
-        } else {
-            self.updatesSources = updatesSources
-            self.externalSources = externalSources
-        }
     }
 
     // filter sources by search query
@@ -184,18 +136,15 @@ class BrowseViewModel {
                 storedUpdatesSources = updatesSources
                 storedPinnedSources = pinnedSources
                 storedInstalledSources = installedSources
-                storedExternalSources = externalSources
             }
             guard
                 let storedUpdatesSources = storedUpdatesSources,
                 let storedPinnedSources = storedPinnedSources,
-                let storedInstalledSources = storedInstalledSources,
-                let storedExternalSources = storedExternalSources
+                let storedInstalledSources = storedInstalledSources
             else { return }
             updatesSources = storedUpdatesSources.filter { $0.name.lowercased().contains(query) }
             pinnedSources = storedPinnedSources.filter { $0.name.lowercased().contains(query) }
             installedSources = storedInstalledSources.filter { $0.name.lowercased().contains(query) }
-            externalSources = storedExternalSources.filter { $0.name.lowercased().contains(query) }
         } else {
             // reset search, restore source arrays
             if let storedUpdatesSources = storedUpdatesSources {
@@ -209,10 +158,6 @@ class BrowseViewModel {
             if let storedInstalledSources = storedInstalledSources {
                 installedSources = storedInstalledSources
                 self.storedInstalledSources = nil
-            }
-            if let storedExternalSources = storedExternalSources {
-                externalSources = storedExternalSources
-                self.storedExternalSources = nil
             }
         }
     }

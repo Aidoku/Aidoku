@@ -34,16 +34,6 @@ struct SourceListsView: View {
                     Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS_TEXT"))
                 }
             }
-
-            if !sourceLists.isEmpty {
-                Section {
-                    SettingView(setting: .init(
-                        key: "Browse.showNsfwSources",
-                        title: NSLocalizedString("SHOW_NSFW_SOURCES"),
-                        value: .toggle(.init())
-                    ))
-                }
-            }
         }
         .overlay {
             if loading {

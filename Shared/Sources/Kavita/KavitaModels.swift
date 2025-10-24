@@ -182,14 +182,14 @@ extension KavitaSeries {
         apiKey: String,
         metadata: KavitaSeriesMetadata? = nil
     ) -> AidokuRunner.Manga {
-        let status: AidokuRunner.MangaStatus = switch metadata?.publicationStatus {
+        let status: AidokuRunner.PublishingStatus = switch metadata?.publicationStatus {
             case .ongoing: .ongoing
             case .hiatus: .hiatus
             case .completed, .ended: .completed
             case .cancelled: .cancelled
             default: .unknown
         }
-        let contentRating: AidokuRunner.MangaContentRating = if let ageRating = metadata?.ageRating {
+        let contentRating: AidokuRunner.ContentRating = if let ageRating = metadata?.ageRating {
             if ageRating >= 10 {
                 // mature 17+ or r18
                 .nsfw

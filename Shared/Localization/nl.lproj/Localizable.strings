@@ -148,7 +148,6 @@
 "SOURCE_LISTS" = "Bron lijsten";
 "SOURCE_LIST_ADDED" = "Bron lijsten toegevoegd";
 "SOURCE_LIST_ADDED_TEXT" = "U kunt nu bladeren door externe bronnen in het Blader tabblad.";
-"SHOW_NSFW_SOURCES" = "Toon NSFW Bronnen";
 "SOURCE_LIST_URL" = "Bron lijst URL";
 "RESTORE_BACKUP" = "Herstellen naar deze back-up?";
 "BACKUP_IMPORT_SUCCESS" = "Back-up geïmporteerd";

@@ -211,7 +211,6 @@
 "THAT_HAVENT_BEEN_READ" = "Koji nisu pročitani";
 "SOURCE_LISTS" = "Popisi izvora";
 "SOURCE_LIST_ADDED_TEXT" = "Sada možete pregledavati vanjske izvore na kartici Pregledaj.";
-"SHOW_NSFW_SOURCES" = "Prikaži izvore sadržaja za odrasle";
 "SOURCE_LIST_URL" = "URL popisa izvora";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Navedeni URL popisa izvora je nevažeći ili je već dodan.";
 "BACKUPS" = "Sigurnosne kopije";

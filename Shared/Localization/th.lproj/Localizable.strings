@@ -123,7 +123,6 @@
 "SOURCE_LISTS" = "รายชื่อแหล่งข้อมูล";
 "SOURCE_LIST_ADDED" = "รายชื่อแหล่งข้อมูลถูกเพิ่มแล้ว";
 "SOURCE_LIST_ADDED_TEXT" = "คุณสามารถค้นหาแหล่งข้อมูลภายนอกในแทบค้นมังงะ";
-"SHOW_NSFW_SOURCES" = "โชว์แหล่งข้อมูล NSFW";
 "SOURCE_LIST_URL" = "URL รายการแหล่งข้อมูล";
 "SOURCE_LIST_ADD" = "เพิ่มรายการแหล่งข้อมูล";
 "SOURCE_LIST_ADD_TEXT" = "ป้อน URL แหล่งข้อมูล";

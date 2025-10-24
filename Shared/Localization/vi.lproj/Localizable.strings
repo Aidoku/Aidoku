@@ -186,7 +186,6 @@
 "SOURCE_LISTS" = "Danh sách nguồn";
 "SOURCE_LIST_ADDED" = "Đã thêm danh sách nguồn";
 "SOURCE_LIST_ADDED_TEXT" = "Bây giờ có thể thêm nguồn bên ngoài từ mục Nguồn.";
-"SHOW_NSFW_SOURCES" = "Hiển thị nguồn 18+";
 "SOURCE_LIST_URL" = "URL của danh sách nguồn";
 "SOURCE_LIST_ADD" = "Thêm danh sách nguồn";
 "SOURCE_LIST_ADD_TEXT" = "Nhập URL của danh sách nguồn";

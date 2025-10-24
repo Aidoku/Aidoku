@@ -136,7 +136,6 @@
 "APPEARANCE" = "Pamja";
 "INCOGNITO_MODE" = "Mënyra Inkognito";
 "PIN_MANGA_UNREAD" = "Pa Lexuar";
-"SHOW_NSFW_SOURCES" = "Trego Burimet NSFW";
 "RESTORE_BACKUP_TEXT" = "Të gjitha të dhënat aktuale do të hiqen dhe do të zëvendësohen me të dhënat nga kjo kopje rezervë.";
 "BACKUP_IMPORT_SUCCESS" = "Kopja Rezervë u Importua";
 "RESTORE" = "Rikthe";

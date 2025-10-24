@@ -223,7 +223,6 @@
 "WITH_UNREAD_CHAPTERS" = "읽지 않은 챕터 포함";
 "THAT_HAVENT_BEEN_READ" = "읽지 않은 것";
 "SOURCE_LISTS" = "소스 목록";
-"SHOW_NSFW_SOURCES" = "성인용 소스 표시";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "제공된 소스 목록 URL이 잘못되었거나 이미 추가되었습니다.";
 "CORRUPTED_BACKUP" = "손상된 백업";
 "RENAME_BACKUP" = "백업 이름 바꾸기";

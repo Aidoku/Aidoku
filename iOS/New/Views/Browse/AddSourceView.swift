@@ -128,6 +128,7 @@ struct AddSourceView: View {
                 text: $searchText,
                 enabled: $searching,
                 focused: $searchFocused,
+                hidesNavigationBarDuringPresentation: false,
                 hidesSearchBarWhenScrolling: false,
                 onCancel: {
                     // task delays slightly to prevent sheet from closing
@@ -166,8 +167,7 @@ struct AddSourceView: View {
                 Text(NSLocalizedString("SOURCE_IMPORT_FAIL_TEXT"))
             }
             .sheet(isPresented: $showLanguageSelectSheet) {
-                LanguageSelectView()
-                    .ignoresSafeArea()
+                AddSourceFilterView()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -180,20 +180,24 @@ struct AddSourceView: View {
                         Button {
                             showLanguageSelectSheet = true
                         } label: {
-                            Image(systemName: "globe.americas.fill")
+                            if #available(iOS 26.0, *) {
+                                Image(systemName: "line.3.horizontal.decrease")
+                            } else {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                            }
                         }
                     }
                 }
             }
             .navigationTitle(NSLocalizedString("ADD_SOURCE"))
             .navigationBarTitleDisplayMode(.inline)
-            .onReceive(NotificationCenter.default.publisher(for: .browseLanguages)) { _ in
-                // re-filter external sources when selected languages change
+            .onReceive(NotificationCenter.default.publisher(for: .filterExternalSources)) { _ in
                 let result = filterExternalSources()
                 externalSources = result.0
                 allSourcesInstalled = result.allSourcesInstalled
             }
         }
+        .interactiveDismissDisabled(searching)
     }
 
     var builtInSources: some View {
@@ -306,7 +310,8 @@ struct AddSourceView: View {
         else { return ([], true) }
         let appVersion = SemanticVersion(appVersionString)
         let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-        let showNsfw = UserDefaults.standard.bool(forKey: "Browse.showNsfwSources")
+        let contentRatings = (UserDefaults.standard.stringArray(forKey: "Browse.contentRatings") ?? [])
+            .compactMap { SourceContentRating(stringValue: $0) }
 
         var allSourcesInstalled = true
 
@@ -332,9 +337,9 @@ struct AddSourceView: View {
                         return nil
                     }
                 }
-                // hide nsfw sources
+                // hide unselected content ratings
                 let contentRating = info.resolvedContentRating
-                if !showNsfw && contentRating == .primarilyNsfw {
+                if !contentRatings.contains(where: { $0 == contentRating }) {
                     return nil
                 }
                 // hide unselected languages
@@ -353,15 +358,5 @@ struct AddSourceView: View {
                 return lhs < rhs
             }
         return (result, allSourcesInstalled)
-    }
-}
-
-private struct LanguageSelectView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UINavigationController {
-        UINavigationController(rootViewController: LanguageSelectViewController())
-    }
-
-    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
-        // nothing
     }
 }

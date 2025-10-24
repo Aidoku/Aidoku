@@ -112,9 +112,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.deleteDownloadAfterReading": false,
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
+                "Browse.contentRatings": ["safe", "containsNsfw"],
                 "Browse.updateCount": 0,
-                "Browse.showNsfwSources": false,
-                "Browse.labelNsfwSources": true,
 
                 "History.lockHistoryTab": false,
 
@@ -181,14 +180,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         ImagePipeline.shared = pipeline
 
-        // migrate history to 0.6 format
-        if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
-            Task.detached {
-                await self.migrateHistory()
-            }
-        }
-
-        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
+        performMigration()
 
         networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
             switch connectionType {
@@ -225,6 +217,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)
+    }
+
+    func performMigration() {
+        // migrate history to 0.6 format
+        if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
+            Task.detached {
+                await self.migrateHistory()
+            }
+        }
+
+        // migrate showNsfwSources setting
+        if UserDefaults.standard.bool(forKey: "Browse.showNsfwSources") {
+            UserDefaults.standard.setValue(["safe", "containsNsfw", "primarilyNsfw"], forKey: "Browse.contentRatings")
+            UserDefaults.standard.removeObject(forKey: "Browse.showNsfwSources")
+        }
+
+        UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
     }
 
     func migrateHistory() async {

@@ -42,7 +42,7 @@ extension Notification.Name {
     static let downloadsResumed = Self("downloadsResumed")
 
     // browse
-    static let browseLanguages = Self("Browse.languages")
+    static let filterExternalSources = Self("filterExternalSources")
 
     // reader
     static let readerReadingMode = Self("Reader.readingMode")

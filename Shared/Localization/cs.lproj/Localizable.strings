@@ -199,7 +199,6 @@
 "WITH_COMPLETED_STATUS" = "Se statusem dokončeno";
 "THAT_HAVENT_BEEN_READ" = "Které nebyly přečteny";
 "SOURCE_LISTS" = "Seznamy zdrojů";
-"SHOW_NSFW_SOURCES" = "Zobrazit NSFW zdroje";
 "SOURCE_LIST_URL" = "Adresa URL seznamu zdrojů";
 "BACKUP_IMPORT_SUCCESS" = "Záloha byla importována";
 "RESET_SETTINGS_TEXT" = "Tato akce je nevratná. Všechna nastavení aplikace a zdroje budou resetována.";

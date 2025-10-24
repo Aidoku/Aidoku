@@ -204,7 +204,6 @@
 "MANGA_PER_ROW" = "Manga soronként";
 "ONLY_DOWNLOAD_ON_WIFI" = "Letöltés Csak Wi-Fi-n";
 "WITH_COMPLETED_STATUS" = "Befejezett státuszuak";
-"SHOW_NSFW_SOURCES" = "NSFW Források Megjelenítése";
 "SOURCE_LIST_URL" = "Forráslista URL";
 "SOURCE_LIST_ADDED" = "Forráslista Hozzáadva";
 "SOURCE_LIST_ADDED_TEXT" = "A Böngészés lapon most már böngészhet a külső források között.";

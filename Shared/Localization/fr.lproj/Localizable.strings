@@ -113,7 +113,6 @@
 "WITH_COMPLETED_STATUS" = "Avec le statut « terminé »";
 "THAT_HAVENT_BEEN_READ" = "Qui n'ont pas été lus";
 "SOURCE_LISTS" = "Listes de sources";
-"SHOW_NSFW_SOURCES" = "Afficher les sources pour adultes";
 "SOURCE_LIST_URL" = "URL de la liste des sources";
 "SOURCE_LIST_ADD" = "Ajouter une liste de sources";
 "LOCK_HISTORY_TAB" = "Verrouiller l'onglet historique";

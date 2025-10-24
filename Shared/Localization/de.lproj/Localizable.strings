@@ -202,7 +202,6 @@
 "EVERY_2_DAYS" = "Alle 2 Tage";
 "WEEKLY" = "Wöchentlich";
 "SOURCE_LISTS" = "Quellenlisten";
-"SHOW_NSFW_SOURCES" = "NSFW-Quellen anzeigen";
 "SOURCE_LIST_ADD" = "Quellenliste hinzufügen";
 "SOURCE_LIST_ADD_TEXT" = "Gib die URL der Quellenliste ein";
 "SOURCE_LIST_ADD_FAIL" = "Quellenliste hinzufügen fehlgeschlagen";
