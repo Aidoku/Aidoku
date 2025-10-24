@@ -325,6 +325,7 @@ class TrackerManager {
             }
         } else {
             // Default mode: sync both chapter and volume progress
+            var checkedForChapters = false
             if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
                 // find all chapters with a chapter number less than or equal to the last tracker chapter
                 chaptersToMark = chapters.filter {
@@ -335,9 +336,12 @@ class TrackerManager {
                         false
                     }
                 }
+                checkedForChapters = true
             }
             // otherwise, if we didn't find any chapters, try using the volume number instead
-            if let trackerLastReadVolume, trackerLastReadVolume > 0 && chaptersToMark.isEmpty {
+            // note: ignores the case where we skipped checking chapters due to currentHighestRead <= trackerLastReadChapter (#753)
+            let foundNoChapters = checkedForChapters && chaptersToMark.isEmpty
+            if let trackerLastReadVolume, trackerLastReadVolume > 0 && (foundNoChapters || trackerLastReadChapter == nil) {
                 // find all chapters with a volume number less than or equal to the last tracker volume
                 chaptersToMark = chapters.filter {
                     if let volume = $0.volumeNumber, volume <= Float(trackerLastReadVolume) {
