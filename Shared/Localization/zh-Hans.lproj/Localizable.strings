@@ -561,7 +561,7 @@
 "RANGE_FROM" = "从";
 "RANGE_TO" = "到";
 "INVERT_TAP_ZONES" = "反转点击区域";
-"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "iCloud Sync是一项实验性功能。启用或禁用它可能会触发数据丢失。";
+"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "iCloud 同步是一项实验性功能。启用或禁用它可能会触发数据丢失。";
 "ICLOUD_SYNC_TEXT_SIDELOADED" = "iCloud 同步仅通过 TestFlight 安装时可用。";
 "NO_RESULTS_FOR_%@" = "“%@”没有结果";
 "NO_RESULTS_TEXT" = "检查拼写或尝试新的搜索。";
@@ -574,3 +574,4 @@
 "NAME" = "名称";
 "DATE" = "日期";
 "BACKUP_INFO_TITLE" = "备份信息";
+"LEARN_MORE" = "了解更多…";

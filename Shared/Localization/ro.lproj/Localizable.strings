@@ -325,3 +325,12 @@
 "PIN" = "Fixează";
 "UNPIN" = "Anulare fixare";
 "CROP_BORDERS" = "Decupează Colțurile";
+"DONE" = "Gata";
+"INVALID" = "Invalid";
+"PAUSE" = "Pauză";
+"RESUME" = "Continuă";
+"WARNING" = "Avertizare";
+"ENABLE_PERMISSION" = "Activează Permisia";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Accesul a fost refuzat anterior. Te rugăm să permiți Aidoku acces la Fotografii pentru a salva imaginile în Galeria ta. Poți activa accesul din Setările de confidențialitate.";
+"CONTENT" = "Conținut";
+"%@_EXPERIMENTAL" = "%@ (Experimental)";
