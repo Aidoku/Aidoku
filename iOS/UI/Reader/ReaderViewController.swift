@@ -70,6 +70,38 @@ class ReaderViewController: BaseObservingViewController {
         return tap
     }()
 
+    private lazy var closeSwipeGestures: [UISwipeGestureRecognizer] = {
+        let directions: [UISwipeGestureRecognizer.Direction] = [.left, .right, .down]
+        return directions.map { direction in
+            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleCloseSwipe(_:)))
+            swipe.direction = direction
+            return swipe
+        }
+    }()
+
+    private lazy var closePanGesture: UIPanGestureRecognizer = {
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handleClosePan(_:)))
+        return pan
+    }()
+
+    private var initialCenter: CGPoint = .zero
+    private var isDismissing = false
+
+    private func updateSwipeGestures(for readingMode: ReadingMode) {
+        switch readingMode {
+        case .ltr, .rtl:
+            // Horizontal paged modes: only down swipe enabled
+            closeSwipeGestures[0].isEnabled = false // left
+            closeSwipeGestures[1].isEnabled = false // right
+            closeSwipeGestures[2].isEnabled = true  // down
+        case .vertical, .webtoon, .continuous:
+            // Vertical paged mode and Scroll modes: left and right swipes enabled
+            closeSwipeGestures[0].isEnabled = true  // left
+            closeSwipeGestures[1].isEnabled = true  // right
+            closeSwipeGestures[2].isEnabled = false // down
+        }
+    }
+
     var statusBarHidden = false
 
     override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
@@ -182,6 +214,12 @@ class ReaderViewController: BaseObservingViewController {
 
         // bar toggle tap gesture
         view.addGestureRecognizer(barToggleTapGesture)
+
+        // close swipe gestures
+        closeSwipeGestures.forEach { view.addGestureRecognizer($0) }
+
+        // close pan gesture for visual feedback
+        view.addGestureRecognizer(closePanGesture)
 
         // set reader
         let readingModeKey = "Reader.readingMode.\(manga.key)"
@@ -404,6 +442,93 @@ class ReaderViewController: BaseObservingViewController {
         dismiss(animated: true)
     }
 
+    func closeWithoutAnimation() {
+        dismiss(animated: false)
+    }
+
+    @objc func handleCloseSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
+        close()
+    }
+
+    @objc func handleClosePan(_ gestureRecognizer: UIPanGestureRecognizer) {
+        guard !isDismissing else { return }
+
+        let translation = gestureRecognizer.translation(in: view)
+        let velocity = gestureRecognizer.velocity(in: view)
+
+        switch gestureRecognizer.state {
+        case .began:
+            initialCenter = view.center
+        case .changed:
+            // Check if the pan direction is allowed for current reading mode
+            let isHorizontalPan = abs(translation.x) > abs(translation.y)
+            let isVerticalPan = abs(translation.y) > abs(translation.x)
+
+            var shouldAllowPan = false
+
+            switch readingMode {
+            case .ltr, .rtl:
+                // Only allow down swipe for horizontal paged modes
+                shouldAllowPan = translation.y > 0 && isVerticalPan
+            case .vertical, .webtoon, .continuous:
+                // Allow horizontal swipes for these modes
+                shouldAllowPan = isHorizontalPan
+            }
+
+            if shouldAllowPan {
+                let progress = min(abs(isHorizontalPan ? translation.x : translation.y) / 200, 1)
+                let scale = 1 - (progress * 0.1)
+
+                view.center = CGPoint(
+                    x: initialCenter.x + (isHorizontalPan ? translation.x : 0),
+                    y: initialCenter.y + (isVerticalPan ? translation.y : 0)
+                )
+                view.transform = CGAffineTransform(scaleX: scale, y: scale)
+                view.alpha = 1 - (progress * 0.3)
+            }
+        case .ended, .cancelled:
+            let translation = gestureRecognizer.translation(in: view)
+            let velocity = gestureRecognizer.velocity(in: view)
+
+            let isHorizontalPan = abs(translation.x) > abs(translation.y)
+            let isVerticalPan = abs(translation.y) > abs(translation.x)
+
+            var shouldDismiss = false
+
+            switch readingMode {
+            case .ltr, .rtl:
+                // Dismiss if swiped down more than 100pt and no upward velocity
+                shouldDismiss = translation.y > 100 && velocity.y >= 0
+            case .vertical, .webtoon, .continuous:
+                // Dismiss if swiped horizontally more than 100pt and velocity is in the same direction
+                shouldDismiss = abs(translation.x) > 100 && (translation.x > 0 ? velocity.x >= 0 : velocity.x <= 0)
+            }
+
+            if shouldDismiss {
+                isDismissing = true
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.view.center = CGPoint(
+                        x: self.initialCenter.x + (isHorizontalPan ? self.view.bounds.width * (translation.x > 0 ? 1 : -1) : 0),
+                        y: self.initialCenter.y + (isVerticalPan ? self.view.bounds.height : 0)
+                    )
+                    self.view.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                    self.view.alpha = 0
+                }, completion: { _ in
+                    self.closeWithoutAnimation()
+                })
+            } else {
+                // Return to original position
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.view.center = self.initialCenter
+                    self.view.transform = .identity
+                    self.view.alpha = 1
+                })
+            }
+        default:
+            break
+        }
+    }
+
     @objc func sliderMoved(_ sender: ReaderSliderView) {
         reader?.sliderMoved(value: sender.currentValue)
     }
@@ -477,6 +602,8 @@ extension ReaderViewController {
                 } else {
                     pageController = nil
                 }
+                // Update swipe gestures based on reading mode
+                updateSwipeGestures(for: readingMode)
             case .scroll:
                 toolbarView.sliderView.direction = .forward
                 if !(reader is ReaderWebtoonViewController) {
@@ -484,6 +611,8 @@ extension ReaderViewController {
                 } else {
                     pageController = nil
                 }
+                // Update swipe gestures based on reading mode
+                updateSwipeGestures(for: readingMode)
             case .text:
                 toolbarView.sliderView.direction = .forward
                 if !(reader is ReaderTextViewController) {
@@ -491,6 +620,8 @@ extension ReaderViewController {
                 } else {
                     pageController = nil
                 }
+                // Update swipe gestures based on reading mode
+                updateSwipeGestures(for: readingMode)
         }
         if let pageController {
             reader?.remove()
