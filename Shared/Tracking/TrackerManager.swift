@@ -404,16 +404,10 @@ class TrackerManager {
             }
         }
 
+        guard !result.isEmpty else { return }
+
         // create local history
         let (completed, progressed) = await CoreDataManager.shared.container.performBackgroundTask { context in
-            if !result.isEmpty {
-                CoreDataManager.shared.setRead(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
-                    context: context
-                )
-            }
-
             var completed: [String] = []
             var progressed: [String: Int] = [:]
 
@@ -452,6 +446,15 @@ class TrackerManager {
                         context: context
                     )
                 }
+            }
+
+            // mark manga as read only if history was updated
+            if !completed.isEmpty || !progressed.isEmpty {
+                CoreDataManager.shared.setRead(
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    context: context
+                )
             }
 
             try? context.save()

@@ -297,13 +297,15 @@ extension CoreDataManager {
         }
     }
 
+    @discardableResult
     func setCompleted(
         sourceId: String,
         mangaId: String,
         chapterIds: [String],
         date: Date = Date(),
         context: NSManagedObjectContext? = nil
-    ) {
+    ) -> Bool {
+        var success = false
         for chapterId in chapterIds {
             let historyObject = self.getOrCreateHistory(
                 sourceId: sourceId,
@@ -314,7 +316,9 @@ extension CoreDataManager {
             guard !historyObject.completed else { continue }
             historyObject.completed = true
             historyObject.dateRead = date
+            success = true
         }
+        return success
     }
 
     /// Check if history exists for a manga.

@@ -50,23 +50,25 @@ extension HistoryManager {
     ) async {
         // mark each manga as read
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.setRead(
-                sourceId: sourceId,
-                mangaId: mangaId,
-                context: context
-            )
             // mark chapters as read
-            CoreDataManager.shared.setCompleted(
+            let success = CoreDataManager.shared.setCompleted(
                 sourceId: sourceId,
                 mangaId: mangaId,
                 chapterIds: chapters.map { $0.key },
                 date: date,
                 context: context
             )
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
+            if success {
+                CoreDataManager.shared.setRead(
+                    sourceId: sourceId,
+                    mangaId: mangaId,
+                    context: context
+                )
+                do {
+                    try context.save()
+                } catch {
+                    LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
+                }
             }
         }
         if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
