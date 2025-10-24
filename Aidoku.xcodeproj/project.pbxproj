@@ -31,6 +31,10 @@
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
 		FB034E942EAAB6A90072EEEB /* OIDCLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */; };
+		FB034E982EAAFA850072EEEB /* KavitaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E952EAAFA850072EEEB /* KavitaTracker.swift */; };
+		FB034E992EAAFA850072EEEB /* KavitaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E962EAAFA850072EEEB /* KavitaApi.swift */; };
+		FB034E9A2EAAFA850072EEEB /* KavitaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E962EAAFA850072EEEB /* KavitaApi.swift */; };
+		FB034E9B2EAAFA850072EEEB /* KavitaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E952EAAFA850072EEEB /* KavitaTracker.swift */; };
 		FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182A2E09B05D00CEE275 /* GIFImage.swift */; };
 		FB05182D2E09B37D00CEE275 /* GIFImageNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */; };
 		FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */; };
@@ -533,6 +537,8 @@
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
 		FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OIDCLoginController.swift; sourceTree = "<group>"; };
+		FB034E952EAAFA850072EEEB /* KavitaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaTracker.swift; sourceTree = "<group>"; };
+		FB034E962EAAFA850072EEEB /* KavitaApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaApi.swift; sourceTree = "<group>"; };
 		FB05182A2E09B05D00CEE275 /* GIFImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImage.swift; sourceTree = "<group>"; };
 		FB05182C2E09B37C00CEE275 /* GIFImageNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImageNode.swift; sourceTree = "<group>"; };
 		FB0518302E0AEFEF00CEE275 /* UpscaleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpscaleProcessor.swift; sourceTree = "<group>"; };
@@ -1040,6 +1046,15 @@
 				FB79841B2E0DD181000761A9 /* TapZone.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		FB034E972EAAFA850072EEEB /* kavita */ = {
+			isa = PBXGroup;
+			children = (
+				FB034E952EAAFA850072EEEB /* KavitaTracker.swift */,
+				FB034E962EAAFA850072EEEB /* KavitaApi.swift */,
+			);
+			path = kavita;
 			sourceTree = "<group>";
 		};
 		FB05F8652964907200D1EA2D /* Source */ = {
@@ -1923,11 +1938,12 @@
 		FBD6A413285B7CAF007116C9 /* Trackers */ = {
 			isa = PBXGroup;
 			children = (
+				FB1A4E5F2E78A817006F4BA8 /* komga */,
+				FB034E972EAAFA850072EEEB /* kavita */,
 				FB0E1CCC288AE8AD00B67BA9 /* anilist */,
 				FBD6A414285B7CB5007116C9 /* myanimelist */,
 				04B48CF62CD6835700F719D0 /* shikimori */,
 				1871B4712E81241200C272AD /* bangumi */,
-				FB1A4E5F2E78A817006F4BA8 /* komga */,
 			);
 			path = Trackers;
 			sourceTree = "<group>";
@@ -2298,6 +2314,7 @@
 				FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */,
 				FB6340CE27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB3F49EB2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */,
+				FB034E982EAAFA850072EEEB /* KavitaTracker.swift in Sources */,
 				FB4E57992E3529C0006EF27C /* TabBarController.swift in Sources */,
 				FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */,
 				FBE7A58F2DE1214F00CA5B60 /* ExternalSourceTableCell.swift in Sources */,
@@ -2382,6 +2399,7 @@
 				FB427514295FBFF900131377 /* SourceTableViewCell.swift in Sources */,
 				FB14B1272DF4CFE90067E4D4 /* UIKitShim.swift in Sources */,
 				FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */,
+				FB034E992EAAFA850072EEEB /* KavitaApi.swift in Sources */,
 				FB55AFA528AAAEF70083EFC3 /* BaseViewController.swift in Sources */,
 				FB716E04283E7D4D00F1BB5D /* String.swift in Sources */,
 				FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */,
@@ -2618,6 +2636,7 @@
 				FB7983A22E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */,
 				FB79841C2E0DD183000761A9 /* TapZone.swift in Sources */,
 				FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */,
+				FB034E9A2EAAFA850072EEEB /* KavitaApi.swift in Sources */,
 				FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FB4275172960D6AA00131377 /* SourceInfo.swift in Sources */,
@@ -2678,6 +2697,7 @@
 				FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FBCA1B2E2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
 				FB7B7ED2278CE671001E6EAF /* SourceManager.swift in Sources */,
+				FB034E9B2EAAFA850072EEEB /* KavitaTracker.swift in Sources */,
 				FB30D583296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
 				FB14B1322DF4D36A0067E4D4 /* NotificationName.swift in Sources */,
 				FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */,

@@ -9,13 +9,7 @@
 protocol EnhancedTracker: Tracker {}
 
 extension EnhancedTracker {
-    var isLoggedIn: Bool { true }
-
     func search(title: String, includeNsfw: Bool) async throws -> [TrackSearchItem] {
         fatalError("search by title not implemented for enhanced tracker")
-    }
-
-    func logout() {
-        fatalError("logout not implement for enanced tracker")
     }
 }

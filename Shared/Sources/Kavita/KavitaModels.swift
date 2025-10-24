@@ -233,6 +233,8 @@ struct KavitaVolume: Codable, Sendable {
         let createdUtc: Date
         let language: String?
         let pages: Int
+        let pagesRead: Int
+        let lastReadingProgressUtc: Date
         let files: [File]
     }
 
