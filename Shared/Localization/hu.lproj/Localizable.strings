@@ -259,6 +259,5 @@
 "NO_AVAILABLE_SOURCES_INFO" = "Módosítsa a szűrőket a külső források megtekintéséhez.";
 "ALL_SOURCES_INSTALLED" = "Minden Forrás Telepítve";
 "ALL_SOURCES_INSTALLED_INFO" = "Nincs több telepíteni való külső forrás.";
-"LOCAL_SOURCE" = "Helyi Forrás";
-"LOCAL_SOURCE_INFO" = "A helyi forrás lehetővé teszi saját olvasási könyvtár feltöltését és kezelését közvetlenül az Aidoku-ban.";
-"LOCAL_SOURCE_SETUP" = "Helyi Forrás Beállítása";
+"LOCAL_FILES_INFO" = "A helyi forrás lehetővé teszi saját olvasási könyvtár feltöltését és kezelését közvetlenül az Aidoku-ban.";
+"LOCAL_FILES_SETUP" = "Helyi Forrás Beállítása";

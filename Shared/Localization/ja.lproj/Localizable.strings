@@ -370,9 +370,8 @@
 "UNKNOWN_ERROR" = "不明なエラー";
 "ADD_SOURCE" = "ソースを追加する";
 "IMPORT_SOURCE" = "ソースをインポートする";
-"LOCAL_SOURCE" = "ローカルソース";
-"LOCAL_SOURCE_INFO" = "ローカルソースを使って愛読から直接ライブラリーをアップロードして管理することができます。";
-"LOCAL_SOURCE_SETUP" = "ローカルソースの設定";
+"LOCAL_FILES_INFO" = "ローカルファイルのソースを使って愛読から直接ライブラリーをアップロードして管理することができます。";
+"LOCAL_FILES_SETUP" = "ローカルファイルの設定";
 "LOCAL_FILES" = "ローカルファイル";
 "LOCAL_FILES_TAGLINE" = "ローカルファイルから読む";
 "IMPORT" = "インポート";

@@ -380,7 +380,6 @@
 "NO_RESULTS" = "Sem resultados";
 "NO_EXTERNAL_SOURCES" = "Nenhumas fontes externas";
 "ALL_SOURCES_INSTALLED" = "Todas as fontes instaladas";
-"LOCAL_SOURCE" = "Fonte local";
 "LOCAL_FILES" = "Ficheiros locais";
 "LOCAL_FILES_TAGLINE" = "Ler dos ficheiros locais";
 "IMPORT" = "Importar";

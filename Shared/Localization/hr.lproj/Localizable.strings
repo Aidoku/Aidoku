@@ -424,8 +424,7 @@
 "NO_AVAILABLE_SOURCES_INFO" = "Prilagodi filtre za prikaz više eksternih izvora.";
 "ALL_SOURCES_INSTALLED" = "Svi izvori su instalirani";
 "ALL_SOURCES_INSTALLED_INFO" = "Nema preostalih eksternih izvora za instaliranje.";
-"LOCAL_SOURCE" = "Lokalni izvor";
-"LOCAL_SOURCE_SETUP" = "Konfiguracija lokalnog izvora";
+"LOCAL_FILES_SETUP" = "Konfiguracija lokalnog izvora";
 "LOCAL_FILES" = "Lokalne datoteke";
 "LOCAL_FILES_TAGLINE" = "Čitaj iz lokalnih datoteka";
 "IMPORT" = "Uvezi";
@@ -478,7 +477,7 @@
 "RESET_SETTINGS_CONFIRM_%@" = "Stvarno želiš resetirati sve postavke za %@?";
 "CANCEL_CONFIRM" = "Stvarno želiš prekinuti?";
 "NO_EXTERNAL_SOURCES_INFO" = "Konfiguriraj popise izvora u kartici postavki za instaliranje eksternih izvora.";
-"LOCAL_SOURCE_INFO" = "Lokalni izvor omogućuje prijenos i upravljanje vlastitom bibliotekom za čitanje izravno unutar Aidokua.";
+"LOCAL_FILES_INFO" = "Lokalni izvor omogućuje prijenos i upravljanje vlastitom bibliotekom za čitanje izravno unutar Aidokua.";
 "OPEN_WEBSITE" = "Otvori web stranicu";
 "SET_COVER_IMAGE" = "Postavi sliku omota";
 "UPLOAD_CUSTOM_COVER" = "Prenesi prilagođeni omot";

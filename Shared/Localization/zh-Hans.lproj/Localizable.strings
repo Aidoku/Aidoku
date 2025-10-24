@@ -405,8 +405,7 @@
 "ALL_SOURCES_INSTALLED_INFO" = "没有其他外部来源可以安装。";
 "IMPORT" = "导入";
 "LOCAL_FILES" = "本机文件";
-"LOCAL_SOURCE_SETUP" = "本机来源设置";
-"LOCAL_SOURCE" = "本机来源";
+"LOCAL_FILES_SETUP" = "本机来源设置";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本机文件导入";
 "LOCAL_FILE_IMPORT_TEXT" = "导入包含图像的 CBZ 或 ZIP 文件以供阅读。";
@@ -493,7 +492,7 @@
 "UNAVAILABLE_SOURCE_LISTS_TEXT" = "获取上述来源列表时发生了错误。";
 "SOURCE_BREAKING_CHANGE" = "来源重大变更";
 "SOURCE_BREAKING_CHANGE_TEXT" = "此来源发生了重大变更，需要迁移以保留您的书库和历史记录。";
-"LOCAL_SOURCE_INFO" = "本地来源允许你在Aidoku中直接上传和管理你自己的阅读库。";
+"LOCAL_FILES_INFO" = "本地来源允许你在Aidoku中直接上传和管理你自己的阅读库。";
 "LOCAL_FILES_TAGLINE" = "读取本机文件";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "从书架删除项目";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "从书架删除 %i 项目";

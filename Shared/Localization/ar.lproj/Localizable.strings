@@ -396,9 +396,8 @@
 "NO_AVAILABLE_SOURCES_INFO" = "قم بتعديل المرشحات لعرض المزيد من المصادر الخارجية.";
 "ALL_SOURCES_INSTALLED" = "تم تثبيت جميع المصادر";
 "ALL_SOURCES_INSTALLED_INFO" = "لا توجد مصادر خارجية متبقية للتثبيت.";
-"LOCAL_SOURCE" = "المصدر المحلي";
-"LOCAL_SOURCE_INFO" = "يتيح لك المصدر المحلي رفع وإدارة مكتبتك الخاصة للقراءة مباشرة داخل Aidoku.";
-"LOCAL_SOURCE_SETUP" = "إعداد المصدر المحلي";
+"LOCAL_FILES_INFO" = "يتيح لك المصدر المحلي رفع وإدارة مكتبتك الخاصة للقراءة مباشرة داخل Aidoku.";
+"LOCAL_FILES_SETUP" = "إعداد المصدر المحلي";
 "LOCAL_FILES" = "الملفات المحلية";
 "LOCAL_FILES_TAGLINE" = "قم بالقراءة من الملفات المحلية";
 "IMPORT" = "استيراد";
