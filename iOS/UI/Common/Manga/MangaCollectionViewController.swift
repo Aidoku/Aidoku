@@ -12,6 +12,7 @@ class MangaCollectionViewController: BaseCollectionViewController {
     lazy var dataSource = makeDataSource()
 
     var itemSpacing: CGFloat = 12
+    var sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
     private var focusedIndexPath: IndexPath? {
         didSet {
@@ -69,7 +70,7 @@ class MangaCollectionViewController: BaseCollectionViewController {
             }
         }
         let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = itemSpacing
+        config.interSectionSpacing = itemSpacing + sectionSpacing
         layout.configuration = config
         return layout
     }
