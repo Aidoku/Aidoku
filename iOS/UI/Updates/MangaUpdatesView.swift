@@ -92,17 +92,23 @@ struct MangaUpdatesView: View {
                 let items = entry.items
                 ForEach(items, id: \.mangaKey) { item in
                     let updates = item.updates
-                    if let manga = updates.first?.manga {
+                    if let update = updates.first {
                         NavigationLink(
-                            destination: MangaView(manga: manga, path: path)
+                            destination: MangaView(manga: update.manga, path: path)
                                 .onAppear {
-                                    setOpened(manga: manga)
+                                    setOpened(manga: update.manga)
                                 }
                         ) {
                             MangaUpdateItemView(updates: updates)
                         }
                         .offsetListSeparator()
                         .id(item.mangaKey)
+                        .swipeActions(edge: .trailing) {
+                            Button(NSLocalizedString("DELETE")) {
+                                removeUpdate(update: update, day: entry.day)
+                            }
+                            .tint(.red)
+                        }
                     }
                 }
             } header: {
@@ -204,6 +210,36 @@ extension MangaUpdatesView {
             Task {
                 await CoreDataManager.shared.setOpened(sourceId: manga.sourceKey, mangaId: manga.key)
                 NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+            }
+        }
+    }
+    
+    private func removeUpdate(update: UpdateInfo, day: Int) {
+        var newEntries = entries
+        if let sectionIndex = newEntries.firstIndex(where: { $0.day == day }) {
+            var section = newEntries[sectionIndex]
+            section.items.removeAll(where: { $0.mangaKey == update.manga.uniqueKey })
+            if section.items.isEmpty {
+                newEntries.remove(at: sectionIndex)
+            } else {
+                newEntries[sectionIndex] = section
+            }
+        }
+
+        withAnimation {
+            entries = newEntries
+            if newEntries.isEmpty { hasNoUpdates = true }
+        }        
+        
+        Task {
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.removeMangaUpdate(
+                    sourceId: update.manga.sourceKey,
+                    mangaId: update.manga.key,
+                    date: update.date,
+                    context: context
+                )
+                try? context.save()
             }
         }
     }
