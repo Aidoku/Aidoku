@@ -72,6 +72,30 @@ extension CoreDataManager {
         mangaUpdateObject.chapter = chapterObject
     }
 
+    /// Removes all manga update objects for a manga on a specific date
+    func removeMangaUpdate(
+        sourceId: String,
+        mangaId: String,
+        date: Date,
+        context: NSManagedObjectContext? = nil
+    ) {
+        let context = context ?? self.context
+
+        let calendar = Calendar.autoupdatingCurrent
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
+        let request = MangaUpdateObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@ AND date >= %@ AND date < %@",
+            mangaId, sourceId, startOfDay as NSDate, endOfDay as NSDate
+        )
+        
+        if let updates = try? context.fetch(request) {
+            for update in updates { context.delete(update) }
+        }
+    }
+
     /// Gets all unviewed updates of a manga
     func getUnviewedMangaUpdates(
         sourceId: String,
