@@ -307,7 +307,7 @@
 "CACHE_SIZE_%@" = "快取大小：%@";
 "UNREAD_CHAPTERS" = "未讀章節";
 "SET_AS_SINGLE_PAGE" = "作爲單獨頁面顯示";
-"%i_OF_%i" = "%i的%i";
+"%i_OF_%i" = "%i之%i";
 "%i_PAGES_LEFT" = "剩餘%i頁";
 "WEBTOON" = "條漫";
 "%i_CHAPTERS" = "共%i章";
