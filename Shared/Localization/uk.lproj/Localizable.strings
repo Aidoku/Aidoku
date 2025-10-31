@@ -589,3 +589,8 @@
 "FORMAT_PDF" = "PDF";
 "FORMAT_ARCHIVE" = "Архів";
 "LOGIN_VIA_OIDC" = "Увійти через OIDC";
+"CONTENT_RATING" = "Рейтинг вмісту";
+"SAFE" = "Безпечний";
+"CONTAINS_NSFW" = "Містить NSFW";
+"PRIMARILY_NSFW" = "В основному NSFW";
+"TOGGLE_BARS" = "Перемикання видимості панелі";

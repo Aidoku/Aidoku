@@ -233,7 +233,7 @@
 "LOCKED_CATEGORIES" = "已鎖定類別";
 "TOTAL_CHAPTERS" = "章節數量";
 "NOT_FOUND" = "找不到項目";
-"ONE_PAGE_LEFT" = "剩餘一頁";
+"ONE_PAGE_LEFT" = "剩餘1頁";
 "FAILED_CHAPTER_LOAD" = "載入章節失敗";
 "AVAILABLE" = "更多來源";
 "DEFAULT_READING_MODE" = "預設閱讀模式";
@@ -261,7 +261,7 @@
 "NO_UPDATES" = "沒有更新";
 "%lld_PLUS_MORE" = "+%lld更多";
 "DELETE_DOWNLOAD_AFTER_READING" = "閱讀完刪除下載";
-"CROP_BORDERS" = "裁減邊緣";
+"CROP_BORDERS" = "裁切邊緣";
 "READER_BG_COLOR" = "背景顏色";
 "TRACK_DROPPED" = "已棄追";
 "ONESHOT" = "短篇";
@@ -307,7 +307,7 @@
 "CACHE_SIZE_%@" = "快取大小：%@";
 "UNREAD_CHAPTERS" = "未讀章節";
 "SET_AS_SINGLE_PAGE" = "作爲單獨頁面顯示";
-"%i_OF_%i" = "%i的%i";
+"%i_OF_%i" = "%i之%i";
 "%i_PAGES_LEFT" = "剩餘%i頁";
 "WEBTOON" = "條漫";
 "%i_CHAPTERS" = "共%i章";
