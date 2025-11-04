@@ -20,6 +20,10 @@ struct DownloadedMangaInfo: Identifiable, Hashable {
     let chapterCount: Int
     let isInLibrary: Bool
 
+    var mangaIdentifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
+    }
+
     /// Computed property for display title (fallback to manga ID)
     var displayTitle: String {
         title ?? mangaId

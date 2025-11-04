@@ -172,9 +172,9 @@ extension MangaDownloadDetailView.ViewModel {
             chapters.removeAll { $0.id == chapter.id }
         }
 
-        // Perform actual deletion in background
+        // Perform actual deletion
         Task {
-            DownloadManager.shared.deleteChapter(chapter, from: manga)
+            await DownloadManager.shared.deleteChapter(chapter, from: manga)
         }
     }
 
@@ -185,7 +185,9 @@ extension MangaDownloadDetailView.ViewModel {
         }
 
         // Perform actual deletion
-        DownloadManager.shared.deleteChaptersForManga(manga)
+        Task {
+            await DownloadManager.shared.deleteChaptersForManga(manga)
+        }
     }
 
     func confirmDeleteAll() {
@@ -234,15 +236,17 @@ extension MangaDownloadDetailView.ViewModel {
         // Immediate updates for relevant manga operations
         let immediateNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
             (.downloadRemoved, { [weak self] notification in
-                guard let chapter = notification.object as? Chapter,
-                      chapter.sourceId == self?.manga.sourceId,
-                      chapter.mangaId == self?.manga.mangaId else { return false }
+                guard
+                    let id = notification.object as? ChapterIdentifier,
+                    id.mangaIdentifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             }),
             (.downloadsRemoved, { [weak self] notification in
-                guard let manga = notification.object as? Manga,
-                      manga.sourceId == self?.manga.sourceId,
-                      manga.id == self?.manga.mangaId else { return false }
+                guard
+                    let id = notification.object as? MangaIdentifier,
+                    id == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             })
         ]
@@ -264,13 +268,13 @@ extension MangaDownloadDetailView.ViewModel {
         let debouncedNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
             (.downloadFinished, { [weak self] notification in
                 guard let download = notification.object as? Download,
-                      download.sourceId == self?.manga.sourceId,
-                      download.mangaId == self?.manga.mangaId else { return false }
+                      download.mangaIdentifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             }),
             (.downloadsQueued, { [weak self] notification in
                 guard let downloads = notification.object as? [Download] else { return false }
-                return downloads.contains { $0.sourceId == self?.manga.sourceId && $0.mangaId == self?.manga.mangaId }
+                return downloads.contains { $0.mangaIdentifier == self?.manga.mangaIdentifier }
             }),
             (.addToLibrary, { [weak self] notification in
                 guard let addedManga = notification.object as? Manga,

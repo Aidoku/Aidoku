@@ -216,11 +216,11 @@ class LibraryViewModel {
             (pinnedManga, manga) = await MainActor.run {
                 (
                     pinnedMangaCopy.filter { info in
-                        let condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                        let condition = DownloadManager.shared.hasDownloadedChapter(from: info.identifier)
                         return exclude ? !condition : condition
                     },
                     mangaCopy.filter { info in
-                        let condition = DownloadManager.shared.hasDownloadedChapter(sourceId: info.sourceId, mangaId: info.mangaId)
+                        let condition = DownloadManager.shared.hasDownloadedChapter(from: info.identifier)
                         return exclude ? !condition : condition
                     }
                 )

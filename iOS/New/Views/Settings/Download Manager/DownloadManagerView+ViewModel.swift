@@ -186,7 +186,9 @@ extension DownloadManagerView.ViewModel {
             downloadedManga = []
         }
 
-        DownloadManager.shared.deleteAll()
+        Task {
+            await DownloadManager.shared.deleteAll()
+        }
     }
 
     func confirmDeleteAll() {

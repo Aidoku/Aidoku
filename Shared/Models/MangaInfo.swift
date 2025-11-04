@@ -8,6 +8,8 @@
 import Foundation
 
 struct MangaInfo: Hashable, Sendable {
+    var identifier: MangaIdentifier { .init(sourceKey: sourceId, mangaKey: mangaId) }
+
     let mangaId: String
     let sourceId: String
 

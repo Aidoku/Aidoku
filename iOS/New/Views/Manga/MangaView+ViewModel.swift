@@ -184,14 +184,14 @@ extension MangaView {
                 .sink { [weak self] output in
                     guard let self, let downloads = output.object as? [Download] else { return }
                     let chapters = downloads.compactMap {
-                        if $0.chapter?.mangaId == self.manga.key && $0.chapter?.sourceId == self.manga.sourceKey {
+                        if $0.mangaIdentifier == self.manga.identifier {
                             $0.chapter
                         } else {
                             nil
                         }
                     }
                     for chapter in chapters {
-                        self.downloadProgress[chapter.id] = 0
+                        self.downloadProgress[chapter.key] = 0
                     }
                 }
                 .store(in: &cancellables)
@@ -201,10 +201,9 @@ extension MangaView {
                     guard
                         let self,
                         let download = output.object as? Download,
-                        let chapter = download.chapter,
-                        chapter.mangaId == self.manga.key && chapter.sourceId == self.manga.sourceKey
+                        download.mangaIdentifier == self.manga.identifier
                     else { return }
-                    self.downloadProgress[chapter.id] = Float(download.progress) / Float(download.total)
+                    self.downloadProgress[download.chapterIdentifier.chapterKey] = Float(download.progress) / Float(download.total)
                 }
                 .store(in: &cancellables)
 
@@ -394,8 +393,8 @@ extension MangaView.ViewModel {
                     // update manga updates
                     for chapter in newChapters
                     where
-                    langFilter != nil ? chapter.lang == langFilter : true
-                    && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
+                        langFilter != nil ? chapter.lang == langFilter : true
+                        && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                     {
                         CoreDataManager.shared.createMangaUpdate(
                             sourceId: sourceKey,
@@ -428,10 +427,9 @@ extension MangaView.ViewModel {
     private func loadDownloadStatus() async {
         let sourceKey = manga.sourceKey
         let mangaKey = manga.key
-        // todo: downloadmanager needs to be moved off of mainactor since this causes hangs when loading large amounts of chapters
         for chapter in chapters {
-            downloadStatus[chapter.key] = DownloadManager.shared.getDownloadStatus(
-                for: chapter.toOld(sourceId: sourceKey, mangaId: mangaKey)
+            downloadStatus[chapter.key] = await DownloadManager.shared.getDownloadStatus(
+                for: .init(sourceKey: sourceKey, mangaKey: mangaKey, chapterKey: chapter.key)
             )
         }
     }
@@ -511,32 +509,29 @@ extension MangaView.ViewModel {
     }
 
     private func removeDownload(_ notification: Notification) {
-        var chapter: Chapter?
-        if let chapterCast = notification.object as? Chapter {
-            chapter = chapterCast
-        } else if
-            let download = notification.object as? Download,
-            let chapterCast = download.chapter
-        {
-            chapter = chapterCast
+        var chapter: ChapterIdentifier?
+        if let identifier = notification.object as? ChapterIdentifier {
+            chapter = identifier
+        } else if let download = notification.object as? Download {
+            chapter = download.chapterIdentifier
         }
         if let chapter {
-            downloadProgress.removeValue(forKey: chapter.id)
-            downloadStatus[chapter.id] = DownloadManager.shared.getDownloadStatus(for: chapter)
+            Task {
+                downloadProgress.removeValue(forKey: chapter.chapterKey)
+                downloadStatus[chapter.chapterKey] = await DownloadManager.shared.getDownloadStatus(for: chapter)
+            }
         }
     }
 
     private func removeDownloads(_ notification: Notification) {
-        if let chapters = notification.object as? [Chapter] {
+        if let chapters = notification.object as? [ChapterIdentifier] {
             for chapter in chapters {
-                downloadProgress.removeValue(forKey: chapter.id)
-                downloadStatus[chapter.id] = DownloadManager.shared.getDownloadStatus(
-                    for: chapter
-                )
+                downloadProgress.removeValue(forKey: chapter.chapterKey)
+                downloadStatus[chapter.chapterKey] = DownloadStatus.none
             }
         } else if
-            let manga = notification.object as? Manga,
-            manga.id == self.manga.key && manga.sourceId == self.manga.sourceKey
+            let manga = notification.object as? MangaIdentifier,
+            manga == self.manga.identifier
         { // all chapters
             downloadProgress = [:]
             for chapter in self.manga.chapters ?? chapters {
@@ -592,9 +587,7 @@ extension MangaView.ViewModel {
                 case .downloaded:
                     chapters = chapters.filter {
                         let downloaded = !DownloadManager.shared.isChapterDownloaded(
-                            sourceId: manga.sourceKey,
-                            mangaId: manga.key,
-                            chapterId: $0.key
+                            chapter: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
                         )
                         return filter.exclude ? downloaded : !downloaded
                     }

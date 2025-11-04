@@ -5,6 +5,7 @@
 //  Created by Skitty on 5/2/22.
 //
 
+import AidokuRunner
 import Foundation
 
 /*
@@ -20,20 +21,22 @@ import Foundation
  */
 
 // global class to manage downloads
-@MainActor
-class DownloadManager {
+actor DownloadManager {
     static let shared = DownloadManager()
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Downloads", isDirectory: true)
 
-    private let cache: DownloadCache
+    nonisolated let cache: DownloadCache
     private let queue: DownloadQueue
-
-    private(set) var downloadsPaused = false
 
     var ignoreConnectionType = false
 
     private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
+
+    // for download manager UI
+    private var downloadedMangaCache: [DownloadedMangaInfo] = []
+    private var lastCacheUpdate: Date = .distantPast
+    private let cacheValidityDuration: TimeInterval = 60 // 1 minute
 
     init() {
         self.cache = DownloadCache()
@@ -42,20 +45,28 @@ class DownloadManager {
             Self.directory.createDirectory()
         }
         Task {
-            await self.queue.setOnCompletion { [weak self] in
-                self?.invalidateDownloadedMangaCache()
+            await self.queue.setOnCompletion { @Sendable [weak self] in
+                Task { @MainActor in
+                    await self?.invalidateDownloadedMangaCache()
+                }
             }
         }
     }
 
-    func getDownloadQueue() async -> [String: [Download]] {
-        await queue.queue
+    func loadQueueState() async {
+        await queue.loadQueueState()
+
+        // fetch loaded downloads to notify ui about
+        let downloads = await queue.queue.flatMap(\.value)
+        if !downloads.isEmpty {
+            NotificationCenter.default.post(name: .downloadsQueued, object: downloads)
+        }
     }
 
-    func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
+    func getDownloadedPages(for chapter: ChapterIdentifier) async -> [Page] {
         var descriptionFiles: [URL] = []
 
-        var pages = cache.directory(for: chapter).contents
+        var pages = await cache.directory(for: chapter).contents
             .compactMap { url -> Page? in
                 let imageURL: String?
                 let text: String?
@@ -76,8 +87,8 @@ class DownloadManager {
                     return nil
                 }
                 return Page(
-                    sourceId: chapter.sourceId,
-                    chapterId: chapter.id,
+                    sourceId: chapter.sourceKey,
+                    chapterId: chapter.chapterKey,
                     index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
                     imageURL: imageURL,
                     text: text,
@@ -104,20 +115,27 @@ class DownloadManager {
         return pages
     }
 
-    func isChapterDownloaded(chapter: Chapter) -> Bool {
-        cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id)
+    @MainActor
+    func isChapterDownloaded(chapter: ChapterIdentifier) -> Bool {
+        cache.isChapterDownloaded(identifier: chapter)
     }
 
-    func isChapterDownloaded(sourceId: String, mangaId: String, chapterId: String) -> Bool {
-        cache.isChapterDownloaded(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId)
+    @MainActor
+    func hasDownloadedChapter(from identifier: MangaIdentifier) -> Bool {
+        cache.hasDownloadedChapter(from: identifier)
     }
 
-    func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
+    func hasQueuedDownloads() async -> Bool {
+        await queue.hasQueuedDownloads()
+    }
+
+    @MainActor
+    func getDownloadStatusSync(for chapter: ChapterIdentifier) -> DownloadStatus {
         if isChapterDownloaded(chapter: chapter) {
             return .finished
         } else {
-            let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
+            let tmpDirectory = cache.directory(for: chapter.mangaIdentifier)
+                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
             if tmpDirectory.exists {
                 return .downloading
             } else {
@@ -126,154 +144,155 @@ class DownloadManager {
         }
     }
 
-    func hasDownloadedChapter(sourceId: String, mangaId: String) -> Bool {
-        cache.hasDownloadedChapter(sourceId: sourceId, mangaId: mangaId)
-    }
-
-    func hasQueuedDownloads() async -> Bool {
-        await queue.hasQueuedDownloads()
-    }
-
-    func loadQueueState() async {
-        await queue.loadQueueState()
-
-        // fetch loaded downloads to notify ui about
-        let downloads = await queue.queue.flatMap(\.value)
-        if !downloads.isEmpty {
-            NotificationCenter.default.post(name: NSNotification.Name("downloadsQueued"), object: downloads)
-        }
+    func getDownloadStatus(for chapter: ChapterIdentifier) async -> DownloadStatus {
+        await getDownloadStatusSync(for: chapter)
     }
 }
 
+// MARK: File Management
+
 extension DownloadManager {
+    /// Download all chapters for a manga.
+    func downloadAll(manga: AidokuRunner.Manga) async {
+        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
 
-    func downloadAll(manga: Manga) async {
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-            .filter {
-                // filter out chapters that are locked and already downloaded
-                !$0.locked && !isChapterDownloaded(chapter: $0)
+        var chaptersToDownload: [AidokuRunner.Chapter] = []
+
+        for chapter in allChapters {
+            guard !chapter.locked else { continue }
+            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            if !downloaded {
+                chaptersToDownload.append(chapter.toNew())
             }
-        download(chapters: chapters.reversed(), manga: manga)
-    }
-
-    func downloadUnread(manga: Manga) async {
-        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-            .filter {
-                (readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1)
-                    && !$0.locked && !isChapterDownloaded(chapter: $0)
-            }
-        download(chapters: chapters.reversed(), manga: manga)
-    }
-
-    func download(chapters: [Chapter], manga: Manga? = nil) {
-        Task {
-            let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
-            NotificationCenter.default.post(
-                name: NSNotification.Name("downloadsQueued"),
-                object: downloads
-            )
-            // Invalidate cache since new downloads may affect the list
-            invalidateDownloadedMangaCache()
         }
+
+        await download(manga: manga, chapters: chaptersToDownload.reversed())
     }
 
-    func delete(chapters: [Chapter]) {
+    /// Download unread chapters for a manga.
+    func downloadUnread(manga: AidokuRunner.Manga) async {
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceKey, mangaId: manga.key)
+        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
+
+        var chaptersToDownload: [AidokuRunner.Chapter] = []
+
+        for chapter in allChapters {
+            guard !chapter.locked else { continue }
+            let isUnread = readingHistory[chapter.id] == nil || readingHistory[chapter.id]?.page != -1
+            guard isUnread else { continue }
+            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            if !downloaded {
+                chaptersToDownload.append(chapter.toNew())
+            }
+        }
+
+        await download(manga: manga, chapters: chaptersToDownload.reversed())
+    }
+
+    /// Download given chapters from a manga.
+    func download(manga: AidokuRunner.Manga, chapters: [AidokuRunner.Chapter]) async {
+        let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
+        NotificationCenter.default.post(
+            name: .downloadsQueued,
+            object: downloads
+        )
+        // Invalidate cache since new downloads may affect the list
+        await invalidateDownloadedMangaCache()
+    }
+
+    /// Remove downloads for specified chapters.
+    func delete(chapters: [ChapterIdentifier]) async {
         for chapter in chapters {
-            cache.directory(for: chapter).removeItem()
-            cache.remove(chapter: chapter)
-            NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
+            await cache.directory(for: chapter).removeItem()
+            await cache.remove(chapter: chapter)
+            NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
         // Invalidate cache for download manager UI
-        invalidateDownloadedMangaCache()
+        await invalidateDownloadedMangaCache()
     }
 
-    func deleteChapters(for manga: Manga) {
-        cache.directory(for: manga).removeItem()
-        cache.remove(manga: manga)
-        NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
+    /// Remove all downloads from a manga.
+    func deleteChapters(for manga: MangaIdentifier) async {
+        await cache.directory(for: manga).removeItem()
+        await cache.remove(manga: manga)
+        NotificationCenter.default.post(name: .downloadsRemoved, object: manga)
         // Invalidate cache for download manager UI
-        invalidateDownloadedMangaCache()
+        await invalidateDownloadedMangaCache()
     }
 
-    func deleteAll() {
-        cache.removeAll()
+    /// Remove all downloads.
+    func deleteAll() async {
+        await cache.removeAll()
+    }
+}
+
+// MARK: Queue Control
+
+extension DownloadManager {
+    func isQueuePaused() async -> Bool {
+        !(await queue.running)
     }
 
-    func pauseDownloads() {
-        Task {
-            await queue.pause()
-        }
-        downloadsPaused = true
-        NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
+    func getDownloadQueue() async -> [String: [Download]] {
+        await queue.queue
+    }
+
+    func pauseDownloads() async {
+        await queue.pause()
+        NotificationCenter.default.post(name: .downloadsPaused, object: nil)
         // Invalidate cache since paused state may affect display
-        invalidateDownloadedMangaCache()
+        await invalidateDownloadedMangaCache()
     }
 
-    func resumeDownloads() {
-        Task {
-            await queue.resume()
-        }
-        downloadsPaused = false
-        NotificationCenter.default.post(name: Notification.Name("downloadsResumed"), object: nil)
+    func resumeDownloads() async {
+        await queue.resume()
+        NotificationCenter.default.post(name: .downloadsResumed, object: nil)
         // Invalidate cache since resumed state may affect display
-        invalidateDownloadedMangaCache()
+        await invalidateDownloadedMangaCache()
     }
 
-    func cancelDownload(for chapter: Chapter) {
-        Task {
-            await queue.cancelDownload(for: chapter)
+    func cancelDownload(for chapter: ChapterIdentifier) async {
+        await queue.cancelDownload(for: chapter)
+        // Invalidate cache since cancelled downloads may affect display
+        await invalidateDownloadedMangaCache()
+    }
+
+    func cancelDownloads(for chapters: [ChapterIdentifier] = []) async {
+        if chapters.isEmpty {
+            await queue.cancelAll()
+        } else {
+            await queue.cancelDownloads(for: chapters)
         }
         // Invalidate cache since cancelled downloads may affect display
-        invalidateDownloadedMangaCache()
+        await invalidateDownloadedMangaCache()
     }
 
-    func cancelDownloads(for chapters: [Chapter] = []) {
-        Task {
-            if chapters.isEmpty {
-                await queue.cancelAll()
-            } else {
-                await queue.cancelDownloads(for: chapters)
-            }
-        }
-        downloadsPaused = false
-        // Invalidate cache since cancelled downloads may affect display
-        invalidateDownloadedMangaCache()
+    func onProgress(for chapter: ChapterIdentifier, block: @Sendable @escaping (Int, Int) -> Void) async {
+        await queue.onProgress(for: chapter, block: block)
     }
 
-    func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
-        Task {
-            await queue.onProgress(for: chapter, block: block)
-        }
-    }
-
-    func removeProgressBlock(for chapter: Chapter) {
-        Task {
-            await queue.removeProgressBlock(for: chapter)
-        }
+    func removeProgressBlock(for chapter: ChapterIdentifier) async {
+        await queue.removeProgressBlock(for: chapter)
     }
 }
 
 // MARK: - Download Manager UI Support
 extension DownloadManager {
-    private static var downloadedMangaCache: [DownloadedMangaInfo] = []
-    private static var lastCacheUpdate: Date = .distantPast
-    private static let cacheValidityDuration: TimeInterval = 60 // 1 minute
 
     /// Get all downloaded manga with metadata from CoreData if available
     func getAllDownloadedManga() async -> [DownloadedMangaInfo] {
         // Return cached result if still valid
         let now = Date()
-        if now.timeIntervalSince(Self.lastCacheUpdate) < Self.cacheValidityDuration {
-            return Self.downloadedMangaCache
+        if now.timeIntervalSince(lastCacheUpdate) < cacheValidityDuration {
+            return downloadedMangaCache
         }
 
         var downloadedManga: [DownloadedMangaInfo] = []
 
         // Ensure downloads directory exists
         guard Self.directory.exists else {
-            Self.downloadedMangaCache = []
-            Self.lastCacheUpdate = now
+            downloadedMangaCache = []
+            lastCacheUpdate = now
             return []
         }
 
@@ -387,8 +406,8 @@ extension DownloadManager {
         }
 
         // Cache the result
-        Self.downloadedMangaCache = downloadedManga
-        Self.lastCacheUpdate = now
+        downloadedMangaCache = downloadedManga
+        lastCacheUpdate = now
 
         return downloadedManga
     }
@@ -443,12 +462,11 @@ extension DownloadManager {
     }
 
     /// Save chapter metadata when downloading
-    func saveChapterMetadata(_ chapter: Chapter, to directory: URL) {
+    func saveChapterMetadata(_ chapter: AidokuRunner.Chapter, to directory: URL) {
         let metadata = ChapterMetadata(
             title: chapter.title,
-            chapterNumber: chapter.chapterNum,
-            volumeNumber: chapter.volumeNum,
-            sourceOrder: chapter.sourceOrder
+            chapterNumber: chapter.chapterNumber,
+            volumeNumber: chapter.volumeNumber
         )
 
         let metadataURL = directory.appendingPathComponent(".metadata.json")
@@ -462,10 +480,10 @@ extension DownloadManager {
     }
 
     /// Save manga metadata when first downloading from it
-    func saveMangaMetadata(_ manga: Manga, to directory: URL) async {
+    func saveMangaMetadata(_ manga: AidokuRunner.Manga, to directory: URL) async {
         // Get the cover image and convert to base64
         var thumbnailBase64: String?
-        if let coverUrl = manga.coverUrl {
+        if let coverUrl = manga.cover.flatMap({ URL(string: $0) }) {
             do {
                 let (data, _) = try await URLSession.shared.data(from: coverUrl)
                 thumbnailBase64 = data.base64EncodedString()
@@ -475,9 +493,9 @@ extension DownloadManager {
         }
 
         let metadata = MangaMetadata(
-            mangaId: manga.id,
+            mangaId: manga.key,
             title: manga.title,
-            cover: manga.coverUrl?.absoluteString,
+            cover: manga.cover,
             thumbnailBase64: thumbnailBase64,
             description: manga.description
         )
@@ -527,7 +545,6 @@ extension DownloadManager {
         let title: String?
         let chapterNumber: Float?
         let volumeNumber: Float?
-        let sourceOrder: Int
     }
 
     /// Simple manga metadata structure
@@ -571,27 +588,25 @@ extension DownloadManager {
     }
 
     /// Delete chapters for a specific manga (used by download manager UI)
-    func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) {
-        let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.directoryMangaId)
-        deleteChapters(for: manga)
+    func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) async {
+        await deleteChapters(for: mangaInfo.mangaIdentifier)
 
         // Invalidate cache
-        Self.lastCacheUpdate = .distantPast
+        lastCacheUpdate = .distantPast
     }
 
     /// Delete a specific chapter (used by download manager UI)
-    func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) {
-        let chapter = Chapter(
-            sourceId: mangaInfo.sourceId,
-            id: chapterInfo.chapterId,
-            mangaId: mangaInfo.directoryMangaId, // Use directory name for file system operations
-            title: chapterInfo.title,
-            sourceOrder: -1
-        )
-        delete(chapters: [chapter])
+    func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) async {
+        await delete(chapters: [
+            .init(
+                sourceKey: mangaInfo.sourceId,
+                mangaKey: mangaInfo.mangaId,
+                chapterKey: chapterInfo.chapterId
+            )
+        ])
 
         // Invalidate cache
-        Self.lastCacheUpdate = .distantPast
+        lastCacheUpdate = .distantPast
     }
 
     /// Get total size of all downloads
@@ -607,7 +622,7 @@ extension DownloadManager {
     }
 
     /// Invalidate the downloaded manga cache (call when downloads are added/removed)
-    func invalidateDownloadedMangaCache() {
-        Self.lastCacheUpdate = .distantPast
+    func invalidateDownloadedMangaCache() async {
+        lastCacheUpdate = .distantPast
     }
 }

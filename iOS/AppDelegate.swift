@@ -184,15 +184,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
             switch connectionType {
-            case .wifi:
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
-                    DownloadManager.shared.ignoreConnectionType = false
-                    DownloadManager.shared.resumeDownloads()
-                }
-            case .cellular, .none:
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && !DownloadManager.shared.ignoreConnectionType {
-                    DownloadManager.shared.pauseDownloads()
-                }
+                case .wifi:
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        Task {
+                            DownloadManager.shared.ignoreConnectionType = false
+                            await DownloadManager.shared.resumeDownloads()
+                        }
+                    }
+                case .cellular, .none:
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && !DownloadManager.shared.ignoreConnectionType {
+                        Task {
+                            await DownloadManager.shared.pauseDownloads()
+                        }
+                    }
             }
         }
 

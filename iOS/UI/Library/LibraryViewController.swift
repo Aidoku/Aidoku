@@ -584,7 +584,10 @@ extension LibraryViewController {
     }
 
     @objc func openDownloadQueue() {
-        present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
+        let viewController = UIHostingController(rootView: DownloadQueueView())
+        viewController.navigationItem.largeTitleDisplayMode = .never
+        viewController.navigationItem.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        present(viewController, animated: true)
     }
 
     @objc func openMangaUpdates() {
@@ -1136,7 +1139,7 @@ extension LibraryViewController {
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
                         for mangaInfo in mangaInfo {
-                            await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga())
+                            await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga().toNew())
                         }
                     }
                 } else {
@@ -1153,7 +1156,7 @@ extension LibraryViewController {
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
                         for manga in mangaInfo {
-                            await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                            await DownloadManager.shared.downloadUnread(manga: manga.toManga().toNew())
                         }
                     }
                 } else {

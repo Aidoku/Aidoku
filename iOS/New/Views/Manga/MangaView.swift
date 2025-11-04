@@ -88,7 +88,9 @@ struct MangaView: View {
                 actions: {
                     Button(NSLocalizedString("CANCEL"), role: .cancel) {}
                     Button(NSLocalizedString("REMOVE"), role: .destructive) {
-                        DownloadManager.shared.deleteChapters(for: viewModel.manga.toOld())
+                        Task {
+                            await DownloadManager.shared.deleteChapters(for: viewModel.manga.identifier)
+                        }
                     }
                 },
                 message: {
@@ -101,17 +103,17 @@ struct MangaView: View {
                 actions: {
                     Button(NSLocalizedString("CANCEL"), role: .cancel) {}
                     Button(NSLocalizedString("REMOVE"), role: .destructive) {
-                        DownloadManager.shared.delete(chapters: selectedChapters.map {
-                            Chapter(
-                                sourceId: viewModel.manga.sourceKey,
-                                id: $0,
-                                mangaId: viewModel.manga.key,
-                                title: nil,
-                                sourceOrder: 0
-                            )
-                        })
-                        withAnimation {
-                            editMode = .inactive
+                        Task {
+                            await DownloadManager.shared.delete(chapters: selectedChapters.map {
+                                .init(
+                                    sourceKey: viewModel.manga.sourceKey,
+                                    mangaKey: viewModel.manga.key,
+                                    chapterKey: $0
+                                )
+                            })
+                            withAnimation {
+                                editMode = .inactive
+                            }
                         }
                     }
                 },
@@ -238,7 +240,8 @@ extension MangaView {
     @ViewBuilder
     func viewForChapter(_ chapter: AidokuRunner.Chapter, index: Int) -> some View {
         let last = index == viewModel.chapters.count - 1
-        let downloaded = viewModel.downloadStatus[chapter.key] == .finished
+        let downloadStatus = viewModel.downloadStatus[chapter.key, default: .none]
+        let downloaded = downloadStatus == .finished
         let locked = chapter.locked && !downloaded
         let opacity: Double = if #available(iOS 17.0, *), locked {
             0.5
@@ -267,7 +270,12 @@ extension MangaView {
                 }
             }
         } contextMenu: {
-            contextMenu(chapter: chapter, index: index, last: last)
+            contextMenu(
+                chapter: chapter,
+                downloadStatus: downloadStatus,
+                index: index,
+                last: last
+            )
         }
         // use equatableview to determine when to refresh the view
         // improves the scrolling performance of the list
@@ -280,7 +288,7 @@ extension MangaView {
     }
 
     @ViewBuilder
-    func contextMenu(chapter: AidokuRunner.Chapter, index: Int, last: Bool) -> some View {
+    func contextMenu(chapter: AidokuRunner.Chapter, downloadStatus: DownloadStatus, index: Int, last: Bool) -> some View {
         Section {
             if viewModel.manga.isLocal() {
                 // if the chapter is from the local source, add a button to remove it instead of download
@@ -300,20 +308,24 @@ extension MangaView {
                     Label(NSLocalizedString("REMOVE"), systemImage: "trash")
                 }
             } else {
-                let oldChapter = chapter.toOld(
-                    sourceId: viewModel.manga.sourceKey,
-                    mangaId: viewModel.manga.key
+                let identifier = ChapterIdentifier(
+                    sourceKey: viewModel.manga.sourceKey,
+                    mangaKey: viewModel.manga.key,
+                    chapterKey: chapter.key
                 )
-                let downloadStatus = DownloadManager.shared.getDownloadStatus(for: oldChapter)
                 if downloadStatus == .finished {
                     Button(role: .destructive) {
-                        DownloadManager.shared.delete(chapters: [oldChapter])
+                        Task {
+                            await DownloadManager.shared.delete(chapters: [identifier])
+                        }
                     } label: {
                         Label(NSLocalizedString("REMOVE_DOWNLOAD"), systemImage: "trash")
                     }
                 } else if downloadStatus == .downloading {
                     Button(role: .destructive) {
-                        DownloadManager.shared.cancelDownload(for: oldChapter)
+                        Task {
+                            await DownloadManager.shared.cancelDownload(for: identifier)
+                        }
                     } label: {
                         Label(NSLocalizedString("CANCEL_DOWNLOAD"), systemImage: "xmark")
                     }
@@ -324,10 +336,12 @@ extension MangaView {
                             downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
                                 || !downloadOnlyOnWifi
                         {
-                            DownloadManager.shared.download(
-                                chapters: [oldChapter],
-                                manga: viewModel.manga.toOld()
-                            )
+                            Task {
+                                await DownloadManager.shared.download(
+                                    manga: viewModel.manga,
+                                    chapters: [chapter]
+                                )
+                            }
                         } else {
                             showConnectionAlert = true
                         }
@@ -462,8 +476,7 @@ extension MangaView {
                 }
 
                 if DownloadManager.shared.hasDownloadedChapter(
-                    sourceId: viewModel.manga.sourceKey,
-                    mangaId: viewModel.manga.key
+                    from: viewModel.manga.identifier
                 ) {
                     Divider()
                     Button(role: .destructive) {
@@ -589,9 +602,11 @@ extension MangaView {
     var toolbarDownloadButton: some View {
         let allChaptersDownloaded = !selectedChapters.contains(where: {
             !DownloadManager.shared.isChapterDownloaded(
-                sourceId: viewModel.manga.sourceKey,
-                mangaId: viewModel.manga.key,
-                chapterId: $0
+                chapter: .init(
+                    sourceKey: viewModel.manga.sourceKey,
+                    mangaKey: viewModel.manga.key,
+                    chapterKey: $0
+                )
             )
         })
         if !selectedChapters.isEmpty && allChaptersDownloaded {
@@ -600,26 +615,33 @@ extension MangaView {
             }
         } else {
             Button(NSLocalizedString("DOWNLOAD")) {
-                let downloadChapters = selectedChapters
-                    .compactMap { id in
-                        viewModel.chapters.first(where: { $0.key == id })?
-                            .toOld(
-                                sourceId: viewModel.manga.sourceKey,
-                                mangaId: viewModel.manga.key
+                let downloadChapters = (viewModel.manga.chapters ?? viewModel.chapters)
+                    .filter { chapter in
+                        let isSelected = selectedChapters.contains(chapter.key)
+                        guard isSelected else { return false }
+                        let isDownloaded = DownloadManager.shared.isChapterDownloaded(
+                            chapter: .init(
+                                sourceKey: viewModel.manga.sourceKey,
+                                mangaKey: viewModel.manga.key,
+                                chapterKey: chapter.key
                             )
+                        )
+                        guard !isDownloaded else { return false }
+                        return true
                     }
-                    .filter { !DownloadManager.shared.isChapterDownloaded(chapter: $0) }
-                    .sorted { $0.sourceOrder > $1.sourceOrder }
+                    .reversed()
 
                 let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
                 if
                     downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
                         || !downloadOnlyOnWifi
                 {
-                    DownloadManager.shared.download(
-                        chapters: downloadChapters,
-                        manga: viewModel.manga.toOld()
-                    )
+                    Task {
+                        await DownloadManager.shared.download(
+                            manga: viewModel.manga,
+                            chapters: Array(downloadChapters)
+                        )
+                    }
                 } else {
                     showConnectionAlert = true
                 }

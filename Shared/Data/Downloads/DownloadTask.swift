@@ -10,7 +10,7 @@ import AidokuRunner
 import UniformTypeIdentifiers
 import Nuke
 
-protocol DownloadTaskDelegate: AnyObject {
+protocol DownloadTaskDelegate: AnyObject, Sendable {
     func taskCancelled(task: DownloadTask) async
     func taskPaused(task: DownloadTask) async
     func taskFinished(task: DownloadTask) async
@@ -58,18 +58,10 @@ actor DownloadTask: Identifiable {
 
         if
             let download = downloads.first,
-            let source = SourceManager.shared.source(for: download.sourceId)
+            let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
         {
-            let chapter = Chapter(
-                sourceId: download.sourceId,
-                id: download.chapterId,
-                mangaId: download.mangaId,
-                title: nil,
-                sourceOrder: -1
-            )
-
             // if directory exists (chapter already downloaded) return
-            let directory = await cache.directory(for: chapter)
+            let directory = await cache.directory(for: download.chapterIdentifier)
             guard !directory.exists else {
                 downloads.removeFirst()
                 await delegate?.downloadFinished(download: download)
@@ -98,19 +90,22 @@ actor DownloadTask: Identifiable {
         guard !downloads.isEmpty && downloads.count >= downloadIndex else { return }
 
         let pageInterceptor = PageInterceptorProcessor(source: source)
-        let manga = downloads[downloadIndex].toManga()
-        let chapter = downloads[downloadIndex].toChapter()
-        let tmpDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-            .appendingSafePathComponent(".tmp_\(chapter.id)")
+        let download = downloads[downloadIndex]
+        let manga = downloads[downloadIndex].manga
+        let chapter = downloads[downloadIndex].chapter
+        let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
+            .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
         tmpDirectory.createDirectory()
 
         downloads[downloadIndex].status = .downloading
 
         if pages.isEmpty {
             pages = ((try? await source.getPageList(
-                manga: manga.toNew(),
-                chapter: chapter.toNew()
-            )) ?? []).map { $0.toOld(sourceId: source.key, chapterId: chapter.id) }
+                manga: manga,
+                chapter: chapter
+            )) ?? []).map {
+                $0.toOld(sourceId: source.key, chapterId: download.chapterIdentifier.chapterKey)
+            }
             downloads[downloadIndex].total = pages.count
         }
 
@@ -239,13 +234,14 @@ actor DownloadTask: Identifiable {
                     await DownloadManager.shared.saveChapterMetadata(chapter, to: directory)
 
                     // Save manga metadata when first chapter for this manga is downloaded
-                    let mangaDirectory = await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
+                    let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
                     let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
-                    if !metadataPath.exists, let mangaInfo = downloads[downloadIndex].manga {
+                    if !metadataPath.exists {
+                        let mangaInfo = downloads[downloadIndex].manga
                         await DownloadManager.shared.saveMangaMetadata(mangaInfo, to: mangaDirectory)
                     }
 
-                    await cache.add(chapter: chapter)
+                    await cache.add(chapter: download.chapterIdentifier)
                 }
                 if let download = downloads[safe: downloadIndex] {
                     downloads[downloadIndex].status = .finished
@@ -277,9 +273,9 @@ actor DownloadTask: Identifiable {
         }
     }
 
-    func cancel(chapter: Chapter? = nil) {
+    func cancel(chapter: ChapterIdentifier? = nil) {
         if let chapter = chapter,
-           let index = downloads.firstIndex(where: { $0.chapterId == chapter.id }) {
+           let index = downloads.firstIndex(where: { $0.chapterIdentifier == chapter }) {
             // cancel specific chapter download
             let wasRunning = running
             running = false
@@ -291,8 +287,8 @@ actor DownloadTask: Identifiable {
             // remove chapter tmp download directory
             let download = downloads[index]
             Task {
-                await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                    .appendingSafePathComponent(".tmp_\(chapter.id)")
+                await cache.directory(for: chapter.mangaIdentifier)
+                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
                     .removeItem()
                 await delegate?.downloadCancelled(download: download)
                 downloads.removeAll { $0 == download }
@@ -303,19 +299,19 @@ actor DownloadTask: Identifiable {
         } else {
             // cancel all downloads in task
             running = false
-            var manga: [Manga] = []
+            var manga: [MangaIdentifier] = []
             for i in downloads.indices {
                 guard i < downloads.count else { continue }
                 downloads[i].status = .cancelled
-                if !manga.contains(where: { $0.id == downloads[i].mangaId }) {
-                    manga.append(Manga(sourceId: downloads[i].sourceId, id: downloads[i].mangaId))
+                if !manga.contains(downloads[i].mangaIdentifier) {
+                    manga.append(downloads[i].mangaIdentifier)
                 }
                 downloads.remove(at: i)
             }
             // remove cached tmp directories
             Task {
                 for manga in manga {
-                    await cache.directory(forSourceId: manga.sourceId, mangaId: manga.id)
+                    await cache.directory(for: manga)
                         .contents
                         .filter { $0.lastPathComponent.hasPrefix(".tmp") }
                         .forEach { $0.removeItem() }

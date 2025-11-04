@@ -40,9 +40,9 @@ class ReaderPagedViewModel {
                 sourceId: sourceId,
                 mangaId: manga.key
             )
-            let isDownloaded = DownloadManager.shared.isChapterDownloaded(chapter: oldChapter)
+            let isDownloaded = DownloadManager.shared.isChapterDownloaded(chapter: oldChapter.identifier)
             if isDownloaded {
-                pages = DownloadManager.shared.getDownloadedPagesWithoutContents(for: oldChapter)
+                pages = await DownloadManager.shared.getDownloadedPages(for: oldChapter.identifier)
             } else {
                 pages = (try? await source?
                     .getPageList(
@@ -60,13 +60,22 @@ class ReaderPagedViewModel {
     func preload(chapter: AidokuRunner.Chapter) async {
         guard preloadedChapter != chapter else { return }
         preloadedChapter = nil
+        preloadedPages = await getPages(chapter: chapter)
+        preloadedChapter = chapter
+    }
+
+    private func getPages(chapter: AidokuRunner.Chapter) async -> [Page] {
         let sourceId = source?.key ?? manga.sourceKey
-        let oldChapter = chapter.toOld(sourceId: sourceId, mangaId: manga.key)
-        let isDownloaded = DownloadManager.shared.isChapterDownloaded(chapter: oldChapter)
+        let identifier = ChapterIdentifier(
+            sourceKey: sourceId,
+            mangaKey: manga.key,
+            chapterKey: chapter.key
+        )
+        let isDownloaded = DownloadManager.shared.isChapterDownloaded(chapter: identifier)
         if isDownloaded {
-            preloadedPages = DownloadManager.shared.getDownloadedPagesWithoutContents(for: oldChapter)
+            return await DownloadManager.shared.getDownloadedPages(for: identifier)
         } else {
-            preloadedPages = (try? await source?
+            return (try? await source?
                 .getPageList(
                     manga: manga,
                     chapter: chapter
@@ -76,6 +85,5 @@ class ReaderPagedViewModel {
                     $0.toOld(sourceId: sourceId, chapterId: chapter.id)
                 } ?? []
         }
-        preloadedChapter = chapter
     }
 }
