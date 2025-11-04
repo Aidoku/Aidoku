@@ -21,16 +21,16 @@ protocol DownloadTaskDelegate: AnyObject, Sendable {
 
 // performs the actual download operations
 actor DownloadTask: Identifiable {
-
     let id: String
-    let cache: DownloadCache
-    var downloads: [Download]
-    weak var delegate: DownloadTaskDelegate?
 
-    var running: Bool = false
+    private let cache: DownloadCache
+    private var downloads: [Download]
+    private weak var delegate: DownloadTaskDelegate?
 
-    var currentPage: Int = 0
-    var pages: [Page] = []
+    private var currentPage: Int = 0
+    private var pages: [Page] = []
+
+    private(set) var running: Bool = false
 
     init(id: String, cache: DownloadCache, downloads: [Download]) {
         self.id = id
@@ -42,11 +42,81 @@ actor DownloadTask: Identifiable {
         self.delegate = delegate
     }
 
-    func getDownload(_ index: Int = 0) -> Download? {
-        downloads.count >= index ? downloads[index] : nil
+    func resume() {
+        guard !running else { return }
+        running = true
+        Task {
+            await next()
+        }
     }
 
-    func next() async {
+    func pause() async {
+        running = false
+        for (i, download) in downloads.enumerated() where download.status == .downloading {
+            downloads[i].status = .paused
+        }
+        Task {
+            await delegate?.taskPaused(task: self)
+        }
+    }
+
+    func cancel(chapter: ChapterIdentifier? = nil) {
+        if
+            let chapter = chapter,
+            let index = downloads.firstIndex(where: { $0.chapterIdentifier == chapter })
+        {
+            // cancel specific chapter download
+            let wasRunning = running
+            running = false
+            downloads[index].status = .cancelled
+            if index == 0 {
+                pages = []
+                currentPage = 0
+            }
+            // remove chapter tmp download directory
+            let download = downloads[index]
+            Task {
+                await cache.directory(for: chapter.mangaIdentifier)
+                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+                    .removeItem()
+                await delegate?.downloadCancelled(download: download)
+                downloads.removeAll { $0 == download }
+                if wasRunning {
+                    resume()
+                }
+            }
+        } else {
+            // cancel all downloads in task
+            running = false
+            var manga: Set<MangaIdentifier> = []
+            for i in downloads.indices {
+                downloads[i].status = .cancelled
+                manga.insert(downloads[i].mangaIdentifier)
+            }
+            downloads.removeAll()
+            // remove cached tmp directories
+            Task {
+                for manga in manga {
+                    await cache.directory(for: manga)
+                        .contents
+                        .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                        .forEach { $0.removeItem() }
+                }
+                pages = []
+                currentPage = 0
+                await delegate?.taskCancelled(task: self)
+            }
+        }
+    }
+
+    func add(download: Download) {
+        guard !downloads.contains(where: { $0 == download }) else { return }
+        downloads.append(download)
+    }
+}
+
+extension DownloadTask {
+    private func next() async {
         guard running else { return }
 
         // done with all downloads
@@ -56,6 +126,7 @@ actor DownloadTask: Identifiable {
             return
         }
 
+        // attempt to download first chapter in the queue
         if
             let download = downloads.first,
             let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
@@ -76,23 +147,27 @@ actor DownloadTask: Identifiable {
             }
 
             Task {
-                guard downloads.count >= 1 else { return }
+                guard !downloads.isEmpty else { return }
                 await self.download(0, from: source, to: directory)
             }
         } else {
+            // source not found, skip this download
             downloads.removeFirst()
             await next()
         }
     }
 
     // perform download
-    func download(_ downloadIndex: Int, from source: AidokuRunner.Source, to directory: URL) async {
+    private func download(_ downloadIndex: Int, from source: AidokuRunner.Source, to directory: URL) async {
         guard !downloads.isEmpty && downloads.count >= downloadIndex else { return }
 
-        let pageInterceptor = PageInterceptorProcessor(source: source)
         let download = downloads[downloadIndex]
-        let manga = downloads[downloadIndex].manga
-        let chapter = downloads[downloadIndex].chapter
+        let pageInterceptor: PageInterceptorProcessor? = if source.features.processesPages {
+            PageInterceptorProcessor(source: source)
+        } else {
+            nil
+        }
+
         let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
             .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
         tmpDirectory.createDirectory()
@@ -101,8 +176,8 @@ actor DownloadTask: Identifiable {
 
         if pages.isEmpty {
             pages = ((try? await source.getPageList(
-                manga: manga,
-                chapter: chapter
+                manga: download.manga,
+                chapter: download.chapter
             )) ?? []).map {
                 $0.toOld(sourceId: source.key, chapterId: download.chapterIdentifier.chapterKey)
             }
@@ -112,13 +187,14 @@ actor DownloadTask: Identifiable {
         var failedPages = 0
 
         while !pages.isEmpty && currentPage < pages.count && running {
-            downloads[downloadIndex].progress = currentPage + 1
-            await delegate?.downloadProgressChanged(download: getDownload(downloadIndex)!)
-
             let page = pages[currentPage]
             let pageNumber = String(format: "%03d", currentPage + 1) // XXX.png
+            let targetPath = tmpDirectory.appendingPathComponent(pageNumber)
 
             currentPage += 1
+
+            downloads[downloadIndex].progress = currentPage
+            await delegate?.downloadProgressChanged(download: downloads[downloadIndex])
 
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 // let source modify image request
@@ -129,7 +205,7 @@ actor DownloadTask: Identifiable {
 
                 let result = try? await URLSession.shared.data(for: urlRequest)
 
-                if source.features.processesPages {
+                if let pageInterceptor {
                     let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
                     do {
                         let container = ImageContainer(image: image)
@@ -157,26 +233,20 @@ actor DownloadTask: Identifiable {
                             )
                         )
                         let data = newImage.image.pngData()
-                        try data?.write(
-                            to: tmpDirectory
-                                .appendingPathComponent(pageNumber)
-                                .appendingPathExtension("png")
-                        )
-                        continue
+                        if let data {
+                            try data.write(to: targetPath.appendingPathExtension("png"))
+                        } else {
+                            failedPages += 1
+                            LogManager.logger.error("Error processing image: missing result")
+                        }
                     } catch {
+                        failedPages += 1
                         LogManager.logger.error("Error processing image: \(error)")
                     }
-                }
-
-                if let (data, res) = result {
-                    // See if we can guess the file extension
-                    let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
+                } else if let (data, res) = result {
+                    let fileExtention = guessFileExtension(response: res, defaultValue: "png")
                     do {
-                        try data.write(
-                            to: tmpDirectory
-                                .appendingPathComponent(pageNumber)
-                                .appendingPathExtension(fileExtention)
-                        )
+                        try data.write(to: targetPath.appendingPathExtension(fileExtention))
                     } catch {
                         failedPages += 1
                         LogManager.logger.error("Error writing downloaded image: \(error)")
@@ -188,16 +258,12 @@ actor DownloadTask: Identifiable {
             } else {
                 do {
                     if let base64 = page.base64, let data = Data(base64Encoded: base64) {
-                        try data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("png"))
+                        try data.write(to: targetPath.appendingPathExtension("png"))
                     } else if let text = page.text, let data = text.data(using: .utf8) {
-                        try data.write(to: tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("txt"))
+                        try data.write(to: targetPath.appendingPathExtension("txt"))
                     } else if let image = page.image {
                         let data = image.pngData()
-                        try data?.write(
-                            to: tmpDirectory
-                                .appendingPathComponent(pageNumber)
-                                .appendingPathExtension("png")
-                        )
+                        try data?.write(to: targetPath.appendingPathExtension("png"))
                     }
                 } catch {
                     failedPages += 1
@@ -212,8 +278,7 @@ actor DownloadTask: Identifiable {
                 }
                 if let description {
                     let data = description.data(using: .utf8)
-                    let path = tmpDirectory.appendingPathComponent(pageNumber).appendingPathExtension("desc.txt")
-                    try? data?.write(to: path)
+                    try? data?.write(to: targetPath.appendingPathExtension("desc.txt"))
                 }
             }
         }
@@ -231,7 +296,7 @@ actor DownloadTask: Identifiable {
             } else {
                 if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
                     // Save chapter metadata after successful download
-                    await DownloadManager.shared.saveChapterMetadata(chapter, to: directory)
+                    await DownloadManager.shared.saveChapterMetadata(download.chapter, to: directory)
 
                     // Save manga metadata when first chapter for this manga is downloaded
                     let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
@@ -242,6 +307,8 @@ actor DownloadTask: Identifiable {
                     }
 
                     await cache.add(chapter: download.chapterIdentifier)
+                } else {
+                    LogManager.logger.error("Error moving temporary download directory to final location")
                 }
                 if let download = downloads[safe: downloadIndex] {
                     downloads[downloadIndex].status = .finished
@@ -254,82 +321,6 @@ actor DownloadTask: Identifiable {
             await next()
         }
     }
-
-    func resume() {
-        guard !running else { return }
-        running = true
-        Task {
-            await next()
-        }
-    }
-
-    func pause() async {
-        running = false
-        for (i, download) in downloads.enumerated() where download.status == .downloading {
-            downloads[i].status = .paused
-        }
-        Task {
-            await delegate?.taskPaused(task: self)
-        }
-    }
-
-    func cancel(chapter: ChapterIdentifier? = nil) {
-        if let chapter = chapter,
-           let index = downloads.firstIndex(where: { $0.chapterIdentifier == chapter }) {
-            // cancel specific chapter download
-            let wasRunning = running
-            running = false
-            downloads[index].status = .cancelled
-            if index == 0 {
-                pages = []
-                currentPage = 0
-            }
-            // remove chapter tmp download directory
-            let download = downloads[index]
-            Task {
-                await cache.directory(for: chapter.mangaIdentifier)
-                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-                    .removeItem()
-                await delegate?.downloadCancelled(download: download)
-                downloads.removeAll { $0 == download }
-                if wasRunning {
-                    resume()
-                }
-            }
-        } else {
-            // cancel all downloads in task
-            running = false
-            var manga: [MangaIdentifier] = []
-            for i in downloads.indices {
-                guard i < downloads.count else { continue }
-                downloads[i].status = .cancelled
-                if !manga.contains(downloads[i].mangaIdentifier) {
-                    manga.append(downloads[i].mangaIdentifier)
-                }
-                downloads.remove(at: i)
-            }
-            // remove cached tmp directories
-            Task {
-                for manga in manga {
-                    await cache.directory(for: manga)
-                        .contents
-                        .filter { $0.lastPathComponent.hasPrefix(".tmp") }
-                        .forEach { $0.removeItem() }
-                }
-                pages = []
-                currentPage = 0
-                await delegate?.taskCancelled(task: self)
-            }
-        }
-    }
-
-    func add(download: Download, autostart: Bool = false) {
-        guard !downloads.contains(where: { $0 == download }) else { return }
-        downloads.append(download)
-        if !running && autostart {
-            resume()
-        }
-    }
 }
 
 // MARK: Utility
@@ -338,14 +329,12 @@ extension DownloadTask {
         if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
             return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
         }
-
         guard
             let mimeType = response.mimeType,
             let type = UTType(mimeType: mimeType)
         else {
             return defaultValue
         }
-
         return type.preferredFilenameExtension ?? defaultValue
     }
 }

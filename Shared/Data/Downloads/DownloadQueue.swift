@@ -15,11 +15,9 @@ actor DownloadQueue {
     private let cache: DownloadCache
     private var onCompletion: (() -> Void)?
 
-    var queue: [String: [Download]] = [:] // all queued downloads stored under source id
-    var tasks: [String: DownloadTask] = [:] // tasks for each source
-    var progressBlocks: [ChapterIdentifier: (Int, Int) -> Void] = [:]
-
-    var running: Bool = false
+    private(set) var queue: [String: [Download]] = [:] // all queued downloads stored under source id
+    private var tasks: [String: DownloadTask] = [:] // tasks for each source
+    private var progressBlocks: [ChapterIdentifier: (Int, Int) -> Void] = [:]
 
     private var sendCancelNotification = true
 
@@ -33,9 +31,6 @@ actor DownloadQueue {
     }
 
     func start() async {
-//        guard !running else { return }
-        running = true
-
         for source in queue {
             if tasks[source.key] == nil {
                 let task = DownloadTask(id: source.key, cache: cache, downloads: source.value)
@@ -47,18 +42,19 @@ actor DownloadQueue {
     }
 
     func resume() async {
-        for task in tasks {
-            await task.value.resume()
+        await withTaskGroup(of: Void.self) { group in
+            for task in tasks.values {
+                group.addTask { await task.resume() }
+            }
         }
-        running = true
     }
 
     func pause() async {
-        guard running else { return }
-        for task in tasks {
-            await task.value.pause()
+        await withTaskGroup(of: Void.self) { group in
+            for task in tasks.values {
+                group.addTask { await task.pause() }
+            }
         }
-        running = false
     }
 
     @discardableResult
@@ -70,17 +66,14 @@ actor DownloadQueue {
                 mangaKey: manga.key,
                 chapterKey: chapter.key
             )
-            if await cache.isChapterDownloaded(identifier: identifier) {
+            guard !(await cache.isChapterDownloaded(identifier: identifier)) else {
                 continue
             }
             // create tmp directory so we know it's queued
             await cache.directory(for: manga.identifier)
                 .appendingSafePathComponent(".tmp_\(chapter.id)")
                 .createDirectory()
-            let download = Download.from(
-                manga: manga,
-                chapter: chapter
-            )
+            let download = Download.from(manga: manga, chapter: chapter)
             downloads.append(download)
             if queue[manga.sourceKey] == nil {
                 queue[manga.sourceKey] = [download]
@@ -109,6 +102,7 @@ actor DownloadQueue {
     }
 
     func cancelDownloads(for chapters: [ChapterIdentifier]) async {
+        // disable individual download cancelled notifications
         sendCancelNotification = false
         defer { sendCancelNotification = true }
         for chapter in chapters {
@@ -170,11 +164,17 @@ actor DownloadQueue {
     func hasQueuedDownloads() -> Bool {
         !queue.isEmpty
     }
+
+    func isRunning() async -> Bool {
+        for task in tasks where await task.value.running {
+            return true
+        }
+        return false
+    }
 }
 
 // MARK: - Task Delegate
 extension DownloadQueue: DownloadTaskDelegate {
-
     func taskCancelled(task: DownloadTask) async {
         await taskFinished(task: task)
     }
@@ -184,12 +184,12 @@ extension DownloadQueue: DownloadTaskDelegate {
     func taskFinished(task: DownloadTask) async {
         tasks.removeValue(forKey: task.id)
         queue.removeValue(forKey: task.id)
-        running = !tasks.isEmpty
         saveQueueState()
     }
 
     func downloadFinished(download: Download) async {
         await downloadCancelled(download: download)
+        progressBlocks.removeValue(forKey: download.chapterIdentifier)
         onCompletion?()
         NotificationCenter.default.post(name: .downloadFinished, object: download)
     }

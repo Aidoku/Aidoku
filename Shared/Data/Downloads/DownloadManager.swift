@@ -230,7 +230,7 @@ extension DownloadManager {
 
 extension DownloadManager {
     func isQueuePaused() async -> Bool {
-        !(await queue.running)
+        !(await queue.isRunning())
     }
 
     func getDownloadQueue() async -> [String: [Download]] {

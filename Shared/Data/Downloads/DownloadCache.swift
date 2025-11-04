@@ -11,18 +11,16 @@ import Foundation
 // TODO: should probably be reloaded every once in a while so we can recheck filesystem for user modifications
 @MainActor
 class DownloadCache {
-
     struct Directory {
         var url: URL
         var subdirectories: [String: Directory] = [:]
     }
 
-    var rootDirectory = Directory(url: DownloadManager.directory)
-
-    var loaded = false
+    private var rootDirectory = Directory(url: DownloadManager.directory)
+    private var loaded = false
 
     // create cache from filesystem
-    func load() {
+    private func load() {
         for sourceDirectory in DownloadManager.directory.contents where sourceDirectory.isDirectory {
             rootDirectory.subdirectories[sourceDirectory.lastPathComponent] = Directory(url: sourceDirectory)
             for mangaDirectory in sourceDirectory.contents where mangaDirectory.isDirectory {
@@ -38,7 +36,6 @@ class DownloadCache {
                     )
             }
         }
-
         loaded = true
     }
 
@@ -88,31 +85,30 @@ extension DownloadCache {
     // check if a chapter has a download directory
     func isChapterDownloaded(identifier: ChapterIdentifier) -> Bool {
         if !loaded { load() }
-        if let sourceDirectory = rootDirectory.subdirectories[identifier.sourceKey.directoryName],
-           let mangaDirectory = sourceDirectory.subdirectories[identifier.mangaKey.directoryName] {
-            return mangaDirectory.subdirectories[identifier.chapterKey.directoryName] != nil
+        guard
+            let sourceDirectory = rootDirectory.subdirectories[identifier.sourceKey.directoryName],
+            let mangaDirectory = sourceDirectory.subdirectories[identifier.mangaKey.directoryName]
+        else {
+            return false
         }
-        return false
+        return mangaDirectory.subdirectories[identifier.chapterKey.directoryName] != nil
     }
 
+    // check if any chapter subdirectories exist
     func hasDownloadedChapter(from identifier: MangaIdentifier) -> Bool {
         if !loaded { load() }
-        if let sourceDirectory = rootDirectory.subdirectories[identifier.sourceKey.directoryName],
-           let mangaDirectory = sourceDirectory.subdirectories[identifier.mangaKey.directoryName] {
-            return !mangaDirectory.subdirectories.isEmpty
+        guard
+            let sourceDirectory = rootDirectory.subdirectories[identifier.sourceKey.directoryName],
+            let mangaDirectory = sourceDirectory.subdirectories[identifier.mangaKey.directoryName]
+        else {
+            return false
         }
-        return false
+        return !mangaDirectory.subdirectories.isEmpty
     }
 }
 
-// MARK: - Directory Provider
+// MARK: Directory Provider
 extension DownloadCache {
-
-//    func directory(for source: Source) -> URL {
-//        DownloadManager.directory
-//            .appendingSafePathComponent(source.id)
-//    }
-
     func directory(for manga: MangaIdentifier) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(manga.sourceKey)
