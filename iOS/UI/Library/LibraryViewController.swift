@@ -29,7 +29,7 @@ class LibraryViewController: MangaCollectionViewController {
             image: UIImage(systemName: locked ? "lock" : "lock.open"),
             style: .plain,
             target: self,
-            action: #selector(toggleLock)
+            action: #selector(performToggleLock)
         )
         item.title = NSLocalizedString("TOGGLE_LOCK")
         return item
@@ -212,7 +212,7 @@ class LibraryViewController: MangaCollectionViewController {
             ? NSLocalizedString("LIBRARY_LOCKED", comment: "")
             : NSLocalizedString("CATEGORY_LOCKED", comment: "")
         lockedStackView.buttonText = NSLocalizedString("VIEW_LIBRARY", comment: "")
-        lockedStackView.button.addTarget(self, action: #selector(unlock), for: .touchUpInside)
+        lockedStackView.button.addTarget(self, action: #selector(performUnlock), for: .touchUpInside)
         lockedStackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(lockedStackView)
 
@@ -682,35 +682,59 @@ extension LibraryViewController {
 
 // MARK: - Locking
 extension LibraryViewController {
+    func updateLock() {
+        updateLockState()
+        updateDataSource()
+    }
 
-    @objc func unlock() {
+    func lock() {
+        locked = true
+        updateLock()
+    }
+
+    func unlock() {
+        locked = false
+        updateLock()
+    }
+
+    func attemptUnlock() async {
         let context = LAContext()
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-            context.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
+        let success: Bool
+
+        do {
+            success = try await context.evaluatePolicy(
+                .defaultPolicy,
                 localizedReason: NSLocalizedString("AUTH_FOR_LIBRARY", comment: "")
-            ) { [weak self] success, _ in
-                guard success, let self = self else { return }
-                Task { @MainActor in
-                    self.locked = false
-                    self.updateLockState()
-                    self.updateDataSource()
-                }
-            }
-        } else { // biometrics not supported
-            locked = false
-            updateLockState()
-            updateDataSource()
+            )
+        } catch {
+            // The error is to be displayed to users, so we can ignore it.
+            return
+        }
+
+        guard success else {
+            return
+        }
+
+        unlock()
+    }
+
+    func toggleLock() async {
+        if locked {
+            await attemptUnlock()
+        } else {
+            lock()
         }
     }
 
-    @objc func toggleLock() {
-        if locked {
-            unlock()
-        } else {
-            locked = true
-            updateLockState()
-            updateDataSource()
+    @objc func performUnlock() {
+        Task {
+            await attemptUnlock()
+        }
+    }
+
+    @objc func performToggleLock() {
+        Task {
+            await toggleLock()
         }
     }
 
