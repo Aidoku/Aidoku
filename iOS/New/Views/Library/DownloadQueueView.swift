@@ -26,7 +26,7 @@ struct DownloadQueueView: View {
                             12
                         }
                         HStack {
-                            Text(NSLocalizedString("DOWNLOADS_PAUSED"))
+                            Text(NSLocalizedString("DOWNLOADING_PAUSED"))
                             Spacer()
                             Button(NSLocalizedString("RESUME")) {
                                 Task {
@@ -161,6 +161,7 @@ struct DownloadQueueView: View {
                 }
             }
             .task {
+                isPaused = await DownloadManager.shared.isQueuePaused()
                 let globalQueue = await DownloadManager.shared.getDownloadQueue()
                 var queue: [(String, [Download])] = []
                 for queueObject in globalQueue where !queueObject.value.isEmpty {
@@ -186,14 +187,14 @@ struct DownloadQueueView: View {
             .onReceive(NotificationCenter.default.publisher(for: .downloadsQueued)) { output in
                 guard let downloads = output.object as? [Download] else { return }
                 for download in downloads {
-                    let index = self.queue.firstIndex(where: { $0.sourceId == download.chapterIdentifier.sourceKey })
+                    let index = queue.firstIndex(where: { $0.sourceId == download.chapterIdentifier.sourceKey })
                     var downloads = index != nil ? self.queue[index!].downloads : []
                     downloads.append(download)
                     withAnimation {
                         if let index {
-                            self.queue[index].downloads = downloads
+                            queue[index].downloads = downloads
                         } else {
-                            self.queue.append((download.chapterIdentifier.sourceKey, downloads))
+                            queue.append((download.chapterIdentifier.sourceKey, downloads))
                         }
                     }
                     subscribeToProgress(download: download)
@@ -217,6 +218,7 @@ struct DownloadQueueView: View {
                 }
                 withAnimation {
                     queue.removeAll()
+                    isPaused = false
                 }
             }
         }
@@ -224,19 +226,22 @@ struct DownloadQueueView: View {
 
     func remove(download: Download) {
         guard
-            let index = self.queue.firstIndex(where: { $0.sourceId == download.chapterIdentifier.sourceKey })
+            let index = queue.firstIndex(where: { $0.sourceId == download.chapterIdentifier.sourceKey })
         else {
             return
         }
-        var downloads = self.queue[index].downloads
+        var downloads = queue[index].downloads
         let indexToRemove = downloads.firstIndex(where: { $0 == download })
         guard let indexToRemove else { return } // nothing to remove
         downloads.remove(at: indexToRemove)
         withAnimation {
             if downloads.isEmpty {
-                self.queue.remove(at: index)
+                queue.remove(at: index)
+                if queue.isEmpty {
+                    isPaused = false
+                }
             } else {
-                self.queue[index].downloads = downloads
+                queue[index].downloads = downloads
             }
         }
         Task {
@@ -247,7 +252,7 @@ struct DownloadQueueView: View {
 
     func subscribeToProgress(download: Download) {
         if download.total > 0 {
-            self.progress[download.chapterIdentifier] = (download.progress, download.total)
+            progress[download.chapterIdentifier] = (download.progress, download.total)
         }
         Task {
             await DownloadManager.shared.onProgress(for: download.chapterIdentifier) { progress, total in

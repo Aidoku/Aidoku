@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+@preconcurrency import BackgroundTasks
 import Foundation
 
 // stores queued and active downloads
@@ -19,6 +20,14 @@ actor DownloadQueue {
     private var tasks: [String: DownloadTask] = [:] // tasks for each source
     private var progressBlocks: [ChapterIdentifier: (Int, Int) -> Void] = [:]
 
+    private var paused = false
+    private var registeredTask = false
+    private var totalDownloads: Int = 0
+    private var completedDownloads: Int = 0
+    private var bgTask: ProgressReporting?
+
+    private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".download"
+
     private var sendCancelNotification = true
 
     init(cache: DownloadCache, onCompletion: (() -> Void)? = nil) {
@@ -31,6 +40,26 @@ actor DownloadQueue {
     }
 
     func start() async {
+        paused = false
+
+        guard !queue.isEmpty else { return }
+
+        if bgTask == nil, #available(iOS 26.0, *) {
+            await register()
+
+            let request = BGContinuedProcessingTaskRequest(
+                identifier: Self.taskIdentifier,
+                title: NSLocalizedString("DOWNLOADING"),
+                subtitle: NSLocalizedString("PROCESSING_QUEUE")
+            )
+            do {
+                try BGTaskScheduler.shared.submit(request)
+                return
+            } catch {
+                LogManager.logger.error("Failed to start background downloading: \(error)")
+            }
+        }
+
         for source in queue {
             if tasks[source.key] == nil {
                 let task = DownloadTask(id: source.key, cache: cache, downloads: source.value)
@@ -42,6 +71,14 @@ actor DownloadQueue {
     }
 
     func resume() async {
+        paused = false
+
+        if #available(iOS 26.0, *) {
+            if bgTask == nil {
+                await start()
+            }
+        }
+
         await withTaskGroup(of: Void.self) { group in
             for task in tasks.values {
                 group.addTask { await task.resume() }
@@ -50,6 +87,17 @@ actor DownloadQueue {
     }
 
     func pause() async {
+        paused = true
+
+        if #available(iOS 26.0, *) {
+            if let task = bgTask as? BGContinuedProcessingTask {
+                task.updateTitle(
+                    NSLocalizedString("DOWNLOADING"),
+                    subtitle: NSLocalizedString("PAUSED")
+                )
+            }
+        }
+
         await withTaskGroup(of: Void.self) { group in
             for task in tasks.values {
                 group.addTask { await task.pause() }
@@ -82,6 +130,8 @@ actor DownloadQueue {
                 await tasks[manga.sourceKey]?.add(download: download)
             }
         }
+        totalDownloads += downloads.count
+        bgTask?.progress.totalUnitCount = Int64(totalDownloads)
         if autoStart {
             await start()
         }
@@ -173,6 +223,63 @@ actor DownloadQueue {
     }
 }
 
+extension DownloadQueue {
+    private func setTask(key: String, task: DownloadTask) {
+        tasks[key] = task
+    }
+
+    private func setBackgroundTask(_ task: ProgressReporting?) {
+        bgTask = task
+        totalDownloads = queue.values.reduce(0) { $0 + $1.count }
+        completedDownloads = 0
+        bgTask?.progress.totalUnitCount = Int64(totalDownloads)
+    }
+
+    @available(iOS 26.0, *)
+    private func register() async {
+        guard !registeredTask else { return }
+        registeredTask = true
+
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
+            guard let self, let task = task as? BGContinuedProcessingTask else { return }
+
+            task.expirationHandler = {
+                Task {
+                    await DownloadManager.shared.pauseDownloads()
+                    await self.setBackgroundTask(nil)
+                }
+            }
+
+            Task { @Sendable in
+                await self.setBackgroundTask(task)
+
+                let queue = await self.queue
+                for source in queue {
+                    var downloadTask = await self.tasks[source.key]
+                    if downloadTask == nil {
+                        downloadTask = DownloadTask(id: source.key, cache: self.cache, downloads: source.value)
+                        guard let downloadTask else { continue }
+                        await downloadTask.setDelegate(delegate: self)
+                        await self.setTask(key: source.key, task: downloadTask)
+                    }
+                    await downloadTask?.resume()
+                }
+
+                // wait until downloads complete
+                while true {
+                    if await self.queue.isEmpty {
+                        break
+                    }
+                }
+
+                await self.setBackgroundTask(nil)
+
+                task.setTaskCompleted(success: true)
+            }
+        }
+    }
+}
+
 // MARK: - Task Delegate
 extension DownloadQueue: DownloadTaskDelegate {
     func taskCancelled(task: DownloadTask) async {
@@ -206,6 +313,17 @@ extension DownloadQueue: DownloadTaskDelegate {
         progressBlocks.removeValue(forKey: download.chapterIdentifier)
         if sendCancelNotification {
             NotificationCenter.default.post(name: .downloadCancelled, object: download)
+        }
+
+        completedDownloads += 1
+        bgTask?.progress.completedUnitCount = Int64(completedDownloads)
+        if #available(iOS 26.0, *) {
+            if !paused, let task = bgTask as? BGContinuedProcessingTask {
+                task.updateTitle(
+                    NSLocalizedString("DOWNLOADING"),
+                    subtitle: String(format: NSLocalizedString("%i_OF_%i"), completedDownloads, totalDownloads)
+                )
+            }
         }
     }
 

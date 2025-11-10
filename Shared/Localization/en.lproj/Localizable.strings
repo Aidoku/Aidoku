@@ -33,6 +33,7 @@
 // Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
+"DOWNLOADING" = "Downloading";
 "DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
@@ -43,6 +44,10 @@
 "NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
+"PROCESSING_QUEUE" = "Processing Queue…";
+"DOWNLOADING_PAUSED" = "Downloading Paused";
+"PAUSED" = "Paused";
+"CANCEL_ALL_DOWNLOADS" = "Cancel All Downloads";
 
 // Download Manager
 "DOWNLOAD_MANAGER" = "Download Manager";

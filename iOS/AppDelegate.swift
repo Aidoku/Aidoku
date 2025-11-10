@@ -187,12 +187,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 case .wifi:
                     if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                         Task {
-                            DownloadManager.shared.ignoreConnectionType = false
                             await DownloadManager.shared.resumeDownloads()
                         }
                     }
                 case .cellular, .none:
-                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && !DownloadManager.shared.ignoreConnectionType {
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                         Task {
                             await DownloadManager.shared.pauseDownloads()
                         }
@@ -243,7 +242,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func migrateHistory() async {
         showLoadingIndicator(style: .progress)
         try? await Task.sleep(nanoseconds: 500 * 1000000)
-        await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
+        await CoreDataManager.shared.migrateChapterHistory(progress: { @Sendable progress in
             Task { @MainActor in
                 self.indicatorProgress = progress
             }

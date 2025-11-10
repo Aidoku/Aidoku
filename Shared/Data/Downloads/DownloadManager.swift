@@ -29,8 +29,6 @@ actor DownloadManager {
     nonisolated let cache: DownloadCache
     private let queue: DownloadQueue
 
-    var ignoreConnectionType = false
-
     private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
 
     // for download manager UI

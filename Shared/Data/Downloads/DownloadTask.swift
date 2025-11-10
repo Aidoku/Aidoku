@@ -28,6 +28,7 @@ actor DownloadTask: Identifiable {
     private weak var delegate: DownloadTaskDelegate?
 
     private var currentPage: Int = 0
+    private var failedPages: Int = 0
     private var pages: [Page] = []
 
     private(set) var running: Bool = false
@@ -72,6 +73,7 @@ actor DownloadTask: Identifiable {
             if index == 0 {
                 pages = []
                 currentPage = 0
+                failedPages = 0
             }
             // remove chapter tmp download directory
             let download = downloads[index]
@@ -104,6 +106,7 @@ actor DownloadTask: Identifiable {
                 }
                 pages = []
                 currentPage = 0
+                failedPages = 0
                 await delegate?.taskCancelled(task: self)
             }
         }
@@ -159,15 +162,9 @@ extension DownloadTask {
 
     // perform download
     private func download(_ downloadIndex: Int, from source: AidokuRunner.Source, to directory: URL) async {
-        guard !downloads.isEmpty && downloads.count >= downloadIndex else { return }
+        guard running && !downloads.isEmpty && downloads.count > downloadIndex else { return }
 
         let download = downloads[downloadIndex]
-        let pageInterceptor: PageInterceptorProcessor? = if source.features.processesPages {
-            PageInterceptorProcessor(source: source)
-        } else {
-            nil
-        }
-
         let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
             .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
         tmpDirectory.createDirectory()
@@ -184,78 +181,29 @@ extension DownloadTask {
             downloads[downloadIndex].total = pages.count
         }
 
-        var failedPages = 0
+        struct NetworkPage {
+            let download: Download
+            let url: URL
+            let context: PageContext?
+            let targetPath: URL
+        }
 
-        while !pages.isEmpty && currentPage < pages.count && running {
-            let page = pages[currentPage]
-            let pageNumber = String(format: "%03d", currentPage + 1) // XXX.png
+        var networkPages: [NetworkPage] = []
+
+        for (i, page) in pages.enumerated() {
+            let pageNumber = String(format: "%03d", i + 1)
             let targetPath = tmpDirectory.appendingPathComponent(pageNumber)
 
-            currentPage += 1
-
-            downloads[downloadIndex].progress = currentPage
-            await delegate?.downloadProgressChanged(download: downloads[downloadIndex])
-
             if let urlString = page.imageURL, let url = URL(string: urlString) {
-                // let source modify image request
-                let urlRequest = await source.getModifiedImageRequest(
+                // add pages that require network requests to a concurrent queue
+                networkPages.append(.init(
+                    download: download,
                     url: url,
-                    context: page.context
-                )
-
-                let result = try? await URLSession.shared.data(for: urlRequest)
-
-                if let pageInterceptor {
-                    let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
-                    do {
-                        let container = ImageContainer(image: image)
-                        let request = ImageRequest(
-                            urlRequest: urlRequest,
-                            userInfo: [.contextKey: page.context ?? [:]]
-                        )
-                        let newImage = try pageInterceptor.process(
-                            container,
-                            context: .init(
-                                request: request,
-                                response: .init(
-                                    container: container,
-                                    request: request,
-                                    urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
-                                        HTTPURLResponse(
-                                            url: $0,
-                                            statusCode: 404,
-                                            httpVersion: nil,
-                                            headerFields: nil
-                                        )
-                                    }
-                                ),
-                                isCompleted: true
-                            )
-                        )
-                        let data = newImage.image.pngData()
-                        if let data {
-                            try data.write(to: targetPath.appendingPathExtension("png"))
-                        } else {
-                            failedPages += 1
-                            LogManager.logger.error("Error processing image: missing result")
-                        }
-                    } catch {
-                        failedPages += 1
-                        LogManager.logger.error("Error processing image: \(error)")
-                    }
-                } else if let (data, res) = result {
-                    let fileExtention = guessFileExtension(response: res, defaultValue: "png")
-                    do {
-                        try data.write(to: targetPath.appendingPathExtension(fileExtention))
-                    } catch {
-                        failedPages += 1
-                        LogManager.logger.error("Error writing downloaded image: \(error)")
-                    }
-                } else {
-                    failedPages += 1
-                    LogManager.logger.error("Error downloading image with url \(urlRequest)")
-                }
+                    context: page.context,
+                    targetPath: targetPath
+                ))
             } else {
+                currentPage += 1
                 do {
                     if let base64 = page.base64, let data = Data(base64Encoded: base64) {
                         try data.write(to: targetPath.appendingPathExtension("png"))
@@ -283,49 +231,156 @@ extension DownloadTask {
             }
         }
 
-        // handle completion of the current download
-        if currentPage == pages.count {
-            if failedPages == pages.count {
-                // the entire chapter failed to download, skip adding to cache and cancel
-                tmpDirectory.removeItem()
-                if let download = downloads[safe: downloadIndex] {
-                    downloads[downloadIndex].status = .cancelled
-                    downloads.remove(at: downloadIndex)
-                    await delegate?.downloadCancelled(download: download)
-                }
-            } else {
-                if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
-                    // Save chapter metadata after successful download
-                    await DownloadManager.shared.saveChapterMetadata(download.chapter, to: directory)
+        let pageInterceptor: PageInterceptorProcessor? = if source.features.processesPages {
+            PageInterceptorProcessor(source: source)
+        } else {
+            nil
+        }
 
-                    // Save manga metadata when first chapter for this manga is downloaded
-                    let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
-                    let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
-                    if !metadataPath.exists {
-                        let mangaInfo = downloads[downloadIndex].manga
-                        await DownloadManager.shared.saveMangaMetadata(mangaInfo, to: mangaDirectory)
+        // download pages from the network concurrently
+        await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
+            for page in networkPages {
+                taskGroup.addTask {
+                    let urlRequest = await source.getModifiedImageRequest(
+                        url: page.url,
+                        context: page.context
+                    )
+
+                    let result = try? await URLSession.shared.data(for: urlRequest)
+
+                    var resultData: Data?
+                    var resultPath: URL?
+
+                    if let pageInterceptor {
+                        let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
+                        do {
+                            let container = ImageContainer(image: image)
+                            let request = ImageRequest(
+                                urlRequest: urlRequest,
+                                userInfo: [.contextKey: page.context ?? [:]]
+                            )
+                            let newImage = try pageInterceptor.process(
+                                container,
+                                context: .init(
+                                    request: request,
+                                    response: .init(
+                                        container: container,
+                                        request: request,
+                                        urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
+                                            HTTPURLResponse(
+                                                url: $0,
+                                                statusCode: 404,
+                                                httpVersion: nil,
+                                                headerFields: nil
+                                            )
+                                        }
+                                    ),
+                                    isCompleted: true
+                                )
+                            )
+                            let data = newImage.image.pngData()
+                            resultData = data
+                            resultPath = page.targetPath.appendingPathExtension("png")
+                        } catch {
+                            LogManager.logger.error("Error processing image: \(error)")
+                        }
+                    } else if let (data, res) = result {
+                        let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
+                        resultData = data
+                        resultPath = page.targetPath.appendingPathExtension(fileExtention)
+                    } else {
+                        LogManager.logger.error("Error downloading image with url \(urlRequest)")
                     }
 
-                    await cache.add(chapter: download.chapterIdentifier)
-                } else {
-                    LogManager.logger.error("Error moving temporary download directory to final location")
-                }
-                if let download = downloads[safe: downloadIndex] {
-                    downloads[downloadIndex].status = .finished
-                    downloads.remove(at: downloadIndex)
-                    await delegate?.downloadFinished(download: download)
+                    return (resultData, resultPath)
                 }
             }
-            pages = []
-            currentPage = 0
-            await next()
+
+            for await (data, path) in taskGroup {
+                if let data, let path {
+                    do {
+                        try data.write(to: path)
+                    } catch {
+                        LogManager.logger.error("Error writing downloaded image: \(error)")
+                    }
+                }
+                await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+            }
         }
+
+        // handle completion of the current download
+        if networkPages.isEmpty && currentPage == pages.count {
+            await handleChapterDownloadFinish(download: download)
+        }
+    }
+
+    private func incrementProgress(for id: ChapterIdentifier, failed: Bool = false) async {
+        guard let downloadIndex = downloads.firstIndex(where: { $0.chapterIdentifier == id }) else {
+            return
+        }
+        currentPage += 1
+        downloads[downloadIndex].progress = currentPage
+        let download = downloads[downloadIndex]
+        Task {
+            await delegate?.downloadProgressChanged(download: download)
+        }
+        if failed {
+            failedPages += 1
+        }
+        if currentPage == pages.count {
+            await handleChapterDownloadFinish(download: download)
+        }
+    }
+
+    private func handleChapterDownloadFinish(download: Download) async {
+        let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
+            .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
+
+        if failedPages == pages.count {
+            // the entire chapter failed to download, skip adding to cache and cancel
+            tmpDirectory.removeItem()
+            if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
+                downloads[downloadIndex].status = .cancelled
+                downloads.remove(at: downloadIndex)
+                await delegate?.downloadCancelled(download: download)
+            }
+            LogManager.logger.error("Chapter failed to download: \(download.chapter.formattedTitle())")
+        } else {
+            if failedPages > 0 {
+                LogManager.logger.error("Chapter downloaded with \(failedPages) failed pages: \(download.chapter.formattedTitle())")
+            }
+            let directory = await cache.directory(for: download.chapterIdentifier)
+            if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
+                // Save chapter metadata after successful download
+                await DownloadManager.shared.saveChapterMetadata(download.chapter, to: directory)
+
+                // Save manga metadata when first chapter for this manga is downloaded
+                let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
+                let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
+                if !metadataPath.exists {
+                    await DownloadManager.shared.saveMangaMetadata(download.manga, to: mangaDirectory)
+                }
+
+                await cache.add(chapter: download.chapterIdentifier)
+            } else {
+                LogManager.logger.error("Error moving temporary download directory to final location \(tmpDirectory) \(directory)")
+            }
+            if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
+                downloads[downloadIndex].status = .finished
+                downloads.remove(at: downloadIndex)
+                await delegate?.downloadFinished(download: download)
+            }
+        }
+        pages = []
+        currentPage = 0
+        failedPages = 0
+        await next()
     }
 }
 
 // MARK: Utility
 extension DownloadTask {
-    private func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
+    private nonisolated func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
         if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
             return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
         }
