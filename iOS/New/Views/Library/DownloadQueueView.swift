@@ -66,9 +66,11 @@ struct DownloadQueueView: View {
 
                                 VStack(alignment: .leading) {
                                     Text(download.manga.title)
+                                        .lineLimit(3)
                                     Text(download.chapter.formattedTitle())
                                         .foregroundStyle(.secondary)
                                         .font(.callout)
+                                        .lineLimit(1)
                                     let progress = self.progress[download.chapterIdentifier]
                                     let value: Float = if let progress {
                                         Float(progress.progress) / Float(progress.total)

@@ -25,10 +25,9 @@ actor DownloadQueue {
     private var totalDownloads: Int = 0
     private var completedDownloads: Int = 0
     private var bgTask: ProgressReporting?
+    private var sendCancelNotification = true
 
     private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".download"
-
-    private var sendCancelNotification = true
 
     init(cache: DownloadCache, onCompletion: (() -> Void)? = nil) {
         self.cache = cache
@@ -60,13 +59,17 @@ actor DownloadQueue {
             }
         }
 
-        for source in queue {
-            if tasks[source.key] == nil {
-                let task = DownloadTask(id: source.key, cache: cache, downloads: source.value)
+        await initAndResumeTasks()
+    }
+
+    private func initAndResumeTasks() async {
+        for (sourceKey, downloads) in queue {
+            if tasks[sourceKey] == nil {
+                let task = DownloadTask(id: sourceKey, cache: cache, downloads: downloads)
                 await task.setDelegate(delegate: self)
-                tasks[source.key] = task
+                tasks[sourceKey] = task
             }
-            await tasks[source.key]?.resume()
+            await tasks[sourceKey]?.resume()
         }
     }
 
@@ -224,10 +227,6 @@ actor DownloadQueue {
 }
 
 extension DownloadQueue {
-    private func setTask(key: String, task: DownloadTask) {
-        tasks[key] = task
-    }
-
     private func setBackgroundTask(_ task: ProgressReporting?) {
         bgTask = task
         totalDownloads = queue.values.reduce(0) { $0 + $1.count }
@@ -252,18 +251,7 @@ extension DownloadQueue {
 
             Task { @Sendable in
                 await self.setBackgroundTask(task)
-
-                let queue = await self.queue
-                for source in queue {
-                    var downloadTask = await self.tasks[source.key]
-                    if downloadTask == nil {
-                        downloadTask = DownloadTask(id: source.key, cache: self.cache, downloads: source.value)
-                        guard let downloadTask else { continue }
-                        await downloadTask.setDelegate(delegate: self)
-                        await self.setTask(key: source.key, task: downloadTask)
-                    }
-                    await downloadTask?.resume()
-                }
+                await self.initAndResumeTasks()
 
                 // wait until downloads complete
                 while true {

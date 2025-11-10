@@ -101,7 +101,8 @@ class LibraryViewController: MangaCollectionViewController {
         super.viewDidLoad()
 
         // load stored download queue state on first load
-        Task.detached {
+        Task {
+            await SourceManager.shared.loadSources() // make sure sources are loaded first
             await DownloadManager.shared.loadQueueState()
         }
     }
