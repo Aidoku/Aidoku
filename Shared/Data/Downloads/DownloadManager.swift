@@ -144,7 +144,7 @@ actor DownloadManager {
             let tmpDirectory = cache.directory(for: chapter.mangaIdentifier)
                 .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
             if tmpDirectory.exists {
-                return .downloading
+                return .queued
             } else {
                 return .none
             }
@@ -220,6 +220,7 @@ extension DownloadManager {
 
     /// Remove all downloads from a manga.
     func deleteChapters(for manga: MangaIdentifier) async {
+        await queue.cancelDownloads(for: manga)
         await cache.directory(for: manga).removeItem()
         await cache.remove(manga: manga)
         NotificationCenter.default.post(name: .downloadsRemoved, object: manga)

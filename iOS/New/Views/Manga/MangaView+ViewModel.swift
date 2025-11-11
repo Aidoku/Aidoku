@@ -192,6 +192,7 @@ extension MangaView {
                         }
                     }
                     for chapter in chapters {
+                        self.downloadStatus[chapter.key] = .queued
                         self.downloadProgress[chapter.key] = 0
                     }
                 }
@@ -204,6 +205,7 @@ extension MangaView {
                         let download = output.object as? Download,
                         download.mangaIdentifier == self.manga.identifier
                     else { return }
+                    self.downloadStatus[download.chapterIdentifier.chapterKey] = .downloading
                     self.downloadProgress[download.chapterIdentifier.chapterKey] = Float(download.progress) / Float(download.total)
                 }
                 .store(in: &cancellables)

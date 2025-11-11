@@ -53,7 +53,7 @@ actor DownloadTask: Identifiable {
 
     func pause() async {
         running = false
-        for (i, download) in downloads.enumerated() where download.status == .downloading {
+        for (i, download) in downloads.enumerated() where download.status == .queued || download.status == .downloading {
             downloads[i].status = .paused
         }
         Task {
@@ -61,11 +61,9 @@ actor DownloadTask: Identifiable {
         }
     }
 
-    func cancel(chapter: ChapterIdentifier? = nil) {
-        if
-            let chapter = chapter,
-            let index = downloads.firstIndex(where: { $0.chapterIdentifier == chapter })
-        {
+    func cancel(manga: MangaIdentifier? = nil, chapter: ChapterIdentifier? = nil) {
+        if let chapter {
+            guard let index = downloads.firstIndex(where: { $0.chapterIdentifier == chapter }) else { return }
             // cancel specific chapter download
             let wasRunning = running
             running = false
@@ -83,6 +81,32 @@ actor DownloadTask: Identifiable {
                     .removeItem()
                 await delegate?.downloadCancelled(download: download)
                 downloads.removeAll { $0 == download }
+                if wasRunning {
+                    resume()
+                }
+            }
+        } else if let manga {
+            let wasRunning = running
+            running = false
+            Task {
+                var cancelled: IndexSet = []
+                for i in downloads.indices {
+                    if downloads[i].mangaIdentifier == manga {
+                        if i == 0 {
+                            pages = []
+                            currentPage = 0
+                            failedPages = 0
+                        }
+                        downloads[i].status = .cancelled
+                        await delegate?.downloadCancelled(download: downloads[i])
+                        cancelled.insert(i)
+                    }
+                }
+                downloads.remove(atOffsets: cancelled)
+                await cache.directory(for: manga)
+                    .contents
+                    .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                    .forEach { $0.removeItem() }
                 if wasRunning {
                     resume()
                 }
@@ -178,6 +202,7 @@ extension DownloadTask {
             )) ?? []).map {
                 $0.toOld(sourceId: source.key, chapterId: download.chapterIdentifier.chapterKey)
             }
+            guard running && !downloads.isEmpty && downloads.count > downloadIndex else { return }
             downloads[downloadIndex].total = pages.count
         }
 

@@ -283,8 +283,8 @@ extension MangaView {
             chapter: chapter,
             read: viewModel.readingHistory[chapter.key]?.page == -1,
             page: viewModel.readingHistory[chapter.key]?.page,
-            downloaded: downloaded,
-            downloadProgress: viewModel.downloadProgress[chapter.key] ?? (downloadStatus == .downloading ? 0 : nil),
+            downloadStatus: downloadStatus,
+            downloadProgress: viewModel.downloadProgress[chapter.key],
             displayMode: viewModel.chapterTitleDisplayMode,
             isEditing: editMode == .active
         ) {
@@ -445,94 +445,48 @@ extension MangaView {
 
     @ViewBuilder
     var rightNavbarButton: some View {
-        if editMode == .inactive {
-            Menu {
-                Menu(NSLocalizedString("MARK_ALL")) {
-                    Button {
-                        // only show loading indicator for a larger number of chapters
-                        if viewModel.chapters.count > 100 {
-                            showLoadingIndicator()
-                        }
-                        Task {
-                            await viewModel.markRead(chapters: viewModel.chapters)
-                            hideLoadingIndicator()
-                        }
-                    } label: {
-                        Label(NSLocalizedString("READ"), systemImage: "eye")
-                    }
-                    Button {
-                        if viewModel.chapters.count > 100 {
-                            showLoadingIndicator()
-                        }
-                        Task {
-                            await viewModel.markUnread(chapters: viewModel.chapters)
-                            hideLoadingIndicator()
-                        }
-                    } label: {
-                        Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
-                    }
+        RightNavbarButton(
+            viewModel: viewModel,
+            markAllRead: {
+                // only show loading indicator for a larger number of chapters
+                if viewModel.chapters.count > 100 {
+                    showLoadingIndicator()
                 }
-                Button {
-                    withAnimation {
-                        editMode = .active
-                    }
-                } label: {
-                    Label(NSLocalizedString("SELECT_CHAPTERS"), systemImage: "checkmark.circle")
+                Task {
+                    await viewModel.markRead(chapters: viewModel.chapters)
+                    hideLoadingIndicator()
                 }
-                if viewModel.bookmarked {
-                    if !CoreDataManager.shared.getCategories(sorted: false).isEmpty {
-                        Button {
-                            path.present(
-                                UINavigationController(
-                                    rootViewController: CategorySelectViewController(
-                                        manga: viewModel.manga
-                                    )
-                                )
-                            )
-                        } label: {
-                            Label(NSLocalizedString("EDIT_CATEGORIES"), systemImage: "folder.badge.gearshape")
-                        }
-                    }
-                    Button {
-                        let migrateView = MigrateMangaView(manga: [viewModel.manga.toOld()])
-                        path.present(UIHostingController(
-                            rootView: SwiftUINavigationView(rootView: migrateView)
-                        ))
-                    } label: {
-                        Label(NSLocalizedString("MIGRATE"), systemImage: "arrow.left.arrow.right")
-                    }
+            },
+            markAllUnread: {
+                if viewModel.chapters.count > 100 {
+                    showLoadingIndicator()
                 }
-                if let url = viewModel.manga.url {
-                    Button {
-                        showShareSheet(url: url)
-                    } label: {
-                        Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
-                    }
+                Task {
+                    await viewModel.markUnread(chapters: viewModel.chapters)
+                    hideLoadingIndicator()
                 }
-
-                if DownloadManager.shared.hasDownloadedChapter(
-                    from: viewModel.manga.identifier
-                ) {
-                    Divider()
-                    Button(role: .destructive) {
-                        showRemoveAllConfirm = true
-                    } label: {
-                        Label(
-                            NSLocalizedString("REMOVE_ALL_DOWNLOADS"),
-                            systemImage: "trash"
+            },
+            editCategories: {
+                path.present(
+                    UINavigationController(
+                        rootViewController: CategorySelectViewController(
+                            manga: viewModel.manga
                         )
-                    }
-                }
-            } label: {
-                MoreIcon()
-            }
-        } else {
-            DoneButton {
-                withAnimation {
-                    editMode = .inactive
-                }
-            }
-        }
+                    )
+                )
+            },
+            migrate: {
+                let migrateView = MigrateMangaView(manga: [viewModel.manga.toOld()])
+                path.present(UIHostingController(
+                    rootView: SwiftUINavigationView(rootView: migrateView)
+                ))
+            },
+            showShareSheet: showShareSheet(url:),
+            removeDownloads: {
+                showRemoveAllConfirm = true
+            },
+            editMode: $editMode
+        ).equatable()
     }
 }
 
@@ -635,16 +589,28 @@ extension MangaView {
 
     @ViewBuilder
     var toolbarDownloadButton: some View {
-        let allChaptersDownloaded = !selectedChapters.contains(where: {
-            !DownloadManager.shared.isChapterDownloaded(
-                chapter: .init(
-                    sourceKey: viewModel.manga.sourceKey,
-                    mangaKey: viewModel.manga.key,
-                    chapterKey: $0
-                )
-            )
+        let allChaptersQueued = !selectedChapters.contains(where: {
+            viewModel.downloadStatus[$0] != .queued
         })
-        if !selectedChapters.isEmpty && allChaptersDownloaded {
+        let allChaptersDownloaded = !selectedChapters.contains(where: {
+            viewModel.downloadStatus[$0] != .finished
+        })
+        if !selectedChapters.isEmpty && allChaptersQueued {
+            Button(NSLocalizedString("CANCEL")) {
+                Task {
+                    await DownloadManager.shared.cancelDownloads(for: selectedChapters.map {
+                        .init(
+                            sourceKey: viewModel.manga.sourceKey,
+                            mangaKey: viewModel.manga.key,
+                            chapterKey: $0
+                        )
+                    })
+                }
+                withAnimation {
+                    editMode = .inactive
+                }
+            }
+        } else if !selectedChapters.isEmpty && allChaptersDownloaded {
             Button(NSLocalizedString("REMOVE")) {
                 showRemoveSelectedConfirm = true
             }
@@ -654,14 +620,10 @@ extension MangaView {
                     .filter { chapter in
                         let isSelected = selectedChapters.contains(chapter.key)
                         guard isSelected else { return false }
-                        let isDownloaded = DownloadManager.shared.isChapterDownloaded(
-                            chapter: .init(
-                                sourceKey: viewModel.manga.sourceKey,
-                                mangaKey: viewModel.manga.key,
-                                chapterKey: chapter.key
-                            )
-                        )
-                        guard !isDownloaded else { return false }
+                        let isDownloaded = viewModel.downloadStatus[chapter.key] == .finished
+                        let isDownloading = viewModel.downloadStatus[chapter.key] == .downloading
+                        let isQueued = viewModel.downloadStatus[chapter.key] == .queued
+                        guard !isDownloaded, !isDownloading, !isQueued else { return false }
                         return true
                     }
                     .reversed()
@@ -749,7 +711,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
     let chapter: AidokuRunner.Chapter
     let read: Bool
     let page: Int?
-    let downloaded: Bool
+    let downloadStatus: DownloadStatus
     let downloadProgress: Float?
     let displayMode: ChapterTitleDisplayMode
     let isEditing: Bool
@@ -758,7 +720,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
     var contextMenu: (() -> T)?
 
     private var locked: Bool {
-        chapter.locked && !downloaded
+        chapter.locked && !(downloadStatus == .finished)
     }
 
     var body: some View {
@@ -769,7 +731,7 @@ private struct ChapterCellView<T: View>: View, Equatable {
                 chapter: chapter,
                 read: read,
                 page: page,
-                downloaded: downloaded,
+                downloadStatus: downloadStatus,
                 downloadProgress: downloadProgress,
                 displayMode: displayMode
             )
@@ -791,13 +753,130 @@ private struct ChapterCellView<T: View>: View, Equatable {
         }
     }
 
-    static func == (lhs: ChapterCellView<T>, rhs: ChapterCellView<T>) -> Bool {
+    static nonisolated func == (lhs: ChapterCellView<T>, rhs: ChapterCellView<T>) -> Bool {
         lhs.chapter == rhs.chapter
             && lhs.read == rhs.read
             && lhs.page == rhs.page
-            && lhs.downloaded == rhs.downloaded
+            && lhs.downloadStatus == rhs.downloadStatus
             && lhs.downloadProgress == rhs.downloadProgress
             && lhs.displayMode == rhs.displayMode
+            && lhs.isEditing == rhs.isEditing
+    }
+}
+
+private struct RightNavbarButton: View, Equatable {
+    let bookmarked: Bool
+    let hasCategories: Bool
+    let url: URL?
+    let hasDownloads: Bool
+    let isEditing: Bool
+
+    let markAllRead: () -> Void
+    let markAllUnread: () -> Void
+    let editCategories: () -> Void
+    let migrate: () -> Void
+    let showShareSheet: (URL) -> Void
+    let removeDownloads: () -> Void
+
+    @Binding var editMode: EditMode
+
+    init(
+        viewModel: MangaView.ViewModel,
+        markAllRead: @escaping () -> Void,
+        markAllUnread: @escaping () -> Void,
+        editCategories: @escaping () -> Void,
+        migrate: @escaping () -> Void,
+        showShareSheet: @escaping (URL) -> Void,
+        removeDownloads: @escaping () -> Void,
+        editMode: Binding<EditMode>
+    ) {
+        self.bookmarked = viewModel.bookmarked
+        self.hasCategories = !CoreDataManager.shared.getCategories(sorted: false).isEmpty
+        self.url = viewModel.manga.url
+        self.hasDownloads = viewModel.downloadStatus.contains(where: { $0.value == .finished })
+        self.markAllRead = markAllRead
+        self.markAllUnread = markAllUnread
+        self.editCategories = editCategories
+        self.migrate = migrate
+        self.showShareSheet = showShareSheet
+        self.removeDownloads = removeDownloads
+        self.isEditing = editMode.wrappedValue == .active
+        self._editMode = editMode
+    }
+
+    var body: some View {
+        if editMode == .inactive {
+            Menu {
+                Menu(NSLocalizedString("MARK_ALL")) {
+                    Button {
+                        markAllRead()
+                    } label: {
+                        Label(NSLocalizedString("READ"), systemImage: "eye")
+                    }
+                    Button {
+                        markAllUnread()
+                    } label: {
+                        Label(NSLocalizedString("UNREAD"), systemImage: "eye.slash")
+                    }
+                }
+                Button {
+                    withAnimation {
+                        editMode = .active
+                    }
+                } label: {
+                    Label(NSLocalizedString("SELECT_CHAPTERS"), systemImage: "checkmark.circle")
+                }
+                if bookmarked {
+                    if hasCategories {
+                        Button {
+                            editCategories()
+                        } label: {
+                            Label(NSLocalizedString("EDIT_CATEGORIES"), systemImage: "folder.badge.gearshape")
+                        }
+                    }
+                    Button {
+                        migrate()
+                    } label: {
+                        Label(NSLocalizedString("MIGRATE"), systemImage: "arrow.left.arrow.right")
+                    }
+                }
+                if let url {
+                    Button {
+                        showShareSheet(url)
+                    } label: {
+                        Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
+                    }
+                }
+
+                if hasDownloads {
+                    Divider()
+                    Button(role: .destructive) {
+                        removeDownloads()
+                    } label: {
+                        Label(
+                            NSLocalizedString("REMOVE_ALL_DOWNLOADS"),
+                            systemImage: "trash"
+                        )
+                    }
+                }
+            } label: {
+                MoreIcon()
+            }
+        } else {
+            DoneButton {
+                withAnimation {
+                    editMode = .inactive
+                }
+            }
+        }
+
+    }
+
+    static nonisolated func == (lhs: RightNavbarButton, rhs: RightNavbarButton) -> Bool {
+        lhs.bookmarked == rhs.bookmarked
+            && lhs.hasCategories == rhs.hasCategories
+            && lhs.url == rhs.url
+            && lhs.hasDownloads == rhs.hasDownloads
             && lhs.isEditing == rhs.isEditing
     }
 }

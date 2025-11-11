@@ -176,6 +176,18 @@ actor DownloadQueue {
         saveQueueState()
     }
 
+    func cancelDownloads(for manga: MangaIdentifier) async {
+        if let task = tasks[manga.sourceKey] {
+            await task.cancel(manga: manga)
+        } else {
+            await cache.directory(for: manga)
+                .contents
+                .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                .forEach { $0.removeItem() }
+        }
+        saveQueueState()
+    }
+
     func cancelAll() async {
         sendCancelNotification = false
         defer { sendCancelNotification = true }
