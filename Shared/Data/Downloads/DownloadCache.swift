@@ -103,7 +103,7 @@ extension DownloadCache {
         else {
             return false
         }
-        return !mangaDirectory.subdirectories.isEmpty
+        return mangaDirectory.subdirectories.contains { !$0.value.url.lastPathComponent.hasPrefix(".tmp") }
     }
 }
 

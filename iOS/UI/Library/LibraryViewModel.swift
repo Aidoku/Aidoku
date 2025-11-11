@@ -220,28 +220,21 @@ class LibraryViewModel {
 
         guard success else { return }
 
-        if checkDownloads {
-            let pinnedMangaCopy = pinnedManga
-            let mangaCopy = manga
-            let exclude = excludeDownloads
-            (pinnedManga, manga) = await MainActor.run {
-                (
-                    pinnedMangaCopy.filter { info in
-                        let condition = DownloadManager.shared.hasDownloadedChapter(from: info.identifier)
-                        return exclude ? !condition : condition
-                    },
-                    mangaCopy.filter { info in
-                        let condition = DownloadManager.shared.hasDownloadedChapter(from: info.identifier)
-                        return exclude ? !condition : condition
-                    }
-                )
-            }
-        }
-
         self.pinnedManga = pinnedManga
         self.manga = manga
 
         await fetchDownloadCounts()
+
+        if checkDownloads {
+            self.pinnedManga = self.pinnedManga.filter { info in
+                let condition = info.downloads > 0
+                return excludeDownloads ? !condition : condition
+            }
+            self.manga = self.manga.filter { info in
+                let condition = info.downloads > 0
+                return excludeDownloads ? !condition : condition
+            }
+        }
 
         if sortMethod == .unreadChapters {
             await sortLibrary()
