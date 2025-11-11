@@ -77,7 +77,6 @@ struct ChapterListHeaderView: View {
             }
             Text(text)
                 .font(.headline)
-                .padding(.vertical, 10)
                 .transition(.scale) // for some reason this makes it animate correctly
                 .id("chapters")
 

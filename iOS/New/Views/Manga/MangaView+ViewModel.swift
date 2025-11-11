@@ -16,6 +16,7 @@ extension MangaView {
 
         @Published var manga: AidokuRunner.Manga
         @Published var chapters: [AidokuRunner.Chapter] = []
+        @Published var otherDownloadedChapters: [AidokuRunner.Chapter] = []
 
         @Published var readingHistory: [String: (page: Int, date: Int)] = [:]
         @Published var downloadProgress: [String: Float] = [:] // chapterId: progress
@@ -268,12 +269,12 @@ extension MangaView.ViewModel {
     func fetchData() async {
         let sourceKey = manga.sourceKey
         let mangaId = manga.key
-        let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaId, context: context)
         }
         if inLibrary {
             // load data from db
-            let chapters = await CoreDataManager.shared.container.performBackgroundTask { context in
+            let chapters = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getChapters(
                     sourceId: sourceKey,
                     mangaId: mangaId,
@@ -318,9 +319,43 @@ extension MangaView.ViewModel {
             }
             await source.partialMangaPublisher?.removeSink()
         }
+        await fetchDownloadedChapters()
         await loadDownloadStatus()
         updateReadButton()
         initialDataLoaded = true
+    }
+
+    func fetchDownloadedChapters() async {
+        let downloadedChapters = await DownloadManager.shared.getDownloadedChapters(for: manga.identifier)
+            .filter { chapter in
+                !(manga.chapters ?? chapters).contains(where: { $0.key.directoryName == chapter.chapterId.directoryName })
+            }
+            .map { $0.toChapter() }
+            .sorted { (lhs: AidokuRunner.Chapter, rhs: AidokuRunner.Chapter) in
+                // Primary sort: by chapter number if both have it
+                if let lhsChapter = lhs.chapterNumber, let rhsChapter = rhs.chapterNumber {
+                    if lhsChapter != rhsChapter {
+                        return lhsChapter > rhsChapter
+                    }
+                    // If chapter numbers are equal, sort by volume number
+                    if let lhsVolume = lhs.volumeNumber, let rhsVolume = rhs.volumeNumber {
+                        return lhsVolume > rhsVolume
+                    }
+                }
+
+                // Secondary sort: by volume number if only one has chapter number
+                if let lhsVolume = lhs.volumeNumber, let rhsVolume = rhs.volumeNumber {
+                    return lhsVolume > rhsVolume
+                }
+
+                // Final fallback: alphabetical comparison of display titles
+                let lhsTitle = lhs.title?.lowercased() ?? ""
+                let rhsTitle = rhs.title?.lowercased() ?? ""
+                return lhsTitle.localizedStandardCompare(rhsTitle) == .orderedDescending
+            }
+        withAnimation {
+            otherDownloadedChapters = downloadedChapters
+        }
     }
 
     func syncTrackerProgress() async {
@@ -332,7 +367,7 @@ extension MangaView.ViewModel {
 
         // sync progress from regular trackers if auto sync enabled
         if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") {
-            let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { [manga] context in
+            let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable [manga] context in
                 CoreDataManager.shared.getTracks(
                     sourceId: manga.sourceKey,
                     mangaId: manga.key,
@@ -360,7 +395,7 @@ extension MangaView.ViewModel {
         let sourceKey = source.key
         let mangaId = manga.key
 
-        let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaId, context: context)
         }
 
@@ -383,11 +418,12 @@ extension MangaView.ViewModel {
                 let langFilter = chapterLangFilter
                 let scanlatorFilter = chapterScanlatorFilter
                 let sourceKey = source.key
-                await CoreDataManager.shared.container.performBackgroundTask { context in
+                let mangaKey = newManga.key
+                await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                     let newChapters = CoreDataManager.shared.setChapters(
                         chapters,
                         sourceId: sourceKey,
-                        mangaId: newManga.key,
+                        mangaId: mangaKey,
                         context: context
                     )
                     // update manga updates
@@ -398,7 +434,7 @@ extension MangaView.ViewModel {
                     {
                         CoreDataManager.shared.createMangaUpdate(
                             sourceId: sourceKey,
-                            mangaId: newManga.key,
+                            mangaId: mangaKey,
                             chapterObject: chapter,
                             context: context
                         )
@@ -413,6 +449,9 @@ extension MangaView.ViewModel {
                 manga = newManga
                 chapters = filteredChapters()
             }
+
+            // ensure downloaded chapters are in the correct section if they were added/removed from the main list
+            await fetchDownloadedChapters()
         } catch {
             withAnimation {
                 self.manga.chapters = []
@@ -425,12 +464,13 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        let sourceKey = manga.sourceKey
-        let mangaKey = manga.key
         for chapter in chapters {
             downloadStatus[chapter.key] = await DownloadManager.shared.getDownloadStatus(
-                for: .init(sourceKey: sourceKey, mangaKey: mangaKey, chapterKey: chapter.key)
+                for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
             )
+        }
+        for chapter in otherDownloadedChapters {
+            downloadStatus[chapter.key] = .finished
         }
     }
 
@@ -519,6 +559,11 @@ extension MangaView.ViewModel {
             Task {
                 downloadProgress.removeValue(forKey: chapter.chapterKey)
                 downloadStatus[chapter.chapterKey] = await DownloadManager.shared.getDownloadStatus(for: chapter)
+                if let chapterIndex = otherDownloadedChapters.firstIndex(where: { $0.key == chapter.chapterKey }) {
+                    withAnimation {
+                        _ = otherDownloadedChapters.remove(at: chapterIndex)
+                    }
+                }
             }
         }
     }

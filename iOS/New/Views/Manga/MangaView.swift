@@ -60,18 +60,32 @@ struct MangaView: View {
                         viewForChapter(chapter, index: index)
                     }
 
-                    if !viewModel.chapters.isEmpty {
-                        VStack {
-                            Divider() // final, full width separator
-                            Color.clear.frame(height: 28) // padding for bottom of list
-                        }
-                        .padding(.top, {
-                            // add a little spacing above on ios 15, since the separator ends up hidden
-                            if #available(iOS 16.0, *) { 0 } else { 0.5 }
-                        }())
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(.zero)
+                    // hide the separator if there are no chapters, or all the chapters are filtered and the other section is shown
+                    if !viewModel.chapters.isEmpty || (!(viewModel.manga.chapters?.isEmpty ?? true) && !viewModel.otherDownloadedChapters.isEmpty) {
+                        bottomSeparator
                     }
+                }
+
+                if !viewModel.otherDownloadedChapters.isEmpty {
+                    VStack {
+                        HStack {
+                            Text(NSLocalizedString("DOWNLOADED_CHAPTERS"))
+                                .font(.headline)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        Divider()
+                    }
+                    .listRowInsets(.zero)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+
+                    ForEach(viewModel.otherDownloadedChapters.indices, id: \.self) { index in
+                        let chapter = viewModel.otherDownloadedChapters[index]
+                        viewForChapter(chapter, index: index, secondSection: true)
+                    }
+
+                    bottomSeparator
                 }
             }
             // decrease the min row height for the bottom separator/spacing
@@ -218,6 +232,7 @@ extension MangaView {
                 scanlatorFilter: $viewModel.chapterScanlatorFilter,
                 descriptionExpanded: $descriptionExpanded,
                 chapterTitleDisplayMode: $viewModel.chapterTitleDisplayMode,
+                hasOtherDownloads: !viewModel.otherDownloadedChapters.isEmpty,
                 onTrackerButtonPressed: {
                     let vc = TrackerModalViewController(manga: viewModel.manga)
                     vc.modalPresentationStyle = .overFullScreen
@@ -237,9 +252,22 @@ extension MangaView {
         .listRowSeparator(.hidden)
     }
 
+    var bottomSeparator: some View {
+        VStack {
+            Divider() // final, full width separator
+            Color.clear.frame(height: 28) // padding for bottom of list
+        }
+        .padding(.top, {
+            // add a little spacing above on ios 15, since the separator ends up hidden
+            if #available(iOS 16.0, *) { 0 } else { 0.5 }
+        }())
+        .listRowSeparator(.hidden)
+        .listRowInsets(.zero)
+    }
+
     @ViewBuilder
-    func viewForChapter(_ chapter: AidokuRunner.Chapter, index: Int) -> some View {
-        let last = index == viewModel.chapters.count - 1
+    func viewForChapter(_ chapter: AidokuRunner.Chapter, index: Int, secondSection: Bool = false) -> some View {
+        let last = index == (secondSection ? viewModel.otherDownloadedChapters : viewModel.chapters).count - 1
         let downloadStatus = viewModel.downloadStatus[chapter.key, default: .none]
         let downloaded = downloadStatus == .finished
         let locked = chapter.locked && !downloaded
@@ -274,7 +302,8 @@ extension MangaView {
                 chapter: chapter,
                 downloadStatus: downloadStatus,
                 index: index,
-                last: last
+                last: last,
+                secondSection: secondSection
             )
         }
         // use equatableview to determine when to refresh the view
@@ -288,7 +317,13 @@ extension MangaView {
     }
 
     @ViewBuilder
-    func contextMenu(chapter: AidokuRunner.Chapter, downloadStatus: DownloadStatus, index: Int, last: Bool) -> some View {
+    func contextMenu(
+        chapter: AidokuRunner.Chapter,
+        downloadStatus: DownloadStatus,
+        index: Int,
+        last: Bool,
+        secondSection: Bool
+    ) -> some View {
         Section {
             if viewModel.manga.isLocal() {
                 // if the chapter is from the local source, add a button to remove it instead of download
@@ -371,7 +406,7 @@ extension MangaView {
                     Label(NSLocalizedString("MARK_READ"), systemImage: "eye")
                 }
             }
-            if !last {
+            if !last && !secondSection {
                 Menu(NSLocalizedString("MARK_PREVIOUS")) {
                     Button {
                         let chapters = [AidokuRunner.Chapter](viewModel.chapters[

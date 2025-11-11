@@ -449,7 +449,8 @@ extension DownloadManager {
                 chapterNumber: metadata?.chapterNumber,
                 volumeNumber: metadata?.volumeNumber,
                 size: size,
-                downloadDate: downloadDate
+                downloadDate: downloadDate,
+                chapter: metadata?.chapter
             )
 
             chapters.append(chapterInfo)
@@ -492,7 +493,8 @@ extension DownloadManager {
                     return .init(
                         title: comicInfo.title,
                         chapterNumber: comicInfo.number.flatMap { Float($0) },
-                        volumeNumber: comicInfo.volume.flatMap { Float($0) }
+                        volumeNumber: comicInfo.volume.flatMap { Float($0) },
+                        chapter: comicInfo.toChapter()
                     )
                 }
             }
@@ -556,6 +558,7 @@ extension DownloadManager {
         let title: String?
         let chapterNumber: Float?
         let volumeNumber: Float?
+        var chapter: AidokuRunner.Chapter?
     }
 
     /// Simple manga metadata structure
