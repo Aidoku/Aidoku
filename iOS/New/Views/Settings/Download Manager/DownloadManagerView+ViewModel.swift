@@ -174,10 +174,10 @@ extension DownloadManagerView.ViewModel {
 
     private func getSourceDisplayName(_ sourceId: String) -> String {
         if let source = SourceManager.shared.source(for: sourceId) {
-            return source.name
+            source.name
+        } else {
+            sourceId
         }
-        // Fall back to source ID for unknown sources
-        return sourceId.capitalized
     }
 
     func deleteAllChapters() {

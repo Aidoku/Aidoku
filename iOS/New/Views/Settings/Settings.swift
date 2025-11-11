@@ -110,10 +110,10 @@ enum Settings {
                 ))
             ),
             .init(
-                key: "DownloadManager",
-                title: NSLocalizedString("DOWNLOAD_MANAGER"),
+                key: "Downloads",
+                title: NSLocalizedString("DOWNLOADS"),
                 value: .page(.init(
-                    items: [],
+                    items: downloadSettings,
                     inlineTitle: true,
                     icon: .system(name: "arrow.down.circle.fill", color: "blue", inset: 6)
                 ))
@@ -264,18 +264,8 @@ extension Settings {
                     value: .toggle(.init())
                 ),
                 .init(
-                    key: "Library.downloadOnlyOnWifi",
-                    title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
-                    value: .toggle(.init())
-                ),
-                .init(
                     key: "Library.refreshMetadata",
                     title: NSLocalizedString("REFRESH_METADATA"),
-                    value: .toggle(.init())
-                ),
-                .init(
-                    key: "Library.deleteDownloadAfterReading",
-                    title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
                     value: .toggle(.init())
                 )
             ]))
@@ -549,6 +539,21 @@ extension Settings {
                     value: .button(.init())
                 )
             ]))
+        )
+    ]
+}
+
+extension Settings {
+    static let downloadSettings: [Setting] = [
+        .init(
+            key: "Library.downloadOnlyOnWifi",
+            title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
+            value: .toggle(.init())
+        ),
+        .init(
+            key: "Library.deleteDownloadAfterReading",
+            title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
+            value: .toggle(.init())
         )
     ]
 }

@@ -48,9 +48,7 @@
 "DOWNLOADING_PAUSED" = "Downloading Paused";
 "PAUSED" = "Paused";
 "CANCEL_ALL_DOWNLOADS" = "Cancel All Downloads";
-
-// Download Manager
-"DOWNLOAD_MANAGER" = "Download Manager";
+"DOWNLOADS" = "Downloads";
 "NO_DOWNLOADS" = "No Downloads";
 "NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
 "DOWNLOADED_CHAPTERS" = "Downloaded Chapters";

@@ -42,7 +42,7 @@ struct DownloadManagerView: View {
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoading)
         .animation(.easeInOut(duration: 0.3), value: viewModel.downloadedManga.isEmpty)
-        .navigationTitle(NSLocalizedString("DOWNLOAD_MANAGER"))
+        .navigationTitle(NSLocalizedString("DOWNLOADS"))
         .task {
             await viewModel.loadDownloadedManga()
         }
@@ -97,6 +97,12 @@ struct DownloadManagerView: View {
                     }
                 }
                 .padding(.vertical, 4)
+            }
+
+            Section(NSLocalizedString("SETTINGS")) {
+                ForEach(Settings.downloadSettings, id: \.key) { setting in
+                    SettingView(setting: setting)
+                }
             }
 
             // Manga grouped by source with stable IDs for smooth updates

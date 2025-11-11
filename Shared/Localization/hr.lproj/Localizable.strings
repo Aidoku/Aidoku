@@ -360,7 +360,6 @@
 "PHOTOS_ACCESS_DENIED_TEXT" = "Pristup je prethodno bio odbijen. Dozvoli da Aidoku pristupi tvojim fotografijama za spremanje slika u tvoje fotografije. Pristup može aktivirati u postavkama privatnosti.";
 "CONTENT" = "Sadržaj";
 "%@_EXPERIMENTAL" = "%@ (eksperimentalno)";
-"DOWNLOAD_MANAGER" = "Upravljač preuzimanja";
 "NO_DOWNLOADS" = "Nema preuzimanja";
 "NO_DOWNLOADS_TEXT" = "Preuzeti sadržaj će se pojaviti ovdje.";
 "DOWNLOADED_CHAPTERS" = "Preuzeta poglavlja";
