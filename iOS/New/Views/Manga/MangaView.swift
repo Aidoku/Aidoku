@@ -329,7 +329,7 @@ extension MangaView {
                     } label: {
                         Label(NSLocalizedString("CANCEL_DOWNLOAD"), systemImage: "xmark")
                     }
-                } else {
+                } else if viewModel.source != nil {
                     Button {
                         let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
                         if
@@ -649,7 +649,7 @@ extension MangaView {
                     editMode = .inactive
                 }
             }
-            .disabled(viewModel.manga.isLocal() || selectedChapters.isEmpty)
+            .disabled(viewModel.source == nil || viewModel.manga.isLocal() || selectedChapters.isEmpty)
         }
     }
 }
