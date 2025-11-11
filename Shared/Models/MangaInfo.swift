@@ -20,6 +20,7 @@ struct MangaInfo: Hashable, Sendable {
     var url: URL?
 
     var unread: Int = 0
+    var downloads: Int = 0
 
     func toManga() -> Manga {
         Manga(

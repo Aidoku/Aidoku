@@ -98,6 +98,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
+                "Library.downloadedChapterBadges": true,
                 "Library.pinManga": false,
                 "Library.pinMangaType": 0,
                 "Library.lockLibrary": false,

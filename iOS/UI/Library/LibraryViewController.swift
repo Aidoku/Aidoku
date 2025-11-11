@@ -268,9 +268,34 @@ class LibraryViewController: MangaCollectionViewController {
         }
 
         addObserver(forName: "downloadsQueued", using: checkNavbarDownloadButton)
-        addObserver(forName: "downloadFinished", using: checkNavbarDownloadButton)
         addObserver(forName: "downloadCancelled", using: checkNavbarDownloadButton)
         addObserver(forName: "downloadsCancelled", using: checkNavbarDownloadButton)
+
+        addObserver(forName: "downloadFinished") { [weak self] notification in
+            checkNavbarDownloadButton(notification)
+            if let download = notification.object as? Download {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: download.mangaIdentifier)
+                    self?.updateDataSource()
+                }
+            }
+        }
+        addObserver(forName: "downloadRemoved") { [weak self] notification in
+            if let id = notification.object as? ChapterIdentifier {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: id.mangaIdentifier)
+                    self?.updateDataSource()
+                }
+            }
+        }
+        addObserver(forName: "downloadsRemoved") { [weak self] notification in
+            if let id = notification.object as? MangaIdentifier {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: id)
+                    self?.updateDataSource()
+                }
+            }
+        }
 
         addObserver(forName: "updateCategories") { [weak self] _ in
             guard let self = self else { return }
@@ -333,9 +358,21 @@ class LibraryViewController: MangaCollectionViewController {
             self?.opensReaderView = notification.object as? Bool ?? false
         }
 
-        // refresh unread badges
+        // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
-            self?.viewModel.badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+            if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
+                self?.viewModel.badgeType.insert(.unread)
+            } else {
+                self?.viewModel.badgeType.remove(.unread)
+            }
+            self?.reloadItems()
+        }
+        addObserver(forName: "Library.downloadedChapterBadges") { [weak self] _ in
+            if UserDefaults.standard.bool(forKey: "Library.downloadedChapterBadges") {
+                self?.viewModel.badgeType.insert(.downloaded)
+            } else {
+                self?.viewModel.badgeType.remove(.downloaded)
+            }
             self?.reloadItems()
         }
 
@@ -414,15 +451,21 @@ class LibraryViewController: MangaCollectionViewController {
     // cells with unread badges
     override func makeCellRegistration() -> CellRegistration {
         CellRegistration { [weak self] cell, _, info in
+            guard let self else { return }
             cell.sourceId = info.sourceId
             cell.mangaId = info.mangaId
             cell.title = info.title
-            if self?.viewModel.badgeType == .unread {
+            if self.viewModel.badgeType.contains(.unread) {
                 cell.badgeNumber = info.unread
             } else {
                 cell.badgeNumber = 0
             }
-            cell.setEditing(self?.isEditing ?? false, animated: false)
+            if self.viewModel.badgeType.contains(.downloaded) {
+                cell.badgeNumber2 = info.downloads
+            } else {
+                cell.badgeNumber2 = 0
+            }
+            cell.setEditing(self.isEditing, animated: false)
             if cell.isSelected {
                 cell.select(animated: false)
             } else {

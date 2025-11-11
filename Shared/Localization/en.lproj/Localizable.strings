@@ -377,6 +377,7 @@
 "READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
+"DOWNLOADED_CHAPTER_BADGES" = "Downloaded Chapter Badges";
 "PIN_MANGA" = "Pin Manga";
 "PIN_MANGA_TYPE" = "Pin Type";
 "PIN_MANGA_UNREAD" = "Unread";

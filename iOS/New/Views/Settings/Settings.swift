@@ -170,6 +170,11 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
+                key: "Library.downloadedChapterBadges",
+                title: NSLocalizedString("DOWNLOADED_CHAPTER_BADGES"),
+                value: .toggle(.init())
+            ),
+            .init(
                 key: "Library.pinManga",
                 title: NSLocalizedString("PIN_MANGA"),
                 value: .toggle(.init())

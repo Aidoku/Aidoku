@@ -123,6 +123,15 @@ actor DownloadManager {
         cache.hasDownloadedChapter(from: identifier)
     }
 
+    func downloadsCount(for identifier: MangaIdentifier) -> Int {
+        Self.directory
+            .appendingSafePathComponent(identifier.sourceKey.directoryName)
+            .appendingSafePathComponent(identifier.mangaKey.directoryName)
+            .contents
+            .filter { $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") }
+            .count
+    }
+
     func hasQueuedDownloads() async -> Bool {
         await queue.hasQueuedDownloads()
     }

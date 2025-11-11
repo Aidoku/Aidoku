@@ -46,9 +46,11 @@ class LibraryViewModel {
         }
     }
 
-    enum BadgeType {
-        case none
-        case unread
+    struct BadgeType: OptionSet {
+        let rawValue: Int
+
+        static let unread = BadgeType(rawValue: 1 << 0)
+        static let downloaded = BadgeType(rawValue: 1 << 1)
     }
 
     struct LibraryFilter {
@@ -64,7 +66,16 @@ class LibraryViewModel {
     lazy var pinType: PinType = getPinType()
     lazy var sortMethod = SortMethod(rawValue: UserDefaults.standard.integer(forKey: "Library.sortOption")) ?? .lastOpened
     lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
-    lazy var badgeType: BadgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+    lazy var badgeType: BadgeType = {
+        var type: BadgeType = []
+        if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
+            type.insert(.unread)
+        }
+        if UserDefaults.standard.bool(forKey: "Library.downloadedChapterBadges") {
+            type.insert(.downloaded)
+        }
+        return type
+    }()
 
     var filters: [LibraryFilter] = []
 
@@ -230,6 +241,8 @@ class LibraryViewModel {
         self.pinnedManga = pinnedManga
         self.manga = manga
 
+        await fetchDownloadCounts()
+
         if sortMethod == .unreadChapters {
             await sortLibrary()
         }
@@ -332,6 +345,19 @@ class LibraryViewModel {
             await loadLibrary()
         } else if sortMethod == .unreadChapters {
             await sortLibrary()
+        }
+    }
+
+    func fetchDownloadCounts(for identifier: MangaIdentifier? = nil) async {
+        for (i, manga) in self.pinnedManga.enumerated() {
+            if identifier == nil || manga.identifier == identifier {
+                self.pinnedManga[i].downloads = await DownloadManager.shared.downloadsCount(for: manga.identifier)
+            }
+        }
+        for (i, manga) in self.manga.enumerated() {
+            if identifier == nil || manga.identifier == identifier {
+                self.manga[i].downloads = await DownloadManager.shared.downloadsCount(for: manga.identifier)
+            }
         }
     }
 
