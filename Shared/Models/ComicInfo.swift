@@ -24,6 +24,12 @@ struct ComicInfo {
     let summary: String?
     /// A free text field, usually used to store information about the application that created the ComicInfo.xml file.
     let notes: String?
+    /// The release year of the book.
+    let year: Int?
+    /// The release month of the book.
+    let month: Int?
+    /// The release day of the book.
+    let day: Int?
     /// Person or organization responsible for creating the scenario (comma separated).
     let writer: String?
     /// Person or organization responsible for drawing the art (comma separated).
@@ -83,7 +89,8 @@ extension ComicInfo {
 
 extension ComicInfo {
     static func load(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) -> ComicInfo {
-        .init(
+        let dateComponents = chapter.dateUploaded.flatMap { Calendar.current.dateComponents([.year, .month, .day], from: $0) }
+        return .init(
             title: chapter.title,
             series: manga.title,
             number: chapter.chapterNumber.flatMap { String(format: "%g", $0) },
@@ -97,6 +104,9 @@ extension ComicInfo {
             ))).flatMap {
                 String(data: $0, encoding: .utf8).flatMap { AidokuNotesData.prefix + $0 }
             },
+            year: dateComponents?.year,
+            month: dateComponents?.month,
+            day: dateComponents?.day,
             writer: manga.authors?.joined(separator: ", "),
             penciller: manga.artists?.joined(separator: ", "),
             translator: chapter.scanlators?.joined(separator: ", "),
@@ -130,6 +140,8 @@ extension ComicInfo {
         else {
             return nil
         }
+        let tags = (genre.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+            + (tags.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
         return .init(
             sourceKey: sourceKey,
             key: key,
@@ -139,7 +151,7 @@ extension ComicInfo {
             authors: writer.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
             description: summary,
             url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
-            tags: nil,
+            tags: tags,
             status: .unknown,
             contentRating: {
                 switch ageRating {
@@ -173,7 +185,14 @@ extension ComicInfo {
             title: title,
             chapterNumber: number.flatMap { Float($0) },
             volumeNumber: volume.flatMap { Float($0) },
-            dateUploaded: nil,
+            dateUploaded: {
+                guard let day, let month, let year else { return nil }
+                var components = DateComponents()
+                components.year = year
+                components.month = month
+                components.day = day
+                return Calendar.current.date(from: components)
+            }(),
             scanlators: translator.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
             url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
             language: languageIso,
@@ -200,6 +219,9 @@ extension ComicInfo {
             var volume: Int?
             var summary: String?
             var notes: String?
+            var year: Int?
+            var month: Int?
+            var day: Int?
             var writer: String?
             var penciller: String?
             var translator: String?
@@ -242,6 +264,9 @@ extension ComicInfo {
                         case "Volume": volume = Int(value)
                         case "Summary": summary = value
                         case "Notes": notes = value
+                        case "Year": year = Int(value)
+                        case "Month": month = Int(value)
+                        case "Day": day = Int(value)
                         case "Writer": writer = value
                         case "Penciller": penciller = value
                         case "Translator": translator = value
@@ -274,6 +299,9 @@ extension ComicInfo {
             volume: delegate.volume,
             summary: delegate.summary,
             notes: delegate.notes,
+            year: delegate.year,
+            month: delegate.month,
+            day: delegate.day,
             writer: delegate.writer,
             penciller: delegate.penciller,
             translator: delegate.translator,
@@ -313,6 +341,9 @@ extension ComicInfo {
         xml += xmlElementInt("Volume", volume)
         xml += xmlElement("Summary", summary)
         xml += xmlElement("Notes", notes)
+        xml += xmlElementInt("Year", year)
+        xml += xmlElementInt("Month", month)
+        xml += xmlElementInt("Day", day)
         xml += xmlElement("Writer", writer)
         xml += xmlElement("Penciller", penciller)
         xml += xmlElement("Translator", translator)
