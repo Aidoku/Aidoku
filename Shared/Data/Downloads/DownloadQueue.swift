@@ -122,7 +122,7 @@ actor DownloadQueue {
             }
             // create tmp directory so we know it's queued
             await cache.directory(for: manga.identifier)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
+                .appendingSafePathComponent(".tmp_\(chapter.key)")
                 .createDirectory()
             let download = Download.from(manga: manga, chapter: chapter)
             downloads.append(download)

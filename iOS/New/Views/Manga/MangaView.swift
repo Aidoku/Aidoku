@@ -256,7 +256,7 @@ extension MangaView {
             read: viewModel.readingHistory[chapter.key]?.page == -1,
             page: viewModel.readingHistory[chapter.key]?.page,
             downloaded: downloaded,
-            downloadProgress: viewModel.downloadProgress[chapter.key],
+            downloadProgress: viewModel.downloadProgress[chapter.key] ?? (downloadStatus == .downloading ? 0 : nil),
             displayMode: viewModel.chapterTitleDisplayMode,
             isEditing: editMode == .active
         ) {
