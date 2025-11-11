@@ -485,6 +485,8 @@
 		FBE7A5942DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */; };
 		FBE7A5952DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */; };
 		FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE88BEF2886FC5800A61122 /* TrackerListView.swift */; };
+		FBE975CC2EC3932D008C7633 /* ComicInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE975CB2EC39329008C7633 /* ComicInfo.swift */; };
+		FBE975CD2EC3932D008C7633 /* ComicInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE975CB2EC39329008C7633 /* ComicInfo.swift */; };
 		FBECCECF2DE0C845007D5467 /* KomgaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECCECE2DE0C842007D5467 /* KomgaModels.swift */; };
 		FBECCED02DE0C845007D5467 /* KomgaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBECCECE2DE0C842007D5467 /* KomgaModels.swift */; };
 		FBED231727B83B670095D0C0 /* UISwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED231627B83B670095D0C0 /* UISwitch.swift */; };
@@ -903,6 +905,7 @@
 		FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSourceTableCell.swift; sourceTree = "<group>"; };
 		FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSourceConfig.swift; sourceTree = "<group>"; };
 		FBE88BEF2886FC5800A61122 /* TrackerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerListView.swift; sourceTree = "<group>"; };
+		FBE975CB2EC39329008C7633 /* ComicInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComicInfo.swift; sourceTree = "<group>"; };
 		FBECCECE2DE0C842007D5467 /* KomgaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaModels.swift; sourceTree = "<group>"; };
 		FBED14542819FCFC004B8050 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBED1455281A2B9D004B8050 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -1041,8 +1044,9 @@
 				FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */,
 				FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */,
 				FB034EA02EAC274E0072EEEB /* ChapterIdentifier.swift */,
-				FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */,
 				FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */,
+				FBE975CB2EC39329008C7633 /* ComicInfo.swift */,
+				FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */,
 				FB63D5002E38124A004FF4DC /* EditedKeys.swift */,
 				FB02E1F3288D7C0C00B9E2DE /* Manga.swift */,
 				FB034EA32EAC275C0072EEEB /* MangaIdentifier.swift */,
@@ -2308,6 +2312,7 @@
 				FB0E1CDB288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB57A6042E7F021600C9FD40 /* LoginShimViewController.swift in Sources */,
 				37F3E66D2850F62100A944E0 /* Collection.swift in Sources */,
+				FBE975CD2EC3932D008C7633 /* ComicInfo.swift in Sources */,
 				FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FBE578F928983F5700F9F1B5 /* UICollectionView+CellRegistration.swift in Sources */,
 				FBED232527BC07690095D0C0 /* SourceInfoViewController.swift in Sources */,
@@ -2697,6 +2702,7 @@
 				FB0CAA6228A9988A0024561A /* MangaInfo.swift in Sources */,
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
+				FBE975CC2EC3932D008C7633 /* ComicInfo.swift in Sources */,
 				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
 				04B48CFB2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */,
 				FB72501027CAAC6F0037F1C9 /* BackupManager.swift in Sources */,

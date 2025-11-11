@@ -352,13 +352,21 @@ extension DownloadTask {
             let directory = await cache.directory(for: download.chapterIdentifier)
             if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
                 // Save chapter metadata after successful download
-                await DownloadManager.shared.saveChapterMetadata(download.chapter, to: directory)
+                await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: directory)
 
-                // Save manga metadata when first chapter for this manga is downloaded
+                // save manga cover if not already present
                 let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
-                let metadataPath = mangaDirectory.appendingPathComponent(".manga_metadata.json")
-                if !metadataPath.exists {
-                    await DownloadManager.shared.saveMangaMetadata(download.manga, to: mangaDirectory)
+                let coverPath = mangaDirectory.appendingPathComponent("cover.png")
+                if
+                    !coverPath.exists,
+                    let coverUrl = download.manga.cover.flatMap({ URL(string: $0) }),
+                    let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
+                {
+                    let request = await source.getModifiedImageRequest(url: coverUrl, context: nil)
+                    let result = try? await URLSession.shared.data(for: request)
+                    if let data = result?.0 {
+                        try? data.write(to: coverPath)
+                    }
                 }
 
                 await cache.add(chapter: download.chapterIdentifier)

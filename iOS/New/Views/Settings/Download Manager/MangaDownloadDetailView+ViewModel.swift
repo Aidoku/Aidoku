@@ -42,7 +42,7 @@ extension MangaDownloadDetailView.ViewModel {
     func loadChapters() async {
         isLoading = true
 
-        let downloadedChapters = await DownloadManager.shared.getDownloadedChapters(for: manga)
+        let downloadedChapters = await DownloadManager.shared.getDownloadedChapters(for: manga.mangaIdentifier)
 
         await MainActor.run {
             self.chapters = self.sortChapters(downloadedChapters)
@@ -124,7 +124,7 @@ extension MangaDownloadDetailView.ViewModel {
         lastUpdateId = updateId
 
         // Fetch updates in background
-        let newChapters = await DownloadManager.shared.getDownloadedChapters(for: manga)
+        let newChapters = await DownloadManager.shared.getDownloadedChapters(for: manga.mangaIdentifier)
         let updatedMangaStatus = await fetchUpdatedMangaLibraryStatus()
 
         await MainActor.run {
@@ -186,7 +186,7 @@ extension MangaDownloadDetailView.ViewModel {
 
         // Perform actual deletion
         Task {
-            await DownloadManager.shared.deleteChaptersForManga(manga)
+            await DownloadManager.shared.deleteChapters(for: manga.mangaIdentifier)
         }
     }
 

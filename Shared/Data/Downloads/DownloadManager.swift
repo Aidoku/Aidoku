@@ -285,7 +285,6 @@ extension DownloadManager {
 
 // MARK: - Download Manager UI Support
 extension DownloadManager {
-
     /// Get all downloaded manga with metadata from CoreData if available
     func getAllDownloadedManga() async -> [DownloadedMangaInfo] {
         // Return cached result if still valid
@@ -420,10 +419,10 @@ extension DownloadManager {
     }
 
     /// Get downloaded chapters for a specific manga
-    func getDownloadedChapters(for mangaInfo: DownloadedMangaInfo) async -> [DownloadedChapterInfo] {
+    func getDownloadedChapters(for identifier: MangaIdentifier) async -> [DownloadedChapterInfo] {
         let mangaDirectory = Self.directory
-            .appendingSafePathComponent(mangaInfo.sourceId)
-            .appendingSafePathComponent(mangaInfo.directoryMangaId)
+            .appendingSafePathComponent(identifier.sourceKey.directoryName)
+            .appendingSafePathComponent(identifier.mangaKey.directoryName)
 
         guard mangaDirectory.exists else { return [] }
 
@@ -456,7 +455,7 @@ extension DownloadManager {
             chapters.append(chapterInfo)
         }
 
-        // Sort chapters by ID (which should correspond to chapter order)
+        // Sort chapters by ID
         chapters.sort { lhs, rhs in
             // Try to sort numerically if possible, otherwise alphabetically
             if let lhsNum = Double(lhs.chapterId), let rhsNum = Double(rhs.chapterId) {
@@ -468,62 +467,41 @@ extension DownloadManager {
         return chapters
     }
 
-    /// Save chapter metadata when downloading
-    func saveChapterMetadata(_ chapter: AidokuRunner.Chapter, to directory: URL) {
-        let metadata = ChapterMetadata(
-            title: chapter.title,
-            chapterNumber: chapter.chapterNumber,
-            volumeNumber: chapter.volumeNumber
-        )
-
-        let metadataURL = directory.appendingPathComponent(".metadata.json")
-
+    /// Save chapter metadata to ComicInfo.xml.
+    func saveChapterMetadata(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter, to directory: URL) {
+        let xml = ComicInfo.load(manga: manga, chapter: chapter).export()
+        guard let data = xml.data(using: .utf8) else { return }
         do {
-            let data = try JSONEncoder().encode(metadata)
+            let metadataURL = directory.appendingPathComponent("ComicInfo.xml")
             try data.write(to: metadataURL)
         } catch {
             LogManager.logger.error("Failed to save chapter metadata: \(error)")
         }
     }
 
-    /// Save manga metadata when first downloading from it
-    func saveMangaMetadata(_ manga: AidokuRunner.Manga, to directory: URL) async {
-        // Get the cover image and convert to base64
-        var thumbnailBase64: String?
-        if let coverUrl = manga.cover.flatMap({ URL(string: $0) }) {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: coverUrl)
-                thumbnailBase64 = data.base64EncodedString()
-            } catch {
-                LogManager.logger.error("Failed to download manga cover: \(error)")
-            }
-        }
-
-        let metadata = MangaMetadata(
-            mangaId: manga.key,
-            title: manga.title,
-            cover: manga.cover,
-            thumbnailBase64: thumbnailBase64,
-            description: manga.description
-        )
-
-        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
-
-        do {
-            let data = try JSONEncoder().encode(metadata)
-            try data.write(to: metadataURL)
-        } catch {
-            LogManager.logger.error("Failed to save manga metadata: \(error)")
-        }
-    }
-
-    /// Load chapter metadata from directory
+    /// Load chapter metadata from chapter directory.
     private func loadChapterMetadata(from directory: URL) -> ChapterMetadata? {
-        let metadataURL = directory.appendingPathComponent(".metadata.json")
-
-        guard metadataURL.exists else { return nil }
-
         do {
+            let xmlURL = directory.appendingPathComponent("ComicInfo.xml")
+            if xmlURL.exists {
+                let data = try Data(contentsOf: xmlURL)
+                if
+                    let string = String(data: data, encoding: .utf8),
+                    let comicInfo = ComicInfo.load(xmlString: string)
+                {
+                    return .init(
+                        title: comicInfo.title,
+                        chapterNumber: comicInfo.number.flatMap { Float($0) },
+                        volumeNumber: comicInfo.volume.flatMap { Float($0) }
+                    )
+                }
+            }
+
+            // fall back to json metadata
+            // todo: we should migrate this
+            let metadataURL = directory.appendingPathComponent(".metadata.json")
+            guard metadataURL.exists else { return nil }
+
             let data = try Data(contentsOf: metadataURL)
             return try JSONDecoder().decode(ChapterMetadata.self, from: data)
         } catch {
@@ -532,10 +510,36 @@ extension DownloadManager {
         }
     }
 
-    /// Load manga metadata from directory
+    /// Load manga metadata from manga directory.
     private func loadMangaMetadata(from directory: URL) -> MangaMetadata? {
-        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
+        // check for ComicInfo.xml in any subdirectory
+        for subdirectory in directory.contents where subdirectory.isDirectory {
+            let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
+            if xmlURL.exists {
+                do {
+                    let data = try Data(contentsOf: xmlURL)
+                    if
+                        let string = String(data: data, encoding: .utf8),
+                        let comicInfo = ComicInfo.load(xmlString: string)
+                    {
+                        let extraData = comicInfo.extraData()
+                        return MangaMetadata(
+                            mangaId: extraData?.mangaKey,
+                            title: comicInfo.series,
+                            cover: directory.appendingPathComponent("cover.png").absoluteString,
+                            thumbnailBase64: nil,
+                            description: comicInfo.summary
+                        )
+                    }
+                } catch {
+                    LogManager.logger.error("Failed to load manga metadata from ComicInfo.xml: \(error)")
+                }
+            }
+        }
 
+        // fall back to json metadata
+        // todo: we should migrate this
+        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
         guard metadataURL.exists else { return nil }
 
         do {
@@ -563,7 +567,7 @@ extension DownloadManager {
         let description: String?
     }
 
-    /// Calculate the total size of a directory in bytes
+    /// Calculate the total size of a directory in bytes.
     private func calculateDirectorySize(_ directory: URL) async -> Int64 {
         guard directory.exists else { return 0 }
 
@@ -594,14 +598,6 @@ extension DownloadManager {
         }
     }
 
-    /// Delete chapters for a specific manga (used by download manager UI)
-    func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) async {
-        await deleteChapters(for: mangaInfo.mangaIdentifier)
-
-        // Invalidate cache
-        lastCacheUpdate = .distantPast
-    }
-
     /// Delete a specific chapter (used by download manager UI)
     func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) async {
         await delete(chapters: [
@@ -611,9 +607,6 @@ extension DownloadManager {
                 chapterKey: chapterInfo.chapterId
             )
         ])
-
-        // Invalidate cache
-        lastCacheUpdate = .distantPast
     }
 
     /// Get total size of all downloads
