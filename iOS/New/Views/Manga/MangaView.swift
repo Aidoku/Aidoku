@@ -74,7 +74,7 @@ struct MangaView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 20)
-                        Divider()
+                        ListDivider()
                     }
                     .listRowInsets(.zero)
                     .listRowBackground(Color.clear)
@@ -254,7 +254,7 @@ extension MangaView {
 
     var bottomSeparator: some View {
         VStack {
-            Divider() // final, full width separator
+            ListDivider() // final, full width separator
             Color.clear.frame(height: 28) // padding for bottom of list
         }
         .padding(.top, {

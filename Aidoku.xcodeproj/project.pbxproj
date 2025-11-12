@@ -429,6 +429,7 @@
 		FBAED4092E3A6BCC00B81E74 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAED4082E3A6BC900B81E74 /* HistoryView.swift */; };
 		FBAED40C2E3A762800B81E74 /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = FBAED40B2E3A762800B81E74 /* SwiftUIIntrospect */; };
 		FBAED40E2E3AE5C500B81E74 /* OnReportScrollVisibilityChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAED40D2E3AE5C000B81E74 /* OnReportScrollVisibilityChange.swift */; };
+		FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB44E692EC53A420032EFBB /* ListDivider.swift */; };
 		FBB5164A2E2F231F00749F4E /* DownloadsView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB516492E2F231B00749F4E /* DownloadsView+ViewModel.swift */; };
 		FBB5164C2E2F23AE00749F4E /* DownloadedMangaView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB5164B2E2F23AB00749F4E /* DownloadedMangaView+ViewModel.swift */; };
 		FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */ = {isa = PBXBuildFile; productRef = FBBCB31C2E08D6B000ED5CAB /* Gifu */; };
@@ -850,6 +851,7 @@
 		FBAED4052E3A5ECF00B81E74 /* StepperTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperTableViewCell.swift; sourceTree = "<group>"; };
 		FBAED4082E3A6BC900B81E74 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		FBAED40D2E3AE5C000B81E74 /* OnReportScrollVisibilityChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnReportScrollVisibilityChange.swift; sourceTree = "<group>"; };
+		FBB44E692EC53A420032EFBB /* ListDivider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListDivider.swift; sourceTree = "<group>"; };
 		FBB516492E2F231B00749F4E /* DownloadsView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DownloadsView+ViewModel.swift"; sourceTree = "<group>"; };
 		FBB5164B2E2F23AB00749F4E /* DownloadedMangaView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DownloadedMangaView+ViewModel.swift"; sourceTree = "<group>"; };
 		FBBE0FCF2886F69500D7C63F /* TrackerSettingOptionViewCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionViewCoordinator.swift; sourceTree = "<group>"; };
@@ -1584,6 +1586,7 @@
 				FB7C28892E8310AA009FF6AF /* MoreIcon.swift */,
 				FB7C288B2E8312CB009FF6AF /* UnavailableView.swift */,
 				FB7C288D2E84420D009FF6AF /* LargeButton.swift */,
+				FBB44E692EC53A420032EFBB /* ListDivider.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -2549,6 +2552,7 @@
 				FB619E3F2E94A62000E3B565 /* PageTracker.swift in Sources */,
 				FB662ED82DA813E300007514 /* MangaGridItem.swift in Sources */,
 				FBF8C5842DCD01E30066F53D /* BlockingTask.swift in Sources */,
+				FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */,
 				FB662ED92DA813E300007514 /* MangaDetailsHeaderView.swift in Sources */,
 				FB662EDB2DA813E300007514 /* MultiSelectFilterView.swift in Sources */,
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,

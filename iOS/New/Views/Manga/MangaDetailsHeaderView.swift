@@ -218,7 +218,7 @@ struct MangaDetailsHeaderView: View {
 
             // separator
             if !chapters.isEmpty {
-                Divider()
+                ListDivider()
             }
         }
         .animation(.default, value: animationTrigger)

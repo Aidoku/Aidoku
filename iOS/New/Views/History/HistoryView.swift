@@ -166,7 +166,7 @@ struct HistoryView: View {
 
     func cellView(entry: HistoryEntry) -> some View {
         let manga = viewModel.mangaCache[entry.mangaCacheKey]
-        let view = HistoryEntryCell(
+        return HistoryEntryCell(
             entry: entry,
             manga: manga,
             chapter: viewModel.chapterCache[entry.chapterCacheKey]
@@ -194,15 +194,7 @@ struct HistoryView: View {
         }
         .id(entry.chapterCacheKey)
         .tag(entry.chapterCacheKey)
-
-        if #available(iOS 16.0, *) {
-            return view
-                .alignmentGuide(.listRowSeparatorLeading) { d in
-                    d[.leading]
-                }
-        } else {
-            return view
-        }
+        .offsetListSeparator()
     }
 
     @ViewBuilder
