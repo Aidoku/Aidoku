@@ -73,7 +73,9 @@ extension LocalFileManager {
                 let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
 
         guard !imageEntries.isEmpty else {
             return nil
@@ -138,7 +140,9 @@ extension LocalFileManager {
                 return Self.allowedImageExtensions.contains(ext) || ext == "txt"
             }
             // sort by file name
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
             .map { entry in
                 AidokuRunner.Page(content: .zipFile(url: archiveUrl, filePath: entry.path))
             }
@@ -221,7 +225,9 @@ extension LocalFileManager {
                 let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
 
         guard !imageEntries.isEmpty else {
             throw LocalFileManagerError.noImagesFound

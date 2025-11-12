@@ -94,7 +94,9 @@ actor DownloadManager {
                     return Self.allowedImageExtensions.contains(ext)
                 }
                 // sort by file name
-                .sorted { $0.path < $1.path }
+                .sorted {
+                    $0.path.localizedStandardCompare($1.path) == .orderedAscending
+                }
                 .map { entry in
                     AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: entry.path))
                         .toOld(sourceId: chapter.sourceKey, chapterId: chapter.chapterKey)
