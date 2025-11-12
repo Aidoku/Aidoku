@@ -285,13 +285,13 @@ class ReaderViewController: BaseObservingViewController {
     func updateReadPosition() {
         guard
             !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
-            (toolbarView.totalPages ?? 0) > 0
-        else { return }
+            (toolbarView.totalPages ?? 0) > 0 // ensure chapter pages are loaded
+        else {
+            return
+        }
         Task {
-            // don't add history if there is none and we're at the first page
             let sourceId = source?.key ?? manga.sourceKey
             let mangaId = manga.key
-
             let chapterId = chapter.key
             let (completed, progress) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getProgress(
@@ -303,11 +303,11 @@ class ReaderViewController: BaseObservingViewController {
             }
             let hasHistory = completed || progress != nil
 
-            if currentPage == 1 {
-                if hasHistory {
-                    return
-                }
+            // don't add history if there is none and we're at the first page
+            if currentPage == 1 && !hasHistory {
+                return
             }
+
             await HistoryManager.shared.setProgress(
                 chapter: chapter.toOld(sourceId: sourceId, mangaId: mangaId),
                 progress: currentPage,
