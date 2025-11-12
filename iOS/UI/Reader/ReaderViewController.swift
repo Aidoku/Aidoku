@@ -779,7 +779,15 @@ extension ReaderViewController {
                 if #available(iOS 26.0, *) {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 1
                 }
-                self.node.backgroundColor = .systemBackground
+                self.node.backgroundColor = if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                    .systemBackground
+                } else {
+                    if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                        .white
+                    } else {
+                        .black
+                    }
+                }
                 self.node.layoutIfNeeded()
             }
         }
@@ -804,12 +812,12 @@ extension ReaderViewController {
                 }
 
                 self.node.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
-                case "system":
-                    .systemBackground
-                case "white":
-                    .white
-                default:
-                    .black
+                    case "system":
+                        .systemBackground
+                    case "white":
+                        .white
+                    default:
+                        .black
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in
