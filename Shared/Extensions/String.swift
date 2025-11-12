@@ -57,4 +57,12 @@ extension String {
             self
         }
     }
+
+    func pathExtension() -> String {
+        if let idx = lastIndex(of: ".") {
+            String(self[index(idx, offsetBy: 1)...])
+        } else {
+            ""
+        }
+    }
 }

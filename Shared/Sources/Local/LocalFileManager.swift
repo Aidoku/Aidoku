@@ -21,7 +21,7 @@ actor LocalFileManager {
     private var lastScanTime = Date.distantPast
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
-    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp"])
+    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
 
     private var localFolderFileDescriptor: CInt?
     private var localFolderSource: DispatchSourceFileSystemObject?
@@ -66,7 +66,7 @@ extension LocalFileManager {
         // find image entries (pages)
         let imageEntries = archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
             .sorted { $0.path < $1.path }
@@ -124,17 +124,16 @@ extension LocalFileManager {
         }
 
         // find image entries (pages)
-        let imageEntries = archive
+        return archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
-                return Self.allowedImageExtensions.contains(ext)
+                let ext = entry.path.lowercased().pathExtension()
+                return Self.allowedImageExtensions.contains(ext) || ext == "txt"
             }
             // sort by file name
             .sorted { $0.path < $1.path }
-
-        return imageEntries.map { entry in
-            AidokuRunner.Page(content: .zipFile(url: archiveUrl, filePath: entry.path))
-        }
+            .map { entry in
+                AidokuRunner.Page(content: .zipFile(url: archiveUrl, filePath: entry.path))
+            }
     }
 }
 
@@ -207,7 +206,7 @@ extension LocalFileManager {
         // find image entries (pages)
         let imageEntries = archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
             .sorted { $0.path < $1.path }

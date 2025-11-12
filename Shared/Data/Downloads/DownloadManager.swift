@@ -79,12 +79,13 @@ actor DownloadManager {
 
             var pages = archive
                 .filter { entry in
-                    let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                    let ext = entry.path.lowercased().pathExtension()
                     if ext == "txt" {
                         if entry.path.hasSuffix("desc.txt") {
                             descriptionFiles.append(entry)
+                            return false
                         }
-                        return false
+                        return true
                     }
                     return Self.allowedImageExtensions.contains(ext)
                 }
