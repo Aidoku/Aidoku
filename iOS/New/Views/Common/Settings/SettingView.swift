@@ -228,18 +228,19 @@ struct SettingView: View {
 
     private func auth() async -> Bool {
         let context = LAContext()
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-            return await withCheckedContinuation { continuation in
-                context.evaluatePolicy(
-                    .deviceOwnerAuthenticationWithBiometrics,
-                    localizedReason: NSLocalizedString("AUTH_TO_OPEN")
-                ) { success, _ in
-                    continuation.resume(returning: success)
-                }
-            }
-        } else {
+        let success: Bool
+
+        do {
+            success = try await context.evaluatePolicy(
+                .defaultPolicy,
+                localizedReason: NSLocalizedString("AUTH_TO_OPEN")
+            )
+        } catch {
+            // The error is to be displayed to users, so we can ignore it.
             return false
         }
+
+        return success
     }
 
     private var disabled: Bool {
