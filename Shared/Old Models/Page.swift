@@ -34,6 +34,10 @@ struct Page: Hashable {
         "\(chapterId)|\(index)"
     }
 
+    var isTextPage: Bool {
+        text != nil || (zipURL != nil && imageURL?.lowercased().hasSuffix(".txt") == true)
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(chapterId)
         hasher.combine(index)

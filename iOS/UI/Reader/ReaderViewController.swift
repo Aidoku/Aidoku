@@ -635,7 +635,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
-        } else if pages.count == 1 && pages[0].text != nil {
+        } else if pages.count == 1 && pages[0].isTextPage {
             // single text page, should switch to text reader
             if !(reader is ReaderTextViewController) {
                 setReader(.text)

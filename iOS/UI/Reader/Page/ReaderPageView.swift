@@ -323,10 +323,8 @@ class ReaderPageView: UIView {
         let result: (data: Data, isText: Bool)? = await Task.detached {
             do {
                 var data = Data()
-                let archive: Archive
-                archive = try Archive(url: zipURL, accessMode: .read)
-                guard let entry = archive[filePath]
-                else {
+                let archive = try Archive(url: zipURL, accessMode: .read)
+                guard let entry = archive[filePath] else {
                     return nil
                 }
                 _ = try archive.extract(
