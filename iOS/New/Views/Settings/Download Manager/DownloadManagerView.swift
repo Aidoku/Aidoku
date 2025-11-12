@@ -69,6 +69,13 @@ struct DownloadManagerView: View {
                             NavigationLink(destination: MangaDownloadDetailView(manga: manga).environmentObject(path)) {
                                 DownloadedMangaRow(manga: manga)
                             }
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    viewModel.delete(manga: manga)
+                                } label: {
+                                    Label(NSLocalizedString("DELETE"), systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 }
@@ -107,7 +114,7 @@ struct DownloadManagerView: View {
     }
 }
 
-struct DownloadedMangaRow: View {
+private struct DownloadedMangaRow: View {
     let manga: DownloadedMangaInfo
 
     var body: some View {

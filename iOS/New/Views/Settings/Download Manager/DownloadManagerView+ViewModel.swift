@@ -183,6 +183,16 @@ extension DownloadManagerView.ViewModel {
         }
     }
 
+    func delete(manga: DownloadedMangaInfo) {
+        if let index = downloadedManga.firstIndex(of: manga) {
+            downloadedManga.remove(at: index)
+        }
+
+        Task {
+            await DownloadManager.shared.deleteChapters(for: manga.mangaIdentifier)
+        }
+    }
+
     func confirmDeleteAll() {
         showingDeleteAllConfirmation = true
     }
