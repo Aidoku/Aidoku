@@ -130,6 +130,10 @@ extension Chapter {
         }
     }
 
+    var mangaIdentifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
+    }
+
     var identifier: ChapterIdentifier {
         .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
     }

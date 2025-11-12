@@ -123,7 +123,7 @@ extension MangaView {
                         let chapters = output.object as? [Chapter]
                     else { return }
                     let date = Int(Date().timeIntervalSince1970)
-                    for chapter in chapters {
+                    for chapter in chapters where chapter.mangaIdentifier == self.manga.identifier {
                         self.readingHistory[chapter.id] = (page: -1, date: date)
                     }
                     self.updateReadButton()
@@ -134,12 +134,12 @@ extension MangaView {
                 .sink { [weak self] output in
                     guard let self else { return }
                     if let chapters = output.object as? [Chapter] {
-                        for chapter in chapters {
+                        for chapter in chapters where chapter.mangaIdentifier == self.manga.identifier {
                             self.readingHistory.removeValue(forKey: chapter.id)
                         }
                     } else if
                         let manga = output.object as? Manga,
-                        manga.id == self.manga.key && manga.sourceId == source?.key
+                        manga.identifier == self.manga.identifier
                     {
                         self.readingHistory = [:]
                     }
@@ -151,6 +151,7 @@ extension MangaView {
                     guard
                         let self,
                         let item = output.object as? (chapter: Chapter, page: Int),
+                        item.chapter.mangaIdentifier == self.manga.identifier,
                         self.readingHistory[item.chapter.id]?.page != -1
                     else {
                         return
