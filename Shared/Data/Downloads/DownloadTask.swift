@@ -173,8 +173,7 @@ extension DownloadTask {
             }
 
             Task {
-                guard !downloads.isEmpty else { return }
-                await self.download(0, from: source, to: directory)
+                await self.download(from: source)
             }
         } else {
             // source not found, skip this download
@@ -184,15 +183,15 @@ extension DownloadTask {
     }
 
     // perform download
-    private func download(_ downloadIndex: Int, from source: AidokuRunner.Source, to directory: URL) async {
-        guard running && !downloads.isEmpty && downloads.count > downloadIndex else { return }
+    private func download(from source: AidokuRunner.Source) async {
+        guard running && !downloads.isEmpty else { return }
 
-        let download = downloads[downloadIndex]
+        let download = downloads[0]
+        downloads[0].status = .downloading
+
         let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
             .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
         tmpDirectory.createDirectory()
-
-        downloads[downloadIndex].status = .downloading
 
         if pages.isEmpty {
             pages = ((try? await source.getPageList(
@@ -201,12 +200,11 @@ extension DownloadTask {
             )) ?? []).map {
                 $0.toOld(sourceId: source.key, chapterId: download.chapterIdentifier.chapterKey)
             }
-            guard running && !downloads.isEmpty && downloads.count > downloadIndex else { return }
-            downloads[downloadIndex].total = pages.count
+            guard running && downloads.first == download else { return }
+            downloads[0].total = pages.count
         }
 
         struct NetworkPage {
-            let download: Download
             let url: URL
             let context: PageContext?
             let targetPath: URL
@@ -221,7 +219,6 @@ extension DownloadTask {
             if let urlString = page.imageURL, let url = URL(string: urlString) {
                 // add pages that require network requests to a concurrent queue
                 networkPages.append(.init(
-                    download: download,
                     url: url,
                     context: page.context,
                     targetPath: targetPath
@@ -321,6 +318,10 @@ extension DownloadTask {
             }
 
             for await (data, path) in taskGroup {
+                guard tmpDirectory.exists else {
+                    // download was cancelled, stop processing
+                    return
+                }
                 if let data, let path {
                     do {
                         try data.write(to: path)
