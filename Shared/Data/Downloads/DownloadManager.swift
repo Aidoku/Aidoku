@@ -412,7 +412,7 @@ extension DownloadManager {
                 // Fallback to CoreData only if no stored metadata exists
                 let mangaMetadata = if let firstComicInfo {
                     (
-                        title: firstComicInfo.title,
+                        title: firstComicInfo.series,
                         coverUrl: mangaDirectory.appendingPathComponent("cover.png").absoluteString,
                         isInLibrary: await withCheckedContinuation { continuation in
                             CoreDataManager.shared.container.performBackgroundTask { context in
