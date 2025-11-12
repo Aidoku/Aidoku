@@ -554,6 +554,11 @@ extension Settings {
             key: "Library.deleteDownloadAfterReading",
             title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
             value: .toggle(.init())
+        ),
+        .init(
+            key: "Downloads.compress",
+            title: NSLocalizedString("COMPRESS_DOWNLOADS"),
+            value: .toggle(.init())
         )
     ]
 }

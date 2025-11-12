@@ -5,10 +5,11 @@
 //  Created by Skitty on 5/14/22.
 //
 
-import Foundation
 import AidokuRunner
-import UniformTypeIdentifiers
+import Foundation
 import Nuke
+import UniformTypeIdentifiers
+import ZIPFoundation
 
 protocol DownloadTaskDelegate: AnyObject, Sendable {
     func taskCancelled(task: DownloadTask) async
@@ -90,17 +91,15 @@ actor DownloadTask: Identifiable {
             running = false
             Task {
                 var cancelled: IndexSet = []
-                for i in downloads.indices {
-                    if downloads[i].mangaIdentifier == manga {
-                        if i == 0 {
-                            pages = []
-                            currentPage = 0
-                            failedPages = 0
-                        }
-                        downloads[i].status = .cancelled
-                        await delegate?.downloadCancelled(download: downloads[i])
-                        cancelled.insert(i)
+                for i in downloads.indices where downloads[i].mangaIdentifier == manga {
+                    if i == 0 {
+                        pages = []
+                        currentPage = 0
+                        failedPages = 0
                     }
+                    downloads[i].status = .cancelled
+                    await delegate?.downloadCancelled(download: downloads[i])
+                    cancelled.insert(i)
                 }
                 downloads.remove(atOffsets: cancelled)
                 await cache.directory(for: manga)
@@ -158,15 +157,15 @@ extension DownloadTask {
             let download = downloads.first,
             let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
         {
-            // if directory exists (chapter already downloaded) return
+            // if chapter already downloaded, skip
             let directory = await cache.directory(for: download.chapterIdentifier)
-            guard !directory.exists else {
+            guard !directory.exists && !directory.appendingPathExtension("cbz").exists else {
                 downloads.removeFirst()
                 await delegate?.downloadFinished(download: download)
                 return await next()
             }
 
-            // download has been cancelled or failed, move to next
+            // download has been cancelled or failed, skip
             if download.status != .queued && download.status != .downloading && download.status != .paused {
                 downloads.removeFirst()
                 await delegate?.downloadCancelled(download: download)
@@ -374,10 +373,18 @@ extension DownloadTask {
             if failedPages > 0 {
                 LogManager.logger.error("Chapter downloaded with \(failedPages) failed pages: \(download.chapter.formattedTitle())")
             }
-            let directory = await cache.directory(for: download.chapterIdentifier)
-            if (try? FileManager.default.moveItem(at: tmpDirectory, to: directory)) != nil {
+            do {
                 // Save chapter metadata after successful download
-                await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: directory)
+                await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
+
+                let directory = await cache.directory(for: download.chapterIdentifier)
+
+                if UserDefaults.standard.bool(forKey: "Downloads.compress") {
+                    try FileManager.default.zipItem(at: tmpDirectory, to: directory.appendingPathExtension("cbz"))
+                    tmpDirectory.removeItem()
+                } else {
+                    try FileManager.default.moveItem(at: tmpDirectory, to: directory)
+                }
 
                 // save manga cover if not already present
                 let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
@@ -395,8 +402,8 @@ extension DownloadTask {
                 }
 
                 await cache.add(chapter: download.chapterIdentifier)
-            } else {
-                LogManager.logger.error("Error moving temporary download directory to final location \(tmpDirectory) \(directory)")
+            } catch {
+                LogManager.logger.error("Error moving temporary download directory (\(tmpDirectory)) to final location: \(error)")
             }
             if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
                 downloads[downloadIndex].status = .finished

@@ -25,8 +25,13 @@ class DownloadCache {
             rootDirectory.subdirectories[sourceDirectory.lastPathComponent] = Directory(url: sourceDirectory)
             for mangaDirectory in sourceDirectory.contents where mangaDirectory.isDirectory {
                 var chapterDirectories: [String: Directory] = [:]
-                for chapterDirectory in mangaDirectory.contents where chapterDirectory.isDirectory {
-                    chapterDirectories[chapterDirectory.lastPathComponent] = Directory(url: chapterDirectory)
+                for chapterFileOrDirectory in mangaDirectory.contents {
+                    let key = if chapterFileOrDirectory.pathExtension.isEmpty {
+                        chapterFileOrDirectory.lastPathComponent
+                    } else {
+                        chapterFileOrDirectory.deletingPathExtension().lastPathComponent
+                    }
+                    chapterDirectories[key] = Directory(url: chapterFileOrDirectory)
                 }
                 rootDirectory
                     .subdirectories[sourceDirectory.lastPathComponent]?

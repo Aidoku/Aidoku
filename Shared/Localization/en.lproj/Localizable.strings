@@ -56,6 +56,7 @@
 "%i_SERIES" = "%i series";
 "IN_LIBRARY" = "In Library";
 "VIEW_SERIES" = "View Series";
+"COMPRESS_DOWNLOADS" = "Compress Downloads";
 
 // Library
 "LIBRARY" = "Library";

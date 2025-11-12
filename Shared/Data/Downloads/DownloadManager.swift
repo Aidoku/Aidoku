@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import Foundation
+import ZIPFoundation
 
 /*
  File Structure:
@@ -62,55 +63,117 @@ actor DownloadManager {
     }
 
     func getDownloadedPages(for chapter: ChapterIdentifier) async -> [Page] {
-        var descriptionFiles: [URL] = []
+        let directory = await cache.directory(for: chapter)
 
-        var pages = await cache.directory(for: chapter).contents
-            .compactMap { url -> Page? in
-                let imageURL: String?
-                let text: String?
-                if url.pathExtension == "txt" {
-                    // add description file to list
-                    if url.lastPathComponent.hasSuffix("desc.txt") {
-                        descriptionFiles.append(url)
+        let archiveURL = directory.appendingPathExtension("cbz")
+        if archiveURL.exists {
+            let archive: Archive
+            do {
+                archive = try Archive(url: archiveURL, accessMode: .read)
+            } catch {
+                LogManager.logger.error("Failed to read archive: \(error)")
+                return []
+            }
+
+            var descriptionFiles: [Entry] = []
+
+            var pages = archive
+                .filter { entry in
+                    let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                    if ext == "txt" {
+                        if entry.path.hasSuffix("desc.txt") {
+                            descriptionFiles.append(entry)
+                        }
+                        return false
+                    }
+                    return Self.allowedImageExtensions.contains(ext)
+                }
+                // sort by file name
+                .sorted { $0.path < $1.path }
+                .map { entry in
+                    AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: entry.path))
+                        .toOld(sourceId: chapter.sourceKey, chapterId: chapter.chapterKey)
+                }
+
+            for entry in descriptionFiles {
+                guard
+                    let index = entry.path
+                        .lastPathComponent()
+                        .split(separator: ".", maxSplits: 1)
+                        .first
+                        .flatMap({ Int($0) }),
+                    index > 0,
+                    index <= pages.count
+                else { break }
+
+                do {
+                    var descriptionData = Data()
+                    _ = try archive.extract(
+                        entry,
+                        consumer: { data in
+                            descriptionData.append(data)
+                        }
+                    )
+                    pages[index - 1].hasDescription = true
+                    pages[index - 1].description = String(data: descriptionData, encoding: .utf8)
+                } catch {
+                    LogManager.logger.error("Failed to extract page description text from archive: \(error)")
+                    continue
+                }
+            }
+
+            return pages
+        } else {
+            var descriptionFiles: [URL] = []
+
+            var pages = await cache.directory(for: chapter).contents
+                .compactMap { url -> Page? in
+                    let imageURL: String?
+                    let text: String?
+                    if url.pathExtension == "txt" {
+                        // add description file to list
+                        if url.lastPathComponent.hasSuffix("desc.txt") {
+                            descriptionFiles.append(url)
+                            return nil
+                        }
+                        // otherwise, load file as text
+                        imageURL = nil
+                        text = try? String(contentsOf: url)
+                    } else if Self.allowedImageExtensions.contains(url.pathExtension) {
+                        // load file as image
+                        imageURL = url.absoluteString
+                        text = nil
+                    } else {
                         return nil
                     }
-                    // otherwise, load file as text
-                    imageURL = nil
-                    text = try? String(contentsOf: url)
-                } else if Self.allowedImageExtensions.contains(url.pathExtension) {
-                    // load file as image
-                    imageURL = url.absoluteString
-                    text = nil
-                } else {
-                    return nil
+                    return Page(
+                        sourceId: chapter.sourceKey,
+                        chapterId: chapter.chapterKey,
+                        index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
+                        imageURL: imageURL,
+                        text: text,
+                    )
                 }
-                return Page(
-                    sourceId: chapter.sourceKey,
-                    chapterId: chapter.chapterKey,
-                    index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-                    imageURL: imageURL,
-                    text: text,
-                )
+                .sorted { $0.index < $1.index }
+
+            // load descriptions from files
+            for descriptionFile in descriptionFiles {
+                guard
+                    let index = descriptionFile
+                        .deletingPathExtension()
+                        .lastPathComponent
+                        .split(separator: ".", maxSplits: 1)
+                        .first
+                        .flatMap({ Int($0) }),
+                    index > 0,
+                    index <= pages.count
+                else { break }
+                pages[index - 1].hasDescription = true
+                pages[index - 1].description = try? String(contentsOf: descriptionFile)
             }
-            .sorted { $0.index < $1.index }
 
-        // load descriptions from files
-        for descriptionFile in descriptionFiles {
-            guard
-                let index = descriptionFile
-                    .deletingPathExtension()
-                    .lastPathComponent
-                    .split(separator: ".")
-                    .first
-                    .flatMap({ Int($0) }),
-                index > 0,
-                index <= pages.count
-            else { break }
-            pages[index - 1].hasDescription = true
-            pages[index - 1].description = try? String(contentsOf: descriptionFile)
+            return pages
         }
-
-        return pages
     }
 
     @MainActor
@@ -128,7 +191,7 @@ actor DownloadManager {
             .appendingSafePathComponent(identifier.sourceKey.directoryName)
             .appendingSafePathComponent(identifier.mangaKey.directoryName)
             .contents
-            .filter { $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp") }
+            .filter { ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp") }
             .count
     }
 
@@ -210,7 +273,10 @@ extension DownloadManager {
     /// Remove downloads for specified chapters.
     func delete(chapters: [ChapterIdentifier]) async {
         for chapter in chapters {
-            await cache.directory(for: chapter).removeItem()
+            let directory = await cache.directory(for: chapter)
+            let archiveURL = directory.appendingPathExtension("cbz")
+            directory.removeItem()
+            archiveURL.removeItem()
             await cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
@@ -315,7 +381,7 @@ extension DownloadManager {
 
                 // Count chapters and calculate total size
                 let chapterDirectories = mangaDirectory.contents.filter {
-                    $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
+                    ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
                 }
 
                 guard !chapterDirectories.isEmpty else { continue }
@@ -428,13 +494,13 @@ extension DownloadManager {
         guard mangaDirectory.exists else { return [] }
 
         let chapterDirectories = mangaDirectory.contents.filter {
-            $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
+            ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
         }
 
         var chapters: [DownloadedChapterInfo] = []
 
         for chapterDirectory in chapterDirectories {
-            let chapterId = chapterDirectory.lastPathComponent
+            let chapterId = chapterDirectory.deletingPathExtension().lastPathComponent
             let size = await calculateDirectorySize(chapterDirectory)
 
             // Get directory creation date as download date
@@ -484,20 +550,43 @@ extension DownloadManager {
     /// Load chapter metadata from chapter directory.
     private func loadChapterMetadata(from directory: URL) -> ChapterMetadata? {
         do {
-            let xmlURL = directory.appendingPathComponent("ComicInfo.xml")
-            if xmlURL.exists {
-                let data = try Data(contentsOf: xmlURL)
+            func loadComicInfo(data: Data) -> ChapterMetadata? {
                 if
                     let string = String(data: data, encoding: .utf8),
                     let comicInfo = ComicInfo.load(xmlString: string)
                 {
-                    return .init(
+                    .init(
                         title: comicInfo.title,
                         chapterNumber: comicInfo.number.flatMap { Float($0) },
                         volumeNumber: comicInfo.volume.flatMap { Float($0) },
                         chapter: comicInfo.toChapter()
                     )
+                } else {
+                    nil
                 }
+            }
+
+            if directory.pathExtension == "cbz" {
+                let archive = try Archive(url: directory, accessMode: .read)
+                guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
+                    return nil
+                }
+                var data = Data()
+                _ = try archive.extract(
+                    entry,
+                    consumer: { readData in
+                        data.append(readData)
+                    }
+                )
+                return loadComicInfo(data: data)
+            }
+
+            guard directory.isDirectory else { return nil }
+
+            let xmlURL = directory.appendingPathComponent("ComicInfo.xml")
+            if xmlURL.exists {
+                let data = try Data(contentsOf: xmlURL)
+                return loadComicInfo(data: data)
             }
 
             // fall back to json metadata
@@ -515,28 +604,54 @@ extension DownloadManager {
 
     /// Load manga metadata from manga directory.
     private func loadMangaMetadata(from directory: URL) -> MangaMetadata? {
+        func loadComicInfo(data: Data) -> MangaMetadata? {
+            guard
+                let string = String(data: data, encoding: .utf8),
+                let comicInfo = ComicInfo.load(xmlString: string)
+            else {
+                return nil
+            }
+            let extraData = comicInfo.extraData()
+            return .init(
+                mangaId: extraData?.mangaKey,
+                title: comicInfo.series,
+                cover: directory.appendingPathComponent("cover.png").absoluteString,
+                thumbnailBase64: nil,
+                description: comicInfo.summary
+            )
+        }
+
         // check for ComicInfo.xml in any subdirectory
-        for subdirectory in directory.contents where subdirectory.isDirectory {
-            let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
-            if xmlURL.exists {
-                do {
-                    let data = try Data(contentsOf: xmlURL)
-                    if
-                        let string = String(data: data, encoding: .utf8),
-                        let comicInfo = ComicInfo.load(xmlString: string)
-                    {
-                        let extraData = comicInfo.extraData()
-                        return MangaMetadata(
-                            mangaId: extraData?.mangaKey,
-                            title: comicInfo.series,
-                            cover: directory.appendingPathComponent("cover.png").absoluteString,
-                            thumbnailBase64: nil,
-                            description: comicInfo.summary
-                        )
+        for subdirectory in directory.contents where subdirectory.isDirectory || subdirectory.pathExtension == "cbz" {
+            do {
+                if directory.pathExtension == "cbz" {
+                    let archive = try Archive(url: directory, accessMode: .read)
+                    guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
+                        return nil
                     }
-                } catch {
-                    LogManager.logger.error("Failed to load manga metadata from ComicInfo.xml: \(error)")
+                    var data = Data()
+                    _ = try archive.extract(
+                        entry,
+                        consumer: { readData in
+                            data.append(readData)
+                        }
+                    )
+                    let result = loadComicInfo(data: data)
+                    if let result {
+                        return result
+                    }
+                } else {
+                    let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
+                    if xmlURL.exists {
+                        let data = try Data(contentsOf: xmlURL)
+                        let result = loadComicInfo(data: data)
+                        if let result {
+                            return result
+                        }
+                    }
                 }
+            } catch {
+                LogManager.logger.error("Failed to load manga metadata from ComicInfo.xml: \(error)")
             }
         }
 
@@ -579,21 +694,28 @@ extension DownloadManager {
             DispatchQueue.global(qos: .utility).async {
                 var totalSize: Int64 = 0
 
-                if let enumerator = FileManager.default.enumerator(
-                    at: directory,
-                    includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
-                    options: [.skipsHiddenFiles]
-                ) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-                            if resourceValues.isRegularFile == true {
-                                totalSize += Int64(resourceValues.fileSize ?? 0)
+                if directory.isDirectory {
+                    if let enumerator = FileManager.default.enumerator(
+                        at: directory,
+                        includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
+                        options: [.skipsHiddenFiles]
+                    ) {
+                        for case let fileURL as URL in enumerator {
+                            do {
+                                let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                                if resourceValues.isRegularFile == true {
+                                    totalSize += Int64(resourceValues.fileSize ?? 0)
+                                }
+                            } catch {
+                                // Skip files that can't be accessed
+                                continue
                             }
-                        } catch {
-                            // Skip files that can't be accessed
-                            continue
                         }
+                    }
+                } else {
+                    let resourceValues = try? directory.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                    if let resourceValues, resourceValues.isRegularFile == true {
+                        totalSize = Int64(resourceValues.fileSize ?? 0)
                     }
                 }
 

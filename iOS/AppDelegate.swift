@@ -110,7 +110,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.excludedUpdateCategories": [String](),
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
-                "Library.deleteDownloadAfterReading": false,
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
                 "Browse.contentRatings": ["safe", "containsNsfw"],
@@ -142,7 +141,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.orientation": "device",
 
                 "Tracking.updateAfterReading": true,
-                "Tracking.autoSyncFromTracker": false
+                "Tracking.autoSyncFromTracker": false,
+
+                "Library.downloadOnlyOnWifi": false,
+                "Library.deleteDownloadAfterReading": false,
+                "Downloads.compress": true
             ]
         )
 
@@ -222,7 +225,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)
     }
+}
 
+extension AppDelegate {
     func performMigration() {
         // migrate history to 0.6 format
         if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
