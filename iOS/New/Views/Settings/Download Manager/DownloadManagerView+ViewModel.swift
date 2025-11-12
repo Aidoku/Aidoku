@@ -26,10 +26,6 @@ extension DownloadManagerView {
         init() {
             setupNotificationObservers()
         }
-
-        deinit {
-            updateDebouncer?.invalidate()
-        }
     }
 }
 
@@ -43,22 +39,18 @@ extension DownloadManagerView.ViewModel {
     }
 
     func loadDownloadedManga() async {
-        await MainActor.run {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                self.isLoading = true
-            }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isLoading = true
         }
 
         let manga = await DownloadManager.shared.getAllDownloadedManga()
         let formattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
 
-        await MainActor.run {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                self.downloadedManga = manga
-                self.totalSize = formattedSize
-                self.totalCount = manga.count
-                self.isLoading = false
-            }
+        withAnimation(.easeInOut(duration: 0.3)) {
+            downloadedManga = manga
+            totalSize = formattedSize
+            totalCount = manga.count
+            isLoading = false
         }
     }
 

@@ -31,10 +31,6 @@ extension MangaDownloadDetailView {
             self.sortAscending = UserDefaults.standard.bool(forKey: "downloadChapterSortAscending")
             setupNotificationObservers()
         }
-
-        deinit {
-            updateDebouncer?.invalidate()
-        }
     }
 }
 
