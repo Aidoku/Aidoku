@@ -253,36 +253,6 @@ extension MangaManager {
         return false
     }
 
-    /// Update properties on manga from latest source info.
-    func updateMangaDetails(manga: [Manga]) async {
-        let newDetails = await withTaskGroup(
-            of: (Int, Manga)?.self,
-            returning: [Int: Manga].self
-        ) { taskGroup in
-            for mangaItem in manga {
-                taskGroup.addTask {
-                    guard
-                        let newInfo = try? await SourceManager.shared.source(for: mangaItem.sourceId)?
-                            .getMangaUpdate(manga: mangaItem.toNew(), needsDetails: true, needsChapters: false)
-                            .toOld()
-                    else { return nil }
-                    return (mangaItem.hashValue, newInfo)
-                }
-            }
-
-            var results: [Int: Manga] = [:]
-            for await result in taskGroup {
-                guard let result = result else { continue }
-                results[result.0] = result.1
-            }
-            return results
-        }
-        for mangaItem in manga {
-            guard let newInfo = newDetails[manga.hashValue] else { return }
-            mangaItem.load(from: newInfo)
-        }
-    }
-
     /// Refresh manga objects in library.
     func refreshLibrary(category: String? = nil, forceAll: Bool = false, onProgress: ((Float) -> Void)? = nil) async {
         onLibraryRefreshProgress = onProgress
@@ -316,11 +286,6 @@ extension MangaManager {
         let excludedCategories = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
         let updateMetadata = forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata")
 
-        // fetch new details
-        if updateMetadata {
-            await updateMangaDetails(manga: allManga)
-        }
-
         // filter items that we should skip
         let filteredManga = await CoreDataManager.shared.container.performBackgroundTask { context in
             allManga.filter { manga in
@@ -336,14 +301,24 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
-        await withTaskGroup(of: Void.self) { group in
+        let newDetails = await withTaskGroup(
+            of: (Int, AidokuRunner.Manga)?.self,
+            returning: [Int: AidokuRunner.Manga].self
+        ) { group in
             for manga in filteredManga {
                 group.addTask {
                     guard
-                        let chapters = try? await SourceManager.shared.source(for: manga.sourceId)?
-                            .getMangaUpdate(manga: manga.toNew(), needsDetails: false, needsChapters: true)
-                            .chapters
-                    else { return }
+                        let newManga = try? await SourceManager.shared.source(for: manga.sourceId)?
+                            .getMangaUpdate(manga: manga.toNew(), needsDetails: updateMetadata, needsChapters: true)
+                    else { return nil }
+
+                    let returnResult: (Int, AidokuRunner.Manga)? = if updateMetadata {
+                        (manga.hashValue, newManga)
+                    } else {
+                        nil
+                    }
+
+                    guard let chapters = newManga.chapters else { return returnResult }
 
                     await CoreDataManager.shared.container.performBackgroundTask { context in
                         guard let libraryObject = CoreDataManager.shared.getLibraryManga(
@@ -388,13 +363,27 @@ extension MangaManager {
                             }
                         }
                     }
+
+                    return returnResult
                 }
             }
 
-            for await _ in group {
+            var results: [Int: AidokuRunner.Manga] = [:]
+            for await result in group {
                 completed += 1
                 let progress = Float(completed) / Float(total)
                 updateLibraryRefreshProgress(progress)
+                if let result {
+                    results[result.0] = result.1
+                }
+            }
+            return results
+        }
+
+        if updateMetadata {
+            for mangaItem in filteredManga {
+                guard let newInfo = newDetails[mangaItem.hashValue] else { continue }
+                mangaItem.load(from: newInfo.toOld())
             }
         }
 
