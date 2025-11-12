@@ -79,6 +79,10 @@ actor DownloadManager {
 
             var pages = archive
                 .filter { entry in
+                    let lastPathComponent = entry.path.lastPathComponent()
+                    guard !lastPathComponent.hasPrefix(".") else {
+                        return false
+                    }
                     let ext = entry.path.lowercased().pathExtension()
                     if ext == "txt" {
                         if entry.path.hasSuffix("desc.txt") {
@@ -129,6 +133,9 @@ actor DownloadManager {
 
             var pages = await cache.directory(for: chapter).contents
                 .compactMap { url -> Page? in
+                    guard !url.lastPathComponent.hasPrefix(".") else {
+                        return nil
+                    }
                     let imageURL: String?
                     let text: String?
                     if url.pathExtension == "txt" {

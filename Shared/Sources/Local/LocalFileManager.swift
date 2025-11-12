@@ -66,6 +66,10 @@ extension LocalFileManager {
         // find image entries (pages)
         let imageEntries = archive
             .filter { entry in
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
                 let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
@@ -126,6 +130,10 @@ extension LocalFileManager {
         // find image entries (pages)
         return archive
             .filter { entry in
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
                 let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext) || ext == "txt"
             }
@@ -206,6 +214,10 @@ extension LocalFileManager {
         // find image entries (pages)
         let imageEntries = archive
             .filter { entry in
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
                 let ext = entry.path.lowercased().pathExtension()
                 return Self.allowedImageExtensions.contains(ext)
             }
