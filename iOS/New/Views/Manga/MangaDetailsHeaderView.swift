@@ -254,7 +254,7 @@ struct MangaDetailsHeaderView: View {
 
     @ViewBuilder
     var labelsView: some View {
-        if manga.status != .unknown || (manga.contentRating != .unknown && manga.contentRating != .safe) {
+        if manga.status != .unknown || (manga.contentRating != .unknown && manga.contentRating != .safe) || (bookmarked && source != nil) {
             HStack(spacing: 6) {
                 if manga.status != .unknown {
                     LabelView(text: manga.status.title)
