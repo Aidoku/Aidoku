@@ -352,7 +352,6 @@
 "ENABLE_PERMISSION" = "Ativar permissão";
 "CONTENT" = "Conteúdo";
 "%@_EXPERIMENTAL" = "%@ (Experimental)";
-"DOWNLOAD_MANAGER" = "Gestor de descargas";
 "NO_DOWNLOADS" = "Sem descargas";
 "TOTAL_DOWNLOADS" = "Total de descargas";
 "%i_SERIES" = "%i series";

@@ -5,6 +5,7 @@
 //  Created by Skitty on 5/14/22.
 //
 
+import AidokuRunner
 import Foundation
 
 enum DownloadStatus: Int, Codable {
@@ -17,55 +18,36 @@ enum DownloadStatus: Int, Codable {
     case failed
 }
 
-struct Download: Equatable, Codable {
-    let sourceId: String
-    let mangaId: String
-    let chapterId: String
+struct Download: Equatable, Sendable, Codable {
+    var mangaIdentifier: MangaIdentifier { chapterIdentifier.mangaIdentifier }
+    let chapterIdentifier: ChapterIdentifier
 
     var status: DownloadStatus = .queued
 
     var progress: Int = 0
     var total: Int = 0
 
-    var manga: Manga?
-    var chapter: Chapter?
+    var manga: AidokuRunner.Manga
+    var chapter: AidokuRunner.Chapter
 
     static func == (lhs: Download, rhs: Download) -> Bool {
-        lhs.sourceId == rhs.sourceId && lhs.mangaId == rhs.mangaId && lhs.chapterId == rhs.chapterId
+        lhs.chapterIdentifier == rhs.chapterIdentifier
     }
 
-    static func from(chapter: Chapter, status: DownloadStatus = .queued) -> Download {
+    static func from(
+        manga: AidokuRunner.Manga,
+        chapter: AidokuRunner.Chapter,
+        status: DownloadStatus = .queued
+    ) -> Download {
         Download(
-            sourceId: chapter.sourceId,
-            mangaId: chapter.mangaId,
-            chapterId: chapter.id,
+            chapterIdentifier: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key),
             status: status,
+            manga: manga,
             chapter: chapter
         )
     }
+}
 
-    func toChapter() -> Chapter {
-        if let chapter {
-            return chapter
-        } else {
-            return Chapter(
-                sourceId: sourceId,
-                id: chapterId,
-                mangaId: mangaId,
-                title: nil,
-                sourceOrder: -1
-            )
-        }
-    }
-
-    func toManga() -> Manga {
-        if let manga {
-            return manga
-        } else {
-            return Manga(
-                sourceId: sourceId,
-                id: mangaId
-            )
-        }
-    }
+extension Download: Identifiable {
+    var id: ChapterIdentifier { chapterIdentifier }
 }

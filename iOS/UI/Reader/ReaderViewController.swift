@@ -259,9 +259,11 @@ class ReaderViewController: BaseObservingViewController {
         super.viewWillDisappear(animated)
 
         if !chaptersToRemoveDownload.isEmpty {
-            DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
-                $0.toOld(sourceId: source?.key ?? manga.sourceKey, mangaId: manga.key)
-            })
+            Task {
+                await DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
+                    .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
+                })
+            }
         }
 
         guard currentPage >= 1 else { return }
@@ -520,9 +522,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
         while index >= 0 {
             let new = chapterList[index]
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatus(for: new.toOld(sourceId: manga.sourceKey, mangaId: manga.key)) == .finished
+                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =
@@ -559,9 +562,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatus(for: new.toOld(sourceId: manga.sourceKey, mangaId: manga.key)) == .finished
+                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =

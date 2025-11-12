@@ -1,5 +1,5 @@
 //
-//  MangaDownloadDetailView+ViewModel.swift
+//  DownloadedMangaView+ViewModel.swift
 //  Aidoku
 //
 //  Created by Skitty on 7/21/25.
@@ -9,15 +9,16 @@ import SwiftUI
 import Combine
 import AidokuRunner
 
-extension MangaDownloadDetailView {
+extension DownloadedMangaView {
     @MainActor
     class ViewModel: ObservableObject {
+        @Published var manga: DownloadedMangaInfo
+
         @Published var chapters: [DownloadedChapterInfo] = []
         @Published var isLoading = true
         @Published var showingDeleteAllConfirmation = false
         @Published var sortAscending = true
-
-        @Published var manga: DownloadedMangaInfo
+        @Published var readingHistory: [String: (page: Int, date: Int)] = [:]
 
         // Non-reactive state for background management
         private var backgroundUpdateInProgress = false
@@ -31,23 +32,26 @@ extension MangaDownloadDetailView {
             self.sortAscending = UserDefaults.standard.bool(forKey: "downloadChapterSortAscending")
             setupNotificationObservers()
         }
-
-        deinit {
-            updateDebouncer?.invalidate()
-        }
     }
 }
 
-extension MangaDownloadDetailView.ViewModel {
+extension DownloadedMangaView.ViewModel {
     func loadChapters() async {
         isLoading = true
 
-        let downloadedChapters = await DownloadManager.shared.getDownloadedChapters(for: manga)
+        let downloadedChapters = await DownloadManager.shared.getDownloadedChapters(for: manga.mangaIdentifier)
 
         await MainActor.run {
             self.chapters = self.sortChapters(downloadedChapters)
             self.isLoading = false
         }
+    }
+
+    func loadHistory() async {
+        readingHistory = await CoreDataManager.shared.getReadingHistory(
+            sourceId: manga.sourceId,
+            mangaId: manga.mangaId
+        )
     }
 
     func toggleSortOrder() {
@@ -124,20 +128,18 @@ extension MangaDownloadDetailView.ViewModel {
         lastUpdateId = updateId
 
         // Fetch updates in background
-        let newChapters = await DownloadManager.shared.getDownloadedChapters(for: manga)
+        let newChapters = await DownloadManager.shared.getDownloadedChapters(for: manga.mangaIdentifier)
         let updatedMangaStatus = await fetchUpdatedMangaLibraryStatus()
 
-        await MainActor.run {
-            guard updateId == lastUpdateId else { return }
+        guard updateId == lastUpdateId else { return }
 
-            // Update library status immediately (doesn't affect list)
-            if updatedMangaStatus != manga.isInLibrary {
-                updateMangaLibraryStatus(to: updatedMangaStatus)
-            }
-
-            // Selective chapter list updates
-            updateChaptersSelectively(newChapters: newChapters)
+        // Update library status immediately (doesn't affect list)
+        if updatedMangaStatus != manga.isInLibrary {
+            updateMangaLibraryStatus(to: updatedMangaStatus)
         }
+
+        // Selective chapter list updates
+        updateChaptersSelectively(newChapters: newChapters)
     }
 
     /// Update only changed chapters to preserve scroll position
@@ -172,9 +174,15 @@ extension MangaDownloadDetailView.ViewModel {
             chapters.removeAll { $0.id == chapter.id }
         }
 
-        // Perform actual deletion in background
+        // Perform actual deletion
         Task {
-            DownloadManager.shared.deleteChapter(chapter, from: manga)
+            await DownloadManager.shared.delete(chapters: [
+                .init(
+                    sourceKey: manga.sourceId,
+                    mangaKey: manga.mangaId,
+                    chapterKey: chapter.chapterId
+                )
+            ])
         }
     }
 
@@ -185,7 +193,9 @@ extension MangaDownloadDetailView.ViewModel {
         }
 
         // Perform actual deletion
-        DownloadManager.shared.deleteChaptersForManga(manga)
+        Task {
+            await DownloadManager.shared.deleteChapters(for: manga.mangaIdentifier)
+        }
     }
 
     func confirmDeleteAll() {
@@ -234,15 +244,17 @@ extension MangaDownloadDetailView.ViewModel {
         // Immediate updates for relevant manga operations
         let immediateNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
             (.downloadRemoved, { [weak self] notification in
-                guard let chapter = notification.object as? Chapter,
-                      chapter.sourceId == self?.manga.sourceId,
-                      chapter.mangaId == self?.manga.mangaId else { return false }
+                guard
+                    let id = notification.object as? ChapterIdentifier,
+                    id.mangaIdentifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             }),
             (.downloadsRemoved, { [weak self] notification in
-                guard let manga = notification.object as? Manga,
-                      manga.sourceId == self?.manga.sourceId,
-                      manga.id == self?.manga.mangaId else { return false }
+                guard
+                    let id = notification.object as? MangaIdentifier,
+                    id == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             })
         ]
@@ -264,13 +276,13 @@ extension MangaDownloadDetailView.ViewModel {
         let debouncedNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
             (.downloadFinished, { [weak self] notification in
                 guard let download = notification.object as? Download,
-                      download.sourceId == self?.manga.sourceId,
-                      download.mangaId == self?.manga.mangaId else { return false }
+                      download.mangaIdentifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             }),
             (.downloadsQueued, { [weak self] notification in
                 guard let downloads = notification.object as? [Download] else { return false }
-                return downloads.contains { $0.sourceId == self?.manga.sourceId && $0.mangaId == self?.manga.mangaId }
+                return downloads.contains { $0.mangaIdentifier == self?.manga.mangaIdentifier }
             }),
             (.addToLibrary, { [weak self] notification in
                 guard let addedManga = notification.object as? Manga,
@@ -307,8 +319,68 @@ extension MangaDownloadDetailView.ViewModel {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
                     self?.scheduleBackgroundUpdate()
+                    Task {
+                        await self?.loadHistory()
+                    }
                 }
                 .store(in: &cancellables)
         }
+
+        // reading history
+        NotificationCenter.default.publisher(for: .historyAdded)
+            .sink { [weak self] output in
+                guard
+                    let self,
+                    let chapters = output.object as? [Chapter]
+                else { return }
+                let date = Int(Date().timeIntervalSince1970)
+                for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
+                    self.readingHistory[chapter.id] = (page: -1, date: date)
+                }
+            }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: .historyAdded)
+            .sink { [weak self] output in
+                guard
+                    let self,
+                    let chapters = output.object as? [Chapter]
+                else { return }
+                let date = Int(Date().timeIntervalSince1970)
+                for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
+                    self.readingHistory[chapter.id] = (page: -1, date: date)
+                }
+            }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: .historyRemoved)
+            .sink { [weak self] output in
+                guard let self else { return }
+                if let chapters = output.object as? [Chapter] {
+                    for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
+                        self.readingHistory.removeValue(forKey: chapter.id)
+                    }
+                } else if
+                    let manga = output.object as? Manga,
+                    manga.identifier == self.manga.mangaIdentifier
+                {
+                    self.readingHistory = [:]
+                }
+            }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: .historySet)
+            .sink { [weak self] output in
+                guard
+                    let self,
+                    let item = output.object as? (chapter: Chapter, page: Int),
+                    item.chapter.mangaIdentifier == self.manga.mangaIdentifier,
+                    self.readingHistory[item.chapter.id]?.page != -1
+                else {
+                    return
+                }
+                self.readingHistory[item.chapter.id] = (
+                    page: item.page,
+                    date: Int(Date().timeIntervalSince1970)
+                )
+            }
+            .store(in: &cancellables)
     }
 }

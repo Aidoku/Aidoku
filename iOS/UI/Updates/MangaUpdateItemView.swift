@@ -30,16 +30,11 @@ struct MangaUpdateItemView: View {
 
     var body: some View {
         HStack(alignment: count == 1 ? .center : .top) {
-            SourceImageView(
+            MangaCoverView(
                 source: manga.flatMap { SourceManager.shared.source(for: $0.sourceKey) },
-                imageUrl: manga?.cover ?? "",
+                coverImage: manga?.cover ?? "",
                 width: coverWidth,
                 height: coverHeight
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color(UIColor.quaternarySystemFill), lineWidth: 1)
             )
             .padding(.trailing, 6)
 

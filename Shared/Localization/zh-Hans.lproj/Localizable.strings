@@ -520,7 +520,6 @@
 "UPSCALING" = "增强";
 "RELOAD_FAILED_TEXT" = "重新加载图像失败。请重试。";
 "RELOAD_FAILED" = "重新加载失败";
-"DOWNLOAD_MANAGER" = "下载管理器";
 "NO_DOWNLOADS" = "无下载内容";
 "NO_DOWNLOADS_TEXT" = "下载内容将显示在此处。";
 "DOWNLOADED_CHAPTERS" = "已下载章节";

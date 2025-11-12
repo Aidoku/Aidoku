@@ -299,13 +299,6 @@ class ReaderPageView: UIView {
     }
 
     func setPageImage(zipURL: URL, filePath: String) async -> Bool {
-        // remove text view if it exists
-        if let textView {
-            textView.view.removeFromSuperview()
-            textView.didMove(toParent: nil)
-            self.textView = nil
-        }
-
         var hasher = Hasher()
         hasher.combine(zipURL)
         hasher.combine(filePath)
@@ -327,9 +320,9 @@ class ReaderPageView: UIView {
             return true
         }
 
-        let image: UIImage? = await Task.detached {
+        let result: (data: Data, isText: Bool)? = await Task.detached {
             do {
-                var imageData = Data()
+                var data = Data()
                 let archive: Archive
                 archive = try Archive(url: zipURL, accessMode: .read)
                 guard let entry = archive[filePath]
@@ -338,36 +331,54 @@ class ReaderPageView: UIView {
                 }
                 _ = try archive.extract(
                     entry,
-                    consumer: { data in
-                        imageData.append(data)
+                    consumer: { readData in
+                        data.append(readData)
                     }
                 )
-                guard var image = UIImage(data: imageData) else {
-                    return nil
-                }
-
-                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                    let processor = CropBordersProcessor()
-                    if let processedImage = processor.process(image) {
-                        image = processedImage
-                    }
-                }
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                    if let processedImage = processor.process(image) {
-                        image = processedImage
-                    }
-                } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
-                    let processor = UpscaleProcessor()
-                    if let processedImage = processor.process(image) {
-                        image = processedImage
-                    }
-                }
-
-                return image
+                return (data, entry.path.hasSuffix(".txt"))
             } catch {
                 return nil
             }
+        }.value
+
+        guard let result else { return false }
+
+        if result.isText, let text = String(data: result.data, encoding: .utf8) {
+            setPageText(text: text)
+            return true
+        }
+
+        // remove text view if it exists
+        if let textView {
+            textView.view.removeFromSuperview()
+            textView.didMove(toParent: nil)
+            self.textView = nil
+        }
+
+        let image: UIImage? = await Task.detached {
+            guard var image = UIImage(data: result.data) else {
+                return nil
+            }
+
+            if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                let processor = CropBordersProcessor()
+                if let processedImage = processor.process(image) {
+                    image = processedImage
+                }
+            }
+            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
+                if let processedImage = processor.process(image) {
+                    image = processedImage
+                }
+            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                let processor = UpscaleProcessor()
+                if let processedImage = processor.process(image) {
+                    image = processedImage
+                }
+            }
+
+            return image
         }.value
         guard let image else { return false }
 

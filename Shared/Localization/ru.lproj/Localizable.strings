@@ -493,7 +493,6 @@
 "OEL" = "OEL";
 "%@_EXPERIMENTAL" = "%@ (Экспериментальный)";
 "UPSCALING" = "Масштабирование";
-"DOWNLOAD_MANAGER" = "Менеджер загрузки";
 "NO_DOWNLOADS" = "Нет загрузок";
 "NO_DOWNLOADS_TEXT" = "Загруженное содержимое появится здесь.";
 "DOWNLOADED_CHAPTERS" = "Загруженные главы";

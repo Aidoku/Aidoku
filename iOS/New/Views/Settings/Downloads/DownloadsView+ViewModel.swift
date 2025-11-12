@@ -1,5 +1,5 @@
 //
-//  DownloadManagerView+ViewModel.swift
+//  DownloadsView+ViewModel.swift
 //  Aidoku
 //
 //  Created by Skitty on 7/21/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-extension DownloadManagerView {
+extension DownloadsView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var downloadedManga: [DownloadedMangaInfo] = []
@@ -16,6 +16,7 @@ extension DownloadManagerView {
         @Published var totalSize: String = ""
         @Published var totalCount = 0
         @Published var showingDeleteAllConfirmation = false
+        @Published var showingMigrateNotice = false
 
         // Non-reactive state for background updates
         private var backgroundUpdateInProgress = false
@@ -26,14 +27,10 @@ extension DownloadManagerView {
         init() {
             setupNotificationObservers()
         }
-
-        deinit {
-            updateDebouncer?.invalidate()
-        }
     }
 }
 
-extension DownloadManagerView.ViewModel {
+extension DownloadsView.ViewModel {
     // Group manga by source for sectioned display
     var groupedManga: [(source: String, manga: [DownloadedMangaInfo])] {
         let grouped = Dictionary(grouping: downloadedManga) { $0.sourceId }
@@ -43,22 +40,20 @@ extension DownloadManagerView.ViewModel {
     }
 
     func loadDownloadedManga() async {
-        await MainActor.run {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                self.isLoading = true
-            }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isLoading = true
         }
 
         let manga = await DownloadManager.shared.getAllDownloadedManga()
         let formattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
+        let shouldMigrate = await DownloadManager.shared.checkForOldMetadata()
 
-        await MainActor.run {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                self.downloadedManga = manga
-                self.totalSize = formattedSize
-                self.totalCount = manga.count
-                self.isLoading = false
-            }
+        withAnimation(.easeInOut(duration: 0.3)) {
+            downloadedManga = manga
+            totalSize = formattedSize
+            totalCount = manga.count
+            isLoading = false
+            showingMigrateNotice = shouldMigrate
         }
     }
 
@@ -174,10 +169,10 @@ extension DownloadManagerView.ViewModel {
 
     private func getSourceDisplayName(_ sourceId: String) -> String {
         if let source = SourceManager.shared.source(for: sourceId) {
-            return source.name
+            source.name
+        } else {
+            sourceId
         }
-        // Fall back to source ID for unknown sources
-        return sourceId.capitalized
     }
 
     func deleteAllChapters() {
@@ -186,10 +181,31 @@ extension DownloadManagerView.ViewModel {
             downloadedManga = []
         }
 
-        DownloadManager.shared.deleteAll()
+        Task {
+            await DownloadManager.shared.deleteAll()
+        }
+    }
+
+    func delete(manga: DownloadedMangaInfo) {
+        if let index = downloadedManga.firstIndex(of: manga) {
+            downloadedManga.remove(at: index)
+        }
+
+        Task {
+            await DownloadManager.shared.deleteChapters(for: manga.mangaIdentifier)
+        }
     }
 
     func confirmDeleteAll() {
         showingDeleteAllConfirmation = true
+    }
+
+    func migrate() {
+        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+        Task {
+            await DownloadManager.shared.migrateOldMetadata()
+            await loadDownloadedManga()
+            (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+        }
     }
 }

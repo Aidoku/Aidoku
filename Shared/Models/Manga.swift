@@ -201,4 +201,8 @@ extension Manga {
             chapters: chapters
         )
     }
+
+    var identifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: id)
+    }
 }

@@ -1,5 +1,5 @@
 //
-//  MangaDownloadDetailView.swift
+//  DownloadedMangaView.swift
 //  Aidoku
 //
 //  Created by doomsboygaming on 6/25/25.
@@ -9,7 +9,7 @@ import AidokuRunner
 import SwiftUI
 import UIKit
 
-struct MangaDownloadDetailView: View {
+struct DownloadedMangaView: View {
     @StateObject private var viewModel: ViewModel
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var path: NavigationCoordinator
@@ -57,6 +57,7 @@ struct MangaDownloadDetailView: View {
         }
         .task {
             await viewModel.loadChapters()
+            await viewModel.loadHistory()
         }
         .alert(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), isPresented: $viewModel.showingDeleteAllConfirmation) {
             Button(NSLocalizedString("CANCEL"), role: .cancel) { }
@@ -89,7 +90,7 @@ struct MangaDownloadDetailView: View {
                     Button {
                         openReaderView(chapter: chapter)
                     } label: {
-                        ChapterRow(chapter: chapter)
+                        ChapterRow(chapter: chapter, history: viewModel.readingHistory[chapter.chapterId])
                     }
                     .foregroundStyle(.primary)
                 }
@@ -190,6 +191,11 @@ struct MangaDownloadDetailView: View {
 
 private struct ChapterRow: View {
     let chapter: DownloadedChapterInfo
+    let history: (page: Int, date: Int)?
+
+    var isRead: Bool {
+        history?.page == -1
+    }
 
     var body: some View {
         HStack {
@@ -197,6 +203,7 @@ private struct ChapterRow: View {
                 Text(chapter.displayTitle)
                     .font(.callout)
                     .lineLimit(1)
+                    .foregroundStyle(isRead ? .secondary : .primary)
 
                 // Format like chapter subtitles: Date • Size
                 if let subtitle = formatChapterSubtitle() {
@@ -215,7 +222,7 @@ private struct ChapterRow: View {
     private func formatChapterSubtitle() -> String? {
         var components: [String] = []
 
-        // Add download date if available
+        // download date
         if let downloadDate = chapter.downloadDate {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
@@ -223,15 +230,20 @@ private struct ChapterRow: View {
             components.append(formatter.string(from: downloadDate))
         }
 
-        // Add size
+        // file size
         components.append(ByteCountFormatter.string(fromByteCount: chapter.size, countStyle: .file))
+
+        // pages read
+        if let page = history?.page, page > 0 {
+            components.append(String(format: NSLocalizedString("PAGE_X"), page))
+        }
 
         return components.isEmpty ? nil : components.joined(separator: " • ")
     }
 }
 
 #Preview {
-    MangaDownloadDetailView(
+    DownloadedMangaView(
         manga: DownloadedMangaInfo(
             sourceId: "test",
             mangaId: "test-manga",

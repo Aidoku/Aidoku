@@ -57,6 +57,7 @@ extension SettingsView {
                                                 HStack(spacing: 2) {
                                                     ForEach(Array(zip(setting.paths.indices, setting.paths)), id: \.0.self) { index, title in
                                                         Text(title)
+                                                            .lineLimit(1)
                                                         if index < setting.paths.count - 1 {
                                                             Image(systemName: "arrow.forward")
                                                         }
@@ -287,8 +288,8 @@ extension SettingsView {
             SourceListsView()
         } else if key == "Backups" {
             BackupsView().environmentObject(path)
-        } else if key == "DownloadManager" {
-            DownloadManagerView().environmentObject(path)
+        } else if key == "Downloads" {
+            DownloadsView().environmentObject(path)
         }
     }
 

@@ -98,6 +98,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
+                "Library.downloadedChapterBadges": true,
                 "Library.pinManga": false,
                 "Library.pinMangaType": 0,
                 "Library.lockLibrary": false,
@@ -109,7 +110,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.excludedUpdateCategories": [String](),
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
-                "Library.deleteDownloadAfterReading": false,
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
                 "Browse.contentRatings": ["safe", "containsNsfw"],
@@ -141,7 +141,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.orientation": "device",
 
                 "Tracking.updateAfterReading": true,
-                "Tracking.autoSyncFromTracker": false
+                "Tracking.autoSyncFromTracker": false,
+
+                "Library.downloadOnlyOnWifi": false,
+                "Library.deleteDownloadAfterReading": false,
+                "Downloads.compress": true
             ]
         )
 
@@ -184,15 +188,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
             switch connectionType {
-            case .wifi:
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
-                    DownloadManager.shared.ignoreConnectionType = false
-                    DownloadManager.shared.resumeDownloads()
-                }
-            case .cellular, .none:
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") && !DownloadManager.shared.ignoreConnectionType {
-                    DownloadManager.shared.pauseDownloads()
-                }
+                case .wifi:
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        Task {
+                            await DownloadManager.shared.resumeDownloads()
+                        }
+                    }
+                case .cellular, .none:
+                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        Task {
+                            await DownloadManager.shared.pauseDownloads()
+                        }
+                    }
             }
         }
 
@@ -218,7 +225,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)
     }
+}
 
+extension AppDelegate {
     func performMigration() {
         // migrate history to 0.6 format
         if UserDefaults.standard.string(forKey: "currentVersion") == "0.5" {
@@ -239,7 +248,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func migrateHistory() async {
         showLoadingIndicator(style: .progress)
         try? await Task.sleep(nanoseconds: 500 * 1000000)
-        await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
+        await CoreDataManager.shared.migrateChapterHistory(progress: { @Sendable progress in
             Task { @MainActor in
                 self.indicatorProgress = progress
             }

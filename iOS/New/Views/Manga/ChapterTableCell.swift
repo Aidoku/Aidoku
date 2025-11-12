@@ -14,12 +14,20 @@ struct ChapterTableCell: View {
     let chapter: AidokuRunner.Chapter
     let read: Bool
     let page: Int?
-    let downloaded: Bool
+    let downloadStatus: DownloadStatus
     var downloadProgress: Float?
     let displayMode: ChapterTitleDisplayMode
 
+    var downloaded: Bool {
+        downloadStatus == .finished
+    }
+
     var locked: Bool {
         chapter.locked && !downloaded
+    }
+
+    var progress: Float? {
+        downloadProgress ?? (downloadStatus == .queued || downloadStatus == .downloading ? 0 : nil)
     }
 
     var body: some View {
@@ -51,8 +59,8 @@ struct ChapterTableCell: View {
                 Image(systemName: "arrow.down.circle.fill")
                     .imageScale(.small)
                     .foregroundStyle(.tertiary)
-            } else if let downloadProgress {
-                DownloadProgressView(progress: downloadProgress)
+            } else if let progress {
+                DownloadProgressView(progress: progress)
                     .frame(width: 13, height: 13)
             } else if locked {
                 Image(systemName: "lock.fill")

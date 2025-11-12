@@ -30,6 +30,17 @@ class MangaGridCell: UICollectionViewCell {
         set {
             badgeLabel.text = newValue == 0 ? nil : String(newValue)
             badgeView.isHidden = badgeLabel.text == nil
+            updateBadgeLayout()
+        }
+    }
+    var badgeNumber2: Int {
+        get {
+            Int(badgeLabel2.text ?? "") ?? 0
+        }
+        set {
+            badgeLabel2.text = newValue == 0 ? nil : String(newValue)
+            badgeView2.isHidden = badgeLabel2.text == nil
+            updateBadgeLayout()
         }
     }
 
@@ -46,8 +57,45 @@ class MangaGridCell: UICollectionViewCell {
     private let titleLabel = UILabel()
     private let overlayView = UIView()
     private let gradient = CAGradientLayer()
-    private let badgeView = UIView()
-    private let badgeLabel = UILabel()
+
+    private lazy var badgeView = {
+        let badgeView = UIView()
+        badgeView.isHidden = true
+        badgeView.backgroundColor = tintColor
+        badgeView.layer.cornerRadius = 5
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.addSubview(badgeLabel)
+        return badgeView
+    }()
+
+    private let badgeLabel = {
+        let badgeLabel = UILabel()
+        badgeLabel.textColor = .white
+        badgeLabel.numberOfLines = 1
+        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        return badgeLabel
+    }()
+
+    private lazy var badgeView2 = {
+        let badgeView = UIView()
+        badgeView.isHidden = true
+        badgeView.backgroundColor = .systemIndigo
+        badgeView.layer.cornerRadius = 5
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.addSubview(badgeLabel2)
+        return badgeView
+    }()
+
+    private let badgeLabel2 = {
+        let badgeLabel = UILabel()
+        badgeLabel.textColor = .white
+        badgeLabel.numberOfLines = 1
+        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        return badgeLabel
+    }()
+
     private let bookmarkView = UIImageView()
     private let highlightView = UIView()
 
@@ -98,6 +146,8 @@ class MangaGridCell: UICollectionViewCell {
         return checkmarkImageView
     }()
 
+    private var badgeConstraints: [NSLayoutConstraint] = []
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -140,17 +190,8 @@ class MangaGridCell: UICollectionViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
 
-        badgeView.isHidden = true
-        badgeView.backgroundColor = tintColor
-        badgeView.layer.cornerRadius = 5
-        badgeView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(badgeView)
-
-        badgeLabel.textColor = .white
-        badgeLabel.numberOfLines = 1
-        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
-        badgeView.addSubview(badgeLabel)
+        addSubview(badgeView2)
 
         bookmarkView.isHidden = true
         bookmarkView.image = UIImage(named: "bookmark")
@@ -188,13 +229,14 @@ class MangaGridCell: UICollectionViewCell {
             titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
 
-            badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-            badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
             badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10),
             badgeView.heightAnchor.constraint(equalToConstant: 20),
-
             badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor),
             badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor),
+            badgeView2.widthAnchor.constraint(equalTo: badgeLabel2.widthAnchor, constant: 10),
+            badgeView2.heightAnchor.constraint(equalToConstant: 20),
+            badgeLabel2.centerXAnchor.constraint(equalTo: badgeView2.centerXAnchor),
+            badgeLabel2.centerYAnchor.constraint(equalTo: badgeView2.centerYAnchor),
 
             bookmarkView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             bookmarkView.topAnchor.constraint(equalTo: topAnchor),
@@ -219,6 +261,8 @@ class MangaGridCell: UICollectionViewCell {
             checkmarkImageView.centerXAnchor.constraint(equalTo: selectionView.centerXAnchor),
             checkmarkImageView.centerYAnchor.constraint(equalTo: selectionView.centerYAnchor)
         ])
+
+        updateBadgeLayout()
     }
 
     override func layoutSubviews() {
@@ -326,6 +370,47 @@ class MangaGridCell: UICollectionViewCell {
         UIView.animate(withDuration: animated ? 0.3 : 0) {
             self.shadowOverlayView.alpha = 1
             self.selectionView.layer.shadowOpacity = 0
+        }
+    }
+
+    private func updateBadgeLayout() {
+        NSLayoutConstraint.deactivate(badgeConstraints)
+        if badgeNumber > 0 && badgeNumber2 > 0 {
+            // both badges visible, show side by side
+            badgeView.isHidden = false
+            badgeView2.isHidden = false
+            badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner] // top-left, bottom-left
+            badgeView2.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner] // top-right, bottom-right
+            badgeConstraints = [
+                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
+                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
+                badgeView2.leadingAnchor.constraint(equalTo: badgeView.trailingAnchor),
+                badgeView2.topAnchor.constraint(equalTo: badgeView.topAnchor)
+            ]
+            NSLayoutConstraint.activate(badgeConstraints)
+        } else if badgeNumber > 0 {
+            // only first badge visible
+            badgeView.isHidden = false
+            badgeView2.isHidden = true
+            badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            badgeConstraints = [
+                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
+                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5)
+            ]
+            NSLayoutConstraint.activate(badgeConstraints)
+        } else if badgeNumber2 > 0 {
+            // only second badge visible
+            badgeView.isHidden = true
+            badgeView2.isHidden = false
+            badgeView2.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            badgeConstraints = [
+                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
+                badgeView2.topAnchor.constraint(equalTo: topAnchor, constant: 5)
+            ]
+            NSLayoutConstraint.activate(badgeConstraints)
+        } else {
+            badgeView.isHidden = true
+            badgeView2.isHidden = true
         }
     }
 }

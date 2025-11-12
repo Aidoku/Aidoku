@@ -42,11 +42,27 @@ extension String {
 }
 
 extension String {
+    func lastPathComponent() -> String {
+        if let idx = lastIndex(of: "/") {
+            String(self[index(idx, offsetBy: 1)...])
+        } else {
+            self
+        }
+    }
+
     func removingExtension() -> String {
         if let idx = lastIndex(of: ".") {
             String(self[..<idx])
         } else {
             self
+        }
+    }
+
+    func pathExtension() -> String {
+        if let idx = lastIndex(of: ".") {
+            String(self[index(idx, offsetBy: 1)...])
+        } else {
+            ""
         }
     }
 }

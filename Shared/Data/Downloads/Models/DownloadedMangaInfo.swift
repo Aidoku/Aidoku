@@ -20,6 +20,10 @@ struct DownloadedMangaInfo: Identifiable, Hashable {
     let chapterCount: Int
     let isInLibrary: Bool
 
+    var mangaIdentifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
+    }
+
     /// Computed property for display title (fallback to manga ID)
     var displayTitle: String {
         title ?? mangaId
@@ -70,6 +74,8 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
     let volumeNumber: Float?     // For formatted titles
     let size: Int64
     let downloadDate: Date?
+
+    let chapter: AidokuRunner.Chapter?
 
     /// Computed property for display title with smart formatting
     var displayTitle: String {
@@ -127,7 +133,15 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
         ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
     }
 
-    init(chapterId: String, title: String? = nil, chapterNumber: Float? = nil, volumeNumber: Float? = nil, size: Int64, downloadDate: Date? = nil) {
+    init(
+        chapterId: String,
+        title: String? = nil,
+        chapterNumber: Float? = nil,
+        volumeNumber: Float? = nil,
+        size: Int64,
+        downloadDate: Date? = nil,
+        chapter: AidokuRunner.Chapter? = nil
+    ) {
         self.id = chapterId
         self.chapterId = chapterId
         self.title = title
@@ -135,14 +149,16 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
         self.volumeNumber = volumeNumber
         self.size = size
         self.downloadDate = downloadDate
+        self.chapter = chapter
     }
 
     func toChapter() -> AidokuRunner.Chapter {
-        .init(
+        chapter ?? .init(
             key: chapterId,
             title: title,
             chapterNumber: chapterNumber,
-            volumeNumber: volumeNumber
+            volumeNumber: volumeNumber,
+            dateUploaded: downloadDate
         )
     }
 }

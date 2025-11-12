@@ -1,0 +1,359 @@
+//
+//  ComicInfo.swift
+//  Aidoku
+//
+//  Created by Skitty on 11/11/25.
+//
+
+import AidokuRunner
+import Foundation
+
+// https://github.com/anansi-project/comicinfo/blob/main/schema/v2.0/ComicInfo.xsd
+struct ComicInfo {
+    /// Title of the book.
+    var title: String?
+    /// Title of the series the book is part of.
+    var series: String?
+    /// Number of the book in the series.
+    var number: String?
+    /// The total number of books in the series.
+    var count: Int?
+    /// Volume containing the book.
+    var volume: Int?
+    /// A description or summary of the book.
+    var summary: String?
+    /// A free text field, usually used to store information about the application that created the ComicInfo.xml file.
+    var notes: String?
+    /// The release year of the book.
+    var year: Int?
+    /// The release month of the book.
+    var month: Int?
+    /// The release day of the book.
+    var day: Int?
+    /// Person or organization responsible for creating the scenario (comma separated).
+    var writer: String?
+    /// Person or organization responsible for drawing the art (comma separated).
+    var penciller: String?
+    /// A person or organization who renders a text from one language into another (comma separated).
+    var translator: String?
+    /// Genre of the book or series (comma separated).
+    var genre: String?
+    /// Tags of the book or series (comma separated).
+    var tags: String?
+    /// A URL pointing to a reference website for the book (space separated).
+    var web: String?
+    /// A language code describing the language of the book.
+    var languageIso: String?
+    /// Whether the book is a manga. This also defines the reading direction as right-to-left when set to YesAndRightToLeft.
+    var manga: Manga?
+    /// Age rating of the book.
+    var ageRating: AgeRating?
+
+    enum AgeRating: String {
+        case unknown = "Unknown"
+        case everyone = "Everyone"
+        case m15Plus = "MA15+"
+        case r18Plus = "R18+"
+    }
+
+    enum Manga: String {
+        case unknown = "Unknown"
+        case no = "No"
+        case yes = "Yes"
+        case yesAndRightToLeft = "YesAndRightToLeft"
+    }
+
+    struct AidokuNotesData: Codable {
+        static let prefix = "!AIDOKUDATA"
+
+        let sourceKey: String?
+        let mangaKey: String?
+        let chapterKey: String?
+    }
+}
+
+extension ComicInfo {
+    func extraData() -> AidokuNotesData? {
+        guard
+            let notes,
+            notes.hasPrefix(AidokuNotesData.prefix)
+        else {
+            return nil
+        }
+        return try? JSONDecoder().decode(
+            AidokuNotesData.self,
+            from: Data(notes.dropFirst(AidokuNotesData.prefix.count).utf8)
+        )
+    }
+}
+
+extension ComicInfo {
+    static func load(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) -> ComicInfo {
+        let dateComponents = chapter.dateUploaded.flatMap { Calendar.current.dateComponents([.year, .month, .day], from: $0) }
+        return .init(
+            title: chapter.title,
+            series: manga.title,
+            number: chapter.chapterNumber.flatMap { String(format: "%g", $0) },
+            count: nil,
+            volume: chapter.volumeNumber.flatMap { Int($0) },
+            summary: manga.description,
+            notes: (try? JSONEncoder().encode(AidokuNotesData(
+                sourceKey: manga.sourceKey,
+                mangaKey: manga.key,
+                chapterKey: chapter.key
+            ))).flatMap {
+                String(data: $0, encoding: .utf8).flatMap { AidokuNotesData.prefix + $0 }
+            },
+            year: dateComponents?.year,
+            month: dateComponents?.month,
+            day: dateComponents?.day,
+            writer: manga.authors?.joined(separator: ", "),
+            penciller: manga.artists?.joined(separator: ", "),
+            translator: chapter.scanlators?.joined(separator: ", "),
+            genre: nil,
+            tags: manga.tags?.joined(separator: ", "),
+            web: manga.url?.absoluteString,
+            languageIso: chapter.language,
+            manga: {
+                switch manga.viewer {
+                    case .rightToLeft: .yesAndRightToLeft
+                    case .unknown: nil
+                    default: .no
+                }
+            }(),
+            ageRating: {
+                switch manga.contentRating {
+                    case .unknown: nil
+                    case .safe: .everyone
+                    case .suggestive: .m15Plus
+                    case .nsfw: .r18Plus
+                }
+            }()
+        )
+    }
+
+    func toManga() -> AidokuRunner.Manga? {
+        guard
+            let extraData = extraData(),
+            let sourceKey = extraData.sourceKey,
+            let key = extraData.mangaKey
+        else {
+            return nil
+        }
+        let tags = (genre.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+            + (tags.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+        return .init(
+            sourceKey: sourceKey,
+            key: key,
+            title: series ?? "",
+            cover: nil,
+            artists: penciller.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
+            authors: writer.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
+            description: summary,
+            url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
+            tags: tags,
+            status: .unknown,
+            contentRating: {
+                switch ageRating {
+                    case .everyone: .safe
+                    case .m15Plus: .suggestive
+                    case .r18Plus: .nsfw
+                    default: .unknown
+                }
+            }(),
+            viewer: {
+                switch manga {
+                    case .yesAndRightToLeft: .rightToLeft
+                    default: .unknown
+                }
+            }(),
+            updateStrategy: .always,
+            nextUpdateTime: nil,
+            chapters: nil
+        )
+    }
+
+    func toChapter() -> AidokuRunner.Chapter? {
+        guard
+            let extraData = extraData(),
+            let key = extraData.chapterKey
+        else {
+            return nil
+        }
+        return .init(
+            key: key,
+            title: title,
+            chapterNumber: number.flatMap { Float($0) },
+            volumeNumber: volume.flatMap { Float($0) },
+            dateUploaded: {
+                guard let day, let month, let year else { return nil }
+                var components = DateComponents()
+                components.year = year
+                components.month = month
+                components.day = day
+                return Calendar.current.date(from: components)
+            }(),
+            scanlators: translator.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
+            url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
+            language: languageIso,
+            thumbnail: nil,
+            locked: false
+        )
+    }
+}
+
+extension ComicInfo {
+    static func load(xmlString: String) -> ComicInfo? {
+        guard let data = xmlString.data(using: .utf8) else {
+            return nil
+        }
+
+        class ComicInfoParserDelegate: NSObject, XMLParserDelegate {
+            var currentElement: String?
+            var currentValue: String = ""
+
+            var title: String?
+            var series: String?
+            var number: String?
+            var count: Int?
+            var volume: Int?
+            var summary: String?
+            var notes: String?
+            var year: Int?
+            var month: Int?
+            var day: Int?
+            var writer: String?
+            var penciller: String?
+            var translator: String?
+            var genre: String?
+            var tags: String?
+            var web: String?
+            var pageCount: Int?
+            var languageIso: String?
+            var manga: ComicInfo.Manga?
+            var ageRating: ComicInfo.AgeRating?
+
+            func parser(
+                _ parser: XMLParser,
+                didStartElement elementName: String,
+                namespaceURI: String?,
+                qualifiedName qName: String?,
+                attributes attributeDict: [String: String] = [:]
+            ) {
+                currentElement = elementName
+                currentValue = ""
+            }
+
+            func parser(_ parser: XMLParser, foundCharacters string: String) {
+                currentValue += string
+            }
+
+            func parser(
+                _ parser: XMLParser,
+                didEndElement elementName: String,
+                namespaceURI: String?,
+                qualifiedName qName: String?
+            ) {
+                let value = currentValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !value.isEmpty {
+                    switch elementName {
+                        case "Title": title = value
+                        case "Series": series = value
+                        case "Number": number = value
+                        case "Count": count = Int(value)
+                        case "Volume": volume = Int(value)
+                        case "Summary": summary = value
+                        case "Notes": notes = value
+                        case "Year": year = Int(value)
+                        case "Month": month = Int(value)
+                        case "Day": day = Int(value)
+                        case "Writer": writer = value
+                        case "Penciller": penciller = value
+                        case "Translator": translator = value
+                        case "Genre": genre = value
+                        case "Tags": tags = value
+                        case "Web": web = value
+                        case "LanguageISO": languageIso = value
+                        case "Manga": manga = ComicInfo.Manga(rawValue: value)
+                        case "AgeRating": ageRating = ComicInfo.AgeRating(rawValue: value)
+                        default: break
+                    }
+                }
+                currentElement = nil
+                currentValue = ""
+            }
+        }
+
+        let delegate = ComicInfoParserDelegate()
+        let parser = XMLParser(data: data)
+        parser.delegate = delegate
+        guard parser.parse() else {
+            return nil
+        }
+
+        return ComicInfo(
+            title: delegate.title,
+            series: delegate.series,
+            number: delegate.number,
+            count: delegate.count,
+            volume: delegate.volume,
+            summary: delegate.summary,
+            notes: delegate.notes,
+            year: delegate.year,
+            month: delegate.month,
+            day: delegate.day,
+            writer: delegate.writer,
+            penciller: delegate.penciller,
+            translator: delegate.translator,
+            genre: delegate.genre,
+            tags: delegate.tags,
+            web: delegate.web,
+            languageIso: delegate.languageIso,
+            manga: delegate.manga,
+            ageRating: delegate.ageRating
+        )
+    }
+
+    func export() -> String {
+        func xmlEscape(_ string: String) -> String {
+            var escaped = string
+            escaped = escaped.replacingOccurrences(of: "&", with: "&amp;")
+            escaped = escaped.replacingOccurrences(of: "<", with: "&lt;")
+            escaped = escaped.replacingOccurrences(of: ">", with: "&gt;")
+            return escaped
+        }
+
+        func xmlElement(_ name: String, _ value: String?) -> String {
+            guard let value, !value.isEmpty else { return "" }
+            return "    <\(name)>\(xmlEscape(value))</\(name)>\n"
+        }
+
+        func xmlElementInt(_ name: String, _ value: Int?) -> String {
+            guard let value else { return "" }
+            return "    <\(name)>\(value)</\(name)>\n"
+        }
+
+        var xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ComicInfo>\n"
+        xml += xmlElement("Title", title)
+        xml += xmlElement("Series", series)
+        xml += xmlElement("Number", number)
+        xml += xmlElementInt("Count", count)
+        xml += xmlElementInt("Volume", volume)
+        xml += xmlElement("Summary", summary)
+        xml += xmlElement("Notes", notes)
+        xml += xmlElementInt("Year", year)
+        xml += xmlElementInt("Month", month)
+        xml += xmlElementInt("Day", day)
+        xml += xmlElement("Writer", writer)
+        xml += xmlElement("Penciller", penciller)
+        xml += xmlElement("Translator", translator)
+        xml += xmlElement("Genre", genre)
+        xml += xmlElement("Tags", tags)
+        xml += xmlElement("Web", web)
+        xml += xmlElement("LanguageISO", languageIso)
+        xml += xmlElement("Manga", manga?.rawValue)
+        xml += xmlElement("AgeRating", ageRating?.rawValue)
+        xml += "</ComicInfo>\n"
+        return xml
+    }
+}

@@ -5,7 +5,9 @@
 //  Created by Skitty on 5/2/22.
 //
 
+import AidokuRunner
 import Foundation
+import ZIPFoundation
 
 /*
  File Structure:
@@ -20,118 +22,34 @@ import Foundation
  */
 
 // global class to manage downloads
-@MainActor
-class DownloadManager {
+actor DownloadManager {
     static let shared = DownloadManager()
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Downloads", isDirectory: true)
 
-    private let cache: DownloadCache
+    @MainActor
+    private let cache: DownloadCache = .init()
     private let queue: DownloadQueue
-
-    private(set) var downloadsPaused = false
-
-    var ignoreConnectionType = false
 
     private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
 
+    // for UI
+    private var downloadedMangaCache: [DownloadedMangaInfo] = []
+    private var lastCacheUpdate: Date = .distantPast
+    private let cacheValidityDuration: TimeInterval = 60 // 1 minute
+
     init() {
-        self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
         if !Self.directory.exists {
             Self.directory.createDirectory()
         }
         Task {
-            await self.queue.setOnCompletion { [weak self] in
-                self?.invalidateDownloadedMangaCache()
-            }
-        }
-    }
-
-    func getDownloadQueue() async -> [String: [Download]] {
-        await queue.queue
-    }
-
-    func getDownloadedPagesWithoutContents(for chapter: Chapter) -> [Page] {
-        var descriptionFiles: [URL] = []
-
-        var pages = cache.directory(for: chapter).contents
-            .compactMap { url -> Page? in
-                let imageURL: String?
-                let text: String?
-                if url.pathExtension == "txt" {
-                    // add description file to list
-                    if url.lastPathComponent.hasSuffix("desc.txt") {
-                        descriptionFiles.append(url)
-                        return nil
-                    }
-                    // otherwise, load file as text
-                    imageURL = nil
-                    text = try? String(contentsOf: url)
-                } else if Self.allowedImageExtensions.contains(url.pathExtension) {
-                    // load file as image
-                    imageURL = url.absoluteString
-                    text = nil
-                } else {
-                    return nil
+            await self.queue.setOnCompletion { @Sendable [weak self] in
+                Task { @MainActor in
+                    await self?.invalidateDownloadedMangaCache()
                 }
-                return Page(
-                    sourceId: chapter.sourceId,
-                    chapterId: chapter.id,
-                    index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-                    imageURL: imageURL,
-                    text: text,
-                )
-            }
-            .sorted { $0.index < $1.index }
-
-        // load descriptions from files
-        for descriptionFile in descriptionFiles {
-            guard
-                let index = descriptionFile
-                    .deletingPathExtension()
-                    .lastPathComponent
-                    .split(separator: ".")
-                    .first
-                    .flatMap({ Int($0) }),
-                index > 0,
-                index <= pages.count
-            else { break }
-            pages[index - 1].hasDescription = true
-            pages[index - 1].description = try? String(contentsOf: descriptionFile)
-        }
-
-        return pages
-    }
-
-    func isChapterDownloaded(chapter: Chapter) -> Bool {
-        cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id)
-    }
-
-    func isChapterDownloaded(sourceId: String, mangaId: String, chapterId: String) -> Bool {
-        cache.isChapterDownloaded(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId)
-    }
-
-    func getDownloadStatus(for chapter: Chapter) -> DownloadStatus {
-        if isChapterDownloaded(chapter: chapter) {
-            return .finished
-        } else {
-            let tmpDirectory = cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
-            if tmpDirectory.exists {
-                return .downloading
-            } else {
-                return .none
             }
         }
-    }
-
-    func hasDownloadedChapter(sourceId: String, mangaId: String) -> Bool {
-        cache.hasDownloadedChapter(sourceId: sourceId, mangaId: mangaId)
-    }
-
-    func hasQueuedDownloads() async -> Bool {
-        await queue.hasQueuedDownloads()
     }
 
     func loadQueueState() async {
@@ -140,140 +58,330 @@ class DownloadManager {
         // fetch loaded downloads to notify ui about
         let downloads = await queue.queue.flatMap(\.value)
         if !downloads.isEmpty {
-            NotificationCenter.default.post(name: NSNotification.Name("downloadsQueued"), object: downloads)
+            NotificationCenter.default.post(name: .downloadsQueued, object: downloads)
+        }
+    }
+
+    func getDownloadedPages(for chapter: ChapterIdentifier) async -> [Page] {
+        let directory = await cache.directory(for: chapter)
+
+        let archiveURL = directory.appendingPathExtension("cbz")
+        if archiveURL.exists {
+            let archive: Archive
+            do {
+                archive = try Archive(url: archiveURL, accessMode: .read)
+            } catch {
+                LogManager.logger.error("Failed to read archive: \(error)")
+                return []
+            }
+
+            var descriptionFiles: [Entry] = []
+
+            var pages = archive
+                .filter { entry in
+                    let ext = entry.path.lowercased().pathExtension()
+                    if ext == "txt" {
+                        if entry.path.hasSuffix("desc.txt") {
+                            descriptionFiles.append(entry)
+                            return false
+                        }
+                        return true
+                    }
+                    return Self.allowedImageExtensions.contains(ext)
+                }
+                // sort by file name
+                .sorted { $0.path < $1.path }
+                .map { entry in
+                    AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: entry.path))
+                        .toOld(sourceId: chapter.sourceKey, chapterId: chapter.chapterKey)
+                }
+
+            for entry in descriptionFiles {
+                guard
+                    let index = entry.path
+                        .lastPathComponent()
+                        .split(separator: ".", maxSplits: 1)
+                        .first
+                        .flatMap({ Int($0) }),
+                    index > 0,
+                    index <= pages.count
+                else { break }
+
+                do {
+                    var descriptionData = Data()
+                    _ = try archive.extract(
+                        entry,
+                        consumer: { data in
+                            descriptionData.append(data)
+                        }
+                    )
+                    pages[index - 1].hasDescription = true
+                    pages[index - 1].description = String(data: descriptionData, encoding: .utf8)
+                } catch {
+                    LogManager.logger.error("Failed to extract page description text from archive: \(error)")
+                    continue
+                }
+            }
+
+            return pages
+        } else {
+            var descriptionFiles: [URL] = []
+
+            var pages = await cache.directory(for: chapter).contents
+                .compactMap { url -> Page? in
+                    let imageURL: String?
+                    let text: String?
+                    if url.pathExtension == "txt" {
+                        // add description file to list
+                        if url.lastPathComponent.hasSuffix("desc.txt") {
+                            descriptionFiles.append(url)
+                            return nil
+                        }
+                        // otherwise, load file as text
+                        imageURL = nil
+                        text = try? String(contentsOf: url)
+                    } else if Self.allowedImageExtensions.contains(url.pathExtension) {
+                        // load file as image
+                        imageURL = url.absoluteString
+                        text = nil
+                    } else {
+                        return nil
+                    }
+                    return Page(
+                        sourceId: chapter.sourceKey,
+                        chapterId: chapter.chapterKey,
+                        index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
+                        imageURL: imageURL,
+                        text: text,
+                    )
+                }
+                .sorted { $0.index < $1.index }
+
+            // load descriptions from files
+            for descriptionFile in descriptionFiles {
+                guard
+                    let index = descriptionFile
+                        .deletingPathExtension()
+                        .lastPathComponent
+                        .split(separator: ".", maxSplits: 1)
+                        .first
+                        .flatMap({ Int($0) }),
+                    index > 0,
+                    index <= pages.count
+                else { break }
+                pages[index - 1].hasDescription = true
+                pages[index - 1].description = try? String(contentsOf: descriptionFile)
+            }
+
+            return pages
+        }
+    }
+
+    @MainActor
+    func isChapterDownloaded(chapter: ChapterIdentifier) -> Bool {
+        cache.isChapterDownloaded(identifier: chapter)
+    }
+
+    @MainActor
+    func hasDownloadedChapter(from identifier: MangaIdentifier) -> Bool {
+        cache.hasDownloadedChapter(from: identifier)
+    }
+
+    func downloadsCount(for identifier: MangaIdentifier) -> Int {
+        Self.directory
+            .appendingSafePathComponent(identifier.sourceKey.directoryName)
+            .appendingSafePathComponent(identifier.mangaKey.directoryName)
+            .contents
+            .filter { ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp") }
+            .count
+    }
+
+    func hasQueuedDownloads() async -> Bool {
+        await queue.hasQueuedDownloads()
+    }
+
+    @MainActor
+    func getDownloadStatusSync(for chapter: ChapterIdentifier) -> DownloadStatus {
+        if isChapterDownloaded(chapter: chapter) {
+            return .finished
+        } else {
+            let tmpDirectory = cache.directory(for: chapter.mangaIdentifier)
+                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+            if tmpDirectory.exists {
+                return .queued
+            } else {
+                return .none
+            }
+        }
+    }
+
+    func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
+        let mangaDirectory =  Self.directory
+            .appendingSafePathComponent(chapter.sourceKey)
+            .appendingSafePathComponent(chapter.mangaKey)
+        let chapterDirectory = mangaDirectory
+            .appendingSafePathComponent(chapter.chapterKey.directoryName)
+        if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
+            return .finished
+        } else {
+            let tmpDirectory = mangaDirectory
+                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+            if tmpDirectory.exists {
+                return .queued
+            } else {
+                return .none
+            }
         }
     }
 }
 
+// MARK: File Management
+
 extension DownloadManager {
+    /// Download all chapters for a manga.
+    func downloadAll(manga: AidokuRunner.Manga) async {
+        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
 
-    func downloadAll(manga: Manga) async {
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-            .filter {
-                // filter out chapters that are locked and already downloaded
-                !$0.locked && !isChapterDownloaded(chapter: $0)
+        var chaptersToDownload: [AidokuRunner.Chapter] = []
+
+        for chapter in allChapters {
+            guard !chapter.locked else { continue }
+            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            if !downloaded {
+                chaptersToDownload.append(chapter.toNew())
             }
-        download(chapters: chapters.reversed(), manga: manga)
-    }
-
-    func downloadUnread(manga: Manga) async {
-        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceId, mangaId: manga.id)
-        let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-            .filter {
-                (readingHistory[$0.id] == nil || readingHistory[$0.id]?.page != -1)
-                    && !$0.locked && !isChapterDownloaded(chapter: $0)
-            }
-        download(chapters: chapters.reversed(), manga: manga)
-    }
-
-    func download(chapters: [Chapter], manga: Manga? = nil) {
-        Task {
-            let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
-            NotificationCenter.default.post(
-                name: NSNotification.Name("downloadsQueued"),
-                object: downloads
-            )
-            // Invalidate cache since new downloads may affect the list
-            invalidateDownloadedMangaCache()
         }
+
+        await download(manga: manga, chapters: chaptersToDownload.reversed())
     }
 
-    func delete(chapters: [Chapter]) {
+    /// Download unread chapters for a manga.
+    func downloadUnread(manga: AidokuRunner.Manga) async {
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceKey, mangaId: manga.key)
+        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
+
+        var chaptersToDownload: [AidokuRunner.Chapter] = []
+
+        for chapter in allChapters {
+            guard !chapter.locked else { continue }
+            let isUnread = readingHistory[chapter.id] == nil || readingHistory[chapter.id]?.page != -1
+            guard isUnread else { continue }
+            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            if !downloaded {
+                chaptersToDownload.append(chapter.toNew())
+            }
+        }
+
+        await download(manga: manga, chapters: chaptersToDownload.reversed())
+    }
+
+    /// Download given chapters from a manga.
+    func download(manga: AidokuRunner.Manga, chapters: [AidokuRunner.Chapter]) async {
+        let downloads = await queue.add(chapters: chapters, manga: manga, autoStart: true)
+        NotificationCenter.default.post(
+            name: .downloadsQueued,
+            object: downloads
+        )
+        // Invalidate cache since new downloads may affect the list
+        invalidateDownloadedMangaCache()
+    }
+
+    /// Remove downloads for specified chapters.
+    func delete(chapters: [ChapterIdentifier]) async {
         for chapter in chapters {
-            cache.directory(for: chapter).removeItem()
-            cache.remove(chapter: chapter)
-            NotificationCenter.default.post(name: NSNotification.Name("downloadRemoved"), object: chapter)
+            let directory = await cache.directory(for: chapter)
+            let archiveURL = directory.appendingPathExtension("cbz")
+            directory.removeItem()
+            archiveURL.removeItem()
+            await cache.remove(chapter: chapter)
+            NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
-        // Invalidate cache for download manager UI
+        // Invalidate cache for UI
         invalidateDownloadedMangaCache()
     }
 
-    func deleteChapters(for manga: Manga) {
-        cache.directory(for: manga).removeItem()
-        cache.remove(manga: manga)
-        NotificationCenter.default.post(name: NSNotification.Name("downloadsRemoved"), object: manga)
-        // Invalidate cache for download manager UI
+    /// Remove all downloads from a manga.
+    func deleteChapters(for manga: MangaIdentifier) async {
+        await queue.cancelDownloads(for: manga)
+        await cache.directory(for: manga).removeItem()
+        await cache.remove(manga: manga)
+        NotificationCenter.default.post(name: .downloadsRemoved, object: manga)
+        // Invalidate cache for UI
         invalidateDownloadedMangaCache()
     }
 
-    func deleteAll() {
-        cache.removeAll()
+    /// Remove all downloads.
+    func deleteAll() async {
+        await cache.removeAll()
+    }
+}
+
+// MARK: Queue Control
+
+extension DownloadManager {
+    func isQueuePaused() async -> Bool {
+        !(await queue.isRunning())
     }
 
-    func pauseDownloads() {
-        Task {
-            await queue.pause()
-        }
-        downloadsPaused = true
-        NotificationCenter.default.post(name: Notification.Name("downloadsPaused"), object: nil)
+    func getDownloadQueue() async -> [String: [Download]] {
+        await queue.queue
+    }
+
+    func pauseDownloads() async {
+        await queue.pause()
+        NotificationCenter.default.post(name: .downloadsPaused, object: nil)
         // Invalidate cache since paused state may affect display
         invalidateDownloadedMangaCache()
     }
 
-    func resumeDownloads() {
-        Task {
-            await queue.resume()
-        }
-        downloadsPaused = false
-        NotificationCenter.default.post(name: Notification.Name("downloadsResumed"), object: nil)
+    func resumeDownloads() async {
+        await queue.resume()
+        NotificationCenter.default.post(name: .downloadsResumed, object: nil)
         // Invalidate cache since resumed state may affect display
         invalidateDownloadedMangaCache()
     }
 
-    func cancelDownload(for chapter: Chapter) {
-        Task {
-            await queue.cancelDownload(for: chapter)
+    func cancelDownload(for chapter: ChapterIdentifier) async {
+        await queue.cancelDownload(for: chapter)
+        // Invalidate cache since cancelled downloads may affect display
+        invalidateDownloadedMangaCache()
+    }
+
+    func cancelDownloads(for chapters: [ChapterIdentifier] = []) async {
+        if chapters.isEmpty {
+            await queue.cancelAll()
+        } else {
+            await queue.cancelDownloads(for: chapters)
         }
         // Invalidate cache since cancelled downloads may affect display
         invalidateDownloadedMangaCache()
     }
 
-    func cancelDownloads(for chapters: [Chapter] = []) {
-        Task {
-            if chapters.isEmpty {
-                await queue.cancelAll()
-            } else {
-                await queue.cancelDownloads(for: chapters)
-            }
-        }
-        downloadsPaused = false
-        // Invalidate cache since cancelled downloads may affect display
-        invalidateDownloadedMangaCache()
+    func onProgress(for chapter: ChapterIdentifier, block: @Sendable @escaping (Int, Int) -> Void) async {
+        await queue.onProgress(for: chapter, block: block)
     }
 
-    func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
-        Task {
-            await queue.onProgress(for: chapter, block: block)
-        }
-    }
-
-    func removeProgressBlock(for chapter: Chapter) {
-        Task {
-            await queue.removeProgressBlock(for: chapter)
-        }
+    func removeProgressBlock(for chapter: ChapterIdentifier) async {
+        await queue.removeProgressBlock(for: chapter)
     }
 }
 
-// MARK: - Download Manager UI Support
+// MARK: - Downloads UI Support
 extension DownloadManager {
-    private static var downloadedMangaCache: [DownloadedMangaInfo] = []
-    private static var lastCacheUpdate: Date = .distantPast
-    private static let cacheValidityDuration: TimeInterval = 60 // 1 minute
-
     /// Get all downloaded manga with metadata from CoreData if available
     func getAllDownloadedManga() async -> [DownloadedMangaInfo] {
         // Return cached result if still valid
         let now = Date()
-        if now.timeIntervalSince(Self.lastCacheUpdate) < Self.cacheValidityDuration {
-            return Self.downloadedMangaCache
+        if now.timeIntervalSince(lastCacheUpdate) < cacheValidityDuration {
+            return downloadedMangaCache
         }
 
         var downloadedManga: [DownloadedMangaInfo] = []
 
         // Ensure downloads directory exists
         guard Self.directory.exists else {
-            Self.downloadedMangaCache = []
-            Self.lastCacheUpdate = now
+            downloadedMangaCache = []
+            lastCacheUpdate = now
             return []
         }
 
@@ -289,7 +397,7 @@ extension DownloadManager {
 
                 // Count chapters and calculate total size
                 let chapterDirectories = mangaDirectory.contents.filter {
-                    $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
+                    ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
                 }
 
                 guard !chapterDirectories.isEmpty else { continue }
@@ -298,25 +406,25 @@ extension DownloadManager {
                 let chapterCount = chapterDirectories.count
 
                 // Try to load metadata from the manga directory first
-                let storedMetadata = loadMangaMetadata(from: mangaDirectory)
+                let firstComicInfo = findComicInfo(in: mangaDirectory)
+                let extraData = firstComicInfo?.extraData()
 
                 // Fallback to CoreData only if no stored metadata exists
-                let mangaMetadata = if let storedMetadata {
+                let mangaMetadata = if let firstComicInfo {
                     (
-                        title: storedMetadata.title,
-                        coverUrl: storedMetadata.thumbnailBase64 != nil ?
-                            "data:image;base64,\(storedMetadata.thumbnailBase64!)" : storedMetadata.cover,
+                        title: firstComicInfo.series,
+                        coverUrl: mangaDirectory.appendingPathComponent("cover.png").absoluteString,
                         isInLibrary: await withCheckedContinuation { continuation in
                             CoreDataManager.shared.container.performBackgroundTask { context in
                                 let isInLibrary = CoreDataManager.shared.hasLibraryManga(
                                     sourceId: sourceId,
-                                    mangaId: storedMetadata.mangaId ?? mangaId,
+                                    mangaId: extraData?.mangaKey ?? mangaId,
                                     context: context
                                 )
                                 continuation.resume(returning: isInLibrary)
                             }
                         },
-                        actualMangaId: storedMetadata.mangaId ?? mangaId
+                        actualMangaId: extraData?.mangaKey ?? mangaId
                     )
                 } else {
                     await withCheckedContinuation { continuation in
@@ -387,28 +495,28 @@ extension DownloadManager {
         }
 
         // Cache the result
-        Self.downloadedMangaCache = downloadedManga
-        Self.lastCacheUpdate = now
+        downloadedMangaCache = downloadedManga
+        lastCacheUpdate = now
 
         return downloadedManga
     }
 
     /// Get downloaded chapters for a specific manga
-    func getDownloadedChapters(for mangaInfo: DownloadedMangaInfo) async -> [DownloadedChapterInfo] {
+    func getDownloadedChapters(for identifier: MangaIdentifier) async -> [DownloadedChapterInfo] {
         let mangaDirectory = Self.directory
-            .appendingSafePathComponent(mangaInfo.sourceId)
-            .appendingSafePathComponent(mangaInfo.directoryMangaId)
+            .appendingSafePathComponent(identifier.sourceKey.directoryName)
+            .appendingSafePathComponent(identifier.mangaKey.directoryName)
 
         guard mangaDirectory.exists else { return [] }
 
         let chapterDirectories = mangaDirectory.contents.filter {
-            $0.isDirectory && !$0.lastPathComponent.hasPrefix(".tmp")
+            ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
         }
 
         var chapters: [DownloadedChapterInfo] = []
 
         for chapterDirectory in chapterDirectories {
-            let chapterId = chapterDirectory.lastPathComponent
+            let chapterId = chapterDirectory.deletingPathExtension().lastPathComponent
             let size = await calculateDirectorySize(chapterDirectory)
 
             // Get directory creation date as download date
@@ -416,21 +524,22 @@ extension DownloadManager {
             let downloadDate = attributes?[.creationDate] as? Date
 
             // Try to load metadata from the chapter directory
-            let metadata = loadChapterMetadata(from: chapterDirectory)
+            let metadata = getComicInfo(in: chapterDirectory)
 
             let chapterInfo = DownloadedChapterInfo(
                 chapterId: chapterId,
                 title: metadata?.title,
-                chapterNumber: metadata?.chapterNumber,
-                volumeNumber: metadata?.volumeNumber,
+                chapterNumber: metadata?.number.flatMap { Float($0) },
+                volumeNumber: metadata?.volume.flatMap { Float($0) },
                 size: size,
-                downloadDate: downloadDate
+                downloadDate: downloadDate,
+                chapter: metadata?.toChapter()
             )
 
             chapters.append(chapterInfo)
         }
 
-        // Sort chapters by ID (which should correspond to chapter order)
+        // Sort chapters by ID
         chapters.sort { lhs, rhs in
             // Try to sort numerically if possible, otherwise alphabetically
             if let lhsNum = Double(lhs.chapterId), let rhsNum = Double(rhs.chapterId) {
@@ -442,104 +551,112 @@ extension DownloadManager {
         return chapters
     }
 
-    /// Save chapter metadata when downloading
-    func saveChapterMetadata(_ chapter: Chapter, to directory: URL) {
-        let metadata = ChapterMetadata(
-            title: chapter.title,
-            chapterNumber: chapter.chapterNum,
-            volumeNumber: chapter.volumeNum,
-            sourceOrder: chapter.sourceOrder
-        )
-
-        let metadataURL = directory.appendingPathComponent(".metadata.json")
-
+    /// Save chapter metadata to ComicInfo.xml.
+    func saveChapterMetadata(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter, to directory: URL) {
+        let xml = ComicInfo.load(manga: manga, chapter: chapter).export()
+        guard let data = xml.data(using: .utf8) else { return }
         do {
-            let data = try JSONEncoder().encode(metadata)
+            let metadataURL = directory.appendingPathComponent("ComicInfo.xml")
             try data.write(to: metadataURL)
         } catch {
             LogManager.logger.error("Failed to save chapter metadata: \(error)")
         }
     }
 
-    /// Save manga metadata when first downloading from it
-    func saveMangaMetadata(_ manga: Manga, to directory: URL) async {
-        // Get the cover image and convert to base64
-        var thumbnailBase64: String?
-        if let coverUrl = manga.coverUrl {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: coverUrl)
-                thumbnailBase64 = data.base64EncodedString()
-            } catch {
-                LogManager.logger.error("Failed to download manga cover: \(error)")
+    /// Load chapter metadata from chapter directory.
+    private func getComicInfo(in directory: URL) -> ComicInfo? {
+        do {
+            func loadComicInfo(data: Data) -> ComicInfo? {
+                if
+                    let string = String(data: data, encoding: .utf8),
+                    let comicInfo = ComicInfo.load(xmlString: string)
+                {
+                    comicInfo
+                } else {
+                    nil
+                }
             }
-        }
 
-        let metadata = MangaMetadata(
-            mangaId: manga.id,
-            title: manga.title,
-            cover: manga.coverUrl?.absoluteString,
-            thumbnailBase64: thumbnailBase64,
-            description: manga.description
-        )
+            if directory.pathExtension == "cbz" {
+                let archive = try Archive(url: directory, accessMode: .read)
+                guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
+                    return nil
+                }
+                var data = Data()
+                _ = try archive.extract(
+                    entry,
+                    consumer: { readData in
+                        data.append(readData)
+                    }
+                )
+                return loadComicInfo(data: data)
+            }
 
-        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
+            guard directory.isDirectory else { return nil }
 
-        do {
-            let data = try JSONEncoder().encode(metadata)
-            try data.write(to: metadataURL)
-        } catch {
-            LogManager.logger.error("Failed to save manga metadata: \(error)")
-        }
-    }
+            let xmlURL = directory.appendingPathComponent("ComicInfo.xml")
+            if xmlURL.exists {
+                let data = try Data(contentsOf: xmlURL)
+                return loadComicInfo(data: data)
+            }
 
-    /// Load chapter metadata from directory
-    private func loadChapterMetadata(from directory: URL) -> ChapterMetadata? {
-        let metadataURL = directory.appendingPathComponent(".metadata.json")
-
-        guard metadataURL.exists else { return nil }
-
-        do {
-            let data = try Data(contentsOf: metadataURL)
-            return try JSONDecoder().decode(ChapterMetadata.self, from: data)
+            return nil
         } catch {
             LogManager.logger.error("Failed to load chapter metadata: \(error)")
             return nil
         }
     }
 
-    /// Load manga metadata from directory
-    private func loadMangaMetadata(from directory: URL) -> MangaMetadata? {
-        let metadataURL = directory.appendingPathComponent(".manga_metadata.json")
-
-        guard metadataURL.exists else { return nil }
-
-        do {
-            let data = try Data(contentsOf: metadataURL)
-            return try JSONDecoder().decode(MangaMetadata.self, from: data)
-        } catch {
-            LogManager.logger.error("Failed to load manga metadata: \(error)")
-            return nil
+    /// Load metadata from manga directory.
+    private func findComicInfo(in directory: URL) -> ComicInfo? {
+        func loadComicInfo(data: Data) -> ComicInfo? {
+            guard
+                let string = String(data: data, encoding: .utf8),
+                let comicInfo = ComicInfo.load(xmlString: string)
+            else {
+                return nil
+            }
+            return comicInfo
         }
+
+        // check for ComicInfo.xml in any subdirectory
+        for subdirectory in directory.contents where subdirectory.isDirectory || subdirectory.pathExtension == "cbz" {
+            do {
+                if directory.pathExtension == "cbz" {
+                    let archive = try Archive(url: directory, accessMode: .read)
+                    guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
+                        return nil
+                    }
+                    var data = Data()
+                    _ = try archive.extract(
+                        entry,
+                        consumer: { readData in
+                            data.append(readData)
+                        }
+                    )
+                    let result = loadComicInfo(data: data)
+                    if let result {
+                        return result
+                    }
+                } else {
+                    let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
+                    if xmlURL.exists {
+                        let data = try Data(contentsOf: xmlURL)
+                        let result = loadComicInfo(data: data)
+                        if let result {
+                            return result
+                        }
+                    }
+                }
+            } catch {
+                LogManager.logger.error("Failed to load manga metadata from ComicInfo.xml: \(error)")
+            }
+        }
+
+        return nil
     }
 
-    /// Simple chapter metadata structure
-    private struct ChapterMetadata: Codable {
-        let title: String?
-        let chapterNumber: Float?
-        let volumeNumber: Float?
-        let sourceOrder: Int
-    }
-
-    /// Simple manga metadata structure
-    private struct MangaMetadata: Codable {
-        let mangaId: String?
-        let title: String?
-        let cover: String?
-        let thumbnailBase64: String?
-        let description: String?
-    }
-
-    /// Calculate the total size of a directory in bytes
+    /// Calculate the total size of a directory in bytes.
     private func calculateDirectorySize(_ directory: URL) async -> Int64 {
         guard directory.exists else { return 0 }
 
@@ -547,21 +664,28 @@ extension DownloadManager {
             DispatchQueue.global(qos: .utility).async {
                 var totalSize: Int64 = 0
 
-                if let enumerator = FileManager.default.enumerator(
-                    at: directory,
-                    includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
-                    options: [.skipsHiddenFiles]
-                ) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-                            if resourceValues.isRegularFile == true {
-                                totalSize += Int64(resourceValues.fileSize ?? 0)
+                if directory.isDirectory {
+                    if let enumerator = FileManager.default.enumerator(
+                        at: directory,
+                        includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
+                        options: [.skipsHiddenFiles]
+                    ) {
+                        for case let fileURL as URL in enumerator {
+                            do {
+                                let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                                if resourceValues.isRegularFile == true {
+                                    totalSize += Int64(resourceValues.fileSize ?? 0)
+                                }
+                            } catch {
+                                // Skip files that can't be accessed
+                                continue
                             }
-                        } catch {
-                            // Skip files that can't be accessed
-                            continue
                         }
+                    }
+                } else {
+                    let resourceValues = try? directory.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+                    if let resourceValues, resourceValues.isRegularFile == true {
+                        totalSize = Int64(resourceValues.fileSize ?? 0)
                     }
                 }
 
@@ -570,44 +694,99 @@ extension DownloadManager {
         }
     }
 
-    /// Delete chapters for a specific manga (used by download manager UI)
-    func deleteChaptersForManga(_ mangaInfo: DownloadedMangaInfo) {
-        let manga = Manga(sourceId: mangaInfo.sourceId, id: mangaInfo.directoryMangaId)
-        deleteChapters(for: manga)
-
-        // Invalidate cache
-        Self.lastCacheUpdate = .distantPast
-    }
-
-    /// Delete a specific chapter (used by download manager UI)
-    func deleteChapter(_ chapterInfo: DownloadedChapterInfo, from mangaInfo: DownloadedMangaInfo) {
-        let chapter = Chapter(
-            sourceId: mangaInfo.sourceId,
-            id: chapterInfo.chapterId,
-            mangaId: mangaInfo.directoryMangaId, // Use directory name for file system operations
-            title: chapterInfo.title,
-            sourceOrder: -1
-        )
-        delete(chapters: [chapter])
-
-        // Invalidate cache
-        Self.lastCacheUpdate = .distantPast
-    }
-
-    /// Get total size of all downloads
-    func getTotalDownloadedSize() async -> Int64 {
-        guard Self.directory.exists else { return 0 }
-        return await calculateDirectorySize(Self.directory)
-    }
-
     /// Get formatted total download size string
     func getFormattedTotalDownloadedSize() async -> String {
-        let totalSize = await getTotalDownloadedSize()
+        let totalSize = if Self.directory.exists {
+            await calculateDirectorySize(Self.directory)
+        } else {
+            Int64(0)
+        }
         return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
     }
 
     /// Invalidate the downloaded manga cache (call when downloads are added/removed)
-    func invalidateDownloadedMangaCache() {
-        Self.lastCacheUpdate = .distantPast
+    private func invalidateDownloadedMangaCache() {
+        lastCacheUpdate = .distantPast
+    }
+}
+
+extension DownloadManager {
+    /// Check if there is any old metadata files that need migration.
+    func checkForOldMetadata() -> Bool {
+        for sourceDirectory in Self.directory.contents where sourceDirectory.isDirectory {
+            for mangaDirectory in sourceDirectory.contents where mangaDirectory.isDirectory {
+                if mangaDirectory.appendingPathComponent(".manga_metadata.json").exists {
+                    return true
+                }
+                for chapterDirectory in mangaDirectory.contents where chapterDirectory.isDirectory {
+                    if chapterDirectory.appendingPathComponent(".metadata.json").exists {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    /// Migrate old metadata files to new format.
+    func migrateOldMetadata() {
+        for sourceDirectory in Self.directory.contents where sourceDirectory.isDirectory {
+            for mangaDirectory in sourceDirectory.contents where mangaDirectory.isDirectory {
+                let mangaMetadataUrl = mangaDirectory.appendingPathComponent(".manga_metadata.json")
+                var seriesTitle: String?
+                if mangaMetadataUrl.exists {
+                    if
+                        let data = try? Data(contentsOf: mangaMetadataUrl),
+                        let metadata = try? JSONDecoder().decode(MangaMetadata.self, from: data)
+                    {
+                        // save series title for chapter ComicInfo
+                        seriesTitle = metadata.title
+                        // save cover image data as cover.png
+                        if
+                            let thumbnailBase64 = metadata.thumbnailBase64,
+                            let imageData = Data(base64Encoded: thumbnailBase64)
+                        {
+                            try? imageData.write(to: mangaDirectory.appendingPathComponent("cover.png"))
+                        }
+                    }
+                    mangaMetadataUrl.removeItem()
+                }
+                for chapterDirectory in mangaDirectory.contents where chapterDirectory.isDirectory {
+                    let chapterMetadataUrl = chapterDirectory.appendingPathComponent(".metadata.json")
+                    if chapterMetadataUrl.exists {
+                        if
+                            let data = try? Data(contentsOf: chapterMetadataUrl),
+                            let metadata = try? JSONDecoder().decode(ChapterMetadata.self, from: data)
+                        {
+                            let xml = ComicInfo(
+                                title: metadata.title,
+                                series: seriesTitle,
+                                number: metadata.chapterNumber.flatMap { String($0) },
+                                volume: metadata.volumeNumber.flatMap { Int(floor($0)) }
+                            ).export()
+                            guard let data = xml.data(using: .utf8) else { continue }
+                            try? data.write(to: chapterDirectory.appendingPathComponent("ComicInfo.xml"))
+                        }
+                        chapterMetadataUrl.removeItem()
+                    }
+                }
+            }
+        }
+        invalidateDownloadedMangaCache()
+    }
+
+    private struct ChapterMetadata: Codable {
+        let title: String?
+        let chapterNumber: Float?
+        let volumeNumber: Float?
+        var chapter: AidokuRunner.Chapter?
+    }
+
+    private struct MangaMetadata: Codable {
+        let mangaId: String?
+        let title: String?
+        let cover: String?
+        let thumbnailBase64: String?
+        let description: String?
     }
 }
