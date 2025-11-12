@@ -27,7 +27,8 @@ actor DownloadManager {
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Downloads", isDirectory: true)
 
-    nonisolated let cache: DownloadCache
+    @MainActor
+    private let cache: DownloadCache = .init()
     private let queue: DownloadQueue
 
     private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
@@ -38,7 +39,6 @@ actor DownloadManager {
     private let cacheValidityDuration: TimeInterval = 60 // 1 minute
 
     init() {
-        self.cache = DownloadCache()
         self.queue = DownloadQueue(cache: cache)
         if !Self.directory.exists {
             Self.directory.createDirectory()

@@ -123,7 +123,7 @@ class LibraryViewModel {
         let filters = self.filters
         let pinType = self.pinType
 
-        var (
+        let (
             success,
             pinnedManga,
             manga,
