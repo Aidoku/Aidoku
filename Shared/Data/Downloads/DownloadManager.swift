@@ -33,7 +33,7 @@ actor DownloadManager {
 
     private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
 
-    // for download manager UI
+    // for UI
     private var downloadedMangaCache: [DownloadedMangaInfo] = []
     private var lastCacheUpdate: Date = .distantPast
     private let cacheValidityDuration: TimeInterval = 60 // 1 minute
@@ -296,7 +296,7 @@ extension DownloadManager {
             await cache.remove(chapter: chapter)
             NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
-        // Invalidate cache for download manager UI
+        // Invalidate cache for UI
         invalidateDownloadedMangaCache()
     }
 
@@ -306,7 +306,7 @@ extension DownloadManager {
         await cache.directory(for: manga).removeItem()
         await cache.remove(manga: manga)
         NotificationCenter.default.post(name: .downloadsRemoved, object: manga)
-        // Invalidate cache for download manager UI
+        // Invalidate cache for UI
         invalidateDownloadedMangaCache()
     }
 
@@ -366,7 +366,7 @@ extension DownloadManager {
     }
 }
 
-// MARK: - Download Manager UI Support
+// MARK: - Downloads UI Support
 extension DownloadManager {
     /// Get all downloaded manga with metadata from CoreData if available
     func getAllDownloadedManga() async -> [DownloadedMangaInfo] {

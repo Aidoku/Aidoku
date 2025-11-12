@@ -1,5 +1,5 @@
 //
-//  DownloadManagerView+ViewModel.swift
+//  DownloadsView+ViewModel.swift
 //  Aidoku
 //
 //  Created by Skitty on 7/21/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-extension DownloadManagerView {
+extension DownloadsView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var downloadedManga: [DownloadedMangaInfo] = []
@@ -30,7 +30,7 @@ extension DownloadManagerView {
     }
 }
 
-extension DownloadManagerView.ViewModel {
+extension DownloadsView.ViewModel {
     // Group manga by source for sectioned display
     var groupedManga: [(source: String, manga: [DownloadedMangaInfo])] {
         let grouped = Dictionary(grouping: downloadedManga) { $0.sourceId }

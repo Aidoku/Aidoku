@@ -289,7 +289,7 @@ extension SettingsView {
         } else if key == "Backups" {
             BackupsView().environmentObject(path)
         } else if key == "Downloads" {
-            DownloadManagerView().environmentObject(path)
+            DownloadsView().environmentObject(path)
         }
     }
 

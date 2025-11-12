@@ -1,5 +1,5 @@
 //
-//  MangaDownloadDetailView+ViewModel.swift
+//  DownloadedMangaView+ViewModel.swift
 //  Aidoku
 //
 //  Created by Skitty on 7/21/25.
@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 import AidokuRunner
 
-extension MangaDownloadDetailView {
+extension DownloadedMangaView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var manga: DownloadedMangaInfo
@@ -35,7 +35,7 @@ extension MangaDownloadDetailView {
     }
 }
 
-extension MangaDownloadDetailView.ViewModel {
+extension DownloadedMangaView.ViewModel {
     func loadChapters() async {
         isLoading = true
 

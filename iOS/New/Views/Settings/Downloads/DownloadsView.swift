@@ -1,5 +1,5 @@
 //
-//  DownloadManagerView.swift
+//  DownloadsView.swift
 //  Aidoku
 //
 //  Created by doomsboygaming on 6/25/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DownloadManagerView: View {
+struct DownloadsView: View {
     @StateObject private var viewModel = ViewModel()
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -66,7 +66,7 @@ struct DownloadManagerView: View {
                 ForEach(viewModel.groupedManga, id: \.source) { group in
                     Section(header: Text(group.source)) {
                         ForEach(group.manga) { manga in
-                            NavigationLink(destination: MangaDownloadDetailView(manga: manga).environmentObject(path)) {
+                            NavigationLink(destination: DownloadedMangaView(manga: manga).environmentObject(path)) {
                                 DownloadedMangaRow(manga: manga)
                             }
                             .swipeActions {
@@ -181,7 +181,7 @@ private struct DownloadedMangaRow: View {
 }
 
 #Preview {
-    NavigationView {
-        DownloadManagerView()
+    PlatformNavigationStack {
+        DownloadsView()
     }
 }

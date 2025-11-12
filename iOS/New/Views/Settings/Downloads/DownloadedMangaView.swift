@@ -1,5 +1,5 @@
 //
-//  MangaDownloadDetailView.swift
+//  DownloadedMangaView.swift
 //  Aidoku
 //
 //  Created by doomsboygaming on 6/25/25.
@@ -9,7 +9,7 @@ import AidokuRunner
 import SwiftUI
 import UIKit
 
-struct MangaDownloadDetailView: View {
+struct DownloadedMangaView: View {
     @StateObject private var viewModel: ViewModel
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var path: NavigationCoordinator
@@ -243,7 +243,7 @@ private struct ChapterRow: View {
 }
 
 #Preview {
-    MangaDownloadDetailView(
+    DownloadedMangaView(
         manga: DownloadedMangaInfo(
             sourceId: "test",
             mangaId: "test-manga",
