@@ -215,8 +215,23 @@ actor DownloadManager {
         }
     }
 
-    func getDownloadStatus(for chapter: ChapterIdentifier) async -> DownloadStatus {
-        await getDownloadStatusSync(for: chapter)
+    func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
+        let mangaDirectory =  Self.directory
+            .appendingSafePathComponent(chapter.sourceKey)
+            .appendingSafePathComponent(chapter.mangaKey)
+        let chapterDirectory = mangaDirectory
+            .appendingSafePathComponent(chapter.chapterKey.directoryName)
+        if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
+            return .finished
+        } else {
+            let tmpDirectory = mangaDirectory
+                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+            if tmpDirectory.exists {
+                return .queued
+            } else {
+                return .none
+            }
+        }
     }
 }
 

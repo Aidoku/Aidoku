@@ -467,10 +467,18 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        for chapter in chapters {
-            downloadStatus[chapter.key] = await DownloadManager.shared.getDownloadStatus(
-                for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-            )
+        await withTaskGroup(of: (String, DownloadStatus).self) { [manga] group in
+            for chapter in chapters {
+                group.addTask {
+                    let status = await DownloadManager.shared.getDownloadStatus(
+                        for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                    )
+                    return (chapter.key, status)
+                }
+            }
+            for await (key, status) in group {
+                downloadStatus[key] = status
+            }
         }
         for chapter in otherDownloadedChapters {
             downloadStatus[chapter.key] = .finished
