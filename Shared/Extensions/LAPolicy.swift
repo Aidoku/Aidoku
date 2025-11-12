@@ -8,5 +8,5 @@
 import LocalAuthentication
 
 extension LAPolicy {
-    static let defaultPolicy = Self.deviceOwnerAuthenticationWithBiometrics
+    static let defaultPolicy = Self.deviceOwnerAuthentication
 }
