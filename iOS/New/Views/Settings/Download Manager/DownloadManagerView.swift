@@ -111,6 +111,13 @@ struct DownloadManagerView: View {
         } message: {
             Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
         }
+        .alert(NSLocalizedString("METADATA_DETECTED"), isPresented: $viewModel.showingMigrateNotice) {
+            Button(NSLocalizedString("OK"), role: .cancel) {
+                viewModel.migrate()
+            }
+        } message: {
+            Text(NSLocalizedString("METADATA_DETECTED_TEXT"))
+        }
     }
 }
 

@@ -11,43 +11,43 @@ import Foundation
 // https://github.com/anansi-project/comicinfo/blob/main/schema/v2.0/ComicInfo.xsd
 struct ComicInfo {
     /// Title of the book.
-    let title: String?
+    var title: String?
     /// Title of the series the book is part of.
-    let series: String?
+    var series: String?
     /// Number of the book in the series.
-    let number: String?
+    var number: String?
     /// The total number of books in the series.
-    let count: Int?
+    var count: Int?
     /// Volume containing the book.
-    let volume: Int?
+    var volume: Int?
     /// A description or summary of the book.
-    let summary: String?
+    var summary: String?
     /// A free text field, usually used to store information about the application that created the ComicInfo.xml file.
-    let notes: String?
+    var notes: String?
     /// The release year of the book.
-    let year: Int?
+    var year: Int?
     /// The release month of the book.
-    let month: Int?
+    var month: Int?
     /// The release day of the book.
-    let day: Int?
+    var day: Int?
     /// Person or organization responsible for creating the scenario (comma separated).
-    let writer: String?
+    var writer: String?
     /// Person or organization responsible for drawing the art (comma separated).
-    let penciller: String?
+    var penciller: String?
     /// A person or organization who renders a text from one language into another (comma separated).
-    let translator: String?
+    var translator: String?
     /// Genre of the book or series (comma separated).
-    let genre: String?
+    var genre: String?
     /// Tags of the book or series (comma separated).
-    let tags: String?
+    var tags: String?
     /// A URL pointing to a reference website for the book (space separated).
-    let web: String?
+    var web: String?
     /// A language code describing the language of the book.
-    let languageIso: String?
+    var languageIso: String?
     /// Whether the book is a manga. This also defines the reading direction as right-to-left when set to YesAndRightToLeft.
-    let manga: Manga?
+    var manga: Manga?
     /// Age rating of the book.
-    let ageRating: AgeRating?
+    var ageRating: AgeRating?
 
     enum AgeRating: String {
         case unknown = "Unknown"

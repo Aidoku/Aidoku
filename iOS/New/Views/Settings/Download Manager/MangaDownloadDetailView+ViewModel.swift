@@ -176,7 +176,13 @@ extension MangaDownloadDetailView.ViewModel {
 
         // Perform actual deletion
         Task {
-            await DownloadManager.shared.deleteChapter(chapter, from: manga)
+            await DownloadManager.shared.delete(chapters: [
+                .init(
+                    sourceKey: manga.sourceId,
+                    mangaKey: manga.mangaId,
+                    chapterKey: chapter.chapterId
+                )
+            ])
         }
     }
 

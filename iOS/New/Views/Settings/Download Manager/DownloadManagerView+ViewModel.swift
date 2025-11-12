@@ -16,6 +16,7 @@ extension DownloadManagerView {
         @Published var totalSize: String = ""
         @Published var totalCount = 0
         @Published var showingDeleteAllConfirmation = false
+        @Published var showingMigrateNotice = false
 
         // Non-reactive state for background updates
         private var backgroundUpdateInProgress = false
@@ -45,12 +46,14 @@ extension DownloadManagerView.ViewModel {
 
         let manga = await DownloadManager.shared.getAllDownloadedManga()
         let formattedSize = await DownloadManager.shared.getFormattedTotalDownloadedSize()
+        let shouldMigrate = await DownloadManager.shared.checkForOldMetadata()
 
         withAnimation(.easeInOut(duration: 0.3)) {
             downloadedManga = manga
             totalSize = formattedSize
             totalCount = manga.count
             isLoading = false
+            showingMigrateNotice = shouldMigrate
         }
     }
 
@@ -195,5 +198,14 @@ extension DownloadManagerView.ViewModel {
 
     func confirmDeleteAll() {
         showingDeleteAllConfirmation = true
+    }
+
+    func migrate() {
+        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+        Task {
+            await DownloadManager.shared.migrateOldMetadata()
+            await loadDownloadedManga()
+            (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+        }
     }
 }
