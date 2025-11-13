@@ -128,6 +128,9 @@ class SearchViewController: UIViewController {
         searchController.searchBar.delegate = self
         searchController.obscuresBackgroundDuringPresentation = false
         navigationItem.searchController = searchController
+        if #available(iOS 16.0, *) {
+            navigationItem.preferredSearchBarPlacement = .stacked
+        }
 
         let config = UICollectionViewCompositionalLayoutConfiguration()
         let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { sectionIndex, _ in

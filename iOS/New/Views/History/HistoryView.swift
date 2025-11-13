@@ -60,6 +60,7 @@ struct HistoryView: View {
         }
         .customSearchable(
             text: $searchText,
+            stacked: false,
             onSubmit: {
                 Task {
                     await viewModel.search(query: searchText, delay: false)
