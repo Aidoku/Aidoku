@@ -654,7 +654,11 @@ extension MangaView {
 extension MangaView {
     func openReaderView(chapter: AidokuRunner.Chapter) {
         var mangaWithFilteredChapters = viewModel.manga
-        mangaWithFilteredChapters.chapters = viewModel.chapters
+        mangaWithFilteredChapters.chapters = if viewModel.chapterSortAscending {
+            viewModel.chapters.reversed()
+        } else {
+            viewModel.chapters
+        }
         let readerController = ReaderViewController(
             source: viewModel.source,
             manga: mangaWithFilteredChapters,

@@ -147,7 +147,7 @@ extension CoreDataManager {
             do {
                 try context.save()
             } catch {
-                LogManager.logger.error("CoreDataManager.updateMangaDetails: \(error.localizedDescription)")
+                LogManager.logger.error("CoreDataManager.updateMangaDetails: \(error)")
             }
             return object.toManga()
         }
