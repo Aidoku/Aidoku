@@ -253,6 +253,15 @@ class NewSourceViewController: UIViewController {
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.searchBar.delegate = self
 
+        // fix iPadOS 26 bug
+        if #available(iOS 26.0, *), UIDevice.current.userInterfaceIdiom == .pad {
+            typealias SetClearAsCancelButtonVisibility = @convention(c) (NSObject, Selector, NSInteger) -> Void
+            let selector = NSSelectorFromString("_setClearAsCancelButtonVisibilityWhenEmpty:")
+            let methodIMP = searchController.method(for: selector)
+            let method = unsafeBitCast(methodIMP, to: SetClearAsCancelButtonVisibility.self)
+            method(searchController, selector, 1)
+        }
+
         setSearchBarHidden(!onlySearch)
 
         // disable the search bar tap gesture while it's hidden
