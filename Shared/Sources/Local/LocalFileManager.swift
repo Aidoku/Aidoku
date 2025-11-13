@@ -19,6 +19,7 @@ actor LocalFileManager {
     static let shared = LocalFileManager()
 
     private var lastScanTime = Date.distantPast
+    private var scanTask: Task<Void, Never>?
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
     static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
@@ -114,7 +115,8 @@ extension LocalFileManager {
             previewImages: previewImages,
             name: url.lastPathComponent,
             pageCount: pageEntries.count,
-            fileType: fileType
+            fileType: fileType,
+            comicInfo: ComicInfo.load(from: url)
         )
     }
 }
@@ -287,6 +289,8 @@ extension LocalFileManager {
             throw LocalFileManagerError.noImagesFound
         }
 
+        let comicInfo = ComicInfo.load(from: archive)
+
         let resolvedMangaId = mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent
         let mangaTitle = mangaName ?? resolvedMangaId
 
@@ -299,7 +303,11 @@ extension LocalFileManager {
 
         // get chapter number
         let chapter = if volume == nil && chapter == nil {
-            if let mangaId {
+            if let comicInfo, let number = comicInfo.number, let chapter = Float(number) {
+                chapter
+            } else if let chapter = LocalFileNameParser.getMangaChapterNumber(from: url.lastPathComponent) {
+                chapter
+            } else if let mangaId {
                 await LocalFileDataManager.shared.getNextChapterNumber(series: mangaId)
             } else {
                 Float(1)
@@ -408,7 +416,8 @@ extension LocalFileManager {
                 id: resolvedMangaId,
                 title: mangaTitle,
                 cover: cover,
-                description: mangaDescription
+                description: mangaDescription,
+                comicInfo: comicInfo
             )
         }
 
@@ -424,7 +433,8 @@ extension LocalFileManager {
             id: UUID().uuidString,
             title: title,
             volume: volume,
-            chapter: chapter
+            chapter: chapter,
+            comicInfo: comicInfo
         )
     }
 }
@@ -531,70 +541,76 @@ extension LocalFileManager {
         // don't scan while suppressing file events
         guard !suppressFileEvents else { return }
 
-        let fileManager = FileManager.default
-        let documentsDir = fileManager.documentDirectory
-        let localFolder = documentsDir.appendingPathComponent("Local", isDirectory: true)
-        localFolder.createDirectory()
-
-        // get all manga folders
-        let mangaFolders = (try? fileManager.contentsOfDirectory(
-            at: localFolder,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: .skipsHiddenFiles
-        ))?.filter { $0.isDirectory } ?? []
-
-        let (toRemove, toAdd) = await LocalFileDataManager.shared.findMangaDiskChanges(mangaFolders: mangaFolders)
-
-        // remove manga from db that no longer exist on disk
-        for mangaId in toRemove {
-            await removeManga(with: mangaId)
+        // ensure only one scan is running at a time
+        guard scanTask == nil else {
+            await scanTask?.value
+            return
         }
 
-        // add manga to db that exist on disk but not in db yet
-        for folder in mangaFolders where toAdd.contains(folder.lastPathComponent) {
-            // find cbz files in this folder
-            let cbzFiles = (try? fileManager.contentsOfDirectory(
-                at: folder,
-                includingPropertiesForKeys: nil,
-                options: .skipsHiddenFiles
-            ))?.filter { Self.allowedFileExtensions.contains($0.pathExtension.lowercased()) } ?? []
-            let mangaId = folder.lastPathComponent
-            // add cbz files as chapters
-            for cbzFile in cbzFiles {
-                do {
-                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
-                } catch {
-                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for new manga \(mangaId): \(error)")
+        scanTask = Task {
+            let fileManager = FileManager.default
+            let documentsDir = fileManager.documentDirectory
+            let localFolder = documentsDir.appendingPathComponent("Local", isDirectory: true)
+            localFolder.createDirectory()
+
+            // get all manga folders
+            let mangaFolders = localFolder.contents.filter { $0.isDirectory }
+
+            let (toRemove, toAdd) = await LocalFileDataManager.shared.findMangaDiskChanges(mangaFolders: mangaFolders)
+
+            // remove manga from db that no longer exist on disk
+            for mangaId in toRemove {
+                await removeManga(with: mangaId)
+            }
+
+            // for each manga folder, ensure chapters in db match local files
+            for folder in mangaFolders {
+                let mangaId = folder.lastPathComponent
+
+                // find cbz files in this folder
+                let cbzFiles = folder.contents
+                    .filter {
+                        Self.allowedFileExtensions.contains($0.pathExtension.lowercased())
+                    }
+                    .sorted {
+                        $0.path.localizedStandardCompare($1.path) == .orderedAscending
+                    }
+
+                // add manga to db that exist on disk but not in db yet
+                if toAdd.contains(mangaId) {
+                    // add cbz files as chapters
+                    for cbzFile in cbzFiles {
+                        do {
+                            try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                        } catch {
+                            LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for new manga \(mangaId): \(error)")
+                        }
+                    }
+                } else {
+                    // add missing chapters
+                    let cbzFileNames = Set(cbzFiles.map { $0.lastPathComponent })
+
+                    let dbChapterFileNames = await LocalFileDataManager.shared.removeMissingChapters(
+                        mangaId: mangaId,
+                        availableChapters: cbzFileNames
+                    )
+
+                    // add chapters for new cbz files
+                    let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
+                    for cbzFile in chaptersToAdd {
+                        do {
+                            try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                        } catch {
+                            LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \(mangaId): \(error)")
+                        }
+                    }
                 }
             }
+
+            // clear running task (complete)
+            scanTask = nil
         }
-
-        // for each manga folder, ensure chapters in db match local files
-        for folder in mangaFolders {
-            let mangaId = folder.lastPathComponent
-            // find cbz files in this folder
-            let cbzFiles = (try? fileManager.contentsOfDirectory(
-                at: folder,
-                includingPropertiesForKeys: nil,
-                options: .skipsHiddenFiles
-            ))?.filter { Self.allowedFileExtensions.contains($0.pathExtension.lowercased()) } ?? []
-            let cbzFileNames = Set(cbzFiles.map { $0.lastPathComponent })
-
-            let dbChapterFileNames = await LocalFileDataManager.shared.removeMissingChapters(
-                mangaId: mangaId,
-                availableChapters: cbzFileNames
-            )
-
-            // add chapters for new cbz files
-            let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
-            for cbzFile in chaptersToAdd {
-                do {
-                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
-                } catch {
-                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \(mangaId): \(error)")
-                }
-            }
-        }
+        await scanTask?.value
     }
 }
 

@@ -7,9 +7,10 @@
 
 import AidokuRunner
 import Foundation
+import ZIPFoundation
 
 // https://github.com/anansi-project/comicinfo/blob/main/schema/v2.0/ComicInfo.xsd
-struct ComicInfo {
+struct ComicInfo: Hashable {
     /// Title of the book.
     var title: String?
     /// Title of the series the book is part of.
@@ -140,37 +141,8 @@ extension ComicInfo {
         else {
             return nil
         }
-        let tags = (genre.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
-            + (tags.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
-        return .init(
-            sourceKey: sourceKey,
-            key: key,
-            title: series ?? "",
-            cover: nil,
-            artists: penciller.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
-            authors: writer.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
-            description: summary,
-            url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
-            tags: tags,
-            status: .unknown,
-            contentRating: {
-                switch ageRating {
-                    case .everyone: .safe
-                    case .m15Plus: .suggestive
-                    case .r18Plus: .nsfw
-                    default: .unknown
-                }
-            }(),
-            viewer: {
-                switch manga {
-                    case .yesAndRightToLeft: .rightToLeft
-                    default: .unknown
-                }
-            }(),
-            updateStrategy: .always,
-            nextUpdateTime: nil,
-            chapters: nil
-        )
+        let basicManga = AidokuRunner.Manga(sourceKey: sourceKey, key: key, title: series ?? "")
+        return copy(into: basicManga)
     }
 
     func toChapter() -> AidokuRunner.Chapter? {
@@ -180,24 +152,67 @@ extension ComicInfo {
         else {
             return nil
         }
-        return .init(
-            key: key,
-            title: title,
-            chapterNumber: number.flatMap { Float($0) },
-            volumeNumber: volume.flatMap { Float($0) },
-            dateUploaded: {
-                guard let day, let month, let year else { return nil }
-                var components = DateComponents()
-                components.year = year
-                components.month = month
-                components.day = day
-                return Calendar.current.date(from: components)
-            }(),
-            scanlators: translator.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } },
-            url: web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) },
-            language: languageIso,
-            thumbnail: nil,
-            locked: false
+        let basicChapter = AidokuRunner.Chapter(key: key)
+        return copy(into: basicChapter)
+    }
+
+    func copy(into manga: AidokuRunner.Manga) -> AidokuRunner.Manga {
+        let artists = penciller.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
+        let authors = writer.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
+        let url = web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) }
+        let tags = (genre.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+            + (tags.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+        let contentRating: ContentRating = switch ageRating {
+            case .everyone: .safe
+            case .m15Plus: .suggestive
+            case .r18Plus: .nsfw
+            default: manga.contentRating
+        }
+        let viewer: Viewer = switch self.manga {
+            case .yesAndRightToLeft: .rightToLeft
+            default: manga.viewer
+        }
+        return AidokuRunner.Manga(
+            sourceKey: manga.sourceKey,
+            key: manga.key,
+            title: series ?? manga.title,
+            cover: manga.cover,
+            artists: (artists?.isEmpty ?? true) ? manga.artists : artists,
+            authors: (authors?.isEmpty ?? true) ? manga.authors : authors,
+            description: summary ?? manga.description,
+            url: url ?? manga.url,
+            tags: tags.isEmpty ? manga.tags : tags,
+            status: manga.status,
+            contentRating: contentRating,
+            viewer: viewer,
+            updateStrategy: manga.updateStrategy,
+            nextUpdateTime: manga.nextUpdateTime,
+            chapters: manga.chapters
+        )
+    }
+
+    func copy(into chapter: AidokuRunner.Chapter) -> AidokuRunner.Chapter {
+        let dateUploaded: Date? = {
+            guard let day, let month, let year else { return nil }
+            var components = DateComponents()
+            components.year = year
+            components.month = month
+            components.day = day
+            return Calendar.current.date(from: components)
+        }()
+        let scanlators = translator.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
+        let url = web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) }
+        return AidokuRunner.Chapter(
+            key: chapter.key,
+            title: title ?? chapter.title,
+            chapterNumber: number.flatMap { Float($0) } ?? chapter.chapterNumber,
+            volumeNumber: volume.flatMap { Float($0) } ?? chapter.volumeNumber,
+            dateUploaded: dateUploaded ?? chapter.dateUploaded,
+            scanlators: (scanlators?.isEmpty ?? true) ? chapter.scanlators : scanlators,
+            url: url ?? chapter.url,
+            language: languageIso ?? chapter.language,
+            thumbnail: chapter.thumbnail,
+            locked: chapter.locked
         )
     }
 }
@@ -355,5 +370,42 @@ extension ComicInfo {
         xml += xmlElement("AgeRating", ageRating?.rawValue)
         xml += "</ComicInfo>\n"
         return xml
+    }
+}
+
+extension ComicInfo {
+    static func load(from archiveURL: URL) -> ComicInfo? {
+        do {
+            let archive = try Archive(url: archiveURL, accessMode: .read)
+            return load(from: archive)
+        } catch {
+            return nil
+        }
+    }
+
+    static func load(from archive: Archive) -> ComicInfo? {
+        do {
+            guard
+                let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") })
+            else {
+                return nil
+            }
+            var data = Data()
+            _ = try archive.extract(
+                entry,
+                consumer: { readData in
+                    data.append(readData)
+                }
+            )
+            guard
+                let string = String(data: data, encoding: .utf8),
+                let comicInfo = ComicInfo.load(xmlString: string)
+            else {
+                return nil
+            }
+            return comicInfo
+        } catch {
+            return nil
+        }
     }
 }

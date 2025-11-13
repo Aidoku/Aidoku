@@ -30,7 +30,7 @@ extension LocalFileDataManager {
     // check if a series exists in the db with the given name (id)
     func hasSeries(name: String) -> Bool {
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "fileInfo != nil AND id == %@", name)
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", name, LocalSourceRunner.sourceKey)
         request.fetchLimit = 1
         return (try? context.count(for: request)) == 1
     }
@@ -38,8 +38,8 @@ extension LocalFileDataManager {
     // check if a series has a chapter with the given volume and chapter numbers
     func hasChapter(series: String, volume: Float?, chapter: Float?) -> Bool {
         let request = ChapterObject.fetchRequest()
-        var predicateString = "fileInfo != nil AND mangaId == %@"
-        var args: [Any] = [series]
+        var predicateString = "sourceId == %@ AND mangaId == %@"
+        var args: [Any] = [LocalSourceRunner.sourceKey, series]
         if let volume {
             predicateString += " AND volume == %@"
             args.append(NSNumber(value: volume))
@@ -60,7 +60,7 @@ extension LocalFileDataManager {
     // get the next chapter number to assign a new chapter for a series
     func getNextChapterNumber(series: String) -> Float {
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(format: "fileInfo != nil AND mangaId == %@", series)
+        request.predicate = NSPredicate(format: "sourceId == %@ AND mangaId == %@", LocalSourceRunner.sourceKey, series)
         guard let results = try? context.fetch(request) else { return 1}
 
         // get all chapter numbers
@@ -84,9 +84,9 @@ extension LocalFileDataManager {
     func fetchLocalSeriesInfo(query: String? = nil) -> [LocalSeriesInfo] {
         let request = MangaObject.fetchRequest()
         request.predicate = if let query, !query.isEmpty {
-            NSPredicate(format: "fileInfo != nil AND title CONTAINS[cd] %@", query)
+            NSPredicate(format: "sourceId == %@ AND title CONTAINS[cd] %@", LocalSourceRunner.sourceKey, query)
         } else {
-            NSPredicate(format: "fileInfo != nil")
+            NSPredicate(format: "sourceId == %@", LocalSourceRunner.sourceKey)
         }
         request.sortDescriptors = [NSSortDescriptor(key: "fileInfo.dateCreated", ascending: false)]
         do {
@@ -108,9 +108,9 @@ extension LocalFileDataManager {
     func fetchLocalSeries(query: String? = nil) -> [AidokuRunner.Manga] {
         let request = MangaObject.fetchRequest()
         request.predicate = if let query, !query.isEmpty {
-            NSPredicate(format: "fileInfo != nil AND title CONTAINS[cd] %@", query)
+            NSPredicate(format: "sourceId == %@ AND title CONTAINS[cd] %@", LocalSourceRunner.sourceKey, query)
         } else {
-            NSPredicate(format: "fileInfo != nil")
+            NSPredicate(format: "sourceId == %@", LocalSourceRunner.sourceKey)
         }
         request.sortDescriptors = [NSSortDescriptor(key: "fileInfo.dateCreated", ascending: false)]
         do {
@@ -293,7 +293,8 @@ extension LocalFileDataManager {
         id: String,
         title: String,
         cover: String? = nil,
-        description: String? = nil
+        description: String? = nil,
+        comicInfo: ComicInfo? = nil
     ) {
         let fileInfo = LocalFileInfoObject(context: context)
         fileInfo.path = removeDocumentsDirPrefix(from: url)
@@ -302,11 +303,24 @@ extension LocalFileDataManager {
         fileInfo.dateModified = values?.contentModificationDate
 
         let object = MangaObject(context: context)
-        object.id = id
-        object.sourceId = LocalSourceRunner.sourceKey
-        object.title = title
-        object.cover = cover
-        object.desc = description
+
+        if let comicInfo {
+            let basicManga = AidokuRunner.Manga(
+                sourceKey: LocalSourceRunner.sourceKey,
+                key: id,
+                title: title,
+                cover: cover,
+                description: description
+            )
+            let detailedManga = comicInfo.copy(into: basicManga)
+            object.load(from: detailedManga)
+        } else {
+            object.id = id
+            object.sourceId = LocalSourceRunner.sourceKey
+            object.title = title
+            object.cover = cover
+            object.desc = description
+        }
         object.fileInfo = fileInfo
 
         try? context.save()
@@ -318,10 +332,11 @@ extension LocalFileDataManager {
         id: String,
         title: String? = nil,
         volume: Float? = nil,
-        chapter: Float? = nil
+        chapter: Float? = nil,
+        comicInfo: ComicInfo? = nil
     ) {
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "fileInfo != nil AND id == %@", mangaId)
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId, LocalSourceRunner.sourceKey)
         request.fetchLimit = 1
         guard let mangaObject = (try? context.fetch(request))?.first else { return }
 
@@ -333,14 +348,31 @@ extension LocalFileDataManager {
         fileInfo.dateModified = values?.contentModificationDate
 
         let chapterObject = ChapterObject(context: self.context)
-        chapterObject.id = id
-        chapterObject.mangaId = mangaId
-        chapterObject.sourceId = LocalSourceRunner.sourceKey
-        chapterObject.title = title
-        chapterObject.volume = volume.map { NSNumber(value: $0) }
-        chapterObject.chapter = chapter.map { NSNumber(value: $0) }
+
+        if let comicInfo {
+            let basicChapter = AidokuRunner.Chapter(
+                key: id,
+                title: title,
+                chapterNumber: chapter,
+                volumeNumber: volume,
+                dateUploaded: values?.contentModificationDate
+            )
+            let detailedChapter = comicInfo.copy(into: basicChapter)
+            chapterObject.load(
+                from: detailedChapter,
+                sourceId: LocalSourceRunner.sourceKey,
+                mangaId: mangaId
+            )
+        } else {
+            chapterObject.id = id
+            chapterObject.mangaId = mangaId
+            chapterObject.sourceId = LocalSourceRunner.sourceKey
+            chapterObject.title = title
+            chapterObject.volume = volume.map { NSNumber(value: $0) }
+            chapterObject.chapter = chapter.map { NSNumber(value: $0) }
+            chapterObject.dateUploaded = values?.contentModificationDate
+        }
         chapterObject.manga = mangaObject
-        chapterObject.dateUploaded = values?.contentModificationDate
         chapterObject.fileInfo = fileInfo
         // add to the top of the chapter list
         chapterObject.sourceOrder = -Int16((mangaObject.chapters?.count ?? 0) + 1)
@@ -391,7 +423,7 @@ extension LocalFileDataManager {
             // manga that no longer exist on disk
             toRemove,
             // manga that exist on disk but not in db
-            folderMangaIds.subtracting(dbMangaIds),
+            folderMangaIds.subtracting(dbMangaIds)
         )
     }
 }

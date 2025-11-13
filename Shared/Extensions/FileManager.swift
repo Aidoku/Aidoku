@@ -21,7 +21,7 @@ extension URL {
     }
 
     var contents: [URL] {
-        (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil)) ?? []
+        (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
     }
 
     var isDirectory: Bool {

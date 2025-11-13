@@ -501,30 +501,8 @@ extension DownloadManager {
     /// Load chapter metadata from chapter directory.
     private func getComicInfo(in directory: URL) -> ComicInfo? {
         do {
-            func loadComicInfo(data: Data) -> ComicInfo? {
-                if
-                    let string = String(data: data, encoding: .utf8),
-                    let comicInfo = ComicInfo.load(xmlString: string)
-                {
-                    comicInfo
-                } else {
-                    nil
-                }
-            }
-
             if directory.pathExtension == "cbz" {
-                let archive = try Archive(url: directory, accessMode: .read)
-                guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
-                    return nil
-                }
-                var data = Data()
-                _ = try archive.extract(
-                    entry,
-                    consumer: { readData in
-                        data.append(readData)
-                    }
-                )
-                return loadComicInfo(data: data)
+                return ComicInfo.load(from: directory)
             }
 
             guard directory.isDirectory else { return nil }
@@ -532,7 +510,12 @@ extension DownloadManager {
             let xmlURL = directory.appendingPathComponent("ComicInfo.xml")
             if xmlURL.exists {
                 let data = try Data(contentsOf: xmlURL)
-                return loadComicInfo(data: data)
+                if
+                    let string = String(data: data, encoding: .utf8),
+                    let comicInfo = ComicInfo.load(xmlString: string)
+                {
+                    return comicInfo
+                }
             }
 
             return nil
@@ -558,28 +541,19 @@ extension DownloadManager {
         for subdirectory in directory.contents where subdirectory.isDirectory || subdirectory.pathExtension == "cbz" {
             do {
                 if directory.pathExtension == "cbz" {
-                    let archive = try Archive(url: directory, accessMode: .read)
-                    guard let entry = archive.first(where: { $0.path.hasSuffix("ComicInfo.xml") }) else {
-                        return nil
-                    }
-                    var data = Data()
-                    _ = try archive.extract(
-                        entry,
-                        consumer: { readData in
-                            data.append(readData)
-                        }
-                    )
-                    let result = loadComicInfo(data: data)
-                    if let result {
-                        return result
+                    if let comicInfo = ComicInfo.load(from: directory) {
+                        return comicInfo
                     }
                 } else {
                     let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
                     if xmlURL.exists {
                         let data = try Data(contentsOf: xmlURL)
                         let result = loadComicInfo(data: data)
-                        if let result {
-                            return result
+                        if
+                            let string = String(data: data, encoding: .utf8),
+                            let comicInfo = ComicInfo.load(xmlString: string)
+                        {
+                            return comicInfo
                         }
                     }
                 }

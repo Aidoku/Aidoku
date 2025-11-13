@@ -55,9 +55,9 @@ public class MangaObject: NSManagedObject {
         scanlatorFilter = manga.scanlatorFilter
     }
 
-    func load(from manga: AidokuRunner.Manga, sourceId: String) {
+    func load(from manga: AidokuRunner.Manga, sourceId: String? = nil) {
         id = manga.key
-        self.sourceId = sourceId
+        self.sourceId = sourceId ?? manga.sourceKey
         title = manga.title
         author = manga.authors.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
         artist = manga.artists.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
