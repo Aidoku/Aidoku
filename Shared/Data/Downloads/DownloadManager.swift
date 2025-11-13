@@ -31,8 +31,6 @@ actor DownloadManager {
     private let cache: DownloadCache = .init()
     private let queue: DownloadQueue
 
-    private static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
-
     // for UI
     private var downloadedMangaCache: [DownloadedMangaInfo] = []
     private var lastCacheUpdate: Date = .distantPast
@@ -62,84 +60,20 @@ actor DownloadManager {
         }
     }
 
-    func getDownloadedPages(for chapter: ChapterIdentifier) async -> [Page] {
+    func getDownloadedPages(for chapter: ChapterIdentifier) async -> [AidokuRunner.Page] {
         let directory = await cache.directory(for: chapter)
 
         let archiveURL = directory.appendingPathExtension("cbz")
         if archiveURL.exists {
-            let archive: Archive
-            do {
-                archive = try Archive(url: archiveURL, accessMode: .read)
-            } catch {
-                LogManager.logger.error("Failed to read archive: \(error)")
-                return []
-            }
-
-            var descriptionFiles: [Entry] = []
-
-            var pages = archive
-                .filter { entry in
-                    let lastPathComponent = entry.path.lastPathComponent()
-                    guard !lastPathComponent.hasPrefix(".") else {
-                        return false
-                    }
-                    let ext = entry.path.lowercased().pathExtension()
-                    if ext == "txt" {
-                        if entry.path.hasSuffix("desc.txt") {
-                            descriptionFiles.append(entry)
-                            return false
-                        }
-                        return true
-                    }
-                    return Self.allowedImageExtensions.contains(ext)
-                }
-                // sort by file name
-                .sorted {
-                    $0.path.localizedStandardCompare($1.path) == .orderedAscending
-                }
-                .map { entry in
-                    AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: entry.path))
-                        .toOld(sourceId: chapter.sourceKey, chapterId: chapter.chapterKey)
-                }
-
-            for entry in descriptionFiles {
-                guard
-                    let index = entry.path
-                        .lastPathComponent()
-                        .split(separator: ".", maxSplits: 1)
-                        .first
-                        .flatMap({ Int($0) }),
-                    index > 0,
-                    index <= pages.count
-                else { break }
-
-                do {
-                    var descriptionData = Data()
-                    _ = try archive.extract(
-                        entry,
-                        consumer: { data in
-                            descriptionData.append(data)
-                        }
-                    )
-                    pages[index - 1].hasDescription = true
-                    pages[index - 1].description = String(data: descriptionData, encoding: .utf8)
-                } catch {
-                    LogManager.logger.error("Failed to extract page description text from archive: \(error)")
-                    continue
-                }
-            }
-
-            return pages
+            return LocalFileManager.shared.readPages(from: archiveURL)
         } else {
             var descriptionFiles: [URL] = []
 
             var pages = await cache.directory(for: chapter).contents
-                .compactMap { url -> Page? in
+                .compactMap { url -> AidokuRunner.Page? in
                     guard !url.lastPathComponent.hasPrefix(".") else {
                         return nil
                     }
-                    let imageURL: String?
-                    let text: String?
                     if url.pathExtension == "txt" {
                         // add description file to list
                         if url.lastPathComponent.hasSuffix("desc.txt") {
@@ -147,24 +81,16 @@ actor DownloadManager {
                             return nil
                         }
                         // otherwise, load file as text
-                        imageURL = nil
-                        text = try? String(contentsOf: url)
-                    } else if Self.allowedImageExtensions.contains(url.pathExtension) {
+                        let text: String? = try? String(contentsOf: url)
+                        guard let text else { return nil }
+                        return AidokuRunner.Page(content: .text(text))
+                    } else if LocalFileManager.allowedImageExtensions.contains(url.pathExtension) {
                         // load file as image
-                        imageURL = url.absoluteString
-                        text = nil
+                        return AidokuRunner.Page(content: .url(url: url, context: nil))
                     } else {
                         return nil
                     }
-                    return Page(
-                        sourceId: chapter.sourceKey,
-                        chapterId: chapter.chapterKey,
-                        index: (Int(url.deletingPathExtension().lastPathComponent) ?? 1) - 1,
-                        imageURL: imageURL,
-                        text: text,
-                    )
                 }
-                .sorted { $0.index < $1.index }
 
             // load descriptions from files
             for descriptionFile in descriptionFiles {
