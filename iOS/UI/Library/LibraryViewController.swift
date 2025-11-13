@@ -322,6 +322,15 @@ class LibraryViewController: MangaCollectionViewController {
             }
         }
 
+        addObserver(forName: "updateChapters") { [weak self] notification in
+            if let id = notification.object as? MangaIdentifier {
+                Task {
+                    await self?.viewModel.fetchUnreads(for: id)
+                    self?.updateDataSource()
+                }
+            }
+        }
+
         addObserver(forName: "updateLibraryLock") { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in

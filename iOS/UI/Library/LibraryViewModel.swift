@@ -341,6 +341,43 @@ class LibraryViewModel {
         }
     }
 
+    func fetchUnreads(for identifier: MangaIdentifier) async {
+        let unreadCount = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+            let filters = CoreDataManager.shared.getMangaChapterFilters(
+                sourceId: identifier.sourceKey,
+                mangaId: identifier.mangaKey,
+                context: context
+            )
+            return CoreDataManager.shared.unreadCount(
+                sourceId: identifier.sourceKey,
+                mangaId: identifier.mangaKey,
+                lang: filters.language,
+                scanlators: filters.scanlators,
+                context: context
+            )
+        }
+        var didUpdate = false
+        if let index = self.manga.firstIndex(where: { $0.identifier == identifier }) {
+            if self.manga[index].unread != unreadCount {
+                didUpdate = true
+                self.manga[index].unread = unreadCount
+            }
+        } else if let index = self.pinnedManga.firstIndex(where: { $0.identifier == identifier }) {
+            if self.pinnedManga[index].unread != unreadCount {
+                didUpdate = true
+                self.pinnedManga[index].unread = unreadCount
+            }
+        }
+        // re-sort library if needed
+        if didUpdate {
+            if pinType == .unread {
+                await loadLibrary()
+            } else if sortMethod == .unreadChapters {
+                await sortLibrary()
+            }
+        }
+    }
+
     func fetchDownloadCounts(for identifier: MangaIdentifier? = nil) async {
         for (i, manga) in self.pinnedManga.enumerated() {
             if identifier == nil || manga.identifier == identifier {

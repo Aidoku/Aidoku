@@ -446,6 +446,8 @@ extension MangaView.ViewModel {
                 }
             }
 
+            NotificationCenter.default.post(name: .updateChapters, object: newManga.identifier)
+
             await loadHistory()
 
             withAnimation {
