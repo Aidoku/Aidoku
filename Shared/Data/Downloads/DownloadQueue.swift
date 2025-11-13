@@ -43,6 +43,7 @@ actor DownloadQueue {
 
         guard !queue.isEmpty else { return }
 
+#if !os(macOS)
         if bgTask == nil, #available(iOS 26.0, *) {
             await register()
 
@@ -58,6 +59,7 @@ actor DownloadQueue {
                 LogManager.logger.error("Failed to start background downloading: \(error)")
             }
         }
+#endif
 
         await initAndResumeTasks()
     }
@@ -92,6 +94,7 @@ actor DownloadQueue {
     func pause() async {
         paused = true
 
+#if !os(macOS)
         if #available(iOS 26.0, *) {
             if let task = bgTask as? BGContinuedProcessingTask {
                 task.updateTitle(
@@ -100,6 +103,7 @@ actor DownloadQueue {
                 )
             }
         }
+#endif
 
         await withTaskGroup(of: Void.self) { group in
             for task in tasks.values {
@@ -246,6 +250,7 @@ extension DownloadQueue {
         bgTask?.progress.totalUnitCount = Int64(totalDownloads)
     }
 
+#if !os(macOS)
     @available(iOS 26.0, *)
     private func register() async {
         guard !registeredTask else { return }
@@ -278,6 +283,7 @@ extension DownloadQueue {
             }
         }
     }
+#endif
 }
 
 // MARK: - Task Delegate
@@ -317,6 +323,8 @@ extension DownloadQueue: DownloadTaskDelegate {
 
         completedDownloads += 1
         bgTask?.progress.completedUnitCount = Int64(completedDownloads)
+
+#if !os(macOS)
         if #available(iOS 26.0, *) {
             if !paused, let task = bgTask as? BGContinuedProcessingTask {
                 task.updateTitle(
@@ -325,6 +333,7 @@ extension DownloadQueue: DownloadTaskDelegate {
                 )
             }
         }
+#endif
     }
 
     func downloadProgressChanged(download: Download) async {
