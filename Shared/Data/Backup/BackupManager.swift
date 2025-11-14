@@ -5,10 +5,10 @@
 //  Created by Skitty on 2/26/22.
 //
 
+import BackgroundTasks
 import Foundation
 
-class BackupManager {
-
+actor BackupManager {
     static let shared = BackupManager()
 
     static let directory = FileManager.default.documentDirectory.appendingPathComponent("Backups", isDirectory: true)
@@ -16,6 +16,9 @@ class BackupManager {
     static var backupUrls: [URL] {
         Self.directory.contentsByDateModified
     }
+
+    private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
+    private static let maxAutoBackups = 4
 
     func save(backup: Backup, url: URL? = nil) {
         Self.directory.createDirectory()
@@ -34,10 +37,8 @@ class BackupManager {
         }
     }
 
-    func saveNewBackup(options: BackupOptions) {
-        Task {
-            save(backup: await createBackup(options: options))
-        }
+    func saveNewBackup(options: BackupOptions) async {
+        save(backup: await createBackup(options: options))
     }
 
     func importBackup(from url: URL) -> Bool {
@@ -64,6 +65,7 @@ class BackupManager {
     }
 
     struct BackupOptions {
+        var automatic: Bool = false
         let libraryEntries: Bool
         let history: Bool
         let chapters: Bool
@@ -137,7 +139,8 @@ class BackupManager {
                 sources: sources,
                 sourceLists: sourceLists,
                 settings: settings,
-                date: Date(),
+                date: Date.now,
+                automatic: options.automatic,
                 version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
             )
         }
@@ -379,5 +382,110 @@ class BackupManager {
         await MangaManager.shared.refreshLibrary(forceAll: true)
 
         NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
+    }
+}
+
+extension BackupManager {
+    func scheduleAutoBackup() {
+        guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else {
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.taskIdentifier)
+            return
+        }
+
+        let lastUpdated = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "AutomaticBackups.lastBackup"))
+        let interval: Double = switch UserDefaults.standard.string(forKey: "AutomaticBackups.interval") {
+            case "6hours": 21600
+            case "12hours": 43200
+            case "daily": 86400
+            case "2days": 172800
+            case "weekly": 604800
+            default: 0
+        }
+        let nextUpdateTime = lastUpdated + interval
+
+        if nextUpdateTime < Date.now {
+            // interval time has passed, create auto backup now
+            Task {
+                await createAutoBackup()
+            }
+        } else {
+            // schedule task for the future
+            let request = BGProcessingTaskRequest(identifier: Self.taskIdentifier)
+            request.earliestBeginDate = nextUpdateTime
+            request.requiresExternalPower = false
+            request.requiresNetworkConnectivity = false
+
+            do {
+                try BGTaskScheduler.shared.submit(request)
+            } catch {
+                LogManager.logger.error("Could not schedule automatic backup: \(error)")
+            }
+        }
+    }
+
+    nonisolated func register() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
+            guard let self, let task = task as? BGProcessingTask else { return }
+
+            Task { @Sendable in
+                await self.createAutoBackup()
+
+                task.setTaskCompleted(success: true)
+            }
+        }
+    }
+
+    private func createAutoBackup() async {
+        guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else { return }
+
+        let libraryEntries = UserDefaults.standard.bool(forKey: "AutomaticBackups.libraryEntries")
+        let chapters = UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters")
+        let tracking = UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking")
+        let history = UserDefaults.standard.bool(forKey: "AutomaticBackups.history")
+        let categories = UserDefaults.standard.bool(forKey: "AutomaticBackups.categories")
+        let settings = UserDefaults.standard.bool(forKey: "AutomaticBackups.settings")
+        let sourceLists = UserDefaults.standard.bool(forKey: "AutomaticBackups.sourceLists")
+        let sensitiveSettings = UserDefaults.standard.bool(forKey: "AutomaticBackups.sensitiveSettings")
+
+        await self.saveNewBackup(
+            options: .init(
+                automatic: true,
+                libraryEntries: libraryEntries,
+                history: history,
+                chapters: chapters,
+                tracking: tracking,
+                categories: categories,
+                settings: settings,
+                sourceLists: sourceLists,
+                sensitiveSettings: sensitiveSettings
+            )
+        )
+
+        // update last auto backup time
+        UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: "AutomaticBackups.lastBackup")
+
+        cleanUpAutoBackups()
+        scheduleAutoBackup() // schedule the next one
+    }
+
+    // ensure we keep only the latest maxAutoBackups automatic backups
+    private func cleanUpAutoBackups() {
+        var autoBackups: [(URL, Backup)] = []
+        for backupUrl in Self.backupUrls {
+            let backup = Backup.load(from: backupUrl)
+            if let backup, backup.automatic ?? false {
+                autoBackups.append((backupUrl, backup))
+            }
+        }
+        while autoBackups.count > Self.maxAutoBackups {
+            let oldestBackup = autoBackups
+                .min { $0.1.date < $1.1.date }
+            if let oldestBackup {
+                removeBackup(url: oldestBackup.0)
+                autoBackups.removeAll { $0.0 == oldestBackup.0 }
+            } else {
+                break
+            }
+        }
     }
 }

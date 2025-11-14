@@ -49,16 +49,18 @@ struct BackupCreateView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     DoneButton {
-                        BackupManager.shared.saveNewBackup(options: .init(
-                            libraryEntries: libraryEntries,
-                            history: history,
-                            chapters: chapters,
-                            tracking: tracking,
-                            categories: categories,
-                            settings: settings,
-                            sourceLists: sourceLists,
-                            sensitiveSettings: sensitiveSettings
-                        ))
+                        Task {
+                            await BackupManager.shared.saveNewBackup(options: .init(
+                                libraryEntries: libraryEntries,
+                                history: history,
+                                chapters: chapters,
+                                tracking: tracking,
+                                categories: categories,
+                                settings: settings,
+                                sourceLists: sourceLists,
+                                sensitiveSettings: sensitiveSettings
+                            ))
+                        }
                         dismiss()
                     }
                 }

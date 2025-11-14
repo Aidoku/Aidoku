@@ -143,6 +143,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,
 
+                "AutomaticBackups.enabled": true,
+                "AutomaticBackups.interval": "daily",
+                "AutomaticBackups.lastBackup": Date.distantPast.timeIntervalSince1970,
+                "AutomaticBackups.libraryEntries": true,
+                "AutomaticBackups.chapters": true,
+                "AutomaticBackups.tracking": true,
+                "AutomaticBackups.history": true,
+                "AutomaticBackups.categories": true,
+                "AutomaticBackups.settings": true,
+                "AutomaticBackups.sourceLists": true,
+                "AutomaticBackups.sensitiveSettings": false,
+
                 "Library.downloadOnlyOnWifi": false,
                 "Library.deleteDownloadAfterReading": false,
                 "Downloads.compress": true
@@ -204,6 +216,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         application.applicationSupportsShakeToEdit = true
+
+        BackupManager.shared.register()
+
+        Task {
+            await BackupManager.shared.scheduleAutoBackup()
+        }
 
         return true
     }
@@ -360,16 +378,18 @@ extension AppDelegate {
                 }
             }
         } else if url.pathExtension == "json" || url.pathExtension == "aib" {
-            if BackupManager.shared.importBackup(from: url) {
-                presentAlert(
-                    title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
-                    message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: "")
-                )
-            } else {
-                presentAlert(
-                    title: NSLocalizedString("IMPORT_FAIL", comment: ""),
-                    message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: "")
-                )
+            Task {
+                if await BackupManager.shared.importBackup(from: url) {
+                    presentAlert(
+                        title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
+                        message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: "")
+                    )
+                } else {
+                    presentAlert(
+                        title: NSLocalizedString("IMPORT_FAIL", comment: ""),
+                        message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: "")
+                    )
+                }
             }
         } else if
             SourceManager.shared.localSourceInstalled
