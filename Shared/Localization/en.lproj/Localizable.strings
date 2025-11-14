@@ -33,6 +33,7 @@
 // Downloads
 "DOWNLOAD" = "Download";
 "DOWNLOADED" = "Downloaded";
+"DOWNLOADING" = "Downloading";
 "DOWNLOAD_QUEUE" = "Download Queue";
 "CANCEL_DOWNLOAD" = "Cancel Download";
 "REMOVE_DOWNLOAD" = "Remove Download";
@@ -43,9 +44,11 @@
 "NO_WIFI_ALERT_TITLE" = "No Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "You need to be connected to Wi-Fi to download this content. Please connect to Wi-Fi and try again.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "You are not currently on Wi-Fi. Download anyway?";
-
-// Download Manager
-"DOWNLOAD_MANAGER" = "Download Manager";
+"PROCESSING_QUEUE" = "Processing Queue…";
+"DOWNLOADING_PAUSED" = "Downloading Paused";
+"PAUSED" = "Paused";
+"CANCEL_ALL_DOWNLOADS" = "Cancel All Downloads";
+"DOWNLOADS" = "Downloads";
 "NO_DOWNLOADS" = "No Downloads";
 "NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
 "DOWNLOADED_CHAPTERS" = "Downloaded Chapters";
@@ -53,6 +56,9 @@
 "%i_SERIES" = "%i series";
 "IN_LIBRARY" = "In Library";
 "VIEW_SERIES" = "View Series";
+"COMPRESS_DOWNLOADS" = "Compress Downloads";
+"METADATA_DETECTED" = "Legacy Metadata Detected";
+"METADATA_DETECTED_TEXT" = "Legacy JSON metadata will be migrated to ComicInfo.xml files.";
 
 // Library
 "LIBRARY" = "Library";
@@ -372,6 +378,7 @@
 "READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
+"DOWNLOADED_CHAPTER_BADGES" = "Downloaded Chapter Badges";
 "PIN_MANGA" = "Pin Manga";
 "PIN_MANGA_TYPE" = "Pin Type";
 "PIN_MANGA_UNREAD" = "Unread";

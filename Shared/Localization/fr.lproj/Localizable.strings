@@ -360,7 +360,6 @@
 "INVALID" = "Invalide";
 "CONTENT" = "Contenu";
 "%@_EXPERIMENTAL" = "%@ (Expérimental)";
-"DOWNLOAD_MANAGER" = "Gestionnaire de téléchargement";
 "NO_DOWNLOADS" = "Aucun téléchargement";
 "NO_DOWNLOADS_TEXT" = "Le contenu téléchargé apparaîtra ici.";
 "DOWNLOADED_CHAPTERS" = "Chapitres téléchargés";

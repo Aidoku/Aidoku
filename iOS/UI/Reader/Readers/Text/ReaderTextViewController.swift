@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import SwiftUI
+import ZIPFoundation
 
 class ReaderTextViewController: BaseViewController {
     let viewModel: ReaderTextViewModel
@@ -158,14 +159,46 @@ extension ReaderTextViewController: UIScrollViewDelegate {
 // MARK: - ReaderTextView
 private struct ReaderTextView: View {
     let source: AidokuRunner.Source?
-    let page: Page?
+    let text: String?
+
+    init(source: AidokuRunner.Source?, page: Page?) {
+        self.source = source
+
+        func loadText(page: Page) -> String? {
+            if let text = page.text {
+                return text
+            }
+
+            guard
+                let zipURL = page.zipURL.flatMap({ URL(string: $0) }),
+                let filePath = page.imageURL
+            else {
+                return nil
+            }
+            do {
+                var data = Data()
+                let archive = try Archive(url: zipURL, accessMode: .read)
+                guard let entry = archive[filePath] else {
+                    return nil
+                }
+                _ = try archive.extract(
+                    entry,
+                    consumer: { readData in
+                        data.append(readData)
+                    }
+                )
+                return String(data: data, encoding: .utf8)
+            } catch {
+                return nil
+            }
+        }
+        self.text = page.flatMap { loadText(page: $0) }
+    }
 
     var body: some View {
-        if let page {
-            if let text = page.text {
-                MarkdownView(text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+        if let text {
+            MarkdownView(text)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

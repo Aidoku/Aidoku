@@ -359,7 +359,6 @@
 "BASE_URL" = "기본 URL";
 "SEE_ALL" = "모두 표시";
 "%@_EXPERIMENTAL" = "%@ (실험실 기능)";
-"DOWNLOAD_MANAGER" = "내려받기 관리자";
 "NO_DOWNLOADS" = "내려받은 컨텐츠 없음";
 "NO_DOWNLOADS_TEXT" = "내려받은 콘텐츠가 여기에 나타납니다.";
 "DOWNLOADED_CHAPTERS" = "내려받은 챕터";

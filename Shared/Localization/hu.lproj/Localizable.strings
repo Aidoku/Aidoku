@@ -216,7 +216,6 @@
 "CONTENT" = "Tartalom";
 "%@_EXPERIMENTAL" = "%@ (Kísérleti)";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Biztos vagy benne, hogy törölni szeretnéd az összes letöltött fájlt?";
-"DOWNLOAD_MANAGER" = "Letöltéskezelő";
 "NO_DOWNLOADS" = "Nincsenek Letöltések";
 "NO_DOWNLOADS_TEXT" = "A letöltött tartalmak itt fognak megjelenni.";
 "DOWNLOADED_CHAPTERS" = "Letöltött Fejezetek";

@@ -5,23 +5,29 @@
 //  Created by Skitty on 5/13/22.
 //
 
+import AidokuRunner
+@preconcurrency import BackgroundTasks
 import Foundation
 
 // stores queued and active downloads
 // creates a downloadtask for every source
 // only one chapter per source is downloaded at a time
 actor DownloadQueue {
-
     private let cache: DownloadCache
     private var onCompletion: (() -> Void)?
 
-    var queue: [String: [Download]] = [:] // all queued downloads stored under source id
-    var tasks: [String: DownloadTask] = [:] // tasks for each source
-    var progressBlocks: [Chapter: (Int, Int) -> Void] = [:]
+    private(set) var queue: [String: [Download]] = [:] // all queued downloads stored under source id
+    private var tasks: [String: DownloadTask] = [:] // tasks for each source
+    private var progressBlocks: [ChapterIdentifier: (Int, Int) -> Void] = [:]
 
-    var running: Bool = false
-
+    private var paused = false
+    private var registeredTask = false
+    private var totalDownloads: Int = 0
+    private var completedDownloads: Int = 0
+    private var bgTask: ProgressReporting?
     private var sendCancelNotification = true
+
+    private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".download"
 
     init(cache: DownloadCache, onCompletion: (() -> Void)? = nil) {
         self.cache = cache
@@ -33,55 +39,106 @@ actor DownloadQueue {
     }
 
     func start() async {
-//        guard !running else { return }
-        running = true
+        paused = false
 
-        for source in queue {
-            if tasks[source.key] == nil {
-                let task = DownloadTask(id: source.key, cache: cache, downloads: source.value)
-                await task.setDelegate(delegate: self)
-                tasks[source.key] = task
+        guard !queue.isEmpty else { return }
+
+#if !os(macOS)
+        if bgTask == nil, #available(iOS 26.0, *) {
+            await register()
+
+            let request = BGContinuedProcessingTaskRequest(
+                identifier: Self.taskIdentifier,
+                title: NSLocalizedString("DOWNLOADING"),
+                subtitle: NSLocalizedString("PROCESSING_QUEUE")
+            )
+            do {
+                try BGTaskScheduler.shared.submit(request)
+                return
+            } catch {
+                LogManager.logger.error("Failed to start background downloading: \(error)")
             }
-            await tasks[source.key]?.resume()
+        }
+#endif
+
+        await initAndResumeTasks()
+    }
+
+    private func initAndResumeTasks() async {
+        for (sourceKey, downloads) in queue {
+            if tasks[sourceKey] == nil {
+                let task = DownloadTask(id: sourceKey, cache: cache, downloads: downloads)
+                await task.setDelegate(delegate: self)
+                tasks[sourceKey] = task
+            }
+            await tasks[sourceKey]?.resume()
         }
     }
 
     func resume() async {
-        for task in tasks {
-            await task.value.resume()
+        paused = false
+
+        if #available(iOS 26.0, *) {
+            if bgTask == nil {
+                await start()
+            }
         }
-        running = true
+
+        await withTaskGroup(of: Void.self) { group in
+            for task in tasks.values {
+                group.addTask { await task.resume() }
+            }
+        }
     }
 
     func pause() async {
-        guard running else { return }
-        for task in tasks {
-            await task.value.pause()
+        paused = true
+
+#if !os(macOS)
+        if #available(iOS 26.0, *) {
+            if let task = bgTask as? BGContinuedProcessingTask {
+                task.updateTitle(
+                    NSLocalizedString("DOWNLOADING"),
+                    subtitle: NSLocalizedString("PAUSED")
+                )
+            }
         }
-        running = false
+#endif
+
+        await withTaskGroup(of: Void.self) { group in
+            for task in tasks.values {
+                group.addTask { await task.pause() }
+            }
+        }
     }
 
     @discardableResult
-    func add(chapters: [Chapter], manga: Manga? = nil, autoStart: Bool = true) async -> [Download] {
+    func add(chapters: [AidokuRunner.Chapter], manga: AidokuRunner.Manga, autoStart: Bool = true) async -> [Download] {
         var downloads: [Download] = []
         for chapter in chapters {
-            if await cache.isChapterDownloaded(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id) {
+            let identifier = ChapterIdentifier(
+                sourceKey: manga.sourceKey,
+                mangaKey: manga.key,
+                chapterKey: chapter.key
+            )
+            guard !(await cache.isChapterDownloaded(identifier: identifier)) else {
                 continue
             }
             // create tmp directory so we know it's queued
-            await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
+            await cache.directory(for: manga.identifier)
+                .appendingSafePathComponent(".tmp_\(chapter.key)")
                 .createDirectory()
-            var download = Download.from(chapter: chapter)
-            download.manga = manga
+            let download = Download.from(manga: manga, chapter: chapter)
             downloads.append(download)
-            if queue[chapter.sourceId] == nil {
-                queue[chapter.sourceId] = [download]
+            if queue[manga.sourceKey] == nil {
+                queue[manga.sourceKey] = [download]
             } else {
-                queue[chapter.sourceId]?.append(download)
-                await tasks[chapter.sourceId]?.add(download: download)
+                queue[manga.sourceKey]?.append(download)
+                await tasks[manga.sourceKey]?.add(download: download)
             }
         }
+        totalDownloads += downloads.count
+        bgTask?.progress.totalUnitCount = Int64(totalDownloads)
         if autoStart {
             await start()
         }
@@ -89,36 +146,49 @@ actor DownloadQueue {
         return downloads
     }
 
-    func cancelDownload(for chapter: Chapter) async {
-        if let task = tasks[chapter.sourceId] {
+    func cancelDownload(for chapter: ChapterIdentifier) async {
+        if let task = tasks[chapter.sourceKey] {
             await task.cancel(chapter: chapter)
         } else {
             // no longer in queue but the tmp download directory still exists, so we should remove it
-            await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                .appendingSafePathComponent(".tmp_\(chapter.id)")
+            await cache.directory(for: chapter.mangaIdentifier)
+                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
                 .removeItem()
         }
         saveQueueState()
     }
 
-    func cancelDownloads(for chapters: [Chapter]) async {
+    func cancelDownloads(for chapters: [ChapterIdentifier]) async {
+        // disable individual download cancelled notifications
         sendCancelNotification = false
         defer { sendCancelNotification = true }
         for chapter in chapters {
-            if let task = tasks[chapter.sourceId] {
+            if let task = tasks[chapter.sourceKey] {
                 await task.cancel(chapter: chapter)
             } else {
-                await cache.directory(forSourceId: chapter.sourceId, mangaId: chapter.mangaId)
-                    .appendingSafePathComponent(".tmp_\(chapter.id)")
+                await cache.directory(for: chapter.mangaIdentifier)
+                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
                     .removeItem()
             }
-            if let queueItem = queue[chapter.sourceId]?.firstIndex(where: {
-                $0.chapterId == chapter.id && $0.mangaId == chapter.mangaId
+            if let queueItem = queue[chapter.sourceKey]?.firstIndex(where: {
+                $0.chapterIdentifier == chapter
             }) {
-                queue[chapter.sourceId]?.remove(at: queueItem)
+                queue[chapter.sourceKey]?.remove(at: queueItem)
             }
         }
-        NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: chapters)
+        NotificationCenter.default.post(name: .downloadsCancelled, object: chapters)
+        saveQueueState()
+    }
+
+    func cancelDownloads(for manga: MangaIdentifier) async {
+        if let task = tasks[manga.sourceKey] {
+            await task.cancel(manga: manga)
+        } else {
+            await cache.directory(for: manga)
+                .contents
+                .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                .forEach { $0.removeItem() }
+        }
         saveQueueState()
     }
 
@@ -129,16 +199,16 @@ actor DownloadQueue {
             await task.value.cancel()
         }
         queue = [:]
-        NotificationCenter.default.post(name: NSNotification.Name("downloadsCancelled"), object: nil)
+        NotificationCenter.default.post(name: .downloadsCancelled, object: nil)
         saveQueueState()
     }
 
     // register callback for download progress change
-    func onProgress(for chapter: Chapter, block: @escaping (Int, Int) -> Void) {
+    func onProgress(for chapter: ChapterIdentifier, block: @escaping (Int, Int) -> Void) {
         progressBlocks[chapter] = block
     }
 
-    func removeProgressBlock(for chapter: Chapter) {
+    func removeProgressBlock(for chapter: ChapterIdentifier) {
         progressBlocks.removeValue(forKey: chapter)
     }
 
@@ -159,18 +229,65 @@ actor DownloadQueue {
             await start()
         }
     }
-}
-
-extension DownloadQueue {
 
     func hasQueuedDownloads() -> Bool {
         !queue.isEmpty
     }
+
+    func isRunning() async -> Bool {
+        for task in tasks where await task.value.running {
+            return true
+        }
+        return false
+    }
+}
+
+extension DownloadQueue {
+    private func setBackgroundTask(_ task: ProgressReporting?) {
+        bgTask = task
+        totalDownloads = queue.values.reduce(0) { $0 + $1.count }
+        completedDownloads = 0
+        bgTask?.progress.totalUnitCount = Int64(totalDownloads)
+    }
+
+#if !os(macOS)
+    @available(iOS 26.0, *)
+    private func register() async {
+        guard !registeredTask else { return }
+        registeredTask = true
+
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
+            guard let self, let task = task as? BGContinuedProcessingTask else { return }
+
+            task.expirationHandler = {
+                Task {
+                    await DownloadManager.shared.pauseDownloads()
+                    await self.setBackgroundTask(nil)
+                }
+            }
+
+            Task { @Sendable in
+                await self.setBackgroundTask(task)
+                await self.initAndResumeTasks()
+
+                // wait until downloads complete
+                while true {
+                    if await self.queue.isEmpty {
+                        break
+                    }
+                }
+
+                await self.setBackgroundTask(nil)
+
+                task.setTaskCompleted(success: true)
+            }
+        }
+    }
+#endif
 }
 
 // MARK: - Task Delegate
 extension DownloadQueue: DownloadTaskDelegate {
-
     func taskCancelled(task: DownloadTask) async {
         await taskFinished(task: task)
     }
@@ -180,40 +297,52 @@ extension DownloadQueue: DownloadTaskDelegate {
     func taskFinished(task: DownloadTask) async {
         tasks.removeValue(forKey: task.id)
         queue.removeValue(forKey: task.id)
-        running = !tasks.isEmpty
         saveQueueState()
     }
 
     func downloadFinished(download: Download) async {
         await downloadCancelled(download: download)
+        progressBlocks.removeValue(forKey: download.chapterIdentifier)
         onCompletion?()
-        NotificationCenter.default.post(name: NSNotification.Name("downloadFinished"), object: download)
+        NotificationCenter.default.post(name: .downloadFinished, object: download)
     }
 
     func downloadCancelled(download: Download) async {
-        var sourceDownloads = queue[download.sourceId] ?? []
+        var sourceDownloads = queue[download.chapterIdentifier.sourceKey] ?? []
         sourceDownloads.removeAll { $0 == download }
         if sourceDownloads.isEmpty {
-            queue.removeValue(forKey: download.sourceId)
+            queue.removeValue(forKey: download.chapterIdentifier.sourceKey)
         } else {
-            queue[download.sourceId] = sourceDownloads
+            queue[download.chapterIdentifier.sourceKey] = sourceDownloads
         }
         saveQueueState()
-        if let chapter = download.chapter {
-            progressBlocks.removeValue(forKey: chapter)
-        }
+        progressBlocks.removeValue(forKey: download.chapterIdentifier)
         if sendCancelNotification {
-            NotificationCenter.default.post(name: NSNotification.Name("downloadCancelled"), object: download)
+            NotificationCenter.default.post(name: .downloadCancelled, object: download)
         }
+
+        completedDownloads += 1
+        bgTask?.progress.completedUnitCount = Int64(completedDownloads)
+
+#if !os(macOS)
+        if #available(iOS 26.0, *) {
+            if !paused, let task = bgTask as? BGContinuedProcessingTask {
+                task.updateTitle(
+                    NSLocalizedString("DOWNLOADING"),
+                    subtitle: String(format: NSLocalizedString("%i_OF_%i"), completedDownloads, totalDownloads)
+                )
+            }
+        }
+#endif
     }
 
     func downloadProgressChanged(download: Download) async {
-        if let index = queue[download.sourceId]?.firstIndex(where: { $0 == download }) {
-            queue[download.sourceId]?[index] = download
+        if let index = queue[download.chapterIdentifier.sourceKey]?.firstIndex(where: { $0 == download }) {
+            queue[download.chapterIdentifier.sourceKey]?[index] = download
         }
-        if let chapter = download.chapter, let block = progressBlocks[chapter] {
+        if let block = progressBlocks[download.chapterIdentifier] {
             block(download.progress, download.total)
         }
-        NotificationCenter.default.post(name: NSNotification.Name("downloadProgressed"), object: download)
+        NotificationCenter.default.post(name: .downloadProgressed, object: download)
     }
 }

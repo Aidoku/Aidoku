@@ -278,7 +278,6 @@
 "NO_WIFI_ALERT_TITLE" = "Tidak ada Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "Anda perlu terhubung ke Wi-Fi untuk mengunduh konten ini. Silakan terhubung ke Wi-Fi dan coba lagi.";
 "DOWNLOAD_ANYWAY_MESSAGE" = "Anda saat ini tidak terhubung ke Wi-Fi. Apakah tetap ingin mengunduh?";
-"DOWNLOAD_MANAGER" = "Manajer Unduhan";
 "NO_DOWNLOADS" = "Tidak ada unduhan";
 "NO_DOWNLOADS_TEXT" = "Konten yang diunduh akan muncul di sini.";
 "DOWNLOADED_CHAPTERS" = "Bab yang Diunduh";

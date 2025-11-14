@@ -19,9 +19,10 @@ actor LocalFileManager {
     static let shared = LocalFileManager()
 
     private var lastScanTime = Date.distantPast
+    private var scanTask: Task<Void, Never>?
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
-    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp"])
+    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
 
     private var localFolderFileDescriptor: CInt?
     private var localFolderSource: DispatchSourceFileSystemObject?
@@ -64,32 +65,44 @@ extension LocalFileManager {
         }
 
         // find image entries (pages)
-        let imageEntries = archive
+        let pageEntries = archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
+                let ext = entry.path.pathExtension().lowercased()
+                if ext == "txt" {
+                    return !entry.path.hasSuffix("desc.txt")
+                }
                 return Self.allowedImageExtensions.contains(ext)
             }
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
 
-        guard !imageEntries.isEmpty else {
+        guard !pageEntries.isEmpty else {
             return nil
         }
 
         // extract the first three images for preview
-        let previewImages = imageEntries.prefix(3).compactMap { entry -> PlatformImage? in
-            var imageData = Data()
-            do {
-                _ = try archive.extract(
-                    entry,
-                    consumer: { data in
-                        imageData.append(data)
-                    }
-                )
-                return PlatformImage(data: imageData)
-            } catch {
-                return nil
+        let previewImages = pageEntries
+            .filter { !$0.path.lowercased().hasSuffix("txt") }
+            .prefix(3)
+            .compactMap { entry -> PlatformImage? in
+                var imageData = Data()
+                do {
+                    _ = try archive.extract(
+                        entry,
+                        consumer: { data in
+                            imageData.append(data)
+                        }
+                    )
+                    return PlatformImage(data: imageData)
+                } catch {
+                    return nil
+                }
             }
-        }
 
         let fileType = switch pathExtension {
             case "cbz": LocalFileType.cbz
@@ -101,8 +114,9 @@ extension LocalFileManager {
             url: url,
             previewImages: previewImages,
             name: url.lastPathComponent,
-            pageCount: imageEntries.count,
-            fileType: fileType
+            pageCount: pageEntries.count,
+            fileType: fileType,
+            comicInfo: ComicInfo.load(from: url)
         )
     }
 }
@@ -113,33 +127,83 @@ extension LocalFileManager {
         guard let cbzPath = await LocalFileDataManager.shared.fetchChapterArchivePath(mangaId: mangaId, chapterId: chapterId)
         else { return [] }
 
-        // read zip file
         let documentsDir = FileManager.default.documentDirectory
-        let archiveUrl = documentsDir.appendingPathComponent(cbzPath)
+        let archiveURL = documentsDir.appendingPathComponent(cbzPath)
+        return readPages(from: archiveURL)
+    }
+
+    // read pages from an archive file
+    nonisolated func readPages(from archiveURL: URL) -> [AidokuRunner.Page] {
         let archive: Archive
         do {
-            archive = try Archive(url: archiveUrl, accessMode: .read)
+            archive = try Archive(url: archiveURL, accessMode: .read)
         } catch {
+            LogManager.logger.error("Failed to read archive: \(error)")
             return []
         }
 
-        // find image entries (pages)
-        let imageEntries = archive
+        var descriptionFiles: [Entry] = []
+
+        var pages = archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                // ignore hidden files
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
+                // ensure extension is allowed
+                let ext = entry.path.pathExtension().lowercased()
+                if ext == "txt" {
+                    if entry.path.hasSuffix("desc.txt") {
+                        descriptionFiles.append(entry)
+                        return false
+                    }
+                    return true
+                }
                 return Self.allowedImageExtensions.contains(ext)
             }
             // sort by file name
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
+            .map { entry in
+                AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: entry.path))
+            }
 
-        return imageEntries.map { entry in
-            AidokuRunner.Page(content: .zipFile(url: archiveUrl, filePath: entry.path))
+        for entry in descriptionFiles {
+            guard
+                let index = entry.path
+                    .lastPathComponent()
+                    .split(separator: ".", maxSplits: 1)
+                    .first
+                    .flatMap({ Int($0) }),
+                index > 0,
+                index <= pages.count
+            else { break }
+
+            do {
+                var descriptionData = Data()
+                _ = try archive.extract(
+                    entry,
+                    consumer: { data in
+                        descriptionData.append(data)
+                    }
+                )
+                pages[index - 1].hasDescription = true
+                pages[index - 1].description = String(data: descriptionData, encoding: .utf8)
+            } catch {
+                LogManager.logger.error("Failed to extract page description text from archive: \(error)")
+                continue
+            }
         }
+
+        return pages
     }
 }
 
 extension LocalFileManager {
     // add a new file to the local files source
+    // swiftlint:disable:next cyclomatic_complexity
     func uploadFile(
         from url: URL,
         // if the file already exists, skip uploading it to avoid duplicates
@@ -205,16 +269,27 @@ extension LocalFileManager {
         }
 
         // find image entries (pages)
-        let imageEntries = archive
+        let pageEntries = archive
             .filter { entry in
-                let ext = String(entry.path.lowercased().split(separator: ".").last ?? "")
+                let lastPathComponent = entry.path.lastPathComponent()
+                guard !lastPathComponent.hasPrefix(".") else {
+                    return false
+                }
+                let ext = entry.path.pathExtension().lowercased()
+                if ext == "txt" {
+                    return !entry.path.hasSuffix("desc.txt")
+                }
                 return Self.allowedImageExtensions.contains(ext)
             }
-            .sorted { $0.path < $1.path }
+            .sorted {
+                $0.path.localizedStandardCompare($1.path) == .orderedAscending
+            }
 
-        guard !imageEntries.isEmpty else {
+        guard !pageEntries.isEmpty else {
             throw LocalFileManagerError.noImagesFound
         }
+
+        let comicInfo = ComicInfo.load(from: archive)
 
         let resolvedMangaId = mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent
         let mangaTitle = mangaName ?? resolvedMangaId
@@ -228,7 +303,11 @@ extension LocalFileManager {
 
         // get chapter number
         let chapter = if volume == nil && chapter == nil {
-            if let mangaId {
+            if let comicInfo, let number = comicInfo.number, let chapter = Float(number) {
+                chapter
+            } else if let chapter = LocalFileNameParser.getMangaChapterNumber(from: url.lastPathComponent) {
+                chapter
+            } else if let mangaId {
                 await LocalFileDataManager.shared.getNextChapterNumber(series: mangaId)
             } else {
                 Float(1)
@@ -294,18 +373,22 @@ extension LocalFileManager {
             }
         } else if mangaId == nil {
             // copy first page image to use as cover image
-            let firstImageEntry = imageEntries.first!
-            let coverExt = (firstImageEntry.path as NSString).pathExtension
-            let coverFileName = "cover.\(coverExt)"
-            let newCoverURL = mangaFolder.appendingPathComponent(coverFileName)
-            do {
-                if newCoverURL.exists {
-                    try? fileManager.removeItem(at: newCoverURL)
+            let firstImageEntry = pageEntries.first(where: { !$0.path.lowercased().hasSuffix("txt") })
+            if let firstImageEntry {
+                let coverExt = (firstImageEntry.path as NSString).pathExtension
+                let coverFileName = "cover.\(coverExt)"
+                let newCoverURL = mangaFolder.appendingPathComponent(coverFileName)
+                do {
+                    if newCoverURL.exists {
+                        try? fileManager.removeItem(at: newCoverURL)
+                    }
+                    _ = try archive.extract(firstImageEntry, to: newCoverURL)
+                    coverURL = newCoverURL
+                } catch {
+                    throw LocalFileManagerError.fileCopyFailed
                 }
-                _ = try archive.extract(firstImageEntry, to: newCoverURL)
-                coverURL = newCoverURL
-            } catch {
-                throw LocalFileManagerError.fileCopyFailed
+            } else {
+                coverURL = nil
             }
         } else {
             coverURL = nil
@@ -333,7 +416,8 @@ extension LocalFileManager {
                 id: resolvedMangaId,
                 title: mangaTitle,
                 cover: cover,
-                description: mangaDescription
+                description: mangaDescription,
+                comicInfo: comicInfo
             )
         }
 
@@ -349,7 +433,8 @@ extension LocalFileManager {
             id: UUID().uuidString,
             title: title,
             volume: volume,
-            chapter: chapter
+            chapter: chapter,
+            comicInfo: comicInfo
         )
     }
 }
@@ -456,70 +541,76 @@ extension LocalFileManager {
         // don't scan while suppressing file events
         guard !suppressFileEvents else { return }
 
-        let fileManager = FileManager.default
-        let documentsDir = fileManager.documentDirectory
-        let localFolder = documentsDir.appendingPathComponent("Local", isDirectory: true)
-        localFolder.createDirectory()
-
-        // get all manga folders
-        let mangaFolders = (try? fileManager.contentsOfDirectory(
-            at: localFolder,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: .skipsHiddenFiles
-        ))?.filter { $0.isDirectory } ?? []
-
-        let (toRemove, toAdd) = await LocalFileDataManager.shared.findMangaDiskChanges(mangaFolders: mangaFolders)
-
-        // remove manga from db that no longer exist on disk
-        for mangaId in toRemove {
-            await removeManga(with: mangaId)
+        // ensure only one scan is running at a time
+        guard scanTask == nil else {
+            await scanTask?.value
+            return
         }
 
-        // add manga to db that exist on disk but not in db yet
-        for folder in mangaFolders where toAdd.contains(folder.lastPathComponent) {
-            // find cbz files in this folder
-            let cbzFiles = (try? fileManager.contentsOfDirectory(
-                at: folder,
-                includingPropertiesForKeys: nil,
-                options: .skipsHiddenFiles
-            ))?.filter { Self.allowedFileExtensions.contains($0.pathExtension.lowercased()) } ?? []
-            let mangaId = folder.lastPathComponent
-            // add cbz files as chapters
-            for cbzFile in cbzFiles {
-                do {
-                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
-                } catch {
-                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for new manga \(mangaId): \(error)")
+        scanTask = Task {
+            let fileManager = FileManager.default
+            let documentsDir = fileManager.documentDirectory
+            let localFolder = documentsDir.appendingPathComponent("Local", isDirectory: true)
+            localFolder.createDirectory()
+
+            // get all manga folders
+            let mangaFolders = localFolder.contents.filter { $0.isDirectory }
+
+            let (toRemove, toAdd) = await LocalFileDataManager.shared.findMangaDiskChanges(mangaFolders: mangaFolders)
+
+            // remove manga from db that no longer exist on disk
+            for mangaId in toRemove {
+                await removeManga(with: mangaId)
+            }
+
+            // for each manga folder, ensure chapters in db match local files
+            for folder in mangaFolders {
+                let mangaId = folder.lastPathComponent
+
+                // find cbz files in this folder
+                let cbzFiles = folder.contents
+                    .filter {
+                        Self.allowedFileExtensions.contains($0.pathExtension.lowercased())
+                    }
+                    .sorted {
+                        $0.path.localizedStandardCompare($1.path) == .orderedAscending
+                    }
+
+                // add manga to db that exist on disk but not in db yet
+                if toAdd.contains(mangaId) {
+                    // add cbz files as chapters
+                    for cbzFile in cbzFiles {
+                        do {
+                            try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                        } catch {
+                            LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for new manga \(mangaId): \(error)")
+                        }
+                    }
+                } else {
+                    // add missing chapters
+                    let cbzFileNames = Set(cbzFiles.map { $0.lastPathComponent })
+
+                    let dbChapterFileNames = await LocalFileDataManager.shared.removeMissingChapters(
+                        mangaId: mangaId,
+                        availableChapters: cbzFileNames
+                    )
+
+                    // add chapters for new cbz files
+                    let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
+                    for cbzFile in chaptersToAdd {
+                        do {
+                            try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
+                        } catch {
+                            LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \(mangaId): \(error)")
+                        }
+                    }
                 }
             }
+
+            // clear running task (complete)
+            scanTask = nil
         }
-
-        // for each manga folder, ensure chapters in db match local files
-        for folder in mangaFolders {
-            let mangaId = folder.lastPathComponent
-            // find cbz files in this folder
-            let cbzFiles = (try? fileManager.contentsOfDirectory(
-                at: folder,
-                includingPropertiesForKeys: nil,
-                options: .skipsHiddenFiles
-            ))?.filter { Self.allowedFileExtensions.contains($0.pathExtension.lowercased()) } ?? []
-            let cbzFileNames = Set(cbzFiles.map { $0.lastPathComponent })
-
-            let dbChapterFileNames = await LocalFileDataManager.shared.removeMissingChapters(
-                mangaId: mangaId,
-                availableChapters: cbzFileNames
-            )
-
-            // add chapters for new cbz files
-            let chaptersToAdd = cbzFiles.filter { !dbChapterFileNames.contains($0.lastPathComponent) }
-            for cbzFile in chaptersToAdd {
-                do {
-                    try await uploadFile(from: cbzFile, skipUpload: true, mangaId: mangaId)
-                } catch {
-                    LogManager.logger.error("Failed to process file \(cbzFile.lastPathComponent) for manga \(mangaId): \(error)")
-                }
-            }
-        }
+        await scanTask?.value
     }
 }
 

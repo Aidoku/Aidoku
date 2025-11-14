@@ -15,6 +15,7 @@ extension View {
         hideCancelButton: Bool = false,
         hidesNavigationBarDuringPresentation: Bool = true,
         hidesSearchBarWhenScrolling: Bool = true,
+        stacked: Bool = true,
         bookmarkIcon: UIImage? = nil,
         onSubmit: (() -> Void)? = nil,
         onCancel: (() -> Void)? = nil,
@@ -28,6 +29,7 @@ extension View {
                 hideCancelButton: hideCancelButton,
                 hidesNavigationBarDuringPresentation: hidesNavigationBarDuringPresentation,
                 hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling,
+                stacked: stacked,
                 bookmarkIcon: bookmarkIcon,
                 onSubmit: onSubmit,
                 onCancel: onCancel,
@@ -49,6 +51,7 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
     let hideCancelButton: Bool
     let hidesNavigationBarDuringPresentation: Bool
     let hidesSearchBarWhenScrolling: Bool
+    let stacked: Bool
     let bookmarkIcon: UIImage?
     let onSubmit: (() -> Void)?
     let onCancel: (() -> Void)?
@@ -106,7 +109,11 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
             searchController.searchBar.setImage(bookmarkIcon, for: .bookmark, state: .normal)
         }
 
-        return NavSearchBarWrapper(searchController: searchController, hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling)
+        return NavSearchBarWrapper(
+            searchController: searchController,
+            hidesSearchBarWhenScrolling: hidesSearchBarWhenScrolling,
+            stacked: stacked
+        )
     }
 
     func updateUIViewController(_ controller: NavSearchBarWrapper, context: Context) {
@@ -141,11 +148,13 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
     class NavSearchBarWrapper: UIViewController {
         var searchController: UISearchController
         let hidesSearchBarWhenScrolling: Bool
+        let stacked: Bool
         var shouldShow = false
 
-        init(searchController: UISearchController, hidesSearchBarWhenScrolling: Bool) {
+        init(searchController: UISearchController, hidesSearchBarWhenScrolling: Bool, stacked: Bool) {
             self.searchController = searchController
             self.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
+            self.stacked = stacked
             super.init(nibName: nil, bundle: nil)
         }
 
@@ -180,7 +189,7 @@ private struct CustomSearchBar: UIViewControllerRepresentable {
         func show() {
             parent?.navigationItem.searchController = searchController
             parent?.navigationItem.hidesSearchBarWhenScrolling = hidesSearchBarWhenScrolling
-            if #available(iOS 16.0, *) {
+            if #available(iOS 16.0, *), stacked {
                 parent?.navigationItem.preferredSearchBarPlacement = .stacked
             }
 

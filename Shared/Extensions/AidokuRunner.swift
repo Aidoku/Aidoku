@@ -179,6 +179,10 @@ extension AidokuRunner.Manga {
     var uniqueKey: String {
         "\(sourceKey).\(key)"
     }
+
+    var identifier: MangaIdentifier {
+        .init(sourceKey: sourceKey, mangaKey: key)
+    }
 }
 
 extension AidokuRunner.PublishingStatus {

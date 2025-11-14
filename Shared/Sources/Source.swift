@@ -337,12 +337,7 @@ extension Source {
     }
 
     func getPageList(chapter: Chapter, skipDownloadedCheck: Bool = false) async throws -> [Page] {
-        if !skipDownloadedCheck {
-            if await DownloadManager.shared.isChapterDownloaded(chapter: chapter) {
-                return await DownloadManager.shared.getDownloadedPagesWithoutContents(for: chapter)
-            }
-        }
-        return await actor.getPageList(chapter: chapter)
+        await actor.getPageList(chapter: chapter)
     }
 
     struct ImageRequest: Sendable {

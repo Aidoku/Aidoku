@@ -60,6 +60,7 @@ struct HistoryView: View {
         }
         .customSearchable(
             text: $searchText,
+            stacked: false,
             onSubmit: {
                 Task {
                     await viewModel.search(query: searchText, delay: false)
@@ -84,7 +85,9 @@ struct HistoryView: View {
                 if UserDefaults.standard.bool(forKey: "History.lockHistoryTab") {
                     Button {
                         if locked {
-                            unlock()
+                            Task {
+                                await unlock()
+                            }
                         } else {
                             locked = true
                         }
@@ -144,7 +147,9 @@ struct HistoryView: View {
                 .fontWeight(.medium)
 
             Button(NSLocalizedString("VIEW_HISTORY")) {
-                unlock()
+                Task {
+                    await unlock()
+                }
             }
         }
         .padding(.top, -52) // slight offset to account for search bar and make the view more centered
@@ -162,7 +167,7 @@ struct HistoryView: View {
 
     func cellView(entry: HistoryEntry) -> some View {
         let manga = viewModel.mangaCache[entry.mangaCacheKey]
-        let view = HistoryEntryCell(
+        return HistoryEntryCell(
             entry: entry,
             manga: manga,
             chapter: viewModel.chapterCache[entry.chapterCacheKey]
@@ -190,15 +195,7 @@ struct HistoryView: View {
         }
         .id(entry.chapterCacheKey)
         .tag(entry.chapterCacheKey)
-
-        if #available(iOS 16.0, *) {
-            return view
-                .alignmentGuide(.listRowSeparatorLeading) { d in
-                    d[.leading]
-                }
-        } else {
-            return view
-        }
+        .offsetListSeparator()
     }
 
     @ViewBuilder
@@ -243,19 +240,25 @@ struct HistoryView: View {
     }
 
     // prompt for biometrics to unlock the view
-    func unlock() {
+    func unlock() async {
         let context = LAContext()
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-            let reason = NSLocalizedString("AUTH_FOR_HISTORY")
+        let success: Bool
 
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, _ in
-                if success {
-                    locked = false
-                }
-            }
-        } else { // biometrics not supported
-            locked = false
+        do {
+            success = try await context.evaluatePolicy(
+                .defaultPolicy,
+                localizedReason: NSLocalizedString("AUTH_FOR_HISTORY")
+            )
+        } catch {
+            // The error is to be displayed to users, so we can ignore it.
+            return
         }
+
+        guard success else {
+            return
+        }
+
+        locked = false
     }
 }
 

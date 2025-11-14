@@ -35,6 +35,7 @@ struct MangaDetailsHeaderView: View {
 
     @Binding var chapterTitleDisplayMode: ChapterTitleDisplayMode
 
+    var hasOtherDownloads: Bool
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
 
@@ -67,6 +68,7 @@ struct MangaDetailsHeaderView: View {
         scanlatorFilter: Binding<[String]>,
         descriptionExpanded: Binding<Bool>,
         chapterTitleDisplayMode: Binding<ChapterTitleDisplayMode>,
+        hasOtherDownloads: Bool,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
@@ -87,6 +89,7 @@ struct MangaDetailsHeaderView: View {
         self._scanlatorFilter = scanlatorFilter
         self._descriptionExpanded = descriptionExpanded
         self._chapterTitleDisplayMode = chapterTitleDisplayMode
+        self.hasOtherDownloads = hasOtherDownloads
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
 
@@ -192,26 +195,30 @@ struct MangaDetailsHeaderView: View {
             .foregroundStyle(.white)
             .background(Color.accentColor)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .padding(.bottom, 10)
+            .padding(.bottom, 20)
             .padding(.horizontal, 20)
             .allowsHitTesting(!readButtonDisabled)
 
-            ChapterListHeaderView(
-                allChapters: manga.chapters,
-                filteredChapters: manga.chapters != nil ? chapters : (initialDataLoaded ? [] : nil),
-                sortOption: $chapterSortOption,
-                sortAscending: $chapterSortAscending,
-                filters: $filters,
-                langFilter: $langFilter,
-                scanlatorFilter: $scanlatorFilter,
-                displayMode: $chapterTitleDisplayMode,
-                mangaUniqueKey: manga.uniqueKey
-            )
-            .padding(.horizontal, 20)
+            // hide the chapter list header if there are no chapters and the other downloads header is shown
+            if !(manga.chapters ?? chapters).isEmpty || !hasOtherDownloads {
+                ChapterListHeaderView(
+                    allChapters: manga.chapters,
+                    filteredChapters: manga.chapters != nil ? chapters : (initialDataLoaded ? [] : nil),
+                    sortOption: $chapterSortOption,
+                    sortAscending: $chapterSortAscending,
+                    filters: $filters,
+                    langFilter: $langFilter,
+                    scanlatorFilter: $scanlatorFilter,
+                    displayMode: $chapterTitleDisplayMode,
+                    mangaUniqueKey: manga.uniqueKey
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
+            }
 
             // separator
             if !chapters.isEmpty {
-                Divider()
+                ListDivider()
             }
         }
         .animation(.default, value: animationTrigger)
@@ -247,7 +254,7 @@ struct MangaDetailsHeaderView: View {
 
     @ViewBuilder
     var labelsView: some View {
-        if manga.status != .unknown || (manga.contentRating != .unknown && manga.contentRating != .safe) {
+        if manga.status != .unknown || (manga.contentRating != .unknown && manga.contentRating != .safe) || (bookmarked && source != nil) {
             HStack(spacing: 6) {
                 if manga.status != .unknown {
                     LabelView(text: manga.status.title)
@@ -560,5 +567,6 @@ private struct MangaActionButtonStyle: ButtonStyle {
         scanlatorFilter: $scanlatorFilter,
         descriptionExpanded: Binding.constant(false),
         chapterTitleDisplayMode: $chapterTitleDisplayMode,
+        hasOtherDownloads: false,
     )
 }

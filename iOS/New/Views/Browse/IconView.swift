@@ -10,18 +10,17 @@ import NukeUI
 
 struct IconView: View {
     let imageUrl: URL?
-
-    static let iconSize: CGFloat = 48
+    var iconSize: CGFloat = 48
 
     var body: some View {
         SourceImageView(
             imageUrl: imageUrl?.absoluteString ?? "",
-            width: Self.iconSize,
-            height: Self.iconSize
+            width: iconSize,
+            height: iconSize
         )
-        .clipShape(RoundedRectangle(cornerRadius: Self.iconSize * 0.225))
+        .clipShape(RoundedRectangle(cornerRadius: iconSize * 0.225))
         .overlay(
-            RoundedRectangle(cornerRadius: Self.iconSize * 0.225)
+            RoundedRectangle(cornerRadius: iconSize * 0.225)
                 .strokeBorder(Color(uiColor: UIColor.quaternarySystemFill), lineWidth: 1)
         )
     }
@@ -29,11 +28,15 @@ struct IconView: View {
 
 struct SourceIconView: View {
     let sourceId: String
-    let imageUrl: URL?
+    var imageUrl: URL?
+    var iconSize: CGFloat = 48
 
     var body: some View {
         if let imageUrl {
-            IconView(imageUrl: imageUrl)
+            IconView(
+                imageUrl: imageUrl,
+                iconSize: iconSize
+            )
         } else {
             let imageName = switch sourceId {
                 case LocalSourceRunner.sourceKey: "local"
@@ -43,10 +46,10 @@ struct SourceIconView: View {
             }
             Image(imageName)
                 .resizable()
-                .frame(width: IconView.iconSize, height: IconView.iconSize)
-                .clipShape(RoundedRectangle(cornerRadius: IconView.iconSize * 0.225))
+                .frame(width: iconSize, height: iconSize)
+                .clipShape(RoundedRectangle(cornerRadius: iconSize * 0.225))
                 .overlay(
-                    RoundedRectangle(cornerRadius: IconView.iconSize * 0.225)
+                    RoundedRectangle(cornerRadius: iconSize * 0.225)
                         .strokeBorder(Color(uiColor: UIColor.quaternarySystemFill), lineWidth: 1)
                 )
         }

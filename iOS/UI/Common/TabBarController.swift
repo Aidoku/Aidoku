@@ -85,7 +85,7 @@ class TabBarController: UITabBarController {
                 searchViewController
             }
             searchTab.automaticallyActivatesSearch = true
-            tabs = [
+            let fixedTabs = [
                 UITab(
                     title: NSLocalizedString("LIBRARY"),
                     image: UIImage(systemName: "books.vertical.fill"),
@@ -113,9 +113,13 @@ class TabBarController: UITabBarController {
                     identifier: "3"
                 ) { _ in
                     settingsViewController
-                },
-                searchTab
+                }
             ]
+            fixedTabs.forEach {
+                $0.allowsHiding = false
+                $0.preferredPlacement = .fixed
+            }
+            tabs = fixedTabs + [searchTab]
         } else {
             libraryViewController.tabBarItem = UITabBarItem(
                 title: NSLocalizedString("LIBRARY", comment: ""),

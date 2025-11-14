@@ -29,7 +29,7 @@ class LibraryViewController: MangaCollectionViewController {
             image: UIImage(systemName: locked ? "lock" : "lock.open"),
             style: .plain,
             target: self,
-            action: #selector(toggleLock)
+            action: #selector(performToggleLock)
         )
         item.title = NSLocalizedString("TOGGLE_LOCK")
         return item
@@ -101,7 +101,8 @@ class LibraryViewController: MangaCollectionViewController {
         super.viewDidLoad()
 
         // load stored download queue state on first load
-        Task.detached {
+        Task {
+            await SourceManager.shared.loadSources() // make sure sources are loaded first
             await DownloadManager.shared.loadQueueState()
         }
     }
@@ -212,7 +213,7 @@ class LibraryViewController: MangaCollectionViewController {
             ? NSLocalizedString("LIBRARY_LOCKED", comment: "")
             : NSLocalizedString("CATEGORY_LOCKED", comment: "")
         lockedStackView.buttonText = NSLocalizedString("VIEW_LIBRARY", comment: "")
-        lockedStackView.button.addTarget(self, action: #selector(unlock), for: .touchUpInside)
+        lockedStackView.button.addTarget(self, action: #selector(performUnlock), for: .touchUpInside)
         lockedStackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(lockedStackView)
 
@@ -267,9 +268,34 @@ class LibraryViewController: MangaCollectionViewController {
         }
 
         addObserver(forName: "downloadsQueued", using: checkNavbarDownloadButton)
-        addObserver(forName: "downloadFinished", using: checkNavbarDownloadButton)
         addObserver(forName: "downloadCancelled", using: checkNavbarDownloadButton)
         addObserver(forName: "downloadsCancelled", using: checkNavbarDownloadButton)
+
+        addObserver(forName: "downloadFinished") { [weak self] notification in
+            checkNavbarDownloadButton(notification)
+            if let download = notification.object as? Download {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: download.mangaIdentifier)
+                    self?.updateDataSource()
+                }
+            }
+        }
+        addObserver(forName: "downloadRemoved") { [weak self] notification in
+            if let id = notification.object as? ChapterIdentifier {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: id.mangaIdentifier)
+                    self?.updateDataSource()
+                }
+            }
+        }
+        addObserver(forName: "downloadsRemoved") { [weak self] notification in
+            if let id = notification.object as? MangaIdentifier {
+                Task {
+                    await self?.viewModel.fetchDownloadCounts(for: id)
+                    self?.updateDataSource()
+                }
+            }
+        }
 
         addObserver(forName: "updateCategories") { [weak self] _ in
             guard let self = self else { return }
@@ -293,6 +319,15 @@ class LibraryViewController: MangaCollectionViewController {
             Task { @MainActor in
                 await self.viewModel.loadLibrary()
                 self.updateDataSource()
+            }
+        }
+
+        addObserver(forName: "updateChapters") { [weak self] notification in
+            if let id = notification.object as? MangaIdentifier {
+                Task {
+                    await self?.viewModel.fetchUnreads(for: id)
+                    self?.updateDataSource()
+                }
             }
         }
 
@@ -332,9 +367,21 @@ class LibraryViewController: MangaCollectionViewController {
             self?.opensReaderView = notification.object as? Bool ?? false
         }
 
-        // refresh unread badges
+        // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
-            self?.viewModel.badgeType = UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") ? .unread : .none
+            if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
+                self?.viewModel.badgeType.insert(.unread)
+            } else {
+                self?.viewModel.badgeType.remove(.unread)
+            }
+            self?.reloadItems()
+        }
+        addObserver(forName: "Library.downloadedChapterBadges") { [weak self] _ in
+            if UserDefaults.standard.bool(forKey: "Library.downloadedChapterBadges") {
+                self?.viewModel.badgeType.insert(.downloaded)
+            } else {
+                self?.viewModel.badgeType.remove(.downloaded)
+            }
             self?.reloadItems()
         }
 
@@ -413,15 +460,21 @@ class LibraryViewController: MangaCollectionViewController {
     // cells with unread badges
     override func makeCellRegistration() -> CellRegistration {
         CellRegistration { [weak self] cell, _, info in
+            guard let self else { return }
             cell.sourceId = info.sourceId
             cell.mangaId = info.mangaId
             cell.title = info.title
-            if self?.viewModel.badgeType == .unread {
+            if self.viewModel.badgeType.contains(.unread) {
                 cell.badgeNumber = info.unread
             } else {
                 cell.badgeNumber = 0
             }
-            cell.setEditing(self?.isEditing ?? false, animated: false)
+            if self.viewModel.badgeType.contains(.downloaded) {
+                cell.badgeNumber2 = info.downloads
+            } else {
+                cell.badgeNumber2 = 0
+            }
+            cell.setEditing(self.isEditing, animated: false)
             if cell.isSelected {
                 cell.select(animated: false)
             } else {
@@ -584,7 +637,10 @@ extension LibraryViewController {
     }
 
     @objc func openDownloadQueue() {
-        present(UINavigationController(rootViewController: DownloadQueueViewController()), animated: true)
+        let viewController = UIHostingController(rootView: DownloadQueueView())
+        viewController.navigationItem.largeTitleDisplayMode = .never
+        viewController.navigationItem.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        present(viewController, animated: true)
     }
 
     @objc func openMangaUpdates() {
@@ -682,35 +738,59 @@ extension LibraryViewController {
 
 // MARK: - Locking
 extension LibraryViewController {
+    func updateLock() {
+        updateLockState()
+        updateDataSource()
+    }
 
-    @objc func unlock() {
+    func lock() {
+        locked = true
+        updateLock()
+    }
+
+    func unlock() {
+        locked = false
+        updateLock()
+    }
+
+    func attemptUnlock() async {
         let context = LAContext()
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-            context.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics,
+        let success: Bool
+
+        do {
+            success = try await context.evaluatePolicy(
+                .defaultPolicy,
                 localizedReason: NSLocalizedString("AUTH_FOR_LIBRARY", comment: "")
-            ) { [weak self] success, _ in
-                guard success, let self = self else { return }
-                Task { @MainActor in
-                    self.locked = false
-                    self.updateLockState()
-                    self.updateDataSource()
-                }
-            }
-        } else { // biometrics not supported
-            locked = false
-            updateLockState()
-            updateDataSource()
+            )
+        } catch {
+            // The error is to be displayed to users, so we can ignore it.
+            return
+        }
+
+        guard success else {
+            return
+        }
+
+        unlock()
+    }
+
+    func toggleLock() async {
+        if locked {
+            await attemptUnlock()
+        } else {
+            lock()
         }
     }
 
-    @objc func toggleLock() {
-        if locked {
-            unlock()
-        } else {
-            locked = true
-            updateLockState()
-            updateDataSource()
+    @objc func performUnlock() {
+        Task {
+            await attemptUnlock()
+        }
+    }
+
+    @objc func performToggleLock() {
+        Task {
+            await toggleLock()
         }
     }
 
@@ -1136,7 +1216,7 @@ extension LibraryViewController {
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
                         for mangaInfo in mangaInfo {
-                            await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga())
+                            await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga().toNew())
                         }
                     }
                 } else {
@@ -1153,7 +1233,7 @@ extension LibraryViewController {
                     !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
                     Task {
                         for manga in mangaInfo {
-                            await DownloadManager.shared.downloadUnread(manga: manga.toManga())
+                            await DownloadManager.shared.downloadUnread(manga: manga.toManga().toNew())
                         }
                     }
                 } else {
@@ -1164,7 +1244,7 @@ extension LibraryViewController {
                 }
             }
 
-            if manga.sourceId != LocalSourceRunner.sourceKey {
+            if manga.sourceId != LocalSourceRunner.sourceKey && SourceManager.shared.hasSourceInstalled(id: manga.sourceId) {
                 bottomMenuChildren.append(UIMenu(
                     title: NSLocalizedString("DOWNLOAD", comment: ""),
                     image: UIImage(systemName: "arrow.down.circle"),

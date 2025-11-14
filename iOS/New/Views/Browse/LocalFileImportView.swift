@@ -73,6 +73,14 @@ extension LocalFileImportView {
         init(fileInfo: ImportFileInfo? = nil, fullyPresented: Binding<Bool>) {
             self._fileInfo = State(initialValue: fileInfo)
             self._fullyPresented = fullyPresented
+
+            let initialVolume = fileInfo?.comicInfo?.volume.flatMap { Float($0) }
+                ?? fileInfo.flatMap { LocalFileNameParser.getMangaVolumeNumber(from: $0.name) }
+            let initialChapter = fileInfo?.comicInfo?.number.flatMap { Float($0) }
+                ?? fileInfo.flatMap { LocalFileNameParser.getMangaChapterNumber(from: $0.name) }
+                ?? 1
+            self._volume = State(initialValue: initialVolume)
+            self._chapter = State(initialValue: initialChapter)
         }
     }
 }
@@ -385,10 +393,21 @@ extension LocalFileImportView.ContentView {
     func loadFileInfoFields() {
         guard let fileInfo else { return }
         name = fileInfo.name.removingExtension()
-        seriesName = name
+        seriesName = fileInfo.comicInfo?.series ?? LocalFileNameParser.parseMangaSeries(from: fileInfo.name)
+        seriesDescription = fileInfo.comicInfo?.summary ?? ""
         coverImage = fileInfo.previewImages.first
+        volume = fileInfo.comicInfo?.volume.flatMap { Float($0) }
+            ?? LocalFileNameParser.getMangaVolumeNumber(from: fileInfo.name)
+        chapter = fileInfo.comicInfo?.number.flatMap { Float($0) }
+            ?? LocalFileNameParser.getMangaChapterNumber(from: fileInfo.name)
+            ?? 1
         Task {
-            nameValid = !(await LocalFileDataManager.shared.hasSeries(name: seriesName))
+            let hasSeries = await LocalFileDataManager.shared.hasSeries(name: seriesName)
+            nameValid = !hasSeries
+            if hasSeries {
+                selectedMangaId = seriesName
+                selectedMangaTitle = seriesName
+            }
         }
     }
 

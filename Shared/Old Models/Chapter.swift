@@ -129,4 +129,12 @@ extension Chapter {
             return components.joined(separator: " ")
         }
     }
+
+    var mangaIdentifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
+    }
+
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
+    }
 }

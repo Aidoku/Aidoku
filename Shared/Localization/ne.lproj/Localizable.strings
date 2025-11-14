@@ -339,7 +339,6 @@
 "INVALID" = "अवैध";
 "CONTENT" = "सामग्री";
 "%@_EXPERIMENTAL" = "%@ (एक्सपेरिमेन्टल)";
-"DOWNLOAD_MANAGER" = "डाउनलोड व्यवस्थापक";
 "NO_DOWNLOADS" = "कुनै डाउनलोड छैन";
 "NO_DOWNLOADS_TEXT" = "डाउनलोड गरिएको सामग्री यहाँ देखा पर्नेछ।";
 "DOWNLOADED_CHAPTERS" = "डाउनलोड गरिएका अध्यायहरू";

@@ -259,9 +259,11 @@ class ReaderViewController: BaseObservingViewController {
         super.viewWillDisappear(animated)
 
         if !chaptersToRemoveDownload.isEmpty {
-            DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
-                $0.toOld(sourceId: source?.key ?? manga.sourceKey, mangaId: manga.key)
-            })
+            Task {
+                await DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
+                    .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
+                })
+            }
         }
 
         guard currentPage >= 1 else { return }
@@ -283,13 +285,13 @@ class ReaderViewController: BaseObservingViewController {
     func updateReadPosition() {
         guard
             !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
-            (toolbarView.totalPages ?? 0) > 0
-        else { return }
+            (toolbarView.totalPages ?? 0) > 0 // ensure chapter pages are loaded
+        else {
+            return
+        }
         Task {
-            // don't add history if there is none and we're at the first page
             let sourceId = source?.key ?? manga.sourceKey
             let mangaId = manga.key
-
             let chapterId = chapter.key
             let (completed, progress) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getProgress(
@@ -301,11 +303,11 @@ class ReaderViewController: BaseObservingViewController {
             }
             let hasHistory = completed || progress != nil
 
-            if currentPage == 1 {
-                if hasHistory {
-                    return
-                }
+            // don't add history if there is none and we're at the first page
+            if currentPage == 1 && !hasHistory {
+                return
             }
+
             await HistoryManager.shared.setProgress(
                 chapter: chapter.toOld(sourceId: sourceId, mangaId: mangaId),
                 progress: currentPage,
@@ -520,9 +522,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
         while index >= 0 {
             let new = chapterList[index]
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatus(for: new.toOld(sourceId: manga.sourceKey, mangaId: manga.key)) == .finished
+                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =
@@ -559,9 +562,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
         index += 1
         while index < chapterList.count {
             let new = chapterList[index]
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatus(for: new.toOld(sourceId: manga.sourceKey, mangaId: manga.key)) == .finished
+                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =
@@ -631,7 +635,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
-        } else if pages.count == 1 && pages[0].text != nil {
+        } else if pages.count == 1 && pages[0].isTextPage {
             // single text page, should switch to text reader
             if !(reader is ReaderTextViewController) {
                 setReader(.text)
@@ -775,7 +779,15 @@ extension ReaderViewController {
                 if #available(iOS 26.0, *) {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 1
                 }
-                self.node.backgroundColor = .systemBackground
+                self.node.backgroundColor = if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                    .systemBackground
+                } else {
+                    if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                        .white
+                    } else {
+                        .black
+                    }
+                }
                 self.node.layoutIfNeeded()
             }
         }
@@ -800,12 +812,12 @@ extension ReaderViewController {
                 }
 
                 self.node.backgroundColor = switch UserDefaults.standard.string(forKey: "Reader.backgroundColor") {
-                case "system":
-                    .systemBackground
-                case "white":
-                    .white
-                default:
-                    .black
+                    case "system":
+                        .systemBackground
+                    case "white":
+                        .white
+                    default:
+                        .black
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in

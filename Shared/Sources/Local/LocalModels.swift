@@ -39,4 +39,5 @@ struct ImportFileInfo: Hashable {
     let name: String
     let pageCount: Int
     let fileType: LocalFileType
+    let comicInfo: ComicInfo?
 }

@@ -350,7 +350,6 @@
 "ENABLE_PERMISSION" = "Включване на разрешения";
 "CONTENT" = "Съдържание";
 "%@_EXPERIMENTAL" = "%@ (Експериментално)";
-"DOWNLOAD_MANAGER" = "Мениджър на свалянията";
 "NO_DOWNLOADS" = "Без сваляния";
 "NO_DOWNLOADS_TEXT" = "Изтегленото съдържание ще се появи тук.";
 "DOWNLOADED_CHAPTERS" = "Свалени глави";

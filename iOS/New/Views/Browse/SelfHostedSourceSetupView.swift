@@ -541,54 +541,12 @@ struct KavitaSetupView: View {
         return true
     }
 
-    struct LoginResponse: Decodable {
-        let apiKey: String
-        let username: String
-        let token: String?
-        let refreshToken: String?
-        var cookie: String?
+    static func getLoginResponse(server: String, username: String, password: String) async -> KavitaSourceRunner.LoginResponse? {
+        await KavitaSourceRunner.getLoginResponse(server: server, username: username, password: password)
     }
 
-    static func getLoginResponse(server: String, username: String, password: String) async -> LoginResponse? {
-        guard let loginUrl = URL(string: server + "/api/account/login") else {
-            return nil
-        }
-
-        struct Payload: Encodable {
-            let username: String
-            let password: String
-            let apiKey: String
-        }
-
-        let payload = Payload(username: username, password: password, apiKey: "")
-
-        var request = URLRequest(url: loginUrl)
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONEncoder().encode(payload)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        return try? await URLSession.shared.object(from: request)
-    }
-
-    static func getLoginResponse(server: String, cookies: [HTTPCookie]) async -> LoginResponse? {
-        guard
-            let cookie = cookies.first(where: { $0.name == ".AspNetCore.Cookies" }),
-            let accountUrl = URL(string: server + "/api/account")
-        else {
-            return nil
-        }
-
-        var request = URLRequest(url: accountUrl)
-        request.httpMethod = "GET"
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        for (key, value) in HTTPCookie.requestHeaderFields(with: [cookie]) {
-            request.setValue(value, forHTTPHeaderField: key)
-        }
-
-        var response: LoginResponse? = try? await URLSession.shared.object(from: request)
-        response?.cookie = request.value(forHTTPHeaderField: "Cookie")
-        return response
+    static func getLoginResponse(server: String, cookies: [HTTPCookie]) async -> KavitaSourceRunner.LoginResponse? {
+        await KavitaSourceRunner.getLoginResponse(server: server, cookies: cookies)
     }
 }
 
