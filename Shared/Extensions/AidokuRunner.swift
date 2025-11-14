@@ -127,6 +127,24 @@ extension AidokuRunner.Source {
             nil
         }
     }
+
+    func getSelectedLanguages() -> [String] {
+        if languages.count > 1 {
+            if config?.languageSelectType == .single {
+                let selectedLanguage = UserDefaults.standard.string(forKey: "\(key).language")
+                if let selectedLanguage {
+                    return [selectedLanguage]
+                } else {
+                    return []
+                }
+            } else {
+                let selectedLanguages = UserDefaults.standard.stringArray(forKey: "\(key).languages")
+                return selectedLanguages ?? []
+            }
+        } else {
+            return languages
+        }
+    }
 }
 
 extension AidokuRunner.Manga {

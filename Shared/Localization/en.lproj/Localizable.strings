@@ -339,6 +339,10 @@
 // Search
 "SEARCH" = "Search";
 "VIEW_MORE" = "View More";
+"RECENTLY_SEARCHED" = "Recently Searched";
+"NO_RECENT_SEARCHES" = "No Recent Searches";
+"NO_RECENT_SEARCHES_TEXT" = "Your recent searches will appear here.";
+"SOURCES" = "Sources";
 
 // Account
 "LOGIN" = "Log In";
