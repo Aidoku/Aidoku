@@ -102,6 +102,13 @@ struct HomeScrollerView: View {
                                         Text("empty")
                                             .lineLimit(1)
                                             .opacity(0)
+
+                                        // add another empty line if the title is empty
+                                        if entry.title.isEmpty && entry.subtitle == nil {
+                                            Text("empty")
+                                                .lineLimit(1)
+                                                .opacity(0)
+                                        }
                                     }
                                 }
                                 .padding(.horizontal, 4)

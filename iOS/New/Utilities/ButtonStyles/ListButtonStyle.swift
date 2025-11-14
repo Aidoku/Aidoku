@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct ListButtonStyle: ButtonStyle {
+    var tint: Bool = true
+
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        let label = configuration.label
             .padding(.vertical, 12)
             .padding(.horizontal)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -30,6 +33,10 @@ struct ListButtonStyle: ButtonStyle {
                 }
             )
             .contentShape(Rectangle())
-            .foregroundStyle(.tint)
+        if tint {
+            label.foregroundStyle(.tint)
+        } else {
+            label
+        }
     }
 }

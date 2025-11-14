@@ -8,6 +8,7 @@
 import Foundation
 
 extension Notification.Name {
+    static let updateSourceList = Self("updateSourceList")
     static let updateSourceLists = Self("updateSourceLists")
     static let updateBackupList = Self("updateBackupList")
 

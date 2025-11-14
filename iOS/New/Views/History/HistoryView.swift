@@ -11,8 +11,6 @@ import SwiftUI
 import SwiftUIIntrospect
 
 struct HistoryView: View {
-    @Environment(\.dismiss) private var dismiss
-
     @StateObject private var viewModel = ViewModel()
 
     @State private var searchText = ""
