@@ -29,8 +29,10 @@ extension URL {
     }
 
     var contentsByDateModified: [URL] {
-        if let urls = try? FileManager.default.contentsOfDirectory(at: self,
-                                                                   includingPropertiesForKeys: [.contentModificationDateKey]) {
+        if let urls = try? FileManager.default.contentsOfDirectory(
+            at: self,
+            includingPropertiesForKeys: [.contentModificationDateKey]
+        ) {
             return urls.sorted {
                 ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? Date.distantPast)
                 >

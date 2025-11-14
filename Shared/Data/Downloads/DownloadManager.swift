@@ -527,16 +527,6 @@ extension DownloadManager {
 
     /// Load metadata from manga directory.
     private func findComicInfo(in directory: URL) -> ComicInfo? {
-        func loadComicInfo(data: Data) -> ComicInfo? {
-            guard
-                let string = String(data: data, encoding: .utf8),
-                let comicInfo = ComicInfo.load(xmlString: string)
-            else {
-                return nil
-            }
-            return comicInfo
-        }
-
         // check for ComicInfo.xml in any subdirectory
         for subdirectory in directory.contents where subdirectory.isDirectory || subdirectory.pathExtension == "cbz" {
             do {
@@ -548,7 +538,6 @@ extension DownloadManager {
                     let xmlURL = subdirectory.appendingPathComponent("ComicInfo.xml")
                     if xmlURL.exists {
                         let data = try Data(contentsOf: xmlURL)
-                        let result = loadComicInfo(data: data)
                         if
                             let string = String(data: data, encoding: .utf8),
                             let comicInfo = ComicInfo.load(xmlString: string)

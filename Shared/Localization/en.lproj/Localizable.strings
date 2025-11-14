@@ -392,6 +392,7 @@
 "REFRESH_METADATA" = "Refresh Metadata";
 "DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
+"EVERY_6_HOURS" = "Every 6 hours";
 "EVERY_12_HOURS" = "Every 12 hours";
 "DAILY" = "Daily";
 "EVERY_2_DAYS" = "Every 2 days";
@@ -443,6 +444,8 @@
 "DISABLED" = "Disabled";
 "INVERT_TAP_ZONES" = "Invert Tap Zones";
 "ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
+
+// Backups
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";
 "RENAME_BACKUP" = "Rename Backup";
@@ -469,6 +472,12 @@
 "NAME" = "Name";
 "DATE" = "Date";
 "BACKUP_INFO_TITLE" = "Backup Info";
+"AUTOMATIC_BACKUPS" = "Automatic Backups";
+"BACKUP_INTERVAL" = "Backup Interval";
+"AUTO" = "Auto";
+"LAST_BACKED_UP_%@" = "Last automatically backed up: %@";
+
+// Advanced
 "LOGS" = "Logs";
 "LOGGING" = "Logging";
 "LOG_SERVER" = "Log Server";

@@ -439,6 +439,7 @@
 		FBC1271B28AADCF200B68FFC /* ReaderPagedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */; };
 		FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */; };
 		FBC1271F28ABE05800B68FFC /* ReaderReaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */; };
+		FBC337FC2EC6CBC2007465BA /* AutomaticBackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC337FB2EC6CBBC007465BA /* AutomaticBackupsView.swift */; };
 		FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */; };
 		FBCA1B242888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
 		FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBCA1B232888A910007149C5 /* TrackObject.swift */; };
@@ -872,6 +873,7 @@
 		FBC1271A28AADCF200B68FFC /* ReaderPagedViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPagedViewModel.swift; sourceTree = "<group>"; };
 		FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderHoldingDelegate.swift; sourceTree = "<group>"; };
 		FBC1271E28ABE05800B68FFC /* ReaderReaderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderReaderDelegate.swift; sourceTree = "<group>"; };
+		FBC337FB2EC6CBBC007465BA /* AutomaticBackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticBackupsView.swift; sourceTree = "<group>"; };
 		FBCA1B1F288896EB007149C5 /* TrackerAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerAddView.swift; sourceTree = "<group>"; };
 		FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.5.xcdatamodel; sourceTree = "<group>"; };
 		FBCA1B232888A910007149C5 /* TrackObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackObject.swift; sourceTree = "<group>"; };
@@ -1867,6 +1869,7 @@
 				FB077DAD2E7DC85800C9C214 /* BackupsView.swift */,
 				FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */,
 				FB7C28902E898D94009FF6AF /* BackupContentView.swift */,
+				FBC337FB2EC6CBBC007465BA /* AutomaticBackupsView.swift */,
 			);
 			path = Backups;
 			sourceTree = "<group>";
@@ -2525,6 +2528,7 @@
 				FBFF58912E7F2642009367B7 /* Settings.swift in Sources */,
 				FB31AD0927ACBED700D50410 /* SearchViewController.swift in Sources */,
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
+				FBC337FC2EC6CBC2007465BA /* AutomaticBackupsView.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
 				FB2BE5E329527A6E00FAD8A7 /* ReaderInfoPageView.swift in Sources */,
 				723D3AFD2E0DC5C4003ED4CF /* DownloadsView.swift in Sources */,

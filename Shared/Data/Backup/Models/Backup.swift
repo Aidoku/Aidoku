@@ -21,6 +21,7 @@ struct Backup: Codable, Hashable, Identifiable {
     var settings: [String: JsonAnyValue]?
     var date: Date
     var name: String?
+    var automatic: Bool?
     var version: String?
 
     static func load(from url: URL) -> Backup? {
