@@ -34,7 +34,7 @@ class ZoomableScrollView: UIScrollView {
         super.init(frame: frame)
 
         delegate = self
-        maximumZoomScale = 2
+        maximumZoomScale = 5
         minimumZoomScale = 1
         bouncesZoom = true
         showsVerticalScrollIndicator = false
@@ -98,7 +98,7 @@ extension ZoomableScrollView {
             return
         }
 
-        let toScale = maxScale
+        let toScale: CGFloat = 2
         let finalScale = (currentScale == minScale) ? toScale : minScale
         let zoomRect = zoomRect(for: finalScale, withCenter: point)
         zoom(to: zoomRect, animated: animated)

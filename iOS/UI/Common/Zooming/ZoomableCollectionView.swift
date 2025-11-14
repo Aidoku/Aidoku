@@ -178,7 +178,7 @@ extension ZoomableCollectionView {
         let steps = 120
         let out = scrollNode.view.zoomScale > 1
         let from = scrollNode.view.zoomScale
-        let to = out ? scrollNode.view.zoomScale : scrollNode.view.maximumZoomScale
+        let to = out ? scrollNode.view.zoomScale : 2
 
         var scales: [CGFloat] = []
         var points: [CGPoint] = []

@@ -81,7 +81,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         collectionNode.insetsLayoutMarginsFromSafeArea = false
 
         scrollView.minimumZoomScale = 1
-        scrollView.maximumZoomScale = 2
+        scrollView.maximumZoomScale = 5
     }
 
     override func observe() {
