@@ -197,12 +197,12 @@ class BackupManager {
 
         var stringValue: String {
             switch self {
-            case .manga: NSLocalizedString("CONTENT", comment: "")
-            case .categories: NSLocalizedString("CATEGORIES", comment: "")
-            case .library: NSLocalizedString("LIBRARY", comment: "")
-            case .history: NSLocalizedString("HISTORY", comment: "")
-            case .chapters: NSLocalizedString("CHAPTERS", comment: "")
-            case .track: NSLocalizedString("TRACKERS", comment: "")
+                case .manga: NSLocalizedString("CONTENT", comment: "")
+                case .categories: NSLocalizedString("CATEGORIES", comment: "")
+                case .library: NSLocalizedString("LIBRARY", comment: "")
+                case .history: NSLocalizedString("HISTORY", comment: "")
+                case .chapters: NSLocalizedString("CHAPTERS", comment: "")
+                case .track: NSLocalizedString("TRACKERS", comment: "")
             }
         }
     }

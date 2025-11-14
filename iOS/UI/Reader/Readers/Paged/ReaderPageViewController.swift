@@ -66,10 +66,10 @@ class ReaderPageViewController: BaseViewController {
 
         // need this so the page / chapters can be set before the rest of the views are loaded
         switch type {
-        case .info(let infoPageType):
-            infoView = ReaderInfoPageView(type: infoPageType == .previous ? .previous : .next)
-        case .page:
-            pageView = ReaderPageView(parent: self)
+            case .info(let infoPageType):
+                infoView = ReaderInfoPageView(type: infoPageType == .previous ? .previous : .next)
+            case .page:
+                pageView = ReaderPageView(parent: self)
         }
     }
 

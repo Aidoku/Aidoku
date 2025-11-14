@@ -19,10 +19,10 @@ class ReaderNavigationController: UINavigationController {
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         switch UserDefaults.standard.string(forKey: "Reader.orientation") {
-        case "device": .all
-        case "portrait": .portrait
-        case "landscape": .landscape
-        default: .all
+            case "device": .all
+            case "portrait": .portrait
+            case "landscape": .landscape
+            default: .all
         }
     }
 }

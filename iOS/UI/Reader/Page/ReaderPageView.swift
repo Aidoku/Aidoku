@@ -114,24 +114,24 @@ class ReaderPageView: UIView {
 
         if let imageTask {
             switch imageTask.state {
-            case .running:
-                if completion != nil {
-                    completion!(imageView.image != nil)
-                }
-                return await withCheckedContinuation({ continuation in
-                    self.completion = { success in
-                        self.completion = nil
-                        continuation.resume(returning: success)
+                case .running:
+                    if completion != nil {
+                        completion!(imageView.image != nil)
                     }
-                })
-            case .completed:
-                if imageView.image == nil {
+                    return await withCheckedContinuation({ continuation in
+                        self.completion = { success in
+                            self.completion = nil
+                            continuation.resume(returning: success)
+                        }
+                    })
+                case .completed:
+                    if imageView.image == nil {
+                        request = imageTask.request
+                    } else {
+                        return true
+                    }
+                case .cancelled:
                     request = imageTask.request
-                } else {
-                    return true
-                }
-            case .cancelled:
-                request = imageTask.request
             }
         } else {
             let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {

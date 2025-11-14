@@ -129,16 +129,16 @@ class ReaderDoublePageViewController: BaseViewController {
         let pageView: ReaderPageView?
         let reloadButton: UIButton
         switch pos {
-        case .first:
-            firstPageSet = true
-            firstPage = page
-            pageView = firstPageController.pageView
-            reloadButton = firstReloadButton
-        case .second:
-            secondPageSet = true
-            secondPage = page
-            pageView = secondPageController.pageView
-            reloadButton = secondReloadButton
+            case .first:
+                firstPageSet = true
+                firstPage = page
+                pageView = firstPageController.pageView
+                reloadButton = firstReloadButton
+            case .second:
+                secondPageSet = true
+                secondPage = page
+                pageView = secondPageController.pageView
+                reloadButton = secondReloadButton
         }
         guard let pageView = pageView else {
             return

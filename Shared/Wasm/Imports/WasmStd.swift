@@ -156,10 +156,10 @@ extension WasmStd {
                 return Int32(ObjectType.float.rawValue)
             } else if let value = value as? NSNumber {
                 switch CFNumberGetType(value) {
-                case .floatType, .float32Type, .float64Type, .cgFloatType:
-                    return Int32(ObjectType.float.rawValue)
-                default:
-                    return Int32(ObjectType.int.rawValue)
+                    case .floatType, .float32Type, .float64Type, .cgFloatType:
+                        return Int32(ObjectType.float.rawValue)
+                    default:
+                        return Int32(ObjectType.int.rawValue)
                 }
             } else if value is String {
                 return Int32(ObjectType.string.rawValue)

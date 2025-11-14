@@ -230,14 +230,14 @@ class MangaCoverCell: UICollectionViewCell {
         imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
             guard let self else { return }
             switch result {
-            case .success(let response):
-                Task { @MainActor in
-                    UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
-                        self.imageView.image = response.image
+                case .success(let response):
+                    Task { @MainActor in
+                        UIView.transition(with: self.imageView, duration: 0.3, options: .transitionCrossDissolve) {
+                            self.imageView.image = response.image
+                        }
                     }
-                }
-            case .failure:
-                imageTask = nil
+                case .failure:
+                    imageTask = nil
             }
         }
     }

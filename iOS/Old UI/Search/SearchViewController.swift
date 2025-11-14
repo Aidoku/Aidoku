@@ -60,14 +60,14 @@ class MangaCarouselHeader: UICollectionReusableView {
         let contentRatingTagLabel = UILabel()
 
         switch contentRating {
-        case .containsNsfw:
-            contentRatingTagLabel.text = "17+"
-            contentRatingTagContainer.backgroundColor = UIColor.orange.withAlphaComponent(0.3)
-        case .primarilyNsfw:
-            contentRatingTagLabel.text = "18+"
-            contentRatingTagContainer.backgroundColor = UIColor.red.withAlphaComponent(0.3)
-        default:
-            return
+            case .containsNsfw:
+                contentRatingTagLabel.text = "17+"
+                contentRatingTagContainer.backgroundColor = UIColor.orange.withAlphaComponent(0.3)
+            case .primarilyNsfw:
+                contentRatingTagLabel.text = "18+"
+                contentRatingTagContainer.backgroundColor = UIColor.red.withAlphaComponent(0.3)
+            default:
+                return
         }
 
         contentRatingTagContainer.layer.cornerRadius = 6

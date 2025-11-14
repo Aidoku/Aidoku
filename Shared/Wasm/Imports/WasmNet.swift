@@ -54,10 +54,10 @@ class WasmResponseObject: KVCObject {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "data": return data != nil ? [UInt8](data!) : []
-        case "headers": return headers != nil ? headers : (response as? HTTPURLResponse)?.allHeaderFields
-        case "status_code": return statusCode != nil ? statusCode : (response as? HTTPURLResponse)?.statusCode
-        default: return nil
+            case "data": return data != nil ? [UInt8](data!) : []
+            case "headers": return headers != nil ? headers : (response as? HTTPURLResponse)?.allHeaderFields
+            case "status_code": return statusCode != nil ? statusCode : (response as? HTTPURLResponse)?.statusCode
+            default: return nil
         }
     }
 }
@@ -73,12 +73,12 @@ struct WasmRequestObject: KVCObject {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "url": return URL
-        case "method": return method?.rawValue
-        case "headers": return headers
-        case "body": return body
-        case "response": return response
-        default: return nil
+            case "url": return URL
+            case "method": return method?.rawValue
+            case "headers": return headers
+            case "body": return body
+            case "response": return response
+            default: return nil
         }
     }
 }

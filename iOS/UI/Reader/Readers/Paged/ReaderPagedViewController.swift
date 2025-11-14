@@ -151,12 +151,12 @@ class ReaderPagedViewController: BaseObservingViewController {
         usesDoublePages = {
             self.usesAutoPageLayout = false
             switch UserDefaults.standard.string(forKey: "Reader.pagedPageLayout") {
-            case "single": return false
-            case "double": return true
-            case "auto":
-                self.usesAutoPageLayout = true
-                return self.view.bounds.width > self.view.bounds.height
-            default: return false
+                case "single": return false
+                case "double": return true
+                case "auto":
+                    self.usesAutoPageLayout = true
+                    return self.view.bounds.width > self.view.bounds.height
+                default: return false
             }
         }()
     }
@@ -759,65 +759,65 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         }
         let page = currentIndex + (previousChapter != nil ? -1 : 0)
         switch page {
-        case -1: // previous chapter last page
-            // move previous
-            loadPreviousChapter()
+            case -1: // previous chapter last page
+                // move previous
+                loadPreviousChapter()
 
-        case 0: // previous chapter transition page
-            delegate?.setCurrentPage(0)
-            // preload previous
-            if let previousChapter = previousChapter {
-                Task {
-                    await viewModel.preload(chapter: previousChapter)
-                    if currentIndex > 0, let lastPage = viewModel.preloadedPages.last {
-                        pageViewControllers[currentIndex - 1].setPage(
-                            lastPage,
-                            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
-                        )
+            case 0: // previous chapter transition page
+                delegate?.setCurrentPage(0)
+                // preload previous
+                if let previousChapter = previousChapter {
+                    Task {
+                        await viewModel.preload(chapter: previousChapter)
+                        if currentIndex > 0, let lastPage = viewModel.preloadedPages.last {
+                            pageViewControllers[currentIndex - 1].setPage(
+                                lastPage,
+                                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+                            )
+                        }
                     }
                 }
-            }
 
-        case displayPageCount + 1: // next chapter transition page
-            delegate?.setCurrentPage(displayPageCount + 1)
-            // preload next
-            if let nextChapter = nextChapter {
-                Task {
-                    await viewModel.preload(chapter: nextChapter)
-                    if currentIndex + 1 < pageViewControllers.count, let firstPage = viewModel.preloadedPages.first {
-                        pageViewControllers[currentIndex + 1].setPage(
-                            firstPage,
-                            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
-                        )
+            case displayPageCount + 1: // next chapter transition page
+                delegate?.setCurrentPage(displayPageCount + 1)
+                // preload next
+                if let nextChapter = nextChapter {
+                    Task {
+                        await viewModel.preload(chapter: nextChapter)
+                        if currentIndex + 1 < pageViewControllers.count, let firstPage = viewModel.preloadedPages.first {
+                            pageViewControllers[currentIndex + 1].setPage(
+                                firstPage,
+                                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
+                            )
+                        }
                     }
                 }
-            }
 
-        case displayPageCount + 2: // next chapter first page
-            // move next
-            loadNextChapter()
+            case displayPageCount + 2: // next chapter first page
+                // move next
+                loadNextChapter()
 
-        default:
-            // Track navigation direction for smart split page selection
-            if page > lastPageIndex {
-                navigationDirection = .forward
-            } else if page < lastPageIndex {
-                navigationDirection = .backward
-            }
-            lastPageIndex = page
-            currentPage = page
+            default:
+                // Track navigation direction for smart split page selection
+                if page > lastPageIndex {
+                    navigationDirection = .forward
+                } else if page < lastPageIndex {
+                    navigationDirection = .backward
+                }
+                lastPageIndex = page
+                currentPage = page
 
-            if usesDoublePages {
-                // For double pages, report the actual page range
-                let actualPage = actualPageIndex(from: page)
-                delegate?.setCurrentPages(actualPage...actualPage + 1)
-            } else {
-                // For single pages, report the actual page index
-                let actualPage = actualPageIndex(from: page)
-                delegate?.setCurrentPage(actualPage)
-            }
-            // preload 1 before and pagesToPreload ahead
-            loadPages(in: page - 1 - (usesDoublePages ? 1 : 0)...page + pagesToPreload + (usesDoublePages ? 1 : 0))
+                if usesDoublePages {
+                    // For double pages, report the actual page range
+                    let actualPage = actualPageIndex(from: page)
+                    delegate?.setCurrentPages(actualPage...actualPage + 1)
+                } else {
+                    // For single pages, report the actual page index
+                    let actualPage = actualPageIndex(from: page)
+                    delegate?.setCurrentPage(actualPage)
+                }
+                // preload 1 before and pagesToPreload ahead
+                loadPages(in: page - 1 - (usesDoublePages ? 1 : 0)...page + pagesToPreload + (usesDoublePages ? 1 : 0))
         }
     }
 
@@ -850,23 +850,23 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
 
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         switch readingMode {
-        case .rtl:
-            return getPageController(before: viewController)
-        case .ltr, .vertical:
-            return getPageController(after: viewController)
-        default:
-            return nil
+            case .rtl:
+                return getPageController(before: viewController)
+            case .ltr, .vertical:
+                return getPageController(after: viewController)
+            default:
+                return nil
         }
     }
 
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         switch readingMode {
-        case .rtl:
-            return getPageController(after: viewController)
-        case .ltr, .vertical:
-            return getPageController(before: viewController)
-        default:
-            return nil
+            case .rtl:
+                return getPageController(after: viewController)
+            case .ltr, .vertical:
+                return getPageController(before: viewController)
+            default:
+                return nil
         }
     }
 

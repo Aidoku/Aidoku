@@ -101,9 +101,9 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     func getCurrentPagePath(pos: ScreenPosition = .middle) -> IndexPath? {
         let additional: CGFloat
         switch pos {
-        case .top: additional = 0
-        case .middle: additional = collectionNode.bounds.height / 2
-        case .bottom: additional = collectionNode.bounds.height
+            case .top: additional = 0
+            case .middle: additional = collectionNode.bounds.height / 2
+            case .bottom: additional = collectionNode.bounds.height
         }
         let currentPoint = CGPoint(x: collectionNode.contentOffset.x, y: collectionNode.contentOffset.y + additional)
         return collectionNode.indexPathForItem(at: currentPoint)

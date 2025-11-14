@@ -126,24 +126,24 @@ class ReaderInfoPageView: UIView {
 
     func title(for chapter: Chapter) -> String {
         switch (chapter.volumeNum, chapter.chapterNum, chapter.title) {
-        case (.some(let volumeNum), nil, nil):
-            return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
-        case (nil, .some(let chapterNum), nil):
-            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
-        case (nil, nil, .some(let chapterTitle)): return chapterTitle
-        default:
-            var arr = [String]()
-            if let volumeNum = chapter.volumeNum {
-                arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
-            }
-            if let chapterNum = chapter.chapterNum {
-                arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNum))
-            }
-            if let chapterTitle = chapter.title {
-                arr.append("-")
-                arr.append(chapterTitle)
-            }
-            return arr.joined(separator: " ")
+            case (.some(let volumeNum), nil, nil):
+                return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            case (nil, .some(let chapterNum), nil):
+                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+            case (nil, nil, .some(let chapterTitle)): return chapterTitle
+            default:
+                var arr = [String]()
+                if let volumeNum = chapter.volumeNum {
+                    arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
+                }
+                if let chapterNum = chapter.chapterNum {
+                    arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNum))
+                }
+                if let chapterTitle = chapter.title {
+                    arr.append("-")
+                    arr.append(chapterTitle)
+                }
+                return arr.joined(separator: " ")
         }
     }
 

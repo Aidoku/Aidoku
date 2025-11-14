@@ -58,16 +58,16 @@ class LogViewController: UIViewController {
     func logEntry(entry: LogEntry) {
         if let string = textView.attributedText.mutableCopy() as? NSMutableAttributedString {
         switch entry.type {
-        case .default:
-            break
-        case .info:
-            string.append(NSAttributedString(string: "[INFO] ", attributes: [.foregroundColor: UIColor.systemBlue]))
-        case .debug:
-            string.append(NSAttributedString(string: "[DEBUG] ", attributes: [.foregroundColor: UIColor.label]))
-        case .warning:
-            string.append(NSAttributedString(string: "[WARN] ", attributes: [.foregroundColor: UIColor.systemYellow]))
-        case .error:
-            string.append(NSAttributedString(string: "[ERROR] ", attributes: [.foregroundColor: UIColor.systemRed]))
+            case .default:
+                break
+            case .info:
+                string.append(NSAttributedString(string: "[INFO] ", attributes: [.foregroundColor: UIColor.systemBlue]))
+            case .debug:
+                string.append(NSAttributedString(string: "[DEBUG] ", attributes: [.foregroundColor: UIColor.label]))
+            case .warning:
+                string.append(NSAttributedString(string: "[WARN] ", attributes: [.foregroundColor: UIColor.systemYellow]))
+            case .error:
+                string.append(NSAttributedString(string: "[ERROR] ", attributes: [.foregroundColor: UIColor.systemRed]))
         }
         string.append(NSAttributedString(string: entry.message + "\n", attributes: [.foregroundColor: UIColor.label]))
         string.addAttributes([.font: UIFont(name: "Menlo", size: 12) as Any], range: NSRange(location: 0, length: string.length))

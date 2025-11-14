@@ -229,14 +229,14 @@ extension BrowseViewController {
         else { return nil }
         var config = SmallSectionHeaderConfiguration()
         switch currentSection {
-        case .updates:
-            config.title = NSLocalizedString("UPDATES", comment: "")
-        case .pinned:
-            config.title = NSLocalizedString("PINNED", comment: "")
-        case .installed:
-            config.title = NSLocalizedString("INSTALLED", comment: "")
-        case .external:
-            config.title = NSLocalizedString("EXTERNAL", comment: "")
+            case .updates:
+                config.title = NSLocalizedString("UPDATES", comment: "")
+            case .pinned:
+                config.title = NSLocalizedString("PINNED", comment: "")
+            case .installed:
+                config.title = NSLocalizedString("INSTALLED", comment: "")
+            case .external:
+                config.title = NSLocalizedString("EXTERNAL", comment: "")
         }
         cell.contentConfiguration = config
         return cell
@@ -287,45 +287,45 @@ extension BrowseViewController {
                 }
             }
             switch self.sectionIdentifier(for: indexPath.section) {
-            // Context menu items for a source in Installed section of the table
-            case .installed:
-                actions = [
-                    UIAction(
-                        title: NSLocalizedString("PIN", comment: ""),
-                        image: UIImage(systemName: "pin")
-                    ) { _ in
-                        SourceManager.shared.pin(source: source)
-                        self.viewModel.loadPinnedSources()
-                        self.updateDataSource()
-                    },
-                    uninstallAction
-                ]
-            // Context menu items for a source in Pinned section of the table
-            case .pinned:
-                actions = [
-                    UIMenu(title: "", options: .displayInline, children: [
+                // Context menu items for a source in Installed section of the table
+                case .installed:
+                    actions = [
                         UIAction(
-                            title: NSLocalizedString("REORDER", comment: ""),
-                            image: UIImage(systemName: "shuffle")
+                            title: NSLocalizedString("PIN", comment: ""),
+                            image: UIImage(systemName: "pin")
                         ) { _ in
-                            // Let user re-order sources inside the pinned section.
-                            tableView.setEditing(true, animated: true)
-                            self.updateNavbar()
-                        }
-                    ]),
-                    UIAction(
-                        title: NSLocalizedString("UNPIN", comment: ""),
-                        image: UIImage(systemName: "pin.slash")
-                    ) { _ in
-                        // Remove source from the pinned array, recreate the installed source list and update the table.
-                        SourceManager.shared.unpin(source: source)
-                        self.viewModel.loadPinnedSources()
-                        self.updateDataSource()
-                    },
-                    uninstallAction
-                ]
-            default:
-                break
+                            SourceManager.shared.pin(source: source)
+                            self.viewModel.loadPinnedSources()
+                            self.updateDataSource()
+                        },
+                        uninstallAction
+                    ]
+                // Context menu items for a source in Pinned section of the table
+                case .pinned:
+                    actions = [
+                        UIMenu(title: "", options: .displayInline, children: [
+                            UIAction(
+                                title: NSLocalizedString("REORDER", comment: ""),
+                                image: UIImage(systemName: "shuffle")
+                            ) { _ in
+                                // Let user re-order sources inside the pinned section.
+                                tableView.setEditing(true, animated: true)
+                                self.updateNavbar()
+                            }
+                        ]),
+                        UIAction(
+                            title: NSLocalizedString("UNPIN", comment: ""),
+                            image: UIImage(systemName: "pin.slash")
+                        ) { _ in
+                            // Remove source from the pinned array, recreate the installed source list and update the table.
+                            SourceManager.shared.unpin(source: source)
+                            self.viewModel.loadPinnedSources()
+                            self.updateDataSource()
+                        },
+                        uninstallAction
+                    ]
+                default:
+                    break
             }
             return UIMenu(title: "", children: actions)
         }

@@ -63,10 +63,10 @@ class MangaCollectionViewController: BaseCollectionViewController {
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
             switch Section(rawValue: sectionIndex) {
-            case .pinned, .regular:
-                return self?.makeGridLayoutSection(environment: environment)
-            case nil:
-                return nil
+                case .pinned, .regular:
+                    return self?.makeGridLayoutSection(environment: environment)
+                case nil:
+                    return nil
             }
         }
         let config = UICollectionViewCompositionalLayoutConfiguration()

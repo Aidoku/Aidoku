@@ -135,15 +135,15 @@ extension OAuthClient {
 
     func generatePkceChallenge(method: OAuthCodeChallengeMethod) -> String {
         switch method {
-        case .plain:
-            return generatePkceVerifier()
-        case .s256:
-            return generatePkceVerifier()
-               .data(using: .ascii)
-               .map { SHA256.hash(data: $0) }
-               .map { base64($0) } ?? ""
-        case .none:
-            return ""
+            case .plain:
+                return generatePkceVerifier()
+            case .s256:
+                return generatePkceVerifier()
+                   .data(using: .ascii)
+                   .map { SHA256.hash(data: $0) }
+                   .map { base64($0) } ?? ""
+            case .none:
+                return ""
         }
     }
 

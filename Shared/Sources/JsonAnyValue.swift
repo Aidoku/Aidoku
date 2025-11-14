@@ -31,14 +31,14 @@ struct JsonAnyValue: Hashable {
 
     func toRaw() -> Any? {
         switch type {
-        case .null: return nil
-        case .int: return intValue
-        case .string: return stringValue
-        case .bool: return boolValue
-        case .array: return stringArrayValue
-        case .object: return objectValue?.mapValues { $0.toRaw() }
-        case .double: return doubleValue
-        case .intArray: return intArrayValue
+            case .null: return nil
+            case .int: return intValue
+            case .string: return stringValue
+            case .bool: return boolValue
+            case .array: return stringArrayValue
+            case .object: return objectValue?.mapValues { $0.toRaw() }
+            case .double: return doubleValue
+            case .intArray: return intArrayValue
         }
     }
 }
@@ -134,14 +134,14 @@ extension JsonAnyValue: Codable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch type {
-        case .null: break
-        case .int: try container.encode(intValue)
-        case .string: try container.encode(stringValue)
-        case .bool: try container.encode(boolValue)
-        case .array: try container.encode(stringArrayValue)
-        case .object: try container.encode(objectValue)
-        case .double: try container.encode(doubleValue)
-        case .intArray: try container.encode(intArrayValue)
+            case .null: break
+            case .int: try container.encode(intValue)
+            case .string: try container.encode(stringValue)
+            case .bool: try container.encode(boolValue)
+            case .array: try container.encode(stringArrayValue)
+            case .object: try container.encode(objectValue)
+            case .double: try container.encode(doubleValue)
+            case .intArray: try container.encode(intArrayValue)
         }
     }
 }

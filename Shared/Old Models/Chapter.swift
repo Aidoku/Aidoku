@@ -58,13 +58,13 @@ class Chapter: Codable, Identifiable {
 extension Chapter: KVCObject {
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "id": return id
-        case "mangaId": return mangaId
-        case "title": return title
-        case "scanlator": return scanlator
-        case "chapterNum": return chapterNum
-        case "volumeNum": return volumeNum
-        default: return nil
+            case "id": return id
+            case "mangaId": return mangaId
+            case "title": return title
+            case "scanlator": return scanlator
+            case "chapterNum": return chapterNum
+            case "volumeNum": return volumeNum
+            default: return nil
         }
     }
 }

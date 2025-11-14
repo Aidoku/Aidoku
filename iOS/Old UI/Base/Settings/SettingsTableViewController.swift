@@ -316,97 +316,97 @@ extension SettingsTableViewController {
 
     func performAction(for item: SettingItem, at indexPath: IndexPath) {
         switch item.type {
-        case "select", "multi-select", "multi-single-select":
-            if let requires = item.requires, !UserDefaults.standard.bool(forKey: requires) { return }
-            if let requiresFalse = item.requiresFalse, UserDefaults.standard.bool(forKey: requiresFalse) { return }
+            case "select", "multi-select", "multi-single-select":
+                if let requires = item.requires, !UserDefaults.standard.bool(forKey: requires) { return }
+                if let requiresFalse = item.requiresFalse, UserDefaults.standard.bool(forKey: requiresFalse) { return }
 
-            if item.authToOpen ?? false {
-                let context = LAContext()
-                if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
-                    context.evaluatePolicy(
-                        .deviceOwnerAuthenticationWithBiometrics,
-                        localizedReason: NSLocalizedString("AUTH_TO_OPEN", comment: "")
-                    ) { success, _ in
-                        if success {
-                            Task { @MainActor in
-                                self.navigationController?.pushViewController(
-                                    SettingSelectViewController(source: self.source, item: item, style: self.tableView.style),
-                                    animated: true
-                                )
+                if item.authToOpen ?? false {
+                    let context = LAContext()
+                    if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+                        context.evaluatePolicy(
+                            .deviceOwnerAuthenticationWithBiometrics,
+                            localizedReason: NSLocalizedString("AUTH_TO_OPEN", comment: "")
+                        ) { success, _ in
+                            if success {
+                                Task { @MainActor in
+                                    self.navigationController?.pushViewController(
+                                        SettingSelectViewController(source: self.source, item: item, style: self.tableView.style),
+                                        animated: true
+                                    )
+                                }
                             }
                         }
                     }
+                } else {
+                    navigationController?.pushViewController(
+                        SettingSelectViewController(source: source, item: item, style: tableView.style),
+                        animated: true
+                    )
                 }
-            } else {
-                navigationController?.pushViewController(
-                    SettingSelectViewController(source: source, item: item, style: tableView.style),
-                    animated: true
-                )
-            }
-        case "link":
-            guard
-                let url = URL(string: item.url ?? item.key ?? ""),
-                url.scheme == "http" || url.scheme == "https"
-            else { return }
-            if let notification = item.notification {
-                self.source?.performAction(key: notification)
-                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
-            }
-            if let external = item.external, external {
-                UIApplication.shared.open(url)
-            } else {
-                let safariViewController = SFSafariViewController(url: url)
-                present(safariViewController, animated: true)
-            }
-        case "button":
-            guard let action = item.action else { return }
-            source?.performAction(key: action)
-            NotificationCenter.default.post(name: NSNotification.Name(action), object: nil)
-        case "login":
-            guard item.method == "oauth", let key = item.key else { return }
-            let url: URL?
-            if item.urlKey != nil, let urlString = UserDefaults.standard.string(forKey: item.urlKey ?? "") {
-                url = URL(string: urlString)
-            } else {
-                url = URL(string: item.url ?? "")
-            }
-            guard let url = url else { return }
-            if UserDefaults.standard.string(forKey: key) != nil { // log out
-                UserDefaults.standard.set(nil, forKey: key)
+            case "link":
+                guard
+                    let url = URL(string: item.url ?? item.key ?? ""),
+                    url.scheme == "http" || url.scheme == "https"
+                else { return }
                 if let notification = item.notification {
-                    source?.performAction(key: notification)
+                    self.source?.performAction(key: notification)
                     NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                 }
-                self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
-                self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.title
-            } else { // log in
-                let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
-                    if let error = error {
-                        let sourceInfoString = self.source != nil ? " for \(self.source?.manifest.info.name ?? "source")" : ""
-                        LogManager.logger.error("Log-in authentication error\(sourceInfoString): \(error.localizedDescription)")
+                if let external = item.external, external {
+                    UIApplication.shared.open(url)
+                } else {
+                    let safariViewController = SFSafariViewController(url: url)
+                    present(safariViewController, animated: true)
+                }
+            case "button":
+                guard let action = item.action else { return }
+                source?.performAction(key: action)
+                NotificationCenter.default.post(name: NSNotification.Name(action), object: nil)
+            case "login":
+                guard item.method == "oauth", let key = item.key else { return }
+                let url: URL?
+                if item.urlKey != nil, let urlString = UserDefaults.standard.string(forKey: item.urlKey ?? "") {
+                    url = URL(string: urlString)
+                } else {
+                    url = URL(string: item.url ?? "")
+                }
+                guard let url = url else { return }
+                if UserDefaults.standard.string(forKey: key) != nil { // log out
+                    UserDefaults.standard.set(nil, forKey: key)
+                    if let notification = item.notification {
+                        source?.performAction(key: notification)
+                        NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
                     }
-                    if let callbackURL = callbackURL {
-                        UserDefaults.standard.set(callbackURL.absoluteString, forKey: key)
-                        Task { @MainActor in
-                            if let notification = item.notification {
-                                self.source?.performAction(key: notification)
-                                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                    self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
+                    self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.title
+                } else { // log in
+                    let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
+                        if let error = error {
+                            let sourceInfoString = self.source != nil ? " for \(self.source?.manifest.info.name ?? "source")" : ""
+                            LogManager.logger.error("Log-in authentication error\(sourceInfoString): \(error.localizedDescription)")
+                        }
+                        if let callbackURL = callbackURL {
+                            UserDefaults.standard.set(callbackURL.absoluteString, forKey: key)
+                            Task { @MainActor in
+                                if let notification = item.notification {
+                                    self.source?.performAction(key: notification)
+                                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                                }
+                                self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+                                self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.logoutTitle ?? item.title
                             }
-                            self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-                            self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.logoutTitle ?? item.title
                         }
                     }
+                    session.presentationContextProvider = self
+                    session.start()
                 }
-                session.presentationContextProvider = self
-                session.start()
-            }
-        case "page":
-            guard let items = item.items else { return }
-            let subPage = SettingsTableViewController(items: items, source: source, style: tableView.style)
-            subPage.title = item.title
-            present(subPage, animated: true)
-        default:
-            break
+            case "page":
+                guard let items = item.items else { return }
+                let subPage = SettingsTableViewController(items: items, source: source, style: tableView.style)
+                subPage.title = item.title
+                present(subPage, animated: true)
+            default:
+                break
         }
     }
 

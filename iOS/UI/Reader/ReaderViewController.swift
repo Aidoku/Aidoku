@@ -418,41 +418,41 @@ class ReaderViewController: BaseObservingViewController {
 extension ReaderViewController {
     func setReadingMode(_ mode: String?) {
         switch mode {
-        case "rtl": readingMode = .rtl
-        case "ltr": readingMode = .ltr
-        case "vertical": readingMode = .vertical
-        case "scroll", "webtoon": readingMode = .webtoon
-        case "continuous": readingMode = .continuous
-        case "default":
-            let defaultMode = UserDefaults.standard.string(forKey: "Reader.readingMode")
-            if defaultMode == "default" {
-                setReadingMode("auto")
-            } else {
-                setReadingMode(defaultMode)
-            }
-            return
-        default: // auto
-            // use given default reading mode
-            if let defaultReadingMode {
-                readingMode = defaultReadingMode
-            } else if CoreDataManager.shared.hasManga(
-                sourceId: source?.key ?? manga.sourceKey,
-                mangaId: manga.key
-            ) {
-                // fall back to stored manga viewer
-                let sourceMode = CoreDataManager.shared.getMangaSourceReadingMode(
+            case "rtl": readingMode = .rtl
+            case "ltr": readingMode = .ltr
+            case "vertical": readingMode = .vertical
+            case "scroll", "webtoon": readingMode = .webtoon
+            case "continuous": readingMode = .continuous
+            case "default":
+                let defaultMode = UserDefaults.standard.string(forKey: "Reader.readingMode")
+                if defaultMode == "default" {
+                    setReadingMode("auto")
+                } else {
+                    setReadingMode(defaultMode)
+                }
+                return
+            default: // auto
+                // use given default reading mode
+                if let defaultReadingMode {
+                    readingMode = defaultReadingMode
+                } else if CoreDataManager.shared.hasManga(
                     sourceId: source?.key ?? manga.sourceKey,
                     mangaId: manga.key
-                )
-                if let mode = ReadingMode(rawValue: sourceMode) {
-                    readingMode = mode
+                ) {
+                    // fall back to stored manga viewer
+                    let sourceMode = CoreDataManager.shared.getMangaSourceReadingMode(
+                        sourceId: source?.key ?? manga.sourceKey,
+                        mangaId: manga.key
+                    )
+                    if let mode = ReadingMode(rawValue: sourceMode) {
+                        readingMode = mode
+                    } else {
+                        readingMode = .rtl
+                    }
                 } else {
+                    // fall back to rtl reading mode
                     readingMode = .rtl
                 }
-            } else {
-                // fall back to rtl reading mode
-                readingMode = .rtl
-            }
         }
 
         if !(reader is ReaderTextViewController) {
@@ -646,10 +646,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
             // otherwise, make sure we're not in the text reader
             if reader is ReaderTextViewController {
                 switch readingMode {
-                case .ltr, .rtl, .vertical:
-                    setReader(.paged)
-                case .webtoon, .continuous:
-                    setReader(.scroll)
+                    case .ltr, .rtl, .vertical:
+                        setReader(.paged)
+                    case .webtoon, .continuous:
+                        setReader(.scroll)
                 }
                 setChapter(chapter)
                 loadCurrentChapter()

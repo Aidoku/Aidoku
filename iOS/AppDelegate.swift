@@ -264,14 +264,14 @@ extension AppDelegate {
 
     func showLoadingIndicator(style: LoadingStyle = .indefinite, completion: (() -> Void)? = nil) {
         switch style {
-        case .indefinite:
-            loadingIndicator.startAnimating()
-            loadingIndicator.isHidden = false
-            progressView.isHidden = true
-        case .progress:
-            progressView.progress = 0
-            loadingIndicator.isHidden = true
-            progressView.isHidden = false
+            case .indefinite:
+                loadingIndicator.startAnimating()
+                loadingIndicator.isHidden = false
+                progressView.isHidden = true
+            case .progress:
+                progressView.progress = 0
+                loadingIndicator.isHidden = true
+                progressView.isHidden = false
         }
         visibleViewController?.present(loadingAlert, animated: true, completion: completion)
     }

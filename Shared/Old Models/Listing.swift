@@ -25,9 +25,9 @@ struct Listing: KVCObject, Hashable, Codable {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "name": return self.name
-        case "flags": return flags
-        default: return nil
+            case "name": return self.name
+            case "flags": return flags
+            default: return nil
         }
     }
 }

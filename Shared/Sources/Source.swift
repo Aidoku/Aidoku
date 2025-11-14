@@ -205,16 +205,16 @@ extension Source {
                             settingItems[i].items?[j].requiresFalse = "\(id).\(requires)"
                         }
                         switch subItem.type {
-                        case "switch":
-                            defaults[key] = subItem.defaultValue?.boolValue
-                        case "select", "text":
-                            defaults[key] = subItem.defaultValue?.stringValue
-                        case "multi-select", "multi-single-select":
-                            defaults[key] = subItem.defaultValue?.stringArrayValue
-                        case "stepper":
-                            defaults[key] = subItem.defaultValue?.doubleValue
-                        default:
-                            defaults[key] = subItem.defaultValue?.stringValue
+                            case "switch":
+                                defaults[key] = subItem.defaultValue?.boolValue
+                            case "select", "text":
+                                defaults[key] = subItem.defaultValue?.stringValue
+                            case "multi-select", "multi-single-select":
+                                defaults[key] = subItem.defaultValue?.stringArrayValue
+                            case "stepper":
+                                defaults[key] = subItem.defaultValue?.doubleValue
+                            default:
+                                defaults[key] = subItem.defaultValue?.stringValue
                         }
                     }
                 }
@@ -252,31 +252,31 @@ extension Source {
 
     func parseFilter(from filter: FilterInfo) -> FilterBase? {
         switch filter.type {
-        case "title": return TitleFilter()
-        case "author": return AuthorFilter()
-        case "select":
-            return SelectFilter(
-                name: filter.name ?? "",
-                options: filter.options ?? [],
-                value: filter.defaultValue?.intValue ?? 0
-            )
-        case "sort":
-            let value = filter.defaultValue?.objectValue
-            return SortFilter(
-                name: filter.name ?? "",
-                options: filter.options ?? [],
-                canAscend: filter.canAscend ?? false,
-                value: value?["index"] != nil ? SortSelection(index: value?["index"]?.intValue ?? 0,
-                                                              ascending: value?["ascending"]?.boolValue ?? false)
-                                              : SortSelection(index: 0, ascending: false)
-            )
-        case "check":
-            return CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
-        case "genre":
-            return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
-        case "group":
-            return GroupFilter(name: filter.name ?? "", filters: filter.filters?.compactMap { parseFilter(from: $0) } ?? [])
-        default: break
+            case "title": return TitleFilter()
+            case "author": return AuthorFilter()
+            case "select":
+                return SelectFilter(
+                    name: filter.name ?? "",
+                    options: filter.options ?? [],
+                    value: filter.defaultValue?.intValue ?? 0
+                )
+            case "sort":
+                let value = filter.defaultValue?.objectValue
+                return SortFilter(
+                    name: filter.name ?? "",
+                    options: filter.options ?? [],
+                    canAscend: filter.canAscend ?? false,
+                    value: value?["index"] != nil ? SortSelection(index: value?["index"]?.intValue ?? 0,
+                                                                  ascending: value?["ascending"]?.boolValue ?? false)
+                                                  : SortSelection(index: 0, ascending: false)
+                )
+            case "check":
+                return CheckFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
+            case "genre":
+                return GenreFilter(name: filter.name ?? "", canExclude: filter.canExclude ?? false, id: filter.id, value: filter.defaultValue?.boolValue)
+            case "group":
+                return GroupFilter(name: filter.name ?? "", filters: filter.filters?.compactMap { parseFilter(from: $0) } ?? [])
+            default: break
         }
         return nil
     }

@@ -38,12 +38,12 @@ struct TrackerSettingOptionView: View {
 
     private var backgroundColor: Color {
         switch colorScheme {
-        case .light:
-            return Color(.secondarySystemBackground)
-        case .dark:
-            return Color(.tertiarySystemBackground)
-        @unknown default:
-            return Color(.secondarySystemBackground)
+            case .light:
+                return Color(.secondarySystemBackground)
+            case .dark:
+                return Color(.tertiarySystemBackground)
+            @unknown default:
+                return Color(.secondarySystemBackground)
         }
     }
 

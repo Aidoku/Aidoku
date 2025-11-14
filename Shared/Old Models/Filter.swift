@@ -37,9 +37,9 @@ class FilterBase: KVCObject, Identifiable, Equatable, NSCopying {
 
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "type": return type.rawValue
-        case "name": return self.name
-        default: return nil
+            case "type": return type.rawValue
+            case "name": return self.name
+            default: return nil
         }
     }
 
@@ -60,9 +60,9 @@ class Filter<T>: FilterBase {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "value": return value
-        case "default": return defaultValue
-        default: return super.valueByPropertyName(name: name)
+            case "value": return value
+            case "default": return defaultValue
+            default: return super.valueByPropertyName(name: name)
         }
     }
 
@@ -114,9 +114,9 @@ class CheckFilter: Filter<Bool?> {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "canExclude": return canExclude
-        case "id": return id?.toRaw()
-        default: return super.valueByPropertyName(name: name)
+            case "canExclude": return canExclude
+            case "id": return id?.toRaw()
+            default: return super.valueByPropertyName(name: name)
         }
     }
 
@@ -140,8 +140,8 @@ class SelectFilter: Filter<Int> {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "options": return options
-        default: return super.valueByPropertyName(name: name)
+            case "options": return options
+            default: return super.valueByPropertyName(name: name)
         }
     }
 
@@ -167,9 +167,9 @@ class SortSelection: FilterBase {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "index": return index
-        case "ascending": return ascending
-        default: return nil
+            case "index": return index
+            case "ascending": return ascending
+            default: return nil
         }
     }
 
@@ -194,9 +194,9 @@ class SortFilter: Filter<SortSelection> {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "options": return options
-        case "canAscend": return canAscend
-        default: return super.valueByPropertyName(name: name)
+            case "options": return options
+            case "canAscend": return canAscend
+            default: return super.valueByPropertyName(name: name)
         }
     }
 
@@ -221,8 +221,8 @@ class GroupFilter: Filter<Any?> {
 
     override func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "filters": return filters
-        default: return super.valueByPropertyName(name: name)
+            case "filters": return filters
+            default: return super.valueByPropertyName(name: name)
         }
     }
 

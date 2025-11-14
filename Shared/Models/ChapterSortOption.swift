@@ -19,9 +19,9 @@ enum ChapterSortOption: Int, CaseIterable {
 
     var stringValue: String {
         switch self {
-        case .sourceOrder: NSLocalizedString("SOURCE_ORDER", comment: "")
-        case .chapter: NSLocalizedString("CHAPTER", comment: "")
-        case .uploadDate: NSLocalizedString("UPLOAD_DATE", comment: "")
+            case .sourceOrder: NSLocalizedString("SOURCE_ORDER", comment: "")
+            case .chapter: NSLocalizedString("CHAPTER", comment: "")
+            case .uploadDate: NSLocalizedString("UPLOAD_DATE", comment: "")
         }
     }
 }

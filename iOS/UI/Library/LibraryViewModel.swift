@@ -10,7 +10,6 @@ import CoreData
 
 @MainActor
 class LibraryViewModel {
-
     var manga: [MangaInfo] = []
     var pinnedManga: [MangaInfo] = []
 
@@ -35,13 +34,13 @@ class LibraryViewModel {
 
         var sortStringValue: String {
             switch self {
-            case .alphabetical: "manga.title"
-            case .lastRead: "lastRead"
-            case .lastOpened: "lastOpened"
-            case .lastUpdated: "lastUpdated"
-            case .dateAdded: "dateAdded"
-            case .unreadChapters: ""
-            case .totalChapters: "manga.chapterCount"
+                case .alphabetical: "manga.title"
+                case .lastRead: "lastRead"
+                case .lastOpened: "lastOpened"
+                case .lastUpdated: "lastUpdated"
+                case .dateAdded: "dateAdded"
+                case .unreadChapters: ""
+                case .totalChapters: "manga.chapterCount"
             }
         }
     }
@@ -85,7 +84,9 @@ class LibraryViewModel {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
         }
     }
+}
 
+extension LibraryViewModel {
     func isCategoryLocked() -> Bool {
         guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
         if let currentCategory = currentCategory {
@@ -97,9 +98,9 @@ class LibraryViewModel {
     func getPinType() -> PinType {
         if UserDefaults.standard.bool(forKey: "Library.pinManga") {
             switch UserDefaults.standard.integer(forKey: "Library.pinMangaType") {
-            case 0: return .unread
-            case 1: return .updated
-            default: return .none
+                case 0: return .unread
+                case 1: return .updated
+                default: return .none
             }
         } else {
             return .none
@@ -184,12 +185,12 @@ class LibraryViewModel {
                 for filter in filters {
                     let condition: Bool
                     switch filter.type {
-                    case .downloaded:
-                        checkDownloads = true
-                        excludeDownloads = filter.exclude
-                        continue
-                    case .tracking:
-                        condition = TrackerManager.shared.isTracking(sourceId: info.sourceId, mangaId: info.mangaId)
+                        case .downloaded:
+                            checkDownloads = true
+                            excludeDownloads = filter.exclude
+                            continue
+                        case .tracking:
+                            condition = TrackerManager.shared.isTracking(sourceId: info.sourceId, mangaId: info.mangaId)
                     }
                     let shouldSkip = filter.exclude ? condition : !condition
                     if shouldSkip {
@@ -198,20 +199,20 @@ class LibraryViewModel {
                 }
 
                 switch pinType {
-                case .none:
-                    manga.append(info)
-                case .unread:
-                    if info.unread > 0 {
-                        pinnedManga.append(info)
-                    } else {
+                    case .none:
                         manga.append(info)
-                    }
-                case .updated:
-                    if libraryObject.lastUpdated > libraryObject.lastOpened {
-                        pinnedManga.append(info)
-                    } else {
-                        manga.append(info)
-                    }
+                    case .unread:
+                        if info.unread > 0 {
+                            pinnedManga.append(info)
+                        } else {
+                            manga.append(info)
+                        }
+                    case .updated:
+                        if libraryObject.lastUpdated > libraryObject.lastOpened {
+                            pinnedManga.append(info)
+                        } else {
+                            manga.append(info)
+                        }
                 }
             }
 
@@ -394,42 +395,42 @@ class LibraryViewModel {
     @MainActor
     func sortLibrary() async {
         switch sortMethod {
-        case .alphabetical:
-            if sortAscending {
-                pinnedManga.sort { $0.title ?? "" > $1.title ?? "" }
-                manga.sort { $0.title ?? "" > $1.title ?? "" }
-            } else {
-                pinnedManga.sort { $0.title ?? "" < $1.title ?? "" }
-                manga.sort { $0.title ?? "" < $1.title ?? "" }
-            }
-
-        case .unreadChapters:
-            if sortAscending {
-                pinnedManga.sort {
-                    if $0.unread == 0 {
-                        false
-                    } else if $1.unread == 0 {
-                        true
-                    } else {
-                        $0.unread < $1.unread
-                    }
+            case .alphabetical:
+                if sortAscending {
+                    pinnedManga.sort { $0.title ?? "" > $1.title ?? "" }
+                    manga.sort { $0.title ?? "" > $1.title ?? "" }
+                } else {
+                    pinnedManga.sort { $0.title ?? "" < $1.title ?? "" }
+                    manga.sort { $0.title ?? "" < $1.title ?? "" }
                 }
-                manga.sort {
-                    if $0.unread == 0 {
-                        false
-                    } else if $1.unread == 0 {
-                        true
-                    } else {
-                        $0.unread < $1.unread
-                    }
-                }
-            } else {
-                pinnedManga.sort { $0.unread > $1.unread }
-                manga.sort { $0.unread > $1.unread }
-            }
 
-        default:
-            await loadLibrary()
+            case .unreadChapters:
+                if sortAscending {
+                    pinnedManga.sort {
+                        if $0.unread == 0 {
+                            false
+                        } else if $1.unread == 0 {
+                            true
+                        } else {
+                            $0.unread < $1.unread
+                        }
+                    }
+                    manga.sort {
+                        if $0.unread == 0 {
+                            false
+                        } else if $1.unread == 0 {
+                            true
+                        } else {
+                            $0.unread < $1.unread
+                        }
+                    }
+                } else {
+                    pinnedManga.sort { $0.unread > $1.unread }
+                    manga.sort { $0.unread > $1.unread }
+                }
+
+            default:
+                await loadLibrary()
         }
     }
 

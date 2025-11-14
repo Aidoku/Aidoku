@@ -109,23 +109,23 @@ class MiniModalViewController: UIViewController {
         let translation = gesture.translation(in: view)
 
         switch gesture.state {
-        case .changed:
-            if translation.y < 0 {
-                containerViewHeightConstraint?.constant = sqrt(-translation.y)
-            } else {
-                containerViewHeightConstraint?.constant = -translation.y
-            }
-        case .ended:
-            if (translation.y > 100 && velocity.y > 1) || velocity.y > 1000 {
-                animateDismissView()
-            } else {
-                animatePresentContainer()
-            }
-            if velocity.y < 0 {
-                scrollView.isScrollEnabled = true
-            }
-        default:
-            break
+            case .changed:
+                if translation.y < 0 {
+                    containerViewHeightConstraint?.constant = sqrt(-translation.y)
+                } else {
+                    containerViewHeightConstraint?.constant = -translation.y
+                }
+            case .ended:
+                if (translation.y > 100 && velocity.y > 1) || velocity.y > 1000 {
+                    animateDismissView()
+                } else {
+                    animatePresentContainer()
+                }
+                if velocity.y < 0 {
+                    scrollView.isScrollEnabled = true
+                }
+            default:
+                break
         }
     }
 

@@ -16,16 +16,16 @@ enum LogType {
 
     func toString() -> String {
         switch self {
-        case .default:
-            return ""
-        case .info:
-            return "INFO"
-        case .debug:
-            return "DEBUG"
-        case .warning:
-            return "WARN"
-        case .error:
-            return "ERROR"
+            case .default:
+                return ""
+            case .info:
+                return "INFO"
+            case .debug:
+                return "DEBUG"
+            case .warning:
+                return "WARN"
+            case .error:
+                return "ERROR"
         }
     }
 }

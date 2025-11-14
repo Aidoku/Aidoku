@@ -87,12 +87,12 @@ struct BangumiCollection: Codable {
     // Computed properties for easier access
     var collect: String? {
         switch type {
-        case 1: return "wish"
-        case 2: return "collect"
-        case 3: return "do"
-        case 4: return "on_hold"
-        case 5: return "dropped"
-        default: return nil
+            case 1: return "wish"
+            case 2: return "collect"
+            case 3: return "do"
+            case 4: return "on_hold"
+            case 5: return "dropped"
+            default: return nil
         }
     }
 

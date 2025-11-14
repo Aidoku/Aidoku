@@ -123,14 +123,14 @@ extension SourceInfoViewController {
             }
 
             switch indexPath.row {
-            case 0:
-                cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
-                cell?.detailTextLabel?.text = String(source.manifest.info.version)
-            case 1:
-                cell?.textLabel?.text = NSLocalizedString("LANGUAGE", comment: "")
-                cell?.detailTextLabel?.text = source.manifest.info.lang
-            default:
-                break
+                case 0:
+                    cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
+                    cell?.detailTextLabel?.text = String(source.manifest.info.version)
+                case 1:
+                    cell?.textLabel?.text = NSLocalizedString("LANGUAGE", comment: "")
+                    cell?.detailTextLabel?.text = source.manifest.info.lang
+                default:
+                    break
             }
 
             cell?.accessoryType = .none

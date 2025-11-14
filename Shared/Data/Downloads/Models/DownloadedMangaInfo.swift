@@ -80,27 +80,28 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
     /// Computed property for display title with smart formatting
     var displayTitle: String {
         switch (volumeNumber, chapterNumber, title) {
-        case (.some(let volumeNum), nil, nil):
-            return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
-        case (nil, .some(let chapterNum), nil):
-            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
-        case (nil, nil, .some(let chapterTitle)): return chapterTitle
-        default:
-            var arr = [String]()
-            if let volumeNumber {
-                arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNumber))
-            }
-            if let chapterNumber {
-                arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNumber))
-            }
-            if let title {
-                arr.append("-")
-                arr.append(title)
-            }
-            if arr.isEmpty {
-                return chapterId
-            }
-            return arr.joined(separator: " ")
+            case (.some(let volumeNum), nil, nil):
+                return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            case (nil, .some(let chapterNum), nil):
+                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+            case (nil, nil, .some(let chapterTitle)):
+                return chapterTitle
+            default:
+                var arr = [String]()
+                if let volumeNumber {
+                    arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNumber))
+                }
+                if let chapterNumber {
+                    arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNumber))
+                }
+                if let title {
+                    arr.append("-")
+                    arr.append(title)
+                }
+                if arr.isEmpty {
+                    return chapterId
+                }
+                return arr.joined(separator: " ")
         }
     }
 

@@ -162,21 +162,21 @@ class Manga: Codable, Hashable {
 extension Manga: KVCObject {
     func valueByPropertyName(name: String) -> Any? {
         switch name {
-        case "id": return id
-        case "title": return title
-        case "author": return author
-        case "artist": return artist
-        case "description": return description
-        case "tags": return tags
-        case "cover": return coverUrl
-        case "url": return url
-        case "status": return status.rawValue
-        case "nsfw": return nsfw.rawValue
-        case "viewer": return viewer.rawValue
-        case "chapterFlags": return chapterFlags
-        case "langFilter": return langFilter
-        case "scanlatorFilter": return scanlatorFilter
-        default: return nil
+            case "id": return id
+            case "title": return title
+            case "author": return author
+            case "artist": return artist
+            case "description": return description
+            case "tags": return tags
+            case "cover": return coverUrl
+            case "url": return url
+            case "status": return status.rawValue
+            case "nsfw": return nsfw.rawValue
+            case "viewer": return viewer.rawValue
+            case "chapterFlags": return chapterFlags
+            case "langFilter": return langFilter
+            case "scanlatorFilter": return scanlatorFilter
+            default: return nil
         }
     }
 }
