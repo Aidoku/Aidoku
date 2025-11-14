@@ -19,9 +19,7 @@ struct MangaUpdatesView: View {
     }
     struct UpdateInfo: Identifiable, Hashable {
         let id: String
-        let sourceId: String
-        let chapterId: String
-        let mangaId: String
+        let chapterIdentifier: ChapterIdentifier
         let date: Date
         let manga: AidokuRunner.Manga
         let chapter: Chapter?
@@ -146,9 +144,11 @@ extension MangaUpdatesView {
                 ) {
                     return UpdateInfo(
                         id: $0.id,
-                        sourceId: $0.sourceId ?? "",
-                        chapterId: $0.chapterId ?? "",
-                        mangaId: $0.mangaId ?? "",
+                        chapterIdentifier: .init(
+                            sourceKey: $0.sourceId ?? "",
+                            mangaKey: $0.mangaId ?? "",
+                            chapterKey: $0.chapterId ?? ""
+                        ),
                         date: $0.date ?? Date(),
                         manga: mangaObj.toNewManga(),
                         chapter: $0.chapter?.toChapter(),
@@ -220,12 +220,12 @@ extension MangaUpdatesView {
             }
         }
     }
-    
+
     private func removeUpdateItem(item: Item, day: Int) {
-        let updates = item.updates.map { 
-            (sourceId: $0.sourceId, chapterId: $0.chapterId, mangaId: $0.mangaId)
+        let updates = item.updates.map {
+            $0.chapterIdentifier
         }
-        
+
         var newEntries = entries
         if let sectionIndex = newEntries.firstIndex(where: { $0.day == day }) {
             var section = newEntries[sectionIndex]
@@ -240,8 +240,8 @@ extension MangaUpdatesView {
         withAnimation {
             entries = newEntries
             if newEntries.isEmpty { hasNoUpdates = true }
-        }        
-        
+        }
+
         Task {
             await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.removeMangaUpdates(
