@@ -81,6 +81,7 @@
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
 "REFRESHING_LIBRARY" = "Refreshing Library…";
+"PROCESSING_ENTRIES" = "Processing Entries…";
 
 // Categories
 "ALL" = "All";
@@ -95,8 +96,7 @@
 
 // Browse
 "BROWSE" = "Browse";
-"BROWSE_NO_SOURCES" = "No sources";
-"BROWSE_NO_SOURCES_TEXT" = "Configure your source list or open a\nsource in Aidoku to get started";
+"BROWSE_NO_SOURCES" = "No Sources";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Add a source with the plus button.";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Adding Sources Guide";
 "UPDATES" = "Updates";
@@ -330,6 +330,8 @@
 "HISTORY_LOCKED" = "History is locked.";
 "VIEW_HISTORY" = "View History";
 "AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
+"NO_HISTORY" = "No History";
+"NO_HISTORY_TEXT" = "Reading history will appear here.";
 
 // Manga Updates
 "MANGA_UPDATES" = "Updates";
@@ -394,6 +396,8 @@
 "ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
+"BACKGROUND_REFRESH" = "Background Refresh";
+"BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
 "DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_6_HOURS" = "Every 6 hours";

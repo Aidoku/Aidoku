@@ -51,7 +51,6 @@
 "EDIT_CATEGORIES" = "카테고리 수정";
 "ALWAYS_ASK" = "항상 요청";
 "BROWSE_NO_SOURCES" = "출처 없음";
-"BROWSE_NO_SOURCES_TEXT" = "시작하려면 소스 목록을 구성하거나 \nAidoku에서 소스를 열기";
 "UPDATES" = "업데이트";
 "BUTTON_UPDATE" = "업데이트";
 "BUTTON_GET" = "가져오기";

@@ -153,7 +153,6 @@
 "SOURCE_LIST_ADDED_TEXT" = "你現在可在瀏覽標籤頁中查看外部來源。";
 "EVERY_2_DAYS" = "每兩天";
 "CLEAR_NETWORK_CACHE" = "清除網路快取";
-"BROWSE_NO_SOURCES_TEXT" = "自訂來源列表或\n在Aidoku中打開來源以開始";
 "ADDING_SOURCES_GUIDE_BUTTON" = "新增來源指南";
 "EXTERNAL" = "外部";
 "BUTTON_ERROR" = "錯誤";

@@ -226,49 +226,62 @@ extension Settings {
         ),
         .init(
             title: NSLocalizedString("LIBRARY_UPDATING"),
-            value: .group(.init(items: [
-                .init(
-                    key: "Library.updateInterval",
-                    title: NSLocalizedString("UPDATE_INTERVAL"),
-                    value: .select(.init(
-                        values: ["never", "12hours", "daily", "2days", "weekly"],
-                        titles: [
-                            NSLocalizedString("NEVER"),
-                            NSLocalizedString("EVERY_12_HOURS"),
-                            NSLocalizedString("DAILY"),
-                            NSLocalizedString("EVERY_2_DAYS"),
-                            NSLocalizedString("WEEKLY")
-                        ]
-                    ))
-                ),
-                .init(
-                    key: "Library.skipTitles",
-                    title: NSLocalizedString("SKIP_TITLES"),
-                    value: .multiselect(.init(
-                        values: ["hasUnread", "completed", "notStarted"],
-                        titles: [
-                            NSLocalizedString("WITH_UNREAD_CHAPTERS"),
-                            NSLocalizedString("WITH_COMPLETED_STATUS"),
-                            NSLocalizedString("THAT_HAVENT_BEEN_READ")
-                        ]
-                    ))
-                ),
-                .init(
-                    key: "Library.excludedUpdateCategories",
-                    title: NSLocalizedString("EXCLUDED_CATEGORIES"),
-                    value: .custom
-                ),
-                .init(
-                    key: "Library.updateOnlyOnWifi",
-                    title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
-                    value: .toggle(.init())
-                ),
-                .init(
-                    key: "Library.refreshMetadata",
-                    title: NSLocalizedString("REFRESH_METADATA"),
-                    value: .toggle(.init())
-                )
-            ]))
+            value: .group(.init(
+                footer: NSLocalizedString("BACKGROUND_REFRESH_TEXT"),
+                items: [
+                    .init(
+                        key: "Library.updateInterval",
+                        title: NSLocalizedString("UPDATE_INTERVAL"),
+                        value: .select(.init(
+                            values: ["never", "12hours", "daily", "2days", "weekly"],
+                            titles: [
+                                NSLocalizedString("NEVER"),
+                                NSLocalizedString("EVERY_12_HOURS"),
+                                NSLocalizedString("DAILY"),
+                                NSLocalizedString("EVERY_2_DAYS"),
+                                NSLocalizedString("WEEKLY")
+                            ]
+                        ))
+                    ),
+                    .init(
+                        key: "Library.skipTitles",
+                        title: NSLocalizedString("SKIP_TITLES"),
+                        value: .multiselect(.init(
+                            values: ["hasUnread", "completed", "notStarted"],
+                            titles: [
+                                NSLocalizedString("WITH_UNREAD_CHAPTERS"),
+                                NSLocalizedString("WITH_COMPLETED_STATUS"),
+                                NSLocalizedString("THAT_HAVENT_BEEN_READ")
+                            ]
+                        ))
+                    ),
+                    .init(
+                        key: "Library.excludedUpdateCategories",
+                        title: NSLocalizedString("EXCLUDED_CATEGORIES"),
+                        value: .custom
+                    ),
+                    .init(
+                        key: "Library.updateOnlyOnWifi",
+                        title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Library.updateOnlyOnWifi",
+                        title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Library.refreshMetadata",
+                        title: NSLocalizedString("REFRESH_METADATA"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Library.backgroundRefresh",
+                        title: NSLocalizedString("BACKGROUND_REFRESH"),
+                        value: .toggle(.init())
+                    )
+                ]
+            ))
         )
     ]
 

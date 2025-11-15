@@ -46,7 +46,6 @@
 "DEFAULT_CATEGORY" = "קטגוריית ברירת-מחדל";
 "ALWAYS_ASK" = "תמיד תשאל";
 "BROWSE_NO_SOURCES" = "אין מקורות";
-"BROWSE_NO_SOURCES_TEXT" = "הגדר את רשימת המקורות או פתח\nמקור ב- Aidoku על מנת להתחיל";
 "ADDING_SOURCES_GUIDE_BUTTON" = "מדריך הוספת מקורות";
 "UPDATES" = "עדכונים";
 "LIST_HEADER" = "רשימה";

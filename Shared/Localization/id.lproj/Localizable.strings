@@ -45,7 +45,6 @@
 
 // Browse
 "BROWSE" = "Jelajahi";
-"BROWSE_NO_SOURCES_TEXT" = "Konfigurasikan Daftar Sumber Anda atau buka\nDaftar Sumber di Aidoku untuk memulai";
 "INSTALLED" = "Terpasang";
 "EXTERNAL" = "Eksternal";
 "BUTTON_UPDATE" = "PEMBARUAN";

@@ -58,6 +58,7 @@ class BrowseViewController: BaseTableViewController {
         tableView.refreshControl = refreshControl
 
         // empty text
+        emptyStackView.imageSystemName = "globe"
         emptyStackView.title = NSLocalizedString("BROWSE_NO_SOURCES", comment: "")
         emptyStackView.text = NSLocalizedString("BROWSE_NO_SOURCES_TEXT_NEW", comment: "")
         emptyStackView.buttonText = NSLocalizedString("ADDING_SOURCES_GUIDE_BUTTON", comment: "")

@@ -6,6 +6,7 @@
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).download</string>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).backup</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).libraryRefresh</string>
 	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>

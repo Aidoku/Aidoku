@@ -111,7 +111,6 @@
 "ALL" = "Wszystkie";
 "NONE" = "Żadne";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Jak dodać źródło";
-"BROWSE_NO_SOURCES_TEXT" = "Aby zacząć, skonfiguruj swoją listę źródeł lub\notwórz źródło w Aidoku";
 "BUTTON_GET" = "Weź";
 
 // Source

@@ -105,14 +105,14 @@ struct TrackerView: View {
 
                 switch tracker.scoreType {
                     case .tenPoint:
-                        TrackerSettingOptionView(NSLocalizedString("SCORE", comment: ""), count: $score, total: Binding.constant(10))
+                        TrackerSettingOptionView(NSLocalizedString("SCORE"), count: $score, total: Binding.constant(10))
                     case .hundredPoint:
-                        TrackerSettingOptionView(NSLocalizedString("SCORE", comment: ""), count: $score, total: Binding.constant(100))
+                        TrackerSettingOptionView(NSLocalizedString("SCORE"), count: $score, total: Binding.constant(100))
                     case .tenPointDecimal:
-                        TrackerSettingOptionView(NSLocalizedString("SCORE", comment: ""), count: $score, total: Binding.constant(10), numberType: .float)
+                        TrackerSettingOptionView(NSLocalizedString("SCORE"), count: $score, total: Binding.constant(10), numberType: .float)
                     case .optionList:
                         TrackerSettingOptionView(
-                            NSLocalizedString("SCORE", comment: ""),
+                            NSLocalizedString("SCORE"),
                             type: .menu,
                             options: tracker.scoreOptions.map { $0.0 },
                             selectedOption: $scoreOption

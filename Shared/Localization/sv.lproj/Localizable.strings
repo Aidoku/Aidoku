@@ -162,7 +162,6 @@
 "ALL_CHAPTERS_READ" = "Alla kapitel är lästa";
 "ADD_TO_CATEGORY" = "Lägg till i kategori";
 "LTR" = "Vänster till höger";
-"BROWSE_NO_SOURCES_TEXT" = "Konfigurera din källista eller öppna en\nkälla i Aidoku för att komma igång";
 "NOT_PUBLISHED" = "Ej publicerad";
 "CORRUPTED_BACKUP_TEXT" = "Denna säkerhetskopia tycks ha felkonfigurerad data. Ej möjligt att döpa om.";
 "SOURCE_LIST_ADDED" = "Källista tillagd";

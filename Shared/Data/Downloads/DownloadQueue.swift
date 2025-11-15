@@ -43,7 +43,7 @@ actor DownloadQueue {
 
         guard !queue.isEmpty else { return }
 
-#if !os(macOS)
+#if !os(macOS) && !targetEnvironment(simulator)
         if bgTask == nil, #available(iOS 26.0, *) {
             await register()
 
@@ -250,7 +250,7 @@ extension DownloadQueue {
         bgTask?.progress.totalUnitCount = Int64(totalDownloads)
     }
 
-#if !os(macOS)
+#if !os(macOS) && !targetEnvironment(simulator)
     @available(iOS 26.0, *)
     private func register() async {
         guard !registeredTask else { return }

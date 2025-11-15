@@ -126,7 +126,6 @@
 "NO_WIFI_ALERT_TITLE" = "Pa Wi-Fi";
 "NO_WIFI_ALERT_MESSAGE" = "Duhet të jeni të lidhur me Wi-Fi për të shkarkuar këtë përmbajtje. Ju lutemi lidhuni me Wi-Fi dhe provoni përsëri.";
 "ADD_TO_LIBRARY" = "Shto në Bibliotekë";
-"BROWSE_NO_SOURCES_TEXT" = "Konfiguroni listën tuaj të burimeve ose hapni\nnjë burim në Aidoku për të filluar";
 "NEXT_COLON" = "E Radhës:";
 "FINISHED_COLON" = "Përfunduar:";
 "CURRENT_COLON" = "Aktual:";

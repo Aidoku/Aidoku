@@ -75,6 +75,7 @@ struct DownloadedMangaView: View {
             systemImage: "arrow.down.circle",
             description: Text(NSLocalizedString("NO_DOWNLOADS_TEXT"))
         )
+        .ignoresSafeArea()
     }
 
     private var chaptersList: some View {

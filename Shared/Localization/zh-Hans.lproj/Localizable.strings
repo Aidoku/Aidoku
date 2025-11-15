@@ -54,7 +54,6 @@
 // Browse
 "BROWSE" = "浏览";
 "BROWSE_NO_SOURCES" = "没有来源";
-"BROWSE_NO_SOURCES_TEXT" = "配置你的来源列表\n或在Aidoku中打开来源";
 "ADDING_SOURCES_GUIDE_BUTTON" = "添加来源指南";
 "UPDATES" = "更新";
 "INSTALLED" = "已安装";

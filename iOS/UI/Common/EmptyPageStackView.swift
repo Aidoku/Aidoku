@@ -8,6 +8,17 @@
 import UIKit
 
 class EmptyPageStackView: UIStackView {
+    var imageSystemName: String? {
+        didSet {
+            if let imageSystemName {
+                let config = UIImage.SymbolConfiguration(pointSize: 48, weight: .regular)
+                imageView.image = UIImage(systemName: imageSystemName, withConfiguration: config)
+                imageView.isHidden = false
+            } else {
+                imageView.isHidden = true
+            }
+        }
+    }
 
     var title: String? {
         get { titleLabel.text }
@@ -29,6 +40,7 @@ class EmptyPageStackView: UIStackView {
         set { button.isHidden = !newValue }
     }
 
+    private let imageView = UIImageView()
     private let titleLabel = UILabel()
     private let textLabel = UILabel()
     private let button = UIButton(type: .roundedRect)
@@ -45,14 +57,21 @@ class EmptyPageStackView: UIStackView {
     func configure() {
         axis = .vertical
         alignment = .center
-        distribution = .equalSpacing
-        spacing = 5
+        spacing = 4
 
-        titleLabel.font = .systemFont(ofSize: 25, weight: .semibold)
-        titleLabel.textColor = .secondaryLabel
+        imageView.tintColor = .secondaryLabel
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        addArrangedSubview(imageView)
+        setCustomSpacing(16, after: imageView)
+
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .title2).bold()
+        titleLabel.textColor = .label
         addArrangedSubview(titleLabel)
 
-        textLabel.font = .systemFont(ofSize: 15)
+        textLabel.adjustsFontForContentSizeCategory = true
+        textLabel.font = UIFont.preferredFont(forTextStyle: .callout)
         textLabel.textColor = .secondaryLabel
         textLabel.numberOfLines = 0
         textLabel.textAlignment = .center
@@ -64,5 +83,15 @@ class EmptyPageStackView: UIStackView {
 
     func addButtonTarget(_ target: Any?, action: Selector, for event: UIControl.Event = .touchUpInside) {
         button.addTarget(target, action: action, for: event)
+    }
+}
+
+private extension UIFont {
+    func bold() -> UIFont {
+        if let descriptor = fontDescriptor.withSymbolicTraits(.traitBold) {
+            UIFont(descriptor: descriptor, size: pointSize)
+        } else {
+            self
+        }
     }
 }
