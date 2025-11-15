@@ -72,6 +72,30 @@ extension CoreDataManager {
         mangaUpdateObject.chapter = chapterObject
     }
 
+    /// Removes manga update objects by their composite keys
+    func removeMangaUpdates(
+        updates: [ChapterIdentifier],
+        context: NSManagedObjectContext? = nil
+    ) {
+        let context = context ?? self.context
+        let request = MangaUpdateObject.fetchRequest()
+
+        var predicates: [NSPredicate] = []
+        for update in updates {
+            predicates.append(NSPredicate(
+                format: "sourceId == %@ AND chapterId == %@ AND mangaId == %@",
+                update.sourceKey, update.chapterKey, update.mangaKey
+            ))
+        }
+        request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+
+        if let fetchedUpdates = try? context.fetch(request) {
+            for update in fetchedUpdates {
+                context.delete(update)
+            }
+        }
+    }
+
     /// Gets all unviewed updates of a manga
     func getUnviewedMangaUpdates(
         sourceId: String,
