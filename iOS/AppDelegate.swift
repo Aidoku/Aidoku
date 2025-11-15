@@ -108,6 +108,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.updateInterval": "daily",
                 "Library.skipTitles": ["hasUnread", "completed", "notStarted"],
                 "Library.excludedUpdateCategories": [String](),
+                "Library.backgroundRefresh": true,
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
 
@@ -218,9 +219,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         application.applicationSupportsShakeToEdit = true
 
         BackupManager.shared.register()
+        MangaManager.shared.register()
 
         Task {
             await BackupManager.shared.scheduleAutoBackup()
+            await MangaManager.shared.scheduleLibraryRefresh()
         }
 
         return true

@@ -388,7 +388,9 @@ actor BackupManager {
 extension BackupManager {
     func scheduleAutoBackup() {
         guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else {
+#if !os(macOS) && !targetEnvironment(simulator)
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.taskIdentifier)
+#endif
             return
         }
 
@@ -409,6 +411,7 @@ extension BackupManager {
                 await createAutoBackup()
             }
         } else {
+#if !os(macOS) && !targetEnvironment(simulator)
             // schedule task for the future
             let request = BGProcessingTaskRequest(identifier: Self.taskIdentifier)
             request.earliestBeginDate = nextUpdateTime
@@ -420,10 +423,12 @@ extension BackupManager {
             } catch {
                 LogManager.logger.error("Could not schedule automatic backup: \(error)")
             }
+#endif
         }
     }
 
     nonisolated func register() {
+#if !os(macOS) && !targetEnvironment(simulator)
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
             guard let self, let task = task as? BGProcessingTask else { return }
 
@@ -433,6 +438,7 @@ extension BackupManager {
                 task.setTaskCompleted(success: true)
             }
         }
+#endif
     }
 
     private func createAutoBackup() async {

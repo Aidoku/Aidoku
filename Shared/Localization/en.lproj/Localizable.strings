@@ -81,6 +81,7 @@
 "REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Removing Item from Category %@";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "Removing %i Items from Category %@";
 "REFRESHING_LIBRARY" = "Refreshing Library…";
+"PROCESSING_ENTRIES" = "Processing Entries…";
 
 // Categories
 "ALL" = "All";
@@ -395,6 +396,8 @@
 "ONLY_DOWNLOAD_ON_WIFI" = "Only Download on Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Excluded Categories";
 "REFRESH_METADATA" = "Refresh Metadata";
+"BACKGROUND_REFRESH" = "Background Refresh";
+"BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
 "DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_6_HOURS" = "Every 6 hours";

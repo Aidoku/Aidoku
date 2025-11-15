@@ -89,11 +89,6 @@ class LibraryViewController: MangaCollectionViewController {
             navigationItem.hidesSearchBarWhenScrolling = true
         }
 
-        // run background library refresh if we need to
-        if viewModel.shouldUpdateLibrary() {
-            updateLibraryRefresh()
-        }
-
         becomeFirstResponder()
     }
 
@@ -622,18 +617,7 @@ extension LibraryViewController {
         }
 
         Task {
-            let tabController = UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
-            tabController?.showLibraryRefreshView()
-
-            await MangaManager.shared.refreshLibrary(category: viewModel.currentCategory) { progress in
-                tabController?.setLibraryRefreshProgress(progress)
-            }
-            await viewModel.loadLibrary()
-            updateDataSource()
-
-            // wait 0.5s for final progress animation to complete
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            tabController?.hideAccessoryView()
+            await MangaManager.shared.backgroundRefreshLibrary(category: viewModel.currentCategory)
         }
     }
 

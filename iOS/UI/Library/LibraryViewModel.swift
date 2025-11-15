@@ -559,20 +559,4 @@ extension LibraryViewModel {
             categories: [currentCategory]
         )
     }
-
-    func shouldUpdateLibrary() -> Bool {
-        let lastUpdated = UserDefaults.standard.double(forKey: "Library.lastUpdated")
-        let interval: Double = [
-            "never": Double(-1),
-            "12hours": 43200,
-            "daily": 86400,
-            "2days": 172800,
-            "weekly": 604800
-        ][UserDefaults.standard.string(forKey: "Library.updateInterval")] ?? Double(0)
-        guard interval > 0 else { return false }
-        if Date().timeIntervalSince1970 - lastUpdated > interval {
-            return true
-        }
-        return false
-    }
 }
