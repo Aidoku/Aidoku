@@ -150,7 +150,7 @@ struct AddSourceView: View {
                             return
                         }
                         Task {
-                            let result = try? await SourceManager.shared.importSource(from: url)
+                            let result = await SourceManager.shared.importSource(from: url)
                             if result == nil {
                                 showImportFailAlert = true
                             } else {

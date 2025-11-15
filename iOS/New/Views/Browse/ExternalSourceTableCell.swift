@@ -69,7 +69,7 @@ struct ExternalSourceTableCell: View {
                         let url = externalInfo.fileURL
                     else { return false }
 
-                    let result = try? await SourceManager.shared.importSource(from: url)
+                    let result = await SourceManager.shared.importSource(from: url)
 
                     if result != nil {
                         onInstall?()

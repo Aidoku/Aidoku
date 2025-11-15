@@ -119,7 +119,6 @@ class SourceManager {
 
 // MARK: - Source Management
 extension SourceManager {
-
     func source(for id: String) -> AidokuRunner.Source? {
         sources.first { $0.id == id }
     }
@@ -128,30 +127,44 @@ extension SourceManager {
         sources.contains { $0.id == id }
     }
 
-    func importSource(from url: URL) async throws -> AidokuRunner.Source? {
+    func importSource(from url: URL) async -> AidokuRunner.Source? {
         Self.directory.createDirectory()
 
+        // download and unzip source aix
+        guard let temporaryDirectory = FileManager.default.temporaryDirectory else { return nil }
         var fileUrl = url
-
-        guard let temporaryDirectory = FileManager.default.temporaryDirectory
-        else { return nil }
         if fileUrl.scheme != "file" {
             do {
                 let location = try await URLSession.shared.download(for: URLRequest.from(url))
                 fileUrl = location
             } catch {
+                LogManager.logger.error("Failed to download source from \(url)")
                 return nil
             }
         }
-        try FileManager.default.unzipItem(at: fileUrl, to: temporaryDirectory)
+        do {
+            try FileManager.default.unzipItem(at: fileUrl, to: temporaryDirectory)
+        } catch {
+            LogManager.logger.error("Failed to unarchive source package: \(error)")
+            return nil
+        }
 
+        // try initializing the source
         let payload = temporaryDirectory.appendingPathComponent("Payload")
-        var newSource = try? await AidokuRunner.Source(url: payload)
+        var newSource: AidokuRunner.Source?
         let legacySource: Source?
-        if newSource == nil {
-            legacySource = try? Source(from: payload)
-        } else {
+
+        do {
+            newSource = try await AidokuRunner.Source(url: payload)
             legacySource = nil
+        } catch {
+            newSource = nil
+            legacySource = try? Source(from: payload)
+
+            if legacySource == nil {
+                LogManager.logger.error("Failed to load source: \(error)")
+                return nil
+            }
         }
 
         let id: String
@@ -163,19 +176,27 @@ extension SourceManager {
             return nil
         }
 
+        // move to final location
         let destination = Self.directory.appendingPathComponent(id)
         if destination.exists {
             try? FileManager.default.removeItem(at: destination)
         }
-        try FileManager.default.moveItem(at: payload, to: destination)
+        do {
+            try FileManager.default.moveItem(at: payload, to: destination)
+        } catch {
+            LogManager.logger.error("Failed to unarchive source package: \(error)")
+            return nil
+        }
         try? FileManager.default.removeItem(at: temporaryDirectory)
 
+        // update initialized location
         if newSource != nil {
             newSource = try? await AidokuRunner.Source(id: id, url: destination)
         } else if let legacySource {
             legacySource.url = destination
         }
 
+        // remove old source version (on update)
         let installedSource = sources
             .firstIndex { $0.id == id }
             .flatMap { sources.remove(at: $0) }
@@ -186,6 +207,7 @@ extension SourceManager {
             }
         }
 
+        // add to coredata
         let result: AidokuRunner.Source
 
         if let newSource {
@@ -226,7 +248,7 @@ extension SourceManager {
         sources.append(result)
         sortSources()
 
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceList, object: nil)
 
         return result
     }
@@ -286,7 +308,7 @@ extension SourceManager {
         sources.append(source)
         sortSources()
 
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceList, object: nil)
 
         return key
     }
@@ -311,7 +333,7 @@ extension SourceManager {
                 CoreDataManager.shared.clearSources(context: context)
                 try? context.save()
             }
-            NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
     }
 
@@ -325,7 +347,7 @@ extension SourceManager {
                 CoreDataManager.shared.removeSource(id: source.id, context: context)
                 try? context.save()
             }
-            NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
     }
 
@@ -337,7 +359,7 @@ extension SourceManager {
             pinnedList.append(source.id)
             UserDefaults.standard.set(pinnedList, forKey: key)
         }
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceList, object: nil)
     }
 
     // Unpin a source in browse tab.
@@ -348,13 +370,12 @@ extension SourceManager {
             pinnedList.remove(at: index)
             UserDefaults.standard.set(pinnedList, forKey: key)
         }
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        NotificationCenter.default.post(name: .updateSourceList, object: nil)
     }
 }
 
 // MARK: - Source List Management
 extension SourceManager {
-
     func addSourceList(url: URL) async -> Bool {
         guard !sourceListURLs.contains(url) else {
             return false

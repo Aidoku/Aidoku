@@ -210,7 +210,7 @@ class SourceTableViewCell: UITableViewCell {
         else { return }
         getButton.buttonState = .downloading
         Task {
-            let installedSource = try? await SourceManager.shared.importSource(from: url)
+            let installedSource = await SourceManager.shared.importSource(from: url)
             getButton.buttonState = installedSource == nil ? .fail : .get
         }
     }

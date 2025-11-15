@@ -372,7 +372,7 @@ extension AppDelegate {
             }
         } else if url.pathExtension == "aix" {
             Task {
-                let result = try? await SourceManager.shared.importSource(from: url)
+                let result = await SourceManager.shared.importSource(from: url)
                 if result == nil {
                     presentAlert(
                         title: NSLocalizedString("IMPORT_FAIL", comment: ""),
