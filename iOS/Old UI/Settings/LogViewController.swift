@@ -26,7 +26,12 @@ class LogViewController: UIViewController {
 
         title = NSLocalizedString("LOGS", comment: "")
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: NSLocalizedString("CLEAR"), style: .plain, target: self, action: #selector(clearLog))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: NSLocalizedString("CLEAR"),
+            style: .plain,
+            target: self,
+            action: #selector(clearLog)
+        )
 
         textView.attributedText = NSAttributedString(string: "Log is empty")
         textView.font = UIFont(name: "Menlo", size: 12)
