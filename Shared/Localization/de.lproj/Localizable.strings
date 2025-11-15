@@ -71,7 +71,6 @@
 // Categories
 "ALL" = "Alle";
 "BROWSE_NO_SOURCES" = "Keine Quelle";
-"BROWSE_NO_SOURCES_TEXT" = "Konfiguriere deine Quellenliste oder öffne eine\nQuelle in Aidoku, um loszulegen";
 
 // Source
 "SOURCE_INFO" = "Quelleninfo";

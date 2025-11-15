@@ -33,7 +33,6 @@
 // Browse
 "BROWSE" = "تصفح";
 "BROWSE_NO_SOURCES" = "لا توجد مصادر";
-"BROWSE_NO_SOURCES_TEXT" = "قم بتكوين قائمة المصادر الخاصة بك أو افتح \n مصدرًا في Aidoku للبدء";
 "ADDING_SOURCES_GUIDE_BUTTON" = "دليل إضافة المصادر";
 "UPDATES" = "التحديثات";
 "INSTALLED" = "المثبتة";

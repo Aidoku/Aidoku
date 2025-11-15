@@ -85,7 +85,6 @@
 "DEFAULT_CATEGORY" = "デフォルトの本棚";
 "ALWAYS_ASK" = "常に尋ねる";
 "BROWSE_NO_SOURCES" = "ソースなし";
-"BROWSE_NO_SOURCES_TEXT" = "開始するには、ソースリストを設定するか、\nAidokuでソースを開いてください";
 "ADDING_SOURCES_GUIDE_BUTTON" = "ソース追加ガイド";
 "UPDATES" = "更新";
 "EXTERNAL" = "外部ソース";

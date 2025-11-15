@@ -175,7 +175,6 @@
 "CATEGORY_ADD_TEXT" = "सिर्जना गर्न नयाँ वर्गको शीर्षक प्रविष्ट गर्नुहोस्।";
 "CATEGORY_TITLE" = "वर्ग शीर्षक";
 "BROWSE_NO_SOURCES" = "कुनै स्रोत छैन";
-"BROWSE_NO_SOURCES_TEXT" = "आफ्नो स्रोत सूची कन्फिगर गर्नुहोस् \nवा सुरु गर्न Aidoku मा स्रोत खोल्नुहोस्";
 "ADDING_SOURCES_GUIDE_BUTTON" = "स्रोत गाइड थप्दै";
 "UPDATES" = "अपडेटहरू";
 "BUTTON_UPDATE" = "अपडेट";

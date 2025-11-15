@@ -172,7 +172,6 @@
 "ALL" = "ทั้งหมด";
 "COVER" = "หน้าปก";
 "BROWSE_NO_SOURCES" = "ไม่มีแหล่งข้อมูล";
-"BROWSE_NO_SOURCES_TEXT" = "ตั้งค่าแหล่งข้อมูลรายชื่อของคุณ\nหรือเปิดแหล่งข้อมูลใน Aidoku เพื่อเริ่มใช้";
 "ADDING_SOURCES_GUIDE_BUTTON" = "คู่มือเพิ่มแหล่งข้อมูล";
 "UPDATES" = "อัพเดท";
 "INSTALLED" = "ติดตั้งแล้ว";

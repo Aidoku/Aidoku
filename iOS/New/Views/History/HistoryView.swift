@@ -31,6 +31,13 @@ struct HistoryView: View {
         Group {
             if locked {
                 lockedView
+            } else if viewModel.filteredHistory.isEmpty && viewModel.loadingState == .complete {
+                UnavailableView(
+                    NSLocalizedString("NO_HISTORY"),
+                    systemImage: "book.fill",
+                    description: Text(NSLocalizedString("NO_HISTORY_TEXT"))
+                )
+                .ignoresSafeArea()
             } else {
                 List(selection: $listSelection) {
                     let sections = viewModel.filteredHistory.values.sorted { $0.daysAgo < $1.daysAgo }

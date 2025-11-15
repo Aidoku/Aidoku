@@ -42,7 +42,6 @@
 // Browse
 "BROWSE" = "დათვალიერება";
 "BROWSE_NO_SOURCES" = "წყაროები არ არსებობს";
-"BROWSE_NO_SOURCES_TEXT" = "დააკონფიგურირეთ თქვენი წყაროების სია ან გახსენით a\nწყარო Aidoku-ში დასაწყებად";
 "ADDING_SOURCES_GUIDE_BUTTON" = "წყაროების დამატების ინსტრუქცია";
 
 // Source

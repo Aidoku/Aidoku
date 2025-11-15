@@ -95,8 +95,7 @@
 
 // Browse
 "BROWSE" = "Browse";
-"BROWSE_NO_SOURCES" = "No sources";
-"BROWSE_NO_SOURCES_TEXT" = "Configure your source list or open a\nsource in Aidoku to get started";
+"BROWSE_NO_SOURCES" = "No Sources";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Add a source with the plus button.";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Adding Sources Guide";
 "UPDATES" = "Updates";
@@ -330,6 +329,8 @@
 "HISTORY_LOCKED" = "History is locked.";
 "VIEW_HISTORY" = "View History";
 "AUTH_FOR_HISTORY" = "Authenticate to view reading history.";
+"NO_HISTORY" = "No History";
+"NO_HISTORY_TEXT" = "Reading history will appear here.";
 
 // Manga Updates
 "MANGA_UPDATES" = "Updates";

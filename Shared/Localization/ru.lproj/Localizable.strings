@@ -43,7 +43,6 @@
 // Browse
 "BROWSE" = "Обзор";
 "BROWSE_NO_SOURCES" = "Нет источников";
-"BROWSE_NO_SOURCES_TEXT" = "Сделайте свой список источников или откройте ссылку на\nисточник в Aidoku, чтобы начать";
 
 // Source
 "SOURCE_INFO" = "Информация об источнике";

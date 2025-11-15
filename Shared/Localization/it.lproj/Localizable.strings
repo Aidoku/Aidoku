@@ -72,7 +72,6 @@
 "NONE" = "Nessuno";
 "CATEGORIES" = "Categorie";
 "ALWAYS_ASK" = "Chiedi sempre";
-"BROWSE_NO_SOURCES_TEXT" = "Configura l'elenco delle fonti o apri una fonte\nin Aidoku per iniziare";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Guida all'aggiunta di fonti";
 "UPDATES" = "Aggiornamenti";
 "BUTTON_UPDATE" = "AGGIORNA";

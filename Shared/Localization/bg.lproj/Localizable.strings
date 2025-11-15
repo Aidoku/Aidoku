@@ -42,7 +42,6 @@
 "REMOVE_ALL_DOWNLOADS" = "Премахни всички изтегляния";
 "CLEAR" = "Изчистване";
 "DOWNLOADED" = "Изтеглено";
-"BROWSE_NO_SOURCES_TEXT" = "Конфигурирайте своя списък с източници или отворете\nизточник в Aidoku, за да започнете";
 "LOADING_ELLIPSIS" = "Зареждане…";
 
 // Library

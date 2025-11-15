@@ -46,7 +46,6 @@
 // Browse
 "BROWSE" = "Blaai Deur";
 "BROWSE_NO_SOURCES" = "Geen bronne nie";
-"BROWSE_NO_SOURCES_TEXT" = "Stel jou bronnelys op of maak 'n \nbron in Aidoku oop om te begin";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Gids Vir Bronne Byvoeging";
 "UPDATES" = "Opdaterings";
 "INSTALLED" = "Geïnstalleer";

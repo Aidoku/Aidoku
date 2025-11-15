@@ -54,7 +54,6 @@
 // Browse
 "BROWSE" = "Nguồn";
 "BROWSE_NO_SOURCES" = "Không có nguồn";
-"BROWSE_NO_SOURCES_TEXT" = "Tuỳ chỉnh danh sách nguồn hoặc\nmở một nguồn bằng Aidoku để bắt đầu";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Hướng dẫn thêm nguồn";
 "UPDATES" = "Cập nhật";
 "INSTALLED" = "Đã cài đặt";

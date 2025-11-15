@@ -200,6 +200,7 @@ class LibraryViewController: MangaCollectionViewController {
 
         // empty text view
         emptyStackView.isHidden = true
+        emptyStackView.imageSystemName = "books.vertical.fill"
         emptyStackView.title = viewModel.currentCategory == nil
             ? NSLocalizedString("LIBRARY_EMPTY", comment: "")
             : NSLocalizedString("CATEGORY_EMPTY", comment: "")

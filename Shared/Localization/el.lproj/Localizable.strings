@@ -58,7 +58,6 @@
 "BROWSE" = "Αναζήτηση";
 "SORT_BY" = "Ταξινόμηση Κατά";
 "LAST_OPENED" = "Άνοιγμα πιο Πρόσφατου";
-"BROWSE_NO_SOURCES_TEXT" = "Διαμορφώστε τη λίστα πηγών σας ή ανοίξτε μια\nπηγή στο Aidoku για να ξεκινήσετε";
 "BUTTON_UPDATE" = "Ανανέωση";
 "BUTTON_GET" = "Πάρε";
 "BUTTON_ERROR" = "Σφάλμα";

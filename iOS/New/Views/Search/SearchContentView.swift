@@ -33,31 +33,36 @@ struct SearchContentView: View {
     }
 
     var body: some View {
-        List {
-            if searchText.isEmpty {
-                if !viewModel.history.isEmpty {
-                    historyItems
-                }
-            } else {
-                searchResults
-            }
-        }
-        .scrollBackgroundHiddenPlease()
-        .listStyle(.grouped)
-        .environment(\.defaultMinListRowHeight, 10)
-        .overlay {
+        Group {
             if searchText.isEmpty && viewModel.history.isEmpty {
                 UnavailableView(
                     NSLocalizedString("NO_RECENT_SEARCHES"),
                     systemImage: "magnifyingglass",
                     description: Text(NSLocalizedString("NO_RECENT_SEARCHES_TEXT"))
                 )
+                .ignoresSafeArea()
             } else if !searchText.isEmpty && viewModel.resultsIsEmpty {
                 if viewModel.isLoading {
-                    ProgressView().progressViewStyle(.circular)
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .ignoresSafeArea()
                 } else {
                     UnavailableView.search(text: searchText)
+                        .ignoresSafeArea()
                 }
+            } else {
+                List {
+                    if searchText.isEmpty {
+                        if !viewModel.history.isEmpty {
+                            historyItems
+                        }
+                    } else {
+                        searchResults
+                    }
+                }
+                .scrollBackgroundHiddenPlease()
+                .listStyle(.grouped)
+                .environment(\.defaultMinListRowHeight, 10)
             }
         }
         .animation(.default, value: viewModel.results)

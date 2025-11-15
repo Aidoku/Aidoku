@@ -133,7 +133,6 @@
 // Browse
 "BROWSE" = "Explorar";
 "BROWSE_NO_SOURCES" = "Sem Fontes";
-"BROWSE_NO_SOURCES_TEXT" = "Configure a sua lista de fontes ou abra\numa fonte no Aidoku para iniciar";
 "BUTTON_UPDATE" = "ATUALIZAR";
 "BUTTON_GET" = "OBTER";
 "BUTTON_ERROR" = "ERRO";

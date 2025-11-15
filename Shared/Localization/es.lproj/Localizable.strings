@@ -28,7 +28,6 @@
 // Browse
 "BROWSE" = "Explorar";
 "BROWSE_NO_SOURCES" = "No hay fuentes";
-"BROWSE_NO_SOURCES_TEXT" = "Configura tu lista de fuentes o abre una \nfuente en Aidoku para comenzar";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Guía para agregar fuentes";
 "UPDATES" = "Actualizaciones";
 "INSTALLED" = "Instalado";
