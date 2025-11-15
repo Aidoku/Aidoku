@@ -312,7 +312,9 @@ extension LocalFileDataManager {
                 cover: cover,
                 description: description
             )
-            let detailedManga = comicInfo.copy(into: basicManga)
+            var detailedManga = comicInfo.copy(into: basicManga)
+            detailedManga.title = title
+            detailedManga.description = description ?? detailedManga.description
             object.load(from: detailedManga)
         } else {
             object.id = id
@@ -357,7 +359,8 @@ extension LocalFileDataManager {
                 volumeNumber: volume,
                 dateUploaded: values?.contentModificationDate
             )
-            let detailedChapter = comicInfo.copy(into: basicChapter)
+            var detailedChapter = comicInfo.copy(into: basicChapter)
+            detailedChapter.title = title ?? detailedChapter.title
             chapterObject.load(
                 from: detailedChapter,
                 sourceId: LocalSourceRunner.sourceKey,

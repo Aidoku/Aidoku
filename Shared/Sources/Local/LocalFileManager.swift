@@ -291,8 +291,8 @@ extension LocalFileManager {
 
         let comicInfo = ComicInfo.load(from: archive)
 
-        let mangaTitle = mangaName ?? resolvedMangaId
         let resolvedMangaId = (mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent).percentEncoded()
+        let mangaTitle = mangaName ?? comicInfo?.series ?? resolvedMangaId
 
         // create new folder for the manga
         let fileManager = FileManager.default
