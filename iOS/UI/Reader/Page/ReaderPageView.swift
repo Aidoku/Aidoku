@@ -382,6 +382,9 @@ class ReaderPageView: UIView {
 
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
         imageView.image = image
+        if filePath.pathExtension().lowercased() == "gif" {
+            imageView.animate(withGIFData: result.data)
+        }
         fixImageSize()
 
         return true
