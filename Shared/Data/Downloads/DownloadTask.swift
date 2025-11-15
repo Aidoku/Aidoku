@@ -376,11 +376,11 @@ extension DownloadTask {
 
                 let directory = cache.directory(for: download.chapterIdentifier)
 
+                try FileManager.default.moveItem(at: tmpDirectory, to: directory)
+
                 if UserDefaults.standard.bool(forKey: "Downloads.compress") {
                     try FileManager.default.zipItem(at: tmpDirectory, to: directory.appendingPathExtension("cbz"))
-                    tmpDirectory.removeItem()
-                } else {
-                    try FileManager.default.moveItem(at: tmpDirectory, to: directory)
+                    directory.removeItem()
                 }
 
                 // save manga cover if not already present
