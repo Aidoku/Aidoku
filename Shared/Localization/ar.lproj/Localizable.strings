@@ -141,13 +141,13 @@
 "REMOVE" = "إزالة";
 
 // Downloads
-"DOWNLOAD" = "تنزيل";
-"DOWNLOADED" = "تم تنزيله";
+"DOWNLOAD" = "تحميل";
+"DOWNLOADED" = "التنزيلات";
 "CLEAR" = "مسح";
 "CANCEL_DOWNLOAD" = "إلغاء التنزيل";
-"REMOVE_ALL_DOWNLOADS" = "إزالة كافة التنزيلات";
-"REMOVE_DOWNLOAD" = "إزالة التنزيل";
-"REMOVE_DOWNLOADS" = "إزالة التنزيلات";
+"REMOVE_ALL_DOWNLOADS" = "حذف جميع التحميلات";
+"REMOVE_DOWNLOAD" = "حذف التحميل";
+"REMOVE_DOWNLOADS" = "حذف التنزيلات";
 
 // Categories
 "ALL" = "الكل";
@@ -169,14 +169,14 @@
 "INCOGNITO_MODE" = "وضع التصفح الخفي";
 "RESET_SETTINGS" = "إعادة تعيين الإعدادات";
 "CATEGORY_EMPTY" = "التصنيف فارغ";
-"REMOVE_DOWNLOADS_CONFIRM" = "هل تريد إزالة كافة التنزيلات المحددة؟";
+"REMOVE_DOWNLOADS_CONFIRM" = "حذف كافة التنزيلات المحددة؟";
 "FILTER_BY" = "تصفية حسب";
 "CATEGORIES" = "التصنيفات";
 "EDIT_CATEGORIES" = "تحرير الفئات";
 "INCOGNITO_MODE_TEXT" = "يوقف تاريخ القراءة مؤقتاً عند تفعيله";
 "DESELECT_ALL" = "إلغاء تحديد الكل";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "سيؤدي هذا إلى إزالة تاريخ القراءة لهذا الفصل. هل أنت متأكد من أنك تريد المتابعة؟";
-"DOWNLOAD_QUEUE" = "قائمة انتظار التنزيلات";
+"DOWNLOAD_QUEUE" = "قائمة الانتظار";
 "CHAPTERS" = "فصول";
 "VOL_X" = "المجلد ‮‭%g";
 "VOLUME_X" = "مجلد ‭%g";
@@ -270,7 +270,7 @@
 "VIEW_ON_WEBSITE" = "عرض على الموقع";
 "CLEAR_TRACKED_MANGA" = "مسح المانجا المتتبعة";
 "CLEAR_TRACKED_MANGA_TEXT" = "هذا الإجراء لا رجعة فيه. ستتم إزالة التتبع لجميع أدوات التتبع المضافة إلى المانجا.";
-"REMOVE_ALL_DOWNLOADS_CONFIRM" = "هل أنت متأكد من رغبتك في إزالة جميع التنزيلات؟";
+"REMOVE_ALL_DOWNLOADS_CONFIRM" = "هل أنت متأكد ترغب في حذف جميع التحميلات؟";
 "CACHE_SIZE_%@" = "حجم ذاكرة التخزين المؤقت: %@";
 "SUPPORT_VIA_KOFI" = "الدعم عبر كوفاي";
 "UNREAD_CHAPTERS" = "فصول غير مقروءة";
@@ -328,14 +328,14 @@
 "UNPIN" = "إزالة التثبيت";
 "CROP_BORDERS" = "اقتصاص الحدود";
 "SKIPPING_CHAPTERS" = "تخطي الفصول، إما أن المصدر يفتقدها أو تم تصفيتها";
-"RESUME" = "استئناف";
-"NO_WIFI_ALERT_TITLE" = "لا يوجد واي فاي";
-"NO_WIFI_ALERT_MESSAGE" = "يجب أن تكون متصلاً بشبكة Wi-Fi لتنزيل هذا المحتوى. يُرجى الاتصال بشبكة Wi-Fi والمحاولة مرة أخرى.";
+"RESUME" = "إستئناف";
+"NO_WIFI_ALERT_TITLE" = "لا يوجد شبكة اتصال";
+"NO_WIFI_ALERT_MESSAGE" = "يجب أن تكون متصل بشبكة Wi-Fi لتنزيل هذا المحتوى. يُرجى الاتصال بشبكة Wi-Fi والمحاولة مرة أخرى.";
 "MANGA_UPDATES" = "تحديثات المانجا";
 "NO_UPDATES" = "لا يوجد تحديثات";
-"PAUSE" = "يوقف";
+"PAUSE" = "إيقاف";
 "WARNING" = "تحذير";
-"DOWNLOAD_ANYWAY_MESSAGE" = "أنت غير متصل بشبكة Wi-Fi حاليًا. هل تريد التنزيل على أي حال؟";
+"DOWNLOAD_ANYWAY_MESSAGE" = "أنت غير متصل بشبكة Wi-Fi حاليًا. متابعة التنزيل على أي حال؟";
 "DELETE_DOWNLOAD_AFTER_READING" = "حذف التنزيل بعد القراءة";
 "ONLY_DOWNLOAD_ON_WIFI" = "التنزيل فقط عبر شبكة الWiFi";
 "READER_BG_COLOR" = "لون الخلفية";
@@ -348,7 +348,7 @@
 "NO_SCANLATOR" = "لا يوجد ماسح مترجم";
 "%lld_PLUS_MORE" = "lld%+ المزيد";
 "ENABLE_PERMISSION" = "تفعيل الصلاحيات";
-"PHOTOS_ACCESS_DENIED_TEXT" = "تم رفض الوصول سابقًا. يُرجى السماح لتطبيق Aidoku بالوصول إلى صورك لحفظها في ألبوم الكاميرا. يمكنك تفعيل الوصول من إعدادات الخصوصية.";
+"PHOTOS_ACCESS_DENIED_TEXT" = "تم رفض الوصول مسبقًا. يجب السماح لـ Aidoku بالوصول إلى الوسائط لحفظ الصور في البوم الكاميرا الخاص بك. يمكنك تمكين الوصول من إعدادات الخصوصية.";
 "CLEAR_EXCLUDING_LIBRARY" = "مسح سجل القراءة باستثناء المكتبة";
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "هذا الإجراء لا رجعة فيه. سيتم حذف جميع سجلات القراءة، باستثناء المكتبة.";
 "REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "إزالة %i عناصر من الفئة %@";
@@ -363,14 +363,14 @@
 "%@_EXPERIMENTAL" = "%@ (تجريبي)";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "حذف عنصر من المكتبة";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "حذف عناصر من المكتبة";
-"BROWSE_NO_SOURCES_TEXT_NEW" = "";
+"BROWSE_NO_SOURCES_TEXT_NEW" = "أضف مصدرًا باستخدام زر الاضافة.";
 "BASE_URL" = "عنوان URL الأساسي";
 "SEE_ALL" = "عرض الكل";
-"HOME" = "";
-"FILTERS" = "المرشحات";
-"APPLY" = "تطبيق";
+"HOME" = "الرئيسية";
+"FILTERS" = "التصفيات";
+"APPLY" = "تقديم";
 "SOURCE_SETTINGS" = "إعدادات المصدر";
-"RESET_SETTINGS_CONFIRM_%@" = "هل أنت متأكد من أنك تريد إعادة ضبط جميع الإعدادات لـ @؟";
+"RESET_SETTINGS_CONFIRM_%@" = "هل أنت متأكد تريد إعادة تعيين جميع الإعدادات لـ @؟";
 "CANCEL_CONFIRM" = "هل أنت متأكد من أنك تريد الإلغاء؟";
 "CANCEL_CONFIRM_TEXT" = "سيتم تجاهل التغييرات التي أجريتها.";
 "DISCARD_CHANGES" = "إلغاء التغييرات";
@@ -400,3 +400,15 @@
 "LOCAL_FILES_TAGLINE" = "قم بالقراءة من الملفات المحلية";
 "IMPORT" = "استيراد";
 "IMPORT_FILE" = "استيراد ملف";
+"NO_DOWNLOADS" = "لايوجد تحميلات";
+"NO_DOWNLOADS_TEXT" = "المحتوى الذي تم تنزيله سيظهر هنا";
+"DOWNLOADED_CHAPTERS" = "الأجزاء المحملة";
+"TOTAL_DOWNLOADS" = "إجمالي التنزيلات";
+"IN_LIBRARY" = "في المكتبة";
+"VIEW_SERIES" = "عرض المسلسل";
+"%i_SERIES" = "مسلسل";
+"REFRESHING_LIBRARY" = "جاري تحديث المكتبة…";
+"CONTENT_RATING" = "تقييم المحتوى";
+"SAFE" = "آمن";
+"RANGE_FROM" = "من";
+"RANGE_TO" = "إلى";

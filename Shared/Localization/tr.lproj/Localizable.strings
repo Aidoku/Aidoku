@@ -12,7 +12,7 @@
 "SHARE" = "Paylaş";
 "DOWNLOADED" = "İndirildi";
 "DOWNLOAD_QUEUE" = "İndirme kuyruğu";
-"REMOVE_DOWNLOAD" = "İndirilenleri kaldır";
+"REMOVE_DOWNLOAD" = "İndirmeyi kaldır";
 "REMOVE_ALL_DOWNLOADS" = "Tüm İndirmeleri Kaldır";
 "REMOVE_DOWNLOADS_CONFIRM" = "Seçilen tüm indirmeler kaldırılsın mı?";
 "REMOVE" = "Kaldır";
@@ -56,7 +56,7 @@
 "CATEGORIES" = "Kategoriler";
 "EDIT_CATEGORIES" = "Kategorileri Düzenle";
 "CATEGORY_ADD" = "Kategori Ekle";
-"CATEGORY_ADD_TEXT" = "Bir kategori adı giriniz.";
+"CATEGORY_ADD_TEXT" = "Oluşturulacak kategorinin adını girin.";
 "ALWAYS_ASK" = "Her zaman sor";
 
 // Browse
@@ -127,7 +127,7 @@
 "CHAPTER_X" = "Bölüm %g";
 "RENAME_BACKUP_TEXT" = "Yedek için yeni bir isim gir";
 "SOURCE_LIST_ADD" = "Kaynak Listesi Ekle";
-"LIBRARY_ADD_FROM_BROWSE" = "Gözatma kısmından manga ekle";
+"LIBRARY_ADD_FROM_BROWSE" = "Gözat sekmesinden manga ekleyin";
 "MANGA_INFO" = "Manga hakkında bilgi";
 "TITLE" = "Başlık";
 "LAST_OPENED" = "En son açılan";
@@ -309,7 +309,7 @@
 "MIGRATE_SOURCES" = "Kaynakları Taşı";
 "START_MATCHING" = "Eşleştirmeye Başla";
 "UPLOAD_DATE" = "Yükleme Zamanı";
-"ALL_CHAPTERS_READ" = "Bütün Bölümleri Oku";
+"ALL_CHAPTERS_READ" = "Tüm Bölümler Okundu";
 "DEFAULT_READING_MODE" = "Varsayılan Okuma Modu";
 "IS_TRACKING" = "Takip Ediliyor";
 "PILLARBOX" = "Çerçeve";
@@ -337,13 +337,28 @@
 "READER_BG_COLOR_BLACK" = "Siyah";
 "LINK_COPIED_TEXT" = "Bağlantı panoya kopyalandı.";
 "PAUSE" = "Durdur";
-"RESUME" = "Devam Ettir";
+"RESUME" = "Devam ettir";
 "WARNING" = "Uyarı";
 "NO_WIFI_ALERT_TITLE" = "Wi-Fi Yok";
 "NO_WIFI_ALERT_MESSAGE" = "Bu içeriği indirmek için Wi-Fi'a bağlı olmalısınız. Lütfen Wi-Fi'a bağlanın ve tekrar deneyin.";
-"DOWNLOAD_ANYWAY_MESSAGE" = "Wi-Fi kullanılmıyor. Yine de devam et?";
+"DOWNLOAD_ANYWAY_MESSAGE" = "Wi-Fi bağlantınız yok. Yine de devam et?";
 "LINK_COPIED" = "Bağlantı Kopyalandı";
 "SKIPPING_CHAPTERS" = "%i bölümleri atlanıyor, ya kaynakta eksikler var ya da filtrelenmişler";
 "DELETE_DOWNLOAD_AFTER_READING" = "Okuduktan Sonra İndirmeyi Sil";
 "SCANLATOR" = "Tarayıcı";
 "NO_SCANLATOR" = "Tarayıcı yok";
+"INVALID" = "Geçersiz";
+"CONTENT" = "İçerik";
+"%@_EXPERIMENTAL" = "%@ (Deneysel)";
+"ALL_CHAPTERS_LOCKED" = "Tüm Bölümler Kilitli";
+"DONE" = "Bitti";
+"NO_DOWNLOADS" = "İndirme Yok";
+"NO_DOWNLOADS_TEXT" = "İndirilen içerikler burada görünecektir.";
+"DOWNLOADED_CHAPTERS" = "İndirilen Bölümler";
+"IN_LIBRARY" = "Kütüphanede";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Öğe kütüphaneden kaldırılıyor";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "Kütüphaneden %i öğe kaldırılıyor";
+"REMOVING_(ONE)_ITEM_FROM_CATEGORY_%@" = "Öğe %@ kategorisinden kaldırılıyor";
+"REMOVING_%i_ITEMS_FROM_CATEGORY_%@" = "%@ kategorisinden %i öğe kaldırılıyor";
+"REFRESHING_LIBRARY" = "Kütüphane yenileniyor…";
+"FILTERS" = "Filtreler";
