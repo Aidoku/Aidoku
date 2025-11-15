@@ -1,15 +1,14 @@
 name: Bug report
-description: Create a report to help us improve
+description: Report an issue encountered with the app
 labels: [bug]
 body:
-
   - type: textarea
     id: summary
     attributes:
       label: Summary
-      description: Summarize the bug encountered concisely.
+      description: Summarize the issue encountered.
       placeholder: |
-        Example: "App crashes when opening manga details"
+        Example: "App crashes when opening series details"
     validations:
       required: true
 
@@ -22,73 +21,13 @@ body:
         Example:
           1. Open the app
           2. Navigate to library
-          3. Tap on any manga
+          3. Tap on any series
           4. App crashes
 
-  - type: textarea
-    id: current-behavior
-    attributes:
-      label: What is the current *bug* behavior?
-      description: Describe what actually happens.
-      placeholder: |
-        Example: "The app crashes and returns to home screen"
-
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: What is the expected *correct* behavior?
-      description: Describe what you should see instead.
-      placeholder: |
-        Example: "The manga details page should open normally"
-
-  - type: textarea
-    id: screenshots
-    attributes:
-      label: Screenshots
-      description: Add any relevant screenshots to help explain your problem.
-      placeholder: |
-        You can paste screenshots directly here.
-
   - type: input
-    id: device
+    id: device-info
     attributes:
-      label: Device
-      description: What device are you using?
+      label: Device and version
+      description: What device, OS version, and app version are you using?
       placeholder: |
-        Example: "iPhone 15 Pro, M1 iPad Pro, MacBook Air M2"
-
-  - type: input
-    id: os
-    attributes:
-      label: Operating System
-      placeholder: |
-        Example: "iOS, iPadOS, macOS"
-
-  - type: input
-    id: os-version
-    attributes:
-      label: OS Version
-      placeholder: |
-        Example: "18.6 or 15 Sequoia"
-
-  - type: input
-    id: app-version
-    attributes:
-      label: App Version
-      placeholder: |
-        Example: "main branch, v0.7"
-
-  - type: checkboxes
-    id: acknowledgements
-    attributes:
-      label: Acknowledgements
-      description: Your issue will be closed if you haven't done these steps.
-      options:
-        - label: I have searched the existing issues and this is a new ticket, **NOT** a duplicate or related to another open or closed issue.
-          required: true
-        - label: I have written a short but informative title.
-          required: true
-        - label: I have updated to the latest available version of the app.
-          required: true
-        - label: I will fill out all of the requested information in this form.
-          required: true
+        Example: "iPhone 16 Pro, iOS 26.1, Aidoku v0.7.2 (3)"
