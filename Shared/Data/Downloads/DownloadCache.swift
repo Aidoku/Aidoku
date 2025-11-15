@@ -114,16 +114,28 @@ extension DownloadCache {
 
 // MARK: Directory Provider
 extension DownloadCache {
-    func directory(for manga: MangaIdentifier) -> URL {
+    nonisolated func directory(sourceKey: String) -> URL {
+        DownloadManager.directory
+            .appendingSafePathComponent(sourceKey)
+    }
+
+    nonisolated func directory(for manga: MangaIdentifier) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(manga.sourceKey)
             .appendingSafePathComponent(manga.mangaKey)
     }
 
-    func directory(for chapter: ChapterIdentifier) -> URL {
+    nonisolated func directory(for chapter: ChapterIdentifier) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(chapter.sourceKey)
             .appendingSafePathComponent(chapter.mangaKey)
             .appendingSafePathComponent(chapter.chapterKey)
+    }
+
+    nonisolated func tmpDirectory(for chapter: ChapterIdentifier) -> URL {
+        DownloadManager.directory
+            .appendingSafePathComponent(chapter.sourceKey)
+            .appendingSafePathComponent(chapter.mangaKey)
+            .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
     }
 }

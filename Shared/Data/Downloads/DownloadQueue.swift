@@ -125,9 +125,7 @@ actor DownloadQueue {
                 continue
             }
             // create tmp directory so we know it's queued
-            await cache.directory(for: manga.identifier)
-                .appendingSafePathComponent(".tmp_\(chapter.key)")
-                .createDirectory()
+            cache.tmpDirectory(for: identifier).createDirectory()
             let download = Download.from(manga: manga, chapter: chapter)
             downloads.append(download)
             if queue[manga.sourceKey] == nil {
@@ -151,9 +149,7 @@ actor DownloadQueue {
             await task.cancel(chapter: chapter)
         } else {
             // no longer in queue but the tmp download directory still exists, so we should remove it
-            await cache.directory(for: chapter.mangaIdentifier)
-                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-                .removeItem()
+            cache.tmpDirectory(for: chapter).removeItem()
         }
         saveQueueState()
     }
@@ -166,9 +162,7 @@ actor DownloadQueue {
             if let task = tasks[chapter.sourceKey] {
                 await task.cancel(chapter: chapter)
             } else {
-                await cache.directory(for: chapter.mangaIdentifier)
-                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-                    .removeItem()
+                cache.tmpDirectory(for: chapter).removeItem()
             }
             if let queueItem = queue[chapter.sourceKey]?.firstIndex(where: {
                 $0.chapterIdentifier == chapter
@@ -184,7 +178,7 @@ actor DownloadQueue {
         if let task = tasks[manga.sourceKey] {
             await task.cancel(manga: manga)
         } else {
-            await cache.directory(for: manga)
+            cache.directory(for: manga)
                 .contents
                 .filter { $0.lastPathComponent.hasPrefix(".tmp") }
                 .forEach { $0.removeItem() }

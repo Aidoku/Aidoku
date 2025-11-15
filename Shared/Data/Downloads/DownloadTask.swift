@@ -77,9 +77,7 @@ actor DownloadTask: Identifiable {
             // remove chapter tmp download directory
             let download = downloads[index]
             Task {
-                await cache.directory(for: chapter.mangaIdentifier)
-                    .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-                    .removeItem()
+                cache.tmpDirectory(for: chapter).removeItem()
                 await delegate?.downloadCancelled(download: download)
                 downloads.removeAll { $0 == download }
                 if wasRunning {
@@ -102,7 +100,7 @@ actor DownloadTask: Identifiable {
                     cancelled.insert(i)
                 }
                 downloads.remove(atOffsets: cancelled)
-                await cache.directory(for: manga)
+                cache.directory(for: manga)
                     .contents
                     .filter { $0.lastPathComponent.hasPrefix(".tmp") }
                     .forEach { $0.removeItem() }
@@ -122,7 +120,7 @@ actor DownloadTask: Identifiable {
             // remove cached tmp directories
             Task {
                 for manga in manga {
-                    await cache.directory(for: manga)
+                    cache.directory(for: manga)
                         .contents
                         .filter { $0.lastPathComponent.hasPrefix(".tmp") }
                         .forEach { $0.removeItem() }
@@ -158,7 +156,7 @@ extension DownloadTask {
             let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
         {
             // if chapter already downloaded, skip
-            let directory = await cache.directory(for: download.chapterIdentifier)
+            let directory = cache.directory(for: download.chapterIdentifier)
             guard !directory.exists && !directory.appendingPathExtension("cbz").exists else {
                 downloads.removeFirst()
                 await delegate?.downloadFinished(download: download)
@@ -189,8 +187,7 @@ extension DownloadTask {
         let download = downloads[0]
         downloads[0].status = .downloading
 
-        let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
-            .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
+        let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
         tmpDirectory.createDirectory()
 
         if pages.isEmpty {
@@ -358,8 +355,7 @@ extension DownloadTask {
     }
 
     private func handleChapterDownloadFinish(download: Download) async {
-        let tmpDirectory = await cache.directory(for: download.mangaIdentifier)
-            .appendingSafePathComponent(".tmp_\(download.chapterIdentifier.chapterKey)")
+        let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
 
         if failedPages == pages.count {
             // the entire chapter failed to download, skip adding to cache and cancel
@@ -378,7 +374,7 @@ extension DownloadTask {
                 // Save chapter metadata after successful download
                 await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
 
-                let directory = await cache.directory(for: download.chapterIdentifier)
+                let directory = cache.directory(for: download.chapterIdentifier)
 
                 if UserDefaults.standard.bool(forKey: "Downloads.compress") {
                     try FileManager.default.zipItem(at: tmpDirectory, to: directory.appendingPathExtension("cbz"))
@@ -388,7 +384,7 @@ extension DownloadTask {
                 }
 
                 // save manga cover if not already present
-                let mangaDirectory = await cache.directory(for: download.mangaIdentifier)
+                let mangaDirectory = cache.directory(for: download.mangaIdentifier)
                 let coverPath = mangaDirectory.appendingPathComponent("cover.png")
                 if
                     !coverPath.exists,

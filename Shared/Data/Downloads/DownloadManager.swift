@@ -61,7 +61,7 @@ actor DownloadManager {
     }
 
     func getDownloadedPages(for chapter: ChapterIdentifier) async -> [AidokuRunner.Page] {
-        let directory = await cache.directory(for: chapter)
+        let directory = cache.directory(for: chapter)
 
         let archiveURL = directory.appendingPathExtension("cbz")
         if archiveURL.exists {
@@ -69,7 +69,7 @@ actor DownloadManager {
         } else {
             var descriptionFiles: [URL] = []
 
-            var pages = await cache.directory(for: chapter).contents
+            var pages = directory.contents
                 .compactMap { url -> AidokuRunner.Page? in
                     guard !url.lastPathComponent.hasPrefix(".") else {
                         return nil
@@ -123,9 +123,7 @@ actor DownloadManager {
     }
 
     func downloadsCount(for identifier: MangaIdentifier) -> Int {
-        Self.directory
-            .appendingSafePathComponent(identifier.sourceKey.directoryName)
-            .appendingSafePathComponent(identifier.mangaKey.directoryName)
+        cache.directory(for: identifier)
             .contents
             .filter { ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp") }
             .count
@@ -140,9 +138,7 @@ actor DownloadManager {
         if isChapterDownloaded(chapter: chapter) {
             return .finished
         } else {
-            let tmpDirectory = cache.directory(for: chapter.mangaIdentifier)
-                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-            if tmpDirectory.exists {
+            if cache.tmpDirectory(for: chapter).exists {
                 return .queued
             } else {
                 return .none
@@ -151,17 +147,11 @@ actor DownloadManager {
     }
 
     func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
-        let mangaDirectory =  Self.directory
-            .appendingSafePathComponent(chapter.sourceKey)
-            .appendingSafePathComponent(chapter.mangaKey)
-        let chapterDirectory = mangaDirectory
-            .appendingSafePathComponent(chapter.chapterKey.directoryName)
+        let chapterDirectory = cache.directory(for: chapter)
         if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
             return .finished
         } else {
-            let tmpDirectory = mangaDirectory
-                .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
-            if tmpDirectory.exists {
+            if cache.tmpDirectory(for: chapter).exists {
                 return .queued
             } else {
                 return .none
@@ -170,21 +160,13 @@ actor DownloadManager {
     }
 
     nonisolated func getMangaDirectoryUrl(identifier: MangaIdentifier) -> URL? {
-        let path = Self.directory
-            .appendingSafePathComponent(identifier.sourceKey)
-            .appendingSafePathComponent(identifier.mangaKey)
-            .path
+        let path = cache.directory(for: identifier).path
         return URL(string: "shareddocuments://\(path)")
     }
 
     func getCompressedFile(for chapter: ChapterIdentifier) -> URL? {
-        let mangaDirectory =  Self.directory
-            .appendingSafePathComponent(chapter.sourceKey)
-            .appendingSafePathComponent(chapter.mangaKey)
-        let chapterDirectory = mangaDirectory
-            .appendingSafePathComponent(chapter.chapterKey.directoryName)
-        let chapterFile = chapterDirectory
-            .appendingPathExtension("cbz")
+        let chapterDirectory = cache.directory(for: chapter)
+        let chapterFile = chapterDirectory.appendingPathExtension("cbz")
         if chapterFile.exists {
             return chapterFile
         }
@@ -254,11 +236,23 @@ extension DownloadManager {
     /// Remove downloads for specified chapters.
     func delete(chapters: [ChapterIdentifier]) async {
         for chapter in chapters {
-            let directory = await cache.directory(for: chapter)
+            let directory = cache.directory(for: chapter)
             let archiveURL = directory.appendingPathExtension("cbz")
             directory.removeItem()
             archiveURL.removeItem()
             await cache.remove(chapter: chapter)
+
+            // check if all chapters have been removed (then remove manga directory)
+            let manga = chapter.mangaIdentifier
+            let hasRemainingChapters = cache.directory(for: manga)
+                .contents
+                .contains {
+                    ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+                }
+            if !hasRemainingChapters {
+                await deleteChapters(for: manga)
+            }
+
             NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
         // Invalidate cache for UI
@@ -268,8 +262,16 @@ extension DownloadManager {
     /// Remove all downloads from a manga.
     func deleteChapters(for manga: MangaIdentifier) async {
         await queue.cancelDownloads(for: manga)
-        await cache.directory(for: manga).removeItem()
+        cache.directory(for: manga).removeItem()
         await cache.remove(manga: manga)
+
+        // remove source directory if there are no more manga folders
+        let sourceDirectory = cache.directory(sourceKey: manga.sourceKey)
+        let hasRemainingManga = !sourceDirectory.contents.isEmpty
+        if !hasRemainingManga {
+            sourceDirectory.removeItem()
+        }
+
         NotificationCenter.default.post(name: .downloadsRemoved, object: manga)
         // Invalidate cache for UI
         invalidateDownloadedMangaCache()
@@ -468,10 +470,7 @@ extension DownloadManager {
 
     /// Get downloaded chapters for a specific manga
     func getDownloadedChapters(for identifier: MangaIdentifier) async -> [DownloadedChapterInfo] {
-        let mangaDirectory = Self.directory
-            .appendingSafePathComponent(identifier.sourceKey.directoryName)
-            .appendingSafePathComponent(identifier.mangaKey.directoryName)
-
+        let mangaDirectory = cache.directory(for: identifier)
         guard mangaDirectory.exists else { return [] }
 
         let chapterDirectories = mangaDirectory.contents.filter {
