@@ -56,7 +56,12 @@ struct BackupsView: View {
                 Button {
                     showAutoBackupsSheet = true
                 } label: {
-                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                    let imageName = if #available(iOS 18.0, *) {
+                        "clock.arrow.trianglehead.counterclockwise.rotate.90"
+                    } else {
+                        "clock.arrow.circlepath"
+                    }
+                    Image(systemName: imageName)
                 }
                 Button {
                     showCreateSheet = true

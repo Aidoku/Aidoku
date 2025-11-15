@@ -90,7 +90,12 @@ struct SearchContentView: View {
                         viewModel.search(query: item, delay: false)
                     } label: {
                         HStack {
-                            Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            let imageName = if #available(iOS 18.0, *) {
+                                "clock.arrow.trianglehead.counterclockwise.rotate.90"
+                            } else {
+                                "clock.arrow.circlepath"
+                            }
+                            Image(systemName: imageName)
                                 .foregroundStyle(.tint)
                                 .imageScale(.small)
                             Text(item)
