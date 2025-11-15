@@ -94,6 +94,13 @@ struct DownloadedMangaView: View {
                         ChapterRow(chapter: chapter, history: viewModel.readingHistory[chapter.chapterId])
                     }
                     .foregroundStyle(.primary)
+                    .contextMenu {
+                        Button {
+                            showShareSheet(chapter: chapter)
+                        } label: {
+                            Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
+                        }
+                    }
                 }
                 .onDelete(perform: delete)
             } header: {
@@ -187,6 +194,32 @@ struct DownloadedMangaView: View {
             parent: path.rootViewController
         )
         path.push(viewController)
+    }
+
+    private func showShareSheet(chapter: DownloadedChapterInfo) {
+        Task {
+            let identifier = ChapterIdentifier(
+                sourceKey: viewModel.manga.sourceId,
+                mangaKey: viewModel.manga.mangaId,
+                chapterKey: chapter.chapterId
+            )
+            if let url = await DownloadManager.shared.getCompressedFile(for: identifier) {
+                let activityViewController = UIActivityViewController(
+                    activityItems: [url],
+                    applicationActivities: nil
+                )
+                guard let sourceView = path.rootViewController?.view else { return }
+                activityViewController.popoverPresentationController?.sourceView = sourceView
+                // manually positioned in top right of screen, near the right navigation bar button
+                activityViewController.popoverPresentationController?.sourceRect = CGRect(
+                    x: UIScreen.main.bounds.width - 30,
+                    y: 60,
+                    width: 0,
+                    height: 0
+                )
+                path.present(activityViewController)
+            }
+        }
     }
 }
 

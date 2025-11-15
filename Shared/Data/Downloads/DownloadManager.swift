@@ -168,6 +168,28 @@ actor DownloadManager {
             }
         }
     }
+
+    func getCompressedFile(for chapter: ChapterIdentifier) -> URL? {
+        let mangaDirectory =  Self.directory
+            .appendingSafePathComponent(chapter.sourceKey)
+            .appendingSafePathComponent(chapter.mangaKey)
+        let chapterDirectory = mangaDirectory
+            .appendingSafePathComponent(chapter.chapterKey.directoryName)
+        let chapterFile = chapterDirectory
+            .appendingPathExtension("cbz")
+        if chapterFile.exists {
+            return chapterFile
+        }
+        // otherwise we can compress it ourselves
+        let tmpFile = FileManager.default.temporaryDirectory?.appendingPathComponent(chapterFile.lastPathComponent)
+        guard let tmpFile else { return nil }
+        do {
+            try FileManager.default.zipItem(at: chapterDirectory, to: tmpFile)
+            return tmpFile
+        } catch {
+            return nil
+        }
+    }
 }
 
 // MARK: File Management

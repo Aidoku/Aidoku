@@ -431,11 +431,11 @@ extension MangaView {
                 }
             }
         }
-        if let url = chapter.url {
+        if downloadStatus == .finished || chapter.url != nil {
             Divider()
             Section {
                 Button {
-                    showShareSheet(url: url)
+                    showShareSheet(chapter: chapter)
                 } label: {
                     Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
                 }
@@ -481,7 +481,7 @@ extension MangaView {
                     rootView: SwiftUINavigationView(rootView: migrateView)
                 ))
             },
-            showShareSheet: showShareSheet(url:),
+            showShareSheet: showShareSheet(item:),
             removeDownloads: {
                 showRemoveAllConfirm = true
             },
@@ -669,9 +669,26 @@ extension MangaView {
         path.present(navigationController)
     }
 
-    func showShareSheet(url: URL) {
+    func showShareSheet(chapter: AidokuRunner.Chapter) {
+        if viewModel.downloadStatus[chapter.key] == .finished {
+            Task {
+                let identifier = ChapterIdentifier(
+                    sourceKey: viewModel.manga.sourceKey,
+                    mangaKey: viewModel.manga.key,
+                    chapterKey: chapter.key
+                )
+                if let url = await DownloadManager.shared.getCompressedFile(for: identifier) {
+                    showShareSheet(item: url)
+                }
+            }
+        } else if let url = chapter.url {
+            showShareSheet(item: url)
+        }
+    }
+
+    func showShareSheet(item: Any) {
         let activityViewController = UIActivityViewController(
-            activityItems: [url],
+            activityItems: [item],
             applicationActivities: nil
         )
         guard let sourceView = path.rootViewController?.view else { return }
