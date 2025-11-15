@@ -28,9 +28,9 @@ final actor LocalFileDataManager {
 // MARK: Checking
 extension LocalFileDataManager {
     // check if a series exists in the db with the given name (id)
-    func hasSeries(name: String) -> Bool {
+    func hasSeries(id: String) -> Bool {
         let request = MangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", name, LocalSourceRunner.sourceKey)
+        request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", id, LocalSourceRunner.sourceKey)
         request.fetchLimit = 1
         return (try? context.count(for: request)) == 1
     }

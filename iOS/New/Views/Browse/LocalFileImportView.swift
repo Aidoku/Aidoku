@@ -402,7 +402,7 @@ extension LocalFileImportView.ContentView {
             ?? LocalFileNameParser.getMangaChapterNumber(from: fileInfo.name)
             ?? 1
         Task {
-            let hasSeries = await LocalFileDataManager.shared.hasSeries(name: seriesName)
+            let hasSeries = await LocalFileDataManager.shared.hasSeries(id: seriesName.percentEncoded())
             nameValid = !hasSeries
             if hasSeries {
                 selectedMangaId = seriesName
@@ -434,7 +434,7 @@ extension LocalFileImportView.ContentView {
         if selectedMangaId.isEmpty {
             nameEmpty = seriesName.isEmpty
             Task {
-                nameValid = !(await LocalFileDataManager.shared.hasSeries(name: seriesName))
+                nameValid = !(await LocalFileDataManager.shared.hasSeries(id: seriesName.percentEncoded()))
             }
         } else {
             nameEmpty = false

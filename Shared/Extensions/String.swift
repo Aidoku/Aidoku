@@ -66,3 +66,9 @@ extension String {
         }
     }
 }
+
+extension String {
+    func percentEncoded() -> String {
+        addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? self
+    }
+}

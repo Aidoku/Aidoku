@@ -291,8 +291,8 @@ extension LocalFileManager {
 
         let comicInfo = ComicInfo.load(from: archive)
 
-        let resolvedMangaId = mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent
         let mangaTitle = mangaName ?? resolvedMangaId
+        let resolvedMangaId = (mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent).percentEncoded()
 
         // create new folder for the manga
         let fileManager = FileManager.default
@@ -396,7 +396,7 @@ extension LocalFileManager {
 
         // create the objects in db
         let hasMangaObject = if let mangaId {
-            await LocalFileDataManager.shared.hasSeries(name: mangaId)
+            await LocalFileDataManager.shared.hasSeries(id: mangaId)
         } else {
             false
         }
