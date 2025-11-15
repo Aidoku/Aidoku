@@ -169,6 +169,14 @@ actor DownloadManager {
         }
     }
 
+    nonisolated func getMangaDirectoryUrl(identifier: MangaIdentifier) -> URL? {
+        let path = Self.directory
+            .appendingSafePathComponent(identifier.sourceKey)
+            .appendingSafePathComponent(identifier.mangaKey)
+            .path
+        return URL(string: "shareddocuments://\(path)")
+    }
+
     func getCompressedFile(for chapter: ChapterIdentifier) -> URL? {
         let mangaDirectory =  Self.directory
             .appendingSafePathComponent(chapter.sourceKey)

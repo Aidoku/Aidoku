@@ -34,24 +34,30 @@ struct DownloadedMangaView: View {
         .navigationTitle(viewModel.manga.displayTitle)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if viewModel.manga.isInLibrary || !viewModel.chapters.isEmpty {
-                    Menu {
-                        if viewModel.manga.isInLibrary, let source = SourceManager.shared.source(for: viewModel.manga.sourceId) {
-                            Button {
-                                openMangaView(source: source)
-                            } label: {
-                                Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")
-                            }
+                Menu {
+                    if viewModel.manga.isInLibrary, let source = SourceManager.shared.source(for: viewModel.manga.sourceId) {
+                        Button {
+                            openMangaView(source: source)
+                        } label: {
+                            Label(NSLocalizedString("VIEW_SERIES"), systemImage: "book")
                         }
+                    }
 
-                        if !viewModel.chapters.isEmpty {
-                            Button(role: .destructive, action: viewModel.confirmDeleteAll) {
-                                Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
-                            }
+                    Button {
+                        if let url = DownloadManager.shared.getMangaDirectoryUrl(identifier: viewModel.manga.mangaIdentifier) {
+                            UIApplication.shared.open(url)
                         }
                     } label: {
-                        MoreIcon()
+                        Label(NSLocalizedString("VIEW_FILES"), systemImage: "folder")
                     }
+
+                    if !viewModel.chapters.isEmpty {
+                        Button(role: .destructive, action: viewModel.confirmDeleteAll) {
+                            Label(NSLocalizedString("REMOVE_ALL_DOWNLOADS"), systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    MoreIcon()
                 }
             }
         }

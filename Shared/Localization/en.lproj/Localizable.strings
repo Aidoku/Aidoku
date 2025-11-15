@@ -56,6 +56,7 @@
 "%i_SERIES" = "%i series";
 "IN_LIBRARY" = "In Library";
 "VIEW_SERIES" = "View Series";
+"VIEW_FILES" = "View Files";
 "COMPRESS_DOWNLOADS" = "Compress Downloads";
 "METADATA_DETECTED" = "Legacy Metadata Detected";
 "METADATA_DETECTED_TEXT" = "Legacy JSON metadata will be migrated to ComicInfo.xml files.";
