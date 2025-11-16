@@ -67,7 +67,7 @@ struct SearchFilterHeaderView: View {
         }
         .padding(.top, {
             if #available(iOS 26.0, *) {
-                12
+                6
             } else {
                 0
             }
