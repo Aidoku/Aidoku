@@ -284,19 +284,6 @@ extension MangaManager {
     ) async {
 #if !os(macOS)
         let tabController = await UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
-        await tabController?.showLibraryRefreshView()
-
-        onLibraryRefreshProgress = { progress in
-            tabController?.setLibraryRefreshProgress(Float(progress.fractionCompleted))
-            task?.progress.totalUnitCount = progress.totalUnitCount
-            task?.progress.completedUnitCount = progress.completedUnitCount
-            if #available(iOS 26.0, *), let task = task as? BGContinuedProcessingTask {
-                task.updateTitle(
-                    NSLocalizedString("REFRESHING_LIBRARY"),
-                    subtitle: String(format: NSLocalizedString("%i_OF_%i"), progress.completedUnitCount, progress.totalUnitCount)
-                )
-            }
-        }
 #endif
 
         if libraryRefreshTask != nil {
@@ -305,7 +292,28 @@ extension MangaManager {
         } else {
             // spawn new library refresh
             libraryRefreshTask = Task {
-                await doLibraryRefresh(category: category, forceAll: forceAll, task: task)
+                await doLibraryRefresh(
+                    category: category,
+                    forceAll: forceAll,
+                    task: task,
+                    refreshStarted: {
+#if !os(macOS)
+                        await tabController?.showLibraryRefreshView()
+
+                        self.onLibraryRefreshProgress = { progress in
+                            tabController?.setLibraryRefreshProgress(Float(progress.fractionCompleted))
+                            task?.progress.totalUnitCount = progress.totalUnitCount
+                            task?.progress.completedUnitCount = progress.completedUnitCount
+                            if #available(iOS 26.0, *), let task = task as? BGContinuedProcessingTask {
+                                task.updateTitle(
+                                    NSLocalizedString("REFRESHING_LIBRARY"),
+                                    subtitle: String(format: NSLocalizedString("%i_OF_%i"), progress.completedUnitCount, progress.totalUnitCount)
+                                )
+                            }
+                        }
+#endif
+                    }
+                )
                 libraryRefreshTask = nil
             }
             await libraryRefreshTask?.value
@@ -389,13 +397,19 @@ extension MangaManager {
     private func doLibraryRefresh(
         category: String?,
         forceAll: Bool,
-        task: ProgressReporting? = nil
+        task: ProgressReporting? = nil,
+        refreshStarted: (() async -> Void)? = nil
     ) async {
         // make sure user agent has loaded before doing library refresh
         _ = await UserAgentProvider.shared.getUserAgent()
 
         let allManga = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getLibraryManga(category: category, context: context).compactMap { $0.manga?.toManga() }
+        }
+
+        // ensure there are manga to update
+        guard !allManga.isEmpty else {
+            return
         }
 
         // check if connected to wi-fi
@@ -406,6 +420,8 @@ extension MangaManager {
         let skipOptions = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
         let excludedCategories = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? []
         let updateMetadata = forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata")
+
+        await refreshStarted?()
 
         // filter items that we should skip
         let filteredManga = await CoreDataManager.shared.container.performBackgroundTask { context in
