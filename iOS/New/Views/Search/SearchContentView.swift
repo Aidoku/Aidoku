@@ -16,6 +16,9 @@ struct SearchContentView: View {
     let openResult: (ViewModel.SearchResult) -> Void
     let path: NavigationCoordinator
 
+    @State private var keyboardOffset: CGFloat = 0
+    @Namespace private var animation
+
     init(
         viewModel: ViewModel,
         searchText: Binding<String>,
@@ -40,7 +43,8 @@ struct SearchContentView: View {
                     systemImage: "magnifyingglass",
                     description: Text(NSLocalizedString("NO_RECENT_SEARCHES_TEXT"))
                 )
-                .ignoresSafeArea()
+                .offset(y: -keyboardOffset / 2)
+                .ignoresSafeArea(.all)
             } else if !searchText.isEmpty && viewModel.resultsIsEmpty {
                 if viewModel.isLoading {
                     ProgressView()
@@ -65,6 +69,7 @@ struct SearchContentView: View {
                 .environment(\.defaultMinListRowHeight, 10)
             }
         }
+        .detectKeyboardOffset($keyboardOffset)
         .animation(.default, value: viewModel.results)
         .navigationTitle(NSLocalizedString("SEARCH"))
         .onChange(of: searchText) { newValue in
