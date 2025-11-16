@@ -157,11 +157,10 @@ extension ComicInfo {
     }
 
     func copy(into manga: AidokuRunner.Manga) -> AidokuRunner.Manga {
-        let artists = penciller.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
-        let authors = writer.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
+        let artists = penciller.flatMap { $0.commaSeparated() }
+        let authors = writer.flatMap { $0.commaSeparated() }
         let url = web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) }
-        let tags = (genre.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
-            + (tags.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } } ?? [])
+        let tags = (genre.flatMap { $0.commaSeparated() } ?? []) + (tags.flatMap { $0.commaSeparated() } ?? [])
         let contentRating: ContentRating = switch ageRating {
             case .everyone: .safe
             case .m15Plus: .suggestive
@@ -200,7 +199,7 @@ extension ComicInfo {
             components.day = day
             return Calendar.current.date(from: components)
         }()
-        let scanlators = translator.flatMap { $0.components(separatedBy: ", ").filter { !$0.isEmpty } }
+        let scanlators = translator.flatMap { $0.commaSeparated() }
         let url = web?.split(separator: " ", maxSplits: 1).first.flatMap { URL(string: String($0)) }
         return AidokuRunner.Chapter(
             key: chapter.key,
@@ -407,5 +406,16 @@ extension ComicInfo {
         } catch {
             return nil
         }
+    }
+}
+
+private extension String {
+    func commaSeparated() -> [String] {
+        components(separatedBy: ",")
+            .compactMap {
+                let trimmed = $0.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return nil }
+                return trimmed
+            }
     }
 }
