@@ -525,7 +525,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
+                || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =
@@ -565,7 +565,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: new.key)
 
             let readable = !new.locked
-                || DownloadManager.shared.getDownloadStatusSync(for: identifier) == .finished
+                || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
 
             if readable {
                 let isDuplicate =

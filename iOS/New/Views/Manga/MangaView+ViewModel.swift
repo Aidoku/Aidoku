@@ -469,18 +469,10 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        await withTaskGroup(of: (String, DownloadStatus).self) { [manga] group in
-            for chapter in chapters {
-                group.addTask {
-                    let status = await DownloadManager.shared.getDownloadStatus(
-                        for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-                    )
-                    return (chapter.key, status)
-                }
-            }
-            for await (key, status) in group {
-                downloadStatus[key] = status
-            }
+        for chapter in chapters {
+            downloadStatus[chapter.key] = DownloadManager.shared.getDownloadStatus(
+                for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            )
         }
         for chapter in otherDownloadedChapters {
             downloadStatus[chapter.key] = .finished
@@ -569,13 +561,11 @@ extension MangaView.ViewModel {
             chapter = download.chapterIdentifier
         }
         if let chapter {
-            Task {
-                downloadProgress.removeValue(forKey: chapter.chapterKey)
-                downloadStatus[chapter.chapterKey] = await DownloadManager.shared.getDownloadStatus(for: chapter)
-                if let chapterIndex = otherDownloadedChapters.firstIndex(where: { $0.key == chapter.chapterKey }) {
-                    withAnimation {
-                        _ = otherDownloadedChapters.remove(at: chapterIndex)
-                    }
+            downloadProgress.removeValue(forKey: chapter.chapterKey)
+            downloadStatus[chapter.chapterKey] = DownloadManager.shared.getDownloadStatus(for: chapter)
+            if let chapterIndex = otherDownloadedChapters.firstIndex(where: { $0.key == chapter.chapterKey }) {
+                withAnimation {
+                    _ = otherDownloadedChapters.remove(at: chapterIndex)
                 }
             }
         }

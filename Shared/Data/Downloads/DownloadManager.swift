@@ -133,20 +133,7 @@ actor DownloadManager {
         await queue.hasQueuedDownloads()
     }
 
-    @MainActor
-    func getDownloadStatusSync(for chapter: ChapterIdentifier) -> DownloadStatus {
-        if isChapterDownloaded(chapter: chapter) {
-            return .finished
-        } else {
-            if cache.tmpDirectory(for: chapter).exists {
-                return .queued
-            } else {
-                return .none
-            }
-        }
-    }
-
-    func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
+    nonisolated func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
         let chapterDirectory = cache.directory(for: chapter)
         if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
             return .finished
