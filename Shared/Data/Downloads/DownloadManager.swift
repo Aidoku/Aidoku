@@ -70,6 +70,9 @@ actor DownloadManager {
             var descriptionFiles: [URL] = []
 
             var pages = directory.contents
+                .sorted {
+                    $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending
+                }
                 .compactMap { url -> AidokuRunner.Page? in
                     guard !url.lastPathComponent.hasPrefix(".") else {
                         return nil
