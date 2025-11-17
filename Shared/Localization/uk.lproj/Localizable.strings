@@ -43,7 +43,7 @@
 
 // Browse
 "BROWSE" = "Перегляд";
-"BROWSE_NO_SOURCES" = "Немає джерел";
+"BROWSE_NO_SOURCES" = "Без Джерел";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Керівництво з додавання джерел";
 "UPDATES" = "Оновлення";
 "INSTALLED" = "Встановлено";
@@ -602,3 +602,18 @@
 "METADATA_DETECTED" = "Виявлено застарілі метадані";
 "METADATA_DETECTED_TEXT" = "Застарілі метадані JSON будуть перенесені до файлів ComicInfo.xml.";
 "DOWNLOADED_CHAPTER_BADGES" = "Завантажені значки відділів";
+"VIEW_FILES" = "Переглянути файли";
+"PROCESSING_ENTRIES" = "Обробка записів…";
+"NO_HISTORY" = "Без історії";
+"NO_HISTORY_TEXT" = "Історія читання з’явиться тут.";
+"RECENTLY_SEARCHED" = "Нещодавно пошук";
+"NO_RECENT_SEARCHES" = "Немає нещодавніх пошуків";
+"NO_RECENT_SEARCHES_TEXT" = "Ваші останні пошукові запити з’являться тут.";
+"SOURCES" = "Джерела";
+"BACKGROUND_REFRESH" = "Оновлення фону";
+"BACKGROUND_REFRESH_TEXT" = "Під час ручного запуску оновлення бібліотеки дозвольте оновленню завершитися, навіть якщо програма працює у фоновому режимі.";
+"EVERY_6_HOURS" = "Кожні 6 годин";
+"AUTOMATIC_BACKUPS" = "Автоматичне резервне копіювання";
+"BACKUP_INTERVAL" = "Інтервал резервного копіювання";
+"AUTO" = "Авто";
+"LAST_BACKED_UP_%@" = "Остання автоматична резервна копія: %@";
