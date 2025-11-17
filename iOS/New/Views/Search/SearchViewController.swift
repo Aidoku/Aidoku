@@ -23,7 +23,6 @@ class SearchViewController: UIViewController {
     }
     private var searchText: String = "" {
         didSet {
-            searchController.searchBar.text = searchText
             updateHostingControllers()
         }
     }
@@ -48,7 +47,10 @@ class SearchViewController: UIViewController {
     private var searchTextBinding: Binding<String> {
         .init(
             get: { [weak self] in self?.searchText ?? "" },
-            set: { [weak self] in self?.searchText = $0 }
+            set: { [weak self] in
+                self?.searchText = $0
+                self?.searchController.searchBar.text = $0
+            }
         )
     }
     private var searchCommitToggleBinding: Binding<Bool> {
