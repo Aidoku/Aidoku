@@ -266,11 +266,6 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.updateOnlyOnWifi",
-                title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
-                value: .toggle(.init())
-            ),
-            .init(
                 key: "Library.refreshMetadata",
                 title: NSLocalizedString("REFRESH_METADATA"),
                 value: .toggle(.init())
