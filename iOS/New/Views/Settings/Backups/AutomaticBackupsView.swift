@@ -8,37 +8,17 @@
 import SwiftUI
 
 struct AutomaticBackupsView: View {
-    @State private var enabled: Bool
-    @State private var libraryEntries: Bool
-    @State private var chapters: Bool
-    @State private var tracking: Bool
-    @State private var history: Bool
-    @State private var categories: Bool
-    @State private var settings: Bool
-    @State private var sourceLists: Bool
-    @State private var sensitiveSettings: Bool
+    @StateObject private var enabled = UserDefaultsBool(key: "AutomaticBackups.enabled")
 
     @Environment(\.dismiss) private var dismiss
-
-    init() {
-        self._enabled = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled"))
-        self._libraryEntries = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.libraryEntries"))
-        self._chapters = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters"))
-        self._tracking = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking"))
-        self._history = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.history"))
-        self._categories = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.categories"))
-        self._settings = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.settings"))
-        self._sourceLists = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.sourceLists"))
-        self._sensitiveSettings = State(initialValue: UserDefaults.standard.bool(forKey: "AutomaticBackups.sensitiveSettings"))
-    }
 
     var body: some View {
         PlatformNavigationStack {
             List {
                 Section {
-                    Toggle(NSLocalizedString("AUTOMATIC_BACKUPS"), isOn: $enabled)
+                    toggle(key: "AutomaticBackups.enabled", title: NSLocalizedString("AUTOMATIC_BACKUPS"))
 
-                    if enabled {
+                    if enabled.value {
                         SettingView(
                             setting: .init(
                                 key: "AutomaticBackups.interval",
@@ -63,22 +43,22 @@ struct AutomaticBackupsView: View {
                     }
                 }
 
-                if enabled {
+                if enabled.value {
                     Section(NSLocalizedString("LIBRARY")) {
-                        Toggle(NSLocalizedString("LIBRARY_ENTRIES"), isOn: $libraryEntries)
-                        Toggle(NSLocalizedString("CHAPTERS"), isOn: $chapters)
-                        Toggle(NSLocalizedString("TRACKING"), isOn: $tracking)
-                        Toggle(NSLocalizedString("HISTORY"), isOn: $history)
-                        Toggle(NSLocalizedString("CATEGORIES"), isOn: $categories)
+                        toggle(key: "AutomaticBackups.libraryEntries", title: NSLocalizedString("LIBRARY_ENTRIES"))
+                        toggle(key: "AutomaticBackups.chapters", title: NSLocalizedString("CHAPTERS"))
+                        toggle(key: "AutomaticBackups.tracking", title: NSLocalizedString("TRACKING"))
+                        toggle(key: "AutomaticBackups.history", title: NSLocalizedString("HISTORY"))
+                        toggle(key: "AutomaticBackups.categories", title: NSLocalizedString("CATEGORIES"))
                     }
                     Section(NSLocalizedString("SETTINGS")) {
-                        Toggle(NSLocalizedString("SETTINGS"), isOn: $settings)
-                        Toggle(NSLocalizedString("SOURCE_LISTS"), isOn: $sourceLists)
-                        Toggle(NSLocalizedString("SENSITIVE_SETTINGS"), isOn: $sensitiveSettings)
+                        toggle(key: "AutomaticBackups.settings", title: NSLocalizedString("SETTINGS"))
+                        toggle(key: "AutomaticBackups.sourceLists", title: NSLocalizedString("SOURCE_LISTS"))
+                        toggle(key: "AutomaticBackups.sensitiveSettings", title: NSLocalizedString("SENSITIVE_SETTINGS"))
                     }
                 }
             }
-            .animation(.default, value: enabled)
+            .animation(.default, value: enabled.value)
             .navigationTitle(NSLocalizedString("AUTOMATIC_BACKUPS"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -88,11 +68,21 @@ struct AutomaticBackupsView: View {
                     }
                 }
             }
-            .onChange(of: enabled) { _ in
+            .onChange(of: enabled.value) { _ in
                 Task {
                     await BackupManager.shared.scheduleAutoBackup()
                 }
             }
         }
+    }
+
+    func toggle(key: String, title: String) -> some View {
+        SettingView(
+            setting: .init(
+                key: key,
+                title: title,
+                value: .toggle(.init())
+            )
+        )
     }
 }
