@@ -34,6 +34,8 @@ actor DownloadTask: Identifiable {
 
     private(set) var running: Bool = false
 
+    private static let maxConcurrentPageTasks = 5
+
     init(id: String, cache: DownloadCache, downloads: [Download]) {
         self.id = id
         self.cache = cache
@@ -257,76 +259,77 @@ extension DownloadTask {
 
         // download pages from the network concurrently
         await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
-            for page in networkPages {
-                taskGroup.addTask {
-                    let urlRequest = await source.getModifiedImageRequest(
-                        url: page.url,
-                        context: page.context
-                    )
+            for pageGroup in networkPages.chunked(into: Self.maxConcurrentPageTasks) {
+                for page in pageGroup {
+                    taskGroup.addTask {
+                        let urlRequest = await source.getModifiedImageRequest(
+                            url: page.url,
+                            context: page.context
+                        )
 
-                    let result = try? await URLSession.shared.data(for: urlRequest)
+                        let result = try? await URLSession.shared.data(for: urlRequest)
 
-                    var resultData: Data?
-                    var resultPath: URL?
+                        var resultData: Data?
+                        var resultPath: URL?
 
-                    if let pageInterceptor {
-                        let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
-                        do {
-                            let container = ImageContainer(image: image)
-                            let request = ImageRequest(
-                                urlRequest: urlRequest,
-                                userInfo: [.contextKey: page.context ?? [:]]
-                            )
-                            let newImage = try pageInterceptor.process(
-                                container,
-                                context: .init(
-                                    request: request,
-                                    response: .init(
-                                        container: container,
-                                        request: request,
-                                        urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
-                                            HTTPURLResponse(
-                                                url: $0,
-                                                statusCode: 404,
-                                                httpVersion: nil,
-                                                headerFields: nil
-                                            )
-                                        }
-                                    ),
-                                    isCompleted: true
+                        if let pageInterceptor {
+                            let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
+                            do {
+                                let container = ImageContainer(image: image)
+                                let request = ImageRequest(
+                                    urlRequest: urlRequest,
+                                    userInfo: [.contextKey: page.context ?? [:]]
                                 )
-                            )
-                            let data = newImage.image.pngData()
+                                let newImage = try pageInterceptor.process(
+                                    container,
+                                    context: .init(
+                                        request: request,
+                                        response: .init(
+                                            container: container,
+                                            request: request,
+                                            urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
+                                                HTTPURLResponse(
+                                                    url: $0,
+                                                    statusCode: 404,
+                                                    httpVersion: nil,
+                                                    headerFields: nil
+                                                )
+                                            }
+                                        ),
+                                        isCompleted: true
+                                    )
+                                )
+                                let data = newImage.image.pngData()
+                                resultData = data
+                                resultPath = page.targetPath.appendingPathExtension("png")
+                            } catch {
+                                LogManager.logger.error("Error processing image: \(error)")
+                            }
+                        } else if let (data, res) = result {
+                            let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
                             resultData = data
-                            resultPath = page.targetPath.appendingPathExtension("png")
-                        } catch {
-                            LogManager.logger.error("Error processing image: \(error)")
+                            resultPath = page.targetPath.appendingPathExtension(fileExtention)
+                        } else {
+                            LogManager.logger.error("Error downloading image with url \(urlRequest)")
                         }
-                    } else if let (data, res) = result {
-                        let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
-                        resultData = data
-                        resultPath = page.targetPath.appendingPathExtension(fileExtention)
-                    } else {
-                        LogManager.logger.error("Error downloading image with url \(urlRequest)")
-                    }
 
-                    return (resultData, resultPath)
-                }
-            }
-
-            for await (data, path) in taskGroup {
-                guard tmpDirectory.exists else {
-                    // download was cancelled, stop processing
-                    return
-                }
-                if let data, let path {
-                    do {
-                        try data.write(to: path)
-                    } catch {
-                        LogManager.logger.error("Error writing downloaded image: \(error)")
+                        return (resultData, resultPath)
                     }
                 }
-                await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+                for await (data, path) in taskGroup {
+                    guard tmpDirectory.exists else {
+                        // download was cancelled, stop processing
+                        return
+                    }
+                    if let data, let path {
+                        do {
+                            try data.write(to: path)
+                        } catch {
+                            LogManager.logger.error("Error writing downloaded image: \(error)")
+                        }
+                    }
+                    await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+                }
             }
         }
 
