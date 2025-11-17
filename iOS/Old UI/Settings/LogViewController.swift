@@ -8,18 +8,10 @@
 import UIKit
 
 class LogViewController: UIViewController {
+    private let textView = UITextView()
+    private var entries: [LogEntry] = []
 
-    let textView = UITextView()
-
-    var entries: [LogEntry] = []
-
-    var observerId: UUID?
-
-    deinit {
-        if let observerId = observerId {
-            LogManager.logger.store.removeObserver(id: observerId)
-        }
-    }
+    private var logTask: Task<Void, Never>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,12 +37,14 @@ class LogViewController: UIViewController {
         textView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         textView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
 
-        entries = LogManager.logger.store.entries
-        loadLog()
-
-        observerId = LogManager.logger.store.addObserver { [weak self] entry in
-            self?.entries.append(entry)
-            self?.logEntry(entry: entry)
+        logTask = Task {
+            entries = await LogManager.logger.store.entries
+            loadLog()
+            let stream = await LogManager.logger.store.logStream()
+            for await entry in stream {
+                self.entries.append(entry)
+                self.logEntry(entry: entry)
+            }
         }
     }
 
@@ -62,27 +56,29 @@ class LogViewController: UIViewController {
     @MainActor
     func logEntry(entry: LogEntry) {
         if let string = textView.attributedText.mutableCopy() as? NSMutableAttributedString {
-        switch entry.type {
-            case .default:
-                break
-            case .info:
-                string.append(NSAttributedString(string: "[INFO] ", attributes: [.foregroundColor: UIColor.systemBlue]))
-            case .debug:
-                string.append(NSAttributedString(string: "[DEBUG] ", attributes: [.foregroundColor: UIColor.label]))
-            case .warning:
-                string.append(NSAttributedString(string: "[WARN] ", attributes: [.foregroundColor: UIColor.systemYellow]))
-            case .error:
-                string.append(NSAttributedString(string: "[ERROR] ", attributes: [.foregroundColor: UIColor.systemRed]))
-        }
-        string.append(NSAttributedString(string: entry.message + "\n", attributes: [.foregroundColor: UIColor.label]))
-        string.addAttributes([.font: UIFont(name: "Menlo", size: 12) as Any], range: NSRange(location: 0, length: string.length))
-        textView.attributedText = string
+            switch entry.type {
+                case .default:
+                    break
+                case .info:
+                    string.append(NSAttributedString(string: "[INFO] ", attributes: [.foregroundColor: UIColor.systemBlue]))
+                case .debug:
+                    string.append(NSAttributedString(string: "[DEBUG] ", attributes: [.foregroundColor: UIColor.label]))
+                case .warning:
+                    string.append(NSAttributedString(string: "[WARN] ", attributes: [.foregroundColor: UIColor.systemYellow]))
+                case .error:
+                    string.append(NSAttributedString(string: "[ERROR] ", attributes: [.foregroundColor: UIColor.systemRed]))
+            }
+            string.append(NSAttributedString(string: entry.message + "\n", attributes: [.foregroundColor: UIColor.label]))
+            string.addAttributes([.font: UIFont(name: "Menlo", size: 12) as Any], range: NSRange(location: 0, length: string.length))
+            textView.attributedText = string
         }
     }
 
     @objc func clearLog() {
-        LogManager.logger.store.clear()
         entries = []
         textView.attributedText = NSMutableAttributedString()
+        Task {
+            await LogManager.logger.store.clear()
+        }
     }
 }

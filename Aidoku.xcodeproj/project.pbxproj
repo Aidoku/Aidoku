@@ -148,6 +148,10 @@
 		FB252DA62E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
 		FB252DA72E8B00E60052BA68 /* ChapterTitleDisplayMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */; };
 		FB261ED32ECA63DB00743F56 /* KeyboardOffsetDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB261ED22ECA63DA00743F56 /* KeyboardOffsetDetector.swift */; };
+		FB261ED52ECB8B8400743F56 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB261ED42ECB8B8200743F56 /* LogEntry.swift */; };
+		FB261ED62ECB8B8400743F56 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB261ED42ECB8B8200743F56 /* LogEntry.swift */; };
+		FB261ED82ECB90C900743F56 /* LogType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB261ED72ECB90C700743F56 /* LogType.swift */; };
+		FB261ED92ECB90C900743F56 /* LogType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB261ED72ECB90C700743F56 /* LogType.swift */; };
 		FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB28CF4728090A2200BC7663 /* WasmDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB28CF4528090A2200BC7663 /* WasmDefaults.swift */; };
 		FB2BE5E129522EE700FAD8A7 /* ReaderChapterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */; };
@@ -641,6 +645,8 @@
 		FB248CCB2EA58CEB00BECD2E /* KavitaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaModels.swift; sourceTree = "<group>"; };
 		FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTitleDisplayMode.swift; sourceTree = "<group>"; };
 		FB261ED22ECA63DA00743F56 /* KeyboardOffsetDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardOffsetDetector.swift; sourceTree = "<group>"; };
+		FB261ED42ECB8B8200743F56 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		FB261ED72ECB90C700743F56 /* LogType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogType.swift; sourceTree = "<group>"; };
 		FB28CF4528090A2200BC7663 /* WasmDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmDefaults.swift; sourceTree = "<group>"; };
 		FB2BE5E029522EE700FAD8A7 /* ReaderChapterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderChapterListView.swift; sourceTree = "<group>"; };
 		FB2BE5E72953851100FAD8A7 /* ZoomableCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableCollectionView.swift; sourceTree = "<group>"; };
@@ -1755,6 +1761,8 @@
 				FB716DE9283D5F3E00F1BB5D /* LogManager.swift */,
 				FB716DFB283DA2D400F1BB5D /* Logger.swift */,
 				FB716DFE283DA2D900F1BB5D /* LogStore.swift */,
+				FB261ED72ECB90C700743F56 /* LogType.swift */,
+				FB261ED42ECB8B8200743F56 /* LogEntry.swift */,
 			);
 			path = Logging;
 			sourceTree = "<group>";
@@ -2607,6 +2615,7 @@
 				FB662EC62DA813E300007514 /* SourceListingViewController.swift in Sources */,
 				FB662EC72DA813E300007514 /* PlatformNavigationStack.swift in Sources */,
 				FBE7A58B2DE11A5500CA5B60 /* CustomSearchable.swift in Sources */,
+				FB261ED92ECB90C900743F56 /* LogType.swift in Sources */,
 				FB662EC82DA813E300007514 /* MangaCoverView.swift in Sources */,
 				FB662EC92DA813E300007514 /* FilterLabelView.swift in Sources */,
 				FB662ECA2DA813E300007514 /* ListingsHeaderView.swift in Sources */,
@@ -2633,6 +2642,7 @@
 				FBF8C5842DCD01E30066F53D /* BlockingTask.swift in Sources */,
 				FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */,
 				FB662ED92DA813E300007514 /* MangaDetailsHeaderView.swift in Sources */,
+				FB261ED52ECB8B8400743F56 /* LogEntry.swift in Sources */,
 				FB662EDB2DA813E300007514 /* MultiSelectFilterView.swift in Sources */,
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
 				FB6340B3278F898E0072A2A2 /* Filter.swift in Sources */,
@@ -2756,6 +2766,7 @@
 				FB4B0AE4285CCC8E0066A13B /* URL.swift in Sources */,
 				FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
 				FB248CC52EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
+				FB261ED82ECB90C900743F56 /* LogType.swift in Sources */,
 				FB0518312E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB14B12F2DF4D2E90067E4D4 /* AniListQueries.swift in Sources */,
 				FB0CAA6628A9B5540024561A /* MangaManager.swift in Sources */,
@@ -2825,6 +2836,7 @@
 				04B48CFE2CD6B3B000F719D0 /* ShikimoriQueries.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
+				FB261ED62ECB8B8400743F56 /* LogEntry.swift in Sources */,
 				FB14B12A2DF4D20F0067E4D4 /* AidokuRunner.swift in Sources */,
 				FB63D5012E38124E004FF4DC /* EditedKeys.swift in Sources */,
 				FBA748A12E81C0D200D9BE86 /* BangumiTracker.swift in Sources */,

@@ -7,29 +7,24 @@
 
 import Foundation
 
-struct LogEntry {
-    let date: Date
-    let type: LogType
-    let message: String
-
-    func formatted() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd HH:mm:ss.SSS"
-        return "[\(dateFormatter.string(from: date))] \(type != .default ? "[\(type.toString())] " : "")\(message)"
-    }
-}
-
-class LogStore {
-
+actor LogStore {
     var entries: [LogEntry] = []
-
-    var observers: [UUID: (LogEntry) -> Void] = [:]
+    private var continuations: [UUID: AsyncStream<LogEntry>.Continuation] = [:]
+    private var streamUrl: URL?
 
     func addEntry(level: LogType, message: String) {
         let entry = LogEntry(date: Date(), type: level, message: message)
         entries.append(entry)
-        for observer in observers {
-            observer.value(entry)
+        if let streamUrl {
+            Task {
+                var request = URLRequest(url: streamUrl)
+                request.httpBody = entry.formatted().data(using: .utf8)
+                request.httpMethod = "POST"
+                _ = try? await URLSession.shared.data(for: request)
+            }
+        }
+        for continuation in continuations.values {
+            continuation.yield(entry)
         }
     }
 
@@ -48,14 +43,24 @@ class LogStore {
         }
     }
 
-    @discardableResult
-    func addObserver(_ block: @escaping (LogEntry) -> Void) -> UUID {
-        let id = UUID()
-        observers[id] = block
-        return id
+    func logStream() -> AsyncStream<LogEntry> {
+        AsyncStream { continuation in
+            let id = UUID()
+            continuations[id] = continuation
+            continuation.onTermination = { [weak self] _ in
+                guard let self else { return }
+                Task {
+                    await self.removeContinuation(id: id)
+                }
+            }
+        }
     }
 
-    func removeObserver(id: UUID) {
-        observers.removeValue(forKey: id)
+    func setStreamUrl(_ url: URL?) {
+        streamUrl = url
+    }
+
+    private func removeContinuation(id: UUID) {
+        continuations.removeValue(forKey: id)
     }
 }

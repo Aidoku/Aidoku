@@ -150,13 +150,18 @@ extension SettingsView {
                 }
 
             case "Logs.logServer":
-                LogManager.logger.streamUrl = UserDefaults.standard.string(forKey: "Logs.logServer").flatMap(URL.init)
+                Task {
+                    let url = UserDefaults.standard.string(forKey: "Logs.logServer").flatMap(URL.init)
+                    await LogManager.logger.store.setStreamUrl(url)
+                }
             case "Logs.export":
-                let url = LogManager.export()
-                let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-                guard let sourceView = path.rootViewController?.view else { return }
-                vc.popoverPresentationController?.sourceView = sourceView
-                path.present(vc)
+                Task {
+                    let url = await LogManager.export()
+                    let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+                    guard let sourceView = path.rootViewController?.view else { return }
+                    vc.popoverPresentationController?.sourceView = sourceView
+                    path.present(vc)
+                }
             case "Logs.display":
                 path.push(LogViewController())
 

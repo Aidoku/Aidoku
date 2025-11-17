@@ -7,67 +7,15 @@
 
 import Foundation
 
-enum LogType {
-    case `default`
-    case info
-    case debug
-    case warning
-    case error
-
-    func toString() -> String {
-        switch self {
-            case .default:
-                return ""
-            case .info:
-                return "INFO"
-            case .debug:
-                return "DEBUG"
-            case .warning:
-                return "WARN"
-            case .error:
-                return "ERROR"
-        }
-    }
-}
-
-class Logger {
-
+final class Logger: Sendable {
     let store: LogStore
+    let printLogs: Bool
 
-    var printLogs = true
-
-    private var streamObserverId: UUID?
-    var streamUrl: URL? {
-        didSet {
-            updateStreamUrl()
-        }
-    }
-
-    deinit {
-        if let streamObserverId = streamObserverId {
-            store.removeObserver(id: streamObserverId)
-        }
-    }
-
-    init(store: LogStore = LogStore(), streamUrl: URL? = nil) {
+    init(store: LogStore = LogStore(), printLogs: Bool = true, streamUrl: URL? = nil) {
         self.store = store
-        self.streamUrl = streamUrl
-        updateStreamUrl()
-    }
-
-    private func updateStreamUrl() {
-        if let oldId = streamObserverId { store.removeObserver(id: oldId) }
-        if let newUrl = streamUrl {
-            streamObserverId = store.addObserver { entry in
-                Task {
-                    var request = URLRequest(url: newUrl)
-                    request.httpBody = entry.formatted().data(using: .utf8)
-                    request.httpMethod = "POST"
-                    _ = try? await URLSession.shared.data(for: request)
-                }
-            }
-        } else {
-            streamObserverId = nil
+        self.printLogs = printLogs
+        Task {
+            await store.setStreamUrl(streamUrl)
         }
     }
 
@@ -76,7 +24,9 @@ class Logger {
             let prefix = level != .default ? "[\(level.toString())] " : ""
             print("\(prefix)\(message)")
         }
-        store.addEntry(level: level, message: message)
+        Task {
+            await store.addEntry(level: level, message: message)
+        }
     }
 
     func debug(_ message: String) {
