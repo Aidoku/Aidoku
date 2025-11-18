@@ -282,77 +282,12 @@ class TrackerManager {
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter]? = nil
     ) async {
-        guard
-            let state = try? await tracker.getState(trackId: trackId),
-            case let trackerLastReadChapter = state.lastReadChapter,
-            case let trackerLastReadVolume = state.lastReadVolume,
-            (trackerLastReadChapter ?? 0) > 0 || (trackerLastReadVolume ?? 0) > 0
-        else {
-            return
-        }
-
-        let chapters = if let chapters {
-            chapters
-        } else {
-            await getChapters(manga: manga)
-        }
-        guard !chapters.isEmpty else { return }
-
-        let currentHighestRead = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getHighestReadNumber(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
-                context: context
-            ) ?? 0
-        }
-
-        // Check for display mode
-        let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
-        let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
-
-        var chaptersToMark: [AidokuRunner.Chapter] = []
-
-        // Determine what to sync based on tracker progress and forced mode
-        if displayMode == .chapter {
-            // Forced chapter mode: sync chapter progress
-            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
-                chaptersToMark = chapters.filter { ($0.chapterNumber ?? $0.volumeNumber ?? 0) <= trackerLastReadChapter }
-            }
-        } else if displayMode == .volume {
-            // Forced volume mode: sync volume progress
-            if let trackerLastReadVolume, trackerLastReadVolume > 0 && Float(trackerLastReadVolume) > currentHighestRead {
-                chaptersToMark = chapters.filter { ($0.volumeNumber ?? $0.chapterNumber ?? 0) <= Float(trackerLastReadVolume) }
-            }
-        } else {
-            // Default mode: sync both chapter and volume progress
-            var checkedForChapters = false
-            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
-                // find all chapters with a chapter number less than or equal to the last tracker chapter
-                chaptersToMark = chapters.filter {
-                    // floor the chapter number so partial chapters are marked (e.g. 10.1 and 10.2 will be marked if the tracker is at 10)
-                    if let chapter = $0.chapterNumber, floor(chapter) <= trackerLastReadChapter {
-                        true
-                    } else {
-                        false
-                    }
-                }
-                checkedForChapters = true
-            }
-            // otherwise, if we didn't find any chapters, try using the volume number instead
-            // note: ignores the case where we skipped checking chapters due to currentHighestRead <= trackerLastReadChapter (#753)
-            let foundNoChapters = checkedForChapters && chaptersToMark.isEmpty
-            if let trackerLastReadVolume, trackerLastReadVolume > 0 && (foundNoChapters || trackerLastReadChapter == nil) {
-                // find all chapters with a volume number less than or equal to the last tracker volume
-                chaptersToMark = chapters.filter {
-                    if let volume = $0.volumeNumber, volume <= Float(trackerLastReadVolume) {
-                        true
-                    } else {
-                        false
-                    }
-                }
-            }
-        }
-
+        let chaptersToMark = await getChaptersToSyncProgressFromTracker(
+            tracker: tracker,
+            trackId: trackId,
+            manga: manga,
+            chapters: chapters
+        )
         if !chaptersToMark.isEmpty {
             await HistoryManager.shared.addHistory(
                 sourceId: manga.sourceKey,
@@ -540,5 +475,90 @@ extension TrackerManager {
                 needsChapters: true
             ).chapters) ?? []
         }
+    }
+
+    func getChaptersToSyncProgressFromTracker(
+        tracker: Tracker,
+        trackId: String,
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter]? = nil,
+        currentHighestRead: Float? = nil
+    ) async -> [AidokuRunner.Chapter] {
+        guard
+            let state = try? await tracker.getState(trackId: trackId),
+            case let trackerLastReadChapter = state.lastReadChapter,
+            case let trackerLastReadVolume = state.lastReadVolume,
+            (trackerLastReadChapter ?? 0) > 0 || (trackerLastReadVolume ?? 0) > 0
+        else {
+            return []
+        }
+
+        let chapters = if let chapters {
+            chapters
+        } else {
+            await getChapters(manga: manga)
+        }
+        guard !chapters.isEmpty else { return [] }
+
+        let currentHighestRead = if let currentHighestRead {
+            currentHighestRead
+        } else {
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getHighestReadNumber(
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    context: context
+                ) ?? 0
+            }
+        }
+
+        // Check for display mode
+        let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
+        let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+
+        var chaptersToMark: [AidokuRunner.Chapter] = []
+
+        // Determine what to sync based on tracker progress and forced mode
+        if displayMode == .chapter {
+            // Forced chapter mode: sync chapter progress
+            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
+                chaptersToMark = chapters.filter { ($0.chapterNumber ?? $0.volumeNumber ?? 0) <= trackerLastReadChapter }
+            }
+        } else if displayMode == .volume {
+            // Forced volume mode: sync volume progress
+            if let trackerLastReadVolume, trackerLastReadVolume > 0 && Float(trackerLastReadVolume) > currentHighestRead {
+                chaptersToMark = chapters.filter { ($0.volumeNumber ?? $0.chapterNumber ?? 0) <= Float(trackerLastReadVolume) }
+            }
+        } else {
+            // Default mode: sync both chapter and volume progress
+            var checkedForChapters = false
+            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
+                // find all chapters with a chapter number less than or equal to the last tracker chapter
+                chaptersToMark = chapters.filter {
+                    // floor the chapter number so partial chapters are marked (e.g. 10.1 and 10.2 will be marked if the tracker is at 10)
+                    if let chapter = $0.chapterNumber, floor(chapter) <= trackerLastReadChapter {
+                        true
+                    } else {
+                        false
+                    }
+                }
+                checkedForChapters = true
+            }
+            // otherwise, if we didn't find any chapters, try using the volume number instead
+            // note: ignores the case where we skipped checking chapters due to currentHighestRead <= trackerLastReadChapter (#753)
+            let foundNoChapters = checkedForChapters && chaptersToMark.isEmpty
+            if let trackerLastReadVolume, trackerLastReadVolume > 0 && (foundNoChapters || trackerLastReadChapter == nil) {
+                // find all chapters with a volume number less than or equal to the last tracker volume
+                chaptersToMark = chapters.filter {
+                    if let volume = $0.volumeNumber, volume <= Float(trackerLastReadVolume) {
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+        }
+
+        return chaptersToMark
     }
 }
