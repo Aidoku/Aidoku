@@ -350,6 +350,8 @@ class TrackerManager {
             var completed: [String] = []
             var progressed: [String: Int] = [:]
 
+            var lastRead = Date.distantPast
+
             for (chapterKey, progress) in result {
                 let existingHistory = CoreDataManager.shared.getHistory(
                     sourceId: manga.sourceKey,
@@ -365,6 +367,8 @@ class TrackerManager {
                 if progress.completed {
                     if !(existingHistory?.completed ?? false) {
                         completed.append(chapterKey)
+                        let readDate = progress.date ?? Date.now
+                        lastRead = readDate > lastRead ? readDate : lastRead
                         CoreDataManager.shared.setCompleted(
                             sourceId: manga.sourceKey,
                             mangaId: manga.key,
@@ -375,12 +379,14 @@ class TrackerManager {
                     }
                 } else if progress.page != 0 {
                     progressed[chapterKey] = progress.page
+                    let readDate = progress.date ?? Date.now
+                    lastRead = readDate > lastRead ? readDate : lastRead
                     CoreDataManager.shared.setProgress(
                         progress.page,
                         sourceId: manga.sourceKey,
                         mangaId: manga.key,
                         chapterId: chapterKey,
-                        dateRead: progress.date,
+                        dateRead: readDate,
                         completed: false,
                         context: context
                     )
@@ -392,6 +398,7 @@ class TrackerManager {
                 CoreDataManager.shared.setRead(
                     sourceId: manga.sourceKey,
                     mangaId: manga.key,
+                    date: lastRead,
                     context: context
                 )
             }
