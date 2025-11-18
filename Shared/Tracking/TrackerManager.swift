@@ -41,7 +41,7 @@ class TrackerManager {
     }
 
     /// Send chapter read update to logged in trackers.
-    func setCompleted(chapter: Chapter) async {
+    func setCompleted(chapter: Chapter, skipTracker: Tracker? = nil) async {
         let chapterNum = chapter.chapterNum
         let volumeNum = chapter.volumeNum.flatMap { Int(floor($0)) }
         guard chapterNum != nil || volumeNum != nil else { return }
@@ -60,6 +60,7 @@ class TrackerManager {
 
         for item in trackItems {
             guard
+                skipTracker?.id != item.trackerId,
                 let tracker = getTracker(id: item.trackerId),
                 !(tracker is PageTracker),
                 let state = try? await tracker.getState(trackId: item.id)
@@ -293,7 +294,7 @@ class TrackerManager {
                 sourceId: manga.sourceKey,
                 mangaId: manga.key,
                 chapters: chaptersToMark,
-                skipTrackerUpdate: true
+                skipTracker: tracker
             )
         }
     }

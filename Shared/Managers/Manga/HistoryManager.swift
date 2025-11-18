@@ -47,10 +47,10 @@ extension HistoryManager {
         mangaId: String,
         chapters: [AidokuRunner.Chapter],
         date: Date = Date(),
-        skipTrackerUpdate: Bool = false
+        skipTracker: Tracker? = nil
     ) async {
         // mark each manga as read
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        let success = await CoreDataManager.shared.container.performBackgroundTask { context in
             // mark chapters as read
             let success = CoreDataManager.shared.setCompleted(
                 sourceId: sourceId,
@@ -72,15 +72,18 @@ extension HistoryManager {
                     LogManager.logger.error("HistoryManager.addHistory: \(error.localizedDescription)")
                 }
             }
+            return success
         }
-        if !skipTrackerUpdate && UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
+        guard success else { return }
+        if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
             // update tracker with chapter with largest number
             if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
                 await TrackerManager.shared.setCompleted(
                     chapter: maxChapter.toOld(
                         sourceId: sourceId,
                         mangaId: mangaId
-                    )
+                    ),
+                    skipTracker: skipTracker
                 )
             }
             await TrackerManager.shared.setProgress(
