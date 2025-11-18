@@ -291,7 +291,7 @@ extension LocalFileManager {
 
         let comicInfo = ComicInfo.load(from: archive)
 
-        let resolvedMangaId = (mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent).percentEncoded()
+        let resolvedMangaId = (mangaId ?? mangaName ?? url.deletingPathExtension().lastPathComponent).normalized
         let mangaTitle = mangaName ?? comicInfo?.series ?? resolvedMangaId
 
         // create new folder for the manga
@@ -510,10 +510,9 @@ extension LocalFileManager {
     }
 
     // remove all local source files and db objects
-    func removeAllLocalFiles() {
+    func removeAllLocalFiles() async {
         // disable file listener while we make changes to the disk
         self.suppressFileEvents = true
-        defer { self.suppressFileEvents = false }
 
         let fileManager = FileManager.default
         let documentsDir = fileManager.documentDirectory
@@ -523,6 +522,10 @@ extension LocalFileManager {
         } catch {
             LogManager.logger.error("Failed to remove Local folder: \(error)")
         }
+
+        // update database
+        self.suppressFileEvents = false
+        await scanLocalFiles()
     }
 }
 
@@ -565,7 +568,7 @@ extension LocalFileManager {
 
             // for each manga folder, ensure chapters in db match local files
             for folder in mangaFolders {
-                let mangaId = folder.lastPathComponent
+                let mangaId = folder.lastPathComponent.normalized
 
                 // find cbz files in this folder
                 let cbzFiles = folder.contents

@@ -181,39 +181,43 @@ extension LocalFileDataManager {
             mangaId,
             LocalSourceRunner.sourceKey
         )
-        request.fetchLimit = 1
-        guard let mangaObject = (try? self.context.fetch(request))?.first else {
+        // fetch all mangaobjects with this id, due to possible duplication bug
+        guard let mangaObjects = try? self.context.fetch(request) else {
             return nil // nothing to remove
         }
 
-        guard mangaObject.libraryObject == nil else {
-            // if the manga is in the library, we can't remove it from db (?)
-            // todo: we should probably still remove it, just have a warning
-            return nil
-        }
+        var mangaPath: String?
 
-        // remove associated chapter objects
-        if let chapters = mangaObject.chapters as? Set<ChapterObject> {
-            for chapter in chapters {
-                // remove associated fileInfo
-                if let fileInfo = chapter.fileInfo {
-                    context.delete(fileInfo)
-                }
-                context.delete(chapter)
+        for mangaObject in mangaObjects {
+            guard mangaObject.libraryObject == nil else {
+                // if the manga is in the library, we can't remove it from db (?)
+                // todo: we should probably still remove it, just have a warning
+                continue
             }
+
+            // remove associated chapter objects
+            if let chapters = mangaObject.chapters as? Set<ChapterObject> {
+                for chapter in chapters {
+                    // remove associated fileInfo
+                    if let fileInfo = chapter.fileInfo {
+                        context.delete(fileInfo)
+                    }
+                    context.delete(chapter)
+                }
+            }
+
+            mangaPath = mangaObject.fileInfo?.path
+
+            // remove file info
+            if let fileInfo = mangaObject.fileInfo {
+                context.delete(fileInfo)
+            }
+
+            // remove manga object
+            context.delete(mangaObject)
+
+            try? context.save()
         }
-
-        let mangaPath = mangaObject.fileInfo?.path
-
-        // remove file info
-        if let fileInfo = mangaObject.fileInfo {
-            context.delete(fileInfo)
-        }
-
-        // remove manga object
-        context.delete(mangaObject)
-
-        try? context.save()
 
         return mangaPath
     }
@@ -390,7 +394,7 @@ extension LocalFileDataManager {
 extension LocalFileDataManager {
     // finds manga in db but not on disk and manga on disk but not in db, and fix broken manga covers
     func findMangaDiskChanges(mangaFolders: [URL]) -> (toRemove: Set<String>, toAdd: Set<String>) {
-        let folderMangaIds = Set(mangaFolders.map { $0.lastPathComponent })
+        let folderMangaIds = Set(mangaFolders.map { $0.lastPathComponent.normalized })
 
         // fetch all local manga objects from db
         let coreDataManga: [MangaObject] = {

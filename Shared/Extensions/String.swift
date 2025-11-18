@@ -43,8 +43,9 @@ extension String {
 
 extension String {
     func lastPathComponent() -> String {
-        if let idx = lastIndex(of: "/") {
-            String(self[index(idx, offsetBy: 1)...])
+        let s = self.last == "/" ? String(self.dropLast()) : self
+        return if let idx = s.lastIndex(of: "/") {
+            String(s[index(idx, offsetBy: 1)...])
         } else {
             self
         }
@@ -68,7 +69,11 @@ extension String {
 }
 
 extension String {
+    var normalized: String {
+        precomposedStringWithCanonicalMapping
+    }
+
     func percentEncoded() -> String {
-        addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? self
+        normalized.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? self
     }
 }
