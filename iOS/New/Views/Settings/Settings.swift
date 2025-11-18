@@ -567,21 +567,34 @@ extension Settings {
 }
 
 extension Settings {
-    static let downloadSettings: [Setting] = [
-        .init(
-            key: "Library.downloadOnlyOnWifi",
-            title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
-            value: .toggle(.init())
-        ),
-        .init(
-            key: "Library.deleteDownloadAfterReading",
-            title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
-            value: .toggle(.init())
-        ),
-        .init(
-            key: "Downloads.compress",
-            title: NSLocalizedString("COMPRESS_DOWNLOADS"),
-            value: .toggle(.init())
-        )
-    ]
+    static let downloadSettings: [Setting] = {
+        let baseItems: [Setting] = [
+            .init(
+                key: "Library.downloadOnlyOnWifi",
+                title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Library.deleteDownloadAfterReading",
+                title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Downloads.compress",
+                title: NSLocalizedString("COMPRESS_DOWNLOADS"),
+                value: .toggle(.init())
+            )
+        ]
+        if #available(iOS 26.0, *) {
+            return baseItems + [
+                .init(
+                    key: "Downloads.background",
+                    title: NSLocalizedString("BACKGROUND_DOWNLOADING"),
+                    value: .toggle(.init())
+                )
+            ]
+        } else {
+            return baseItems
+        }
+    }()
 }

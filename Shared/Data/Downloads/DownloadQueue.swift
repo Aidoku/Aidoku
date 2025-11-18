@@ -44,7 +44,7 @@ actor DownloadQueue {
         guard !queue.isEmpty else { return }
 
 #if !os(macOS) && !targetEnvironment(simulator)
-        if bgTask == nil, #available(iOS 26.0, *) {
+        if bgTask == nil, #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Downloads.background") {
             await register()
 
             let request = BGContinuedProcessingTaskRequest(
@@ -78,7 +78,7 @@ actor DownloadQueue {
     func resume() async {
         paused = false
 
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Downloads.background") {
             if bgTask == nil {
                 await start()
             }
