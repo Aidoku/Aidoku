@@ -399,14 +399,24 @@ extension LibraryViewModel {
     }
 
     func fetchDownloadCounts(for identifier: MangaIdentifier? = nil) async {
+        var downloadCounts: [MangaIdentifier: Int] = [:]
+        if let identifier {
+            downloadCounts[identifier] = await DownloadManager.shared.downloadsCount(for: identifier)
+        } else {
+            let currentManga = self.manga + self.pinnedManga
+            for manga in currentManga {
+                let identifier = manga.identifier
+                downloadCounts[identifier] = await DownloadManager.shared.downloadsCount(for: identifier)
+            }
+        }
         for (i, manga) in self.pinnedManga.enumerated() {
-            if identifier == nil || manga.identifier == identifier {
-                self.pinnedManga[i].downloads = await DownloadManager.shared.downloadsCount(for: manga.identifier)
+            if let count = downloadCounts[manga.identifier] {
+                self.pinnedManga[i].downloads = count
             }
         }
         for (i, manga) in self.manga.enumerated() {
-            if identifier == nil || manga.identifier == identifier {
-                self.manga[i].downloads = await DownloadManager.shared.downloadsCount(for: manga.identifier)
+            if let count = downloadCounts[manga.identifier] {
+                self.manga[i].downloads = count
             }
         }
     }
