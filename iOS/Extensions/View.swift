@@ -141,6 +141,16 @@ extension View {
 
     }
 
+    func menuActionDismissDisabled() -> some View {
+        if #available(iOS 16.4, *) {
+            return self.menuActionDismissBehavior(.disabled)
+        } else {
+            return self
+        }
+    }
+}
+
+extension View {
     @ViewBuilder
     func tag<T: Hashable>(_ tag: T, selectable: Bool) -> some View {
         if #available(iOS 17.0, macOS 14.0, *) {

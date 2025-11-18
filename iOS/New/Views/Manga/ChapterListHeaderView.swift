@@ -134,6 +134,7 @@ struct ChapterListHeaderView: View {
                             }
                         }
                     }
+                    .menuActionDismissDisabled()
                 }
                 if languages.count > 1 {
                     Menu(NSLocalizedString("LANGUAGE")) {

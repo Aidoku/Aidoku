@@ -181,7 +181,11 @@ extension LibraryViewModel {
                             excludeDownloads = filter.exclude
                             continue
                         case .tracking:
-                            condition = TrackerManager.shared.isTracking(sourceId: info.sourceId, mangaId: info.mangaId)
+                            condition = CoreDataManager.shared.hasTrack(
+                                sourceId: info.sourceId,
+                                mangaId: info.mangaId,
+                                context: context
+                            )
                     }
                     let shouldSkip = filter.exclude ? condition : !condition
                     if shouldSkip {

@@ -266,7 +266,8 @@ class TrackerManager {
         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
     }
 
-    /// Checks if a manga is being tracked.
+    /// Checks if a manga is being tracked
+    @MainActor
     func isTracking(sourceId: String, mangaId: String) -> Bool {
         CoreDataManager.shared.hasTrack(sourceId: sourceId, mangaId: mangaId)
     }

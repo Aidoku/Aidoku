@@ -921,7 +921,14 @@ extension LibraryViewController {
         if TrackerManager.shared.hasAvailableTrackers {
             trackingFilter = [UIAction(
                 title: NSLocalizedString("IS_TRACKING", comment: ""),
-                image: filterImage(for: .tracking)
+                image: filterImage(for: .tracking),
+                attributes: {
+                    if #available(iOS 16.0, *) {
+                        .keepsMenuPresented
+                    } else {
+                        []
+                    }
+                }()
             ) { _ in
                 self.toggleFilter(method: .tracking)
             }]
@@ -931,7 +938,14 @@ extension LibraryViewController {
         let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
             UIAction(
                 title: NSLocalizedString("DOWNLOADED", comment: ""),
-                image: filterImage(for: .downloaded)
+                image: filterImage(for: .downloaded),
+                attributes: {
+                    if #available(iOS 16.0, *) {
+                        .keepsMenuPresented
+                    } else {
+                        []
+                    }
+                }()
             ) { _ in
                 self.toggleFilter(method: .downloaded)
             }

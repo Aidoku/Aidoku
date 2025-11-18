@@ -75,6 +75,7 @@ struct MultiSelectFilterView: View {
                         }
                     }
                 }
+                .menuActionDismissDisabled()
             } label: {
                 label
             }
