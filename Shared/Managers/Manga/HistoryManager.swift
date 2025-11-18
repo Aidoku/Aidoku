@@ -46,7 +46,8 @@ extension HistoryManager {
         sourceId: String,
         mangaId: String,
         chapters: [AidokuRunner.Chapter],
-        date: Date = Date()
+        date: Date = Date(),
+        skipTrackerUpdate: Bool = false
     ) async {
         // mark each manga as read
         await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -62,6 +63,7 @@ extension HistoryManager {
                 CoreDataManager.shared.setRead(
                     sourceId: sourceId,
                     mangaId: mangaId,
+                    date: date,
                     context: context
                 )
                 do {
@@ -71,7 +73,7 @@ extension HistoryManager {
                 }
             }
         }
-        if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
+        if !skipTrackerUpdate && UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
             // update tracker with chapter with largest number
             if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
                 await TrackerManager.shared.setCompleted(

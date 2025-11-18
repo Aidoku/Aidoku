@@ -292,7 +292,8 @@ class TrackerManager {
             await HistoryManager.shared.addHistory(
                 sourceId: manga.sourceKey,
                 mangaId: manga.key,
-                chapters: chaptersToMark
+                chapters: chaptersToMark,
+                skipTrackerUpdate: true
             )
         }
     }
