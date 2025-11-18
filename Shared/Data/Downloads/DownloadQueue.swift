@@ -258,6 +258,7 @@ extension DownloadQueue {
                     await DownloadManager.shared.pauseDownloads()
                     await self.setBackgroundTask(nil)
                 }
+                task.setTaskCompleted(success: false)
             }
 
             Task { @Sendable in

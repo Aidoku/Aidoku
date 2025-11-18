@@ -206,6 +206,7 @@ extension MangaManager {
                 Task {
                     await self.libraryRefreshTask?.cancel()
                 }
+                task.setTaskCompleted(success: false)
             }
 
             Task { @Sendable in
@@ -494,8 +495,8 @@ extension MangaManager {
                                     let scanlatorFilter = mangaObject.scanlatorFilter ?? []
                                     for chapter in newChapters
                                     where
-                                    mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
-                                    && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
+                                        mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                        && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                                     {
                                         CoreDataManager.shared.createMangaUpdate(
                                             sourceId: manga.sourceId,
