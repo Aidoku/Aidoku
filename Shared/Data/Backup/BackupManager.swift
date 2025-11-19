@@ -375,13 +375,10 @@ actor BackupManager {
         try await chaptersTask.value
         try await trackTask.value
 
-        NotificationCenter.default.post(name: NSNotification.Name("updateHistory"), object: nil)
-        NotificationCenter.default.post(name: NSNotification.Name("updateTrackers"), object: nil)
-        NotificationCenter.default.post(name: NSNotification.Name("updateCategories"), object: nil)
-
-        await MangaManager.shared.refreshLibrary(forceAll: true)
-
-        NotificationCenter.default.post(name: NSNotification.Name("updateLibrary"), object: nil)
+        NotificationCenter.default.post(name: .updateHistory, object: nil)
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+        NotificationCenter.default.post(name: .updateCategories, object: nil)
+        NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 }
 
