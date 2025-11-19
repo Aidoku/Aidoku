@@ -465,49 +465,52 @@ extension MangaManager {
                             nil
                         }
 
-                        guard let chapters = newManga.chapters else { return returnResult }
-
                         await CoreDataManager.shared.container.performBackgroundTask { context in
-                            guard let libraryObject = CoreDataManager.shared.getLibraryManga(
-                                sourceId: manga.sourceId,
-                                mangaId: manga.id,
-                                context: context
-                            ) else {
+                            guard
+                                let libraryObject = CoreDataManager.shared.getLibraryManga(
+                                    sourceId: manga.sourceId,
+                                    mangaId: manga.id,
+                                    context: context
+                                ),
+                                let mangaObject = libraryObject.manga
+                            else {
                                 return
                             }
 
-                            // update manga object
-                            if let mangaObject = libraryObject.manga {
-                                // update details
-                                if updateMetadata {
-                                    mangaObject.load(from: manga)
-                                }
+                            // update details
+                            if updateMetadata {
+                                mangaObject.load(from: manga)
+                            }
 
-                                // update chapter list
-                                if mangaObject.chapters?.count != chapters.count && !chapters.isEmpty {
-                                    let newChapters = CoreDataManager.shared.setChapters(
-                                        chapters,
+                            // update chapters
+                            guard let chapters = newManga.chapters, !chapters.isEmpty else { return }
+
+                            let oldLockedCount = (mangaObject.chapters?.allObjects as? [ChapterObject])?.filter { $0.locked }.count ?? 0
+                            let newLockedCount = chapters.filter { $0.locked }.count
+
+                            if mangaObject.chapters?.count != chapters.count || oldLockedCount != newLockedCount {
+                                let newChapters = CoreDataManager.shared.setChapters(
+                                    chapters,
+                                    sourceId: manga.sourceId,
+                                    mangaId: manga.id,
+                                    context: context
+                                )
+                                // add manga updates
+                                let scanlatorFilter = mangaObject.scanlatorFilter ?? []
+                                for chapter in newChapters
+                                where
+                                    mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                                    && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
+                                {
+                                    CoreDataManager.shared.createMangaUpdate(
                                         sourceId: manga.sourceId,
                                         mangaId: manga.id,
+                                        chapterObject: chapter,
                                         context: context
                                     )
-                                    // update manga updates
-                                    let scanlatorFilter = mangaObject.scanlatorFilter ?? []
-                                    for chapter in newChapters
-                                    where
-                                        mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
-                                        && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
-                                    {
-                                        CoreDataManager.shared.createMangaUpdate(
-                                            sourceId: manga.sourceId,
-                                            mangaId: manga.id,
-                                            chapterObject: chapter,
-                                            context: context
-                                        )
-                                    }
-                                    libraryObject.lastUpdated = Date()
-                                    try? context.save()
                                 }
+                                libraryObject.lastUpdated = Date.now
+                                try? context.save()
                             }
                         }
 
