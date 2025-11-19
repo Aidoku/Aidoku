@@ -132,6 +132,7 @@ extension SourceManager {
 
         // download and unzip source aix
         guard let temporaryDirectory = FileManager.default.temporaryDirectory else { return nil }
+        var secured = false
         var fileUrl = url
         if fileUrl.scheme != "file" {
             do {
@@ -140,6 +141,13 @@ extension SourceManager {
             } catch {
                 LogManager.logger.error("Failed to download source from \(url)")
                 return nil
+            }
+        } else {
+            secured = url.startAccessingSecurityScopedResource()
+        }
+        defer {
+            if secured {
+                url.stopAccessingSecurityScopedResource()
             }
         }
         do {

@@ -238,11 +238,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
-    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
-        handleUrl(url: url)
-        return true
-    }
-
     func applicationWillTerminate(_ application: UIApplication) {
         guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)

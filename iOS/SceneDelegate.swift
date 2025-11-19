@@ -31,8 +31,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.makeKeyAndVisible()
         }
 
-        if let url = connectionOptions.urlContexts.first?.url,
-           let delegate = UIApplication.shared.delegate as? AppDelegate {
+        if
+            let url = connectionOptions.urlContexts.first?.url,
+            let delegate = UIApplication.shared.delegate as? AppDelegate
+        {
             delegate.handleUrl(url: url)
         }
     }
