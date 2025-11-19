@@ -18,13 +18,31 @@ extension CoreDataManager {
     func clearHistoryExcludingLibrary(context: NSManagedObjectContext? = nil) {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
-        let libraryMangaIds = self.getLibraryManga(context: context).compactMap {
-            $0.manga?.toManga().id
+
+        let pairPredicates = self.getLibraryManga(context: context).compactMap { mangaObj -> NSCompoundPredicate? in
+            guard
+                let mangaId = mangaObj.manga?.id,
+                let sourceId = mangaObj.manga?.sourceId
+            else {
+                return nil
+            }
+            return NSCompoundPredicate(andPredicateWithSubpredicates: [
+                NSPredicate(format: "mangaId == %@", mangaId),
+                NSPredicate(format: "sourceId == %@", sourceId)
+            ])
         }
-        request.predicate = NSPredicate(
-            format: "NOT (mangaId IN %@)",
-            libraryMangaIds
-        )
+
+        let excludePredicate: NSPredicate
+        if pairPredicates.isEmpty {
+            // if nothing in library, don't exclude anything
+            excludePredicate = NSPredicate(value: true)
+        } else {
+            // NOT ((mangaId == a AND sourceId == b) OR (mangaId == c AND sourceId == d) OR ...)
+            let orPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: pairPredicates)
+            excludePredicate = NSCompoundPredicate(notPredicateWithSubpredicate: orPredicate)
+        }
+
+        request.predicate = excludePredicate
         clear(request: request, context: context)
     }
 
