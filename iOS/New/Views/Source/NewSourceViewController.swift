@@ -627,24 +627,26 @@ extension NewSourceViewController {
         }
 
         let safariAction = UIAction(title: NSLocalizedString("OPEN_WEBSITE"), image: UIImage(systemName: "safari")) { [weak self] _ in
-            guard
-                let self,
-                let url = self.source.urls.first,
-                let scheme = url.scheme,
-                scheme.hasPrefix("http")
-            else {
-                let alert = UIAlertController(
-                    title: NSLocalizedString("INVALID_URL"),
-                    message: NSLocalizedString("INVALID_URL_TEXT"),
-                    preferredStyle: .alert
-                )
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .cancel) { _ in })
-                alert.view.tintColor = self?.view.tintColor // uikit bug :)
-                self?.present(alert, animated: true, completion: nil)
-                return
+            guard let self else { return }
+            Task {
+                guard
+                    let url = (try? await self.source.getBaseUrl()) ?? self.source.urls.first,
+                    let scheme = url.scheme,
+                    scheme.hasPrefix("http")
+                else {
+                    let alert = UIAlertController(
+                        title: NSLocalizedString("INVALID_URL"),
+                        message: NSLocalizedString("INVALID_URL_TEXT"),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .cancel) { _ in })
+                    alert.view.tintColor = self.view.tintColor // uikit bug :)
+                    self.present(alert, animated: true, completion: nil)
+                    return
+                }
+                let safariController = SFSafariViewController(url: url)
+                self.present(safariController, animated: true)
             }
-            let safariController = SFSafariViewController(url: url)
-            self.present(safariController, animated: true)
         }
 
         let rightmostButton = if !onlySearch && source.urls.first != nil {
