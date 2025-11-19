@@ -75,6 +75,11 @@ extension CoreDataManager {
         if let object = self.getCategory(title: title, context: context) {
             context.delete(object)
         }
+        // update sort fields
+        let categories = getCategories(sorted: true, context: context)
+        for (index, category) in categories.enumerated() where category.sort != index {
+            category.sort = Int16(index)
+        }
     }
 
     /// Sets a new title for a category object with the given title.
@@ -82,33 +87,44 @@ extension CoreDataManager {
         guard
             !hasCategory(title: newTitle, context: context),
             let object = getCategory(title: title, context: context)
-        else { return false }
+        else {
+            return false
+        }
         object.title = newTitle
         return true
     }
 
     /// Moves a cateogry to a new position.
-    func moveCategory(title: String, position: Int, context: NSManagedObjectContext? = nil) {
-        guard
-            position >= 0,
-            let categoryObject = getCategory(title: title, context: context),
-            categoryObject.sort != position
-        else { return }
-        let currentPos = Int(categoryObject.sort)
-        let categories = getCategories(context: context)
-        guard position < categories.count else { return }
-        if position > currentPos {
-            // move categories above currentPos down a position
-            for i in currentPos + 1...position {
-                categories[i].sort -= 1
-            }
-        } else {
-            // move categories below currentPos up a position
-            for i in position..<currentPos {
-                categories[i].sort += 1
-            }
+    func moveCategory(
+        title: String,
+        toPosition: Int,
+        context: NSManagedObjectContext? = nil
+    ) {
+        let context = context ?? self.context
+
+        guard let categoryObject = getCategory(title: title, context: context) else {
+            return
         }
-        categoryObject.sort = Int16(position)
+
+        let fromPosition = Int(categoryObject.sort)
+        var categories = getCategories(sorted: true, context: context)
+
+        // ensure move is valid
+        guard
+            fromPosition != toPosition,
+            fromPosition >= 0, fromPosition < categories.count,
+            toPosition >= 0, toPosition < categories.count
+        else {
+            return
+        }
+
+        let movedCategory = categories.remove(at: fromPosition)
+        categories.insert(movedCategory, at: toPosition)
+
+        // update sort values to match new order
+        for (index, category) in categories.enumerated() where category.sort != index {
+            category.sort = Int16(index)
+        }
     }
 
     /// Add categories to library manga.
