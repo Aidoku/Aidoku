@@ -1,0 +1,65 @@
+{
+  "name": "Aidoku Source",
+  "identifier": "app.aidoku.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/altstore/apps.json",
+  "subtitle": "Home of Aidoku, free and open source manga reader for iOS and iPadOS",
+  "description": "This is the AltStore Source for Aidoku, free and open source manga reader for iOS and iPadOS.\n\nFor full details on what's included, check the website: https://aidoku.app/",
+  "website": "https://aidoku.app/",
+  "featuredApps": [
+    "app.aidoku.Aidoku"
+  ],
+  "apps": [
+    {
+      "name": "Aidoku",
+      "bundleIdentifier": "app.aidoku.Aidoku",
+      "developerName": "Skitty",
+      "subtitle": "Free and open source manga reader for iOS and iPadOS",
+      "localizedDescription": "A free and open source manga reading application for iOS and iPadOS.",
+      "iconURL": "https://aidoku.app/images/apple-touch-icon.png",
+      "tintColor": "ff375f",
+      "category": "entertainment",
+      "screenshots": [
+        {
+          "imageURL": "https://aidoku.app/images/library.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/source.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/reader.png",
+          "width": 450,
+          "height": 908
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "aps-environment",
+          "com.apple.developer.icloud-container-environment",
+          "com.apple.developer.icloud-container-identifiers",
+          "com.apple.developer.icloud-services",
+          "com.apple.developer.ubiquity-kvstore-identifier"
+        ],
+        "privacy": {
+          "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
+          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library",
+          "NSLocalNetworkUsageDescription": "Aidoku needs permission to connect to local Komga servers"
+        }
+      },
+      "versions": [
+        {
+          "version": "0.7.3",
+          "date": "2025-11-17",
+          "localizedDescription": "\u2022 Background downloading (iOS 26+): feel free to switch off the app while your downloads (and library refresh) complete.\n\u2022 Download compression: downloading should now be significantly faster and result in less storage usage by default, and you can now export downloaded chapters as cbz files.\n\u2022 Automatic backups: Aidoku can now schedule periodic backups in the background just in case something happens and you need to restore old data.\n\u2022 Built\u2022in Kavita source and tracker (just like Komga).\n\u2022 New search tab: redesigned look, now with filter options and search history.\n\u2022 Local files improvements: metadata can now be parsed from ComicInfo.xml files (and downloads from other sources now save this).\n\u2022 Download badges: see how many downloaded chapters you have, next to the unread badge.\n\u2022 Many bug fixes: various iPadOS issues, Komga PDF pages, download crashes, auto tracking logic, etc.",
+          "downloadURL": "https://github.com/Aidoku/Aidoku/releases/download/v0.7.3/Aidoku.ipa",
+          "size": 6197921,
+          "minOSVersion": "15.0"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
