@@ -414,35 +414,33 @@ extension MangaView.ViewModel {
             if inLibrary {
                 let result = await CoreDataManager.shared.updateMangaDetails(manga: newManga.toOld())
                 newManga = result?.toNew(chapters: newManga.chapters) ?? newManga
-            }
 
-            // update chapters in db
-            if inLibrary, let chapters = newManga.chapters {
-                let langFilter = chapterLangFilter
-                let scanlatorFilter = chapterScanlatorFilter
-                let sourceKey = source.key
-                let mangaKey = newManga.key
-                await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-                    let newChapters = CoreDataManager.shared.setChapters(
-                        chapters,
-                        sourceId: sourceKey,
-                        mangaId: mangaKey,
-                        context: context
-                    )
-                    // update manga updates
-                    for chapter in newChapters
-                    where
-                        langFilter != nil ? chapter.lang == langFilter : true
-                        && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
-                    {
-                        CoreDataManager.shared.createMangaUpdate(
+                if let chapters = newManga.chapters {
+                    let sourceKey = source.key
+                    let mangaKey = newManga.key
+                    await CoreDataManager.shared.container.performBackgroundTask { @Sendable [chapterLangFilter, chapterScanlatorFilter] context in
+                        let newChapters = CoreDataManager.shared.setChapters(
+                            chapters,
                             sourceId: sourceKey,
                             mangaId: mangaKey,
-                            chapterObject: chapter,
                             context: context
                         )
+                        // update manga updates
+                        for chapter in newChapters
+                        where
+                            chapterLangFilter != nil ? chapter.lang == chapterLangFilter : true
+                            && !chapterScanlatorFilter.isEmpty ? chapterScanlatorFilter.contains(chapter.scanlator ?? "") : true
+                        {
+                            CoreDataManager.shared.createMangaUpdate(
+                                sourceId: sourceKey,
+                                mangaId: mangaKey,
+                                chapterObject: chapter,
+                                context: context
+                            )
+                        }
+                        try? context.save()
                     }
-                    try? context.save()
+                    await markOpened()
                 }
             }
 
