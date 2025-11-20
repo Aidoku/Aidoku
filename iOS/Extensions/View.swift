@@ -129,6 +129,14 @@ extension View {
         }
     }
 
+    func scrollDismissesKeyboardImmediately() -> some View {
+        if #available(iOS 16.0, *) {
+            return self.scrollDismissesKeyboard(.immediately)
+        } else {
+            return self
+        }
+    }
+
     func contentMarginsPlease(
         _ edges: Edge.Set = .all,
         _ length: CGFloat?,

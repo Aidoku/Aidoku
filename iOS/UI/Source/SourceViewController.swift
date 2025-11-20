@@ -43,6 +43,8 @@ class SourceViewController: MangaCollectionViewController {
             navigationItem.hidesSearchBarWhenScrolling = false
         }
 
+        collectionView.keyboardDismissMode = .onDrag
+
         if source.titleSearchable {
             let searchController = UISearchController(searchResultsController: nil)
             searchController.searchResultsUpdater = self

@@ -62,7 +62,7 @@ struct SourceSearchView: View {
                     .background(Color(NSColor.underPageBackgroundColor))
                     .searchable(text: $searchText)
 #endif
-                    .scrollDismissesKeyboardInteractively()
+                    .scrollDismissesKeyboardImmediately()
                     .onChange(of: searchText) { _ in
                         // queue search update (with delay) when text changes
                         viewModel.loadManga(

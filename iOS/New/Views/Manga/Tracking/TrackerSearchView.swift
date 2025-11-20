@@ -52,7 +52,7 @@ struct TrackerSearchView: View {
                         }
                     }
                     .listStyle(.plain)
-                    .scrollDismissesKeyboardInteractively()
+                    .scrollDismissesKeyboardImmediately()
                 }
             }
             .toolbar {

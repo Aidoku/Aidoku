@@ -54,6 +54,8 @@ class BrowseViewController: BaseTableViewController {
         tableView.sectionFooterHeight = 8
         tableView.separatorStyle = .none
         tableView.backgroundColor = .systemBackground
+        tableView.keyboardDismissMode = .onDrag
+
         refreshControl.addTarget(self, action: #selector(refreshSourceLists(_:)), for: .valueChanged)
         tableView.refreshControl = refreshControl
 
