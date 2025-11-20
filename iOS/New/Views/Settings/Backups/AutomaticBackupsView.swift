@@ -62,8 +62,8 @@ struct AutomaticBackupsView: View {
             .navigationTitle(NSLocalizedString("AUTOMATIC_BACKUPS"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    DoneButton {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
                         dismiss()
                     }
                 }
