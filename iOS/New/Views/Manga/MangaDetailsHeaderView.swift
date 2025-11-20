@@ -146,12 +146,14 @@ struct MangaDetailsHeaderView: View {
                             Button {
                                 // we'll need a better ui in the future for different author selection
                                 guard let author = authors.first else { return }
-                                let view = MangaListView(source: source, title: author) { page in
+
+                                let viewController = MangaListViewController(source: source, title: author)
+                                viewController.getEntries = { page in
                                     try await source.getSearchMangaList(query: nil, page: page, filters: [
                                         .text(id: "author", value: author)
                                     ])
-                                }.environmentObject(path)
-                                path.push(view, title: author)
+                                }
+                                path.push(viewController)
                             } label: {
                                 label
                             }
@@ -363,12 +365,13 @@ struct MangaDetailsHeaderView: View {
                         let label = TagView(text: tag)
                         if let source, let filter = source.matchingGenreFilter(for: tag) {
                             Button {
-                                let view = MangaListView(source: source, title: tag) { page in
+                                let viewController = MangaListViewController(source: source, title: tag)
+                                viewController.getEntries = { page in
                                     try await source.getSearchMangaList(query: nil, page: page, filters: [
                                         filter
                                     ])
-                                }.environmentObject(path)
-                                path.push(view, title: tag)
+                                }
+                                path.push(viewController)
                             } label: {
                                 label
                             }

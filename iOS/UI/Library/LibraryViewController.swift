@@ -10,7 +10,7 @@ import LocalAuthentication
 import SwiftUI
 import AidokuRunner
 
-class LibraryViewController: MangaCollectionViewController {
+class LibraryViewController: OldMangaCollectionViewController {
     let viewModel = LibraryViewModel()
 
     private lazy var downloadBarButton = {

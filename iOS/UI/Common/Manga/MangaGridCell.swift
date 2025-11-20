@@ -10,7 +10,6 @@ import Nuke
 import UIKit
 
 class MangaGridCell: UICollectionViewCell {
-
     var sourceId: String?
     var mangaId: String?
 
