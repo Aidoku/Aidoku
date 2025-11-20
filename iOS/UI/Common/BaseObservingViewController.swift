@@ -6,21 +6,15 @@
 //
 
 import UIKit
+import Combine
 
 class BaseObservingViewController: BaseViewController {
-
-    private var observers: [NSObjectProtocol] = []
-
-    deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
+    var cancellables = Set<AnyCancellable>()
 
     func addObserver(forName name: NSNotification.Name, object: Any? = nil, using block: @escaping (Notification) -> Void) {
-        observers.append(NotificationCenter.default.addObserver(
-            forName: name, object: object, queue: nil, using: block
-        ))
+        NotificationCenter.default.publisher(for: name)
+            .sink(receiveValue: block)
+            .store(in: &cancellables)
     }
 
     func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {

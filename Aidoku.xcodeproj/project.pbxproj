@@ -173,6 +173,9 @@
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
+		FB3DDA082ECE37570081232F /* SourceSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDA072ECE37510081232F /* SourceSearchViewController.swift */; };
+		FB3DDA0A2ECE4D3A0081232F /* SourceSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDA092ECE4D360081232F /* SourceSearchViewModel.swift */; };
+		FB3DDA0C2ECE60A30081232F /* SourceErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDA0B2ECE60A20081232F /* SourceErrorView.swift */; };
 		FB3DDF7A2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
 		FB3DDF7B2E1317AB00A64897 /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF792E1317A800A64897 /* ImageModel.swift */; };
 		FB3DDF7E2E1452A800A64897 /* DocumentPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */; };
@@ -267,7 +270,6 @@
 		FB63D5022E38124E004FF4DC /* EditedKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB63D5002E38124A004FF4DC /* EditedKeys.swift */; };
 		FB662E8B2DA58B1200007514 /* NewSourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662E8A2DA58B0F00007514 /* NewSourceViewController.swift */; };
 		FB662EB92DA813E300007514 /* SelectFilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EA32DA813E300007514 /* SelectFilterView.swift */; };
-		FB662EBA2DA813E300007514 /* SourceSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EB42DA813E300007514 /* SourceSearchView.swift */; };
 		FB662EBB2DA813E300007514 /* HomeLinksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EA92DA813E300007514 /* HomeLinksView.swift */; };
 		FB662EBC2DA813E300007514 /* SourceHomeSkeletonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EAE2DA813E300007514 /* SourceHomeSkeletonView.swift */; };
 		FB662EBD2DA813E300007514 /* FilterBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662E9E2DA813E300007514 /* FilterBadgeView.swift */; };
@@ -665,6 +667,9 @@
 		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A32B14180F005E6264 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A42B14183C005E6264 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB3DDA072ECE37510081232F /* SourceSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSearchViewController.swift; sourceTree = "<group>"; };
+		FB3DDA092ECE4D360081232F /* SourceSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSearchViewModel.swift; sourceTree = "<group>"; };
+		FB3DDA0B2ECE60A20081232F /* SourceErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceErrorView.swift; sourceTree = "<group>"; };
 		FB3DDF792E1317A800A64897 /* ImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageModel.swift; sourceTree = "<group>"; };
 		FB3DDF7D2E1452A500A64897 /* DocumentPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPickerView.swift; sourceTree = "<group>"; };
 		FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterSortOption.swift; sourceTree = "<group>"; };
@@ -772,7 +777,6 @@
 		FB662EAF2DA813E300007514 /* ListingsHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListingsHeaderView.swift; sourceTree = "<group>"; };
 		FB662EB12DA813E300007514 /* SearchFilterHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFilterHeaderView.swift; sourceTree = "<group>"; };
 		FB662EB32DA813E300007514 /* SourceListingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceListingViewController.swift; sourceTree = "<group>"; };
-		FB662EB42DA813E300007514 /* SourceSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSearchView.swift; sourceTree = "<group>"; };
 		FB662EB52DA813E300007514 /* SourceSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSettingsView.swift; sourceTree = "<group>"; };
 		FB662EDF2DA81A5C00007514 /* Carousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Carousel.swift; sourceTree = "<group>"; };
 		FB662EE02DA81A5C00007514 /* ChapterTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTableCell.swift; sourceTree = "<group>"; };
@@ -1612,6 +1616,7 @@
 				FB14B1222DF4CF290067E4D4 /* ImagePicker.swift */,
 				FB662EDF2DA81A5C00007514 /* Carousel.swift */,
 				FB662E922DA813E300007514 /* ErrorView.swift */,
+				FB3DDA0B2ECE60A20081232F /* SourceErrorView.swift */,
 				FB8E48D22DBD8E05002A3621 /* SourceImageView.swift */,
 				FB662E942DA813E300007514 /* MangaCoverView.swift */,
 				FB662E952DA813E300007514 /* MangaGridItem.swift */,
@@ -1682,7 +1687,8 @@
 				FB662EAE2DA813E300007514 /* SourceHomeSkeletonView.swift */,
 				FB662EAF2DA813E300007514 /* ListingsHeaderView.swift */,
 				FB662EB12DA813E300007514 /* SearchFilterHeaderView.swift */,
-				FB662EB42DA813E300007514 /* SourceSearchView.swift */,
+				FB3DDA072ECE37510081232F /* SourceSearchViewController.swift */,
+				FB3DDA092ECE4D360081232F /* SourceSearchViewModel.swift */,
 				FB662EB52DA813E300007514 /* SourceSettingsView.swift */,
 				FB662EB32DA813E300007514 /* SourceListingViewController.swift */,
 				FB662E9B2DA813E300007514 /* MangaListView.swift */,
@@ -2398,6 +2404,7 @@
 				FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */,
 				FB3DDF7A2E1317AB00A64897 /* ImageModel.swift in Sources */,
 				FBF8C5862DCD02030066F53D /* PageInterceptorProcessor.swift in Sources */,
+				FB3DDA082ECE37570081232F /* SourceSearchViewController.swift in Sources */,
 				FB4B0AE3285CCC8E0066A13B /* URL.swift in Sources */,
 				FBE7812F28308DC60038C0E3 /* Download.swift in Sources */,
 				FB0CAA4E28A2B9F40024561A /* CoreDataManager+LibraryManga.swift in Sources */,
@@ -2549,6 +2556,7 @@
 				FB716DFF283DA2D900F1BB5D /* LogStore.swift in Sources */,
 				FBC337FC2EC6CBC2007465BA /* AutomaticBackupsView.swift in Sources */,
 				FB72502827CC06AA0037F1C9 /* SegmentTableViewCell.swift in Sources */,
+				FB3DDA0C2ECE60A30081232F /* SourceErrorView.swift in Sources */,
 				FB2BE5E329527A6E00FAD8A7 /* ReaderInfoPageView.swift in Sources */,
 				723D3AFD2E0DC5C4003ED4CF /* DownloadsView.swift in Sources */,
 				723D3AFE2E0DC5C4003ED4CF /* DownloadedMangaView.swift in Sources */,
@@ -2590,6 +2598,7 @@
 				FB67EE6027F3708400C468EA /* WasmImports.swift in Sources */,
 				FB034EA42EAC27600072EEEB /* MangaIdentifier.swift in Sources */,
 				FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */,
+				FB3DDA0A2ECE4D3A0081232F /* SourceSearchViewModel.swift in Sources */,
 				FB72501F27CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB4B0ADD285C2C570066A13B /* TrackSearchItem.swift in Sources */,
 				FBED232327BB461D0095D0C0 /* SourceObject.swift in Sources */,
@@ -2599,7 +2608,6 @@
 				FB8E48DB2DC00783002A3621 /* SelectHighlightButtonStyle.swift in Sources */,
 				FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */,
 				FB662EB92DA813E300007514 /* SelectFilterView.swift in Sources */,
-				FB662EBA2DA813E300007514 /* SourceSearchView.swift in Sources */,
 				FB662EBB2DA813E300007514 /* HomeLinksView.swift in Sources */,
 				FB662EBC2DA813E300007514 /* SourceHomeSkeletonView.swift in Sources */,
 				FB98ECAF2DE64779002FB089 /* HomeGridView.swift in Sources */,

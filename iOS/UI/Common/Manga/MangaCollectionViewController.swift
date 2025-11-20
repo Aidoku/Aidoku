@@ -8,11 +8,10 @@
 import UIKit
 
 class MangaCollectionViewController: BaseCollectionViewController {
+    static let itemSpacing: CGFloat = 12
+    static let sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
     lazy var dataSource = makeDataSource()
-
-    var itemSpacing: CGFloat = 12
-    var sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
     private var focusedIndexPath: IndexPath? {
         didSet {
@@ -38,10 +37,14 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     override func observe() {
         addObserver(forName: "General.portraitRows") { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
+            Task { @MainActor in
+                self?.collectionView.collectionViewLayout.invalidateLayout()
+            }
         }
         addObserver(forName: "General.landscapeRows") { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
+            Task { @MainActor in
+                self?.collectionView.collectionViewLayout.invalidateLayout()
+            }
         }
     }
 
@@ -61,28 +64,27 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     // MARK: Collection View Layout
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
             switch Section(rawValue: sectionIndex) {
                 case .pinned, .regular:
-                    return self?.makeGridLayoutSection(environment: environment)
+                    return Self.makeGridLayoutSection(environment: environment)
                 case nil:
                     return nil
             }
         }
         let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = itemSpacing + sectionSpacing
+        config.interSectionSpacing = Self.itemSpacing + Self.sectionSpacing
         layout.configuration = config
         return layout
     }
 }
 
 extension MangaCollectionViewController {
-
     // TODO: list layout
 //    func makeListLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
 //    }
 
-    func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+    static func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
         let itemsPerRow = UserDefaults.standard.integer(
             forKey: environment.container.contentSize.width > environment.container.contentSize.height
                 ? "General.landscapeRows"
@@ -115,7 +117,6 @@ extension MangaCollectionViewController {
 
 // MARK: - Collection View Delegate
 extension MangaCollectionViewController {
-
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
             cell.highlight()
@@ -137,7 +138,6 @@ extension MangaCollectionViewController {
 
 // MARK: - Data Source
 extension MangaCollectionViewController {
-
     enum Section: Int, CaseIterable {
         case pinned
         case regular
