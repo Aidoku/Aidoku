@@ -175,6 +175,12 @@ class BrowseViewController: BaseTableViewController {
         let hostingController = UIHostingController(
             rootView: SwiftUINavigationView(rootView: MigrateSourcesView())
         )
+        if #available(iOS 26.0, *) {
+            hostingController.preferredTransition = .zoom { _ in
+                self.navigationItem.rightBarButtonItems?.last
+            }
+        }
+        hostingController.modalPresentationStyle = .pageSheet
         present(hostingController, animated: true)
     }
 
@@ -184,6 +190,12 @@ class BrowseViewController: BaseTableViewController {
                 .ignoresSafeArea() // fixes some weird keyboard clipping stuff
                 .environmentObject(NavigationCoordinator(rootViewController: self))
         )
+        if #available(iOS 26.0, *) {
+            hostingController.preferredTransition = .zoom { _ in
+                self.navigationItem.rightBarButtonItems?.first
+            }
+        }
+        hostingController.modalPresentationStyle = .pageSheet
         present(hostingController, animated: true)
     }
 
@@ -515,6 +527,9 @@ extension BrowseViewController {
                 action: #selector(openAddSourcePage)
             )
             addSourceBarButton.title = NSLocalizedString("ADD_SOURCE")
+            if #available(iOS 26.0, *) {
+                addSourceBarButton.sharesBackground = false
+            }
 
             let migrateSourcesBarButton = UIBarButtonItem(
                 image: UIImage(systemName: "arrow.left.arrow.right"),
@@ -523,6 +538,9 @@ extension BrowseViewController {
                 action: #selector(openMigrateSourcePage)
             )
             migrateSourcesBarButton.title = NSLocalizedString("MIGRATE_SOURCES")
+            if #available(iOS 26.0, *) {
+                migrateSourcesBarButton.sharesBackground = false
+            }
 
             navigationItem.rightBarButtonItems = [
                 addSourceBarButton,

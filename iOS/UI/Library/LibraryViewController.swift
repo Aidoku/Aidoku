@@ -21,6 +21,9 @@ class LibraryViewController: OldMangaCollectionViewController {
             action: #selector(openDownloadQueue)
         )
         item.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        if #available(iOS 26.0, *) {
+            item.sharesBackground = false
+        }
         return item
     }()
 
@@ -54,6 +57,9 @@ class LibraryViewController: OldMangaCollectionViewController {
             action: #selector(openMangaUpdates)
         )
         item.title = NSLocalizedString("MANGA_UPDATES")
+        if #available(iOS 26.0, *) {
+            item.sharesBackground = false
+        }
         return item
     }()
 
@@ -625,16 +631,22 @@ extension LibraryViewController {
         let viewController = UIHostingController(rootView: DownloadQueueView())
         viewController.navigationItem.largeTitleDisplayMode = .never
         viewController.navigationItem.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        if #available(iOS 26.0, *) {
+            viewController.preferredTransition = .zoom { _ in
+                self.downloadBarButton
+            }
+        }
+        viewController.modalPresentationStyle = .pageSheet
         present(viewController, animated: true)
     }
 
     @objc func openMangaUpdates() {
         let path = NavigationCoordinator(rootViewController: self)
-        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView().environmentObject(path))
+        let viewController = UIHostingController(rootView: MangaUpdatesView().environmentObject(path))
         // configure navigation item before displaying to fix animation
-        mangaUpdatesViewController.navigationItem.largeTitleDisplayMode = .never
-        mangaUpdatesViewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES", comment: "")
-        navigationController?.pushViewController(mangaUpdatesViewController, animated: true)
+        viewController.navigationItem.largeTitleDisplayMode = .never
+        viewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES")
+        navigationController?.pushViewController(viewController, animated: true)
     }
 
     @objc func removeSelectedFromLibrary() {
@@ -806,7 +818,7 @@ extension LibraryViewController {
             if navigationItem.rightBarButtonItems?.count ?? 0 == 0 {
                 navigationItem.rightBarButtonItems = [lockBarButton]
             } else {
-                navigationItem.rightBarButtonItems?.append(lockBarButton)
+                navigationItem.rightBarButtonItems?.insert(lockBarButton, at: 1)
             }
         } else if !locked, let index = index {
             navigationItem.rightBarButtonItems?.remove(at: index)
