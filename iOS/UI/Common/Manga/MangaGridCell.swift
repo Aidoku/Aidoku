@@ -158,16 +158,16 @@ class MangaGridCell: UICollectionViewCell {
     }
 
     func configure() {
-        clipsToBounds = true
-        layer.cornerRadius = 5
+        contentView.clipsToBounds = true
+        contentView.layer.cornerRadius = 5
 
-        layer.borderWidth = 1
-        layer.borderColor = UIColor.quaternarySystemFill.cgColor
+        contentView.layer.borderWidth = 1
+        contentView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
 
         imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(imageView)
+        contentView.addSubview(imageView)
 
         gradient.frame = bounds
         gradient.locations = [0.6, 1]
@@ -181,52 +181,52 @@ class MangaGridCell: UICollectionViewCell {
         overlayView.layer.insertSublayer(gradient, at: 0)
         overlayView.layer.cornerRadius = layer.cornerRadius
         overlayView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(overlayView)
+        contentView.addSubview(overlayView)
 
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.font = .systemFont(ofSize: 15, weight: .medium)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(titleLabel)
+        contentView.addSubview(titleLabel)
 
-        addSubview(badgeView)
-        addSubview(badgeView2)
+        contentView.addSubview(badgeView)
+        contentView.addSubview(badgeView2)
 
         bookmarkView.isHidden = true
         bookmarkView.image = UIImage(named: "bookmark")
         bookmarkView.contentMode = .scaleAspectFit
         bookmarkView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(bookmarkView)
+        contentView.addSubview(bookmarkView)
 
         highlightView.alpha = 0
         highlightView.backgroundColor = UIColor(white: 0, alpha: 0.5)
         highlightView.layer.cornerRadius = layer.cornerRadius
         highlightView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(highlightView)
+        contentView.addSubview(highlightView)
 
         shadowOverlayView.alpha = 0
         selectionView.alpha = 0
         checkmarkImageView.isHidden = true
-        addSubview(shadowOverlayView)
-        addSubview(selectionView)
+        contentView.addSubview(shadowOverlayView)
+        contentView.addSubview(selectionView)
         selectionView.addSubview(checkmarkImageView)
     }
 
     func constrain() {
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: topAnchor),
-            imageView.leftAnchor.constraint(equalTo: leftAnchor),
-            imageView.rightAnchor.constraint(equalTo: rightAnchor),
-            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            imageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            overlayView.topAnchor.constraint(equalTo: topAnchor),
-            overlayView.leftAnchor.constraint(equalTo: leftAnchor),
-            overlayView.rightAnchor.constraint(equalTo: rightAnchor),
-            overlayView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            overlayView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            overlayView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            overlayView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            overlayView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
 
             badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10),
             badgeView.heightAnchor.constraint(equalToConstant: 20),
@@ -237,23 +237,23 @@ class MangaGridCell: UICollectionViewCell {
             badgeLabel2.centerXAnchor.constraint(equalTo: badgeView2.centerXAnchor),
             badgeLabel2.centerYAnchor.constraint(equalTo: badgeView2.centerYAnchor),
 
-            bookmarkView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            bookmarkView.topAnchor.constraint(equalTo: topAnchor),
+            bookmarkView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            bookmarkView.topAnchor.constraint(equalTo: contentView.topAnchor),
             bookmarkView.widthAnchor.constraint(equalToConstant: 17),
             bookmarkView.heightAnchor.constraint(equalToConstant: 27),
 
-            highlightView.topAnchor.constraint(equalTo: topAnchor),
-            highlightView.leftAnchor.constraint(equalTo: leftAnchor),
-            highlightView.rightAnchor.constraint(equalTo: rightAnchor),
-            highlightView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            highlightView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            highlightView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            highlightView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            highlightView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            shadowOverlayView.topAnchor.constraint(equalTo: topAnchor),
-            shadowOverlayView.leftAnchor.constraint(equalTo: leftAnchor),
-            shadowOverlayView.rightAnchor.constraint(equalTo: rightAnchor),
-            shadowOverlayView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            shadowOverlayView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            shadowOverlayView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            shadowOverlayView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            shadowOverlayView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            selectionView.rightAnchor.constraint(equalTo: rightAnchor, constant: -10),
-            selectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            selectionView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            selectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             selectionView.widthAnchor.constraint(equalToConstant: selectionView.frame.width),
             selectionView.heightAnchor.constraint(equalToConstant: selectionView.frame.height),
 

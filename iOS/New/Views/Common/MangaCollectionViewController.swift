@@ -188,8 +188,26 @@ extension MangaCollectionViewController {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let manga = dataSource.itemIdentifier(for: indexPath) else { return }
+        guard let manga = dataSource.itemIdentifier(for: indexPath) else {
+            return
+        }
         let viewController = MangaViewController(manga: manga, parent: self)
+        if #available(iOS 18.0, *) {
+            viewController.preferredTransition = .zoom { context in
+                guard
+                    let detailViewController = context.zoomedViewController as? MangaViewController,
+                    let indexPath = self.dataSource.indexPath(for: detailViewController.manga),
+                    let cell = self.collectionView.cellForItem(at: indexPath)
+                else {
+                    return nil
+                }
+                if let cell = cell as? MangaListCell {
+                    return cell.coverImageView
+                } else {
+                    return cell.contentView
+                }
+            }
+        }
         navigationController?.pushViewController(viewController, animated: true)
     }
 

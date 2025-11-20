@@ -151,8 +151,21 @@ extension OldMangaCollectionViewController {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
-        let vc = MangaViewController(manga: info.toManga().toNew(), parent: self)
-        navigationController?.pushViewController(vc, animated: true)
+        let viewController = MangaViewController(manga: info, parent: self)
+        if #available(iOS 18.0, *) {
+            viewController.preferredTransition = .zoom { context in
+                guard
+                    let detailViewController = context.zoomedViewController as? MangaViewController,
+                    let info = detailViewController.mangaInfo,
+                    let indexPath = self.dataSource.indexPath(for: info),
+                    let cell = self.collectionView.cellForItem(at: indexPath)
+                else {
+                    return nil
+                }
+                return cell.contentView
+            }
+        }
+        navigationController?.pushViewController(viewController, animated: true)
     }
 }
 

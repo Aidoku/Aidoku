@@ -15,7 +15,7 @@ class MangaListCell: UICollectionViewCell {
     private var url: String?
     private var imageTask: ImageTask?
 
-    private lazy var coverImageView = {
+    lazy var coverImageView = {
         let imageView = GIFImageView()
         imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.clipsToBounds = true
