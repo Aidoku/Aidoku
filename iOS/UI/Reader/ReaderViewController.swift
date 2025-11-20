@@ -301,7 +301,11 @@ class ReaderViewController: BaseObservingViewController {
 
                 case "_UIContentSwipeDismissGestureRecognizer": // swipe down gesture
                     recognizer.isEnabled = !isWebtoonReader
-                    recognizer.delegate = nil // fixes swipe down activating on swipe edge sometimes..?
+                    if UIDevice.current.userInterfaceIdiom != .pad {
+                        recognizer.delegate = nil // fixes swipe down activating on swipe edge sometimes..?
+                    } else {
+                        recognizer.delegate = self // for ipads, we need to handle it ourselves
+                    }
 
 //                case "_UITransformGestureRecognizer": // pinch gesture
 //                    recognizer.isEnabled = true
@@ -861,6 +865,15 @@ extension ReaderViewController {
                 }
             }
         }
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension ReaderViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return true }
+        let velocity = pan.velocity(in: pan.view)
+        return velocity.y > velocity.x && (abs(velocity.x) < 40 || abs(velocity.y) > abs(velocity.x) * 3)
     }
 }
 
