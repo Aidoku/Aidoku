@@ -48,7 +48,7 @@ class MangaCollectionViewController: BaseCollectionViewController {
             bottom: 10,
             right: 0
         )
-        collectionView.keyboardDismissMode = .interactive
+        collectionView.keyboardDismissMode = .onDrag
 
         // pull to refresh
         refreshControl.addTarget(self, action: #selector(refresh(_:)), for: .valueChanged)
