@@ -70,8 +70,6 @@ class LibraryViewController: OldMangaCollectionViewController {
 
     private lazy var locked = viewModel.isCategoryLocked()
 
-    private lazy var opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
-
     private var ignoreOptionChange = false
     private var lastSearch: String?
 
@@ -364,10 +362,6 @@ class LibraryViewController: OldMangaCollectionViewController {
 
         addObserver(forName: "Library.pinManga", using: updatePinType)
         addObserver(forName: "Library.pinMangaType", using: updatePinType)
-
-        addObserver(forName: "Library.opensReaderView") { [weak self] notification in
-            self?.opensReaderView = notification.object as? Bool ?? false
-        }
 
         // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
@@ -1024,7 +1018,7 @@ extension LibraryViewController {
             return
         }
 
-        if opensReaderView {
+        if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
             Task {
                 // get next chapter to read
                 let history = await CoreDataManager.shared.getReadingHistory(
@@ -1042,7 +1036,7 @@ extension LibraryViewController {
                     let manga = AidokuRunner.Manga(
                         sourceKey: chapter.sourceId,
                         key: chapter.mangaId,
-                        title: "",
+                        title: info.title ?? "",
                         chapters: chapters.map { $0.toNew() }
                     )
                     let readerController = ReaderViewController(
@@ -1051,8 +1045,22 @@ extension LibraryViewController {
                         chapter: chapter.toNew()
                     )
                     let navigationController = ReaderNavigationController(
-                        rootViewController: readerController
+                        readerViewController: readerController,
+                        mangaInfo: info
                     )
+                    if #available(iOS 18.0, *) {
+                        navigationController.preferredTransition = .zoom { context in
+                            guard
+                                let navigationController = context.zoomedViewController as? ReaderNavigationController,
+                                let info = navigationController.mangaInfo,
+                                let indexPath = self.dataSource.indexPath(for: info),
+                                let cell = self.collectionView.cellForItem(at: indexPath)
+                            else {
+                                return nil
+                            }
+                            return cell.contentView
+                        }
+                    }
                     navigationController.modalPresentationStyle = .fullScreen
                     present(navigationController, animated: true)
                 } else {
@@ -1140,7 +1148,7 @@ extension LibraryViewController {
                 ]))
             }
 
-            if self.opensReaderView {
+            if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
                 actions.append(UIAction(
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
                     image: UIImage(systemName: "info.circle"),

@@ -27,7 +27,11 @@ struct MangaView: View {
 
     @State private var loadingAlert: UIAlertController?
 
+    @State private var openChapter: AidokuRunner.Chapter?
+
     private var path: NavigationCoordinator
+
+    @Namespace private var transitionNamespace
 
     init(
         source: AidokuRunner.Source? = nil,
@@ -188,6 +192,24 @@ struct MangaView: View {
                     }
                 }
             }
+            .fullScreenCover(item: $openChapter) { chapter in
+                let readerController = ReaderViewController(
+                    source: viewModel.source,
+                    manga: {
+                        var mangaWithFilteredChapters = viewModel.manga
+                        mangaWithFilteredChapters.chapters = if viewModel.chapterSortAscending {
+                            viewModel.chapters.reversed()
+                        } else {
+                            viewModel.chapters
+                        }
+                        return mangaWithFilteredChapters
+                    }(),
+                    chapter: chapter
+                )
+                SwiftUIReaderNavigationController(readerViewController: readerController)
+                    .ignoresSafeArea()
+                    .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
+            }
             .environment(\.editMode, $editMode)
         }
 
@@ -240,7 +262,7 @@ extension MangaView {
                 },
                 onReadButtonPressed: {
                     if let nextChapter = viewModel.nextChapter {
-                        openReaderView(chapter: nextChapter)
+                        openChapter = nextChapter
                     }
                 }
             )
@@ -289,7 +311,7 @@ extension MangaView {
             isEditing: editMode == .active
         ) {
             if editMode == .inactive {
-                openReaderView(chapter: chapter)
+                openChapter = chapter
             } else {
                 if selectedChapters.contains(chapter.key) {
                     selectedChapters.remove(chapter.key)
@@ -314,6 +336,7 @@ extension MangaView {
         .opacity(opacity)
         .id(chapter.key)
         .tag(chapter.key, selectable: !locked)
+        .matchedTransitionSourcePlease(id: chapter, in: transitionNamespace)
     }
 
     @ViewBuilder
@@ -652,23 +675,6 @@ extension MangaView {
 }
 
 extension MangaView {
-    func openReaderView(chapter: AidokuRunner.Chapter) {
-        var mangaWithFilteredChapters = viewModel.manga
-        mangaWithFilteredChapters.chapters = if viewModel.chapterSortAscending {
-            viewModel.chapters.reversed()
-        } else {
-            viewModel.chapters
-        }
-        let readerController = ReaderViewController(
-            source: viewModel.source,
-            manga: mangaWithFilteredChapters,
-            chapter: chapter
-        )
-        let navigationController = ReaderNavigationController(rootViewController: readerController)
-        navigationController.modalPresentationStyle = .fullScreen
-        path.present(navigationController)
-    }
-
     func showShareSheet(chapter: AidokuRunner.Chapter) {
         if viewModel.downloadStatus[chapter.key] == .finished {
             Task {
