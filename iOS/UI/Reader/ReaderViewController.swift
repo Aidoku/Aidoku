@@ -11,7 +11,6 @@ import SwiftUI
 import AidokuRunner
 
 class ReaderViewController: BaseObservingViewController {
-
     enum Reader {
         case paged
         case scroll
@@ -258,6 +257,8 @@ class ReaderViewController: BaseObservingViewController {
         // there's a bug on ios 15 where the toolbar just disappears when adding a child hosting controller
         navigationController?.isToolbarHidden = false
         navigationController?.toolbar.alpha = 1
+
+        disableSwipeGestures()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -283,6 +284,30 @@ class ReaderViewController: BaseObservingViewController {
                 self.toolbarViewWidthConstraint?.constant = size.width - 32 - 10
             } else {
                 self.toolbarViewWidthConstraint?.constant = size.width
+            }
+        }
+    }
+
+    func disableSwipeGestures() {
+        let isWebtoonReader = reader is ReaderWebtoonViewController
+
+        // the view with the target gesture recognizers changes based on if it was presented from uikit or swiftui
+        let gestureRecognizers = (parent?.view.gestureRecognizers ?? []) + (parent?.view.superview?.superview?.gestureRecognizers ?? [])
+
+        for recognizer in gestureRecognizers {
+            switch String(describing: type(of: recognizer)) {
+                case "_UIParallaxTransitionPanGestureRecognizer": // swipe edge gesture
+                    recognizer.isEnabled = isWebtoonReader
+
+                case "_UIContentSwipeDismissGestureRecognizer": // swipe down gesture
+                    recognizer.isEnabled = !isWebtoonReader
+                    recognizer.delegate = nil // fixes swipe down activating on swipe edge sometimes..?
+
+//                case "_UITransformGestureRecognizer": // pinch gesture
+//                    recognizer.isEnabled = true
+
+                default:
+                    break
             }
         }
     }
@@ -506,6 +531,7 @@ extension ReaderViewController {
             add(child: pageController, below: descriptionButtonController.view)
         }
         reader?.readingMode = readingMode
+        disableSwipeGestures()
     }
 }
 
