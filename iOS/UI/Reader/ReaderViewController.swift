@@ -250,6 +250,11 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
+        if navigationController?.toolbar.alpha == 0 {
+            hideBars()
+        }
+
         // there's a bug on ios 15 where the toolbar just disappears when adding a child hosting controller
         navigationController?.isToolbarHidden = false
         navigationController?.toolbar.alpha = 1
@@ -772,6 +777,7 @@ extension ReaderViewController {
                 }
             }
             self.pageDescriptionButtonBottomConstraint.constant = 0
+            navigationController.navigationBar.isHidden = false
             UIView.setAnimationsEnabled(true)
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 navigationController.navigationBar.alpha = 1
@@ -821,6 +827,7 @@ extension ReaderViewController {
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in
+                navigationController.navigationBar.isHidden = true
                 if #available(iOS 26.0, *) {
                     navigationController.isToolbarHidden = true
                 } else {
