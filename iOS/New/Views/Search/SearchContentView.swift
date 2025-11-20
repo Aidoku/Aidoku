@@ -65,6 +65,7 @@ struct SearchContentView: View {
                     }
                 }
                 .scrollBackgroundHiddenPlease()
+                .scrollDismissesKeyboardImmediately()
                 .listStyle(.grouped)
                 .environment(\.defaultMinListRowHeight, 10)
             }

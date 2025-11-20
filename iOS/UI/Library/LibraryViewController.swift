@@ -114,6 +114,8 @@ class LibraryViewController: OldMangaCollectionViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
 
+        collectionView.keyboardDismissMode = .onDrag
+
         // search controller
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self

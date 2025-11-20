@@ -60,6 +60,7 @@ struct HistoryView: View {
                 .environment(\.defaultMinListHeaderHeight, 1) // for ios 15
                 .listSectionSpacingPlease(10)
                 .scrollBackgroundHiddenPlease()
+                .scrollDismissesKeyboardImmediately()
                 .background(Color(uiColor: .systemBackground))
             }
         }
