@@ -5,8 +5,8 @@
 //  Created by Skitty on 7/25/22.
 //
 
-import Foundation
 import CoreData
+import UIKit
 
 @MainActor
 class LibraryViewModel {
@@ -23,7 +23,7 @@ class LibraryViewModel {
         case updated
     }
 
-    enum SortMethod: Int {
+    enum SortMethod: Int, CaseIterable {
         case alphabetical = 0
         case lastRead
         case lastOpened
@@ -31,6 +31,18 @@ class LibraryViewModel {
         case dateAdded
         case unreadChapters
         case totalChapters
+
+        var title: String {
+            switch self {
+                case .alphabetical: NSLocalizedString("TITLE")
+                case .lastRead: NSLocalizedString("LAST_READ")
+                case .lastOpened: NSLocalizedString("LAST_OPENED")
+                case .lastUpdated: NSLocalizedString("LAST_UPDATED")
+                case .dateAdded: NSLocalizedString("DATE_ADDED")
+                case .unreadChapters: NSLocalizedString("UNREAD_CHAPTERS")
+                case .totalChapters: NSLocalizedString("TOTAL_CHAPTERS")
+            }
+        }
 
         var sortStringValue: String {
             switch self {
@@ -57,9 +69,24 @@ class LibraryViewModel {
         var exclude: Bool
     }
 
-    enum FilterMethod: Int {
+    enum FilterMethod: Int, CaseIterable {
         case downloaded = 0
         case tracking
+
+        var title: String {
+            switch self {
+                case .downloaded: NSLocalizedString("DOWNLOADED")
+                case .tracking: NSLocalizedString("IS_TRACKING")
+            }
+        }
+
+        var image: UIImage? {
+            let name = switch self {
+                case .downloaded: "arrow.down.circle"
+                case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+            }
+            return UIImage(systemName: name)
+        }
     }
 
     lazy var pinType: PinType = getPinType()

@@ -134,7 +134,6 @@ struct ChapterListHeaderView: View {
                             }
                         }
                     }
-                    .menuActionDismissDisabled()
                 }
                 if languages.count > 1 {
                     Menu(NSLocalizedString("LANGUAGE")) {
@@ -176,6 +175,7 @@ struct ChapterListHeaderView: View {
                     }
                 }
             }
+            .menuActionDismissDisabled()
             Section(NSLocalizedString("TITLE_DISPLAY_MODE")) {
                 ForEach(ChapterTitleDisplayMode.allCases, id: \.rawValue) { mode in
                     Button {

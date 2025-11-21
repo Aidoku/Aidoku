@@ -231,7 +231,7 @@ class LibraryViewController: OldMangaCollectionViewController {
 
             // load library
             await viewModel.loadLibrary()
-            updateSortMenu()
+            updateMoreMenu()
             updateLockState()
             updateDataSource()
         }
@@ -853,14 +853,13 @@ extension LibraryViewController {
     }
 }
 
-// MARK: - Sorting
+// MARK: - Sorting and Filtering
 extension LibraryViewController {
-
     func toggleSort(method: LibraryViewModel.SortMethod) {
         Task {
             await viewModel.toggleSort(method: method)
             updateDataSource()
-            updateSortMenu()
+            updateMoreMenu()
         }
     }
 
@@ -868,106 +867,198 @@ extension LibraryViewController {
         Task {
             await viewModel.toggleFilter(method: method)
             updateDataSource()
-            updateSortMenu()
+            if #available(iOS 26.0, *) {
+                updateFilterMenuState()
+            } else {
+                updateMoreMenu()
+            }
         }
     }
 
-    func updateSortMenu() {
-        let chevronIcon = UIImage(systemName: viewModel.sortAscending ? "chevron.up" : "chevron.down")
-        let sortMenu = UIMenu(title: NSLocalizedString("SORT_BY", comment: ""), options: .displayInline, children: [
-            UIAction(
-                title: NSLocalizedString("TITLE", comment: ""),
-                image: viewModel.sortMethod == .alphabetical ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .alphabetical)
-            },
-            UIAction(
-                title: NSLocalizedString("LAST_READ", comment: ""),
-                image: viewModel.sortMethod == .lastRead ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .lastRead)
-            },
-            UIAction(
-                title: NSLocalizedString("LAST_OPENED", comment: ""),
-                image: viewModel.sortMethod == .lastOpened ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .lastOpened)
-            },
-            UIAction(
-                title: NSLocalizedString("LAST_UPDATED", comment: ""),
-                image: viewModel.sortMethod == .lastUpdated ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .lastUpdated)
-            },
-            UIAction(
-                title: NSLocalizedString("DATE_ADDED", comment: ""),
-                image: viewModel.sortMethod == .dateAdded ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .dateAdded)
-            },
-            UIAction(
-                title: NSLocalizedString("UNREAD_CHAPTERS", comment: ""),
-                image: viewModel.sortMethod == .unreadChapters ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .unreadChapters)
-            },
-            UIAction(
-                title: NSLocalizedString("TOTAL_CHAPTERS", comment: ""),
-                image: viewModel.sortMethod == .totalChapters ? chevronIcon : nil
-            ) { _ in
-                self.toggleSort(method: .totalChapters)
-            }
-        ])
-        func filterImage(for method: LibraryViewModel.FilterMethod) -> UIImage? {
-            if let filter = viewModel.filters.first(where: { $0.type == method }) {
-                return UIImage(systemName: filter.exclude ? "xmark" : "checkmark")
-            } else {
-                return nil
-            }
-        }
-        let trackingFilter: [UIAction]
-        if TrackerManager.shared.hasAvailableTrackers {
-            trackingFilter = [UIAction(
-                title: NSLocalizedString("IS_TRACKING", comment: ""),
-                image: filterImage(for: .tracking),
-                attributes: {
-                    if #available(iOS 16.0, *) {
-                        .keepsMenuPresented
-                    } else {
-                        []
-                    }
-                }()
-            ) { _ in
-                self.toggleFilter(method: .tracking)
-            }]
+    func filterState(for method: LibraryViewModel.FilterMethod) -> UIMenuElement.State {
+        if let filter = viewModel.filters.first(where: { $0.type == method }) {
+            return filter.exclude ? .mixed : .on
         } else {
-            trackingFilter = []
+            return .off
         }
-        let filterMenu = UIMenu(title: NSLocalizedString("FILTER_BY", comment: ""), options: .displayInline, children: [
-            UIAction(
-                title: NSLocalizedString("DOWNLOADED", comment: ""),
-                image: filterImage(for: .downloaded),
-                attributes: {
-                    if #available(iOS 16.0, *) {
-                        .keepsMenuPresented
-                    } else {
-                        []
-                    }
-                }()
-            ) { _ in
-                self.toggleFilter(method: .downloaded)
+    }
+
+    func removeFilterAction() -> UIAction {
+        UIAction(
+            title: NSLocalizedString("REMOVE_FILTER"),
+            image: UIImage(systemName: "minus.circle")
+        ) { [weak self] _ in
+            Task {
+                self?.viewModel.filters = []
+                await self?.viewModel.loadLibrary()
+                self?.updateDataSource()
+                self?.updateMoreMenu()
             }
-        ] + trackingFilter)
+        }
+    }
+
+    func filtersSubtitle() -> String? {
+        guard !viewModel.filters.isEmpty else { return nil }
+        var options: [String] = []
+        for filterMethod in LibraryViewModel.FilterMethod.allCases {
+            if let filter = viewModel.filters.first(where: { $0.type == filterMethod }) {
+                guard options.count < 3 else {
+                    options.removeLast() // make subtitle fit in two lines
+                    options.append(NSLocalizedString("AND_MORE"))
+                    break
+                }
+                if filter.exclude {
+                    options.append(String(format: NSLocalizedString("NOT_%@"), filterMethod.title))
+                } else {
+                    options.append(filterMethod.title)
+                }
+            }
+        }
+        return options.joined(separator: ", ")
+    }
+
+    @available(iOS 26.0, *)
+    func updateFilterMenuState() {
+        // _contextMenuInteraction only exists on ios 26+
+        // a similar thing could probably be achieved on lower versions by putting a UIButton in the bar button custom view
+        let contextMenuInteraction = moreBarButton.value(forKey: "_contextMenuInteraction") as? UIContextMenuInteraction
+        guard let contextMenuInteraction else { return }
+
+        func updateFilterSubmenu(_ menu: UIMenu) -> UIMenu {
+            menu.subtitle = self.filtersSubtitle()
+            return menu.replacingChildren(menu.children.map { element in
+                guard let action = element as? UIAction else { return element }
+                if let method = LibraryViewModel.FilterMethod.allCases.first(where: { $0.title == action.title }) {
+                    action.state = filterState(for: method)
+                }
+                return action
+            })
+        }
+
+        contextMenuInteraction.updateVisibleMenu { menu in
+            if menu.title == NSLocalizedString("BUTTON_FILTER") {
+                updateFilterSubmenu(menu)
+            } else {
+                menu.replacingChildren(menu.children.map { element in
+                    guard let menu = element as? UIMenu else { return element }
+                    if menu.children.first?.title == NSLocalizedString("SORT_BY") {
+                        let shouldShowRemoveFilter = !self.viewModel.filters.isEmpty
+                        let isShowingRemoveFilter = menu.children.last?.title == NSLocalizedString("REMOVE_FILTER")
+
+                        let updatedChildren = menu.children.map { element in
+                            if element.title == NSLocalizedString("BUTTON_FILTER"), let menu = element as? UIMenu {
+                                updateFilterSubmenu(menu) as UIMenuElement
+                            } else {
+                                element
+                            }
+                        }
+
+                        if shouldShowRemoveFilter && !isShowingRemoveFilter {
+                            return menu.replacingChildren(updatedChildren + [removeFilterAction()])
+                        } else if !shouldShowRemoveFilter && isShowingRemoveFilter {
+                            return menu.replacingChildren(updatedChildren.dropLast())
+                        }
+                    }
+                    return element
+                })
+            }
+        }
+
+        if !viewModel.filters.isEmpty {
+            moreBarButton.isSelected = true
+            moreBarButton.image = UIImage(systemName: "line.3.horizontal.decrease")?
+                .withTintColor(.white, renderingMode: .alwaysOriginal)
+        } else {
+            moreBarButton.isSelected = false
+            moreBarButton.image = UIImage(systemName: "ellipsis")
+        }
+    }
+
+    func updateMoreMenu() {
         let selectAction = UIAction(
-            title: NSLocalizedString("SELECT", comment: ""),
+            title: NSLocalizedString("SELECT"),
             image: UIImage(systemName: "checkmark.circle")
         ) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             self.setEditing(true, animated: true)
         }
-        moreBarButton.menu = UIMenu(children: [
-            selectAction, sortMenu, filterMenu
-        ])
+
+        let chevronIcon = UIImage(systemName: viewModel.sortAscending ? "chevron.up" : "chevron.down")
+        let sortMenu = UIMenu(
+            title: NSLocalizedString("SORT_BY"),
+            image: UIImage(systemName: "arrow.up.arrow.down"),
+            children: LibraryViewModel.SortMethod.allCases.map { method in
+                UIAction(
+                    title: method.title,
+                    image: viewModel.sortMethod == method ? chevronIcon : nil
+                ) { _ in
+                    self.toggleSort(method: method)
+                }
+            }
+        )
+
+        let filterMenu = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self else {
+                completion([])
+                return
+            }
+            let filters = UIMenu(
+                title: NSLocalizedString("BUTTON_FILTER"),
+                subtitle: self.filtersSubtitle(),
+                image: UIImage(systemName: "line.3.horizontal.decrease"),
+                children: {
+                    let attributes: UIMenuElement.Attributes = if #available(iOS 16.0, *) {
+                        [.keepsMenuPresented]
+                    } else {
+                        []
+                    }
+                    var actions: [UIAction] = [
+                        UIAction(
+                            title: LibraryViewModel.FilterMethod.downloaded.title,
+                            image: LibraryViewModel.FilterMethod.downloaded.image,
+                            attributes: attributes,
+                            state: self.filterState(for: .downloaded)
+                        ) { [weak self] _ in
+                            self?.toggleFilter(method: .downloaded)
+                        }
+                    ]
+                    if TrackerManager.shared.hasAvailableTrackers {
+                        actions.append(UIAction(
+                            title: LibraryViewModel.FilterMethod.tracking.title,
+                            image: LibraryViewModel.FilterMethod.tracking.image,
+                            attributes: attributes,
+                            state: self.filterState(for: .tracking)
+                        ) { [weak self] _ in
+                            self?.toggleFilter(method: .tracking)
+                        })
+                    }
+                    return actions
+                }()
+            )
+            if self.viewModel.filters.isEmpty {
+                completion([filters])
+            } else {
+                completion([filters, self.removeFilterAction()])
+            }
+        }
+
+        moreBarButton.menu = UIMenu(
+            children: [
+                UIMenu(options: .displayInline, children: [selectAction]),
+                UIMenu(options: .displayInline, children: [sortMenu, filterMenu])
+            ]
+        )
+
+        if #available(iOS 26.0, *) {
+            if !viewModel.filters.isEmpty {
+                moreBarButton.isSelected = true
+                moreBarButton.image = UIImage(systemName: "line.3.horizontal.decrease")?
+                    .withTintColor(.white, renderingMode: .alwaysOriginal)
+            } else {
+                moreBarButton.isSelected = false
+                moreBarButton.image = UIImage(systemName: "ellipsis")
+            }
+        }
     }
 }
 

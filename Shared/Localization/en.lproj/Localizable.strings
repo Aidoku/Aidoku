@@ -72,11 +72,14 @@
 "MANGA_INFO" = "Manga Info";
 "SORT_BY" = "Sort By";
 "FILTER_BY" = "Filter By";
+"REMOVE_FILTER" = "Remove Filter";
 "TITLE" = "Title";
 "LAST_OPENED" = "Last Opened";
 "LAST_READ" = "Last Read";
 "LATEST_CHAPTER" = "Latest Chapter";
 "DATE_ADDED" = "Date Added";
+"AND_MORE" = "and more";
+"NOT_%@" = "Not %@";
 "COVER" = "Cover";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Removing Item from Library";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "Removing %i Items from Library";
