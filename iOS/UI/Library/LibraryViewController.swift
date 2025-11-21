@@ -1241,13 +1241,13 @@ extension LibraryViewController {
                 ]))
             }
 
-            if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
+            if UserDefaults.standard.bool(forKey: "Library.opensReaderView"), mangaInfo.count == 1 {
                 actions.append(UIAction(
-                    title: NSLocalizedString("MANGA_INFO", comment: ""),
+                    title: NSLocalizedString("MANGA_INFO"),
                     image: UIImage(systemName: "info.circle"),
                     attributes: singleAttributes
                 ) { _ in
-                    super.collectionView(collectionView, didSelectItemAt: indexPath) // open info view
+                    self.openInfoView(info: mangaInfo[0], zoom: false)
                 })
             }
 
