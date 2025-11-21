@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftUIIntrospect
 
 class TabBarController: UITabBarController {
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
@@ -69,16 +70,27 @@ class TabBarController: UITabBarController {
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
-        let settingsHostingController = UIHostingController(rootView: SettingsView()
-            .environmentObject(settingsPath))
-        settingsPath.rootViewController = settingsHostingController
-        let settingsViewController = UINavigationController(rootViewController: settingsHostingController)
+        let settingsViewController = if UIDevice.current.userInterfaceIdiom == .pad {
+            // this breaks the zoom transitions from the toolbar buttons in the backups setting page
+            UINavigationController(rootViewController: UIHostingController(rootView: SettingsView().environmentObject(settingsPath)))
+        } else {
+            UIHostingController(
+                rootView: NavigationView {
+                    SettingsView()
+                        .environmentObject(settingsPath)
+                }.introspect(.navigationView(style: .stack), on: .iOS(.v15)) { entity in
+                    settingsPath.rootViewController = entity
+                }
+                .introspect(.navigationStack, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
+                    settingsPath.rootViewController = entity
+                }
+            )
+        }
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
         historyViewController.navigationBar.prefersLargeTitles = true
         searchViewController.navigationBar.prefersLargeTitles = true
-        settingsViewController.navigationBar.prefersLargeTitles = true
 
         if #available(iOS 26.0, *) {
             let searchTab = UISearchTab { _ in

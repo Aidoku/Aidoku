@@ -11,6 +11,14 @@ import SwiftUI
 class NavigationCoordinator: ObservableObject {
     weak var rootViewController: UIViewController?
 
+    var navigationController: UINavigationController? {
+        if let rootViewController = rootViewController as? UINavigationController {
+            rootViewController
+        } else {
+            rootViewController?.navigationController
+        }
+    }
+
     init(rootViewController: UIViewController?) {
         self.rootViewController = rootViewController
     }
@@ -18,11 +26,11 @@ class NavigationCoordinator: ObservableObject {
     func push<V: View>(_ view: V, animated: Bool = true, title: String? = nil) {
         let vc = UIHostingController(rootView: view.environmentObject(self))
         vc.title = title
-        rootViewController?.navigationController?.pushViewController(vc, animated: animated)
+        navigationController?.pushViewController(vc, animated: animated)
     }
 
     func push(_ viewController: UIViewController, animated: Bool = true) {
-        rootViewController?.navigationController?.pushViewController(viewController, animated: animated)
+        navigationController?.pushViewController(viewController, animated: animated)
     }
 
 //    func present<V: View>(_ view: V, animated: Bool = true) {

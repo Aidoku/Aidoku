@@ -149,6 +149,22 @@ extension View {
 
     }
 
+    func matchedTransitionSourcePlease(id: some Hashable, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 18.0, *) {
+            return self.matchedTransitionSource(id: id, in: namespace)
+        } else {
+            return self
+        }
+    }
+
+    func navigationTransitionZoom(sourceID: some Hashable, in namespace: Namespace.ID) -> some View {
+        if #available(iOS 18.0, *) {
+            return self.navigationTransition(.zoom(sourceID: sourceID, in: namespace))
+        } else {
+            return self
+        }
+    }
+
     func menuActionDismissDisabled() -> some View {
         if #available(iOS 16.4, *) {
             return self.menuActionDismissBehavior(.disabled)

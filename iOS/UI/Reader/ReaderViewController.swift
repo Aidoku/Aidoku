@@ -11,7 +11,6 @@ import SwiftUI
 import AidokuRunner
 
 class ReaderViewController: BaseObservingViewController {
-
     enum Reader {
         case paged
         case scroll
@@ -250,9 +249,16 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
+        if navigationController?.toolbar.alpha == 0 {
+            hideBars()
+        }
+
         // there's a bug on ios 15 where the toolbar just disappears when adding a child hosting controller
         navigationController?.isToolbarHidden = false
         navigationController?.toolbar.alpha = 1
+
+        disableSwipeGestures()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -278,6 +284,34 @@ class ReaderViewController: BaseObservingViewController {
                 self.toolbarViewWidthConstraint?.constant = size.width - 32 - 10
             } else {
                 self.toolbarViewWidthConstraint?.constant = size.width
+            }
+        }
+    }
+
+    func disableSwipeGestures() {
+        let isWebtoonReader = reader is ReaderWebtoonViewController
+
+        // the view with the target gesture recognizers changes based on if it was presented from uikit or swiftui
+        let gestureRecognizers = (parent?.view.gestureRecognizers ?? []) + (parent?.view.superview?.superview?.gestureRecognizers ?? [])
+
+        for recognizer in gestureRecognizers {
+            switch String(describing: type(of: recognizer)) {
+                case "_UIParallaxTransitionPanGestureRecognizer": // swipe edge gesture
+                    recognizer.isEnabled = isWebtoonReader
+
+                case "_UIContentSwipeDismissGestureRecognizer": // swipe down gesture
+                    recognizer.isEnabled = !isWebtoonReader
+                    if UIDevice.current.userInterfaceIdiom != .pad {
+                        recognizer.delegate = nil // fixes swipe down activating on swipe edge sometimes..?
+                    } else {
+                        recognizer.delegate = self // for ipads, we need to handle it ourselves
+                    }
+
+//                case "_UITransformGestureRecognizer": // pinch gesture
+//                    recognizer.isEnabled = true
+
+                default:
+                    break
             }
         }
     }
@@ -501,6 +535,7 @@ extension ReaderViewController {
             add(child: pageController, below: descriptionButtonController.view)
         }
         reader?.readingMode = readingMode
+        disableSwipeGestures()
     }
 }
 
@@ -772,6 +807,7 @@ extension ReaderViewController {
                 }
             }
             self.pageDescriptionButtonBottomConstraint.constant = 0
+            navigationController.navigationBar.isHidden = false
             UIView.setAnimationsEnabled(true)
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 navigationController.navigationBar.alpha = 1
@@ -821,6 +857,7 @@ extension ReaderViewController {
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in
+                navigationController.navigationBar.isHidden = true
                 if #available(iOS 26.0, *) {
                     navigationController.isToolbarHidden = true
                 } else {
@@ -828,6 +865,15 @@ extension ReaderViewController {
                 }
             }
         }
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension ReaderViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return true }
+        let velocity = pan.velocity(in: pan.view)
+        return velocity.y > velocity.x && (abs(velocity.x) < 40 || abs(velocity.y) > abs(velocity.x) * 3)
     }
 }
 

@@ -22,12 +22,19 @@ struct BackupsView: View {
 
     @EnvironmentObject private var path: NavigationCoordinator
 
+    @Namespace private var transitionNamespace
+
+    private enum SheetID: String {
+        case create
+        case autoBackup
+    }
+
     init() {
         self._backupUrls = State(initialValue: BackupManager.backupUrls)
     }
 
     var body: some View {
-        List {
+        let list = List {
             Section {
                 ForEach(backupUrls, id: \.self) { url in
                     let backup = backups[url]
@@ -51,30 +58,13 @@ struct BackupsView: View {
         .animation(.default, value: backupUrls)
         .animation(.default, value: backups)
         .navigationTitle(NSLocalizedString("BACKUPS"))
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    showAutoBackupsSheet = true
-                } label: {
-                    let imageName = if #available(iOS 18.0, *) {
-                        "clock.arrow.trianglehead.counterclockwise.rotate.90"
-                    } else {
-                        "clock.arrow.circlepath"
-                    }
-                    Image(systemName: imageName)
-                }
-                Button {
-                    showCreateSheet = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
-        }
         .sheet(isPresented: $showCreateSheet) {
             BackupCreateView()
+                .navigationTransitionZoom(sourceID: SheetID.create, in: transitionNamespace)
         }
         .sheet(isPresented: $showAutoBackupsSheet) {
             AutomaticBackupsView()
+                .navigationTransitionZoom(sourceID: SheetID.autoBackup, in: transitionNamespace)
         }
         .sheet(item: $targetRestoreBackup) { backup in
             BackupContentView(backup: backup)
@@ -103,6 +93,58 @@ struct BackupsView: View {
         .onReceive(NotificationCenter.default.publisher(for: .updateBackupList)) { _ in
             backupUrls = BackupManager.backupUrls
             loadBackupInfo()
+        }
+
+        if #available(iOS 26.0, *) {
+            list
+                .toolbar {
+                    toolbarContentiOS26
+                }
+        } else {
+            list
+                .toolbar {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        autoBackupButton
+                        createBackupButton
+                    }
+                }
+        }
+    }
+
+    var autoBackupButton: some View {
+        Button {
+            showAutoBackupsSheet = true
+        } label: {
+            let imageName = if #available(iOS 18.0, *) {
+                "clock.arrow.trianglehead.counterclockwise.rotate.90"
+            } else {
+                "clock.arrow.circlepath"
+            }
+            Image(systemName: imageName)
+        }
+        .matchedTransitionSourcePlease(id: SheetID.autoBackup, in: transitionNamespace)
+    }
+
+    var createBackupButton: some View {
+        Button {
+            showCreateSheet = true
+        } label: {
+            Image(systemName: "plus")
+        }
+        .matchedTransitionSourcePlease(id: SheetID.create, in: transitionNamespace)
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    var toolbarContentiOS26: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            autoBackupButton
+        }
+
+        ToolbarSpacer(placement: .topBarTrailing)
+
+        ToolbarItem(placement: .topBarTrailing) {
+            createBackupButton
         }
     }
 

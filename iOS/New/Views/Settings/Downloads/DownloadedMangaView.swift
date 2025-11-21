@@ -7,12 +7,15 @@
 
 import AidokuRunner
 import SwiftUI
-import UIKit
 
 struct DownloadedMangaView: View {
     @StateObject private var viewModel: ViewModel
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var path: NavigationCoordinator
+
+    @State private var openChapter: DownloadedChapterInfo?
+
+    @Namespace private var transitionNamespace
 
     init(manga: DownloadedMangaInfo) {
         self._viewModel = StateObject(wrappedValue: .init(manga: manga))
@@ -73,6 +76,16 @@ struct DownloadedMangaView: View {
         } message: {
             Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
         }
+        .fullScreenCover(item: $openChapter) { chapter in
+            let readerController = ReaderViewController(
+                source: SourceManager.shared.source(for: viewModel.manga.sourceId),
+                manga: viewModel.manga.toManga(),
+                chapter: chapter.toChapter()
+            )
+            SwiftUIReaderNavigationController(readerViewController: readerController)
+                .ignoresSafeArea()
+                .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
+        }
     }
 
     private var emptyStateView: some View {
@@ -86,16 +99,14 @@ struct DownloadedMangaView: View {
 
     private var chaptersList: some View {
         List {
-            // Manga info header
             Section {
                 mangaInfoHeader
             }
 
-            // Chapters list with smooth animations
             Section {
                 ForEach(viewModel.chapters) { chapter in
                     Button {
-                        openReaderView(chapter: chapter)
+                        openChapter = chapter
                     } label: {
                         ChapterRow(chapter: chapter, history: viewModel.readingHistory[chapter.chapterId])
                     }
@@ -107,6 +118,7 @@ struct DownloadedMangaView: View {
                             Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
                         }
                     }
+                    .matchedTransitionSourcePlease(id: chapter, in: transitionNamespace)
                 }
                 .onDelete(perform: delete)
             } header: {
@@ -180,17 +192,6 @@ struct DownloadedMangaView: View {
         components.append(viewModel.manga.formattedSize)
 
         return components.joined(separator: " • ")
-    }
-
-    private func openReaderView(chapter: DownloadedChapterInfo) {
-        let readerController = ReaderViewController(
-            source: SourceManager.shared.source(for: viewModel.manga.sourceId),
-            manga: viewModel.manga.toManga(),
-            chapter: chapter.toChapter()
-        )
-        let navigationController = ReaderNavigationController(rootViewController: readerController)
-        navigationController.modalPresentationStyle = .fullScreen
-        path.present(navigationController)
     }
 
     private func openMangaView(source: AidokuRunner.Source) {

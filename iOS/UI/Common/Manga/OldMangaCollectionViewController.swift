@@ -1,5 +1,5 @@
 //
-//  MangaCollectionViewController.swift
+//  OldMangaCollectionViewController.swift
 //  Aidoku (iOS)
 //
 //  Created by Skitty on 8/1/22.
@@ -7,12 +7,11 @@
 
 import UIKit
 
-class MangaCollectionViewController: BaseCollectionViewController {
+class OldMangaCollectionViewController: BaseCollectionViewController {
+    static let itemSpacing: CGFloat = 12
+    static let sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
     lazy var dataSource = makeDataSource()
-
-    var itemSpacing: CGFloat = 12
-    var sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
     private var focusedIndexPath: IndexPath? {
         didSet {
@@ -38,10 +37,14 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     override func observe() {
         addObserver(forName: "General.portraitRows") { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
+            Task { @MainActor in
+                self?.collectionView.collectionViewLayout.invalidateLayout()
+            }
         }
         addObserver(forName: "General.landscapeRows") { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
+            Task { @MainActor in
+                self?.collectionView.collectionViewLayout.invalidateLayout()
+            }
         }
     }
 
@@ -61,28 +64,48 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     // MARK: Collection View Layout
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
             switch Section(rawValue: sectionIndex) {
                 case .pinned, .regular:
-                    return self?.makeGridLayoutSection(environment: environment)
+                    return Self.makeGridLayoutSection(environment: environment)
                 case nil:
                     return nil
             }
         }
         let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = itemSpacing + sectionSpacing
+        config.interSectionSpacing = Self.itemSpacing + Self.sectionSpacing
         layout.configuration = config
         return layout
     }
 }
 
-extension MangaCollectionViewController {
+extension OldMangaCollectionViewController {
+    static func makeListLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+        let itemHeight: CGFloat = 100
+        let spacing: CGFloat = 10
 
-    // TODO: list layout
-//    func makeListLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
-//    }
+        let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .absolute(itemHeight)
+        ))
 
-    func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+        let group = NSCollectionLayoutGroup.vertical(
+            layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(itemHeight)
+            ),
+            subitems: [item]
+        )
+        group.interItemSpacing = .fixed(spacing)
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        section.interGroupSpacing = spacing
+
+        return section
+    }
+
+    static func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
         let itemsPerRow = UserDefaults.standard.integer(
             forKey: environment.container.contentSize.width > environment.container.contentSize.height
                 ? "General.landscapeRows"
@@ -102,7 +125,6 @@ extension MangaCollectionViewController {
             subitem: item,
             count: itemsPerRow
         )
-
         group.interItemSpacing = .fixed(itemSpacing)
 
         let section = NSCollectionLayoutSection(group: group)
@@ -114,8 +136,7 @@ extension MangaCollectionViewController {
 }
 
 // MARK: - Collection View Delegate
-extension MangaCollectionViewController {
-
+extension OldMangaCollectionViewController {
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
             cell.highlight()
@@ -130,14 +151,26 @@ extension MangaCollectionViewController {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
-        let vc = MangaViewController(manga: info.toManga().toNew(), parent: self)
-        navigationController?.pushViewController(vc, animated: true)
+        let viewController = MangaViewController(manga: info, parent: self)
+        if #available(iOS 18.0, *) {
+            viewController.preferredTransition = .zoom { context in
+                guard
+                    let detailViewController = context.zoomedViewController as? MangaViewController,
+                    let info = detailViewController.mangaInfo,
+                    let indexPath = self.dataSource.indexPath(for: info),
+                    let cell = self.collectionView.cellForItem(at: indexPath)
+                else {
+                    return nil
+                }
+                return cell.contentView
+            }
+        }
+        navigationController?.pushViewController(viewController, animated: true)
     }
 }
 
 // MARK: - Data Source
-extension MangaCollectionViewController {
-
+extension OldMangaCollectionViewController {
     enum Section: Int, CaseIterable {
         case pinned
         case regular
@@ -152,7 +185,7 @@ extension MangaCollectionViewController {
 }
 
 // MARK: - Keyboard Shortcuts
-extension MangaCollectionViewController {
+extension OldMangaCollectionViewController {
     override var canBecomeFirstResponder: Bool { true }
 
     override var keyCommands: [UIKeyCommand]? {

@@ -10,7 +10,7 @@ import LocalAuthentication
 import SwiftUI
 import AidokuRunner
 
-class LibraryViewController: MangaCollectionViewController {
+class LibraryViewController: OldMangaCollectionViewController {
     let viewModel = LibraryViewModel()
 
     private lazy var downloadBarButton = {
@@ -21,6 +21,9 @@ class LibraryViewController: MangaCollectionViewController {
             action: #selector(openDownloadQueue)
         )
         item.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        if #available(iOS 26.0, *) {
+            item.sharesBackground = false
+        }
         return item
     }()
 
@@ -54,6 +57,9 @@ class LibraryViewController: MangaCollectionViewController {
             action: #selector(openMangaUpdates)
         )
         item.title = NSLocalizedString("MANGA_UPDATES")
+        if #available(iOS 26.0, *) {
+            item.sharesBackground = false
+        }
         return item
     }()
 
@@ -63,8 +69,6 @@ class LibraryViewController: MangaCollectionViewController {
     private lazy var lockedStackView = LockedPageStackView()
 
     private lazy var locked = viewModel.isCategoryLocked()
-
-    private lazy var opensReaderView = UserDefaults.standard.bool(forKey: "Library.opensReaderView")
 
     private var ignoreOptionChange = false
     private var lastSearch: String?
@@ -361,10 +365,6 @@ class LibraryViewController: MangaCollectionViewController {
         addObserver(forName: "Library.pinManga", using: updatePinType)
         addObserver(forName: "Library.pinMangaType", using: updatePinType)
 
-        addObserver(forName: "Library.opensReaderView") { [weak self] notification in
-            self?.opensReaderView = notification.object as? Bool ?? false
-        }
-
         // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
             if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
@@ -627,16 +627,22 @@ extension LibraryViewController {
         let viewController = UIHostingController(rootView: DownloadQueueView())
         viewController.navigationItem.largeTitleDisplayMode = .never
         viewController.navigationItem.title = NSLocalizedString("DOWNLOAD_QUEUE")
+        if #available(iOS 26.0, *) {
+            viewController.preferredTransition = .zoom { _ in
+                self.downloadBarButton
+            }
+        }
+        viewController.modalPresentationStyle = .pageSheet
         present(viewController, animated: true)
     }
 
     @objc func openMangaUpdates() {
         let path = NavigationCoordinator(rootViewController: self)
-        let mangaUpdatesViewController = UIHostingController(rootView: MangaUpdatesView().environmentObject(path))
+        let viewController = UIHostingController(rootView: MangaUpdatesView().environmentObject(path))
         // configure navigation item before displaying to fix animation
-        mangaUpdatesViewController.navigationItem.largeTitleDisplayMode = .never
-        mangaUpdatesViewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES", comment: "")
-        navigationController?.pushViewController(mangaUpdatesViewController, animated: true)
+        viewController.navigationItem.largeTitleDisplayMode = .never
+        viewController.navigationItem.title = NSLocalizedString("MANGA_UPDATES")
+        navigationController?.pushViewController(viewController, animated: true)
     }
 
     @objc func removeSelectedFromLibrary() {
@@ -808,7 +814,7 @@ extension LibraryViewController {
             if navigationItem.rightBarButtonItems?.count ?? 0 == 0 {
                 navigationItem.rightBarButtonItems = [lockBarButton]
             } else {
-                navigationItem.rightBarButtonItems?.append(lockBarButton)
+                navigationItem.rightBarButtonItems?.insert(lockBarButton, at: 1)
             }
         } else if !locked, let index = index {
             navigationItem.rightBarButtonItems?.remove(at: index)
@@ -1014,7 +1020,7 @@ extension LibraryViewController {
             return
         }
 
-        if opensReaderView {
+        if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
             Task {
                 // get next chapter to read
                 let history = await CoreDataManager.shared.getReadingHistory(
@@ -1032,7 +1038,7 @@ extension LibraryViewController {
                     let manga = AidokuRunner.Manga(
                         sourceKey: chapter.sourceId,
                         key: chapter.mangaId,
-                        title: "",
+                        title: info.title ?? "",
                         chapters: chapters.map { $0.toNew() }
                     )
                     let readerController = ReaderViewController(
@@ -1041,8 +1047,22 @@ extension LibraryViewController {
                         chapter: chapter.toNew()
                     )
                     let navigationController = ReaderNavigationController(
-                        rootViewController: readerController
+                        readerViewController: readerController,
+                        mangaInfo: info
                     )
+                    if #available(iOS 18.0, *) {
+                        navigationController.preferredTransition = .zoom { context in
+                            guard
+                                let navigationController = context.zoomedViewController as? ReaderNavigationController,
+                                let info = navigationController.mangaInfo,
+                                let indexPath = self.dataSource.indexPath(for: info),
+                                let cell = self.collectionView.cellForItem(at: indexPath)
+                            else {
+                                return nil
+                            }
+                            return cell.contentView
+                        }
+                    }
                     navigationController.modalPresentationStyle = .fullScreen
                     present(navigationController, animated: true)
                 } else {
@@ -1130,7 +1150,7 @@ extension LibraryViewController {
                 ]))
             }
 
-            if self.opensReaderView {
+            if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
                 actions.append(UIAction(
                     title: NSLocalizedString("MANGA_INFO", comment: ""),
                     image: UIImage(systemName: "info.circle"),

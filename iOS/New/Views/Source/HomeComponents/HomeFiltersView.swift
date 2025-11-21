@@ -97,7 +97,8 @@ struct HomeFiltersView: View {
     }
 
     func openFilteredPage(for item: HomeComponent.Value.FilterItem) {
-        let view = MangaListView(source: source, title: item.title) { page in
+        let viewController = MangaListViewController(source: source, title: item.title)
+        viewController.getEntries = { page in
             let filters: [FilterValue] = if let filters = item.values {
                 filters
             } else if let filter = source.matchingGenreFilter(for: item.title) {
@@ -110,12 +111,8 @@ struct HomeFiltersView: View {
                 page: page,
                 filters: filters
             )
-        }.environmentObject(path)
-
-        let hostingController = UIHostingController(rootView: view)
-        hostingController.title = item.title
-        hostingController.navigationItem.largeTitleDisplayMode = .never
-        path.push(hostingController)
+        }
+        path.push(viewController)
     }
 }
 
