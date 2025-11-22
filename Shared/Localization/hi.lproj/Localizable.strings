@@ -24,7 +24,6 @@
 
 // Library
 "LIBRARY" = "लाइब्रेरी";
-"LIBRARY_ADD_FROM_BROWSE" = "माँगा ब्राउज़ टाब से जोड़े";
 "ADD_TO_LIBRARY" = "लाइब्रेरी में जोड़े";
 "REMOVE_FROM_LIBRARY" = "लाइब्रेरी से हटाएँ";
 "LAST_OPENED" = "पिछली बार खोला गया";

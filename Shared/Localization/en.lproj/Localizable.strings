@@ -66,7 +66,8 @@
 "LIBRARY" = "Library";
 "LIBRARY_SEARCH" = "Find in Library";
 "LIBRARY_EMPTY" = "Library Empty";
-"LIBRARY_ADD_FROM_BROWSE" = "Add manga from the browse tab";
+"LIBRARY_ADD_CONTENT" = "Add content from the browse tab.";
+"LIBRARY_ADJUST_FILTERS" = "Adjust your filters to see more content.";
 "ADD_TO_LIBRARY" = "Add to Library";
 "REMOVE_FROM_LIBRARY" = "Remove from Library";
 "MANGA_INFO" = "Manga Info";

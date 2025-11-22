@@ -9,7 +9,6 @@
 "LIBRARY" = "ライブラリ";
 "LIBRARY_SEARCH" = "ライブラリ検索";
 "LIBRARY_EMPTY" = "ライブラリの中には本がありません";
-"LIBRARY_ADD_FROM_BROWSE" = "ブラウズから漫画を追加";
 "BROWSE" = "ブラウズ";
 "INSTALLED" = "インストール済のソース";
 "VERSION" = "バージョン";

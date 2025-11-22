@@ -159,7 +159,6 @@
 "LIBRARY" = "Bibliotekë";
 "LIBRARY_SEARCH" = "Kërko në Bibliotekë";
 "LIBRARY_EMPTY" = "Biblioteka është bosh";
-"LIBRARY_ADD_FROM_BROWSE" = "Shto manga nga skeda e shfletimit";
 "REMOVE_FROM_LIBRARY" = "Hiqe nga Biblioteka";
 "MANGA_INFO" = "Informacion për Mangën";
 "SORT_BY" = "Rendit sipas";

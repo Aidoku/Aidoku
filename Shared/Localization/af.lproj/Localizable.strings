@@ -18,7 +18,6 @@
 // Library
 "LIBRARY" = "Biblioteek";
 "LIBRARY_SEARCH" = "Vind in Biblioteek";
-"LIBRARY_ADD_FROM_BROWSE" = "Voeg manga by van die blaaioortjie af";
 "ADD_TO_LIBRARY" = "Voeg by Biblioteek";
 "OK" = "OK";
 "RESET" = "Stel Terug";

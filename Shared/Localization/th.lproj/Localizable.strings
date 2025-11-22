@@ -16,7 +16,6 @@
 "LIBRARY" = "ไลบรารี";
 "LIBRARY_SEARCH" = "ค้นหาในไลบรารี";
 "LIBRARY_EMPTY" = "ไม่มีในไลบรารี";
-"LIBRARY_ADD_FROM_BROWSE" = "เพิ่มมังงะจากแทบเรียกดูมังงะ";
 "ADD_TO_LIBRARY" = "เพิ่มเข้าไลบรารี";
 "SORT_BY" = "เรียงตาม";
 "LAST_OPENED" = "เปิดล่าสุด";

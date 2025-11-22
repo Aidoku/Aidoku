@@ -15,7 +15,6 @@
 "LIBRARY" = "المكتبة";
 "LIBRARY_SEARCH" = "البحث في المكتبة";
 "LIBRARY_EMPTY" = "المكتبة فارغة";
-"LIBRARY_ADD_FROM_BROWSE" = "أضف مانغا من تبويب التصفح";
 "ADD_TO_LIBRARY" = "أضف إلى المكتبة";
 "REMOVE_FROM_LIBRARY" = "إزالة من المكتبة";
 "MANGA_INFO" = "معلومات المانجا";

@@ -15,7 +15,6 @@
 "LIBRARY" = "Biblioteca";
 "LIBRARY_SEARCH" = "Encontrar na biblioteca";
 "LIBRARY_EMPTY" = "Biblioteca vazia";
-"LIBRARY_ADD_FROM_BROWSE" = "Adicionar mangá na guia \"Explorar\"";
 "ADD_TO_LIBRARY" = "Adicionar à biblioteca";
 "REMOVE_FROM_LIBRARY" = "Remover da biblioteca";
 "MANGA_INFO" = "Informação do mangá";

@@ -116,7 +116,6 @@
 "RENAME" = "Átnevezés";
 "GENERAL" = "Általános";
 "SELECT_CHAPTERS" = "Fejezetek kijelölése";
-"LIBRARY_ADD_FROM_BROWSE" = "Adj hozzá mangát a \"Böngészés\" fülről";
 "CATEGORY_ADD_TEXT" = "Add meg az új kategória címét ahhoz, hogy létrejöjjön.";
 "BUTTON_ERROR" = "HIBA";
 "UNPIN" = "Kitűzés visszavonása";

@@ -28,7 +28,6 @@
 "LIBRARY" = "Thư viện";
 "LIBRARY_SEARCH" = "Tìm trong Thư viện";
 "LIBRARY_EMPTY" = "Thư viện trống";
-"LIBRARY_ADD_FROM_BROWSE" = "Thêm truyện từ mục Nguồn";
 "ADD_TO_LIBRARY" = "Thêm vào Thư viện";
 "REMOVE_FROM_LIBRARY" = "Xoá khỏi Thư viện";
 "MANGA_INFO" = "Thông tin truyện";

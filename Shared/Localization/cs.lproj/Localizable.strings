@@ -28,7 +28,6 @@
 "LIBRARY" = "Knihovna";
 "LIBRARY_SEARCH" = "Hledat v knihovně";
 "LIBRARY_EMPTY" = "Knihovna je prázdná";
-"LIBRARY_ADD_FROM_BROWSE" = "Přidat mangu z panelu prohlížeče";
 "ADD_TO_LIBRARY" = "Přidat do knihovny";
 "REMOVE_FROM_LIBRARY" = "Odstranit z knihovny";
 "MANGA_INFO" = "Informace o manze";

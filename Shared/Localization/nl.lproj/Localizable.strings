@@ -24,7 +24,6 @@
 "LIBRARY" = "Bibliotheek";
 "LIBRARY_SEARCH" = "Vind in bibliotheek";
 "LIBRARY_EMPTY" = "Bibliotheek Leeg";
-"LIBRARY_ADD_FROM_BROWSE" = "Voeg manga toe vanuit het ontdekken tabblad";
 "ADD_TO_LIBRARY" = "Voeg toe aan bibliotheek";
 "REMOVE_FROM_LIBRARY" = "Verwijder van bibliotheek";
 "MANGA_INFO" = "Manga Informatie";

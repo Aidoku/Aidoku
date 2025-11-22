@@ -16,7 +16,6 @@
 "LIBRARY" = "라이브러리";
 "LIBRARY_SEARCH" = "라이브러리에서 찾기";
 "LIBRARY_EMPTY" = "빈 라이브러리";
-"LIBRARY_ADD_FROM_BROWSE" = "찾아보기 탭에서 만화 추가";
 "ADD_TO_LIBRARY" = "라이브러리에 추가";
 "MANGA_INFO" = "만화 정보";
 "LAST_OPENED" = "최근 확인순";

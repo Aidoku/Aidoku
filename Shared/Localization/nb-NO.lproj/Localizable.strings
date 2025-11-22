@@ -27,7 +27,6 @@
 "LIBRARY" = "Bibliotek";
 "LIBRARY_SEARCH" = "Finn i bibliotek";
 "LIBRARY_EMPTY" = "Tomt bibliotek";
-"LIBRARY_ADD_FROM_BROWSE" = "Legg til manga fra utforskningsfanen";
 "REMOVE_DOWNLOADS_CONFIRM" = "Fjern alle valgte nedlastninger?";
 "ADD_TO_LIBRARY" = "Legg til i bibliotek";
 "REMOVE_FROM_LIBRARY" = "Fjern fra bibliotek";

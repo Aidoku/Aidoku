@@ -138,6 +138,7 @@ class LibraryViewModel {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
         }
     }
+    private(set) var actuallyEmpty = true
 
     init() {
         let filtersData = UserDefaults.standard.data(forKey: "Library.filters")
@@ -191,6 +192,7 @@ extension LibraryViewModel {
 
         let (
             success,
+            actuallyEmpty,
             pinnedManga,
             manga,
             sourceKeys,
@@ -216,8 +218,10 @@ extension LibraryViewModel {
                 ]
             }
             guard let libraryObjects = try? context.fetch(request) else {
-                return (false, pinnedManga, manga, sourceKeys, unappliedFilters)
+                return (false, true, pinnedManga, manga, sourceKeys, unappliedFilters)
             }
+
+            let actuallyEmpty = libraryObjects.isEmpty
 
             var ids = Set<String>()
 
@@ -298,7 +302,7 @@ extension LibraryViewModel {
                 }
             }
 
-            return (true, pinnedManga, manga, sourceKeys, unappliedFilters)
+            return (true, actuallyEmpty, pinnedManga, manga, sourceKeys, unappliedFilters)
         }
 
         guard success else { return }
@@ -306,6 +310,7 @@ extension LibraryViewModel {
         self.pinnedManga = pinnedManga
         self.manga = manga
         self.sourceKeys = sourceKeys.sorted()
+        self.actuallyEmpty = actuallyEmpty
 
         await fetchUnreads(skipSortCheck: true)
         await fetchDownloadCounts()

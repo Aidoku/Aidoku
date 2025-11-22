@@ -194,11 +194,6 @@ class LibraryViewController: OldMangaCollectionViewController {
 
         // empty text view
         emptyStackView.isHidden = true
-        emptyStackView.imageSystemName = "books.vertical.fill"
-        emptyStackView.title = viewModel.currentCategory == nil
-            ? NSLocalizedString("LIBRARY_EMPTY")
-            : NSLocalizedString("CATEGORY_EMPTY")
-        emptyStackView.text = NSLocalizedString("LIBRARY_ADD_FROM_BROWSE")
         view.addSubview(emptyStackView)
 
         // locked text view
@@ -222,6 +217,7 @@ class LibraryViewController: OldMangaCollectionViewController {
 
             // load library
             await viewModel.loadLibrary()
+            updateEmptyStack()
             updateLockState()
         }
     }
@@ -289,6 +285,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             guard let self else { return }
             Task { @MainActor in
                 await self.viewModel.loadLibrary()
+                self.updateEmptyStack()
                 self.updateDataSource()
             }
         }
@@ -553,6 +550,18 @@ extension LibraryViewController {
                 self.navigationController?.isToolbarHidden = true
             }
         }
+    }
+
+    // updates library empty message
+    // should be called when category changes and when library loads initially
+    func updateEmptyStack() {
+        emptyStackView.imageSystemName = "books.vertical.fill"
+        emptyStackView.title = viewModel.currentCategory == nil
+            ? NSLocalizedString("LIBRARY_EMPTY")
+            : NSLocalizedString("CATEGORY_EMPTY")
+        emptyStackView.text = viewModel.actuallyEmpty
+            ? NSLocalizedString("LIBRARY_ADD_CONTENT")
+            : NSLocalizedString("LIBRARY_ADJUST_FILTERS")
     }
 
     @objc func stopEditing() {
@@ -1084,6 +1093,7 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
             updateNavbarItems()
 
             await viewModel.loadLibrary()
+            updateEmptyStack()
             updateDataSource()
         }
     }

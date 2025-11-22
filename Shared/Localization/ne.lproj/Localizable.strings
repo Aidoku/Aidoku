@@ -164,7 +164,6 @@
 "NO_WIFI_ALERT_TITLE" = "Wi-Fi छैन";
 "NO_WIFI_ALERT_MESSAGE" = "यो सामग्री डाउनलोड गर्न तपाईं Wi-Fi मा जडान हुन आवश्यक छ। कृपया Wi-Fi मा जडान गर्नुहोस् र फेरि प्रयास गर्नुहोस्।";
 "DOWNLOAD_ANYWAY_MESSAGE" = "तपाईं हाल Wi-Fi मा जडान भएको हुनुहुन्न। जे भए पनि डाउनलोड गर्ने हो?";
-"LIBRARY_ADD_FROM_BROWSE" = "ब्राउज ट्याबबाट माङ्गा थप्नुहोस्";
 "ADD_TO_LIBRARY" = "पुस्तकालयमा थप्नुहोस्";
 "REMOVE_FROM_LIBRARY" = "पुस्तकालयबाट हटाउनुहोस्";
 "MANGA_INFO" = "माङ्गा जानकारी";

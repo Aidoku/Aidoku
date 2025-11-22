@@ -194,7 +194,6 @@
 "UNREAD" = "Necitit";
 "CANCEL" = "Anulează";
 "UNKNOWN" = "Necunoscut";
-"LIBRARY_ADD_FROM_BROWSE" = "Adăugați manga din fila de navigare";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Acest lucru va elimina istoricul pentru acest capitol. Sunteți sigur că doriți să continuați?";
 "LATEST_CHAPTER" = "Ultimul capitol";
 "DEFAULT_CATEGORY" = "Categoria implicită";

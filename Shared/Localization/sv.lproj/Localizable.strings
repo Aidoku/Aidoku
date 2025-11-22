@@ -240,7 +240,6 @@
 "CANCEL_DOWNLOAD" = "Avbryt nedladdning";
 "MANGA_INFO" = "Mangainformation";
 "BACKUPS" = "Säkerhetskopior";
-"LIBRARY_ADD_FROM_BROWSE" = "Lägg till manga från upptäck-fliken";
 
 // Settings
 "SETTINGS" = "Inställningar";

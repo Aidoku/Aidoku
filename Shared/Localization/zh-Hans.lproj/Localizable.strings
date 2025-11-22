@@ -28,7 +28,6 @@
 "LIBRARY" = "书架";
 "LIBRARY_SEARCH" = "在书架查找";
 "LIBRARY_EMPTY" = "书架为空";
-"LIBRARY_ADD_FROM_BROWSE" = "从浏览页添加漫画";
 "ADD_TO_LIBRARY" = "添加到书架";
 "REMOVE_FROM_LIBRARY" = "从书架删除";
 "MANGA_INFO" = "漫画信息";
