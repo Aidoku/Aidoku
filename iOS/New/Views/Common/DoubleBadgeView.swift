@@ -125,6 +125,15 @@ class DoubleBadgeView: UIView {
         updateLayout()
     }
 
+    override func tintColorDidChange() {
+        badgeView.backgroundColor = tintColor
+        if tintAdjustmentMode == .dimmed {
+            badgeView2.backgroundColor = .systemIndigo.grayscale()
+        } else {
+            badgeView2.backgroundColor = .systemIndigo
+        }
+    }
+
     func updateLayout() {
         NSLayoutConstraint.deactivate(badgeConstraints)
         if badgeNumber > 0 && badgeNumber2 > 0 {
@@ -165,5 +174,20 @@ class DoubleBadgeView: UIView {
             badgeView2.isHidden = true
         }
         self.invalidateIntrinsicContentSize()
+    }
+}
+
+private extension UIColor {
+    /// Returns a grayscale version of the color.
+    func grayscale() -> UIColor {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        guard getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return self }
+
+        let gray = red * 0.299 + green * 0.587 + blue * 0.114
+        return UIColor(red: gray, green: gray, blue: gray, alpha: alpha)
     }
 }

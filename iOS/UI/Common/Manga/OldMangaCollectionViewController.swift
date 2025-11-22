@@ -57,9 +57,12 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
         cell.sourceId = info.sourceId
         cell.mangaId = info.mangaId
         cell.title = info.title
+
         Task {
             await cell.loadImage(url: info.coverUrl)
         }
+
+        cell.setSelected(cell.isSelected, animated: false)
     }
 
     func configure(cell: MangaListCell, info: MangaInfo) {

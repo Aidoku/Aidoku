@@ -18,28 +18,7 @@ class MangaGridCell: UICollectionViewCell {
             titleLabel.text
         }
         set {
-            titleLabel.text = newValue ?? NSLocalizedString("UNTITLED", comment: "")
-        }
-    }
-
-    var badgeNumber: Int {
-        get {
-            Int(badgeLabel.text ?? "") ?? 0
-        }
-        set {
-            badgeLabel.text = newValue == 0 ? nil : String(newValue)
-            badgeView.isHidden = badgeLabel.text == nil
-            updateBadgeLayout()
-        }
-    }
-    var badgeNumber2: Int {
-        get {
-            Int(badgeLabel2.text ?? "") ?? 0
-        }
-        set {
-            badgeLabel2.text = newValue == 0 ? nil : String(newValue)
-            badgeView2.isHidden = badgeLabel2.text == nil
-            updateBadgeLayout()
+            titleLabel.text = newValue ?? NSLocalizedString("UNTITLED")
         }
     }
 
@@ -57,43 +36,7 @@ class MangaGridCell: UICollectionViewCell {
     private let overlayView = UIView()
     private let gradient = CAGradientLayer()
 
-    private lazy var badgeView = {
-        let badgeView = UIView()
-        badgeView.isHidden = true
-        badgeView.backgroundColor = tintColor
-        badgeView.layer.cornerRadius = 5
-        badgeView.translatesAutoresizingMaskIntoConstraints = false
-        badgeView.addSubview(badgeLabel)
-        return badgeView
-    }()
-
-    private let badgeLabel = {
-        let badgeLabel = UILabel()
-        badgeLabel.textColor = .white
-        badgeLabel.numberOfLines = 1
-        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
-        return badgeLabel
-    }()
-
-    private lazy var badgeView2 = {
-        let badgeView = UIView()
-        badgeView.isHidden = true
-        badgeView.backgroundColor = .systemIndigo
-        badgeView.layer.cornerRadius = 5
-        badgeView.translatesAutoresizingMaskIntoConstraints = false
-        badgeView.addSubview(badgeLabel2)
-        return badgeView
-    }()
-
-    private let badgeLabel2 = {
-        let badgeLabel = UILabel()
-        badgeLabel.textColor = .white
-        badgeLabel.numberOfLines = 1
-        badgeLabel.font = .systemFont(ofSize: 13, weight: .medium)
-        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
-        return badgeLabel
-    }()
+    lazy var badgeView = DoubleBadgeView()
 
     private let bookmarkView = UIImageView()
     private let highlightView = UIView()
@@ -160,13 +103,11 @@ class MangaGridCell: UICollectionViewCell {
     func configure() {
         contentView.clipsToBounds = true
         contentView.layer.cornerRadius = 5
-
         contentView.layer.borderWidth = 1
         contentView.layer.borderColor = UIColor.quaternarySystemFill.cgColor
 
         imageView.image = UIImage(named: "MangaPlaceholder")
         imageView.contentMode = .scaleAspectFill
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(imageView)
 
         gradient.frame = bounds
@@ -180,28 +121,23 @@ class MangaGridCell: UICollectionViewCell {
 
         overlayView.layer.insertSublayer(gradient, at: 0)
         overlayView.layer.cornerRadius = layer.cornerRadius
-        overlayView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(overlayView)
 
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.font = .systemFont(ofSize: 15, weight: .medium)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(titleLabel)
 
         contentView.addSubview(badgeView)
-        contentView.addSubview(badgeView2)
 
         bookmarkView.isHidden = true
         bookmarkView.image = UIImage(named: "bookmark")
         bookmarkView.contentMode = .scaleAspectFit
-        bookmarkView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(bookmarkView)
 
         highlightView.alpha = 0
         highlightView.backgroundColor = UIColor(white: 0, alpha: 0.5)
         highlightView.layer.cornerRadius = layer.cornerRadius
-        highlightView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(highlightView)
 
         shadowOverlayView.alpha = 0
@@ -213,29 +149,30 @@ class MangaGridCell: UICollectionViewCell {
     }
 
     func constrain() {
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        overlayView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        bookmarkView.translatesAutoresizingMaskIntoConstraints = false
+        highlightView.translatesAutoresizingMaskIntoConstraints = false
+
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            imageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
             overlayView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            overlayView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            overlayView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            overlayView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            overlayView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             overlayView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
 
-            badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10),
             badgeView.heightAnchor.constraint(equalToConstant: 20),
-            badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor),
-            badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor),
-            badgeView2.widthAnchor.constraint(equalTo: badgeLabel2.widthAnchor, constant: 10),
-            badgeView2.heightAnchor.constraint(equalToConstant: 20),
-            badgeLabel2.centerXAnchor.constraint(equalTo: badgeView2.centerXAnchor),
-            badgeLabel2.centerYAnchor.constraint(equalTo: badgeView2.centerYAnchor),
+            badgeView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
+            badgeView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
 
             bookmarkView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             bookmarkView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -244,12 +181,12 @@ class MangaGridCell: UICollectionViewCell {
 
             highlightView.topAnchor.constraint(equalTo: contentView.topAnchor),
             highlightView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            highlightView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            highlightView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             highlightView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
             shadowOverlayView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            shadowOverlayView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
-            shadowOverlayView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
+            shadowOverlayView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            shadowOverlayView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             shadowOverlayView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
             selectionView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
@@ -260,8 +197,6 @@ class MangaGridCell: UICollectionViewCell {
             checkmarkImageView.centerXAnchor.constraint(equalTo: selectionView.centerXAnchor),
             checkmarkImageView.centerYAnchor.constraint(equalTo: selectionView.centerYAnchor)
         ])
-
-        updateBadgeLayout()
     }
 
     override func layoutSubviews() {
@@ -274,16 +209,46 @@ class MangaGridCell: UICollectionViewCell {
         imageTask?.cancel()
         imageTask = nil
     }
+}
 
-    override func tintColorDidChange() {
-        badgeView.backgroundColor = tintColor
-        if tintAdjustmentMode == .dimmed {
-            badgeView2.backgroundColor = .systemIndigo.grayscale()
-        } else {
-            badgeView2.backgroundColor = .systemIndigo
+extension MangaGridCell {
+    func highlight() {
+        highlightView.alpha = 1
+    }
+
+    func unhighlight(animated: Bool = true) {
+        UIView.animate(withDuration: animated ? 0.3 : 0) {
+            self.highlightView.alpha = 0
         }
     }
 
+    func setEditing(_ editing: Bool, animated: Bool = true) {
+        isEditing = editing
+        if editing {
+            checkmarkImageView.isHidden = true
+        }
+        UIView.animate(withDuration: animated ? 0.3 : 0) {
+            self.shadowOverlayView.alpha = editing ? 1 : 0
+            self.selectionView.alpha = editing ? 1 : 0
+        }
+    }
+
+    func setSelected(_ selected: Bool, animated: Bool = true) {
+        guard isEditing else { return }
+        checkmarkImageView.isHidden = !selected
+        if animated {
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                self.shadowOverlayView.alpha = selected ? 0 : 1
+                self.selectionView.layer.shadowOpacity = selected ? 1 : 0
+            }
+        } else {
+            self.shadowOverlayView.alpha = selected ? 0 : 1
+            self.selectionView.layer.shadowOpacity = selected ? 1 : 0
+        }
+    }
+}
+
+extension MangaGridCell {
     func loadImage(url: URL?) async {
         guard let url else { return }
 
@@ -336,100 +301,5 @@ class MangaGridCell: UICollectionViewCell {
                     imageTask = nil
             }
         }
-    }
-
-    func highlight() {
-        highlightView.alpha = 1
-    }
-
-    func unhighlight(animated: Bool = true) {
-        UIView.animate(withDuration: animated ? 0.3 : 0) {
-            self.highlightView.alpha = 0
-        }
-    }
-
-    func setEditing(_ editing: Bool, animated: Bool = true) {
-        isEditing = editing
-        if editing {
-            checkmarkImageView.isHidden = true
-        }
-        UIView.animate(withDuration: animated ? 0.3 : 0) {
-            self.shadowOverlayView.alpha = editing ? 1 : 0
-            self.selectionView.alpha = editing ? 1 : 0
-        }
-    }
-
-    func select(animated: Bool = true) {
-        guard isEditing else { return }
-        checkmarkImageView.isHidden = false
-        UIView.animate(withDuration: animated ? 0.3 : 0) {
-            self.shadowOverlayView.alpha = 0
-            self.selectionView.layer.shadowOpacity = 1
-        }
-    }
-
-    func deselect(animated: Bool = true) {
-        guard isEditing else { return }
-        checkmarkImageView.isHidden = true
-        UIView.animate(withDuration: animated ? 0.3 : 0) {
-            self.shadowOverlayView.alpha = 1
-            self.selectionView.layer.shadowOpacity = 0
-        }
-    }
-
-    private func updateBadgeLayout() {
-        NSLayoutConstraint.deactivate(badgeConstraints)
-        if badgeNumber > 0 && badgeNumber2 > 0 {
-            // both badges visible, show side by side
-            badgeView.isHidden = false
-            badgeView2.isHidden = false
-            badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner] // top-left, bottom-left
-            badgeView2.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner] // top-right, bottom-right
-            badgeConstraints = [
-                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-                badgeView2.leadingAnchor.constraint(equalTo: badgeView.trailingAnchor),
-                badgeView2.topAnchor.constraint(equalTo: badgeView.topAnchor)
-            ]
-            NSLayoutConstraint.activate(badgeConstraints)
-        } else if badgeNumber > 0 {
-            // only first badge visible
-            badgeView.isHidden = false
-            badgeView2.isHidden = true
-            badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            badgeConstraints = [
-                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5)
-            ]
-            NSLayoutConstraint.activate(badgeConstraints)
-        } else if badgeNumber2 > 0 {
-            // only second badge visible
-            badgeView.isHidden = true
-            badgeView2.isHidden = false
-            badgeView2.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-            badgeConstraints = [
-                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView2.topAnchor.constraint(equalTo: topAnchor, constant: 5)
-            ]
-            NSLayoutConstraint.activate(badgeConstraints)
-        } else {
-            badgeView.isHidden = true
-            badgeView2.isHidden = true
-        }
-    }
-}
-
-private extension UIColor {
-    /// Returns a grayscale version of the color.
-    func grayscale() -> UIColor {
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-
-        guard getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return self }
-
-        let gray = red * 0.299 + green * 0.587 + blue * 0.114
-        return UIColor(red: gray, green: gray, blue: gray, alpha: alpha)
     }
 }
