@@ -133,7 +133,9 @@ class LibraryViewController: OldMangaCollectionViewController {
             action: #selector(removeSelectedFromLibrary)
         )
         deleteButton.image = UIImage(systemName: "trash")
-        deleteButton.tintColor = .red
+        if #unavailable(iOS 26.0) {
+            deleteButton.tintColor = .systemRed
+        }
 
         let addButton = UIBarButtonItem(
             title: nil,
