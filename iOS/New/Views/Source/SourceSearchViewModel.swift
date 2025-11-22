@@ -18,10 +18,10 @@ class SourceSearchViewModel: ObservableObject {
     @Published var shouldScrollToTop = false
     @Published var bookmarkedItems: Set<String> = .init()
 
+    private(set) var hasAppeared = false
     private(set) var hasMore = true
     private(set) var nextPage = 1
 
-    private var hasAppeared = false
     private var currentSearch: String = "_"
     private var searchTask: Task<(), Never>?
     private var loadMoreTask: Task<(), Never>?

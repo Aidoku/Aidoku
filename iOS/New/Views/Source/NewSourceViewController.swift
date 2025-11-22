@@ -197,6 +197,7 @@ class NewSourceViewController: UIViewController {
         if let filtersData {
             let enabledFilters = try? JSONDecoder().decode([FilterValue].self, from: filtersData)
             self.enabledFilters = enabledFilters ?? []
+            self.searchViewController.enabledFilters = self.enabledFilters
         }
     }
 
