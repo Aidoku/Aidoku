@@ -77,6 +77,19 @@ class LibraryViewController: OldMangaCollectionViewController {
     override var undoManager: UndoManager { libraryUndoManager }
     override var canBecomeFirstResponder: Bool { true }
 
+    override var usesListLayout: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: "Library.listView")
+        }
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: "Library.listView")
+        }
+    }
+
+    override init() {
+        super.init()
+    }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.isToolbarHidden = true
@@ -456,40 +469,56 @@ class LibraryViewController: OldMangaCollectionViewController {
     }
 
     // cells with unread badges
-    override func makeCellRegistration() -> CellRegistration {
-        CellRegistration { [weak self] cell, _, info in
-            guard let self else { return }
-            cell.sourceId = info.sourceId
-            cell.mangaId = info.mangaId
-            cell.title = info.title
-            if self.viewModel.badgeType.contains(.unread) {
-                cell.badgeNumber = info.unread
-            } else {
-                cell.badgeNumber = 0
-            }
-            if self.viewModel.badgeType.contains(.downloaded) {
-                cell.badgeNumber2 = info.downloads
-            } else {
-                cell.badgeNumber2 = 0
-            }
-            cell.setEditing(self.isEditing, animated: false)
-            if cell.isSelected {
-                cell.select(animated: false)
-            } else {
-                cell.deselect(animated: false)
-            }
-            Task {
-                await cell.loadImage(url: info.coverUrl)
-            }
+    override func configure(cell: MangaGridCell, info: MangaInfo) {
+        cell.sourceId = info.sourceId
+        cell.mangaId = info.mangaId
+        cell.title = info.title
+        if self.viewModel.badgeType.contains(.unread) {
+            cell.badgeNumber = info.unread
+        } else {
+            cell.badgeNumber = 0
         }
+        if self.viewModel.badgeType.contains(.downloaded) {
+            cell.badgeNumber2 = info.downloads
+        } else {
+            cell.badgeNumber2 = 0
+        }
+        cell.setEditing(self.isEditing, animated: false)
+        if cell.isSelected {
+            cell.select(animated: false)
+        } else {
+            cell.deselect(animated: false)
+        }
+        Task {
+            await cell.loadImage(url: info.coverUrl)
+        }
+    }
+
+    override func configure(cell: MangaListCell, info: MangaInfo) {
+        super.configure(cell: cell, info: info)
+
+        cell.badgeView.badgeNumber = viewModel.badgeType.contains(.unread) ? info.unread : 0
+        cell.badgeView.badgeNumber2 = viewModel.badgeType.contains(.downloaded) ? info.downloads : 0
+
+        if cell.badgeView.badgeNumber > 0 || cell.badgeView.badgeNumber2 > 0 {
+            cell.setBadgeVisible(true)
+        }
+
+        cell.setEditing(isEditing, animated: false)
     }
 
     override func setEditing(_ editing: Bool, animated: Bool) {
         super.setEditing(editing, animated: animated)
-//        collectionView.setEditing(editing, animated: animated)
         updateNavbarItems()
         updateToolbar()
-        reloadItems()
+
+        for cell in collectionView.visibleCells {
+            if let cell = cell as? MangaGridCell {
+                cell.setEditing(editing, animated: animated)
+            } else if let cell = cell as? MangaListCell {
+                cell.setEditing(editing, animated: animated)
+            }
+        }
     }
 }
 
@@ -983,6 +1012,31 @@ extension LibraryViewController {
             self.setEditing(true, animated: true)
         }
 
+        let layoutActions = [
+            UIAction(
+                title: NSLocalizedString("LAYOUT_GRID"),
+                image: UIImage(systemName: "square.grid.2x2"),
+                state: usesListLayout ? .off : .on
+            ) { [weak self] _ in
+                guard let self, self.usesListLayout else { return }
+                self.usesListLayout = false
+                self.collectionView.setCollectionViewLayout(self.makeCollectionViewLayout(), animated: true)
+                self.collectionView.reloadData()
+                self.updateMoreMenu()
+            },
+            UIAction(
+                title: NSLocalizedString("LAYOUT_LIST"),
+                image: UIImage(systemName: "list.bullet"),
+                state: usesListLayout ? .on : .off
+            ) { [weak self] _ in
+                guard let self, !self.usesListLayout else { return }
+                self.usesListLayout = true
+                self.collectionView.setCollectionViewLayout(self.makeCollectionViewLayout(), animated: true)
+                self.collectionView.reloadData()
+                self.updateMoreMenu()
+            }
+        ]
+
         let chevronIcon = UIImage(systemName: viewModel.sortAscending ? "chevron.up" : "chevron.down")
         let sortMenu = UIMenu(
             title: NSLocalizedString("SORT_BY"),
@@ -1045,6 +1099,7 @@ extension LibraryViewController {
         moreBarButton.menu = UIMenu(
             children: [
                 UIMenu(options: .displayInline, children: [selectAction]),
+                UIMenu(options: .displayInline, children: layoutActions),
                 UIMenu(options: .displayInline, children: [sortMenu, filterMenu])
             ]
         )
@@ -1103,11 +1158,14 @@ extension LibraryViewController {
         else { return }
 
         if isEditing {
-            if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+            let cell = collectionView.cellForItem(at: indexPath)
+            if let cell = cell as? MangaGridCell {
                 cell.select()
-                updateNavbarItems()
-                updateToolbar()
+            } else if let cell = cell as? MangaListCell {
+                cell.setSelected(true)
             }
+            updateNavbarItems()
+            updateToolbar()
             return
         }
 
@@ -1151,7 +1209,11 @@ extension LibraryViewController {
                             else {
                                 return nil
                             }
-                            return cell.contentView
+                            if let cell = cell as? MangaListCell {
+                                return cell.coverImageView
+                            } else {
+                                return cell.contentView
+                            }
                         }
                     }
                     navigationController.modalPresentationStyle = .fullScreen
@@ -1177,11 +1239,14 @@ extension LibraryViewController {
 
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         if isEditing {
-            if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+            let cell = collectionView.cellForItem(at: indexPath)
+            if let cell = cell as? MangaGridCell {
                 cell.deselect()
-                updateNavbarItems()
-                updateToolbar()
+            } else if let cell = cell as? MangaListCell {
+                cell.setSelected(false)
             }
+            updateNavbarItems()
+            updateToolbar()
         }
     }
 

@@ -15,6 +15,8 @@ class MangaListCell: UICollectionViewCell {
     private var url: String?
     private var imageTask: ImageTask?
 
+    private var isEditing = false
+
     lazy var coverImageView = {
         let imageView = GIFImageView()
         imageView.image = UIImage(named: "MangaPlaceholder")
@@ -59,6 +61,11 @@ class MangaListCell: UICollectionViewCell {
     }()
 
     private lazy var tagScrollView = TagScrollView()
+    private lazy var selectionView = SelectionCheckView(frame: .init(x: 0, y: 0, width: 21, height: 21))
+    lazy var badgeView = DoubleBadgeView()
+
+    private var coverLeadingConstraint: NSLayoutConstraint?
+    private var textTrailingConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -77,17 +84,29 @@ class MangaListCell: UICollectionViewCell {
         titleStackView.addArrangedSubview(subtitleLabel)
         titleStackView.addArrangedSubview(tagScrollView)
 
+        contentView.addSubview(selectionView)
         contentView.addSubview(coverImageView)
         contentView.addSubview(titleStackView)
+        contentView.addSubview(badgeView)
     }
 
     func constrain() {
         coverImageView.translatesAutoresizingMaskIntoConstraints = false
         bookmarkImageView.translatesAutoresizingMaskIntoConstraints = false
         titleStackView.translatesAutoresizingMaskIntoConstraints = false
+        selectionView.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
+
+        coverLeadingConstraint = coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+        textTrailingConstraint = titleStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
 
         NSLayoutConstraint.activate([
-            coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            selectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            selectionView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            selectionView.widthAnchor.constraint(equalToConstant: 21),
+            selectionView.heightAnchor.constraint(equalToConstant: 21),
+
+            coverLeadingConstraint!,
             coverImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             coverImageView.widthAnchor.constraint(equalToConstant: 100 * 2/3),
             coverImageView.heightAnchor.constraint(equalToConstant: 100),
@@ -97,13 +116,93 @@ class MangaListCell: UICollectionViewCell {
             bookmarkImageView.widthAnchor.constraint(equalToConstant: 17),
             bookmarkImageView.heightAnchor.constraint(equalToConstant: 27),
 
+            textTrailingConstraint!,
             titleStackView.leadingAnchor.constraint(equalTo: coverImageView.trailingAnchor, constant: 12),
             titleStackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            titleStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+
+            badgeView.heightAnchor.constraint(equalToConstant: 20),
+            badgeView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            badgeView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
 
-    func configure(with manga: AidokuRunner.Manga, isBookmarked: Bool) {
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        coverImageView.image = UIImage(named: "MangaPlaceholder")
+        imageTask?.cancel()
+        imageTask = nil
+        setBadgeVisible(false)
+    }
+
+    func setBadgeVisible(_ visible: Bool) {
+        badgeView.isHidden = !visible
+        if visible {
+            textTrailingConstraint?.isActive = false
+            textTrailingConstraint = titleStackView.trailingAnchor.constraint(lessThanOrEqualTo: badgeView.leadingAnchor, constant: -10)
+            textTrailingConstraint?.isActive = true
+        } else {
+            textTrailingConstraint?.isActive = false
+            textTrailingConstraint = titleStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+            textTrailingConstraint?.isActive = true
+        }
+    }
+}
+
+extension MangaListCell {
+    func highlight() {
+        alpha = 0.5
+    }
+
+    func unhighlight(animated: Bool = true) {
+        UIView.animate(withDuration: animated ? CATransaction.animationDuration() : 0) {
+            self.alpha = 1
+        }
+    }
+
+    func setEditing(_ editing: Bool, animated: Bool = true) {
+        guard isEditing != editing else { return }
+        isEditing = editing
+        if editing {
+            selectionView.setSelected(false, animated: false)
+        }
+        let shouldShowBadge = editing ? false : badgeView.badgeNumber > 0 || badgeView.badgeNumber2 > 2
+        if animated {
+            if editing {
+                self.selectionView.isHidden = false
+            }
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                self.setBadgeVisible(shouldShowBadge)
+                self.coverImageView.alpha = editing ? 0.5 : 1
+                self.coverLeadingConstraint?.constant = editing ? 40 : 0
+                self.layoutIfNeeded()
+            } completion: { _ in
+                if !editing {
+                    self.selectionView.isHidden = true
+                }
+            }
+        } else {
+            self.setBadgeVisible(shouldShowBadge)
+            self.coverImageView.alpha = editing ? 0.5 : 1
+            self.coverLeadingConstraint?.constant = editing ? 40 : 0
+            self.selectionView.isHidden = !editing
+        }
+    }
+
+    func setSelected(_ selected: Bool, animated: Bool = true) {
+        guard isEditing else { return }
+        selectionView.setSelected(selected, animated: animated)
+        if animated {
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                self.coverImageView.alpha = selected ? 1 : 0.5
+            }
+        } else {
+            self.coverImageView.alpha = selected ? 1 : 0.5
+        }
+    }
+}
+
+extension MangaListCell {
+    func configure(with manga: AidokuRunner.Manga, isBookmarked: Bool = false) {
         sourceId = manga.sourceKey
         titleLabel.text = manga.title
         subtitleLabel.text = manga.authors?.joined(separator: ", ")
@@ -122,13 +221,14 @@ class MangaListCell: UICollectionViewCell {
         }
     }
 
-    func highlight() {
-        alpha = 0.5
-    }
+    func configure(with info: MangaInfo) {
+        sourceId = info.sourceId
+        titleLabel.text = info.title
+        subtitleLabel.text = info.author
+        subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true
 
-    func unhighlight(animated: Bool = true) {
-        UIView.animate(withDuration: animated ? CATransaction.animationDuration() : 0) {
-            self.alpha = 1
+        Task {
+            await loadImage(url: info.coverUrl)
         }
     }
 }

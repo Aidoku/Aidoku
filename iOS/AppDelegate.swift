@@ -93,6 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Library.sortOption": 2, // lastOpened
                 "Library.sortAscending": false,
+                "Library.listView": false,
 
                 "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,
 

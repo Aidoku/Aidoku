@@ -154,22 +154,20 @@ class SourceViewController: OldMangaCollectionViewController {
         }
     }
 
-    override func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, _, info in
-            cell.sourceId = info.sourceId
-            cell.mangaId = info.mangaId
-            cell.title = info.title
-            Task {
-                let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
-                    CoreDataManager.shared.hasLibraryManga(
-                        sourceId: info.sourceId,
-                        mangaId: info.mangaId,
-                        context: context
-                    )
-                }
-                cell.showsBookmark = inLibrary
-                await cell.loadImage(url: info.coverUrl)
+    override func configure(cell: MangaGridCell, info: MangaInfo) {
+        cell.sourceId = info.sourceId
+        cell.mangaId = info.mangaId
+        cell.title = info.title
+        Task {
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.hasLibraryManga(
+                    sourceId: info.sourceId,
+                    mangaId: info.mangaId,
+                    context: context
+                )
             }
+            cell.showsBookmark = inLibrary
+            await cell.loadImage(url: info.coverUrl)
         }
     }
 

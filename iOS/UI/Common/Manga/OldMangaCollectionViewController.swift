@@ -11,6 +11,8 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
     static let itemSpacing: CGFloat = 12
     static let sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
 
+    var usesListLayout = false
+
     lazy var dataSource = makeDataSource()
 
     private var focusedIndexPath: IndexPath? {
@@ -26,6 +28,8 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
 
     override func configure() {
         super.configure()
+        collectionView.register(MangaGridCell.self, forCellWithReuseIdentifier: "MangaGridCell")
+        collectionView.register(MangaListCell.self, forCellWithReuseIdentifier: "MangaListCell")
         collectionView.dataSource = dataSource
         collectionView.contentInset = UIEdgeInsets(
             top: 0,
@@ -49,25 +53,31 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
     }
 
     // MARK: Cell Registration
-    typealias CellRegistration = UICollectionView.CellRegistration<MangaGridCell, MangaInfo>
-
-    func makeCellRegistration() -> CellRegistration {
-        CellRegistration { cell, _, info in
-            cell.sourceId = info.sourceId
-            cell.mangaId = info.mangaId
-            cell.title = info.title
-            Task {
-                await cell.loadImage(url: info.coverUrl)
-            }
+    func configure(cell: MangaGridCell, info: MangaInfo) {
+        cell.sourceId = info.sourceId
+        cell.mangaId = info.mangaId
+        cell.title = info.title
+        Task {
+            await cell.loadImage(url: info.coverUrl)
         }
+    }
+
+    func configure(cell: MangaListCell, info: MangaInfo) {
+        cell.configure(with: info)
+        cell.setSelected(cell.isSelected, animated: false)
     }
 
     // MARK: Collection View Layout
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            guard let self else { return nil }
             switch Section(rawValue: sectionIndex) {
                 case .pinned, .regular:
-                    return Self.makeGridLayoutSection(environment: environment)
+                    if self.usesListLayout {
+                        return Self.makeListLayoutSection(environment: environment)
+                    } else {
+                        return Self.makeGridLayoutSection(environment: environment)
+                    }
                 case nil:
                     return nil
             }
@@ -138,14 +148,20 @@ extension OldMangaCollectionViewController {
 // MARK: - Collection View Delegate
 extension OldMangaCollectionViewController {
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
-        if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
+        let cell = collectionView.cellForItem(at: indexPath)
+        if let cell = cell as? MangaGridCell {
+            cell.highlight()
+        } else if let cell = cell as? MangaListCell {
             cell.highlight()
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        if let cell = collectionView.cellForItem(at: indexPath) as? MangaGridCell {
-            cell.unhighlight(animated: true)
+        let cell = collectionView.cellForItem(at: indexPath)
+        if let cell = cell as? MangaGridCell {
+            cell.unhighlight()
+        } else if let cell = cell as? MangaListCell {
+            cell.unhighlight()
         }
     }
 
@@ -166,10 +182,35 @@ extension OldMangaCollectionViewController {
                 else {
                     return nil
                 }
-                return cell.contentView
+                if let cell = cell as? MangaListCell {
+                    return cell.coverImageView
+                } else {
+                    return cell.contentView
+                }
             }
         }
         navigationController?.pushViewController(viewController, animated: true)
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfiguration configuration: UIContextMenuConfiguration,
+        highlightPreviewForItemAt indexPath: IndexPath
+    ) -> UITargetedPreview? {
+        guard
+            let cell = collectionView.cellForItem(at: indexPath),
+            cell is MangaListCell
+        else {
+            return nil
+        }
+
+        // add some padding to list cell
+        let parameters = UIPreviewParameters()
+        let padding: CGFloat = 8
+        let rect = cell.bounds.insetBy(dx: -padding, dy: -padding)
+        parameters.visiblePath = UIBezierPath(roundedRect: rect, cornerRadius: 12)
+
+        return UITargetedPreview(view: cell.contentView, parameters: parameters)
     }
 }
 
@@ -182,9 +223,26 @@ extension OldMangaCollectionViewController {
 
     func makeDataSource() -> UICollectionViewDiffableDataSource<Section, MangaInfo> {
         UICollectionViewDiffableDataSource(
-            collectionView: collectionView,
-            cellProvider: makeCellRegistration().cellProvider
-        )
+            collectionView: collectionView
+        ) { [weak self] collectionView, indexPath, item in
+            // swiftlint:disable force_cast
+            if self?.usesListLayout ?? false {
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: "MangaListCell",
+                    for: indexPath
+                ) as! MangaListCell
+                self?.configure(cell: cell, info: item)
+                return cell
+            } else {
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: "MangaGridCell",
+                    for: indexPath
+                ) as! MangaGridCell
+                self?.configure(cell: cell, info: item)
+                return cell
+            }
+            // swiftlint:enable force_cast
+        }
     }
 }
 
