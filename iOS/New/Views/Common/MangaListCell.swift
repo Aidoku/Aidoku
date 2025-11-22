@@ -105,6 +105,8 @@ class MangaListCell: UICollectionViewCell {
     }
 
     private func configure() {
+        selectionView.isHidden = true // not editing by default
+
         coverImageView.addSubview(bookmarkImageView)
 
         titleStackView.addArrangedSubview(titleLabel)
