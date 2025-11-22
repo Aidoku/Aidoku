@@ -268,15 +268,19 @@ extension MangaGridCell {
 
         self.imageView.stopAnimatingGIF()
 
-        // ensure sources are loaded so we can get the modified image request
-        await SourceManager.shared.loadSources()
+        var urlRequest = URLRequest(url: url)
+        var cached = ImagePipeline.shared.cache.containsCachedImage(for: .init(urlRequest: urlRequest))
 
-        let urlRequest = if let fileUrl = url.toAidokuFileUrl() {
-            URLRequest(url: fileUrl)
-        } else if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
-            await source.getModifiedImageRequest(url: url, context: nil)
-        } else {
-            URLRequest(url: url)
+        if !cached {
+            if let fileUrl = url.toAidokuFileUrl() {
+                urlRequest = URLRequest(url: fileUrl)
+            } else if let sourceId {
+                // ensure sources are loaded so we can get the modified image request
+                await SourceManager.shared.loadSources()
+                if let source = SourceManager.shared.source(for: sourceId) {
+                    urlRequest = await source.getModifiedImageRequest(url: url, context: nil)
+                }
+            }
         }
 
         self.url = (urlRequest.url ?? url).absoluteString
@@ -286,7 +290,7 @@ extension MangaGridCell {
             processors: [DownsampleProcessor(width: bounds.width)]
         )
 
-        let cached = ImagePipeline.shared.cache.containsCachedImage(for: request)
+        cached = cached || ImagePipeline.shared.cache.containsCachedImage(for: request)
 
         imageTask = ImagePipeline.shared.loadImage(with: request) { [weak self] result in
             guard let self else { return }
