@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ReaderPageViewController: BaseViewController {
+class ReaderPageViewController: BaseObservingViewController {
 
     enum InfoPageType {
         case previous
@@ -52,7 +52,15 @@ class ReaderPageViewController: BaseViewController {
     private var pageSet = false
     private var page: Page?
     private var sourceId: String?
-    var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
+    private var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
+    private var pageBackground: PageBackground?
+
+    // disable auto page background in double page controller
+    var isInDoublePageController = false {
+        didSet {
+            loadPageBackground()
+        }
+    }
 
     /// Callback when image aspect ratio is updated
     var onAspectRatioUpdated: (() -> Void)?
@@ -127,6 +135,17 @@ class ReaderPageViewController: BaseViewController {
         }
     }
 
+    override func observe() {
+        addObserver(forName: "Reader.backgroundColor") { [weak self] _ in
+            self?.loadPageBackground()
+        }
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        loadPageBackground() // fix page background resetting on system appearance change
+    }
+
     func setPage(_ page: Page, sourceId: String? = nil) {
         guard !pageSet, let pageView else { return }
         pageSet = true
@@ -154,6 +173,38 @@ class ReaderPageViewController: BaseViewController {
 
             // Notify when image loading is complete with wide image status
             onImageisWideImage?(isWideImage)
+
+            // determine page background color
+            loadPageBackground()
+        }
+    }
+
+    func loadPageBackground() {
+        if
+            UserDefaults.standard.string(forKey: "Reader.backgroundColor") == "auto",
+            !isInDoublePageController,
+            pageBackground != nil || pageView?.imageView.image != nil
+        {
+            let background = if let pageBackground {
+                pageBackground
+            } else if let image = pageView?.imageView.image {
+                PageBackground.choose(for: image)
+            } else {
+                PageBackground.color(.clear)
+            }
+            pageBackground = background
+            switch background {
+                case .color(let color):
+                    view.backgroundColor = color
+                case .gradient(let gradient):
+                    gradient.frame = view.bounds
+                    view.layer.insertSublayer(gradient, at: 0)
+            }
+        } else {
+            view.backgroundColor = nil
+            if case .gradient = pageBackground {
+                view.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
+            }
         }
     }
 

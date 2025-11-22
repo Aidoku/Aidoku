@@ -93,9 +93,10 @@ struct ReaderSettingsView: View {
                             key: "Reader.backgroundColor",
                             title: NSLocalizedString("READER_BG_COLOR"),
                             value: .select(.init(
-                                values: ["system", "white", "black"],
+                                values: ["system", "auto", "white", "black"],
                                 titles: [
                                     NSLocalizedString("READER_BG_COLOR_SYSTEM"),
+                                    NSLocalizedString("READER_BG_COLOR_AUTO"),
                                     NSLocalizedString("READER_BG_COLOR_WHITE"),
                                     NSLocalizedString("READER_BG_COLOR_BLACK")
                                 ]

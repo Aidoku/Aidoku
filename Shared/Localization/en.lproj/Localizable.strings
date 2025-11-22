@@ -459,6 +459,7 @@
 "DISABLE_QUICK_ACTIONS" = "Disable Quick Actions";
 "READER_BG_COLOR" = "Background Color";
 "READER_BG_COLOR_SYSTEM" = "System";
+"READER_BG_COLOR_AUTO" = "Automatic";
 "READER_BG_COLOR_WHITE" = "White";
 "READER_BG_COLOR_BLACK" = "Black";
 "TAP_ZONES" = "Tap Zones";

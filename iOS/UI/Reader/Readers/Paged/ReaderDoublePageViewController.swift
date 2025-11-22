@@ -40,6 +40,8 @@ class ReaderDoublePageViewController: BaseViewController {
         self.secondPageController = secondPage
         self.direction = direction
         super.init()
+        self.firstPageController.isInDoublePageController = true
+        self.secondPageController.isInDoublePageController = true
     }
 
     override func configure() {

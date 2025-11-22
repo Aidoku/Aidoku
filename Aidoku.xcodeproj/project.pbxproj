@@ -476,6 +476,7 @@
 		FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A418285B8EBC007116C9 /* TrackState.swift */; };
 		FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A418285B8EBC007116C9 /* TrackState.swift */; };
 		FBD796682ED1333D00BD05F4 /* DoubleBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD796672ED1333C00BD05F4 /* DoubleBadgeView.swift */; };
+		FBD7966A2ED270B500BD05F4 /* PageBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD796692ED270B100BD05F4 /* PageBackground.swift */; };
 		FBE3E4922DD163DD00EF8145 /* BetterBorderedButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4912DD163D900EF8145 /* BetterBorderedButtonStyle.swift */; };
 		FBE3E4942DD2487000EF8145 /* HomeImageScrollerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4932DD2486B00EF8145 /* HomeImageScrollerView.swift */; };
 		FBE3E4972DD401B700EF8145 /* ReaderTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4962DD401B100EF8145 /* ReaderTextViewController.swift */; };
@@ -917,6 +918,7 @@
 		FBD6A415285B7CC3007116C9 /* MyAnimeListTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAnimeListTracker.swift; sourceTree = "<group>"; };
 		FBD6A418285B8EBC007116C9 /* TrackState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackState.swift; sourceTree = "<group>"; };
 		FBD796672ED1333C00BD05F4 /* DoubleBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleBadgeView.swift; sourceTree = "<group>"; };
+		FBD796692ED270B100BD05F4 /* PageBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageBackground.swift; sourceTree = "<group>"; };
 		FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.10.xcdatamodel; sourceTree = "<group>"; };
 		FBD8A6042CC5AA6F00B1F7D2 /* ne */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ne; path = ne.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBD8A6052CC5AA8A00B1F7D2 /* sq */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sq; path = sq.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1768,6 +1770,7 @@
 				FB662F052DA81B8200007514 /* Modifiers */,
 				FBE7A58A2DE11A5300CA5B60 /* CustomSearchable.swift */,
 				FB57A6032E7F021200C9FD40 /* LoginShimViewController.swift */,
+				FBD796692ED270B100BD05F4 /* PageBackground.swift */,
 				FB8E48D62DBFCFFF002A3621 /* NavigationCoordinator.swift */,
 				FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */,
 			);
@@ -2393,6 +2396,7 @@
 				FB0E1CD4288AEA8A00B67BA9 /* AniListQueries.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */,
+				FBD7966A2ED270B500BD05F4 /* PageBackground.swift in Sources */,
 				FB248CC42EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
 				FB8E318B2DB98AFE0084F899 /* ChapterListHeaderView.swift in Sources */,
 				FB662F0D2DA81B8200007514 /* MangaGridButtonStyle.swift in Sources */,
