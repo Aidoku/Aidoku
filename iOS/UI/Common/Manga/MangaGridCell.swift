@@ -234,6 +234,7 @@ extension MangaGridCell {
     }
 
     func setEditing(_ editing: Bool, animated: Bool = true) {
+        guard isEditing != editing else { return }
         isEditing = editing
         if editing {
             checkmarkImageView.isHidden = true
