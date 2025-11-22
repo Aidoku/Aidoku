@@ -1079,10 +1079,16 @@ extension LibraryViewController {
 
         if isEditing {
             let cell = collectionView.cellForItem(at: indexPath)
+            guard let cell else { return }
             if let cell = cell as? MangaGridCell {
                 cell.setSelected(true)
             } else if let cell = cell as? MangaListCell {
                 cell.setSelected(true)
+            }
+            if #available(iOS 17.5, *) {
+                UISelectionFeedbackGenerator().selectionChanged(at: cell.center)
+            } else {
+                UISelectionFeedbackGenerator().selectionChanged()
             }
             updateNavbarItems()
             updateToolbar()
