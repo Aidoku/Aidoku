@@ -22,7 +22,7 @@ class MangaListCell: UICollectionViewCell {
         set {
             badgeView.badgeNumber = newValue
             if newValue > 0 {
-                setBadgeVisible(true)
+                setBadgeVisible(!isEditing)
             } else if badgeNumber2 <= 0 {
                 setBadgeVisible(false)
             }
@@ -34,7 +34,7 @@ class MangaListCell: UICollectionViewCell {
         set {
             badgeView.badgeNumber2 = newValue
             if newValue > 0 {
-                setBadgeVisible(true)
+                setBadgeVisible(!isEditing)
             } else if badgeNumber <= 0 {
                 setBadgeVisible(false)
             }
