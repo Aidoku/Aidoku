@@ -157,7 +157,7 @@
 "LANDSCAPE" = "横屏";
 "READER" = "阅读";
 "OPEN_READER_VIEW" = "打开阅读界面";
-"UNREAD_CHAPTER_BADGES" = "未读章节标记";
+"UNREAD_CHAPTER_BADGES" = "未读章节数";
 "PIN_MANGA" = "置顶漫画";
 "PIN_MANGA_TYPE" = "置顶类型";
 "PIN_MANGA_UNREAD" = "未读";
@@ -397,7 +397,7 @@
 "NO_EXTERNAL_SOURCES" = "无外部来源";
 "NO_EXTERNAL_SOURCES_INFO" = "在设置选项中配置来源列表以安装外部来源。";
 "NO_AVAILABLE_SOURCES" = "无可用来源";
-"NO_AVAILABLE_SOURCES_INFO" = "调整筛选器以查看更多的外部来源。";
+"NO_AVAILABLE_SOURCES_INFO" = "调整你的过滤器以查看更多外部来源。";
 "ALL_SOURCES_INSTALLED" = "已安装所有来源";
 "ALL_SOURCES_INSTALLED_INFO" = "没有其他外部来源可以安装。";
 "IMPORT" = "导入";
@@ -508,7 +508,7 @@
 "%@_EXPERIMENTAL" = "%@（实验性）";
 "UPSCALE_IMAGES" = "增强画质";
 "UPSCALING_MODELS" = "增强模型";
-"UPSCALE_MAX_IMAGE_HEIGHT" = "最大图像高度";
+"UPSCALE_MAX_IMAGE_HEIGHT" = "图片最大高度";
 "UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "图片高于最大图片高度将不会被放大。";
 "ENABLED_MODEL" = "已启用模型";
 "AVAILABLE_MODELS" = "可用模型";
@@ -603,7 +603,7 @@
 "COMPRESS_DOWNLOADS" = "压缩下载";
 "METADATA_DETECTED" = "检测到的旧版元数据";
 "METADATA_DETECTED_TEXT" = "旧版 JSON 元数据将迁移到 ComicInfo.xml 文件。";
-"DOWNLOADED_CHAPTER_BADGES" = "已下载章节徽章";
+"DOWNLOADED_CHAPTER_BADGES" = "已下载章节数";
 "VIEW_FILES" = "查看文件";
 "PROCESSING_ENTRIES" = "处理条目中…";
 "NO_HISTORY" = "无阅读记录";
@@ -619,3 +619,9 @@
 "BACKUP_INTERVAL" = "备份间隔";
 "AUTO" = "自动";
 "LAST_BACKED_UP_%@" = "上次自动备份时间：%@";
+"BACKGROUND_DOWNLOADING" = "后台下载";
+"AND_MORE" = "以及更多";
+"NOT_%@" = "不是 %@";
+"LAYOUT_GRID" = "网格";
+"LAYOUT_LIST" = "列表";
+"REMOVE_FILTER" = "清除筛选";

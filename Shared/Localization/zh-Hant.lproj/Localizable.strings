@@ -113,7 +113,7 @@
 "NO_NEXT_CHAPTER" = "沒有下一章";
 "NO_PREVIOUS_CHAPTER" = "沒有上一章";
 "READER_SETTINGS" = "閱讀設定";
-"EXPERIMENTAL" = "實驗性";
+"EXPERIMENTAL" = "試驗性";
 "REMOVE_ALL_MANGA_HISTORY" = "清空漫畫閱讀記錄";
 "APPEARANCE" = "外觀";
 "APPEARANCE_LIGHT" = "淺色";
@@ -256,7 +256,7 @@
 "START_TRACKING" = "開始追蹤進度";
 "STOP_TRACKING" = "停止追蹤進度";
 "SKIPPING_CHAPTERS" = "跳過%i章，可能是因為來源缺少這些章節或它們已被過濾掉";
-"NO_UPDATES" = "沒有更新";
+"NO_UPDATES" = "沒有更新項目";
 "%lld_PLUS_MORE" = "+%lld章";
 "DELETE_DOWNLOAD_AFTER_READING" = "閱讀完刪除下載";
 "CROP_BORDERS" = "裁切邊緣";
@@ -330,7 +330,7 @@
 "UPLOAD_DATE" = "上傳日期";
 "SCANLATOR" = "掃譯者";
 "NO_SCANLATOR" = "沒有掃譯者";
-"MANGA_UPDATES" = "更新";
+"MANGA_UPDATES" = "更新項目";
 "ONLY_DOWNLOAD_ON_WIFI" = "只在使用Wi-Fi時下載";
 "READER_BG_COLOR_SYSTEM" = "系統";
 "RENAME_CATEGORY_FAIL" = "無法重新命名類別";
@@ -470,7 +470,7 @@
 "CREATE_BACKUP" = "新增備份";
 "BACKUP_INFO_TITLE" = "備份資訊";
 "AUTOMATIC_BACKUPS" = "自動備份";
-"BACKUP_INTERVAL" = "備份間隔時間";
+"BACKUP_INTERVAL" = "備份間隔";
 "EVERY_6_HOURS" = "每6小時";
 "NO_HISTORY" = "沒有閱讀記錄";
 "NO_RECENT_SEARCHES" = "沒有最近的搜尋項目";
@@ -480,3 +480,18 @@
 "NO_RECENT_SEARCHES_TEXT" = "你最近的搜尋項目會顯示在此處。";
 "BACKGROUND_REFRESH" = "背景更新";
 "LAST_BACKED_UP_%@" = "上次自動備份：%@";
+"SOURCES" = "來源";
+"DOWNLOADED_CHAPTER_BADGES" = "顯示已下載章節數";
+"AUTO" = "自動";
+"SEARCH_OPTIONS" = "搜尋方式選項";
+"BACKGROUND_DOWNLOADING" = "背景下載";
+"NAME" = "名稱";
+"DATE" = "日期";
+"%@_EXPERIMENTAL" = "%@（試驗性）";
+"ICLOUD_SYNC_TEXT_EXPERIMENTAL" = "「iCloud同步」為試驗性功能。啟用或停用可能會造成資料遺失。";
+"SET_COVER_IMAGE" = "設為封面";
+"FORMAT_PDF" = "PDF";
+"FORMAT_EPUB" = "EPUB";
+"LAYOUT_LIST" = "列表";
+"LAYOUT_GRID" = "格狀";
+"RECENTLY_SEARCHED" = "最近搜尋項目";
