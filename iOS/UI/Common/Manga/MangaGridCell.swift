@@ -210,7 +210,8 @@ class MangaGridCell: UICollectionViewCell {
     }
 
     override func layoutSubviews() {
-        gradient.frame = bounds
+        super.layoutSubviews()
+        gradient.frame = contentView.bounds
     }
 
     override func prepareForReuse() {
