@@ -5,6 +5,7 @@
 //  Created by Skitty on 7/25/22.
 //
 
+import AidokuRunner
 import CoreData
 import UIKit
 
@@ -76,6 +77,7 @@ class LibraryViewModel {
         case tracking
         case hasUnread
         case started
+        case completed
         case source
 
         var title: String {
@@ -84,6 +86,7 @@ class LibraryViewModel {
                 case .tracking: NSLocalizedString("IS_TRACKING")
                 case .hasUnread: NSLocalizedString("FILTER_HAS_UNREAD")
                 case .started: NSLocalizedString("FILTER_STARTED")
+                case .completed: NSLocalizedString("COMPLETED")
                 case .source: NSLocalizedString("SOURCES")
             }
         }
@@ -94,6 +97,7 @@ class LibraryViewModel {
                 case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                 case .hasUnread: "eye.slash"
                 case .started: "clock"
+                case .completed: "checkmark.circle"
                 case .source: "globe"
             }
             return UIImage(systemName: name)
@@ -243,6 +247,8 @@ extension LibraryViewModel {
                                 mangaId: info.mangaId,
                                 context: context
                             )
+                        case .completed:
+                            condition = mangaObject.status == AidokuRunner.PublishingStatus.completed.rawValue
                         case .source:
                             guard let sourceId = filter.value else { continue }
                             if filter.exclude {
