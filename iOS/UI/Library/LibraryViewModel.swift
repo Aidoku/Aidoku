@@ -66,13 +66,13 @@ class LibraryViewModel {
         static let downloaded = BadgeType(rawValue: 1 << 1)
     }
 
-    struct LibraryFilter {
+    struct LibraryFilter: Codable {
         var type: FilterMethod
         var value: String?
         var exclude: Bool
     }
 
-    enum FilterMethod: CaseIterable {
+    enum FilterMethod: Int, Codable, CaseIterable {
         case downloaded
         case tracking
         case hasUnread
@@ -126,12 +126,26 @@ class LibraryViewModel {
         return type
     }()
 
-    var filters: [LibraryFilter] = []
+    var filters: [LibraryFilter] {
+        didSet {
+            saveFilters()
+        }
+    }
 
     var categories: [String] = []
     lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
         didSet {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+        }
+    }
+
+    init() {
+        let filtersData = UserDefaults.standard.data(forKey: "Library.filters")
+        if let filtersData {
+            let filters = try? JSONDecoder().decode([LibraryFilter].self, from: filtersData)
+            self.filters = filters ?? []
+        } else {
+            self.filters = []
         }
     }
 }
@@ -167,6 +181,7 @@ extension LibraryViewModel {
         }
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
         let currentCategory = self.currentCategory
         let sortMethod = self.sortMethod
@@ -576,6 +591,13 @@ extension LibraryViewModel {
             filters.append(LibraryFilter(type: method, value: value, exclude: false))
         }
         await loadLibrary()
+    }
+
+    private func saveFilters() {
+        let filtersData = try? JSONEncoder().encode(filters)
+        if let filtersData {
+            UserDefaults.standard.set(filtersData, forKey: "Library.filters")
+        }
     }
 
     func search(query: String) async {
