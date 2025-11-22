@@ -1212,8 +1212,8 @@ extension LibraryViewController {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             var actions: [UIMenuElement] = []
             let singleAttributes = mangaInfo.count > 1
-            ? .disabled
-            : UIMenuElement.Attributes()
+                ? .disabled
+                : UIMenuElement.Attributes()
 
             if let url = manga.url {
                 actions.append(UIMenu(identifier: .share, options: .displayInline, children: [
@@ -1264,11 +1264,10 @@ extension LibraryViewController {
 
             actions.append(UIAction(
                 title: NSLocalizedString("MIGRATE"),
-                image: UIImage(systemName: "arrow.left.arrow.right"),
-                attributes: singleAttributes
+                image: UIImage(systemName: "arrow.left.arrow.right")
             ) { [weak self] _ in
-                let manga = manga.toManga()
-                let migrateView = MigrateMangaView(manga: [manga])
+                let manga = mangaInfo.map { $0.toManga() }
+                let migrateView = MigrateMangaView(manga: manga)
                 self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: migrateView)), animated: true)
             })
 
