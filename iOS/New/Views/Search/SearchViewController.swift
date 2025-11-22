@@ -259,7 +259,7 @@ class SearchViewController: UIViewController {
                     if code == "multi" {
                         NSLocalizedString("MULTI_LANGUAGE")
                     } else {
-                        Locale.current.localizedString(forLanguageCode: code) ?? code
+                        Locale.current.localizedString(forIdentifier: code) ?? code
                     }
                 }(),
                 value: code
