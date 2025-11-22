@@ -67,21 +67,14 @@ class DoubleBadgeView: UIView {
     private var badgeConstraints: [NSLayoutConstraint] = []
 
     override var intrinsicContentSize: CGSize {
-        layoutIfNeeded()
-
         var width: CGFloat = 0
-        var height: CGFloat = 0
-
         if !badgeView.isHidden {
-            width += badgeView.frame.width
-            height = max(height, badgeView.frame.height)
+            width += (badgeLabel.text?.size(withAttributes: [.font: badgeLabel.font as Any]).width ?? 0) + 10
         }
         if !badgeView2.isHidden {
-            width += badgeView2.frame.width
-            height = max(height, badgeView2.frame.height)
+            width += (badgeLabel2.text?.size(withAttributes: [.font: badgeLabel2.font as Any]).width ?? 0) + 10
         }
-
-        return CGSize(width: width, height: height)
+        return CGSize(width: width, height: 20)
     }
 
     override init(frame: CGRect) {
@@ -111,11 +104,14 @@ class DoubleBadgeView: UIView {
         badgeLabel2.setContentCompressionResistancePriority(.required, for: .horizontal)
 
         NSLayoutConstraint.activate([
+            badgeView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            badgeView.centerYAnchor.constraint(equalTo: centerYAnchor),
             badgeView.widthAnchor.constraint(equalTo: badgeLabel.widthAnchor, constant: 10),
             badgeView.heightAnchor.constraint(equalToConstant: 20),
             badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor),
             badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor),
 
+            badgeView2.centerYAnchor.constraint(equalTo: centerYAnchor),
             badgeView2.widthAnchor.constraint(equalTo: badgeLabel2.widthAnchor, constant: 10),
             badgeView2.heightAnchor.constraint(equalToConstant: 20),
             badgeLabel2.centerXAnchor.constraint(equalTo: badgeView2.centerXAnchor),
@@ -143,10 +139,7 @@ class DoubleBadgeView: UIView {
             badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMinXMaxYCorner] // top-left, bottom-left
             badgeView2.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner] // top-right, bottom-right
             badgeConstraints = [
-                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5),
-                badgeView2.leadingAnchor.constraint(equalTo: badgeView.trailingAnchor),
-                badgeView2.topAnchor.constraint(equalTo: badgeView.topAnchor)
+                badgeView2.leadingAnchor.constraint(equalTo: badgeView.trailingAnchor)
             ]
             NSLayoutConstraint.activate(badgeConstraints)
         } else if badgeNumber > 0 {
@@ -155,8 +148,7 @@ class DoubleBadgeView: UIView {
             badgeView2.isHidden = true
             badgeView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             badgeConstraints = [
-                badgeView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView.topAnchor.constraint(equalTo: topAnchor, constant: 5)
+                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
             ]
             NSLayoutConstraint.activate(badgeConstraints)
         } else if badgeNumber2 > 0 {
@@ -165,15 +157,18 @@ class DoubleBadgeView: UIView {
             badgeView2.isHidden = false
             badgeView2.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             badgeConstraints = [
-                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-                badgeView2.topAnchor.constraint(equalTo: topAnchor, constant: 5)
+                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
             ]
             NSLayoutConstraint.activate(badgeConstraints)
         } else {
             badgeView.isHidden = true
             badgeView2.isHidden = true
+            badgeConstraints = [
+                badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
+            ]
+            NSLayoutConstraint.activate(badgeConstraints)
         }
-        self.invalidateIntrinsicContentSize()
+        invalidateIntrinsicContentSize()
     }
 }
 

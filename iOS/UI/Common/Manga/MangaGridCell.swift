@@ -31,12 +31,21 @@ class MangaGridCell: UICollectionViewCell {
         }
     }
 
+    var badgeNumber: Int {
+        get { badgeView.badgeNumber }
+        set { badgeView.badgeNumber = newValue }
+    }
+    var badgeNumber2: Int {
+        get { badgeView.badgeNumber2 }
+        set { badgeView.badgeNumber2 = newValue }
+    }
+
     let imageView = GIFImageView()
     private let titleLabel = UILabel()
     private let overlayView = UIView()
     private let gradient = CAGradientLayer()
 
-    lazy var badgeView = DoubleBadgeView()
+    private lazy var badgeView = DoubleBadgeView()
 
     private let bookmarkView = UIImageView()
     private let highlightView = UIView()
@@ -152,6 +161,7 @@ class MangaGridCell: UICollectionViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         overlayView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
         bookmarkView.translatesAutoresizingMaskIntoConstraints = false
         highlightView.translatesAutoresizingMaskIntoConstraints = false
 

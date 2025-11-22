@@ -17,6 +17,31 @@ class MangaListCell: UICollectionViewCell {
 
     private var isEditing = false
 
+    var badgeNumber: Int {
+        get { badgeView.badgeNumber }
+        set {
+            badgeView.badgeNumber = newValue
+            if newValue > 0 {
+                setBadgeVisible(true)
+            } else if badgeNumber2 <= 0 {
+                setBadgeVisible(false)
+            }
+            badgeWidthConstraint?.constant = badgeView.intrinsicContentSize.width
+        }
+    }
+    var badgeNumber2: Int {
+        get { badgeView.badgeNumber2 }
+        set {
+            badgeView.badgeNumber2 = newValue
+            if newValue > 0 {
+                setBadgeVisible(true)
+            } else if badgeNumber <= 0 {
+                setBadgeVisible(false)
+            }
+            badgeWidthConstraint?.constant = badgeView.intrinsicContentSize.width
+        }
+    }
+
     lazy var coverImageView = {
         let imageView = GIFImageView()
         imageView.image = UIImage(named: "MangaPlaceholder")
@@ -37,6 +62,7 @@ class MangaListCell: UICollectionViewCell {
     private lazy var titleStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
+        stackView.alignment = .leading
         stackView.spacing = 4
         return stackView
     }()
@@ -62,10 +88,11 @@ class MangaListCell: UICollectionViewCell {
 
     private lazy var tagScrollView = TagScrollView()
     private lazy var selectionView = SelectionCheckView(frame: .init(x: 0, y: 0, width: 21, height: 21))
-    lazy var badgeView = DoubleBadgeView()
+    private lazy var badgeView = DoubleBadgeView()
 
     private var coverLeadingConstraint: NSLayoutConstraint?
     private var textTrailingConstraint: NSLayoutConstraint?
+    private var badgeWidthConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -99,6 +126,7 @@ class MangaListCell: UICollectionViewCell {
 
         coverLeadingConstraint = coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
         textTrailingConstraint = titleStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+        badgeWidthConstraint = badgeView.widthAnchor.constraint(equalToConstant: badgeView.intrinsicContentSize.width)
 
         NSLayoutConstraint.activate([
             selectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -120,6 +148,7 @@ class MangaListCell: UICollectionViewCell {
             titleStackView.leadingAnchor.constraint(equalTo: coverImageView.trailingAnchor, constant: 12),
             titleStackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
 
+            badgeWidthConstraint!,
             badgeView.heightAnchor.constraint(equalToConstant: 20),
             badgeView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             badgeView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
@@ -134,7 +163,7 @@ class MangaListCell: UICollectionViewCell {
         setBadgeVisible(false)
     }
 
-    func setBadgeVisible(_ visible: Bool) {
+    private func setBadgeVisible(_ visible: Bool) {
         badgeView.isHidden = !visible
         if visible {
             textTrailingConstraint?.isActive = false
