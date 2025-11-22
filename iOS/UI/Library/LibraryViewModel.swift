@@ -12,6 +12,7 @@ import UIKit
 class LibraryViewModel {
     var manga: [MangaInfo] = []
     var pinnedManga: [MangaInfo] = []
+    var sourceKeys: [String] = []
 
     // temporary storage when searching
     private var storedManga: [MangaInfo]?
@@ -66,19 +67,22 @@ class LibraryViewModel {
 
     struct LibraryFilter {
         var type: FilterMethod
+        var value: String?
         var exclude: Bool
     }
 
-    enum FilterMethod: Int, CaseIterable {
-        case downloaded = 0
+    enum FilterMethod: CaseIterable {
+        case downloaded
         case tracking
         case unread
+        case source
 
         var title: String {
             switch self {
                 case .downloaded: NSLocalizedString("DOWNLOADED")
                 case .tracking: NSLocalizedString("IS_TRACKING")
                 case .unread: NSLocalizedString("FILTER_NOT_READ")
+                case .source: NSLocalizedString("SOURCES")
             }
         }
 
@@ -86,7 +90,8 @@ class LibraryViewModel {
             let name = switch self {
                 case .downloaded: "arrow.down.circle"
                 case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
-                case .unread: "clock.badge.xmark"
+                case .unread: "eye.slash"
+                case .source: "globe"
             }
             return UIImage(systemName: name)
         }
@@ -94,6 +99,7 @@ class LibraryViewModel {
         var isAvailable: Bool {
             switch self {
                 case .tracking: TrackerManager.shared.hasAvailableTrackers
+                case .source: false // needs custom handling
                 default: true
             }
         }
@@ -165,11 +171,13 @@ extension LibraryViewModel {
             success,
             pinnedManga,
             manga,
+            sourceKeys,
             checkDownloads,
             excludeDownloads
         ) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             var pinnedManga: [MangaInfo] = []
             var manga: [MangaInfo] = []
+            var sourceKeys: Set<String> = []
             var checkDownloads = false
             var excludeDownloads = false
 
@@ -188,7 +196,7 @@ extension LibraryViewModel {
                 ]
             }
             guard let libraryObjects = try? context.fetch(request) else {
-                return (false, pinnedManga, manga, checkDownloads, excludeDownloads)
+                return (false, pinnedManga, manga, sourceKeys, checkDownloads, excludeDownloads)
             }
 
             var ids = Set<String>()
@@ -209,7 +217,10 @@ extension LibraryViewModel {
                     url: mangaObject.url.flatMap { URL(string: $0) }
                 )
 
+                sourceKeys.insert(mangaObject.sourceId)
+
                 // process filters
+                var filteredSourceKeys: Set<String> = []
                 for filter in filters {
                     let condition: Bool
                     switch filter.type {
@@ -229,11 +240,23 @@ extension LibraryViewModel {
                                 mangaId: info.mangaId,
                                 context: context
                             )
+                        case .source:
+                            guard let sourceId = filter.value else { continue }
+                            if filter.exclude {
+                                condition = info.sourceId == sourceId
+                            } else {
+                                // handle included source filters as OR
+                                filteredSourceKeys.insert(sourceId)
+                                continue
+                            }
                     }
                     let shouldSkip = filter.exclude ? condition : !condition
                     if shouldSkip {
                         continue main
                     }
+                }
+                if !filteredSourceKeys.isEmpty && !filteredSourceKeys.contains(info.sourceId) {
+                    continue main
                 }
 
                 switch pinType {
@@ -251,13 +274,14 @@ extension LibraryViewModel {
                 }
             }
 
-            return (true, pinnedManga, manga, checkDownloads, excludeDownloads)
+            return (true, pinnedManga, manga, sourceKeys, checkDownloads, excludeDownloads)
         }
 
         guard success else { return }
 
         self.pinnedManga = pinnedManga
         self.manga = manga
+        self.sourceKeys = sourceKeys.sorted()
 
         await fetchUnreads(skipSortCheck: true)
         await fetchDownloadCounts()
@@ -524,16 +548,16 @@ extension LibraryViewModel {
         await sortLibrary()
     }
 
-    func toggleFilter(method: FilterMethod) async {
-        let filterIndex = filters.firstIndex(where: { $0.type == method })
-        if let filterIndex = filterIndex {
+    func toggleFilter(method: FilterMethod, value: String? = nil) async {
+        let filterIndex = filters.firstIndex(where: { $0.type == method && $0.value == value })
+        if let filterIndex {
             if filters[filterIndex].exclude {
                 filters.remove(at: filterIndex)
             } else {
                 filters[filterIndex].exclude = true
             }
         } else {
-            filters.append(LibraryFilter(type: method, exclude: false))
+            filters.append(LibraryFilter(type: method, value: value, exclude: false))
         }
         await loadLibrary()
     }

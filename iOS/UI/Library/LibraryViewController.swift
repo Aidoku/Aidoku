@@ -822,9 +822,9 @@ extension LibraryViewController {
         }
     }
 
-    func toggleFilter(method: LibraryViewModel.FilterMethod) {
+    func toggleFilter(method: LibraryViewModel.FilterMethod, value: String? = nil) {
         Task {
-            await viewModel.toggleFilter(method: method)
+            await viewModel.toggleFilter(method: method, value: value)
             updateDataSource()
             if #available(iOS 26.0, *) {
                 updateFilterMenuState()
@@ -834,8 +834,8 @@ extension LibraryViewController {
         }
     }
 
-    func filterState(for method: LibraryViewModel.FilterMethod) -> UIMenuElement.State {
-        if let filter = viewModel.filters.first(where: { $0.type == method }) {
+    func filterState(for method: LibraryViewModel.FilterMethod, value: String? = nil) -> UIMenuElement.State {
+        if let filter = viewModel.filters.first(where: { $0.type == method && $0.value == value }) {
             filter.exclude ? .mixed : .on
         } else {
             .off
@@ -859,7 +859,12 @@ extension LibraryViewController {
     func filtersSubtitle() -> String? {
         guard !viewModel.filters.isEmpty else { return nil }
         var options: [String] = []
+        var methods: Set<LibraryViewModel.FilterMethod> = []
         for filterMethod in LibraryViewModel.FilterMethod.allCases {
+            // ensure we only list each method type once (e.g. for multiple source filters)
+            guard methods.insert(filterMethod).inserted else {
+                continue
+            }
             if let filter = viewModel.filters.first(where: { $0.type == filterMethod }) {
                 guard options.count < 3 else {
                     options.removeLast() // make subtitle fit in two lines
@@ -897,6 +902,16 @@ extension LibraryViewController {
         contextMenuInteraction.updateVisibleMenu { menu in
             if menu.title == NSLocalizedString("BUTTON_FILTER") {
                 updateFilterSubmenu(menu)
+            } else if menu.title == NSLocalizedString("SOURCES") {
+                menu.replacingChildren(self.viewModel.sourceKeys.map { key in
+                    UIAction(
+                        title: SourceManager.shared.source(for: key)?.name ?? key,
+                        attributes: .keepsMenuPresented,
+                        state: self.filterState(for: .source, value: key)
+                    ) { [weak self] _ in
+                        self?.toggleFilter(method: .source, value: key)
+                    }
+                })
             } else {
                 menu.replacingChildren(menu.children.map { element in
                     guard let menu = element as? UIMenu else { return element }
@@ -995,8 +1010,9 @@ extension LibraryViewController {
                 title: NSLocalizedString("BUTTON_FILTER"),
                 subtitle: self.filtersSubtitle(),
                 image: UIImage(systemName: "line.3.horizontal.decrease"),
-                children: LibraryViewModel.FilterMethod.allCases.map { method in
-                    UIAction(
+                children: LibraryViewModel.FilterMethod.allCases.compactMap { method in
+                    guard method.isAvailable else { return nil }
+                    return UIAction(
                         title: method.title,
                         image: method.image,
                         attributes: attributes,
@@ -1004,7 +1020,21 @@ extension LibraryViewController {
                     ) { [weak self] _ in
                         self?.toggleFilter(method: method)
                     }
-                }
+                } + [
+                    UIMenu(
+                        title: LibraryViewModel.FilterMethod.source.title,
+                        image: LibraryViewModel.FilterMethod.source.image,
+                        children: self.viewModel.sourceKeys.map { key in
+                            UIAction(
+                                title: SourceManager.shared.source(for: key)?.name ?? key,
+                                attributes: attributes,
+                                state: self.filterState(for: .source, value: key)
+                            ) { [weak self] _ in
+                                self?.toggleFilter(method: .source, value: key)
+                            }
+                        }
+                    )
+                ]
             )
             if self.viewModel.filters.isEmpty {
                 completion([filters])
