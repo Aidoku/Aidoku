@@ -823,9 +823,9 @@ extension LibraryViewController {
 
 // MARK: - Sorting and Filtering
 extension LibraryViewController {
-    func toggleSort(method: LibraryViewModel.SortMethod) {
+    func setSort(method: LibraryViewModel.SortMethod, ascending: Bool) {
         Task {
-            await viewModel.toggleSort(method: method)
+            await viewModel.setSort(method: method, ascending: ascending)
             updateDataSource()
             updateMoreMenu()
         }
@@ -991,18 +991,29 @@ extension LibraryViewController {
             }
         ]
 
-        let chevronIcon = UIImage(systemName: viewModel.sortAscending ? "chevron.up" : "chevron.down")
         let sortMenu = UIMenu(
             title: NSLocalizedString("SORT_BY"),
+            subtitle: viewModel.sortMethod.title,
             image: UIImage(systemName: "arrow.up.arrow.down"),
-            children: LibraryViewModel.SortMethod.allCases.map { method in
-                UIAction(
-                    title: method.title,
-                    image: viewModel.sortMethod == method ? chevronIcon : nil
-                ) { _ in
-                    self.toggleSort(method: method)
-                }
-            }
+            children: [
+                UIMenu(options: .displayInline, children: LibraryViewModel.SortMethod.allCases.map { method in
+                    UIAction(
+                        title: method.title,
+                        state: viewModel.sortMethod == method ? .on : .off
+                    ) { [weak self] _ in
+                        self?.setSort(method: method, ascending: false)
+                    }
+                }),
+                UIMenu(options: .displayInline, children: [false, true].map { ascending in
+                    UIAction(
+                        title: ascending ? viewModel.sortMethod.ascendingTitle : viewModel.sortMethod.descendingTitle,
+                        state: viewModel.sortAscending == ascending ? .on : .off
+                    ) { [weak self] _ in
+                        guard let self else { return }
+                        self.setSort(method: self.viewModel.sortMethod, ascending: ascending)
+                    }
+                })
+            ]
         )
 
         let filterMenu = UIDeferredMenuElement.uncached { [weak self] completion in

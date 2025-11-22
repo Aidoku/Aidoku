@@ -84,6 +84,12 @@
 "IS_TRACKING" = "Tracking";
 "FILTER_HAS_UNREAD" = "Unread";
 "FILTER_STARTED" = "Started";
+"ASCENDING" = "Ascending";
+"DESCENDING" = "Descending";
+"OLDEST_FIRST" = "Oldest First";
+"NEWEST_FIRST" = "Newest First";
+"HIGHEST_FIRST" = "Highest First";
+"LOWEST_FIRST" = "Lowest First";
 "COVER" = "Cover";
 "LAYOUT_GRID" = "Grid";
 "LAYOUT_LIST" = "List";

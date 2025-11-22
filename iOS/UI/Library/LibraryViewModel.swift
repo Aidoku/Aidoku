@@ -46,6 +46,30 @@ class LibraryViewModel {
             }
         }
 
+        var descendingTitle: String {
+            switch self {
+                case .alphabetical: NSLocalizedString("ASCENDING") // reverse default for alphabetical sort
+                case .lastRead: NSLocalizedString("NEWEST_FIRST")
+                case .lastOpened: NSLocalizedString("NEWEST_FIRST")
+                case .lastUpdated: NSLocalizedString("NEWEST_FIRST")
+                case .dateAdded: NSLocalizedString("NEWEST_FIRST")
+                case .unreadChapters: NSLocalizedString("HIGHEST_FIRST")
+                case .totalChapters: NSLocalizedString("HIGHEST_FIRST")
+            }
+        }
+
+        var ascendingTitle: String {
+            switch self {
+                case .alphabetical: NSLocalizedString("DESCENDING")
+                case .lastRead: NSLocalizedString("OLDEST_FIRST")
+                case .lastOpened: NSLocalizedString("OLDEST_FIRST")
+                case .lastUpdated: NSLocalizedString("OLDEST_FIRST")
+                case .dateAdded: NSLocalizedString("OLDEST_FIRST")
+                case .unreadChapters: NSLocalizedString("LOWEST_FIRST")
+                case .totalChapters: NSLocalizedString("LOWEST_FIRST")
+            }
+        }
+
         var sortStringValue: String {
             switch self {
                 case .alphabetical: "manga.title"
@@ -570,17 +594,18 @@ extension LibraryViewModel {
         }
     }
 
-    func toggleSort(method: SortMethod) async {
-        if sortMethod == method {
-            sortAscending.toggle()
-        } else {
+    func setSort(method: SortMethod, ascending: Bool) async {
+        guard sortMethod != method || sortAscending != ascending else {
+            return
+        }
+        if sortAscending != ascending {
+            sortAscending = ascending
+            UserDefaults.standard.set(sortAscending, forKey: "Library.sortAscending")
+        }
+        if sortMethod != method {
             sortMethod = method
-            sortAscending = false
             UserDefaults.standard.set(sortMethod.rawValue, forKey: "Library.sortOption")
         }
-
-        UserDefaults.standard.set(sortAscending, forKey: "Library.sortAscending")
-
         await sortLibrary()
     }
 
