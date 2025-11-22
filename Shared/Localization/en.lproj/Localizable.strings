@@ -81,7 +81,8 @@
 "AND_MORE" = "and more";
 "NOT_%@" = "Not %@";
 "IS_TRACKING" = "Tracking";
-"FILTER_NOT_READ" = "Unread";
+"FILTER_HAS_UNREAD" = "Unread";
+"FILTER_STARTED" = "Started";
 "COVER" = "Cover";
 "LAYOUT_GRID" = "Grid";
 "LAYOUT_LIST" = "List";

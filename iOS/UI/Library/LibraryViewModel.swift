@@ -74,14 +74,16 @@ class LibraryViewModel {
     enum FilterMethod: CaseIterable {
         case downloaded
         case tracking
-        case unread
+        case hasUnread
+        case started
         case source
 
         var title: String {
             switch self {
                 case .downloaded: NSLocalizedString("DOWNLOADED")
                 case .tracking: NSLocalizedString("IS_TRACKING")
-                case .unread: NSLocalizedString("FILTER_NOT_READ")
+                case .hasUnread: NSLocalizedString("FILTER_HAS_UNREAD")
+                case .started: NSLocalizedString("FILTER_STARTED")
                 case .source: NSLocalizedString("SOURCES")
             }
         }
@@ -90,7 +92,8 @@ class LibraryViewModel {
             let name = switch self {
                 case .downloaded: "arrow.down.circle"
                 case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
-                case .unread: "eye.slash"
+                case .hasUnread: "eye.slash"
+                case .started: "clock"
                 case .source: "globe"
             }
             return UIImage(systemName: name)
@@ -172,14 +175,12 @@ extension LibraryViewModel {
             pinnedManga,
             manga,
             sourceKeys,
-            checkDownloads,
-            excludeDownloads
+            unappliedFilters
         ) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             var pinnedManga: [MangaInfo] = []
             var manga: [MangaInfo] = []
             var sourceKeys: Set<String> = []
-            var checkDownloads = false
-            var excludeDownloads = false
+            var unappliedFilters: [LibraryFilter] = []
 
             let request = LibraryMangaObject.fetchRequest()
             if let currentCategory {
@@ -196,7 +197,7 @@ extension LibraryViewModel {
                 ]
             }
             guard let libraryObjects = try? context.fetch(request) else {
-                return (false, pinnedManga, manga, sourceKeys, checkDownloads, excludeDownloads)
+                return (false, pinnedManga, manga, sourceKeys, unappliedFilters)
             }
 
             var ids = Set<String>()
@@ -225,8 +226,7 @@ extension LibraryViewModel {
                     let condition: Bool
                     switch filter.type {
                         case .downloaded:
-                            checkDownloads = true
-                            excludeDownloads = filter.exclude
+                            unappliedFilters.append(filter)
                             continue
                         case .tracking:
                             condition = CoreDataManager.shared.hasTrack(
@@ -234,8 +234,11 @@ extension LibraryViewModel {
                                 mangaId: info.mangaId,
                                 context: context
                             )
-                        case .unread:
-                            condition = !CoreDataManager.shared.hasHistory(
+                        case .hasUnread:
+                            unappliedFilters.append(filter)
+                            continue
+                        case .started:
+                            condition = CoreDataManager.shared.hasHistory(
                                 sourceId: info.sourceId,
                                 mangaId: info.mangaId,
                                 context: context
@@ -274,7 +277,7 @@ extension LibraryViewModel {
                 }
             }
 
-            return (true, pinnedManga, manga, sourceKeys, checkDownloads, excludeDownloads)
+            return (true, pinnedManga, manga, sourceKeys, unappliedFilters)
         }
 
         guard success else { return }
@@ -286,15 +289,22 @@ extension LibraryViewModel {
         await fetchUnreads(skipSortCheck: true)
         await fetchDownloadCounts()
 
-        if checkDownloads {
-            self.pinnedManga = self.pinnedManga.filter { info in
-                let condition = info.downloads > 0
-                return excludeDownloads ? !condition : condition
+        if !unappliedFilters.isEmpty {
+            let filter: (MangaInfo) -> Bool = { info in
+                for filter in unappliedFilters {
+                    let condition: Bool
+                    switch filter.type {
+                        case .downloaded: condition = info.downloads > 0
+                        case .hasUnread: condition = info.unread > 0
+                        default: continue
+                    }
+                    let shouldSkip = filter.exclude ? condition : !condition
+                    guard !shouldSkip else { return false }
+                }
+                return true
             }
-            self.manga = self.manga.filter { info in
-                let condition = info.downloads > 0
-                return excludeDownloads ? !condition : condition
-            }
+            self.pinnedManga = self.pinnedManga.filter(filter)
+            self.manga = self.manga.filter(filter)
         }
 
         if pinType == .unread {
