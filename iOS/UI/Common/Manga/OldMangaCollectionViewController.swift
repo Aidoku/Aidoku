@@ -200,20 +200,39 @@ extension OldMangaCollectionViewController {
         contextMenuConfiguration configuration: UIContextMenuConfiguration,
         highlightPreviewForItemAt indexPath: IndexPath
     ) -> UITargetedPreview? {
-        guard
-            let cell = collectionView.cellForItem(at: indexPath),
-            cell is MangaListCell
-        else {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+
+        if cell is MangaListCell {
+            // add some padding to list cell
+            let parameters = UIPreviewParameters()
+            let padding: CGFloat = 8
+            let rect = cell.bounds.insetBy(dx: -padding, dy: -padding)
+            parameters.visiblePath = UIBezierPath(roundedRect: rect, cornerRadius: 12)
+
+            return UITargetedPreview(view: cell.contentView, parameters: parameters)
+        } else if cell is MangaGridCell {
+            // round the grid cell corners correctly
+            let parameters = UIPreviewParameters()
+            parameters.visiblePath = UIBezierPath(
+                roundedRect: cell.bounds,
+                cornerRadius: cell.contentView.layer.cornerRadius
+            )
+            return UITargetedPreview(view: cell.contentView, parameters: parameters)
+        } else {
             return nil
         }
+    }
 
-        // add some padding to list cell
-        let parameters = UIPreviewParameters()
-        let padding: CGFloat = 8
-        let rect = cell.bounds.insetBy(dx: -padding, dy: -padding)
-        parameters.visiblePath = UIBezierPath(roundedRect: rect, cornerRadius: 12)
-
-        return UITargetedPreview(view: cell.contentView, parameters: parameters)
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfiguration configuration: UIContextMenuConfiguration,
+        dismissalPreviewForItemAt indexPath: IndexPath
+    ) -> UITargetedPreview? {
+        self.collectionView(
+            collectionView,
+            contextMenuConfiguration: configuration,
+            highlightPreviewForItemAt: indexPath
+        )
     }
 }
 
