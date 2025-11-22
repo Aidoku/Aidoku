@@ -72,11 +72,13 @@ class LibraryViewModel {
     enum FilterMethod: Int, CaseIterable {
         case downloaded = 0
         case tracking
+        case unread
 
         var title: String {
             switch self {
                 case .downloaded: NSLocalizedString("DOWNLOADED")
                 case .tracking: NSLocalizedString("IS_TRACKING")
+                case .unread: NSLocalizedString("FILTER_NOT_READ")
             }
         }
 
@@ -84,8 +86,16 @@ class LibraryViewModel {
             let name = switch self {
                 case .downloaded: "arrow.down.circle"
                 case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+                case .unread: "clock.badge.xmark"
             }
             return UIImage(systemName: name)
+        }
+
+        var isAvailable: Bool {
+            switch self {
+                case .tracking: TrackerManager.shared.hasAvailableTrackers
+                default: true
+            }
         }
     }
 
@@ -209,6 +219,12 @@ extension LibraryViewModel {
                             continue
                         case .tracking:
                             condition = CoreDataManager.shared.hasTrack(
+                                sourceId: info.sourceId,
+                                mangaId: info.mangaId,
+                                context: context
+                            )
+                        case .unread:
+                            condition = !CoreDataManager.shared.hasHistory(
                                 sourceId: info.sourceId,
                                 mangaId: info.mangaId,
                                 context: context

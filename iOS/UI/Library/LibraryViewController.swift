@@ -986,38 +986,25 @@ extension LibraryViewController {
                 completion([])
                 return
             }
+            let attributes: UIMenuElement.Attributes = if #available(iOS 16.0, *) {
+                .keepsMenuPresented
+            } else {
+                []
+            }
             let filters = UIMenu(
                 title: NSLocalizedString("BUTTON_FILTER"),
                 subtitle: self.filtersSubtitle(),
                 image: UIImage(systemName: "line.3.horizontal.decrease"),
-                children: {
-                    let attributes: UIMenuElement.Attributes = if #available(iOS 16.0, *) {
-                        [.keepsMenuPresented]
-                    } else {
-                        []
+                children: LibraryViewModel.FilterMethod.allCases.map { method in
+                    UIAction(
+                        title: method.title,
+                        image: method.image,
+                        attributes: attributes,
+                        state: self.filterState(for: method)
+                    ) { [weak self] _ in
+                        self?.toggleFilter(method: method)
                     }
-                    var actions: [UIAction] = [
-                        UIAction(
-                            title: LibraryViewModel.FilterMethod.downloaded.title,
-                            image: LibraryViewModel.FilterMethod.downloaded.image,
-                            attributes: attributes,
-                            state: self.filterState(for: .downloaded)
-                        ) { [weak self] _ in
-                            self?.toggleFilter(method: .downloaded)
-                        }
-                    ]
-                    if TrackerManager.shared.hasAvailableTrackers {
-                        actions.append(UIAction(
-                            title: LibraryViewModel.FilterMethod.tracking.title,
-                            image: LibraryViewModel.FilterMethod.tracking.image,
-                            attributes: attributes,
-                            state: self.filterState(for: .tracking)
-                        ) { [weak self] _ in
-                            self?.toggleFilter(method: .tracking)
-                        })
-                    }
-                    return actions
-                }()
+                }
             )
             if self.viewModel.filters.isEmpty {
                 completion([filters])

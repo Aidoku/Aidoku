@@ -80,6 +80,8 @@
 "DATE_ADDED" = "Date Added";
 "AND_MORE" = "and more";
 "NOT_%@" = "Not %@";
+"IS_TRACKING" = "Tracking";
+"FILTER_NOT_READ" = "Unread";
 "COVER" = "Cover";
 "LAYOUT_GRID" = "Grid";
 "LAYOUT_LIST" = "List";
@@ -621,7 +623,6 @@
 "SOURCE_BREAKING_CHANGE" = "Source Breaking Change";
 "SOURCE_BREAKING_CHANGE_TEXT" = "This source had a breaking change and requires migration to keep your library and history.";
 "UPLOAD_DATE" = "Upload Date";
-"IS_TRACKING" = "Tracking";
 "ALL_CHAPTERS_READ" = "All Chapters Read";
 "ALL_CHAPTERS_LOCKED" = "All Chapters Locked";
 "DEFAULT_READING_MODE" = "Default Reading Mode";
