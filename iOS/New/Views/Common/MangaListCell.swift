@@ -87,7 +87,7 @@ class MangaListCell: UICollectionViewCell {
     }()
 
     private lazy var tagScrollView = TagScrollView()
-    private lazy var selectionView = SelectionCheckView(frame: .init(x: 0, y: 0, width: 21, height: 21))
+    private lazy var selectionView = SelectionCheckView()
     private lazy var badgeView = DoubleBadgeView()
 
     private var coverLeadingConstraint: NSLayoutConstraint?

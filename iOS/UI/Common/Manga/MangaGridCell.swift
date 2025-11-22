@@ -64,38 +64,7 @@ class MangaGridCell: UICollectionViewCell {
         return shadowOverlayView
     }()
 
-    // selection circle in bottom right
-    private lazy var selectionView: UIView = {
-        let selectionView = UIView()
-        selectionView.frame.size = CGSize(width: 24, height: 24)
-        selectionView.layer.cornerRadius = 12
-        selectionView.layer.borderColor = UIColor.white.cgColor
-        selectionView.layer.borderWidth = 2
-        selectionView.translatesAutoresizingMaskIntoConstraints = false
-
-        let innerCircleView = UIView()
-        innerCircleView.frame = CGRect(x: 3, y: 3, width: 18, height: 18)
-        innerCircleView.backgroundColor = .white
-        innerCircleView.layer.cornerRadius = 10
-        selectionView.addSubview(innerCircleView)
-
-        selectionView.layer.shadowOpacity = 0
-        selectionView.layer.shadowOffset = .zero
-        selectionView.layer.shadowRadius = 0
-
-        return selectionView
-    }()
-
-    // checkmark icon shown in selection circle when selected
-    private lazy var checkmarkImageView: UIImageView = {
-        let checkmarkImageView = UIImageView()
-        checkmarkImageView.image = UIImage(
-            systemName: "checkmark.circle.fill",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 21)
-        )
-        checkmarkImageView.translatesAutoresizingMaskIntoConstraints = false
-        return checkmarkImageView
-    }()
+    private lazy var selectionView = SelectionCheckView(style: .bordered)
 
     private var badgeConstraints: [NSLayoutConstraint] = []
 
@@ -149,12 +118,10 @@ class MangaGridCell: UICollectionViewCell {
         highlightView.layer.cornerRadius = layer.cornerRadius
         contentView.addSubview(highlightView)
 
-        shadowOverlayView.alpha = 0
-        selectionView.alpha = 0
-        checkmarkImageView.isHidden = true
+        selectionView.isHidden = true
+
         contentView.addSubview(shadowOverlayView)
         contentView.addSubview(selectionView)
-        selectionView.addSubview(checkmarkImageView)
     }
 
     func constrain() {
@@ -164,6 +131,7 @@ class MangaGridCell: UICollectionViewCell {
         badgeView.translatesAutoresizingMaskIntoConstraints = false
         bookmarkView.translatesAutoresizingMaskIntoConstraints = false
         highlightView.translatesAutoresizingMaskIntoConstraints = false
+        selectionView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -201,11 +169,8 @@ class MangaGridCell: UICollectionViewCell {
 
             selectionView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
             selectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            selectionView.widthAnchor.constraint(equalToConstant: selectionView.frame.width),
-            selectionView.heightAnchor.constraint(equalToConstant: selectionView.frame.height),
-
-            checkmarkImageView.centerXAnchor.constraint(equalTo: selectionView.centerXAnchor),
-            checkmarkImageView.centerYAnchor.constraint(equalTo: selectionView.centerYAnchor)
+            selectionView.widthAnchor.constraint(equalToConstant: 24),
+            selectionView.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
 
@@ -237,25 +202,34 @@ extension MangaGridCell {
         guard isEditing != editing else { return }
         isEditing = editing
         if editing {
-            checkmarkImageView.isHidden = true
+            selectionView.setSelected(false, animated: false)
         }
-        UIView.animate(withDuration: animated ? 0.3 : 0) {
+        if animated {
+            if editing {
+                self.selectionView.isHidden = false
+            }
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                self.shadowOverlayView.alpha = editing ? 1 : 0
+            } completion: { _ in
+                if !editing {
+                    self.selectionView.isHidden = true
+                }
+            }
+        } else {
             self.shadowOverlayView.alpha = editing ? 1 : 0
-            self.selectionView.alpha = editing ? 1 : 0
+            self.selectionView.isHidden = !editing
         }
     }
 
     func setSelected(_ selected: Bool, animated: Bool = true) {
         guard isEditing else { return }
-        checkmarkImageView.isHidden = !selected
+        selectionView.setSelected(selected, animated: animated)
         if animated {
             UIView.animate(withDuration: CATransaction.animationDuration()) {
                 self.shadowOverlayView.alpha = selected ? 0 : 1
-                self.selectionView.layer.shadowOpacity = selected ? 1 : 0
             }
         } else {
             self.shadowOverlayView.alpha = selected ? 0 : 1
-            self.selectionView.layer.shadowOpacity = selected ? 1 : 0
         }
     }
 }

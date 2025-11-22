@@ -8,9 +8,17 @@
 import UIKit
 
 class SelectionCheckView: UIView {
+    enum Style {
+        case plain
+        case bordered
+    }
+
+    let style: Style
+    private(set) var isSelected = false
+
     private lazy var unselectedView = {
         let view = UIView()
-        view.layer.cornerRadius = frame.width / 2
+        view.layer.cornerRadius = bounds.width / 2
         view.layer.borderColor = UIColor.systemGray3.cgColor
         view.layer.borderWidth = 1.5
         return view
@@ -18,7 +26,7 @@ class SelectionCheckView: UIView {
 
     private lazy var selectedView = {
         let view = UIView()
-        view.layer.cornerRadius = frame.width / 2
+        view.layer.cornerRadius = bounds.width / 2
         view.backgroundColor = tintColor
         return view
     }()
@@ -38,7 +46,8 @@ class SelectionCheckView: UIView {
         return checkmarkImageView
     }()
 
-    override init(frame: CGRect = .zero) {
+    init(style: Style = .plain, frame: CGRect = .zero) {
+        self.style = style
         super.init(frame: frame)
         configure()
         constrain()
@@ -52,8 +61,14 @@ class SelectionCheckView: UIView {
         selectedView.isHidden = true
         checkmarkImageView.isHidden = true
 
-        addSubview(unselectedView)
-        addSubview(selectedView)
+        if style == .plain {
+            addSubview(unselectedView)
+            addSubview(selectedView)
+        } else {
+            // put border on top if the style is bordered
+            addSubview(selectedView)
+            addSubview(unselectedView)
+        }
         addSubview(checkmarkImageView)
     }
 
@@ -80,30 +95,48 @@ class SelectionCheckView: UIView {
         ])
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        unselectedView.layer.cornerRadius = unselectedView.bounds.width / 2
+        selectedView.layer.cornerRadius = selectedView.bounds.width / 2
+    }
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        unselectedView.layer.borderColor = UIColor.systemGray3.resolvedColor(with: traitCollection).cgColor
+        if !isSelected {
+            unselectedView.layer.borderColor = UIColor.systemGray3.resolvedColor(with: traitCollection).cgColor
+        }
     }
 
     func setSelected(_ selected: Bool, animated: Bool = true) {
+        guard isSelected != selected else { return }
+        isSelected = selected
         if selected {
             if #available(iOS 26.0, *) {
                 selectedView.layer.removeAllAnimations()
+                unselectedView.layer.removeAllAnimations()
                 selectedView.alpha = 1
 
                 checkmarkImageView.addSymbolEffect(.drawOn, animated: animated)
             }
             checkmarkImageView.isHidden = false
             selectedView.isHidden = false
+            if style == .bordered {
+                unselectedView.layer.borderColor = UIColor.white.cgColor
+            }
         } else if !checkmarkImageView.isHidden {
             if #available(iOS 26.0, *) {
                 checkmarkImageView.addSymbolEffect(.disappear, animated: animated)
 
-                if animated {
-                    selectedView.layer.removeAllAnimations()
+                selectedView.layer.removeAllAnimations()
+                unselectedView.layer.removeAllAnimations()
 
+                if animated {
                     UIView.animate(withDuration: CATransaction.animationDuration() / 2) {
                         self.selectedView.alpha = 0
+                        if self.style == .bordered {
+                            self.unselectedView.layer.borderColor = UIColor.systemGray3.cgColor
+                        }
                     } completion: { finished in
                         if finished {
                             self.checkmarkImageView.isHidden = true
@@ -112,13 +145,19 @@ class SelectionCheckView: UIView {
                         }
                     }
                 } else {
-                    self.checkmarkImageView.isHidden = true
-                    self.selectedView.isHidden = true
-                    self.selectedView.alpha = 1
+                    checkmarkImageView.isHidden = true
+                    selectedView.isHidden = true
+                    selectedView.alpha = 1
+                    if style == .bordered {
+                        unselectedView.layer.borderColor = UIColor.systemGray3.cgColor
+                    }
                 }
             } else {
                 checkmarkImageView.isHidden = true
                 selectedView.isHidden = true
+                if style == .bordered {
+                    unselectedView.layer.borderColor = UIColor.systemGray3.cgColor
+                }
             }
         }
     }
