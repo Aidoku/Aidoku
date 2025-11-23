@@ -70,10 +70,8 @@ struct HomeGridView: View {
         .onChange(of: entries) { _ in
             loadingMore = false
         }
-        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            Task {
-                columns = Self.getColumns()
-            }
+        .onReceive(NotificationCenter.default.publisher(for: .orientationDidChange)) { _ in
+            columns = Self.getColumns()
         }
         .onReceive(NotificationCenter.default.publisher(for: .portraitRowsSetting)) { _ in
             columns = Self.getColumns()

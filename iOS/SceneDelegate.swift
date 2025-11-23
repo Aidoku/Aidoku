@@ -8,7 +8,6 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
     var window: UIWindow?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -65,5 +64,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let url = URLContexts.first?.url, let delegate = UIApplication.shared.delegate as? AppDelegate {
             delegate.handleUrl(url: url)
         }
+    }
+
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        didUpdate previousCoordinateSpace: any UICoordinateSpace,
+        interfaceOrientation previousInterfaceOrientation: UIInterfaceOrientation,
+        traitCollection previousTraitCollection: UITraitCollection
+    ) {
+        let newOrientation = if #available(iOS 16.0, *) {
+            windowScene.effectiveGeometry.interfaceOrientation
+        } else {
+            windowScene.interfaceOrientation
+        }
+        guard newOrientation != previousInterfaceOrientation else { return }
+        NotificationCenter.default.post(name: .orientationDidChange, object: newOrientation)
     }
 }

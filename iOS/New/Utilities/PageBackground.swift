@@ -13,7 +13,7 @@ enum PageBackground {
 
     // https://github.com/mihonapp/mihon/blob/fc2c8c06a940392161cf5110e222edbedf9b7e47/core/common/src/main/kotlin/tachiyomi/core/common/util/system/ImageUtil.kt#L333
     // swiftlint:disable:next cyclomatic_complexity
-    static func choose(for image: UIImage) -> PageBackground {
+    static func choose(for image: UIImage, isLandscape: Bool) -> PageBackground {
         let width = Int(image.size.width)
         let height = Int(image.size.height)
         guard width >= 50, height >= 50 else {
@@ -168,15 +168,6 @@ enum PageBackground {
         }
 
         // if the device is in landscape then we can't use gradients
-        let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-        let orientation =
-            if #available(iOS 16.0, *) {
-                scene?.effectiveGeometry.interfaceOrientation
-            } else {
-                scene?.interfaceOrientation
-            }
-        let isLandscape = orientation?.isLandscape ?? false
-
         if isLandscape {
             return .color(darkBG ? blackColor : .white)
         }

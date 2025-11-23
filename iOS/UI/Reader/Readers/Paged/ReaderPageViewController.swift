@@ -139,6 +139,10 @@ class ReaderPageViewController: BaseObservingViewController {
         addObserver(forName: "Reader.backgroundColor") { [weak self] _ in
             self?.loadPageBackground()
         }
+
+        addObserver(forName: .orientationDidChange) { [weak self] _ in
+            self?.loadPageBackground(forceReload: true)
+        }
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -179,16 +183,27 @@ class ReaderPageViewController: BaseObservingViewController {
         }
     }
 
-    func loadPageBackground() {
+    func loadPageBackground(forceReload: Bool = false) {
+        // ensure no old gradients are left
+        view.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
+
         if
             UserDefaults.standard.string(forKey: "Reader.backgroundColor") == "auto",
             !isInDoublePageController,
             pageBackground != nil || pageView?.imageView.image != nil
         {
-            let background = if let pageBackground {
+            let background = if !forceReload, let pageBackground {
                 pageBackground
             } else if let image = pageView?.imageView.image {
-                PageBackground.choose(for: image)
+                PageBackground.choose(for: image, isLandscape: {
+                    let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+                    let orientation = if #available(iOS 16.0, *) {
+                        scene?.effectiveGeometry.interfaceOrientation
+                    } else {
+                        scene?.interfaceOrientation
+                    }
+                    return orientation?.isLandscape ?? false
+                }())
             } else {
                 PageBackground.color(.clear)
             }
@@ -202,9 +217,6 @@ class ReaderPageViewController: BaseObservingViewController {
             }
         } else {
             view.backgroundColor = nil
-            if case .gradient = pageBackground {
-                view.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
-            }
         }
     }
 
