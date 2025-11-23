@@ -11,9 +11,12 @@ class ReaderNavigationController: UINavigationController {
     let readerViewController: ReaderViewController
     let mangaInfo: MangaInfo?
 
-    init(readerViewController: ReaderViewController, mangaInfo: MangaInfo? = nil) {
+    let onWillDisappear: (() -> Void)?
+
+    init(readerViewController: ReaderViewController, mangaInfo: MangaInfo? = nil, onWillDisappear: (() -> Void)? = nil) {
         self.readerViewController = readerViewController
         self.mangaInfo = mangaInfo
+        self.onWillDisappear = onWillDisappear
         super.init(rootViewController: readerViewController)
     }
 
@@ -37,13 +40,19 @@ class ReaderNavigationController: UINavigationController {
             default: .all
         }
     }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        onWillDisappear?()
+    }
 }
 
 struct SwiftUIReaderNavigationController: UIViewControllerRepresentable {
     let readerViewController: ReaderViewController
+    var onWillDisappear: (() -> Void)?
 
     func makeUIViewController(context: Context) -> ReaderNavigationController {
-        .init(readerViewController: readerViewController)
+        .init(readerViewController: readerViewController, onWillDisappear: onWillDisappear)
     }
 
     func updateUIViewController(_ uiViewController: ReaderNavigationController, context: Context) {}

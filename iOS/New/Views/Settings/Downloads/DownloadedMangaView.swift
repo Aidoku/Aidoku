@@ -82,9 +82,11 @@ struct DownloadedMangaView: View {
                 manga: viewModel.manga.toManga(),
                 chapter: chapter.toChapter()
             )
-            SwiftUIReaderNavigationController(readerViewController: readerController)
-                .ignoresSafeArea()
-                .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
+            SwiftUIReaderNavigationController(readerViewController: readerController) {
+                openChapter = nil
+            }
+            .ignoresSafeArea()
+            .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
         }
     }
 
