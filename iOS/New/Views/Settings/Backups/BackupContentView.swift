@@ -108,27 +108,8 @@ struct BackupContentView: View {
     }
 
     func restore() {
-        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
-        UIApplication.shared.isIdleTimerDisabled = true
         Task {
-            do {
-                try await BackupManager.shared.restore(from: backup)
-                (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
-
-                let missingSources = (backup.sources ?? []).filter {
-                    !CoreDataManager.shared.hasSource(id: $0)
-                }
-                if !missingSources.isEmpty {
-                    self.missingSources = missingSources
-                    showMissingSourcesAlert = true
-                }
-            } catch {
-                (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
-
-                restoreError = (error as? BackupManager.BackupError)?.stringValue ?? "Unknown"
-                showRestoreErrorAlert = true
-            }
-            UIApplication.shared.isIdleTimerDisabled = false
+            await BackupManager.shared.restore(from: backup)
         }
     }
 }

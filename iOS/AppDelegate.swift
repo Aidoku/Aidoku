@@ -272,7 +272,7 @@ extension AppDelegate {
             }
         })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
-        hideLoadingIndicator()
+        await hideLoadingIndicator()
     }
 
     enum LoadingStyle {
@@ -291,13 +291,15 @@ extension AppDelegate {
                 loadingIndicator.isHidden = true
                 progressView.isHidden = false
         }
-        visibleViewController?.present(loadingAlert, animated: true, completion: completion)
+        topViewController?.present(loadingAlert, animated: true, completion: completion)
     }
 
-    func hideLoadingIndicator(completion: (() -> Void)? = nil) {
-        loadingAlert.dismiss(animated: true) {
-            self.loadingIndicator.stopAnimating()
-            completion?()
+    func hideLoadingIndicator(completion: (() -> Void)? = nil) async {
+        await withCheckedContinuation { continuation in
+            loadingAlert.dismiss(animated: true) {
+                self.loadingIndicator.stopAnimating()
+                continuation.resume()
+            }
         }
     }
 
@@ -560,7 +562,7 @@ extension AppDelegate {
                             NotificationCenter.default.post(name: .updateLibrary, object: nil)
                             NotificationCenter.default.post(name: .updateHistory, object: nil)
 
-                            self.hideLoadingIndicator()
+                            await self.hideLoadingIndicator()
                         }
                     } else {
                         // otherwise, we just show the migration view and let the user do it

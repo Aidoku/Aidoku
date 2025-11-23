@@ -125,9 +125,8 @@ struct MigrateMangaView: View {
                     appDelegate.showLoadingIndicator(style: .progress) {
                         Task {
                             await performMigration()
-                            appDelegate.hideLoadingIndicator {
-                                dismiss()
-                            }
+                            await appDelegate.hideLoadingIndicator()
+                            dismiss()
                         }
                     }
                 },

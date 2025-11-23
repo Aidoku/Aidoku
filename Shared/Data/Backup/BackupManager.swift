@@ -8,6 +8,10 @@
 import BackgroundTasks
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 actor BackupManager {
     static let shared = BackupManager()
 
@@ -17,7 +21,7 @@ actor BackupManager {
         Self.directory.contentsByDateModified
     }
 
-    private static let taskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
+    private static let backupTaskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
     private static let maxAutoBackups = 4
 
     func save(backup: Backup, url: URL? = nil) {
@@ -210,8 +214,20 @@ actor BackupManager {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
-    func restore(from backup: Backup) async throws {
+    func restore(from backup: Backup) async {
+        await doRestore(from: backup)
+    }
+
+    @discardableResult
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    private func doRestore(from backup: Backup) async -> Bool {
+#if !os(macOS)
+        await MainActor.run {
+            (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+#endif
+
         Task {
             // restore settings
             if let settings = backup.settings {
@@ -369,16 +385,74 @@ actor BackupManager {
                     throw BackupError.track
                 }
             }
+            log("done with tracks")
         }
 
+        var backupError: Error?
+
         // wait for db changes to finish
-        try await chaptersTask.value
-        try await trackTask.value
+        do {
+            try await chaptersTask.value
+            try await trackTask.value
+        } catch {
+            backupError = error
+        }
 
         NotificationCenter.default.post(name: .updateHistory, object: nil)
         NotificationCenter.default.post(name: .updateTrackers, object: nil)
         NotificationCenter.default.post(name: .updateCategories, object: nil)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
+
+#if !os(macOS)
+        let delegate = await UIApplication.shared.delegate as? AppDelegate
+        await delegate?.hideLoadingIndicator()
+
+        await MainActor.run { [backupError] in
+            UIApplication.shared.isIdleTimerDisabled = false
+
+            if let backupError {
+                Task {
+                    // show error alert
+                    delegate?.presentAlert(
+                        title: NSLocalizedString("BACKUP_ERROR"),
+                        message: String(
+                            format: NSLocalizedString("BACKUP_ERROR_TEXT"),
+                            (backupError as? BackupError)?.stringValue ?? NSLocalizedString("UNKNOWN")
+                        )
+                    )
+                }
+            } else {
+                // show missing sources alert if there are any
+                let missingSources = (backup.sources ?? []).filter {
+                    !CoreDataManager.shared.hasSource(id: $0)
+                }
+                if !missingSources.isEmpty {
+                    delegate?.presentAlert(
+                        title: NSLocalizedString("MISSING_SOURCES"),
+                        message: NSLocalizedString("MISSING_SOURCES_TEXT") + missingSources.map { "\n- \($0)" }.joined()
+                    )
+                }
+            }
+        }
+#endif
+
+        return backupError == nil
+    }
+}
+
+extension BackupManager {
+    nonisolated func register() {
+#if !os(macOS) && !targetEnvironment(simulator)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.backupTaskIdentifier, using: nil) { @Sendable [weak self] task in
+            guard let self, let task = task as? BGProcessingTask else { return }
+
+            Task { @Sendable in
+                await self.createAutoBackup()
+
+                task.setTaskCompleted(success: true)
+            }
+        }
+#endif
     }
 }
 
@@ -386,7 +460,7 @@ extension BackupManager {
     func scheduleAutoBackup() {
         guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else {
 #if !os(macOS) && !targetEnvironment(simulator)
-            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.taskIdentifier)
+            BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backupTaskIdentifier)
 #endif
             return
         }
@@ -410,7 +484,7 @@ extension BackupManager {
         } else {
 #if !os(macOS) && !targetEnvironment(simulator)
             // schedule task for the future
-            let request = BGProcessingTaskRequest(identifier: Self.taskIdentifier)
+            let request = BGProcessingTaskRequest(identifier: Self.backupTaskIdentifier)
             request.earliestBeginDate = nextUpdateTime
             request.requiresExternalPower = false
             request.requiresNetworkConnectivity = false
@@ -422,20 +496,6 @@ extension BackupManager {
             }
 #endif
         }
-    }
-
-    nonisolated func register() {
-#if !os(macOS) && !targetEnvironment(simulator)
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
-            guard let self, let task = task as? BGProcessingTask else { return }
-
-            Task { @Sendable in
-                await self.createAutoBackup()
-
-                task.setTaskCompleted(success: true)
-            }
-        }
-#endif
     }
 
     private func createAutoBackup() async {

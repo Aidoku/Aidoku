@@ -235,7 +235,7 @@ extension SettingsView {
                             }
                         })
                         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
-                        (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }
                 }
             case "Advanced.resetSettings":
@@ -269,7 +269,7 @@ extension SettingsView {
                         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
-                        (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }
                 }
             default:

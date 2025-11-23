@@ -205,7 +205,7 @@ extension DownloadsView.ViewModel {
         Task {
             await DownloadManager.shared.migrateOldMetadata()
             await loadDownloadedManga()
-            (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
         }
     }
 }
