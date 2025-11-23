@@ -29,24 +29,26 @@ class TrackerModalViewController: MiniModalViewController {
         containerView.clipsToBounds = true
 
         addChild(swiftuiViewController)
-        swiftuiViewController.view.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(swiftuiViewController.view)
         swiftuiViewController.didMove(toParent: self)
 
-        swiftuiViewController.view.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        swiftuiViewController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
-        swiftuiViewController.view.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
-
-        scrollView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
+        swiftuiViewController.view.translatesAutoresizingMaskIntoConstraints = false
 
         let screenHeightConstraint = scrollView.heightAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.height - 64)
         screenHeightConstraint.priority = .defaultHigh
-        screenHeightConstraint.isActive = true
 
         let hostingHeightConstraint = scrollView.heightAnchor.constraint(equalTo: swiftuiViewController.view.heightAnchor, constant: 20)
         hostingHeightConstraint.priority = .defaultLow
-        hostingHeightConstraint.isActive = true
 
-        scrollView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
+        NSLayoutConstraint.activate([
+            swiftuiViewController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            swiftuiViewController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            swiftuiViewController.view.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+
+            scrollView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            scrollView.widthAnchor.constraint(equalTo: containerView.widthAnchor),
+            screenHeightConstraint,
+            hostingHeightConstraint
+        ])
     }
 }

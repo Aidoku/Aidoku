@@ -11,12 +11,13 @@ import Foundation
 protocol OAuthTracker: Tracker {
     /// The host in the oauth callback url, e.g. `host` in `aidoku://host`.
     var callbackHost: String { get }
-    /// The URL used to authenticate with the tracker service provider.
-    var authenticationUrl: String { get }
     /// The OAuth access token for the tracker.
     var token: String? { get set }
-
+    /// The associate OAuth client for the tracker.
     var oauthClient: OAuthClient { get }
+
+    /// The URL used to authenticate with the tracker service provider.
+    func getAuthenticationUrl() async -> URL?
 
     /// A callback function called after authenticating.
     func handleAuthenticationCallback(url: URL) async
@@ -40,5 +41,9 @@ extension OAuthTracker {
         token = nil
         UserDefaults.standard.removeObject(forKey: "Tracker.\(id).oauth")
         UserDefaults.standard.removeObject(forKey: "Tracker.\(id).token")
+    }
+
+    func getAuthenticationUrl() async -> URL? {
+        await oauthClient.getAuthenticationUrl()
     }
 }

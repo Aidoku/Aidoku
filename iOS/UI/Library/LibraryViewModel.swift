@@ -129,7 +129,7 @@ class LibraryViewModel {
 
         var isAvailable: Bool {
             switch self {
-                case .tracking: TrackerManager.shared.hasAvailableTrackers
+                case .tracking: TrackerManager.hasAvailableTrackers
                 case .source: false // needs custom handling
                 default: true
             }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class KavitaApi {
+actor KavitaApi {
     func getState(sourceKey: String, seriesId: String) async throws -> TrackState? {
         let helper = KavitaHelper(sourceKey: sourceKey)
         let volumes: [KavitaVolume] = try await helper.request(path: "/api/Series/volumes?seriesId=\(seriesId)")

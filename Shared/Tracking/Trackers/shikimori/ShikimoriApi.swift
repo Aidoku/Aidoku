@@ -7,18 +7,14 @@
 
 import Foundation
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
-class ShikimoriApi {
+actor ShikimoriApi {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
     private let userAgent = "Aidoku"
     private let dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"
 
     // Registered under Skitty's Shikimori account
-    var oauth = OAuthClient(
+    nonisolated let oauth = OAuthClient(
         id: "shikimori",
         clientId: "0pRPZsB87w9mp0gQe1HZbSiGt7FfVzJohPGhJKjayW4",
         clientSecret: "42vg9aoyPBnrvFoH1ey2GxbO24eVufOe8D0B6P756e8",
@@ -27,9 +23,9 @@ class ShikimoriApi {
 }
 
 extension ShikimoriApi {
-    func getAuthenticationUrl() -> String? {
-        guard let baseUrl = oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://shikimori-auth") else { return nil }
-        return baseUrl + "&scope=user_rates"
+    func getAuthenticationUrl() async -> String? {
+        guard let baseUrl = await oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://shikimori-auth") else { return nil }
+        return baseUrl.absoluteString + "&scope=user_rates"
     }
 
     func getAccessToken(authCode: String) async -> OAuthResponse? {
@@ -48,13 +44,13 @@ extension ShikimoriApi {
             "scope": "users_rate",
             "code": authCode
         ], boundary: boundary)
-        oauth.tokens = try? await URLSession.shared.object(from: request)
-        oauth.saveTokens()
-        return oauth.tokens
+        let response: OAuthResponse? = try? await URLSession.shared.object(from: request)
+        await oauth.setTokens(response)
+        return response
     }
 
     func refreshAccessToken() async -> OAuthResponse? {
-        guard let refreshToken = oauth.tokens?.refreshToken else { return nil }
+        guard let refreshToken = await oauth.tokens?.refreshToken else { return nil }
 
         guard let url = URL(string: oauth.baseUrl + "/oauth/token") else { return nil }
         var request = URLRequest(url: url)
@@ -68,9 +64,9 @@ extension ShikimoriApi {
             "refresh_token": refreshToken,
             "grant_type": "refresh_token"
         ], boundary: boundary)
-        oauth.tokens = try? await URLSession.shared.object(from: request)
-        oauth.saveTokens()
-        return oauth.tokens
+        let response: OAuthResponse? = try? await URLSession.shared.object(from: request)
+        await oauth.setTokens(response)
+        return response
     }
 
     // MARK: API Methods - Data
@@ -99,7 +95,7 @@ extension ShikimoriApi {
 
         guard var url = URL(string: oauth.baseUrl + "/api/v2/user_rates") else { return nil }
         url.queryParameters = query
-        var request = authorizedRequest(for: url)
+        var request = await authorizedRequest(for: url)
         request.httpMethod = "POST"
 
         guard
@@ -127,7 +123,7 @@ extension ShikimoriApi {
 
         guard var url = URL(string: oauth.baseUrl + "/api/v2/user_rates/\(trackId)") else { return }
         url.queryParameters = query
-        var request = authorizedRequest(for: url)
+        var request = await authorizedRequest(for: url)
         request.httpMethod = "PATCH"
 
         do {
@@ -235,8 +231,8 @@ private extension ShikimoriApi {
         return try? await URLSession.shared.object(from: request)
     }
 
-    func authorizedRequest(for url: URL) -> URLRequest {
-        oauth.authorizedRequest(for: url, additionalHeaders: ["User-Agent": userAgent])
+    func authorizedRequest(for url: URL) async -> URLRequest {
+        await oauth.authorizedRequest(for: url, additionalHeaders: ["User-Agent": userAgent])
     }
 
     @discardableResult
@@ -244,24 +240,17 @@ private extension ShikimoriApi {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
         let statusCode = (response as? HTTPURLResponse)?.statusCode
 
-        if oauth.tokens == nil {
-            oauth.loadTokens()
+        if await oauth.tokens == nil {
+            await oauth.loadTokens()
         }
 
+        let tokenExpired = await oauth.tokens?.expired == true
+
         // check if token expired
-        if statusCode == 401 || oauth.tokens!.expired {
+        if statusCode == 401 || tokenExpired {
             // ensure we have a refresh token, otherwise we need to fully re-auth
-            guard oauth.tokens?.refreshToken != nil else {
-                if !oauth.tokens!.askedForRefresh {
-                    oauth.tokens!.askedForRefresh = true
-                    oauth.saveTokens()
-#if !os(macOS)
-                    await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "Shikimori"),
-                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "Shikimori")
-                    )
-#endif
-                }
+            let reloginNeeded = await oauth.checkIfReloginNeeded(trackerName: "Shikimori")
+            guard !reloginNeeded else {
                 return data
             }
 
@@ -269,7 +258,7 @@ private extension ShikimoriApi {
             if await refreshAccessToken() != nil {
                 // try request again with refreshed token
                 let retryUrl = URL(string: oauth.baseUrl + "/oauth/token")!
-                let newRequest = authorizedRequest(for: retryUrl)
+                let newRequest = await authorizedRequest(for: retryUrl)
                 if let newAuthorization = newRequest.value(forHTTPHeaderField: "Authorization") {
                     var retryRequest = urlRequest
                     retryRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")

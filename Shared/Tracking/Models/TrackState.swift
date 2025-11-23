@@ -8,7 +8,7 @@
 import Foundation
 
 /// A structure containing tracking state data.
-struct TrackState {
+struct TrackState: Sendable {
     /// An integer representing the rating score.
     var score: Int?
     /// The current reading status.

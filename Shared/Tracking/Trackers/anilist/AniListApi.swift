@@ -11,15 +11,17 @@ import Foundation
 import UIKit
 #endif
 
-class AniListApi {
+actor AniListApi {
     private let encoder = JSONEncoder()
 
     // Registered under Skitty's AniList account
-    let oauth = OAuthClient(
+    nonisolated let oauth = OAuthClient(
         id: "anilist",
         clientId: "8912",
         baseUrl: "https://anilist.co/api/v2/oauth"
     )
+
+    var scoreType: String?
 }
 
 // MARK: - Data
@@ -73,9 +75,9 @@ extension AniListApi {
         return response?.data.Viewer
     }
 
-    private func request<T: Codable, D: Encodable>(_ data: D) async -> GraphQLResponse<T>? {
+    private func request<T: Codable & Sendable, D: Encodable>(_ data: D) async -> GraphQLResponse<T>? {
         let url = URL(string: "https://graphql.anilist.co")!
-        var request = oauth.authorizedRequest(for: url)
+        var request = await oauth.authorizedRequest(for: url)
 
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
@@ -84,25 +86,23 @@ extension AniListApi {
         let response: GraphQLResponse<T>? = try? await URLSession.shared.object(from: request)
         // check if token is invalid
         if let response, let errors = response.errors, errors.contains(where: { $0.status == 400 }) {
-            if oauth.tokens == nil {
-                oauth.loadTokens()
-            }
-
             // don't show the relogin alert if we're not logged in in the first place
             let isLoggedIn = UserDefaults.standard.string(forKey: "Tracker.anilist.token") != nil
-            if isLoggedIn && !oauth.tokens!.askedForRefresh {
-                oauth.tokens!.askedForRefresh = true
-                oauth.saveTokens()
-#if !os(macOS)
-                await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                    title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "AniList"),
-                    message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "AniList")
-                )
-#endif
+            if isLoggedIn {
+                await oauth.showReloginAlert(trackerName: "AniList")
             }
         }
 
         return response
+    }
+
+    func getStoreType() async -> String {
+        if let scoreType {
+            return scoreType
+        }
+        let user = await getUser()
+        scoreType = user?.mediaListOptions?.scoreFormat
+        return scoreType ?? "POINT_10"
     }
 }
 

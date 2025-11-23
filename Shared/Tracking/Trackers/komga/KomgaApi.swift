@@ -7,7 +7,7 @@
 
 import Foundation
 
-class KomgaApi {
+actor KomgaApi {
     private func shouldUseChapters(sourceKey: String, mangaKey: String) -> Bool {
         let uniqueKey = "\(sourceKey).\(mangaKey)"
         let key = "Manga.chapterDisplayMode.\(uniqueKey)"

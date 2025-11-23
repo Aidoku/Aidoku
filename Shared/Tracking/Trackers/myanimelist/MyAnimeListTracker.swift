@@ -10,20 +10,19 @@ import AuthenticationServices
 import Foundation
 
 /// MyAnimeList tracker for Aidoku.
-class MyAnimeListTracker: OAuthTracker {
+final class MyAnimeListTracker: OAuthTracker {
     let id = "myanimelist"
     let name = "MyAnimeList"
     let icon = PlatformImage(named: "mal")
 
-    let supportedStatuses = TrackStatus.defaultStatuses
-    let scoreType: TrackScoreType = .tenPoint
-
     let api = MyAnimeListApi()
 
     let callbackHost = "myanimelist-auth"
-    lazy var authenticationUrl = api.oauth.getAuthenticationUrl() ?? ""
-
     var oauthClient: OAuthClient { api.oauth }
+
+    func getTrackerInfo() -> TrackerInfo {
+        .init(supportedStatuses: TrackStatus.defaultStatuses, scoreType: .tenPoint)
+    }
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let id = Int(trackId) else {

@@ -8,7 +8,7 @@
 import Foundation
 
 /// A class wrapping integer values that indicate a title's tracking status.
-class TrackStatus {
+struct TrackStatus: Sendable {
     static let reading = TrackStatus(1)
     static let planning = TrackStatus(2)
     static let completed = TrackStatus(3)

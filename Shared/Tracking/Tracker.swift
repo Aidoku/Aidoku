@@ -9,22 +9,28 @@ import AidokuRunner
 import Foundation
 
 /// A protocol for the implementation of a Tracker.
-protocol Tracker: AnyObject {
+protocol Tracker: AnyObject, Sendable {
     /// A unique identification string.
     var id: String { get }
     /// The title of the tracker.
     var name: String { get }
     /// The icon of the tracker.
     var icon: PlatformImage? { get }
-    /// An array of track statuses the tracker supports.
-    var supportedStatuses: [TrackStatus] { get }
-    /// The current score type for the tracker.
-    var scoreType: TrackScoreType { get }
-    /// An array of options paired with scores to use if score type is an option list.
-    var scoreOptions: [(String, Int)] { get }
 
     /// A boolean indicating if the tracker is currently logged in.
     var isLoggedIn: Bool { get }
+
+    /// Get the configurable fields for the tracker.
+    func getTrackerInfo() async throws -> TrackerInfo
+
+    /// Get the option list value for a specified score.
+    ///
+    /// - Returns: The string value in `options` for the specified score.
+    ///
+    /// - Parameters:
+    ///   - score: The score to match to a corresponding value in `options`.
+    ///   - options: The scoreOptions returned in a previous call to `getTrackerInfo()`.
+    func option(for score: Int, options: [(String, Int)]) async -> String?
 
     /// Register a new tracked title.
     ///
@@ -87,16 +93,6 @@ protocol Tracker: AnyObject {
     /// - Parameter includeNsfw: Whether NSFW search results should be included.
     func search(title: String, includeNsfw: Bool) async throws -> [TrackSearchItem]
 
-    /// Log out from the tracker.
-    func logout()
-
-    /// Get the scoreOptions option string for a specified score.
-    ///
-    /// - Returns: The option in scoreOptions for the specified score.
-    ///
-    /// - Parameter score: The score to match to a corresponding value in scoreOptions.
-    func option(for score: Int) -> String?
-
     /// Check if a given manga can be registered with this tracker.
     ///
     /// - Returns: If the manga can be registered.
@@ -104,18 +100,19 @@ protocol Tracker: AnyObject {
     /// - Parameters:
     ///   - sourceKey: The source key for the given manga.
     ///   - mangaKey: The  key for the given manga.
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool
+    func canRegister(sourceKey: String, mangaKey: String) async throws -> Bool
+
+    /// Log out from the tracker.
+    func logout() async throws
 }
 
 // Default values for optional properties
 extension Tracker {
-    var scoreOptions: [(String, Int)] { [] }
-
-    func option(for score: Int) -> String? {
-        scoreOptions.first { $0.1 == score }?.0
+    func option(for score: Int, options: [(String, Int)]) async -> String? {
+        options.first { $0.1 == score }?.0
     }
 
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
+    func canRegister(sourceKey: String, mangaKey: String) async -> Bool {
         isLoggedIn
     }
 }

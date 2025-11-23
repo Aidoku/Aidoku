@@ -169,7 +169,7 @@ extension MangaView {
                 .sink { [weak self] output in
                     guard let self, let item = output.object as? TrackItem else { return }
                     Task {
-                        if let tracker = TrackerManager.shared.getTracker(id: item.trackerId) {
+                        if let tracker = TrackerManager.getTracker(id: item.trackerId) {
                             await TrackerManager.shared.syncProgressFromTracker(
                                 tracker: tracker,
                                 trackId: item.id,
@@ -378,7 +378,7 @@ extension MangaView.ViewModel {
                 ).map { $0.toItem() }
             }
             for trackItem in trackItems {
-                guard let tracker = TrackerManager.shared.getTracker(id: trackItem.trackerId) else { continue }
+                guard let tracker = TrackerManager.getTracker(id: trackItem.trackerId) else { continue }
                 await TrackerManager.shared.syncProgressFromTracker(
                     tracker: tracker,
                     trackId: trackItem.id,

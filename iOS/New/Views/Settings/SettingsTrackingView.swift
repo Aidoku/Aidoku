@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SettingsTrackingView: View {
     @State private var trackers: [Tracker]
+    @State private var trackersNeedingRelogin: Set<String> = []
 
     @State private var loadingTrackerId: String?
     @State private var logoutTrackerName: String?
@@ -22,7 +23,7 @@ struct SettingsTrackingView: View {
     private static var loginShimController = LoginShimViewController()
 
     init() {
-        self._trackers = State(initialValue: TrackerManager.shared.trackers.filter { !($0 is EnhancedTracker) })
+        self._trackers = State(initialValue: TrackerManager.trackers.filter { !($0 is EnhancedTracker) })
     }
 
     var body: some View {
@@ -48,17 +49,15 @@ struct SettingsTrackingView: View {
             Section(NSLocalizedString("TRACKERS")) {
                 ForEach(trackers.indices, id: \.self) { index in
                     let tracker = trackers[index]
-                    let needsRelogin = if let tracker = tracker as? OAuthTracker, tracker.oauthClient.tokens?.askedForRefresh == true {
-                        true
-                    } else {
-                        false
-                    }
+                    let needsRelogin = trackersNeedingRelogin.contains(tracker.id)
                     Button {
                         if tracker.isLoggedIn && !needsRelogin {
                             logoutTrackerName = tracker.name
                             showLogoutAlert = true
                         } else {
-                            login(to: tracker)
+                            Task {
+                                await login(to: tracker)
+                            }
                         }
                     } label: {
                         HStack(spacing: 12) {
@@ -100,10 +99,14 @@ struct SettingsTrackingView: View {
                 if let name = logoutTrackerName, let tracker = trackers.first(where: { $0.name == name }) {
                     Task {
                         // Call tracker logout to clear authentication data
-                        tracker.logout()
+                        do {
+                            try await tracker.logout()
+                        } catch {
+                            LogManager.logger.error("Unable to log out from \(tracker.name) tracker: \(error)")
+                        }
                         NotificationCenter.default.post(name: .updateTrackers, object: nil)
                         // Remove all tracked items for this tracker
-                        await CoreDataManager.shared.container.performBackgroundTask { context in
+                        await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                             CoreDataManager.shared.removeTracks(trackerId: tracker.id, context: context)
                             try? context.save()
                         }
@@ -111,13 +114,22 @@ struct SettingsTrackingView: View {
                 }
             }
         }
+        .task {
+            for tracker in trackers {
+                guard let oauthTracker = tracker as? OAuthTracker else { return }
+                let needsRelogin = await oauthTracker.oauthClient.tokens?.askedForRefresh == true
+                if needsRelogin {
+                    trackersNeedingRelogin.insert(tracker.id)
+                }
+            }
+        }
     }
 }
 
 extension SettingsTrackingView {
-    func login(to tracker: Tracker) {
+    func login(to tracker: Tracker) async {
         if let tracker = tracker as? OAuthTracker {
-            guard let url = URL(string: tracker.authenticationUrl) else { return }
+            guard let url = await tracker.getAuthenticationUrl() else { return }
             let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "aidoku") { callbackURL, error in
                 if let error {
                     LogManager.logger.error("Tracker authentication error: \(error.localizedDescription)")
@@ -132,7 +144,7 @@ extension SettingsTrackingView {
                         loadingTrackerId = nil
 
                         if tracker.isLoggedIn {
-                            tracker.oauthClient.loadTokens()
+                            await tracker.oauthClient.loadTokens()
                         }
 
                         NotificationCenter.default.post(name: .updateTrackers, object: nil)

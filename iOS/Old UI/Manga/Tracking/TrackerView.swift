@@ -9,9 +9,10 @@ import SwiftUI
 import SafariServices
 
 struct TrackerView: View {
-
     let tracker: Tracker
     let item: TrackItem
+    let info: TrackerInfo
+
     @Binding var refresh: Bool
 
     @State var state: TrackState?
@@ -85,7 +86,7 @@ struct TrackerView: View {
                 TrackerSettingOptionView(
                     NSLocalizedString("STATUS", comment: ""),
                     type: .menu,
-                    options: tracker.supportedStatuses.map { $0.toString() },
+                    options: info.supportedStatuses.map { $0.toString() },
                     selectedOption: $statusOption
                 )
                 TrackerSettingOptionView(
@@ -103,7 +104,7 @@ struct TrackerView: View {
                 TrackerSettingOptionView(NSLocalizedString("STARTED", comment: ""), type: .date, date: $startReadDate)
                 TrackerSettingOptionView(NSLocalizedString("FINISHED", comment: ""), type: .date, date: $finishReadDate)
 
-                switch tracker.scoreType {
+                switch info.scoreType {
                     case .tenPoint:
                         TrackerSettingOptionView(NSLocalizedString("SCORE"), count: $score, total: Binding.constant(10))
                     case .hundredPoint:
@@ -114,7 +115,7 @@ struct TrackerView: View {
                         TrackerSettingOptionView(
                             NSLocalizedString("SCORE"),
                             type: .menu,
-                            options: tracker.scoreOptions.map { $0.0 },
+                            options: info.scoreOptions.map { $0.0 },
                             selectedOption: $scoreOption
                         )
                 }
@@ -123,21 +124,21 @@ struct TrackerView: View {
         .padding([.top, .horizontal])
         // handle state updates
         .onChange(of: score) { newValue in
-            let new = newValue != nil ? tracker.scoreType == .tenPointDecimal ? Int(newValue! * 10) : Int(newValue!) : nil
+            let new = newValue != nil ? info.scoreType == .tenPointDecimal ? Int(newValue! * 10) : Int(newValue!) : nil
             guard state?.score != new else { return }
             state?.score = new
             update.score = new
             stateUpdated = true
         }
         .onChange(of: scoreOption) { newValue in
-            let new = newValue.flatMap { tracker.scoreOptions[safe: $0]?.1 }
+            let new = newValue.flatMap { info.scoreOptions[safe: $0]?.1 }
             guard state?.score != new else { return }
             state?.score = new
             update.score = new
             stateUpdated = true
         }
         .onChange(of: statusOption) { newValue in
-            let new = tracker.supportedStatuses.count > newValue ?? 100 ? tracker.supportedStatuses[newValue!] : nil
+            let new = info.supportedStatuses.count > newValue ?? 100 ? info.supportedStatuses[newValue!] : nil
             guard state?.status != new else { return }
             if new == .completed || new == .dropped {
                 finishReadDate = Date()
@@ -176,24 +177,29 @@ struct TrackerView: View {
             state = try? await tracker.getState(trackId: item.id)
             guard let state else { return }
 
+            let newScoreOption: Int?
+            if info.scoreType == .optionList {
+                let option = await tracker.option(for: state.score ?? 0, options: info.scoreOptions)
+                newScoreOption = info.scoreOptions
+                    .firstIndex { $0.0 == option }
+                    .flatMap {
+                        info.supportedStatuses.distance(
+                            from: info.supportedStatuses.startIndex,
+                            to: $0
+                        )
+                    }
+            } else {
+                newScoreOption = scoreOption
+            }
+
             withAnimation {
-                score = state.score != nil ? tracker.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
-                if tracker.scoreType == .optionList {
-                    let option = tracker.option(for: Int(state.score ?? 0))
-                    scoreOption = tracker.scoreOptions
-                        .firstIndex { $0.0 == option }
-                        .flatMap {
-                            tracker.supportedStatuses.distance(
-                                from: tracker.supportedStatuses.startIndex,
-                                to: $0
-                            )
-                        }
-                }
-                statusOption = tracker.supportedStatuses
+                score = state.score != nil ? info.scoreType == .tenPointDecimal ? Float(state.score!) / 10 : Float(state.score!) : nil
+                scoreOption = newScoreOption
+                statusOption = info.supportedStatuses
                     .firstIndex { $0.rawValue == state.status?.rawValue }
                     .flatMap {
-                        tracker.supportedStatuses.distance(
-                            from: tracker.supportedStatuses.startIndex,
+                        info.supportedStatuses.distance(
+                            from: info.supportedStatuses.startIndex,
                             to: $0
                         )
                     } ?? 0
@@ -224,7 +230,7 @@ struct TrackerView: View {
 struct SafariView: UIViewControllerRepresentable {
     @Binding var url: URL?
 
-    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+    func makeUIViewController(context: Context) -> SFSafariViewController {
         let url = if let url, url.scheme == "http" || url.scheme == "https" {
             url
         } else {
@@ -233,5 +239,5 @@ struct SafariView: UIViewControllerRepresentable {
         return SFSafariViewController(url: url)
     }
 
-    func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {}
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }

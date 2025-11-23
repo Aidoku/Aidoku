@@ -7,16 +7,12 @@
 
 import Foundation
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
-class BangumiApi {
+actor BangumiApi {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let userAgent = "Aidoku/Aidoku (https://github.com/Aidoku/Aidoku)"
 
-    let oauth = OAuthClient(
+    nonisolated let oauth = OAuthClient(
         id: "bangumi",
         clientId: "bgm479068d16523bfca2",
         clientSecret: "d6328f094c5e43a082b6141ab1f4ecc5",
@@ -27,8 +23,8 @@ class BangumiApi {
         decoder.dateDecodingStrategy = .iso8601
     }
 
-    func authorizedRequest(for url: URL) -> URLRequest {
-        oauth.authorizedRequest(for: url, additionalHeaders: ["User-Agent": userAgent])
+    func authorizedRequest(for url: URL) async -> URLRequest {
+        await oauth.authorizedRequest(for: url, additionalHeaders: ["User-Agent": userAgent])
     }
 
     func getAccessToken(authCode: String) async -> OAuthResponse? {
@@ -47,13 +43,13 @@ class BangumiApi {
         ]
         request.httpBody = body.percentEncoded()
 
-        oauth.tokens = try? await URLSession.shared.object(from: request)
-        oauth.saveTokens()
-        return oauth.tokens
+        let response: OAuthResponse? = try? await URLSession.shared.object(from: request)
+        await oauth.setTokens(response)
+        return response
     }
 
     func refreshAccessToken() async -> OAuthResponse? {
-        guard let refreshToken = oauth.tokens?.refreshToken else { return nil }
+        guard let refreshToken = await oauth.tokens?.refreshToken else { return nil }
 
         guard let url = URL(string: oauth.baseUrl + "/access_token") else { return nil }
         var request = URLRequest(url: url)
@@ -70,9 +66,9 @@ class BangumiApi {
         ]
         request.httpBody = body.percentEncoded()
 
-        oauth.tokens = try? await URLSession.shared.object(from: request)
-        oauth.saveTokens()
-        return oauth.tokens
+        let response: OAuthResponse? = try? await URLSession.shared.object(from: request)
+        await oauth.setTokens(response)
+        return response
     }
 }
 
@@ -134,7 +130,7 @@ extension BangumiApi {
     @discardableResult
     func update(subject: Int, update: TrackUpdate) async -> Bool {
         let url = URL(string: "https://api.bgm.tv/v0/users/-/collections/\(subject)")!
-        var request = authorizedRequest(for: url)
+        var request = await authorizedRequest(for: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpMethod = "POST"
@@ -166,24 +162,17 @@ extension BangumiApi {
         var (data, response) = try await URLSession.shared.data(for: urlRequest)
         let statusCode = (response as? HTTPURLResponse)?.statusCode
 
-        if oauth.tokens == nil {
-            oauth.loadTokens()
+        if await oauth.tokens == nil {
+            await oauth.loadTokens()
         }
 
+        let tokenExpired = await oauth.tokens?.expired == true
+
         // Check if token expired (401 Unauthorized)
-        if statusCode == 401 || statusCode == 40101 || statusCode == 40102 || oauth.tokens?.expired == true {
+        if statusCode == 401 || statusCode == 40101 || statusCode == 40102 || tokenExpired {
             // ensure we have a refresh token, otherwise we need to fully re-auth
-            guard oauth.tokens?.refreshToken != nil else {
-                if !oauth.tokens!.askedForRefresh {
-                    oauth.tokens!.askedForRefresh = true
-                    oauth.saveTokens()
-#if !os(macOS)
-                    await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
-                        title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), "Bangumi"),
-                        message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), "Bangumi")
-                    )
-#endif
-                }
+            let reloginNeeded = await oauth.checkIfReloginNeeded(trackerName: "Bangumi")
+            guard !reloginNeeded else {
                 return (data, response)
             }
 
@@ -193,7 +182,7 @@ extension BangumiApi {
             }
 
             // Retry the original request with refreshed token
-            if let newAuthorization = oauth.authorizedRequest(for: urlRequest.url!).value(forHTTPHeaderField: "Authorization") {
+            if let newAuthorization = await oauth.authorizedRequest(for: urlRequest.url!).value(forHTTPHeaderField: "Authorization") {
                 var newRequest = urlRequest
                 newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
                 newRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
@@ -205,7 +194,7 @@ extension BangumiApi {
     }
 
     private func request<T: Codable>(_ url: URL, method: String = "GET", body: Data? = nil) async -> T? {
-        var request = authorizedRequest(for: url)
+        var request = await authorizedRequest(for: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpMethod = method
         if let body {

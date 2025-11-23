@@ -8,7 +8,7 @@
 import Foundation
 
 /// A structure representing a tracked title and its state.
-struct TrackItem {
+struct TrackItem: Sendable {
     /// A unique identifier the tracker can use to identify an item.
     let id: String
     /// The tracker identifier for the item.

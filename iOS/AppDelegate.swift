@@ -355,7 +355,7 @@ extension AppDelegate {
             } else {
                 // check for tracker auth callback
                 // this shouldn't really be called since authentication should be performed within the app
-                if let tracker = TrackerManager.shared.trackers.first(where: {
+                if let tracker = TrackerManager.trackers.first(where: {
                     ($0 as? OAuthTracker)?.callbackHost == url.host
                 }) as? OAuthTracker {
                     Task {

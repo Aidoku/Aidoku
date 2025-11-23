@@ -8,8 +8,11 @@
 import Foundation
 import CryptoKit
 
-class OAuthClient {
+#if canImport(UIKit)
+import UIKit
+#endif
 
+actor OAuthClient {
     let id: String
     let clientId: String
     let clientSecret: String?
@@ -39,7 +42,7 @@ class OAuthClient {
         self.challengeMethod = challengeMethod
     }
 
-    func getAuthenticationUrl(responseType: String = "code", redirectUri: String? = nil) -> String? {
+    func getAuthenticationUrl(responseType: String = "code", redirectUri: String? = nil) -> URL? {
         guard let url = URL(string: baseUrl + "/authorize") else { return nil }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         var queryItems = [
@@ -53,13 +56,12 @@ class OAuthClient {
             queryItems.append(URLQueryItem(name: "code_challenge", value: generatePkceChallenge(method: challengeMethod)))
         }
         components?.queryItems = queryItems
-        return components?.url?.absoluteString
+        return components?.url
     }
 }
 
 // MARK: - Tokens
 extension OAuthClient {
-
     func getAccessToken(authCode: String) async -> OAuthResponse? {
         guard let url = URL(string: baseUrl + "/token") else { return nil }
         var request = URLRequest(url: url)
@@ -101,6 +103,11 @@ extension OAuthClient {
         UserDefaults.standard.set(try? JSONEncoder().encode(tokens), forKey: "Token.\(id).oauth")
     }
 
+    func setTokens(_ response: OAuthResponse?) {
+        tokens = response
+        saveTokens()
+    }
+
     func authorizedRequest(for url: URL, additionalHeaders: [String: String]? = nil) -> URLRequest {
         if tokens == nil { loadTokens() }
 
@@ -123,7 +130,6 @@ extension OAuthClient {
 
 // MARK: - PKCE
 extension OAuthClient {
-
     func generatePkceVerifier() -> String {
         var octets = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, octets.count, &octets) == errSecSuccess else {
@@ -155,5 +161,35 @@ extension OAuthClient {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .trimmingCharacters(in: .whitespaces)
+    }
+}
+
+extension OAuthClient {
+    func checkIfReloginNeeded(trackerName: String) async -> Bool {
+        if tokens == nil {
+            loadTokens()
+        }
+        guard tokens?.refreshToken != nil else {
+            await showReloginAlert(trackerName: trackerName)
+            return true
+        }
+        return false
+    }
+
+    func showReloginAlert(trackerName: String) async {
+        if tokens == nil {
+            loadTokens()
+        }
+        guard var tokens else { return }
+        if !tokens.askedForRefresh {
+            tokens.askedForRefresh = true
+            setTokens(tokens)
+#if !os(macOS)
+            await (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+                title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), trackerName),
+                message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), trackerName)
+            )
+#endif
+        }
     }
 }

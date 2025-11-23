@@ -8,18 +8,20 @@
 import AidokuRunner
 import Foundation
 
-class KomgaTracker: EnhancedTracker, PageTracker {
+final class KomgaTracker: EnhancedTracker, PageTracker {
     let id = "komga"
     let name = NSLocalizedString("KOMGA")
     let icon = PlatformImage(named: "komga")
 
-    let supportedStatuses: [TrackStatus] = []
-    let scoreType: TrackScoreType = .tenPoint
     let isLoggedIn = true
 
     private let api = KomgaApi()
 
     private let idSeparator: Character = "|"
+
+    func getTrackerInfo() -> TrackerInfo {
+        .init(supportedStatuses: [], scoreType: .tenPoint, scoreOptions: [])
+    }
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let highestChapterRead else { return nil }

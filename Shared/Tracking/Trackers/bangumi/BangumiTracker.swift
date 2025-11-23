@@ -9,27 +9,18 @@ import AidokuRunner
 import Foundation
 
 /// Bangumi tracker for Aidoku.
-class BangumiTracker: OAuthTracker {
+final class BangumiTracker: OAuthTracker {
     let id = "bangumi"
     let name = "Bangumi"
     let icon = PlatformImage(named: "bangumi")
 
-    let supportedStatuses = TrackStatus.defaultStatuses
-    var scoreType: TrackScoreType = .tenPoint
-    var scoreOptions: [(String, Int)] = []
-
     let api = BangumiApi()
 
     let callbackHost = "bangumi-auth"
-    lazy var authenticationUrl: String = {
-        api.oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://bangumi-auth") ?? ""
-    }()
-
     var oauthClient: OAuthClient { api.oauth }
 
-    init() {
-        // Bangumi uses 10-point scale by default
-        scoreType = .tenPoint
+    func getTrackerInfo() -> TrackerInfo {
+        .init(supportedStatuses: TrackStatus.defaultStatuses, scoreType: .tenPoint)
     }
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
@@ -134,6 +125,10 @@ class BangumiTracker: OAuthTracker {
                 tracked: false
             )
         }
+    }
+
+    func getAuthenticationUrl() async -> URL? {
+        await api.oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://bangumi-auth")
     }
 
     func handleAuthenticationCallback(url: URL) async {

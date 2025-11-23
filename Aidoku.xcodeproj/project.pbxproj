@@ -477,6 +477,8 @@
 		FBD6A41A285B8EBC007116C9 /* TrackState.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD6A418285B8EBC007116C9 /* TrackState.swift */; };
 		FBD796682ED1333D00BD05F4 /* DoubleBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD796672ED1333C00BD05F4 /* DoubleBadgeView.swift */; };
 		FBD7966A2ED270B500BD05F4 /* PageBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD796692ED270B100BD05F4 /* PageBackground.swift */; };
+		FBD7966C2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD7966B2ED35BF800BD05F4 /* TrackerInfo.swift */; };
+		FBD7966D2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBD7966B2ED35BF800BD05F4 /* TrackerInfo.swift */; };
 		FBE3E4922DD163DD00EF8145 /* BetterBorderedButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4912DD163D900EF8145 /* BetterBorderedButtonStyle.swift */; };
 		FBE3E4942DD2487000EF8145 /* HomeImageScrollerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4932DD2486B00EF8145 /* HomeImageScrollerView.swift */; };
 		FBE3E4972DD401B700EF8145 /* ReaderTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE3E4962DD401B100EF8145 /* ReaderTextViewController.swift */; };
@@ -919,6 +921,7 @@
 		FBD6A418285B8EBC007116C9 /* TrackState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackState.swift; sourceTree = "<group>"; };
 		FBD796672ED1333C00BD05F4 /* DoubleBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleBadgeView.swift; sourceTree = "<group>"; };
 		FBD796692ED270B100BD05F4 /* PageBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageBackground.swift; sourceTree = "<group>"; };
+		FBD7966B2ED35BF800BD05F4 /* TrackerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerInfo.swift; sourceTree = "<group>"; };
 		FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.10.xcdatamodel; sourceTree = "<group>"; };
 		FBD8A6042CC5AA6F00B1F7D2 /* ne */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ne; path = ne.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBD8A6052CC5AA8A00B1F7D2 /* sq */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sq; path = sq.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -2013,6 +2016,7 @@
 		FBD6A40F285B7776007116C9 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				FBD7966B2ED35BF800BD05F4 /* TrackerInfo.swift */,
 				FBD6A410285B7789007116C9 /* TrackItem.swift */,
 				FB4B0ADC285C2C570066A13B /* TrackSearchItem.swift */,
 				FBD6A418285B8EBC007116C9 /* TrackState.swift */,
@@ -2413,6 +2417,7 @@
 				FB4B0AE0285CC7D90066A13B /* MyAnimeListApi.swift in Sources */,
 				FB05F86B2964BFBC00D1EA2D /* SourceViewModel.swift in Sources */,
 				FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
+				FBD7966C2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */,
 				FBE3E4992DD4047100EF8145 /* ReaderTextViewModel.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */,
@@ -2789,6 +2794,7 @@
 				FBA748A42E81C11C00D9BE86 /* BangumiApi.swift in Sources */,
 				FB248CCA2EA5818400BECD2E /* KavitaHelper.swift in Sources */,
 				FBB44E6C2EC634B40032EFBB /* LocalFileNameParser.swift in Sources */,
+				FBD7966D2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */,
 				FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB248CC22EA55D0600BECD2E /* KavitaSource.swift in Sources */,
 				FBE7813028308DC60038C0E3 /* Download.swift in Sources */,

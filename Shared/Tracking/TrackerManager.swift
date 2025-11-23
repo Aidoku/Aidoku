@@ -10,35 +10,45 @@ import CoreData
 import Foundation
 
 /// An interface to interact with title tracking services.
-class TrackerManager {
+actor TrackerManager {
     /// The shared tracker mangaer instance.
     static let shared = TrackerManager()
 
     /// An instance of the Komga tracker.
-    let komga = KomgaTracker()
+    static let komga = KomgaTracker()
     /// An instance of the Komga tracker.
-    let kavita = KavitaTracker()
+    static let kavita = KavitaTracker()
     /// An instance of the AniList tracker.
-    let anilist = AniListTracker()
+    static let anilist = AniListTracker()
     /// An instance of the MyAnimeList tracker.
-    let myanimelist = MyAnimeListTracker()
+    static let myanimelist = MyAnimeListTracker()
     /// An instance of the Shikimori tracker.
-    let shikimori = ShikimoriTracker()
+    static let shikimori = ShikimoriTracker()
     /// An instance of the Bangumi tracker.
-    let bangumi = BangumiTracker()
+    static let bangumi = BangumiTracker()
 
     /// An array of the available trackers.
-    lazy var trackers: [Tracker] = [komga, kavita, anilist, myanimelist, shikimori, bangumi]
+    static let trackers: [Tracker] = [komga, kavita, anilist, myanimelist, shikimori, bangumi]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
-    var hasAvailableTrackers: Bool {
-        trackers.filter { !($0 is EnhancedTracker) }.contains { $0.isLoggedIn }
+    static var hasAvailableTrackers: Bool {
+        Self.trackers.filter { !($0 is EnhancedTracker) }.contains { $0.isLoggedIn }
     }
 
     /// Get the instance of the tracker with the specified id.
-    func getTracker(id: String) -> Tracker? {
-        trackers.first { $0.id == id }
+    static func getTracker(id: String) -> Tracker? {
+        Self.trackers.first { $0.id == id }
     }
+
+//    func hasAvailableTrackers() async -> Bool {
+//        let possibleTrackers = Self.trackers.filter { !($0 is EnhancedTracker) }
+//        for possibleTracker in possibleTrackers {
+//            if await possibleTracker.isLoggedIn() {
+//                return true
+//            }
+//        }
+//        return false
+//    }
 
     /// Send chapter read update to logged in trackers.
     func setCompleted(chapter: Chapter, skipTracker: Tracker? = nil) async {
@@ -50,10 +60,12 @@ class TrackerManager {
         let key = "Manga.chapterDisplayMode.\(uniqueKey)"
         let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
-        let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let sourceId = chapter.sourceId
+        let mangaId = chapter.mangaId
+        let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.getTracks(
-                sourceId: chapter.sourceId,
-                mangaId: chapter.mangaId,
+                sourceId: sourceId,
+                mangaId: mangaId,
                 context: context
             ).map { $0.toItem() }
         }
@@ -61,7 +73,7 @@ class TrackerManager {
         for item in trackItems {
             guard
                 skipTracker?.id != item.trackerId,
-                let tracker = getTracker(id: item.trackerId),
+                let tracker = Self.getTracker(id: item.trackerId),
                 !(tracker is PageTracker),
                 let state = try? await tracker.getState(trackId: item.id)
             else { continue }
@@ -169,7 +181,7 @@ class TrackerManager {
         }
 
         for item in trackItems {
-            guard let tracker = getTracker(id: item.trackerId) as? PageTracker else { continue }
+            guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
             do {
                 for chapter in chapters {
                     try await tracker.setProgress(trackId: item.id, chapter: chapter, progress: progress)
@@ -225,7 +237,7 @@ class TrackerManager {
 
     /// Saves a TrackItem to the data store.
     private func saveTrackItem(item: TrackItem) async {
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.createTrack(
                 id: item.id,
                 trackerId: item.trackerId,
@@ -237,21 +249,21 @@ class TrackerManager {
             do {
                 try context.save()
             } catch {
-                LogManager.logger.error("TrackManager.saveTrackItem(item: \(item)): \(error.localizedDescription)")
+                LogManager.logger.error("TrackManager.saveTrackItem(item:): \(error)")
             }
         }
-        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
-        NotificationCenter.default.post(name: Notification.Name("trackItemAdded"), object: item)
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+        NotificationCenter.default.post(name: .trackItemAdded, object: item)
     }
 
     /// Removes the TrackItem from the data store.
     func removeTrackItem(item: TrackItem) async {
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             self.removeTrackItem(item: item, context: context)
         }
     }
 
-    func removeTrackItem(item: TrackItem, context: NSManagedObjectContext) {
+    nonisolated func removeTrackItem(item: TrackItem, context: NSManagedObjectContext) {
         CoreDataManager.shared.removeTrack(
             trackerId: item.trackerId,
             sourceId: item.sourceId,
@@ -261,9 +273,9 @@ class TrackerManager {
         do {
             try context.save()
         } catch {
-            LogManager.logger.error("TrackManager.removeTrackItem(item: \(item)): \(error.localizedDescription)")
+            LogManager.logger.error("TrackManager.removeTrackItem(item:): \(error)")
         }
-        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
     }
 
     /// Checks if a manga is being tracked
@@ -273,8 +285,14 @@ class TrackerManager {
     }
 
     /// Checks if there is a tracker that can be added to the given manga.
-    func hasAvailableTrackers(sourceKey: String, mangaKey: String) -> Bool {
-        trackers.contains { $0.canRegister(sourceKey: sourceKey, mangaKey: mangaKey) }
+    func hasAvailableTrackers(sourceKey: String, mangaKey: String) async -> Bool {
+        for tracker in Self.trackers {
+            let canRegister = try? await tracker.canRegister(sourceKey: sourceKey, mangaKey: mangaKey)
+            if canRegister == true {
+                return true
+            }
+        }
+        return false
     }
 
     /// Sync progress from tracker to local history.
@@ -321,7 +339,7 @@ class TrackerManager {
         }
 
         for item in trackItems {
-            guard let tracker = getTracker(id: item.trackerId) as? PageTracker else { continue }
+            guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
             do {
                 let batchProgress = try await tracker.getProgress(trackId: item.id, chapters: chapters)
                 if result.isEmpty {
@@ -445,8 +463,8 @@ class TrackerManager {
 
     /// Add all applicable enhanced trackers to a given manga.
     func bindEnhancedTrackers(manga: AidokuRunner.Manga) async {
-        for tracker in trackers where tracker is EnhancedTracker {
-            if tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key) {
+        for tracker in Self.trackers where tracker is EnhancedTracker {
+            if (try? await tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key)) == true {
                 do {
                     let items = try await tracker.search(for: manga, includeNsfw: true)
                     guard let item = items.first else {

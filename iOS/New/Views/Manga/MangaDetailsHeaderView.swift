@@ -47,6 +47,7 @@ struct MangaDetailsHeaderView: View {
     @State private var longHeldBookmark = false
     @State private var longHeldSafari = false
     @State private var isTracking = false
+    @State private var hasAvailableTrackers = false
 
     static let coverWidth: CGFloat = 114
 
@@ -249,8 +250,9 @@ struct MangaDetailsHeaderView: View {
                 mangaId: manga.key
             )
         }
-        .onAppear {
+        .task {
             updateReadButtonText()
+            hasAvailableTrackers = await TrackerManager.shared.hasAvailableTrackers(sourceKey: manga.sourceKey, mangaKey: manga.key)
         }
     }
 
@@ -317,7 +319,7 @@ struct MangaDetailsHeaderView: View {
                     }
             )
 
-            if TrackerManager.shared.hasAvailableTrackers(sourceKey: manga.sourceKey, mangaKey: manga.key) {
+            if hasAvailableTrackers {
                 Button {
                     onTrackerButtonPressed?()
                 } label: {

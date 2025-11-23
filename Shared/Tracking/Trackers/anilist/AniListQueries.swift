@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AniListQueries {
+enum AniListQueries {
     static let searchQuery = """
     query ($search: String) {
       Page(perPage: 20) {
@@ -129,7 +129,7 @@ struct AniListQueries {
     """
 }
 
-struct GraphQLQuery: Codable {
+struct GraphQLQuery: Codable, Sendable {
     var query: String
 }
 
@@ -138,21 +138,21 @@ struct GraphQLVariableQuery<T: Codable>: Codable {
     var variables: T?
 }
 
-struct GraphQLResponse<T: Codable>: Codable {
+struct GraphQLResponse<T: Codable & Sendable>: Codable, Sendable {
     var data: T
     var errors: [GraphQLError]?
 }
 
-struct GraphQLError: Codable {
+struct GraphQLError: Codable, Sendable {
     var message: String?
     var status: Int
 }
 
-struct AniListSearchVars: Codable {
+struct AniListSearchVars: Codable, Sendable {
     var search: String
 }
 
-struct AniListUpdateMediaVars: Codable {
+struct AniListUpdateMediaVars: Codable, Sendable {
     var id: Int
     var status: String?
     var progress: Int?
@@ -162,35 +162,35 @@ struct AniListUpdateMediaVars: Codable {
     var completedAt: AniListDate?
 }
 
-struct AniListSearchResponse: Codable {
+struct AniListSearchResponse: Codable, Sendable {
     var Page: ALPage?
 }
 
-struct AniListMediaStatusVars: Codable {
+struct AniListMediaStatusVars: Codable, Sendable {
     var id: Int
 }
 
-struct AniListMediaStatusResponse: Codable {
+struct AniListMediaStatusResponse: Codable, Sendable {
     var Media: Media?
 }
 
-struct AniListUpdateResponse: Codable {
+struct AniListUpdateResponse: Codable, Sendable {
     var SaveMediaListEntry: SaveMediaListEntry
 }
 
-struct AniListViewerResponse: Codable {
+struct AniListViewerResponse: Codable, Sendable {
     var Viewer: User?
 }
 
-struct SaveMediaListEntry: Codable {
+struct SaveMediaListEntry: Codable, Sendable {
     var id: Int
 }
 
-struct ALPage: Codable {
+struct ALPage: Codable, Sendable {
     var media: [Media]
 }
 
-struct Media: Codable {
+struct Media: Codable, Sendable {
     var id: Int?
     var title: MediaTitle?
     var description: String?
@@ -203,16 +203,16 @@ struct Media: Codable {
     var volumes: Int?
 }
 
-struct MediaTitle: Codable {
+struct MediaTitle: Codable, Sendable {
     var userPreferred: String?
 }
 
-struct MediaImage: Codable {
+struct MediaImage: Codable, Sendable {
     var large: String?
     var medium: String?
 }
 
-struct MediaListEntry: Codable {
+struct MediaListEntry: Codable, Sendable {
     var status: String?
     var score: Float?
     var progress: Int?
@@ -221,16 +221,16 @@ struct MediaListEntry: Codable {
     var completedAt: AniListDate?
 }
 
-struct AniListDate: Codable {
+struct AniListDate: Codable, Sendable {
     var year: Int?
     var month: Int?
     var day: Int?
 }
 
-struct User: Codable {
+struct User: Codable, Sendable {
     var mediaListOptions: MediaListOptions?
 }
 
-struct MediaListOptions: Codable {
+struct MediaListOptions: Codable, Sendable {
     var scoreFormat: String?
 }
