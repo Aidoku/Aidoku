@@ -126,10 +126,13 @@
 "PIN" = "Pin";
 "UNPIN" = "Unpin";
 "REORDER" = "Reorder";
+"EDIT_SOURCES" = "Edit Sources";
 "CONTENT_RATING" = "Content Rating";
 "SAFE" = "Safe";
 "CONTAINS_NSFW" = "Contains NSFW";
 "PRIMARILY_NSFW" = "Primarily NSFW";
+"REMOVE_LOCAL_SOURCE" = "Remove Local Source?";
+"REMOVE_LOCAL_SOURCE_TEXT" = "This will remove all imported local files.";
 
 // Source
 "SOURCE_INFO" = "Source Info";

@@ -641,7 +641,8 @@ extension LibraryViewController {
                     }
                 }
             ] : [],
-            continueActionName: NSLocalizedString("REMOVE_FROM_LIBRARY")
+            continueActionName: NSLocalizedString("REMOVE_FROM_LIBRARY"),
+            sourceItem: toolbarItems?.first
         ) {
             Task {
                 let identifiers = selectedItems.compactMap { self.dataSource.itemIdentifier(for: $0) }

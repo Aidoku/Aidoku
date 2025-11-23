@@ -55,6 +55,7 @@ extension BaseViewController {
         actions: [UIAlertAction] = [],
         continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
         destructive: Bool = true,
+        sourceItem: Any? = nil,
         proceed: @escaping () -> Void
     ) {
         let alertView = UIAlertController(
@@ -75,6 +76,11 @@ extension BaseViewController {
         alertView.addAction(action)
 
         alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+
+        if #available(iOS 16.0, *), let sourceItem = sourceItem as? UIPopoverPresentationControllerSourceItem {
+            alertView.popoverPresentationController?.sourceItem = sourceItem
+        }
+
         present(alertView, animated: true)
     }
 
