@@ -406,6 +406,10 @@ extension MangaManager {
         // make sure user agent has loaded before doing library refresh
         _ = await UserAgentProvider.shared.getUserAgent()
 
+        // process failed tracker updates first
+        await TrackerManager.shared.processFailedUpdates()
+
+        // fetch all library items from db
         let allManga = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getLibraryManga(category: category, context: context).compactMap { $0.manga?.toManga() }
         }

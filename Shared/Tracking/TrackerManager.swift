@@ -40,15 +40,15 @@ actor TrackerManager {
         Self.trackers.first { $0.id == id }
     }
 
-//    func hasAvailableTrackers() async -> Bool {
-//        let possibleTrackers = Self.trackers.filter { !($0 is EnhancedTracker) }
-//        for possibleTracker in possibleTrackers {
-//            if await possibleTracker.isLoggedIn() {
-//                return true
-//            }
-//        }
-//        return false
-//    }
+    struct TrackingState: Codable {
+        var failedPageUpdates: [PageTrackUpdate] = []
+    }
+    private var trackingState: TrackingState
+
+    init() {
+        self.trackingState = UserDefaults.standard.data(forKey: "Tracker.pageTrackingState")
+            .flatMap { try? JSONDecoder().decode(TrackingState.self, from: $0) } ?? .init()
+    }
 
     /// Send chapter read update to logged in trackers.
     func setCompleted(chapter: Chapter, skipTracker: Tracker? = nil) async {
@@ -180,15 +180,27 @@ actor TrackerManager {
             ).map { $0.toItem() }
         }
 
+        var failedUpdates: [PageTrackUpdate] = []
+
         for item in trackItems {
             guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
-            do {
-                for chapter in chapters {
+            for chapter in chapters {
+                do {
                     try await tracker.setProgress(trackId: item.id, chapter: chapter, progress: progress)
+                } catch {
+                    LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
+                    failedUpdates.append(.init(
+                        trackerId: tracker.id,
+                        trackId: item.id,
+                        chapter: chapter,
+                        progres: progress
+                    ))
                 }
-            } catch {
-                LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
             }
+        }
+
+        if !failedUpdates.isEmpty {
+            logFailedUpdates(failedUpdates)
         }
     }
 
@@ -588,5 +600,60 @@ extension TrackerManager {
         }
 
         return chaptersToMark
+    }
+}
+
+// MARK: Tracking State
+extension TrackerManager {
+    func processFailedUpdates() async {
+        guard !trackingState.failedPageUpdates.isEmpty else { return }
+
+        var remainingFailedUpdates: [PageTrackUpdate] = []
+
+        for var update in trackingState.failedPageUpdates {
+            guard let tracker = TrackerManager.getTracker(id: update.trackerId) as? PageTracker else {
+                continue // tracker no longer exists, remove the update
+            }
+            do {
+                try await tracker.setProgress(
+                    trackId: update.trackId,
+                    chapter: update.chapter,
+                    progress: update.progres
+                )
+            } catch {
+                LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
+                update.failCount += 1
+                if update.failCount >= 3 {
+                    continue // remove update after three failed attempts (initial + two retries)
+                }
+                remainingFailedUpdates.append(update)
+            }
+        }
+
+        trackingState.failedPageUpdates = remainingFailedUpdates
+        savePageTrackingState()
+    }
+
+    private func savePageTrackingState() {
+        let data = try? JSONEncoder().encode(trackingState)
+        if let data {
+            UserDefaults.standard.set(data, forKey: "Tracker.pageTrackingState")
+        }
+    }
+
+    private func logFailedUpdates(_ updates: [PageTrackUpdate]) {
+        // merge new updates into existing failed updates, preserving the latest ones
+        for update in updates {
+            // remove any old update, assuming it's not as recent as the new one
+            let existingUpdateIndex = trackingState.failedPageUpdates.firstIndex(where: {
+                $0.trackerId == update.trackerId && $0.trackId == update.trackId && $0.chapter.key == update.chapter.key
+            })
+            if let existingUpdateIndex {
+                trackingState.failedPageUpdates.remove(at: existingUpdateIndex)
+            }
+            // add new update
+            trackingState.failedPageUpdates.append(update)
+        }
+        savePageTrackingState()
     }
 }
