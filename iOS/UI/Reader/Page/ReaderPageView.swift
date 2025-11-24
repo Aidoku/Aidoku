@@ -245,7 +245,9 @@ class ReaderPageView: UIView {
             self.textView = nil
         }
 
-        let request = ImageRequest(id: String(key), data: { Data() })
+        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+        let fullKey = "\(key)-\(settingsKey)"
+        let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
         self.currentImageRequest = request
@@ -304,7 +306,9 @@ class ReaderPageView: UIView {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
-        let request = ImageRequest(id: key, data: { Data() })
+        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+        let fullKey = "\(key)-\(settingsKey)"
+        let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
         self.currentImageRequest = request
@@ -480,6 +484,8 @@ class ReaderPageView: UIView {
     private func clearCurrentImageCache() {
         guard let currentPage else { return }
 
+        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+
         // Handle different image types
         if currentPage.imageURL != nil {
             // For URL-based images, use the stored request if available
@@ -489,7 +495,8 @@ class ReaderPageView: UIView {
         }
         if currentPage.base64 != nil {
             // For base64 images
-            let request = ImageRequest(id: String(currentPage.hashValue), data: { Data() })
+            let fullKey = "\(currentPage.hashValue)-\(settingsKey)"
+            let request = ImageRequest(id: fullKey, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
         }
         if let zipURL = currentPage.zipURL, let url = URL(string: zipURL), let filePath = currentPage.imageURL {
@@ -498,7 +505,8 @@ class ReaderPageView: UIView {
             hasher.combine(url)
             hasher.combine(filePath)
             let key = String(hasher.finalize())
-            let request = ImageRequest(id: key, data: { Data() })
+            let fullKey = "\(key)-\(settingsKey)"
+            let request = ImageRequest(id: fullKey, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
         }
     }
