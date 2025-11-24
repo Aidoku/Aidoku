@@ -245,8 +245,7 @@ class ReaderPageView: UIView {
             self.textView = nil
         }
 
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
-        let fullKey = "\(key)-\(settingsKey)"
+        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
         let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
@@ -306,8 +305,7 @@ class ReaderPageView: UIView {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
-        let fullKey = "\(key)-\(settingsKey)"
+        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
         let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
@@ -484,7 +482,7 @@ class ReaderPageView: UIView {
     private func clearCurrentImageCache() {
         guard let currentPage else { return }
 
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+        let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
 
         // Handle different image types
         if currentPage.imageURL != nil {

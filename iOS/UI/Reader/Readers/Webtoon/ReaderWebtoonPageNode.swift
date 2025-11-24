@@ -347,8 +347,7 @@ extension ReaderWebtoonPageNode {
     }
 
     private func loadImage(base64: String) async {
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
-        let fullKey = "\(page.key)-\(settingsKey)"
+        let fullKey = "\(page.key)-\(UpscaleProcessor.getProcessorSettingsKey())"
         let request = ImageRequest(
             id: fullKey,
             data: { Data() },
@@ -414,8 +413,7 @@ extension ReaderWebtoonPageNode {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
-        let fullKey = "\(key)-\(settingsKey)"
+        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
         let request = ImageRequest(
             id: fullKey,
             data: { Data() },
@@ -560,7 +558,7 @@ extension ReaderWebtoonPageNode {
 
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
-        let settingsKey = "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+        let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
 
         // Handle different image types
         if let urlString = page.imageURL, let url = URL(string: urlString) {

@@ -22,6 +22,10 @@ struct UpscaleProcessor: ImageProcessing {
         "com.github.Aidoku/Aidoku/upscale"
     }
 
+    static func getProcessorSettingsKey() -> String {
+        "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+    }
+
     func process(_ image: PlatformImage) -> PlatformImage? {
         guard let cgImage = image.cgImage else { return image }
 
