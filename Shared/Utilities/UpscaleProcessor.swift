@@ -23,7 +23,11 @@ struct UpscaleProcessor: ImageProcessing {
     }
 
     static func getProcessorSettingsKey() -> String {
-        "\(UserDefaults.standard.bool(forKey: "Reader.cropBorders"))-\(UserDefaults.standard.bool(forKey: "Reader.downsampleImages"))-\(UserDefaults.standard.bool(forKey: "Reader.upscaleImages"))-\(UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight"))"
+        let crop = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
+        let downsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+        let upscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
+        let maxHeight = UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight")
+        return "\(crop)-\(downsample)-\(upscale)-\(maxHeight)"
     }
 
     func process(_ image: PlatformImage) -> PlatformImage? {
