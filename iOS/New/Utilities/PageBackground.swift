@@ -14,6 +14,26 @@ enum PageBackground {
     // https://github.com/mihonapp/mihon/blob/fc2c8c06a940392161cf5110e222edbedf9b7e47/core/common/src/main/kotlin/tachiyomi/core/common/util/system/ImageUtil.kt#L333
     // swiftlint:disable:next cyclomatic_complexity
     static func choose(for image: UIImage, isLandscape: Bool) -> PageBackground {
+        guard
+            let cgImage = image.cgImage,
+            let data = cgImage.dataProvider?.data,
+            let ptr = CFDataGetBytePtr(data)
+        else {
+            return .color(.white)
+        }
+
+        @inline(__always)
+        func colorAt(x: Int, y: Int) -> UIColor {
+            let bytesPerPixel = cgImage.bitsPerPixel / 8
+            let bytesPerRow = cgImage.bytesPerRow
+            let offset = y * bytesPerRow + x * bytesPerPixel
+            let r = ptr[offset]
+            let g = ptr[offset + 1]
+            let b = ptr[offset + 2]
+            let a = ptr[offset + 3]
+            return UIColor(red: CGFloat(r)/255, green: CGFloat(g)/255, blue: CGFloat(b)/255, alpha: CGFloat(a)/255)
+        }
+
         let width = Int(image.size.width)
         let height = Int(image.size.height)
         guard width >= 50, height >= 50 else {
@@ -30,14 +50,14 @@ enum PageBackground {
         let leftOffsetX = left - offsetX
         let rightOffsetX = right + offsetX
 
-        let topLeftPixel = image.colorAt(x: left, y: top)
-        let topRightPixel = image.colorAt(x: right, y: top)
-        let midLeftPixel = image.colorAt(x: left, y: midY)
-        let midRightPixel = image.colorAt(x: right, y: midY)
-        let topCenterPixel = image.colorAt(x: midX, y: top)
-        let botLeftPixel = image.colorAt(x: left, y: bot)
-        let bottomCenterPixel = image.colorAt(x: midX, y: bot)
-        let botRightPixel = image.colorAt(x: right, y: bot)
+        let topLeftPixel = colorAt(x: left, y: top)
+        let topRightPixel = colorAt(x: right, y: top)
+        let midLeftPixel = colorAt(x: left, y: midY)
+        let midRightPixel = colorAt(x: right, y: midY)
+        let topCenterPixel = colorAt(x: midX, y: top)
+        let botLeftPixel = colorAt(x: left, y: bot)
+        let bottomCenterPixel = colorAt(x: midX, y: bot)
+        let botRightPixel = colorAt(x: right, y: bot)
 
         let topLeftIsDark = topLeftPixel.isDark()
         let topRightIsDark = topRightPixel.isDark()
@@ -95,8 +115,8 @@ enum PageBackground {
             let step = max(1, height / 25)
             let yIndices = stride(from: 0, to: height, by: step).enumerated()
             for (index, y) in yIndices {
-                let pixel = image.colorAt(x: x, y: y)
-                let pixelOff = image.colorAt(x: x + (x < width / 2 ? -offsetX : offsetX), y: y)
+                let pixel = colorAt(x: x, y: y)
+                let pixelOff = colorAt(x: x + (x < width / 2 ? -offsetX : offsetX), y: y)
                 if pixel.isWhite() {
                     whitePixelsStreak += 1
                     whitePixels += 1
@@ -176,8 +196,8 @@ enum PageBackground {
         let topCornersIsWhite = topLeftPixel.isWhite() && topRightPixel.isWhite()
         let topCornersIsDark = topLeftIsDark && topRightIsDark
         let botCornersIsDark = botLeftIsDark && botRightIsDark
-        let topOffsetCornersIsDark = image.colorAt(x: leftOffsetX, y: top).isDark() && image.colorAt(x: rightOffsetX, y: top).isDark()
-        let botOffsetCornersIsDark = image.colorAt(x: leftOffsetX, y: bot).isDark() && image.colorAt(x: rightOffsetX, y: bot).isDark()
+        let topOffsetCornersIsDark = colorAt(x: leftOffsetX, y: top).isDark() && colorAt(x: rightOffsetX, y: top).isDark()
+        let botOffsetCornersIsDark = colorAt(x: leftOffsetX, y: bot).isDark() && colorAt(x: rightOffsetX, y: bot).isDark()
 
         let gradientColors: [UIColor]
 
@@ -226,25 +246,5 @@ private extension UIColor {
         let (r1, g1, b1, _) = self.rgba
         let (r2, g2, b2, _) = other.rgba
         return abs(r1 - r2) < 30 && abs(g1 - g2) < 30 && abs(b1 - b2) < 30
-    }
-}
-
-private extension UIImage {
-    func colorAt(x: Int, y: Int) -> UIColor {
-        guard
-            let cgImage = cgImage,
-            let data = cgImage.dataProvider?.data,
-            let ptr = CFDataGetBytePtr(data)
-        else {
-            return .white
-        }
-        let bytesPerPixel = cgImage.bitsPerPixel / 8
-        let bytesPerRow = cgImage.bytesPerRow
-        let offset = y * bytesPerRow + x * bytesPerPixel
-        let r = ptr[offset]
-        let g = ptr[offset + 1]
-        let b = ptr[offset + 2]
-        let a = ptr[offset + 3]
-        return UIColor(red: CGFloat(r)/255, green: CGFloat(g)/255, blue: CGFloat(b)/255, alpha: CGFloat(a)/255)
     }
 }
