@@ -12,6 +12,7 @@ struct FilterHeaderView: View {
     let filters: [AidokuRunner.Filter]
     @Binding var enabledFilters: [FilterValue]
     let onFilterButtonClick: (() -> Void)?
+    let onFilterDismiss: (() -> Void)?
 
     @State private var sortedFilters: [AidokuRunner.Filter]
     @State private var showingSheet = false
@@ -19,11 +20,13 @@ struct FilterHeaderView: View {
     init(
         filters: [AidokuRunner.Filter],
         enabledFilters: Binding<[FilterValue]>,
-        onFilterButtonClick: (() -> Void)? = nil
+        onFilterButtonClick: (() -> Void)? = nil,
+        onFilterDismiss: (() -> Void)? = nil
     ) {
         self.filters = filters
         self._enabledFilters = enabledFilters
         self.onFilterButtonClick = onFilterButtonClick
+        self.onFilterDismiss = onFilterDismiss
 
         // sort filters by moving the enabled filters to the front
         var enabled: [AidokuRunner.Filter] = []
@@ -85,7 +88,7 @@ struct FilterHeaderView: View {
         .scrollClipDisabledPlease()
         .animation(.default, value: sortedFilters)
         .padding(.top, -11)
-        .sheet(isPresented: $showingSheet) {
+        .sheet(isPresented: $showingSheet, onDismiss: onFilterDismiss) {
             FilterListSheetView(
                 filters: filters,
                 showResetButton: true,
