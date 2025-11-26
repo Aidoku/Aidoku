@@ -6,9 +6,8 @@
 //
 
 import Foundation
-import Nuke
 
-extension UpscaleProcessor {
+enum ImageProcessingSettingsKey {
     static func getProcessorSettingsKey() -> String {
         let crop = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
         let downsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
