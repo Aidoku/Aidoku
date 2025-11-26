@@ -301,11 +301,7 @@ class ReaderViewController: BaseObservingViewController {
 
                 case "_UIContentSwipeDismissGestureRecognizer": // swipe down gesture
                     recognizer.isEnabled = !isWebtoonReader
-                    if UIDevice.current.userInterfaceIdiom != .pad {
-                        recognizer.delegate = nil // fixes swipe down activating on swipe edge sometimes..?
-                    } else {
-                        recognizer.delegate = self // for ipads, we need to handle it ourselves
-                    }
+                    recognizer.delegate = self // ensure gesture only activates on swipe down, not swipe right
 
 //                case "_UITransformGestureRecognizer": // pinch gesture
 //                    recognizer.isEnabled = true
