@@ -70,11 +70,15 @@ class TabBarController: UITabBarController {
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
-        let settingsViewController = if UIDevice.current.userInterfaceIdiom == .pad {
+        let settingsViewController: UIViewController
+        if UIDevice.current.userInterfaceIdiom == .pad {
             // this breaks the zoom transitions from the toolbar buttons in the backups setting page
-            UINavigationController(rootViewController: UIHostingController(rootView: SettingsView().environmentObject(settingsPath)))
+            let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
+            let entity = UINavigationController(rootViewController: hosting)
+            settingsPath.rootViewController = entity
+            settingsViewController = entity
         } else {
-            UIHostingController(
+            settingsViewController = UIHostingController(
                 rootView: NavigationView {
                     SettingsView()
                         .environmentObject(settingsPath)
