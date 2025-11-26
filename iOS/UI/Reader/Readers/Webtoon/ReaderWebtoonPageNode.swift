@@ -559,7 +559,6 @@ extension ReaderWebtoonPageNode {
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
         let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
-
         // Handle different image types
         if let urlString = page.imageURL, let url = URL(string: urlString) {
             // For URL-based images, remove from both memory and disk cache

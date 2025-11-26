@@ -483,7 +483,6 @@ class ReaderPageView: UIView {
         guard let currentPage else { return }
 
         let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
-
         // Handle different image types
         if currentPage.imageURL != nil {
             // For URL-based images, use the stored request if available
