@@ -347,7 +347,7 @@ extension ReaderWebtoonPageNode {
     }
 
     private func loadImage(base64: String) async {
-        let fullKey = "\(page.key)-\(UpscaleProcessor.getProcessorSettingsKey())"
+        let fullKey = "\(page.key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(
             id: fullKey,
             data: { Data() },
@@ -413,7 +413,7 @@ extension ReaderWebtoonPageNode {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
-        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
+        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(
             id: fullKey,
             data: { Data() },
@@ -558,7 +558,7 @@ extension ReaderWebtoonPageNode {
 
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
-        let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
+        let settingsKey = ImageProcessingSettingsKey.getProcessorSettingsKey()
         // Handle different image types
         if let urlString = page.imageURL, let url = URL(string: urlString) {
             // For URL-based images, remove from both memory and disk cache

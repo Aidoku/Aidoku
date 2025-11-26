@@ -245,7 +245,7 @@ class ReaderPageView: UIView {
             self.textView = nil
         }
 
-        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
+        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
@@ -305,7 +305,7 @@ class ReaderPageView: UIView {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
-        let fullKey = "\(key)-\(UpscaleProcessor.getProcessorSettingsKey())"
+        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(id: fullKey, data: { Data() })
 
         // Store current image request for reload functionality
@@ -482,7 +482,7 @@ class ReaderPageView: UIView {
     private func clearCurrentImageCache() {
         guard let currentPage else { return }
 
-        let settingsKey = UpscaleProcessor.getProcessorSettingsKey()
+        let settingsKey = ImageProcessingSettingsKey.getProcessorSettingsKey()
         // Handle different image types
         if currentPage.imageURL != nil {
             // For URL-based images, use the stored request if available
