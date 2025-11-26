@@ -108,7 +108,12 @@ class SearchViewController: UIViewController {
                     ))
                 )
             ],
-            enabledFilters: filtersBinding
+            enabledFilters: filtersBinding,
+            onFilterDismiss: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.searchController.searchBar.becomeFirstResponder()
+                }
+            }
         )
     }
 
