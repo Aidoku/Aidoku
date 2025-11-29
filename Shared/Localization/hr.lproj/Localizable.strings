@@ -618,3 +618,4 @@
 "PROCESSING_QUEUE" = "Obrada stavki u redu čekanja …";
 "BACKGROUND_REFRESH" = "Osvježavanje pozadine";
 "BACKGROUND_REFRESH_TEXT" = "Prilikom ručnog pokretanja osvježavanja biblioteke, dopusti da osvježavanje završi čak i ako je aplikacija u pozadini.";
+"BACKGROUND_DOWNLOADING" = "Preuzimanje pozadine";
