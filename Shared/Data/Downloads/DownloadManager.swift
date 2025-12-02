@@ -164,7 +164,7 @@ actor DownloadManager {
         let tmpFile = FileManager.default.temporaryDirectory?.appendingPathComponent(chapterFile.lastPathComponent)
         guard let tmpFile else { return nil }
         do {
-            try FileManager.default.zipItem(at: chapterDirectory, to: tmpFile)
+            try FileManager.default.zipItem(at: chapterDirectory, to: tmpFile, shouldKeepParent: false)
             return tmpFile
         } catch {
             return nil
