@@ -334,6 +334,8 @@ extension ComicInfo {
             escaped = escaped.replacingOccurrences(of: "&", with: "&amp;")
             escaped = escaped.replacingOccurrences(of: "<", with: "&lt;")
             escaped = escaped.replacingOccurrences(of: ">", with: "&gt;")
+            escaped = escaped.replacingOccurrences(of: "\"", with: "&quot;")
+            escaped = escaped.replacingOccurrences(of: "'", with: "&apos;")
             return escaped
         }
 
