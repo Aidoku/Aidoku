@@ -11,16 +11,25 @@ import Testing
 
 @testable import Aidoku
 
-private class TestableTracker: Tracker {
+actor TestableTracker: Tracker {
     let id = "test"
     let name = "Test"
     let icon: Aidoku.PlatformImage? = nil
-    let supportedStatuses: [Aidoku.TrackStatus] = []
-    let scoreType: Aidoku.TrackScoreType = .tenPoint
     let isLoggedIn = true
 
     var lastReadChapter: Float?
     var lastReadVolume: Int?
+
+    func setLastReadChapter(_ chapter: Float?) {
+        lastReadChapter = chapter
+    }
+    func setLastReadVolume(_ volume: Int?) {
+        lastReadVolume = volume
+    }
+
+    func getTrackerInfo() async throws -> Aidoku.TrackerInfo {
+        .init(supportedStatuses: [], scoreType: .tenPoint)
+    }
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         nil
@@ -62,7 +71,7 @@ private class TestableTracker: Tracker {
 
     @Test func testChapterNumbers() async {
         let tracker = TestableTracker()
-        tracker.lastReadChapter = 5
+        await tracker.setLastReadChapter(5)
 
         let result = await TrackerManager.shared.getChaptersToSyncProgressFromTracker(
             tracker: tracker,
@@ -84,8 +93,8 @@ private class TestableTracker: Tracker {
 
     @Test func testVolumeNumbers() async {
         let tracker = TestableTracker()
-        tracker.lastReadChapter = 2
-        tracker.lastReadVolume = 1
+        await tracker.setLastReadChapter(2)
+        await tracker.setLastReadVolume(1)
 
         let chapters: [AidokuRunner.Chapter] = (1...10).map {
             .init(
@@ -107,7 +116,7 @@ private class TestableTracker: Tracker {
         // chapters 1-2, lastReadChapter should be prioritized
         #expect(result.count == 2)
 
-        tracker.lastReadChapter = nil
+        await tracker.setLastReadChapter(nil)
 
         result = await TrackerManager.shared.getChaptersToSyncProgressFromTracker(
             tracker: tracker,
@@ -123,7 +132,7 @@ private class TestableTracker: Tracker {
 
     @Test func testChapterNumbersWithHistory() async {
         let tracker = TestableTracker()
-        tracker.lastReadChapter = 5
+        await tracker.setLastReadChapter(5)
 
         let chapters: [AidokuRunner.Chapter] = (1...10).map {
             .init(
