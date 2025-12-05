@@ -16,13 +16,3 @@ enum ImageProcessingSettingsKey {
         return "\(crop)-\(downsample)-\(upscale)-\(maxHeight)"
     }
 }
-
-
-
-
-
-
-
-
-
-
