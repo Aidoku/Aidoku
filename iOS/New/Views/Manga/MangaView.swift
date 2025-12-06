@@ -193,7 +193,7 @@ struct MangaView: View {
                 }
             }
             .fullScreenCover(item: $openChapter) { chapter in
-                let readerController = ReaderViewController(
+                SwiftUIReaderNavigationController(
                     source: viewModel.source,
                     manga: {
                         var mangaWithFilteredChapters = viewModel.manga
@@ -206,9 +206,8 @@ struct MangaView: View {
                     }(),
                     chapter: chapter
                 )
-                SwiftUIReaderNavigationController(readerViewController: readerController)
-                    .ignoresSafeArea()
-                    .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
+                .ignoresSafeArea()
+                .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
             }
             .environment(\.editMode, $editMode)
         }
