@@ -77,14 +77,13 @@ struct DownloadedMangaView: View {
             Text(NSLocalizedString("REMOVE_ALL_DOWNLOADS_CONFIRM"))
         }
         .fullScreenCover(item: $openChapter) { chapter in
-            let readerController = ReaderViewController(
+            SwiftUIReaderNavigationController(
                 source: SourceManager.shared.source(for: viewModel.manga.sourceId),
                 manga: viewModel.manga.toManga(),
                 chapter: chapter.toChapter()
             )
-            SwiftUIReaderNavigationController(readerViewController: readerController)
-                .ignoresSafeArea()
-                .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
+            .ignoresSafeArea()
+            .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
         }
     }
 

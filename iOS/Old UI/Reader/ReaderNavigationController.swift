@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AidokuRunner
 
 class ReaderNavigationController: UINavigationController {
     let readerViewController: ReaderViewController
@@ -40,16 +41,48 @@ class ReaderNavigationController: UINavigationController {
 }
 
 struct SwiftUIReaderNavigationController: UIViewControllerRepresentable {
-    let readerViewController: ReaderViewController
+    let source: AidokuRunner.Source?
+    let manga: AidokuRunner.Manga
+    let chapter: AidokuRunner.Chapter
+
+    final class Coordinator {
+        var nav: ReaderNavigationController?
+        var reader: ReaderViewController?
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIViewController(context: Context) -> ReaderNavigationController {
-        .init(readerViewController: readerViewController)
+        if let nav = context.coordinator.nav { return nav }
+
+        let reader = ReaderViewController(
+            source: source,
+            manga: manga,
+            chapter: chapter
+        )
+        let nav = ReaderNavigationController(readerViewController: reader)
+        context.coordinator.reader = reader
+        context.coordinator.nav = nav
+        return nav
     }
 
     func updateUIViewController(_ uiViewController: ReaderNavigationController, context: Context) {
-        if readerViewController != uiViewController.readerViewController {
-            Task { @MainActor in
-                uiViewController.setViewControllers([readerViewController], animated: false)
+        guard let reader = context.coordinator.reader else { return }
+
+        // make a fresh reader instance if needed
+        if reader.manga.key != manga.key || reader.manga.sourceKey != manga.sourceKey {
+            let newReader = ReaderViewController(
+                source: source,
+                manga: manga,
+                chapter: chapter
+            )
+            context.coordinator.reader = newReader
+            uiViewController.setViewControllers([newReader], animated: false)
+        } else {
+            // Otherwise, update the existing reader instance
+            if reader.chapter != chapter {
+                reader.setChapter(chapter)
+                reader.loadCurrentChapter()
             }
         }
     }
