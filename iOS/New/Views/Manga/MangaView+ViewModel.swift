@@ -661,7 +661,40 @@ extension MangaView.ViewModel {
 
     private func getNextChapter() -> ChapterResult {
         guard !chapters.isEmpty else { return .none }
-        // get first chapter not completed
+
+        // Find most recently read chapter (by date)
+        let lastRead = readingHistory
+            .filter { $0.value.date > 0 }
+            .max { $0.value.date < $1.value.date }
+
+        if let (lastReadId, lastReadInfo) = lastRead {
+            // Find the chapter object
+            // If the chapter is filtered out (e.g. by lang), we might still want to know it was last read
+            // but we likely can't "continue" it if it's not in the list.
+            // But we should check `manga.chapters` for full list if needed?
+            // "Continue Reading" usually implies continuing what's visible or logical.
+            // Let's stick to visible chapters for now to avoid playing hidden chapters.
+            // Actually, if I hide "read" chapters, the last read one is hidden.
+            // So we should look at the full sorted list to find the "next" one.
+
+            let sorted = sortedChapters()
+            if let chapter = sorted.first(where: { $0.id == lastReadId }) {
+                // If incomplete, resume this chapter
+                if lastReadInfo.page != -1 {
+                    return .chapter(chapter)
+                }
+
+                // If completed, find the next chapter in the sorted list
+                if let index = sorted.firstIndex(where: { $0.id == lastReadId }) {
+                    let nextChapters = sorted.suffix(from: index + 1)
+                    if let next = nextChapters.first(where: { (!$0.locked || downloadStatus[$0.key] == .finished) }) {
+                        return .chapter(next)
+                    }
+                }
+            }
+        }
+
+        // Fallback: get first chapter not completed
         let chapter = (chapterSortAscending ? chapters : chapters.reversed()).first(
             where: { (!$0.locked || downloadStatus[$0.key] == .finished) && readingHistory[$0.id]?.page ?? 0 != -1 }
         )
