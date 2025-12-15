@@ -134,6 +134,7 @@
 		FB1BEF892E3BCC1100098D21 /* HistoryView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1BEF882E3BCC0D00098D21 /* HistoryView+ViewModel.swift */; };
 		FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1BEF8B2E3BFFEE00098D21 /* HistorySection.swift */; };
 		FB1BEF8E2E3BFFF800098D21 /* HistoryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1BEF8D2E3BFFF400098D21 /* HistoryEntry.swift */; };
+		FB1DD8592EF049210007FC78 /* LiquidLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */; };
 		FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */; };
 		FB1F553428AFE78600CFE182 /* ReaderDoublePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */; };
 		FB248CC12EA55D0600BECD2E /* KavitaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC02EA55D0400BECD2E /* KavitaSource.swift */; };
@@ -642,6 +643,7 @@
 		FB1BEF882E3BCC0D00098D21 /* HistoryView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HistoryView+ViewModel.swift"; sourceTree = "<group>"; };
 		FB1BEF8B2E3BFFEE00098D21 /* HistorySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistorySection.swift; sourceTree = "<group>"; };
 		FB1BEF8D2E3BFFF400098D21 /* HistoryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntry.swift; sourceTree = "<group>"; };
+		FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidLensView.swift; sourceTree = "<group>"; };
 		FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMode.swift; sourceTree = "<group>"; };
 		FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDoublePageViewController.swift; sourceTree = "<group>"; };
 		FB2453092A2BA48800716677 /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1175,6 +1177,7 @@
 				FBC1271C28ABDCB400B68FFC /* ReaderHoldingDelegate.swift */,
 				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
 				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
+				FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -2745,6 +2748,7 @@
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
 				48177B8E2B75C40400AD41B4 /* MangaUpdatesView.swift in Sources */,
 				FB716E09283F2E9D00F1BB5D /* CategorySelectViewController.swift in Sources */,
+				FB1DD8592EF049210007FC78 /* LiquidLensView.swift in Sources */,
 				FBE3E4942DD2487000EF8145 /* HomeImageScrollerView.swift in Sources */,
 				FB79841D2E0DD183000761A9 /* TapZone.swift in Sources */,
 				FB58C6B22999B44D00A6F49F /* WebViewViewController.swift in Sources */,
