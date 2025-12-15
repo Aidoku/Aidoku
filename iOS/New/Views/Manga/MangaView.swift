@@ -709,25 +709,13 @@ extension MangaView {
     }
 
     func showLoadingIndicator() {
-        guard loadingAlert == nil else { return }
-        loadingAlert = UIAlertController(
-            title: nil,
-            message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""),
-            preferredStyle: .alert
-        )
-        guard let loadingAlert else { return }
-        let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
-        loadingIndicator.style = .medium
-        loadingIndicator.tag = 3
-        loadingIndicator.startAnimating()
-        loadingAlert.view.addSubview(loadingIndicator)
-        path.present(loadingAlert)
+        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
     }
 
     func hideLoadingIndicator() {
-        guard let loadingAlert else { return }
-        loadingAlert.dismiss(animated: true)
-        self.loadingAlert = nil
+        Task {
+            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+        }
     }
 }
 

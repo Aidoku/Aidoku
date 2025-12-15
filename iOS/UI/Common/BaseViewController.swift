@@ -83,18 +83,6 @@ extension BaseViewController {
 
         present(alertView, animated: true)
     }
-
-    /// Shows a non-interactive loading indicator.
-    func showLoadingIndicator() {
-        (loadingAlert.view.subviews.first(where: { $0.tag == 3 }) as? UIActivityIndicatorView)?.startAnimating()
-        present(loadingAlert, animated: true)
-    }
-
-    /// Dismisses shown loading indicator.
-    func hideLoadingIndicator() {
-        loadingAlert.dismiss(animated: true)
-        (loadingAlert.view.subviews.first(where: { $0.tag == 1 }) as? UIActivityIndicatorView)?.stopAnimating()
-    }
 }
 
 extension BaseViewController {
