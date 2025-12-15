@@ -216,22 +216,16 @@ class ReaderViewController: BaseObservingViewController {
             // if the tap zone is auto, it will changed based on the current reader
             self.updateTapZone()
         }
+        let reloadBlock: (Notification) -> Void = { [weak self] _ in
+            guard let self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
         // reload pages when processors change
-        addObserver(forName: "Reader.downsampleImages") { [weak self] _ in
-            guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
-        addObserver(forName: "Reader.upscaleImages") { [weak self] _ in
-            guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
-        addObserver(forName: "Reader.cropBorders") { [weak self] _ in
-            guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
-        addObserver(forName: "Reader.tapZones") { [weak self] _ in
-            self?.updateTapZone()
-        }
+        addObserver(forName: "Reader.downsampleImages", using: reloadBlock)
+        addObserver(forName: "Reader.upscaleImages", using: reloadBlock)
+        addObserver(forName: "Reader.cropBorders", using: reloadBlock)
+        addObserver(forName: "Reader.liveText", using: reloadBlock)
+        addObserver(forName: "Reader.tapZones", using: reloadBlock)
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
             self.updateReadPosition()
@@ -539,6 +533,7 @@ extension ReaderViewController {
 
 // MARK: - Reader Holding Delegate
 extension ReaderViewController: ReaderHoldingDelegate {
+    var barsHidden: Bool { statusBarHidden }
 
     func getNextChapter() -> AidokuRunner.Chapter? {
         guard
@@ -787,6 +782,8 @@ extension ReaderViewController {
     func showBars() {
         guard let navigationController else { return }
 
+        NotificationCenter.default.post(name: .readerShowingBars, object: nil)
+
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = false
             self.setNeedsStatusBarAppearanceUpdate()
@@ -829,6 +826,8 @@ extension ReaderViewController {
 
     func hideBars() {
         guard let navigationController else { return }
+
+        NotificationCenter.default.post(name: .readerHidingBars, object: nil)
 
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = true

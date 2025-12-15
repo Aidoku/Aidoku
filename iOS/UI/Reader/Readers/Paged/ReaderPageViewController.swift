@@ -8,7 +8,6 @@
 import UIKit
 
 class ReaderPageViewController: BaseObservingViewController {
-
     enum InfoPageType {
         case previous
         case next
@@ -22,8 +21,8 @@ class ReaderPageViewController: BaseObservingViewController {
     let type: PageType
 
     private var infoView: ReaderInfoPageView?
-    private var zoomView: ZoomableScrollView?
-    var pageView: ReaderPageView?
+    private(set) var zoomView: ZoomableScrollView?
+    private(set) var pageView: ReaderPageView?
 
     private lazy var reloadButton = {
         let reloadButton = UIButton(type: .roundedRect)
@@ -104,7 +103,10 @@ class ReaderPageViewController: BaseObservingViewController {
                 pageView.translatesAutoresizingMaskIntoConstraints = false
                 zoomView.addSubview(pageView)
                 zoomView.zoomView = pageView
-
+                // hide live text button when zoomed in
+                zoomView.onZoomScaleChanged = { [weak self] scale in
+                    self?.pageView?.setLiveTextHidden(scale != 1)
+                }
                 view.addSubview(reloadButton)
 
                 self.zoomView = zoomView

@@ -10,6 +10,7 @@ import AsyncDisplayKit
 import Gifu
 import Nuke
 import SwiftUI
+import VisionKit
 import ZIPFoundation
 
 class ReaderWebtoonPageNode: BaseObservingCellNode {
@@ -27,6 +28,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var text: String?
     var ratio: CGFloat?
     private var loading = false
+    private var shouldShowLiveTextButton = false
 
     // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
@@ -245,7 +247,7 @@ extension ReaderWebtoonPageNode {
         } else if let base64 = page.base64 {
             await loadImage(base64: base64)
         } else if let text = page.text {
-             loadText(text)
+            loadText(text)
         } else {
             // TODO: show error
         }
@@ -514,6 +516,12 @@ extension ReaderWebtoonPageNode {
                 if let delegate {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
+                if #available(iOS 16.0, *), UserDefaults.standard.bool(forKey: "Reader.liveText"), ImageAnalyzer.isSupported {
+                    let interaction = ImageAnalysisInteraction()
+                    interaction.preferredInteractionTypes = .automatic
+                    imageNode.addInteraction(interaction)
+                }
+                await analyzeLiveText()
             }
         } else if let text {
             progressNode.isHidden = true
@@ -535,8 +543,33 @@ extension ReaderWebtoonPageNode {
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
     }
 
-    // MARK: - Image Reload Functionality
+    @MainActor
+    private func analyzeLiveText() async {
+        if #available(iOS 16.0, *) {
+            guard let image else {
+                imageNode.imageAnalaysisInteraction?.analysis = nil
+                return
+            }
+            let analyzer = ImageAnalyzer()
+            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+            imageNode.imageAnalaysisInteraction?.analysis = analysis
+            imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+        }
+    }
 
+    @MainActor
+    func setLiveTextHidden(_ hidden: Bool) {
+        if #available(iOS 16.0, *) {
+            shouldShowLiveTextButton = !hidden
+            // don't hide if the text highlighting is active
+            guard imageNode.imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
+            imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
+        }
+    }
+}
+
+// MARK: - Image Reload Functionality
+extension ReaderWebtoonPageNode {
     /// Reloads the current image by clearing its cache and re-fetching from the source
     @MainActor
     func reloadCurrentImage() async -> Bool {

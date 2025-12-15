@@ -338,6 +338,11 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
+                key: "Reader.liveText",
+                title: NSLocalizedString("LIVE_TEXT"),
+                value: .toggle(.init())
+            ),
+            .init(
                 key: "Reader.backgroundColor",
                 title: NSLocalizedString("READER_BG_COLOR"),
                 value: .select(.init(

@@ -11,24 +11,25 @@
 import UIKit
 
 class ZoomableScrollView: UIScrollView {
-
-    var zoomView: UIView! {
+    var zoomView: UIView? {
         didSet {
             configure()
         }
     }
-
-    lazy var zoomingTap: UITapGestureRecognizer = {
-        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        zoomingTap.numberOfTapsRequired = 2
-        return zoomingTap
-    }()
 
     var zoomEnabled = true {
         didSet {
             isScrollEnabled = zoomEnabled
         }
     }
+
+    var onZoomScaleChanged: ((CGFloat) -> Void)?
+
+    private lazy var zoomingTap: UITapGestureRecognizer = {
+        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        zoomingTap.numberOfTapsRequired = 2
+        return zoomingTap
+    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -53,8 +54,8 @@ class ZoomableScrollView: UIScrollView {
     }
 
     func configure() {
-        zoomView.addGestureRecognizer(zoomingTap)
-        zoomView.isUserInteractionEnabled = true
+        zoomView?.addGestureRecognizer(zoomingTap)
+        zoomView?.isUserInteractionEnabled = true
     }
 
     func centerView() {
@@ -81,7 +82,6 @@ class ZoomableScrollView: UIScrollView {
 
 // MARK: - Double Tap Gesture
 extension ZoomableScrollView {
-
     @objc func handleDoubleTap(_ sender: UITapGestureRecognizer) {
         guard zoomEnabled else { return }
         let location = sender.location(in: sender.view)
@@ -120,12 +120,12 @@ extension ZoomableScrollView {
 
 // MARK: - Scroll View Delegate
 extension ZoomableScrollView: UIScrollViewDelegate {
-
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         zoomEnabled ? zoomView : nil
     }
 
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         centerView()
+        onZoomScaleChanged?(zoomScale)
     }
 }

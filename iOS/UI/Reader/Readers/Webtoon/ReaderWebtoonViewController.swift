@@ -82,12 +82,22 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 5
+
+        zoomView.onZoomScaleChanged = { [weak self] scale in
+            self?.setLiveTextButtonHidden(scale != 1)
+        }
     }
 
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool
                 ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+        }
+        addObserver(forName: .readerShowingBars) { [weak self] _ in
+            self?.setLiveTextButtonHidden(false)
+        }
+        addObserver(forName: .readerHidingBars) { [weak self] _ in
+            self?.setLiveTextButtonHidden(true)
         }
     }
 
@@ -122,10 +132,26 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             currentPages.count - (hasStartInfo ? 1 : 0)
         )
     }
+
+    private func setLiveTextButtonHidden(_ hidden: Bool) {
+        collectionNode.visibleNodes.forEach {
+            guard let pageNode = $0 as? ReaderWebtoonPageNode else { return }
+            if hidden || delegate?.barsHidden == true {
+                pageNode.setLiveTextHidden(true)
+            } else {
+                let scale = zoomView.scrollNode.view.zoomScale
+                pageNode.setLiveTextHidden(scale != 1)
+            }
+        }
+    }
 }
 
 // MARK: - Scroll View Delegate
 extension ReaderWebtoonViewController {
+    override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        super.scrollViewWillBeginDragging(scrollView)
+        setLiveTextButtonHidden(true)
+    }
 
     // Update current page when scrolling
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -262,19 +288,24 @@ extension ReaderWebtoonViewController {
 
     // check for infinite load when deceleration stops
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        guard infinite else { return }
         if decelerate {
             return
         }
-        isScrolling = false
-        checkInfiniteLoad()
-    }
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        setLiveTextButtonHidden(false)
         guard infinite else { return }
         isScrolling = false
         checkInfiniteLoad()
     }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        setLiveTextButtonHidden(false)
+        guard infinite else { return }
+        isScrolling = false
+        checkInfiniteLoad()
+    }
+
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        setLiveTextButtonHidden(false)
         guard infinite else { return }
         isScrolling = false
         checkInfiniteLoad()

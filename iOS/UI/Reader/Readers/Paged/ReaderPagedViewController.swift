@@ -145,6 +145,13 @@ class ReaderPagedViewController: BaseObservingViewController {
         }
         addObserver(forName: "Reader.splitWideImages", using: refreshSplitPages)
         addObserver(forName: "Reader.reverseSplitOrder", using: refreshSplitPages)
+
+        addObserver(forName: .readerShowingBars) { [weak self] _ in
+            self?.setLiveTextButtonHidden(false)
+        }
+        addObserver(forName: .readerHidingBars) { [weak self] _ in
+            self?.setLiveTextButtonHidden(true)
+        }
     }
 
     func updatePageLayout() {
@@ -616,6 +623,18 @@ extension ReaderPagedViewController {
             refreshChapter(startPage: targetPage)
         }
     }
+
+    private func setLiveTextButtonHidden(_ hidden: Bool) {
+        pageViewController.viewControllers?.forEach {
+            guard let pageController = $0 as? ReaderPageViewController else { return }
+            if hidden {
+                pageController.pageView?.setLiveTextHidden(true)
+            } else {
+                guard let scale = pageController.zoomView?.zoomScale else { return }
+                pageController.pageView?.setLiveTextHidden(scale != 1)
+            }
+        }
+    }
 }
 
 // MARK: - Reader Delegate
@@ -749,6 +768,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         previousViewControllers: [UIViewController],
         transitionCompleted completed: Bool
     ) {
+        setLiveTextButtonHidden(delegate?.barsHidden ?? false)
         guard
             completed,
             let viewController = pageViewController.viewControllers?.first,
@@ -825,6 +845,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
         _ pageViewController: UIPageViewController,
         willTransitionTo pendingViewControllers: [UIViewController]
     ) {
+        setLiveTextButtonHidden(true)
         for controller in pendingViewControllers {
             if let controller = controller as? ReaderDoublePageViewController {
                 if let first = getIndex(of: controller, pos: .first) {

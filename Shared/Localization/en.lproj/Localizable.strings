@@ -458,9 +458,12 @@
 "NO_AVAILABLE_MODELS_TEXT" = "Failed to fetch available models. Check your network connection and ensure your app is running the latest version.";
 "MODEL_INFO" = "Model Info";
 "LOCK_HISTORY_TAB" = "Lock History Tab";
+
+// Reader Settings
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "DISABLE_QUICK_ACTIONS" = "Disable Quick Actions";
+"LIVE_TEXT" = "Live Text";
 "READER_BG_COLOR" = "Background Color";
 "READER_BG_COLOR_SYSTEM" = "System";
 "READER_BG_COLOR_AUTO" = "Automatic";

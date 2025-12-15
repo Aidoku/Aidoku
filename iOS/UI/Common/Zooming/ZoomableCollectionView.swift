@@ -9,6 +9,7 @@ import AsyncDisplayKit
 import Gifu
 import SwiftUI
 import UIKit
+import VisionKit
 
 class ZoomableCollectionView: ASDisplayNode {
 
@@ -16,6 +17,8 @@ class ZoomableCollectionView: ASDisplayNode {
     let scrollNode = ASScrollNode()
     private let dummyZoomView: UIView
     let layout: UICollectionViewLayout
+
+    var onZoomScaleChanged: ((CGFloat) -> Void)?
 
     private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
     private var lastHit = Date.distantPast
@@ -79,6 +82,7 @@ class ZoomableCollectionView: ASDisplayNode {
                 allowNextTouchPassThrough = false
                 return orig
             }
+            lazy var origType = String(describing: type(of: orig))
             if orig is _ASDisplayView || orig is GIFImageView {
                 if lastHit.timeIntervalSinceNow <= -0.1 {
                     if !tempGestures.isEmpty {
@@ -98,8 +102,24 @@ class ZoomableCollectionView: ASDisplayNode {
                         scrollNode.view.addGestureRecognizer($0)
                     }
                 }
-            } else if String(describing: type(of: orig)) == "CGDrawingView" {
+            } else if origType == "CGDrawingView" {
                 allowNextTouchPassThrough = true
+            } else if origType == "VKImageAnalysisButton" {
+                return orig
+            } else if origType == "VKCImageTextSelectionView_iOS" {
+                // only allow text selection to avoid conflicting with zoom double tap gesture
+                if let range = orig.value(forKey: "documentRange") as? UITextRange {
+                    let selector = NSSelectorFromString("selectionRectsForRange:")
+                    typealias Method = @convention(c) (AnyObject, Selector, UITextRange) -> [UITextSelectionRect]
+                    guard let method = orig.method(for: selector) else { return orig }
+                    let function = unsafeBitCast(method, to: Method.self)
+                    let rects = function(orig, selector, range)
+
+                    let point = view.convert(point, to: orig)
+                    if rects.contains(where: { $0.rect.contains(point) }) {
+                        return orig
+                    }
+                }
             }
         }
         return super.hitTest(point, with: event)
@@ -134,6 +154,7 @@ extension ZoomableCollectionView: UIScrollViewDelegate {
         else { return }
         layout.setScale(scrollView.zoomScale)
         self.layout.invalidateLayout()
+        onZoomScaleChanged?(scrollView.zoomScale)
     }
 
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {

@@ -10,14 +10,19 @@ import Gifu
 import MarkdownUI
 import Nuke
 import SwiftUI
+import VisionKit
 import ZIPFoundation
 
 class ReaderPageView: UIView {
-
     weak var parent: UIViewController?
 
     let imageView = GIFImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+
+    @available(iOS 16.0, *)
+    var imageAnalaysisInteraction: ImageAnalysisInteraction? {
+        imageView.interactions.first as? ImageAnalysisInteraction
+    }
 
     private var textView: UIHostingController<MarkdownView>?
 
@@ -25,6 +30,7 @@ class ReaderPageView: UIView {
     private var imageHeightConstraint: NSLayoutConstraint?
     private var imageTask: ImageTask?
     private var sourceId: String?
+    private var shouldShowLiveTextButton = false
 
     private var completion: ((Bool) -> Void)?
 
@@ -52,6 +58,12 @@ class ReaderPageView: UIView {
         progressView.progressColor = tintColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(progressView)
+
+        if #available(iOS 16.0, *), UserDefaults.standard.bool(forKey: "Reader.liveText"), ImageAnalyzer.isSupported {
+            let interaction = ImageAnalysisInteraction()
+            interaction.preferredInteractionTypes = .automatic
+            imageView.addInteraction(interaction)
+        }
 
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
@@ -87,6 +99,7 @@ class ReaderPageView: UIView {
         if let image = page.image {
             imageView.image = image
             fixImageSize()
+            await analyzeLiveText()
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
@@ -203,6 +216,7 @@ class ReaderPageView: UIView {
                 imageView.animate(withGIFData: data)
             }
             fixImageSize()
+            await analyzeLiveText()
             completion?(true)
             return true
         } catch {
@@ -227,6 +241,7 @@ class ReaderPageView: UIView {
                             imageView.animate(withGIFData: data)
                         }
                         fixImageSize()
+                        await analyzeLiveText()
                         completion?(true)
                         return true
                     }
@@ -259,6 +274,7 @@ class ReaderPageView: UIView {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
             fixImageSize()
+            await analyzeLiveText()
             return true
         }
 
@@ -295,6 +311,7 @@ class ReaderPageView: UIView {
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
         imageView.image = image
         fixImageSize()
+        await analyzeLiveText()
 
         return true
     }
@@ -319,6 +336,7 @@ class ReaderPageView: UIView {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
             fixImageSize()
+            await analyzeLiveText()
             return true
         }
 
@@ -388,6 +406,7 @@ class ReaderPageView: UIView {
             imageView.animate(withGIFData: result.data)
         }
         fixImageSize()
+        await analyzeLiveText()
 
         return true
     }
@@ -459,10 +478,32 @@ class ReaderPageView: UIView {
         }
     }
 
-    // MARK: - Image Reload Functionality
+    private func analyzeLiveText() async {
+        if #available(iOS 16.0, *) {
+            guard let image = imageView.image else {
+                imageAnalaysisInteraction?.analysis = nil
+                return
+            }
+            let analyzer = ImageAnalyzer()
+            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+            imageAnalaysisInteraction?.analysis = analysis
+            imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+        }
+    }
 
+    func setLiveTextHidden(_ hidden: Bool) {
+        if #available(iOS 16.0, *) {
+            shouldShowLiveTextButton = !hidden
+            // don't hide if the text highlighting is active
+            guard imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
+            imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
+        }
+    }
+}
+
+// MARK: - Image Reload Functionality
+extension ReaderPageView {
     /// Reloads the current image by clearing its cache and re-fetching from the source
-    @MainActor
     func reloadCurrentImage() async -> Bool {
         guard let currentPage else {
             return false
