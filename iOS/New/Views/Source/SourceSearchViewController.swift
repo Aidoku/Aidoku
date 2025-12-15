@@ -15,7 +15,7 @@ class SourceSearchViewController: MangaCollectionViewController {
     var searchText: String = ""
     var enabledFilters: [FilterValue] = [] {
         didSet {
-            if !viewModel.hasAppeared && enabledFilters != oldValue {
+            if viewModel.hasAppeared && enabledFilters != oldValue {
                 viewModel.loadManga(
                     searchText: searchText,
                     filters: enabledFilters,
