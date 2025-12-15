@@ -888,7 +888,7 @@ extension LibraryViewController {
                 }
             }
         }
-        return options.joined(separator: ", ")
+        return options.joined(separator: NSLocalizedString("FILTER_SEPARATOR"))
     }
 
     @available(iOS 26.0, *)

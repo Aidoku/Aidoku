@@ -81,6 +81,7 @@
 "DATE_ADDED" = "Date Added";
 "AND_MORE" = "and more";
 "NOT_%@" = "Not %@";
+"FILTER_SEPARATOR" = ", ";
 "IS_TRACKING" = "Tracking";
 "FILTER_HAS_UNREAD" = "Unread";
 "FILTER_STARTED" = "Started";
