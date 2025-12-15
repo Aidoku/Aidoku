@@ -77,17 +77,19 @@ class SearchViewController: UIViewController {
         )
     }
     private var headerView: FilterHeaderView {
-        FilterHeaderView(
-            filters: [
-                .init(
-                    id: "contentRating",
-                    title: NSLocalizedString("CONTENT_RATING"),
-                    value: .multiselect(.init(
-                        canExclude: true,
-                        options: SourceContentRating.allCases.map { $0.title },
-                        ids: SourceContentRating.allCases.map { $0.stringValue }
-                    ))
-                ),
+        var filters: [AidokuRunner.Filter] = [
+            .init(
+                id: "contentRating",
+                title: NSLocalizedString("CONTENT_RATING"),
+                value: .multiselect(.init(
+                    canExclude: true,
+                    options: SourceContentRating.allCases.map { $0.title },
+                    ids: SourceContentRating.allCases.map { $0.stringValue }
+                ))
+            )
+        ]
+        if !sourceLanguages.isEmpty {
+            filters.append(
                 .init(
                     id: "languages",
                     title: NSLocalizedString("LANGUAGES"),
@@ -97,7 +99,11 @@ class SearchViewController: UIViewController {
                         options: sourceLanguages.map { $0.title },
                         ids: sourceLanguages.map { $0.value }
                     ))
-                ),
+                )
+            )
+        }
+        if !sources.isEmpty {
+            filters.append(
                 .init(
                     id: "sources",
                     title: NSLocalizedString("SOURCES"),
@@ -107,7 +113,10 @@ class SearchViewController: UIViewController {
                         ids: sources.map { $0.key }
                     ))
                 )
-            ],
+            )
+        }
+        return FilterHeaderView(
+            filters: filters,
             enabledFilters: filtersBinding
         )
     }
