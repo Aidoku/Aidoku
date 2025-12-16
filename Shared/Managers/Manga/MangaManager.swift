@@ -445,96 +445,83 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
-        let newDetails = await withTaskGroup(
-            of: (Int, AidokuRunner.Manga)?.self,
-            returning: [Int: AidokuRunner.Manga].self
-        ) { group in
+        let newDetails = await {
             var results: [Int: AidokuRunner.Manga] = [:]
             let progress = Progress(totalUnitCount: Int64(total))
 
-            for mangaGroup in filteredManga.chunked(into: Self.maxConcurrentLibraryUpdateTasks) {
-                for manga in mangaGroup {
-                    group.addTask {
-                        guard
-                            !Task.isCancelled,
-                            let newManga = try? await SourceManager.shared.source(for: manga.sourceId)?
-                                .getMangaUpdate(manga: manga.toNew(), needsDetails: updateMetadata, needsChapters: true)
-                        else {
-                            return nil
-                        }
+            for manga in filteredManga {
+                guard !Task.isCancelled else { return results }
 
-                        let returnResult: (Int, AidokuRunner.Manga)? = if updateMetadata {
-                            (manga.hashValue, newManga)
-                        } else {
-                            nil
-                        }
-
-                        await CoreDataManager.shared.container.performBackgroundTask { context in
-                            guard
-                                let libraryObject = CoreDataManager.shared.getLibraryManga(
-                                    sourceId: manga.sourceId,
-                                    mangaId: manga.id,
-                                    context: context
-                                ),
-                                let mangaObject = libraryObject.manga
-                            else {
-                                return
-                            }
-
-                            // update details
-                            if updateMetadata {
-                                mangaObject.load(from: manga)
-                            }
-
-                            // update chapters
-                            guard let chapters = newManga.chapters, !chapters.isEmpty else { return }
-
-                            let oldLockedCount = (mangaObject.chapters?.allObjects as? [ChapterObject])?.filter { $0.locked }.count ?? 0
-                            let newLockedCount = chapters.filter { $0.locked }.count
-
-                            if mangaObject.chapters?.count != chapters.count || oldLockedCount != newLockedCount {
-                                let newChapters = CoreDataManager.shared.setChapters(
-                                    chapters,
-                                    sourceId: manga.sourceId,
-                                    mangaId: manga.id,
-                                    context: context
-                                )
-                                // add manga updates
-                                let scanlatorFilter = mangaObject.scanlatorFilter ?? []
-                                for chapter in newChapters
-                                where
-                                    mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
-                                    && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
-                                {
-                                    CoreDataManager.shared.createMangaUpdate(
-                                        sourceId: manga.sourceId,
-                                        mangaId: manga.id,
-                                        chapterObject: chapter,
-                                        context: context
-                                    )
-                                }
-                                libraryObject.lastUpdated = Date.now
-                                try? context.save()
-                            }
-                        }
-
-                        return returnResult
-                    }
-                }
-
-                for await result in group {
-                    guard !Task.isCancelled else { return results }
+                guard
+                    let newManga = try? await SourceManager.shared.source(for: manga.sourceId)?
+                        .getMangaUpdate(manga: manga.toNew(), needsDetails: updateMetadata, needsChapters: true)
+                else {
                     completed += 1
                     progress.completedUnitCount = Int64(completed)
                     updateLibraryRefreshProgress(progress)
-                    if let result {
-                        results[result.0] = result.1
+                    continue
+                }
+
+                if updateMetadata {
+                    results[manga.hashValue] = newManga
+                }
+
+                await CoreDataManager.shared.container.performBackgroundTask { context in
+                    guard
+                        let libraryObject = CoreDataManager.shared.getLibraryManga(
+                            sourceId: manga.sourceId,
+                            mangaId: manga.id,
+                            context: context
+                        ),
+                        let mangaObject = libraryObject.manga
+                    else {
+                        return
+                    }
+
+                    // update details
+                    if updateMetadata {
+                        mangaObject.load(from: manga)
+                    }
+
+                    // update chapters
+                    guard let chapters = newManga.chapters, !chapters.isEmpty else { return }
+
+                    let oldLockedCount = (mangaObject.chapters?.allObjects as? [ChapterObject])?.filter { $0.locked }.count ?? 0
+                    let newLockedCount = chapters.filter { $0.locked }.count
+
+                    if mangaObject.chapters?.count != chapters.count || oldLockedCount != newLockedCount {
+                        let newChapters = CoreDataManager.shared.setChapters(
+                            chapters,
+                            sourceId: manga.sourceId,
+                            mangaId: manga.id,
+                            context: context
+                        )
+                        // add manga updates
+                        let scanlatorFilter = mangaObject.scanlatorFilter ?? []
+                        for chapter in newChapters
+                        where
+                            mangaObject.langFilter != nil ? chapter.lang == mangaObject.langFilter : true
+                            && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
+                        {
+                            CoreDataManager.shared.createMangaUpdate(
+                                sourceId: manga.sourceId,
+                                mangaId: manga.id,
+                                chapterObject: chapter,
+                                context: context
+                            )
+                        }
+                        libraryObject.lastUpdated = Date.now
+                        try? context.save()
                     }
                 }
+
+                completed += 1
+                progress.completedUnitCount = Int64(completed)
+                updateLibraryRefreshProgress(progress)
             }
 
             return results
-        }
+        }()
 
         if updateMetadata {
             for mangaItem in filteredManga {
