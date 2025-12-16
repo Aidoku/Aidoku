@@ -866,7 +866,7 @@ extension SettingView {
         PlatformNavigationStack {
             Group {
                 if let url = value.url.flatMap({ URL(string: $0) }) {
-                    WebView(url, cookies: $loginCookies, reloadToggle: $loginReload)
+                    WebView(url, sourceId: source?.id, cookies: $loginCookies, reloadToggle: $loginReload)
                         .edgesIgnoringSafeArea(.bottom)
                 }
             }

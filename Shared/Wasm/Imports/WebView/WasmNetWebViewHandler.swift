@@ -102,55 +102,74 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler
     }
 
     func navigated(webView: WKWebView, for request: URLRequest) {
-        WKWebsiteDataStore.default().httpCookieStore.getAllCookies { webViewCookies in
-            guard let url = self.request.url else { return }
-
-            // check for old (expired) clearance cookie
-            let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
-            if let oldCookie {
-                HTTPCookieStorage.shared.deleteCookie(oldCookie)
+        // extract LocalStorage and save to defaults
+        webView.evaluateJavaScript("""
+        (function() {
+            var obj = {};
+            for (var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                obj[key] = localStorage.getItem(key);
             }
-
-            // delay captcha check by 3s (so it loads in)
-#if !os(macOS)
-            if self.popup == nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    self.checkForCaptcha()
-                }
-                // try again in 5s if the first check didn't catch the captcha (dumb hack)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                    self.checkForCaptcha()
+            return obj;
+        })();
+        """) { result, _ in
+            if let dict = result as? [String: String] {
+                let sourceId = self.netModule.globalStore.id
+                for (key, value) in dict {
+                    UserDefaults.standard.set(value, forKey: "\(sourceId).\(key)")
                 }
             }
-#endif
 
-            // check for clearance cookie
-            guard webViewCookies.contains(where: {
-                $0.name == "cf_clearance" &&
-                $0.value != oldCookie?.value ?? "" &&
-                ($0.domain.contains(url.host ?? "") || (url.host?.contains($0.domain) ?? false))
-            }) else {
-                return
-            }
+            WKWebsiteDataStore.default().httpCookieStore.getAllCookies { webViewCookies in
+                guard let url = self.request.url else { return }
 
-            webView.removeFromSuperview()
-            self.done = true
+                // check for old (expired) clearance cookie
+                let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
+                if let oldCookie {
+                    HTTPCookieStorage.shared.deleteCookie(oldCookie)
+                }
+
+                // delay captcha check by 3s (so it loads in)
 #if !os(macOS)
-            self.popup?.dismiss(animated: true)
+                if self.popup == nil {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        self.checkForCaptcha()
+                    }
+                    // try again in 5s if the first check didn't catch the captcha (dumb hack)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                        self.checkForCaptcha()
+                    }
+                }
 #endif
 
-            // save cookies for future requests
-            HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
-            if let cookies = HTTPCookie.requestHeaderFields(with: webViewCookies)["Cookie"] {
-                self.request.addValue(cookies, forHTTPHeaderField: "Cookie")
-            }
+                // check for clearance cookie
+                guard webViewCookies.contains(where: {
+                    $0.name == "cf_clearance" &&
+                    $0.value != oldCookie?.value ?? "" &&
+                    ($0.domain.contains(url.host ?? "") || (url.host?.contains($0.domain) ?? false))
+                }) else {
+                    return
+                }
 
-            // re-send request
-            URLSession.shared.dataTask(with: self.request) { data, response, error in
-                self.netModule.storedResponse = WasmResponseObject(data: data, response: response, error: error)
-                self.netModule.incrementRequest()
-                self.netModule.semaphore.signal()
-            }.resume()
+                webView.removeFromSuperview()
+                self.done = true
+#if !os(macOS)
+                self.popup?.dismiss(animated: true)
+#endif
+
+                // save cookies for future requests
+                HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
+                if let cookies = HTTPCookie.requestHeaderFields(with: webViewCookies)["Cookie"] {
+                    self.request.addValue(cookies, forHTTPHeaderField: "Cookie")
+                }
+
+                // re-send request
+                URLSession.shared.dataTask(with: self.request) { data, response, error in
+                    self.netModule.storedResponse = WasmResponseObject(data: data, response: response, error: error)
+                    self.netModule.incrementRequest()
+                    self.netModule.semaphore.signal()
+                }.resume()
+            }
         }
     }
 
