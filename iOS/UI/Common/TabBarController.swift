@@ -5,10 +5,15 @@
 //  Created by Skitty on 7/26/25.
 //
 
+import Combine
 import SwiftUI
 import SwiftUIIntrospect
 
 class TabBarController: UITabBarController {
+    private var originalFrame: CGRect = .zero
+    private var shrunkFrame: CGRect = .zero
+    private var cancellables: [AnyCancellable] = []
+
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
     private lazy var libraryRefreshAccessory: UIView = {
@@ -171,6 +176,39 @@ class TabBarController: UITabBarController {
 
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
+
+        NotificationCenter.default.publisher(for: .incognitoMode)
+            .sink { [weak self] _ in
+                self?.updateFrame(animated: true)
+            }
+            .store(in: &cancellables)
+    }
+
+    func updateFrame(animated: Bool = false) {
+        if originalFrame == .zero {
+            let bannerHeight = (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.totalBannerHeight ?? 0
+            originalFrame = view.frame
+            shrunkFrame = .init(
+                x: originalFrame.origin.x,
+                y: originalFrame.origin.y + bannerHeight,
+                width: originalFrame.width,
+                height: originalFrame.height - bannerHeight
+            )
+        }
+        func commit() {
+            if UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                view.frame = shrunkFrame
+            } else {
+                view.frame = originalFrame
+            }
+        }
+        if animated {
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                commit()
+            }
+        } else {
+            commit()
+        }
     }
 }
 
@@ -216,6 +254,25 @@ extension TabBarController {
                 width: tabBar.frame.width - padding * 2 - view.safeAreaInsets.left - view.safeAreaInsets.right,
                 height: height
             )
+        }
+        updateFrame()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        originalFrame = .init(origin: self.originalFrame.origin, size: size)
+        shrunkFrame = self.originalFrame
+        coordinator.animate { _ in
+            self.view.setNeedsLayout()
+        } completion: { _ in
+            let bannerHeight = (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.totalBannerHeight ?? 0
+            self.shrunkFrame = .init(
+                x: self.originalFrame.origin.x,
+                y: self.originalFrame.origin.y + bannerHeight,
+                width: self.originalFrame.width,
+                height: self.originalFrame.height - bannerHeight
+            )
+            self.updateFrame(animated: true)
         }
     }
 }

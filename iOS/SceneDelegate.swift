@@ -8,7 +8,14 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    private static let bannerHeight: CGFloat = 30
+
     var window: UIWindow?
+    private var incognitoBannerView: UIView?
+
+    var totalBannerHeight: CGFloat {
+        incognitoBannerView?.frame.height ?? 0
+    }
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if let windowScene = scene as? UIWindowScene {
@@ -28,6 +35,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
             self.window = window
             window.makeKeyAndVisible()
+
+            let incognitoBannerView = IncognitoBannerView()
+            self.incognitoBannerView = incognitoBannerView
+            incognitoBannerView.translatesAutoresizingMaskIntoConstraints = false
+            window.insertSubview(incognitoBannerView, at: 0)
+
+            NSLayoutConstraint.activate([
+                incognitoBannerView.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+                incognitoBannerView.trailingAnchor.constraint(equalTo: window.trailingAnchor),
+                incognitoBannerView.topAnchor.constraint(equalTo: window.topAnchor),
+                incognitoBannerView.bottomAnchor.constraint(equalTo: window.safeAreaLayoutGuide.topAnchor, constant: Self.bannerHeight)
+            ])
         }
 
         if
