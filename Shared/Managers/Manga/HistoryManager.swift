@@ -27,7 +27,7 @@ extension HistoryManager {
             do {
                 try context.save()
             } catch {
-                LogManager.logger.error("HistoryManager.setProgress: \(error.localizedDescription)")
+                LogManager.logger.error("HistoryManager.setProgress: \(error)")
             }
         }
         if !completed && UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
@@ -40,6 +40,27 @@ extension HistoryManager {
             )
         }
         NotificationCenter.default.post(name: .historySet, object: (chapter, progress))
+    }
+
+    struct ReadingSessionData {
+        let startDate: Date
+        let endDate: Date
+        let pagesRead: Int
+    }
+
+    func addSession(chapterIdentifier: ChapterIdentifier, data: ReadingSessionData) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.createSession(
+                chapterIdentifier: chapterIdentifier,
+                data: data,
+                context: context
+            )
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("HistoryManager.addSession: \(error)")
+            }
+        }
     }
 
     func addHistory(

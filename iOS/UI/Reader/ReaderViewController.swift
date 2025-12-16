@@ -25,10 +25,12 @@ class ReaderViewController: BaseObservingViewController {
     var defaultReadingMode: ReadingMode?
     private var tapZone: TapZone?
 
-    var chapterList: [AidokuRunner.Chapter]
-    var chaptersToMark: [AidokuRunner.Chapter] = []
-    var chaptersToRemoveDownload: [AidokuRunner.Chapter] = []
-    var currentPage = 1
+    private var chapterList: [AidokuRunner.Chapter]
+    private var chaptersToMark: [AidokuRunner.Chapter] = []
+    private var chaptersToRemoveDownload: [AidokuRunner.Chapter] = []
+    private var currentPage = 1
+    private var sessionStartPage = 1
+    private var sessionStartDate: Date?
 
     weak var reader: ReaderReaderDelegate?
 
@@ -228,10 +230,19 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.tapZones", using: reloadBlock)
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
-            self.updateReadPosition()
+            Task {
+                await self.updateReadPosition()
+            }
 
             if #available(iOS 26.0, *) {
                 statusBarHidden = false
+            }
+        }
+        addObserver(forName: UIScene.didActivateNotification) { [weak self] _ in
+            guard let self else { return }
+            if self.sessionStartDate == nil {
+                self.sessionStartPage = currentPage
+                self.sessionStartDate = Date.now
             }
         }
         if #available(iOS 26.0, *) {
@@ -245,6 +256,9 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
+        sessionStartPage = currentPage
+        sessionStartDate = Date.now
 
         if navigationController?.toolbar.alpha == 0 {
             hideBars()
@@ -269,7 +283,9 @@ class ReaderViewController: BaseObservingViewController {
         }
 
         guard currentPage >= 1 else { return }
-        updateReadPosition()
+        Task {
+            await updateReadPosition()
+        }
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -308,39 +324,64 @@ class ReaderViewController: BaseObservingViewController {
         }
     }
 
-    func updateReadPosition() {
+    func updateReadPosition(
+        currentPage: Int? = nil,
+        totalPages: Int? = nil,
+        chapter: AidokuRunner.Chapter? = nil
+    ) async {
         guard
             !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
-            (toolbarView.totalPages ?? 0) > 0 // ensure chapter pages are loaded
+            (totalPages ?? toolbarView.totalPages ?? 0) > 0 // ensure chapter pages are loaded
         else {
             return
         }
-        Task {
-            let sourceId = source?.key ?? manga.sourceKey
-            let mangaId = manga.key
-            let chapterId = chapter.key
-            let (completed, progress) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-                CoreDataManager.shared.getProgress(
-                    sourceId: sourceId,
-                    mangaId: mangaId,
-                    chapterId: chapterId,
-                    context: context
-                )
-            }
-            let hasHistory = completed || progress != nil
 
-            // don't add history if there is none and we're at the first page
-            if currentPage == 1 && !hasHistory {
-                return
-            }
+        let currentPage = currentPage ?? self.currentPage
+        let chapter = chapter ?? self.chapter
 
-            await HistoryManager.shared.setProgress(
-                chapter: chapter.toOld(sourceId: sourceId, mangaId: mangaId),
-                progress: currentPage,
-                totalPages: toolbarView.totalPages,
-                completed: completed
+        let sourceId = manga.sourceKey
+        let mangaId = manga.key
+        let chapterId = chapter.key
+        let (completed, progress) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+            CoreDataManager.shared.getProgress(
+                sourceId: sourceId,
+                mangaId: mangaId,
+                chapterId: chapterId,
+                context: context
             )
         }
+        let hasHistory = completed || progress != nil
+
+        // don't add history if there is none and we're at the first page
+        if currentPage == 1 && !hasHistory {
+            return
+        }
+
+        await HistoryManager.shared.setProgress(
+            chapter: chapter.toOld(sourceId: sourceId, mangaId: mangaId),
+            progress: currentPage,
+            totalPages: toolbarView.totalPages,
+            completed: completed
+        )
+        await saveReadingSession(currentPage: currentPage, chapter: chapter)
+    }
+
+    private func saveReadingSession(currentPage: Int? = nil, chapter: AidokuRunner.Chapter? = nil) async {
+        guard let sessionStartDate else { return }
+        let currentPage = currentPage ?? self.currentPage
+        var pagesRead = currentPage > sessionStartPage ? currentPage - sessionStartPage : 0
+        if currentPage == pages.count {
+            // count final page as read
+            pagesRead += 1
+        }
+        if pagesRead > 0 {
+            let chapter = chapter ?? self.chapter
+            await HistoryManager.shared.addSession(
+                chapterIdentifier: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key),
+                data: .init(startDate: sessionStartDate, endDate: .now, pagesRead: pagesRead)
+            )
+        }
+        self.sessionStartDate = nil
     }
 
     func loadChapterList() async {
@@ -421,8 +462,10 @@ class ReaderViewController: BaseObservingViewController {
         )
         view.chapterSet = { [weak self] chapter in
             guard let self else { return }
-            self.setChapter(chapter)
-            self.loadCurrentChapter()
+            if chapter != self.chapter {
+                self.setChapter(chapter)
+                self.loadCurrentChapter()
+            }
         }
         let vc = UIHostingController(rootView: view)
         present(vc, animated: true)
@@ -613,6 +656,18 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     func setChapter(_ chapter: AidokuRunner.Chapter) {
+        guard chapter != self.chapter else { return }
+
+        // store current history data since it will change when new chapter loads
+        let currentPage = currentPage
+        let totalPages = toolbarView.totalPages
+        let oldChapter = self.chapter
+        Task {
+            await updateReadPosition(currentPage: currentPage, totalPages: totalPages, chapter: oldChapter)
+            sessionStartPage = currentPage
+            sessionStartDate = Date.now
+        }
+
         self.chapter = chapter
         self.chaptersToMark = [chapter]
         loadNavbarTitle()

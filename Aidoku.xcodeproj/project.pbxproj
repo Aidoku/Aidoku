@@ -416,6 +416,8 @@
 		FB90E8B42EAD176100A8ACF3 /* DownloadQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90E8B32EAD175B00A8ACF3 /* DownloadQueueView.swift */; };
 		FB90F6CC2899867D000C37E6 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */; };
 		FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */; };
+		FB947CFB2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */; };
+		FB947CFC2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */; };
 		FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
 		FB94E3162DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
 		FB9691562E89971F00BC0587 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9691552E89971D00BC0587 /* Color.swift */; };
@@ -876,6 +878,8 @@
 		FB90E8B32EAD175B00A8ACF3 /* DownloadQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadQueueView.swift; sourceTree = "<group>"; };
 		FB90F6CB2899867D000C37E6 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaInfo.swift; sourceTree = "<group>"; };
+		FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.xcdatamodel; sourceTree = "<group>"; };
+		FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+ReadingSession.swift"; sourceTree = "<group>"; };
 		FB94E3142DF9DE9C00784556 /* SourceList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceList.swift; sourceTree = "<group>"; };
 		FB9691552E89971D00BC0587 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		FB97BFF92EC7BD5F00235F87 /* SearchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchContentView.swift; sourceTree = "<group>"; };
@@ -1154,11 +1158,12 @@
 				FB0CAA4F28A55BB80024561A /* CoreDataManager+Category.swift */,
 				FB0CAA5728A83F020024561A /* CoreDataManager+Chapter.swift */,
 				FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */,
-				48177B8F2B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift */,
 				FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */,
 				FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */,
-				FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */,
+				48177B8F2B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift */,
+				FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */,
 				FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */,
+				FB4EB4FE28AA959C00FDEA4A /* CoreDataManager+Track.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -2758,6 +2763,7 @@
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */,
 				FB58C6B02999B44100A6F49F /* WasmNetWebViewHandler.swift in Sources */,
+				FB947CFB2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */,
 				FBE53F0E29CCA78000899601 /* HeightQueryable.swift in Sources */,
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
 				48177B8E2B75C40400AD41B4 /* MangaUpdatesView.swift in Sources */,
@@ -2872,6 +2878,7 @@
 				FB034E9B2EAAFA850072EEEB /* KavitaTracker.swift in Sources */,
 				FB30D583296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
 				FB14B1322DF4D36A0067E4D4 /* NotificationName.swift in Sources */,
+				FB947CFC2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */,
 				FBE781352830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FBAE7BEF2AF2DC5D00D530EE /* LegacySource.swift in Sources */,
 				FB7B7EDB278CEA6A001E6EAF /* FileManager.swift in Sources */,
@@ -3508,6 +3515,7 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */,
 				FB63D4FF2E37CBEF004FF4DC /* 0.7.1.xcdatamodel */,
 				FBAE7BF02AF58A0000D530EE /* 0.7.xcdatamodel */,
 				FBD8A6032CC56F9400B1F7D2 /* 0.6.10.xcdatamodel */,
@@ -3517,7 +3525,7 @@
 				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = FB63D4FF2E37CBEF004FF4DC /* 0.7.1.xcdatamodel */;
+			currentVersion = FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

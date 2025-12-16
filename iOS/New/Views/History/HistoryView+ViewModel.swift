@@ -70,6 +70,16 @@ extension HistoryView.ViewModel {
                     let self,
                     let chapters = output.object as? [Chapter]
                 else { return }
+                if chapters.count == 1, let chapter = chapters.first {
+                    // check if there's existing history to remove first
+                    let chapterCacheKey = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
+                    if
+                        self.chapterCache[chapterCacheKey] != nil
+                            || missingMangaQueue[MangaKey(sourceId: chapter.sourceId, mangaId: chapter.mangaId)] != nil
+                    {
+                        self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
+                    }
+                }
                 Task {
                     await self.fetchNew(count: chapters.count)
                 }
