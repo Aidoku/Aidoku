@@ -137,6 +137,8 @@
 		FB1DD8592EF049210007FC78 /* LiquidLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */; };
 		FB1DD8932EF057EF0007FC78 /* AddSourceFilterMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1DD8922EF057EB0007FC78 /* AddSourceFilterMenu.swift */; };
 		FB1DD89B2EF0C7710007FC78 /* IncognitoBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1DD89A2EF0C7700007FC78 /* IncognitoBannerView.swift */; };
+		FB1DD89D2EF1A6BC0007FC78 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */; };
+		FB1DD89E2EF1A6BC0007FC78 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */; };
 		FB1F553228AFC9FD00CFE182 /* ReadingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */; };
 		FB1F553428AFE78600CFE182 /* ReaderDoublePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */; };
 		FB248CC12EA55D0600BECD2E /* KavitaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB248CC02EA55D0400BECD2E /* KavitaSource.swift */; };
@@ -648,6 +650,7 @@
 		FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidLensView.swift; sourceTree = "<group>"; };
 		FB1DD8922EF057EB0007FC78 /* AddSourceFilterMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSourceFilterMenu.swift; sourceTree = "<group>"; };
 		FB1DD89A2EF0C7700007FC78 /* IncognitoBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncognitoBannerView.swift; sourceTree = "<group>"; };
+		FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		FB1F553128AFC9FD00CFE182 /* ReadingMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMode.swift; sourceTree = "<group>"; };
 		FB1F553328AFE78600CFE182 /* ReaderDoublePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDoublePageViewController.swift; sourceTree = "<group>"; };
 		FB2453092A2BA48800716677 /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1278,6 +1281,7 @@
 				FBD6A40128525C77007116C9 /* Localization */,
 				FB16E6262DF4D85500E09ED5 /* Utilities */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
+				FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
 			);
 			path = Shared;
@@ -2344,6 +2348,7 @@
 				FB1B4846277CE1920056D02C /* Assets.xcassets in Resources */,
 				FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */,
 				FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */,
+				FB1DD89D2EF1A6BC0007FC78 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2352,6 +2357,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB1B4847277CE1920056D02C /* Assets.xcassets in Resources */,
+				FB1DD89E2EF1A6BC0007FC78 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3120,6 +3126,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_OTHER_FLAGS = "--enable-icon-stack-fallback-generation=disabled";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -3162,6 +3170,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				ASSETCATALOG_OTHER_FLAGS = "--enable-icon-stack-fallback-generation=disabled";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
