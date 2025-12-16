@@ -1113,6 +1113,15 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Collection View Delegate
 extension LibraryViewController {
+    // support two finger drag to select
+    func collectionView(_ collectionView: UICollectionView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
+        true
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath) {
+        setEditing(true, animated: true)
+    }
+
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
 
@@ -1217,15 +1226,10 @@ extension LibraryViewController {
         }
     }
 
-    // hide highlighting when editing
+    // don't highlighting when selecting during editing
     override func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         guard !isEditing else { return }
         super.collectionView(collectionView, didHighlightItemAt: indexPath)
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        guard !isEditing else { return }
-        super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
     private func mangaInfo(at path: IndexPath) -> MangaInfo {

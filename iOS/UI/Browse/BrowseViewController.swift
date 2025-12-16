@@ -277,10 +277,13 @@ extension BrowseViewController {
 
 // MARK: - Table View Delegate
 extension BrowseViewController {
+    // support two finger drag to select
     func tableView(_ tableView: UITableView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
-        guard !isEditing else { return false }
-        self.setEditing(true, animated: true)
-        return true
+        true
+    }
+
+    func tableView(_ tableView: UITableView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath) {
+        setEditing(true, animated: true)
     }
 
     func tableView(_ tableView: UITableView, didHighlightRowAt indexPath: IndexPath) {
