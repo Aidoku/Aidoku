@@ -163,7 +163,7 @@ extension SettingsView {
                     path.present(vc)
                 }
             case "Logs.display":
-                path.push(LogViewController())
+                path.present(LogViewController())
 
             case "Advanced.clearTrackedManga":
                 confirmAction(
@@ -466,7 +466,7 @@ extension SettingsView {
         let hasHeaderView = targetPage.icon != nil && targetPage.info != nil
         controller.title = hasHeaderView ? nil : targetPageSetting.title
         controller.navigationItem.largeTitleDisplayMode = .never
-        path.push(controller)
+        path.present(controller)
     }
 }
 

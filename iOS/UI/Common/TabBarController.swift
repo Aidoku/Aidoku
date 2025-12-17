@@ -78,16 +78,15 @@ class TabBarController: UITabBarController {
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
 
         self.settingsPath = NavigationCoordinator(rootViewController: nil)
-        let settingsHostingController = UIHostingController(rootView: SettingsView().environmentObject(self.settingsPath))
-        let settingsViewController = UINavigationController(rootViewController: settingsHostingController)
+        let settingsHostingController = UIHostingController(rootView: PlatformNavigationStack { SettingsView().environmentObject(self.settingsPath) })
+        let settingsViewController = settingsHostingController
         self.settingsPath.rootViewController = settingsViewController
-        self.settingsNavigationController = settingsViewController
+        self.settingsNavigationController = nil
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
         historyViewController.navigationBar.prefersLargeTitles = true
         searchViewController.navigationBar.prefersLargeTitles = true
-        settingsViewController.navigationBar.prefersLargeTitles = true
 
         if #available(iOS 26.0, *) {
             let searchTab = UISearchTab { _ in
@@ -317,3 +316,4 @@ extension TabBarController: UITabBarControllerDelegate {
         previousSelectedIndex = tabBarController.selectedIndex
     }
 }
+
