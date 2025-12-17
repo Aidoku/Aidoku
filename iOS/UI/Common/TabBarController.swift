@@ -13,6 +13,9 @@ class TabBarController: UITabBarController {
     private var originalFrame: CGRect = .zero
     private var shrunkFrame: CGRect = .zero
     private var cancellables: [AnyCancellable] = []
+    private var settingsNavigationController: UINavigationController?
+    private var settingsPath: NavigationCoordinator!
+    private var previousSelectedIndex: Int?
 
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
@@ -74,10 +77,11 @@ class TabBarController: UITabBarController {
         historyPath.rootViewController = historyHostingController
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
 
-        let settingsPath = NavigationCoordinator(rootViewController: nil)
-        let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
-        let settingsViewController = UINavigationController(rootViewController: hosting)
-        settingsPath.rootViewController = settingsViewController
+        self.settingsPath = NavigationCoordinator(rootViewController: nil)
+        let settingsHostingController = UIHostingController(rootView: SettingsView().environmentObject(self.settingsPath))
+        let settingsViewController = UINavigationController(rootViewController: settingsHostingController)
+        self.settingsPath.rootViewController = settingsViewController
+        self.settingsNavigationController = settingsViewController
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
@@ -158,6 +162,8 @@ class TabBarController: UITabBarController {
             ]
         }
 
+        self.delegate = self
+
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
 
@@ -228,6 +234,8 @@ extension TabBarController {
     }
 
     override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
         if #unavailable(iOS 26.0) {
             let height: CGFloat = 48
             let padding: CGFloat = 16
@@ -287,4 +295,25 @@ extension TabBarController {
     }
 
     override var canBecomeFirstResponder: Bool { true }
+}
+
+// MARK: - UITabBarControllerDelegate
+
+extension TabBarController: UITabBarControllerDelegate {
+
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        let settingsIndex: Int
+        
+        if #available(iOS 26.0, *) {
+            settingsIndex = 3
+        } else {
+            settingsIndex = 4
+        }
+
+        if tabBarController.selectedIndex == settingsIndex && tabBarController.selectedIndex == previousSelectedIndex {
+            settingsNavigationController?.popToRootViewController(animated: true)
+        }
+
+        previousSelectedIndex = tabBarController.selectedIndex
+    }
 }
