@@ -75,31 +75,15 @@ class TabBarController: UITabBarController {
         let historyViewController = UINavigationController(rootViewController: historyHostingController)
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
-        let settingsViewController: UIViewController
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            // this breaks the zoom transitions from the toolbar buttons in the backups setting page
-            let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
-            let entity = UINavigationController(rootViewController: hosting)
-            settingsPath.rootViewController = entity
-            settingsViewController = entity
-        } else {
-            settingsViewController = UIHostingController(
-                rootView: NavigationView {
-                    SettingsView()
-                        .environmentObject(settingsPath)
-                }.introspect(.navigationView(style: .stack), on: .iOS(.v15)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-                .introspect(.navigationStack, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-            )
-        }
+        let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
+        let settingsViewController = UINavigationController(rootViewController: hosting)
+        settingsPath.rootViewController = settingsViewController
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
         historyViewController.navigationBar.prefersLargeTitles = true
         searchViewController.navigationBar.prefersLargeTitles = true
+        settingsViewController.navigationBar.prefersLargeTitles = true
 
         if #available(iOS 26.0, *) {
             let searchTab = UISearchTab { _ in
