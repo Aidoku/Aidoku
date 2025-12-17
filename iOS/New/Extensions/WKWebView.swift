@@ -25,4 +25,26 @@ extension WKWebView {
             }
         }
     }
+
+    func getLocalStorage(keys: [String]) async -> [String: String] {
+        guard !keys.isEmpty else { return [:] }
+        let js = """
+        (function() {
+            var result = {};
+            var keys = \(keys);
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                var value = localStorage.getItem(key);
+                if (value) { result[key] = value; }
+            }
+            return result;
+        })();
+        """
+        do {
+            let result = try await evaluateJavaScript(js) as? [String: String]
+            return result ?? [:]
+        } catch {
+            return [:]
+        }
+    }
 }
