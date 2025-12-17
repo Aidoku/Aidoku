@@ -234,7 +234,7 @@ extension TabBarController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         if #unavailable(iOS 26.0) {
             let height: CGFloat = 48
             let padding: CGFloat = 16
@@ -302,7 +302,7 @@ extension TabBarController: UITabBarControllerDelegate {
 
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         let settingsIndex: Int
-        
+
         if #available(iOS 26.0, *) {
             settingsIndex = 3
         } else {
@@ -316,4 +316,3 @@ extension TabBarController: UITabBarControllerDelegate {
         previousSelectedIndex = tabBarController.selectedIndex
     }
 }
-
