@@ -373,7 +373,11 @@ extension BrowseViewController {
                 title: section == .pinned ? NSLocalizedString("UNPIN") : NSLocalizedString("PIN"),
                 image: UIImage(systemName: section == .pinned ? "pin.slash" : "pin")
             ) { _ in
-                SourceManager.shared.pin(source: source)
+                if section == .pinned {
+                    SourceManager.shared.unpin(source: source)
+                } else {
+                    SourceManager.shared.pin(source: source)
+                }
                 self.viewModel.loadPinnedSources()
                 self.updateDataSource()
             }
