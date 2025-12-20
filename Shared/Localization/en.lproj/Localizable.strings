@@ -433,6 +433,27 @@
 "NO_RESULTS_TEXT" = "Check the spelling or try a new search.";
 "LEARN_MORE" = "Learn more…";
 
+// Insights
+"INSIGHTS" = "Insights";
+"STREAKS" = "Streaks";
+"STATS" = "Stats";
+"CURRENT_STREAK" = "Current Streak";
+"NO_CURRENT_STREAK" = "No Current Streak";
+"NO_CURRENT_STREAK_TEXT" = "Read every day to build a streak.";
+"LONGEST_STREAK" = "Longest Streak";
+"DAYS" = "Days";
+"CHAPTER_PLURAL" = "Chapters";
+"CHAPTER_SINGULAR" = "Chapter";
+"PAGE_PLURAL" = "Pages";
+"PAGE_SINGULAR" = "Page";
+"SERIES_PLURAL" = "Series";
+"SERIES_SINGULAR" = "Series";
+"HOUR_PLURAL" = "Hours";
+"HOUR_SINGULAR" = "Hour";
+"ALL_TIME" = "All-time";
+"THIS_MONTH" = "This Month";
+"THIS_YEAR" = "This Year";
+
 // Source Lists
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";

@@ -289,6 +289,8 @@ extension SettingsView {
             SettingsTrackingView()
         } else if key == "About" {
             SettingsAboutView()
+        } else if key == "Insights" {
+            InsightsView()
         } else if key == "SourceLists" {
             SourceListsView()
         } else if key == "Backups" {

@@ -17,6 +17,7 @@ extension String {
             case "orange": return Color.orange
             case "pink": return Color.pink
             case "purple": return Color.purple
+            case "indigo": return Color.indigo
             case "red": return Color.red
             case "white": return Color.white
             case "yellow": return Color.yellow

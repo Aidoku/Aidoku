@@ -92,6 +92,15 @@ enum Settings {
                 ))
             ),
             .init(
+                key: "Insights",
+                title: NSLocalizedString("INSIGHTS"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "chart.bar.xaxis", color: "indigo")
+                ))
+            ),
+            .init(
                 key: "SourceLists",
                 title: NSLocalizedString("SOURCE_LISTS"),
                 value: .page(.init(

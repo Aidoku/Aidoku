@@ -418,6 +418,10 @@
 		FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */; };
 		FB947CFB2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */; };
 		FB947CFC2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */; };
+		FB947CFE2EF1F81400FC6226 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947CFD2EF1F81100FC6226 /* InsightsView.swift */; };
+		FB947D3C2EF33BEA00FC6226 /* InsightPlatterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947D3B2EF33BEA00FC6226 /* InsightPlatterView.swift */; };
+		FB947D3E2EF33C2800FC6226 /* HeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947D3D2EF33C2500FC6226 /* HeatmapView.swift */; };
+		FB947D402EF33C7900FC6226 /* YearlyMonthChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB947D3F2EF33C7800FC6226 /* YearlyMonthChartView.swift */; };
 		FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
 		FB94E3162DF9DE9E00784556 /* SourceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB94E3142DF9DE9C00784556 /* SourceList.swift */; };
 		FB9691562E89971F00BC0587 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9691552E89971D00BC0587 /* Color.swift */; };
@@ -533,6 +537,15 @@
 		FBED233527C095FC0095D0C0 /* SourceObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED232227BB461D0095D0C0 /* SourceObject.swift */; };
 		FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
 		FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */; };
+		FBF0597D2EF46A3100907B0E /* StatsGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF0597C2EF46A2F00907B0E /* StatsGridView.swift */; };
+		FBF059B62EF7013600907B0E /* InsightsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059B52EF7013400907B0E /* InsightsData.swift */; };
+		FBF059B72EF7013600907B0E /* InsightsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059B52EF7013400907B0E /* InsightsData.swift */; };
+		FBF059B92EF7014D00907B0E /* HeatmapData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059B82EF7014B00907B0E /* HeatmapData.swift */; };
+		FBF059BA2EF7014D00907B0E /* HeatmapData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059B82EF7014B00907B0E /* HeatmapData.swift */; };
+		FBF059BC2EF7015500907B0E /* YearlyMonthData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059BB2EF7015100907B0E /* YearlyMonthData.swift */; };
+		FBF059BD2EF7015500907B0E /* YearlyMonthData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059BB2EF7015100907B0E /* YearlyMonthData.swift */; };
+		FBF059BF2EF7015B00907B0E /* SmallStatsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059BE2EF7015800907B0E /* SmallStatsData.swift */; };
+		FBF059C02EF7015B00907B0E /* SmallStatsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF059BE2EF7015800907B0E /* SmallStatsData.swift */; };
 		FBF8C5842DCD01E30066F53D /* BlockingTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF8C5832DCD01E10066F53D /* BlockingTask.swift */; };
 		FBF8C5862DCD02030066F53D /* PageInterceptorProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF8C5852DCD02020066F53D /* PageInterceptorProcessor.swift */; };
 		FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
@@ -880,6 +893,10 @@
 		FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaInfo.swift; sourceTree = "<group>"; };
 		FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.xcdatamodel; sourceTree = "<group>"; };
 		FB947CFA2EF1D14F00FC6226 /* CoreDataManager+ReadingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+ReadingSession.swift"; sourceTree = "<group>"; };
+		FB947CFD2EF1F81100FC6226 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		FB947D3B2EF33BEA00FC6226 /* InsightPlatterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightPlatterView.swift; sourceTree = "<group>"; };
+		FB947D3D2EF33C2500FC6226 /* HeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapView.swift; sourceTree = "<group>"; };
+		FB947D3F2EF33C7800FC6226 /* YearlyMonthChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearlyMonthChartView.swift; sourceTree = "<group>"; };
 		FB94E3142DF9DE9C00784556 /* SourceList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceList.swift; sourceTree = "<group>"; };
 		FB9691552E89971D00BC0587 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		FB97BFF92EC7BD5F00235F87 /* SearchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchContentView.swift; sourceTree = "<group>"; };
@@ -985,6 +1002,11 @@
 		FBED232A27BEAC980095D0C0 /* SettingItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingItem.swift; sourceTree = "<group>"; };
 		FBED233727C3D0E30095D0C0 /* SourceActor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceActor.swift; sourceTree = "<group>"; };
 		FBED62B3279DB89A0096B717 /* MangaCoverCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaCoverCell.swift; sourceTree = "<group>"; };
+		FBF0597C2EF46A2F00907B0E /* StatsGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsGridView.swift; sourceTree = "<group>"; };
+		FBF059B52EF7013400907B0E /* InsightsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsData.swift; sourceTree = "<group>"; };
+		FBF059B82EF7014B00907B0E /* HeatmapData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapData.swift; sourceTree = "<group>"; };
+		FBF059BB2EF7015100907B0E /* YearlyMonthData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearlyMonthData.swift; sourceTree = "<group>"; };
+		FBF059BE2EF7015800907B0E /* SmallStatsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallStatsData.swift; sourceTree = "<group>"; };
 		FBF8C5832DCD01E10066F53D /* BlockingTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockingTask.swift; sourceTree = "<group>"; };
 		FBF8C5852DCD02020066F53D /* PageInterceptorProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageInterceptorProcessor.swift; sourceTree = "<group>"; };
 		FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
@@ -1115,6 +1137,7 @@
 		FB02E1F5288D7C6700B9E2DE /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				FBF059B42EF7013000907B0E /* Insights */,
 				FB3F49EA2B7C6B7700D3CC75 /* ChapterFlagMask.swift */,
 				FB3F49E42B7C3BA400D3CC75 /* ChapterSortOption.swift */,
 				FB3F49E72B7C3C2B00D3CC75 /* ChapterFilterOption.swift */,
@@ -1866,6 +1889,7 @@
 		FB7984152E0C9F4D000761A9 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				FB947D3A2EF33BCF00FC6226 /* Insights */,
 				FB7C288F2E898D85009FF6AF /* Backups */,
 				FBB516482E2F057200749F4E /* Downloads */,
 				FBFF58902E7F2641009367B7 /* Settings.swift */,
@@ -1947,6 +1971,18 @@
 				FB90E8B32EAD175B00A8ACF3 /* DownloadQueueView.swift */,
 			);
 			path = Library;
+			sourceTree = "<group>";
+		};
+		FB947D3A2EF33BCF00FC6226 /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				FB947CFD2EF1F81100FC6226 /* InsightsView.swift */,
+				FB947D3B2EF33BEA00FC6226 /* InsightPlatterView.swift */,
+				FB947D3D2EF33C2500FC6226 /* HeatmapView.swift */,
+				FB947D3F2EF33C7800FC6226 /* YearlyMonthChartView.swift */,
+				FBF0597C2EF46A2F00907B0E /* StatsGridView.swift */,
+			);
+			path = Insights;
 			sourceTree = "<group>";
 		};
 		FB9A483C2967E47500FFC414 /* Models */ = {
@@ -2146,6 +2182,17 @@
 				FBCA1B232888A910007149C5 /* TrackObject.swift */,
 			);
 			path = Objects;
+			sourceTree = "<group>";
+		};
+		FBF059B42EF7013000907B0E /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				FBF059B52EF7013400907B0E /* InsightsData.swift */,
+				FBF059B82EF7014B00907B0E /* HeatmapData.swift */,
+				FBF059BB2EF7015100907B0E /* YearlyMonthData.swift */,
+				FBF059BE2EF7015800907B0E /* SmallStatsData.swift */,
+			);
+			path = Insights;
 			sourceTree = "<group>";
 		};
 		FBF9DC02281FFCCC0056FA9A /* Imports */ = {
@@ -2427,6 +2474,7 @@
 				FB662F0E2DA81B8200007514 /* AidokuRunner.swift in Sources */,
 				FB662F102DA81B8200007514 /* EdgeInsets.swift in Sources */,
 				FB662F112DA81B8200007514 /* ListButtonStyle.swift in Sources */,
+				FBF059B72EF7013600907B0E /* InsightsData.swift in Sources */,
 				FB1DD89B2EF0C7710007FC78 /* IncognitoBannerView.swift in Sources */,
 				FB662F152DA81B8200007514 /* UIApplication.swift in Sources */,
 				FB3DDF7E2E1452A800A64897 /* DocumentPickerView.swift in Sources */,
@@ -2511,12 +2559,14 @@
 				FBB5164C2E2F23AE00749F4E /* DownloadedMangaView+ViewModel.swift in Sources */,
 				FB0CAA5428A68FDF0024561A /* LockedPageStackView.swift in Sources */,
 				FB7984142E0C9F21000761A9 /* UpscaleModelListView.swift in Sources */,
+				FB947D402EF33C7900FC6226 /* YearlyMonthChartView.swift in Sources */,
 				FB17005D2E39313C00DBC4E4 /* MangaViewController.swift in Sources */,
 				FB55AF9E28AAA4E50083EFC3 /* ReaderToolbarView.swift in Sources */,
 				FB0CAA5628A6BF8A0024561A /* NSPersistentContainer.swift in Sources */,
 				FB55AFAF28AAD40B0083EFC3 /* ReaderPageViewController.swift in Sources */,
 				04B48CF92CD6836100F719D0 /* ShikimoriTracker.swift in Sources */,
 				FBA748A22E81C0D200D9BE86 /* BangumiTracker.swift in Sources */,
+				FB947D3E2EF33C2800FC6226 /* HeatmapView.swift in Sources */,
 				FB3F49E52B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */,
 				FB9A48352967E42B00FFC414 /* MangaToMangaView.swift in Sources */,
 				FBD6A40B2858D371007116C9 /* Tracker.swift in Sources */,
@@ -2571,6 +2621,7 @@
 				FBE3E4922DD163DD00EF8145 /* BetterBorderedButtonStyle.swift in Sources */,
 				FB9A48372967E44200FFC414 /* MigrateSearchMatchView.swift in Sources */,
 				FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */,
+				FBF059B92EF7014D00907B0E /* HeatmapData.swift in Sources */,
 				FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FBE53F0629CB723D00899601 /* ReaderWebtoonTransitionNode.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
@@ -2583,6 +2634,7 @@
 				FB4B0ADA285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
 				FBB44E6D2EC634B40032EFBB /* LocalFileNameParser.swift in Sources */,
+				FB947D3C2EF33BEA00FC6226 /* InsightPlatterView.swift in Sources */,
 				FB2BE5E82953851100FAD8A7 /* ZoomableCollectionView.swift in Sources */,
 				FB077DA82E7DC5F900C9C214 /* CategoriesView.swift in Sources */,
 				FB89D75F2ED11E3E0026937C /* SelectionCheckView.swift in Sources */,
@@ -2590,6 +2642,7 @@
 				FBD0F2EF2D923E14009CB0C4 /* UserAgentProvider.swift in Sources */,
 				FBC1271D28ABDCB400B68FFC /* ReaderHoldingDelegate.swift in Sources */,
 				FB034E942EAAB6A90072EEEB /* OIDCLoginController.swift in Sources */,
+				FB947CFE2EF1F81400FC6226 /* InsightsView.swift in Sources */,
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
@@ -2675,6 +2728,7 @@
 				FB662EC92DA813E300007514 /* FilterLabelView.swift in Sources */,
 				FB662ECA2DA813E300007514 /* ListingsHeaderView.swift in Sources */,
 				FB662ECB2DA813E300007514 /* FilterHeaderView.swift in Sources */,
+				FBF059BF2EF7015B00907B0E /* SmallStatsData.swift in Sources */,
 				FBA748A52E81C11C00D9BE86 /* BangumiApi.swift in Sources */,
 				FB662ECD2DA813E300007514 /* HomeChapterListView.swift in Sources */,
 				FB662ECE2DA813E300007514 /* SettingView.swift in Sources */,
@@ -2731,6 +2785,7 @@
 				FBD6A4052857AF2C007116C9 /* UIImage.swift in Sources */,
 				FBED231D27BAD66C0095D0C0 /* FilterCell.swift in Sources */,
 				FB248CC72EA55E3400BECD2E /* SelfHostedSourceSetupView.swift in Sources */,
+				FBF0597D2EF46A3100907B0E /* StatsGridView.swift in Sources */,
 				FB1B51B128E35B2900D3CE0E /* ReaderWebtoonViewController.swift in Sources */,
 				FB05F869296499DE00D1EA2D /* CoreDataManager+Source.swift in Sources */,
 				FB55AFAC28AABD980083EFC3 /* ReaderPageView.swift in Sources */,
@@ -2748,6 +2803,7 @@
 				FB2BE5ED2953872600FAD8A7 /* ZoomableCollectionViewController.swift in Sources */,
 				FBCA1B20288896EB007149C5 /* TrackerAddView.swift in Sources */,
 				FB8E48D92DC0061B002A3621 /* FilterListSheetView.swift in Sources */,
+				FBF059BC2EF7015500907B0E /* YearlyMonthData.swift in Sources */,
 				FB077DB02E7DCFFA00C9C214 /* String+Highlight.swift in Sources */,
 				FB63D5022E38124E004FF4DC /* EditedKeys.swift in Sources */,
 				FB0CAA6528A9B5440024561A /* MangaManager.swift in Sources */,
@@ -2780,6 +2836,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBF059B62EF7013600907B0E /* InsightsData.swift in Sources */,
 				FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */,
 				FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */,
 				FBD6A412285B7789007116C9 /* TrackItem.swift in Sources */,
@@ -2816,6 +2873,7 @@
 				FB1B4841277CE1920056D02C /* AidokuApp.swift in Sources */,
 				FB3F49E92B7C3C2B00D3CC75 /* ChapterFilterOption.swift in Sources */,
 				FBA748A42E81C11C00D9BE86 /* BangumiApi.swift in Sources */,
+				FBF059C02EF7015B00907B0E /* SmallStatsData.swift in Sources */,
 				FB248CCA2EA5818400BECD2E /* KavitaHelper.swift in Sources */,
 				FBB44E6C2EC634B40032EFBB /* LocalFileNameParser.swift in Sources */,
 				FBD7966D2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */,
@@ -2841,6 +2899,7 @@
 				FB1B4869277CE76B0056D02C /* MangaModels.swift in Sources */,
 				FBD0F2F02D923E14009CB0C4 /* UserAgentProvider.swift in Sources */,
 				FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */,
+				FBF059BA2EF7014D00907B0E /* HeatmapData.swift in Sources */,
 				FB0E1CD9288AEAF700B67BA9 /* OAuthClient.swift in Sources */,
 				FB14B1302DF4D2EF0067E4D4 /* AniListApi.swift in Sources */,
 				FB7984122E0C8068000761A9 /* ModelManager.swift in Sources */,
@@ -2922,6 +2981,7 @@
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
+				FBF059BD2EF7015500907B0E /* YearlyMonthData.swift in Sources */,
 				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,

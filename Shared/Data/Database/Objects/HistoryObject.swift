@@ -36,6 +36,21 @@ extension HistoryObject {
     @NSManaged public var completed: Bool
 
     @NSManaged public var chapter: ChapterObject?
+    @NSManaged public var sessions: NSSet?
+}
+
+extension HistoryObject {
+    @objc(addSessionsObject:)
+    @NSManaged public func addToSessions(_ value: ReadingSessionObject)
+
+    @objc(removeSessionsObject:)
+    @NSManaged public func removeFromSessions(_ value: ReadingSessionObject)
+
+    @objc(addSessions:)
+    @NSManaged public func addToSessions(_ values: NSSet)
+
+    @objc(removeSessions:)
+    @NSManaged public func removeFromSessions(_ values: NSSet)
 }
 
 extension HistoryObject: Identifiable {
