@@ -29,8 +29,9 @@ class ReaderViewController: BaseObservingViewController {
     private var chaptersToMark: [AidokuRunner.Chapter] = []
     private var chaptersToRemoveDownload: [AidokuRunner.Chapter] = []
     private var currentPage = 1
-    private var sessionStartPage = 1
+    private var sessionReadPages: Set<Int> = []
     private var sessionStartDate: Date?
+    private var sessionLastInteraction: Date?
 
     weak var reader: ReaderReaderDelegate?
 
@@ -241,8 +242,9 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: UIScene.didActivateNotification) { [weak self] _ in
             guard let self else { return }
             if self.sessionStartDate == nil {
-                self.sessionStartPage = currentPage
+                self.sessionReadPages = [self.currentPage]
                 self.sessionStartDate = Date.now
+                self.sessionLastInteraction = nil
             }
         }
         if #available(iOS 26.0, *) {
@@ -257,8 +259,9 @@ class ReaderViewController: BaseObservingViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        sessionStartPage = currentPage
+        sessionReadPages = [self.currentPage]
         sessionStartDate = Date.now
+        sessionLastInteraction = nil
 
         if navigationController?.toolbar.alpha == 0 {
             hideBars()
@@ -363,18 +366,13 @@ class ReaderViewController: BaseObservingViewController {
             totalPages: toolbarView.totalPages,
             completed: completed
         )
-        await saveReadingSession(currentPage: currentPage, chapter: chapter)
+        await saveReadingSession(chapter: chapter)
     }
 
-    private func saveReadingSession(currentPage: Int? = nil, chapter: AidokuRunner.Chapter? = nil) async {
+    private func saveReadingSession(chapter: AidokuRunner.Chapter? = nil) async {
         guard let sessionStartDate else { return }
-        let currentPage = currentPage ?? self.currentPage
-        var pagesRead = currentPage > sessionStartPage ? currentPage - sessionStartPage : 0
-        if currentPage == pages.count {
-            // count final page as read
-            pagesRead += 1
-        }
-        if pagesRead > 0 {
+        let pagesRead = sessionReadPages.count
+        if pagesRead > 0 && sessionLastInteraction != nil {
             let chapter = chapter ?? self.chapter
             await HistoryManager.shared.addSession(
                 chapterIdentifier: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key),
@@ -664,8 +662,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let oldChapter = self.chapter
         Task {
             await updateReadPosition(currentPage: currentPage, totalPages: totalPages, chapter: oldChapter)
-            sessionStartPage = currentPage
+            sessionReadPages = [self.currentPage]
             sessionStartDate = Date.now
+            sessionLastInteraction = nil
         }
 
         self.chapter = chapter
@@ -681,6 +680,12 @@ extension ReaderViewController: ReaderHoldingDelegate {
         guard let totalPages = toolbarView.totalPages else { return }
 
         updateDescriptionButton(pages: pages)
+
+        sessionLastInteraction = Date.now
+        for page in pages {
+            guard page >= 1 && page <= totalPages else { continue }
+            sessionReadPages.insert(page)
+        }
 
         let page = max(1, min(pages.lowerBound, totalPages))
         currentPage = page
