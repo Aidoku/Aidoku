@@ -179,6 +179,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "AutomaticBackups.tracking": true,
                 "AutomaticBackups.history": true,
                 "AutomaticBackups.categories": true,
+                "AutomaticBackups.readingSessions": true,
+                "AutomaticBackups.updates": false,
                 "AutomaticBackups.settings": true,
                 "AutomaticBackups.sourceLists": true,
                 "AutomaticBackups.sensitiveSettings": false,

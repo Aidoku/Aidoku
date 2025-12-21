@@ -12,6 +12,8 @@ struct BackupCreateView: View {
     @State private var chapters = true
     @State private var tracking = true
     @State private var history = true
+    @State private var readingSessions = true
+    @State private var updates = false
     @State private var categories = true
     @State private var settings = true
     @State private var sourceLists = true
@@ -28,6 +30,8 @@ struct BackupCreateView: View {
                     Toggle(NSLocalizedString("TRACKING"), isOn: $tracking)
                     Toggle(NSLocalizedString("HISTORY"), isOn: $history)
                     Toggle(NSLocalizedString("CATEGORIES"), isOn: $categories)
+                    Toggle(NSLocalizedString("READING_SESSIONS"), isOn: $readingSessions)
+                    Toggle(NSLocalizedString("UPDATES"), isOn: $updates)
                 } header: {
                     Text(NSLocalizedString("LIBRARY"))
                 }
@@ -55,6 +59,8 @@ struct BackupCreateView: View {
                                 history: history,
                                 chapters: chapters,
                                 tracking: tracking,
+                                readingSessions: readingSessions,
+                                updates: updates,
                                 categories: categories,
                                 settings: settings,
                                 sourceLists: sourceLists,

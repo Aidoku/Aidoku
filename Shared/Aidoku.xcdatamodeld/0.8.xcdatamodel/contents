@@ -79,7 +79,7 @@
     </entity>
     <entity name="MangaUpdate" representedClassName="MangaUpdateObject" syncable="YES" codeGenerationType="class">
         <attribute name="chapterId" optional="YES" attributeType="String"/>
-        <attribute name="date" attributeType="Date" defaultDateTimeInterval="665122680" usesScalarValueType="NO"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
         <attribute name="sourceId" attributeType="String" defaultValueString=""/>
         <attribute name="viewed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>

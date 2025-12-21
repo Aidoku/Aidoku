@@ -530,6 +530,7 @@
 "BACKUP_INTERVAL" = "Backup Interval";
 "AUTO" = "Auto";
 "LAST_BACKED_UP_%@" = "Last automatically backed up: %@";
+"READING_SESSIONS" = "Reading Sessions";
 
 // Advanced
 "LOGS" = "Logs";

@@ -74,6 +74,8 @@ actor BackupManager {
         let history: Bool
         let chapters: Bool
         let tracking: Bool
+        let readingSessions: Bool
+        let updates: Bool
         let categories: Bool
         let settings: Bool
         let sourceLists: Bool
@@ -117,6 +119,16 @@ actor BackupManager {
             } else {
                 []
             }
+            let sessionItems: [BackupReadingSession] = if options.readingSessions {
+                CoreDataManager.shared.getSessions(context: context).compactMap(BackupReadingSession.init)
+            } else {
+                []
+            }
+            let updateItems: [BackupUpdate] = if options.updates {
+                CoreDataManager.shared.getUpdates(context: context).compactMap(BackupUpdate.init)
+            } else {
+                []
+            }
             let categories: [String] = if options.categories {
                 CoreDataManager.shared.getCategoryTitles(context: context)
             } else {
@@ -139,6 +151,8 @@ actor BackupManager {
                 manga: manga,
                 chapters: chapters,
                 trackItems: trackItems,
+                readingSessions: sessionItems,
+                updates: updateItems,
                 categories: categories,
                 sources: sources,
                 sourceLists: sourceLists,
@@ -200,16 +214,20 @@ actor BackupManager {
         case library
         case history
         case chapters
+        case sessions
+        case updates
         case track
 
         var stringValue: String {
             switch self {
-                case .manga: NSLocalizedString("CONTENT", comment: "")
-                case .categories: NSLocalizedString("CATEGORIES", comment: "")
-                case .library: NSLocalizedString("LIBRARY", comment: "")
-                case .history: NSLocalizedString("HISTORY", comment: "")
-                case .chapters: NSLocalizedString("CHAPTERS", comment: "")
-                case .track: NSLocalizedString("TRACKERS", comment: "")
+                case .manga: NSLocalizedString("CONTENT")
+                case .categories: NSLocalizedString("CATEGORIES")
+                case .library: NSLocalizedString("LIBRARY")
+                case .history: NSLocalizedString("HISTORY")
+                case .chapters: NSLocalizedString("CHAPTERS")
+                case .sessions: NSLocalizedString("READING_SESSIONS")
+                case .updates: NSLocalizedString("UPDATES")
+                case .track: NSLocalizedString("TRACKERS")
             }
         }
     }
@@ -367,6 +385,62 @@ actor BackupManager {
                 }
             }
         }
+        let updatesTask = Task {
+            try await chaptersTask.value // need to link updates with
+            if let backupUpdates = backup.updates {
+                let result = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearUpdates(context: context)
+                    let chapters = CoreDataManager.shared.getChapters(context: context)
+                    for backupUpdate in backupUpdates {
+                        let update = backupUpdate.toObject(context: context)
+                        update.chapter = chapters.first {
+                            $0.id == backupUpdate.chapterId
+                                && $0.mangaId == backupUpdate.mangaId
+                                && $0.sourceId == backupUpdate.sourceId
+                        }
+                    }
+                    do {
+                        try context.save()
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+                if !result {
+                    throw BackupError.updates
+                }
+            }
+        }
+        let sessionsTask = Task {
+            try await historyTask.value // need to link sessions with history
+            if let backupSessions = backup.readingSessions {
+                let result = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearSessions(context: context)
+                    let history = CoreDataManager.shared.getHistory(context: context)
+                    for backupSession in backupSessions {
+                        // ensure data is valid
+                        guard backupSession.endDate > backupSession.startDate && backupSession.pagesRead > 0 else {
+                            continue
+                        }
+                        let session = backupSession.toObject(context: context)
+                        session.history = history.first {
+                            $0.chapterId == backupSession.chapterId
+                                && $0.mangaId == backupSession.mangaId
+                                && $0.sourceId == backupSession.sourceId
+                        }
+                    }
+                    do {
+                        try context.save()
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+                if !result {
+                    throw BackupError.updates
+                }
+            }
+        }
         let trackTask = Task {
             if let backupTrackItems = backup.trackItems {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -385,14 +459,14 @@ actor BackupManager {
                     throw BackupError.track
                 }
             }
-            log("done with tracks")
         }
 
         var backupError: Error?
 
         // wait for db changes to finish
         do {
-            try await chaptersTask.value
+            try await updatesTask.value
+            try await sessionsTask.value
             try await trackTask.value
         } catch {
             backupError = error
@@ -502,9 +576,11 @@ extension BackupManager {
         guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else { return }
 
         let libraryEntries = UserDefaults.standard.bool(forKey: "AutomaticBackups.libraryEntries")
+        let history = UserDefaults.standard.bool(forKey: "AutomaticBackups.history")
         let chapters = UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters")
         let tracking = UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking")
-        let history = UserDefaults.standard.bool(forKey: "AutomaticBackups.history")
+        let readingSessions = UserDefaults.standard.bool(forKey: "AutomaticBackups.readingSessions")
+        let updates = UserDefaults.standard.bool(forKey: "AutomaticBackups.updates")
         let categories = UserDefaults.standard.bool(forKey: "AutomaticBackups.categories")
         let settings = UserDefaults.standard.bool(forKey: "AutomaticBackups.settings")
         let sourceLists = UserDefaults.standard.bool(forKey: "AutomaticBackups.sourceLists")
@@ -517,6 +593,8 @@ extension BackupManager {
                 history: history,
                 chapters: chapters,
                 tracking: tracking,
+                readingSessions: readingSessions,
+                updates: updates,
                 categories: categories,
                 settings: settings,
                 sourceLists: sourceLists,

@@ -9,6 +9,16 @@ import CoreData
 import Foundation
 
 extension CoreDataManager {
+    /// Remove all reading session objects.
+    func clearSessions(context: NSManagedObjectContext? = nil) {
+        clear(request: ReadingSessionObject.fetchRequest(), context: context)
+    }
+
+    /// Gets all reading session objects.
+    func getSessions(context: NSManagedObjectContext? = nil) -> [ReadingSessionObject] {
+        (try? (context ?? self.context).fetch(ReadingSessionObject.fetchRequest())) ?? []
+    }
+
     func createSession(
         chapterIdentifier: ChapterIdentifier,
         data: HistoryManager.ReadingSessionData,
