@@ -49,10 +49,8 @@ struct DownloadsView: View {
                 .padding(.vertical, 4)
             }
 
-            Section(NSLocalizedString("SETTINGS")) {
-                ForEach(Settings.downloadSettings, id: \.key) { setting in
-                    SettingView(setting: setting)
-                }
+            ForEach(Settings.downloadSettings, id: \.key) { setting in
+                SettingView(setting: setting)
             }
 
             if viewModel.downloadedManga.isEmpty && viewModel.isLoading {

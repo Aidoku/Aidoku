@@ -188,6 +188,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.downloadOnlyOnWifi": false,
                 "Library.deleteDownloadAfterReading": false,
                 "Downloads.compress": true,
+                "Downloads.parallel": true,
                 "Downloads.background": true
             ]
         )

@@ -583,7 +583,7 @@ extension Settings {
 
 extension Settings {
     static let downloadSettings: [Setting] = {
-        let baseItems: [Setting] = [
+        var baseItems: [Setting] = [
             .init(
                 key: "Library.downloadOnlyOnWifi",
                 title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
@@ -598,18 +598,27 @@ extension Settings {
                 key: "Downloads.compress",
                 title: NSLocalizedString("COMPRESS_DOWNLOADS"),
                 value: .toggle(.init())
+            ),
+            .init(
+                key: "Downloads.parallel",
+                title: NSLocalizedString("PARALLEL_DOWNLOADS"),
+                value: .toggle(.init())
             )
         ]
         if #available(iOS 26.0, *) {
-            return baseItems + [
+            baseItems.append(
                 .init(
                     key: "Downloads.background",
                     title: NSLocalizedString("BACKGROUND_DOWNLOADING"),
                     value: .toggle(.init())
                 )
-            ]
-        } else {
-            return baseItems
+            )
         }
+        return [
+            .init(
+                title: NSLocalizedString("SETTINGS"),
+                value: .group(.init(items: baseItems))
+            )
+        ]
     }()
 }
