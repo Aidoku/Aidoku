@@ -74,6 +74,9 @@ class SearchViewController: UIViewController {
             searchCommitToggle: searchCommitToggleBinding,
             filters: filtersBinding,
             openResult: open(result:),
+            dismissKeyboard: {
+                self.searchController.searchBar.resignFirstResponder()
+            },
             path: NavigationCoordinator(rootViewController: self)
         )
     }

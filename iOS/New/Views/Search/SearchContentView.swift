@@ -14,6 +14,7 @@ struct SearchContentView: View {
     @Binding var searchCommitToggle: Bool
     @Binding private var filters: [FilterValue]
     let openResult: (ViewModel.SearchResult) -> Void
+    let dismissKeyboard: () -> Void
     let path: NavigationCoordinator
 
     @State private var keyboardOffset: CGFloat = 0
@@ -25,6 +26,7 @@ struct SearchContentView: View {
         searchCommitToggle: Binding<Bool> = .constant(false),
         filters: Binding<[FilterValue]>,
         openResult: @escaping (ViewModel.SearchResult) -> Void,
+        dismissKeyboard: @escaping () -> Void,
         path: NavigationCoordinator
     ) {
         self._viewModel = StateObject(wrappedValue: viewModel)
@@ -32,6 +34,7 @@ struct SearchContentView: View {
         self._searchCommitToggle = searchCommitToggle
         self._filters = filters
         self.openResult = openResult
+        self.dismissKeyboard = dismissKeyboard
         self.path = path
     }
 
@@ -93,6 +96,7 @@ struct SearchContentView: View {
                 VStack(spacing: 0) {
                     Button {
                         searchText = item
+                        dismissKeyboard()
                         viewModel.search(query: item, delay: false)
                     } label: {
                         HStack {
