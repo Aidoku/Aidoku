@@ -155,7 +155,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         refreshControl.addTarget(self, action: #selector(updateLibraryRefresh(refreshControl:)), for: .valueChanged)
         collectionView.refreshControl = refreshControl
 
-        collectionView.allowsMultipleSelection = true
+        collectionView.allowsMultipleSelection = !ProcessInfo.processInfo.isMacCatalystApp
         collectionView.allowsSelectionDuringEditing = true
 
         // header view
@@ -453,6 +453,10 @@ class LibraryViewController: OldMangaCollectionViewController {
         super.setEditing(editing, animated: animated)
         updateNavbarItems()
         updateToolbar()
+
+        if ProcessInfo.processInfo.isMacCatalystApp {
+            collectionView.allowsMultipleSelection = editing
+        }
 
         for cell in collectionView.visibleCells {
             if let cell = cell as? MangaGridCell {
