@@ -621,7 +621,7 @@ extension MangaView {
         })
         if !selectedChapters.isEmpty && allChaptersQueued {
             Button(NSLocalizedString("CANCEL")) {
-                Task {
+                Task { [selectedChapters] in
                     await DownloadManager.shared.cancelDownloads(for: selectedChapters.map {
                         .init(
                             sourceKey: viewModel.manga.sourceKey,
