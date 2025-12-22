@@ -842,13 +842,13 @@ extension ReaderViewController {
     func showBars() {
         guard let navigationController else { return }
 
-        NotificationCenter.default.post(name: .readerShowingBars, object: nil)
-
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = false
             self.setNeedsStatusBarAppearanceUpdate()
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         } completion: { _ in
+            NotificationCenter.default.post(name: .readerShowingBars, object: nil)
+
             UIView.setAnimationsEnabled(false)
             if #available(iOS 26.0, *) {
                 if navigationController.isToolbarHidden {
@@ -887,13 +887,13 @@ extension ReaderViewController {
     func hideBars() {
         guard let navigationController else { return }
 
-        NotificationCenter.default.post(name: .readerHidingBars, object: nil)
-
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = true
             self.setNeedsStatusBarAppearanceUpdate()
             self.setNeedsUpdateOfHomeIndicatorAutoHidden()
         } completion: { _ in
+            NotificationCenter.default.post(name: .readerHidingBars, object: nil)
+
             self.pageDescriptionButtonBottomConstraint.constant = 30
 
             UIView.animate(withDuration: CATransaction.animationDuration()) {

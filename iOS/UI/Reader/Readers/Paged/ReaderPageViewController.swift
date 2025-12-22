@@ -20,6 +20,8 @@ class ReaderPageViewController: BaseObservingViewController {
 
     let type: PageType
 
+    weak var delegate: ReaderHoldingDelegate?
+
     private var infoView: ReaderInfoPageView?
     private(set) var zoomView: ZoomableScrollView?
     private(set) var pageView: ReaderPageView?
@@ -67,8 +69,9 @@ class ReaderPageViewController: BaseObservingViewController {
     /// Callback when image loading is complete and wide image status is determined
     var onImageisWideImage: ((Bool) -> Void)?
 
-    init(type: PageType) {
+    init(type: PageType, delegate: ReaderHoldingDelegate?) {
         self.type = type
+        self.delegate = delegate
         super.init()
 
         // need this so the page / chapters can be set before the rest of the views are loaded
@@ -105,7 +108,7 @@ class ReaderPageViewController: BaseObservingViewController {
                 zoomView.zoomView = pageView
                 // hide live text button when zoomed in
                 zoomView.onZoomScaleChanged = { [weak self] scale in
-                    self?.pageView?.setLiveTextHidden(scale != 1)
+                    self?.pageView?.setLiveTextHidden(scale != 1 || (self?.delegate?.barsHidden ?? false))
                 }
                 view.addSubview(reloadButton)
 
