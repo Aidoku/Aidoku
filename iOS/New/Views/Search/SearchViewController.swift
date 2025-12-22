@@ -13,6 +13,7 @@ class SearchViewController: UIViewController {
     private let viewModel = SearchContentView.ViewModel()
     private let searchController: UISearchController = .init(searchResultsController: nil)
 
+    private var isSearchBarActive = false
     private var cancellables = Set<AnyCancellable>()
 
     private var sources: [AidokuRunner.Source] = [] {
@@ -117,7 +118,15 @@ class SearchViewController: UIViewController {
         }
         return FilterHeaderView(
             filters: filters,
-            enabledFilters: filtersBinding
+            enabledFilters: filtersBinding,
+            onFilterSheetDismiss: {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                    if self.isSearchBarActive {
+                        self.searchController.searchBar.becomeFirstResponder()
+                    }
+                }
+            }
         )
     }
 
@@ -339,5 +348,13 @@ extension SearchViewController: UISearchBarDelegate {
 
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchText = ""
+    }
+
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        isSearchBarActive = true
+    }
+
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        isSearchBarActive = false
     }
 }
