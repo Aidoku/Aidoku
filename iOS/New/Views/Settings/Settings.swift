@@ -280,7 +280,7 @@ extension Settings {
                 value: .toggle(.init())
             )
         ]
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
             return .init(
                 title: NSLocalizedString("LIBRARY_UPDATING"),
                 value: .group(.init(
@@ -605,7 +605,7 @@ extension Settings {
                 value: .toggle(.init())
             )
         ]
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
             baseItems.append(
                 .init(
                     key: "Downloads.background",

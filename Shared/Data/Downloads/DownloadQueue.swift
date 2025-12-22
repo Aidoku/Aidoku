@@ -44,7 +44,12 @@ actor DownloadQueue {
         guard !queue.isEmpty else { return }
 
 #if !os(macOS) && !targetEnvironment(simulator)
-        if bgTask == nil, #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Downloads.background") {
+        if
+            bgTask == nil,
+            #available(iOS 26.0, *),
+            UserDefaults.standard.bool(forKey: "Downloads.background"),
+            !ProcessInfo.processInfo.isMacCatalystApp
+        {
             await register()
 
             let request = BGContinuedProcessingTaskRequest(

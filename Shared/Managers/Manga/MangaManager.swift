@@ -261,7 +261,7 @@ extension MangaManager {
         targetCategory = category
 
 #if !os(macOS) && !targetEnvironment(simulator)
-        if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Library.backgroundRefresh") {
+        if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Library.backgroundRefresh"), !ProcessInfo.processInfo.isMacCatalystApp {
             let request = BGContinuedProcessingTaskRequest(
                 identifier: Self.taskIdentifier,
                 title: NSLocalizedString("REFRESHING_LIBRARY"),
