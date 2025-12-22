@@ -174,6 +174,7 @@ struct MangaView: View {
                 guard let navigationController = path.rootViewController?.navigationController
                 else { return }
                 if mode == .active {
+                    navigationController.setDismissGesturesEnabled(false)
                     UIView.animate(withDuration: 0.3) {
                         navigationController.isToolbarHidden = false
                         navigationController.toolbar.alpha = 1
@@ -182,6 +183,7 @@ struct MangaView: View {
                         }
                     }
                 } else {
+                    navigationController.setDismissGesturesEnabled(true)
                     UIView.animate(withDuration: 0.3) {
                         navigationController.toolbar.alpha = 0
                         if #available(iOS 26.0, *) {

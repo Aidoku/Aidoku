@@ -107,6 +107,7 @@
 		FB17114329653B3E00AD523D /* AddToCategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */; };
 		FB1711482967444B00AD523D /* MigrateMangaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1711472967444B00AD523D /* MigrateMangaView.swift */; };
 		FB17114B296770CC00AD523D /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = FB17114A296770CC00AD523D /* NukeUI */; };
+		FB1854662EF9B11E0063F698 /* UINavigationController+DismissGestures.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1854652EF9B1140063F698 /* UINavigationController+DismissGestures.swift */; };
 		FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */; };
 		FB1A4E622E78A829006F4BA8 /* KomgaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */; };
 		FB1A4E642E78A831006F4BA8 /* EnhancedTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */; };
@@ -641,6 +642,7 @@
 		FB17005C2E39313700DBC4E4 /* MangaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaViewController.swift; sourceTree = "<group>"; };
 		FB17114229653B3E00AD523D /* AddToCategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCategoryViewController.swift; sourceTree = "<group>"; };
 		FB1711472967444B00AD523D /* MigrateMangaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateMangaView.swift; sourceTree = "<group>"; };
+		FB1854652EF9B1140063F698 /* UINavigationController+DismissGestures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+DismissGestures.swift"; sourceTree = "<group>"; };
 		FB1A4E602E78A826006F4BA8 /* KomgaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaTracker.swift; sourceTree = "<group>"; };
 		FB1A4E632E78A82D006F4BA8 /* EnhancedTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedTracker.swift; sourceTree = "<group>"; };
 		FB1A4E662E79B1A4006F4BA8 /* KomgaApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaApi.swift; sourceTree = "<group>"; };
@@ -1784,6 +1786,7 @@
 				FB662EF42DA81B8200007514 /* EdgeInsets.swift */,
 				FB662EF92DA81B8200007514 /* UIApplication.swift */,
 				FB55C0AC2DEFC4340019A551 /* UIHostingController+SafeArea.swift */,
+				FB1854652EF9B1140063F698 /* UINavigationController+DismissGestures.swift */,
 				FB7F05F92DDE76430036B116 /* WKWebView.swift */,
 				FB077DA12E7C889900C9C214 /* String+Color.swift */,
 				FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */,
@@ -2762,6 +2765,7 @@
 				FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */,
 				66C7E95B2ED77BBD0026FD6C /* ImageProcessingSettingsKey.swift in Sources */,
 				FB662ED92DA813E300007514 /* MangaDetailsHeaderView.swift in Sources */,
+				FB1854662EF9B11E0063F698 /* UINavigationController+DismissGestures.swift in Sources */,
 				FB261ED52ECB8B8400743F56 /* LogEntry.swift in Sources */,
 				FB662EDB2DA813E300007514 /* MultiSelectFilterView.swift in Sources */,
 				FB72502427CBF8C00037F1C9 /* SettingsTableViewController.swift in Sources */,
