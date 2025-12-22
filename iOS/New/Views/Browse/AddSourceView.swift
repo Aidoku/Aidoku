@@ -22,7 +22,6 @@ struct AddSourceView: View {
     @State private var showKomgaSetup = false
     @State private var showKavitaSetup = false
     @State private var showImportFailAlert = false
-    @State private var showLanguageSelectSheet = false
 
     @State private var searchFocused: Bool? = false
 
@@ -166,9 +165,6 @@ struct AddSourceView: View {
             } message: {
                 Text(NSLocalizedString("SOURCE_IMPORT_FAIL_TEXT"))
             }
-            .sheet(isPresented: $showLanguageSelectSheet) {
-                AddSourceFilterView()
-            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     CloseButton {
@@ -177,15 +173,7 @@ struct AddSourceView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if !allExternalSources.isEmpty {
-                        Button {
-                            showLanguageSelectSheet = true
-                        } label: {
-                            if #available(iOS 26.0, *) {
-                                Image(systemName: "line.3.horizontal.decrease")
-                            } else {
-                                Image(systemName: "line.3.horizontal.decrease.circle")
-                            }
-                        }
+                        AddSourceFilterMenu()
                     }
                 }
             }
@@ -193,8 +181,10 @@ struct AddSourceView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onReceive(NotificationCenter.default.publisher(for: .filterExternalSources)) { _ in
                 let result = filterExternalSources()
-                externalSources = result.0
-                allSourcesInstalled = result.allSourcesInstalled
+                withAnimation {
+                    externalSources = result.0
+                    allSourcesInstalled = result.allSourcesInstalled
+                }
             }
         }
         .interactiveDismissDisabled(searching)

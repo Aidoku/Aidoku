@@ -5,6 +5,7 @@
 //  Created by Skitty on 8/15/22.
 //
 
+import Combine
 import UIKit
 
 class ReaderToolbarView: UIView {
@@ -24,13 +25,17 @@ class ReaderToolbarView: UIView {
     }
 
     let sliderView = ReaderSliderView()
+    private let incognitoModeLabel = UILabel()
     private let currentPageLabel = UILabel()
     private let pagesLeftLabel = UILabel()
+
+    private var cancellables: [AnyCancellable] = []
 
     init() {
         super.init(frame: .zero)
         configure()
         constrain()
+        observe()
     }
 
     required init?(coder: NSCoder) {
@@ -38,25 +43,36 @@ class ReaderToolbarView: UIView {
     }
 
     func configure() {
+        incognitoModeLabel.font = .systemFont(ofSize: 10)
+        incognitoModeLabel.textColor = .secondaryLabel
+        incognitoModeLabel.textAlignment = .left
+        incognitoModeLabel.isHidden = !UserDefaults.standard.bool(forKey: "General.incognitoMode")
+        addSubview(incognitoModeLabel)
+
         currentPageLabel.font = .systemFont(ofSize: 10)
         currentPageLabel.textAlignment = .center
         currentPageLabel.sizeToFit()
-        currentPageLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(currentPageLabel)
 
         pagesLeftLabel.font = .systemFont(ofSize: 10)
         pagesLeftLabel.textColor = .secondaryLabel
         pagesLeftLabel.textAlignment = .right
-        pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(pagesLeftLabel)
 
-        sliderView.translatesAutoresizingMaskIntoConstraints = false
         sliderView.semanticContentAttribute = .playback // for rtl languages
         addSubview(sliderView)
     }
 
     func constrain() {
+        incognitoModeLabel.translatesAutoresizingMaskIntoConstraints = false
+        currentPageLabel.translatesAutoresizingMaskIntoConstraints = false
+        pagesLeftLabel.translatesAutoresizingMaskIntoConstraints = false
+        sliderView.translatesAutoresizingMaskIntoConstraints = false
+
         NSLayoutConstraint.activate([
+            incognitoModeLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            incognitoModeLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+
             currentPageLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             currentPageLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
 
@@ -68,6 +84,14 @@ class ReaderToolbarView: UIView {
             sliderView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
             sliderView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12)
         ])
+    }
+
+    func observe() {
+        NotificationCenter.default.publisher(for: .incognitoMode)
+            .sink { [weak self] _ in
+                self?.incognitoModeLabel.isHidden = !UserDefaults.standard.bool(forKey: "General.incognitoMode")
+            }
+            .store(in: &cancellables)
     }
 
     // allow slider thumb to be touched outside bounds
@@ -115,6 +139,7 @@ class ReaderToolbarView: UIView {
                 ? NSLocalizedString("ONE_PAGE_LEFT", comment: "")
                 : String(format: NSLocalizedString("%i_PAGES_LEFT", comment: ""), pagesLeft)
         }
+        incognitoModeLabel.text = NSLocalizedString("INCOGNITO_MODE")
     }
 
     func updateSliderPosition() {

@@ -41,6 +41,7 @@ struct SettingView: View {
     @State private var showButtonConfirm = false
     @State private var showSafari = false
     @State private var loginCookies: [String: String] = [:]
+    @State private var loginLocalStorage: [String: String] = [:]
     @State private var username = ""
     @State private var password = ""
     @State private var listAddItem = ""
@@ -689,6 +690,7 @@ extension SettingView {
     static let passwordKeySuffix = ".password"
     static let cookieKeysKeySuffix = ".keys"
     static let cookieValuesKeySuffix = ".values"
+    static let localStoragePrefix = ".ls."
 
     @ViewBuilder
     func loginView(value: LoginSetting) -> some View {
@@ -762,6 +764,12 @@ extension SettingView {
                 SettingsStore.shared.remove(key: key + Self.passwordKeySuffix)
                 SettingsStore.shared.remove(key: key + Self.cookieKeysKeySuffix)
                 SettingsStore.shared.remove(key: key + Self.cookieValuesKeySuffix)
+                // remove local storage
+                if let localStorageKeys = value.localStorageKeys {
+                    for lsKey in localStorageKeys {
+                        SettingsStore.shared.remove(key: key + Self.localStoragePrefix + lsKey)
+                    }
+                }
                 SettingsStore.shared.remove(key: key)
                 username = ""
                 password = ""
@@ -866,8 +874,14 @@ extension SettingView {
         PlatformNavigationStack {
             Group {
                 if let url = value.url.flatMap({ URL(string: $0) }) {
-                    WebView(url, cookies: $loginCookies, reloadToggle: $loginReload)
-                        .edgesIgnoringSafeArea(.bottom)
+                    WebView(
+                        url,
+                        localStorageKeys: value.localStorageKeys ?? [],
+                        cookies: $loginCookies,
+                        localStorage: $loginLocalStorage,
+                        reloadToggle: $loginReload
+                    )
+                    .edgesIgnoringSafeArea(.bottom)
                 }
             }
             .toolbar {
@@ -915,6 +929,12 @@ extension SettingView {
                     }
                 } else {
                     commit()
+                }
+            }
+            .onChange(of: loginLocalStorage) { newValue in
+                let key = key(setting.key)
+                for (lsKey, lsValue) in newValue {
+                    SettingsStore.shared.set(key: key + Self.localStoragePrefix + lsKey, value: lsValue)
                 }
             }
         }

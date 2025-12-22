@@ -155,7 +155,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         refreshControl.addTarget(self, action: #selector(updateLibraryRefresh(refreshControl:)), for: .valueChanged)
         collectionView.refreshControl = refreshControl
 
-        collectionView.allowsMultipleSelection = true
+        collectionView.allowsMultipleSelection = !ProcessInfo.processInfo.isMacCatalystApp
         collectionView.allowsSelectionDuringEditing = true
 
         // header view
@@ -453,6 +453,10 @@ class LibraryViewController: OldMangaCollectionViewController {
         super.setEditing(editing, animated: animated)
         updateNavbarItems()
         updateToolbar()
+
+        if ProcessInfo.processInfo.isMacCatalystApp {
+            collectionView.allowsMultipleSelection = editing
+        }
 
         for cell in collectionView.visibleCells {
             if let cell = cell as? MangaGridCell {
@@ -888,7 +892,7 @@ extension LibraryViewController {
                 }
             }
         }
-        return options.joined(separator: ", ")
+        return options.joined(separator: NSLocalizedString("FILTER_SEPARATOR"))
     }
 
     @available(iOS 26.0, *)
@@ -1113,6 +1117,15 @@ extension LibraryViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Collection View Delegate
 extension LibraryViewController {
+    // support two finger drag to select
+    func collectionView(_ collectionView: UICollectionView, shouldBeginMultipleSelectionInteractionAt indexPath: IndexPath) -> Bool {
+        true
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didBeginMultipleSelectionInteractionAt indexPath: IndexPath) {
+        setEditing(true, animated: true)
+    }
+
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
 
@@ -1217,15 +1230,10 @@ extension LibraryViewController {
         }
     }
 
-    // hide highlighting when editing
+    // don't highlighting when selecting during editing
     override func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
         guard !isEditing else { return }
         super.collectionView(collectionView, didHighlightItemAt: indexPath)
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
-        guard !isEditing else { return }
-        super.collectionView(collectionView, didUnhighlightItemAt: indexPath)
     }
 
     private func mangaInfo(at path: IndexPath) -> MangaInfo {
@@ -1315,7 +1323,7 @@ extension LibraryViewController {
             bottomMenuChildren.append(UIMenu(title: NSLocalizedString("MARK_ALL"), image: nil, children: [
                 // read chapters
                 UIAction(title: NSLocalizedString("READ"), image: UIImage(systemName: "eye")) { _ in
-                    self.showLoadingIndicator()
+                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
 
                     Task {
                         for manga in mangaInfo {
@@ -1329,12 +1337,12 @@ extension LibraryViewController {
                             )
                         }
 
-                        self.hideLoadingIndicator()
+                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }
                 },
                 // unread chapters
                 UIAction(title: NSLocalizedString("UNREAD"), image: UIImage(systemName: "eye.slash")) { _ in
-                    self.showLoadingIndicator()
+                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
 
                     Task {
                         for manga in mangaInfo {
@@ -1348,7 +1356,7 @@ extension LibraryViewController {
                             )
                         }
 
-                        self.hideLoadingIndicator()
+                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }
                 }
             ]))

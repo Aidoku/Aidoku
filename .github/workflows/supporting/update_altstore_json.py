@@ -1,7 +1,9 @@
 import json
 import re
 import requests
-import os
+import zipfile
+import plistlib
+import io
 from datetime import datetime
 
 bundle_id = "app.aidoku.Aidoku"
@@ -20,12 +22,12 @@ def fetch_latest_release(repo):
         releases = response.json()
         if len(releases) == 0:
             raise ValueError("No release found.")
-        
+
         sorted_releases = sorted(releases, key=lambda release: datetime.strptime(release["published_at"], "%Y-%m-%dT%H:%M:%SZ"), reverse=True) # Sort from newest to oldest
         filtered_sorted_releases = list(filter(lambda release: release["draft"] == False and release["prerelease"] == False, sorted_releases)) # filter out drafts and prereleases
         if len(filtered_sorted_releases) == 0:
             raise ValueError("An error occured while sorting and filtering releases.")
-        
+
         return filtered_sorted_releases[0]
     except requests.RequestException as e:
         print(f"Error fetching releases: {e}")
@@ -40,6 +42,29 @@ def remove_tags_and_characters(text):
     text = re.sub(r'\r\n', '\n', text)
     return text
 
+def get_ipa_version_and_build(ipa_path):
+    with zipfile.ZipFile(ipa_path, 'r') as ipa:
+        info_plist_path = None
+        # find info.plist in root of .app
+        for name in ipa.namelist():
+            if (
+                name.startswith('Payload/') and
+                name.count('/') == 2 and
+                name.endswith('.app/Info.plist')
+            ):
+                info_plist_path = name
+                break
+        if not info_plist_path:
+            raise FileNotFoundError("Info.plist not found in IPA")
+
+        with ipa.open(info_plist_path) as plist_file:
+            plist_data = plist_file.read()
+            plist = plistlib.load(io.BytesIO(plist_data))
+
+        version = plist.get('CFBundleShortVersionString')
+        build = plist.get('CFBundleVersion')
+        return version, build
+
 def update_json_file(json_file, repo):
     latest_release = fetch_latest_release(repo)
     try:
@@ -52,36 +77,35 @@ def update_json_file(json_file, repo):
     if "apps" not in data:
         print(f"There is no \"apps\" key in {json_file}.")
         raise
-    
+
     apps_data = data["apps"]
     if len(apps_data) == 0:
         print(f"There is no data for \"apps\" key in {json_file}.")
         raise
-        
+
     app = apps_data[0]
     if "versions" not in app:
         app["versions"] = []
-    
-    
+
     if "assets" not in latest_release:
         print("There is no \"assets\" key in latest release JSON. It may mean there are no assets other than source code tarball and zipball.")
         raise
-        
+
     assets = latest_release["assets"]
     if len(assets) == 0:
         print("There are no assets other than source code tarball and zipball in latest release JSON.")
         raise
-    
+
     asset_to_use = None
     for asset in assets:
         if asset["name"].endswith(".ipa"):
             asset_to_use = asset
             break
-            
+ 
     if asset_to_use is None:
         print(".ipa file is not found in assets")
         raise
-    
+
     data["featuredApps"] = [bundle_id]
     app["bundleIdentifier"] = bundle_id
     tag = latest_release["tag_name"]
@@ -103,16 +127,24 @@ def update_json_file(json_file, repo):
         download_url = asset_to_use["browser_download_url"]
         size = asset_to_use["size"]
 
+        # download ipa and read version/build number from it
+        ipa_response = requests.get(download_url)
+        ipa_response.raise_for_status()
+        with open("temp.ipa", "wb") as ipa_file:
+            ipa_file.write(ipa_response.content)
+        version, build = get_ipa_version_and_build("temp.ipa")
+
         version_entry = {
             "version": version,
             "date": version_date,
             "localizedDescription": description,
             "downloadURL": download_url,
             "size": size,
-            "minOSVersion": minimum_ios_version
+            "minOSVersion": minimum_ios_version,
+            "buildVersion": build
         }
         app["versions"].insert(0, version_entry)
-        
+
 # If news update is wanted
 ###
 #    if "news" not in data:

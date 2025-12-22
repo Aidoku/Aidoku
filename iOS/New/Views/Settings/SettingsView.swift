@@ -113,6 +113,7 @@ extension SettingsView {
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .overlay {
             if let searchResult, searchResult.sections.isEmpty {
                 UnavailableView.search(text: searchText)
@@ -289,6 +290,8 @@ extension SettingsView {
             SettingsTrackingView()
         } else if key == "About" {
             SettingsAboutView()
+        } else if key == "Insights" {
+            InsightsView()
         } else if key == "SourceLists" {
             SourceListsView()
         } else if key == "Backups" {

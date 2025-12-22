@@ -394,6 +394,9 @@ extension LocalFileImportView.ContentView {
         guard let fileInfo else { return }
         name = fileInfo.name.removingExtension()
         seriesName = fileInfo.comicInfo?.series ?? LocalFileNameParser.parseMangaSeries(from: fileInfo.name)
+        if seriesName.isEmpty {
+            seriesName = name
+        }
         seriesDescription = fileInfo.comicInfo?.summary ?? ""
         coverImage = fileInfo.previewImages.first
         volume = fileInfo.comicInfo?.volume.flatMap { Float($0) }
@@ -403,6 +406,7 @@ extension LocalFileImportView.ContentView {
             ?? 1
         Task {
             let hasSeries = await LocalFileDataManager.shared.hasSeries(id: seriesName.percentEncoded())
+            nameEmpty = selectedMangaId.isEmpty ? seriesName.isEmpty : false
             nameValid = !hasSeries
             if hasSeries {
                 selectedMangaId = seriesName

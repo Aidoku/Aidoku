@@ -58,6 +58,7 @@
 "VIEW_SERIES" = "View Series";
 "VIEW_FILES" = "View Files";
 "COMPRESS_DOWNLOADS" = "Compress Downloads";
+"PARALLEL_DOWNLOADS" = "Parallel Downloads";
 "BACKGROUND_DOWNLOADING" = "Background Downloading";
 "METADATA_DETECTED" = "Legacy Metadata Detected";
 "METADATA_DETECTED_TEXT" = "Legacy JSON metadata will be migrated to ComicInfo.xml files.";
@@ -81,6 +82,7 @@
 "DATE_ADDED" = "Date Added";
 "AND_MORE" = "and more";
 "NOT_%@" = "Not %@";
+"FILTER_SEPARATOR" = ", ";
 "IS_TRACKING" = "Tracking";
 "FILTER_HAS_UNREAD" = "Unread";
 "FILTER_STARTED" = "Started";
@@ -432,6 +434,27 @@
 "NO_RESULTS_TEXT" = "Check the spelling or try a new search.";
 "LEARN_MORE" = "Learn more…";
 
+// Insights
+"INSIGHTS" = "Insights";
+"STREAKS" = "Streaks";
+"STATS" = "Stats";
+"CURRENT_STREAK" = "Current Streak";
+"NO_CURRENT_STREAK" = "No Current Streak";
+"NO_CURRENT_STREAK_TEXT" = "Read every day to build a streak.";
+"LONGEST_STREAK" = "Longest Streak";
+"DAYS" = "Days";
+"CHAPTER_PLURAL" = "Chapters";
+"CHAPTER_SINGULAR" = "Chapter";
+"PAGE_PLURAL" = "Pages";
+"PAGE_SINGULAR" = "Page";
+"SERIES_PLURAL" = "Series";
+"SERIES_SINGULAR" = "Series";
+"HOUR_PLURAL" = "Hours";
+"HOUR_SINGULAR" = "Hour";
+"ALL_TIME" = "All-time";
+"THIS_MONTH" = "This Month";
+"THIS_YEAR" = "This Year";
+
 // Source Lists
 "SOURCE_LISTS" = "Source Lists";
 "SOURCE_LIST_ADDED" = "Source List Added";
@@ -457,9 +480,12 @@
 "NO_AVAILABLE_MODELS_TEXT" = "Failed to fetch available models. Check your network connection and ensure your app is running the latest version.";
 "MODEL_INFO" = "Model Info";
 "LOCK_HISTORY_TAB" = "Lock History Tab";
+
+// Reader Settings
 "DOWNSAMPLE_IMAGES" = "Downsample Images";
 "CROP_BORDERS" = "Crop Borders";
 "DISABLE_QUICK_ACTIONS" = "Disable Quick Actions";
+"LIVE_TEXT" = "Live Text";
 "READER_BG_COLOR" = "Background Color";
 "READER_BG_COLOR_SYSTEM" = "System";
 "READER_BG_COLOR_AUTO" = "Automatic";
@@ -505,6 +531,7 @@
 "BACKUP_INTERVAL" = "Backup Interval";
 "AUTO" = "Auto";
 "LAST_BACKED_UP_%@" = "Last automatically backed up: %@";
+"READING_SESSIONS" = "Reading Sessions";
 
 // Advanced
 "LOGS" = "Logs";

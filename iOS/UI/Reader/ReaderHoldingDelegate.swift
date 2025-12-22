@@ -9,6 +9,7 @@ import Foundation
 import AidokuRunner
 
 protocol ReaderHoldingDelegate: AnyObject {
+    var barsHidden: Bool { get }
 
     func getNextChapter() -> AidokuRunner.Chapter?
     func getPreviousChapter() -> AidokuRunner.Chapter?

@@ -14,6 +14,9 @@ extension Notification.Name {
     static let updateSourceLists = Self("updateSourceLists")
     static let updateBackupList = Self("updateBackupList")
 
+    // general
+    static let incognitoMode = Self("General.incognitoMode")
+
     // library
     static let updateLibrary = Self("updateLibrary")
     static let addToLibrary = Self("addToLibrary")
@@ -51,6 +54,8 @@ extension Notification.Name {
     static let filterExternalSources = Self("filterExternalSources")
 
     // reader
+    static let readerShowingBars = Self("readerShowingBars")
+    static let readerHidingBars = Self("readerHidingBars")
     static let readerReadingMode = Self("Reader.readingMode")
     static let readerTapZones = Self("Reader.tapZones")
 

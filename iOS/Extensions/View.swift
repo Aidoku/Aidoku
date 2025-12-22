@@ -172,6 +172,28 @@ extension View {
             return self
         }
     }
+
+    func centerScrollAnchorPlease() -> some View {
+        if #available(iOS 18.0, *) {
+            return self.defaultScrollAnchor(.center, for: .alignment)
+        } else {
+            return self
+        }
+    }
+
+    func onChangeWrapper<V: Equatable>(
+        of value: V,
+        initial: Bool = false,
+        _ action: @escaping (_ oldValue: V, _ newValue: V) -> Void
+    ) -> some View {
+        if #available(iOS 17.0, *) {
+            return self.onChange(of: value, initial: initial, action)
+        } else {
+            return self.onChange(of: value) { newValue in
+                action(newValue, newValue)
+            }
+        }
+    }
 }
 
 extension View {

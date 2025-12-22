@@ -182,6 +182,12 @@ extension DownloadTask {
         }
     }
 
+    struct NetworkPage {
+        let url: URL
+        let context: PageContext?
+        let targetPath: URL
+    }
+
     // perform download
     private func download(from source: AidokuRunner.Source) async {
         guard running && !downloads.isEmpty else { return }
@@ -201,12 +207,6 @@ extension DownloadTask {
             }
             guard running && downloads.first == download else { return }
             downloads[0].total = pages.count
-        }
-
-        struct NetworkPage {
-            let url: URL
-            let context: PageContext?
-            let targetPath: URL
         }
 
         var networkPages: [NetworkPage] = []
@@ -257,79 +257,47 @@ extension DownloadTask {
             nil
         }
 
-        // download pages from the network concurrently
-        await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
-            for pageGroup in networkPages.chunked(into: Self.maxConcurrentPageTasks) {
-                for page in pageGroup {
-                    taskGroup.addTask {
-                        let urlRequest = await source.getModifiedImageRequest(
-                            url: page.url,
-                            context: page.context
-                        )
-
-                        let result = try? await URLSession.shared.data(for: urlRequest)
-
-                        var resultData: Data?
-                        var resultPath: URL?
-
-                        if let pageInterceptor {
-                            let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
+        if UserDefaults.standard.bool(forKey: "Downloads.parallel") {
+            // download pages from the network concurrently
+            await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
+                for pageGroup in networkPages.chunked(into: Self.maxConcurrentPageTasks) {
+                    for page in pageGroup {
+                        taskGroup.addTask {
+                            await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor)
+                        }
+                    }
+                    for await (data, path) in taskGroup {
+                        guard tmpDirectory.exists else {
+                            // download was cancelled, stop processing
+                            return
+                        }
+                        if let data, let path {
                             do {
-                                let container = ImageContainer(image: image)
-                                let request = ImageRequest(
-                                    urlRequest: urlRequest,
-                                    userInfo: [.contextKey: page.context ?? [:]]
-                                )
-                                let newImage = try pageInterceptor.process(
-                                    container,
-                                    context: .init(
-                                        request: request,
-                                        response: .init(
-                                            container: container,
-                                            request: request,
-                                            urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
-                                                HTTPURLResponse(
-                                                    url: $0,
-                                                    statusCode: 404,
-                                                    httpVersion: nil,
-                                                    headerFields: nil
-                                                )
-                                            }
-                                        ),
-                                        isCompleted: true
-                                    )
-                                )
-                                let data = newImage.image.pngData()
-                                resultData = data
-                                resultPath = page.targetPath.appendingPathExtension("png")
+                                try data.write(to: path)
                             } catch {
-                                LogManager.logger.error("Error processing image: \(error)")
+                                LogManager.logger.error("Error writing downloaded image: \(error)")
                             }
-                        } else if let (data, res) = result {
-                            let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
-                            resultData = data
-                            resultPath = page.targetPath.appendingPathExtension(fileExtention)
-                        } else {
-                            LogManager.logger.error("Error downloading image with url \(urlRequest)")
                         }
-
-                        return (resultData, resultPath)
+                        await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
                     }
                 }
-                for await (data, path) in taskGroup {
-                    guard tmpDirectory.exists else {
-                        // download was cancelled, stop processing
-                        return
-                    }
-                    if let data, let path {
-                        do {
-                            try data.write(to: path)
-                        } catch {
-                            LogManager.logger.error("Error writing downloaded image: \(error)")
-                        }
-                    }
-                    await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+            }
+        } else {
+            // download pages from the network serially
+            for page in networkPages {
+                let (data, path) = await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor)
+                guard tmpDirectory.exists else {
+                    // download was cancelled, stop processing
+                    return
                 }
+                if let data, let path {
+                    do {
+                        try data.write(to: path)
+                    } catch {
+                        LogManager.logger.error("Error writing downloaded image: \(error)")
+                    }
+                }
+                await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
             }
         }
 
@@ -337,6 +305,66 @@ extension DownloadTask {
         if networkPages.isEmpty && currentPage == pages.count {
             await handleChapterDownloadFinish(download: download)
         }
+    }
+
+    // fetch a single page's data
+    private func downloadPage(
+        _ page: NetworkPage,
+        source: AidokuRunner.Source,
+        pageInterceptor: PageInterceptorProcessor?
+    ) async -> (Data?, URL?) {
+        let urlRequest = await source.getModifiedImageRequest(
+            url: page.url,
+            context: page.context
+        )
+
+        let result = try? await URLSession.shared.data(for: urlRequest)
+
+        var resultData: Data?
+        var resultPath: URL?
+
+        if let pageInterceptor {
+            let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
+            do {
+                let container = ImageContainer(image: image)
+                let request = ImageRequest(
+                    urlRequest: urlRequest,
+                    userInfo: [.contextKey: page.context ?? [:]]
+                )
+                let newImage = try pageInterceptor.process(
+                    container,
+                    context: .init(
+                        request: request,
+                        response: .init(
+                            container: container,
+                            request: request,
+                            urlResponse: result?.1 ?? (request.url ?? request.urlRequest?.url).flatMap {
+                                HTTPURLResponse(
+                                    url: $0,
+                                    statusCode: 404,
+                                    httpVersion: nil,
+                                    headerFields: nil
+                                )
+                            }
+                        ),
+                        isCompleted: true
+                    )
+                )
+                let data = newImage.image.pngData()
+                resultData = data
+                resultPath = page.targetPath.appendingPathExtension("png")
+            } catch {
+                LogManager.logger.error("Error processing image: \(error)")
+            }
+        } else if let (data, res) = result {
+            let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
+            resultData = data
+            resultPath = page.targetPath.appendingPathExtension(fileExtention)
+        } else {
+            LogManager.logger.error("Error downloading image with url \(urlRequest)")
+        }
+
+        return (resultData, resultPath)
     }
 
     private func incrementProgress(for id: ChapterIdentifier, failed: Bool = false) async {
@@ -382,7 +410,7 @@ extension DownloadTask {
                 try FileManager.default.moveItem(at: tmpDirectory, to: directory)
 
                 if UserDefaults.standard.bool(forKey: "Downloads.compress") {
-                    try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"))
+                    try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
                     directory.removeItem()
                 }
 

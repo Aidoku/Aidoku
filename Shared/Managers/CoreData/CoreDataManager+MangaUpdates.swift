@@ -8,6 +8,15 @@
 import CoreData
 
 extension CoreDataManager {
+    /// Remove all update objects.
+    func clearUpdates(context: NSManagedObjectContext? = nil) {
+        clear(request: MangaUpdateObject.fetchRequest(), context: context)
+    }
+
+    /// Gets all update objects.
+    func getUpdates(context: NSManagedObjectContext? = nil) -> [MangaUpdateObject] {
+        (try? (context ?? self.context).fetch(MangaUpdateObject.fetchRequest())) ?? []
+    }
 
     /// Get a particular manga update object.
     func getMangaUpdate(

@@ -90,6 +90,13 @@ struct ReaderSettingsView: View {
                     )
                     SettingView(
                         setting: .init(
+                            key: "Reader.liveText",
+                            title: NSLocalizedString("LIVE_TEXT"),
+                            value: .toggle(.init())
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
                             key: "Reader.backgroundColor",
                             title: NSLocalizedString("READER_BG_COLOR"),
                             value: .select(.init(

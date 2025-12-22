@@ -23,20 +23,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private var networkObserverId: UUID?
 
     private lazy var loadingAlert: UIAlertController = {
-        let loadingAlert = UIAlertController(title: nil, message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""), preferredStyle: .alert)
+        let loadingAlert = UIAlertController(
+            title: nil,
+            message: NSLocalizedString("LOADING_ELLIPSIS"),
+            preferredStyle: .alert
+        )
         progressView.tintColor = loadingAlert.view.tintColor
         loadingAlert.view.addSubview(progressView)
         loadingAlert.view.addSubview(loadingIndicator)
+
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+
+        let progressViewSidePadding: CGFloat
+        let progressViewBottomPadding: CGFloat
+        let indicatorViewSidePadding: CGFloat
+        if #available(iOS 26.0, *) {
+            progressViewSidePadding = 32
+            progressViewBottomPadding = 16
+            indicatorViewSidePadding = 16
+        } else {
+            progressViewSidePadding = 16
+            progressViewBottomPadding = 8
+            indicatorViewSidePadding = 10
+        }
+
         NSLayoutConstraint.activate([
             progressView.centerXAnchor.constraint(equalTo: loadingAlert.view.centerXAnchor),
-            progressView.bottomAnchor.constraint(equalTo: loadingAlert.view.bottomAnchor, constant: -8),
-            progressView.widthAnchor.constraint(equalTo: loadingAlert.view.widthAnchor, constant: -30)
+            progressView.bottomAnchor.constraint(equalTo: loadingAlert.view.bottomAnchor, constant: -progressViewBottomPadding),
+            progressView.widthAnchor.constraint(equalTo: loadingAlert.view.widthAnchor, constant: -(progressViewSidePadding * 2)),
+
+            loadingIndicator.centerYAnchor.constraint(equalTo: loadingAlert.view.centerYAnchor),
+            loadingIndicator.leadingAnchor.constraint(equalTo: loadingAlert.view.leadingAnchor, constant: indicatorViewSidePadding),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: 50),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: 50)
         ])
         return loadingAlert
     }()
 
     private lazy var loadingIndicator: UIActivityIndicatorView = {
-        let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+        let loadingIndicator = UIActivityIndicatorView(frame: .zero)
         loadingIndicator.style = .medium
         loadingIndicator.tag = 3
         return loadingIndicator
@@ -45,7 +71,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private lazy var progressView: UIProgressView = {
         let progressView = UIProgressView(frame: .zero)
         progressView.progress = 0
-        progressView.translatesAutoresizingMaskIntoConstraints = false
         return progressView
     }()
 
@@ -127,6 +152,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.upscaleMaxHeight": 2000,
                 "Reader.cropBorders": false,
                 "Reader.disableQuickActions": false,
+                "Reader.liveText": true,
                 "Reader.tapZones": "disabled",
                 "Reader.invertTapZones": false,
                 "Reader.animatePageTransitions": true,
@@ -153,6 +179,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "AutomaticBackups.tracking": true,
                 "AutomaticBackups.history": true,
                 "AutomaticBackups.categories": true,
+                "AutomaticBackups.readingSessions": true,
+                "AutomaticBackups.updates": false,
                 "AutomaticBackups.settings": true,
                 "AutomaticBackups.sourceLists": true,
                 "AutomaticBackups.sensitiveSettings": false,
@@ -160,6 +188,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.downloadOnlyOnWifi": false,
                 "Library.deleteDownloadAfterReading": false,
                 "Downloads.compress": true,
+                "Downloads.parallel": true,
                 "Downloads.background": true
             ]
         )
@@ -280,6 +309,7 @@ extension AppDelegate {
         case progress
     }
 
+    /// Shows a non-interactive loading indicator.
     func showLoadingIndicator(style: LoadingStyle = .indefinite, completion: (() -> Void)? = nil) {
         switch style {
             case .indefinite:
@@ -294,6 +324,7 @@ extension AppDelegate {
         topViewController?.present(loadingAlert, animated: true, completion: completion)
     }
 
+    /// Dismisses a shown loading indicator.
     func hideLoadingIndicator(completion: (() -> Void)? = nil) async {
         await withCheckedContinuation { continuation in
             loadingAlert.dismiss(animated: true) {

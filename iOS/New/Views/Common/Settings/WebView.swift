@@ -10,19 +10,25 @@ import WebKit
 
 struct WebView: UIViewRepresentable {
     let url: URL
+    let localStorageKeys: [String]
 
     @Binding var cookies: [String: String]
+    @Binding var localStorage: [String: String]
     @Binding var reloadToggle: Bool
 
     private let webView = WKWebView()
 
     init(
         _ url: URL,
+        localStorageKeys: [String] = [],
         cookies: Binding<[String: String]> = .constant([:]),
+        localStorage: Binding<[String: String]> = .constant([:]),
         reloadToggle: Binding<Bool> = .constant(false)
     ) {
         self.url = url
+        self.localStorageKeys = localStorageKeys
         self._cookies = cookies
+        self._localStorage = localStorage
         self._reloadToggle = reloadToggle
     }
 
@@ -60,6 +66,10 @@ struct WebView: UIViewRepresentable {
             Task {
                 let cookies = await webView.getCookies(for: parent.url.host)
                 parent.cookies = cookies
+                if !parent.localStorageKeys.isEmpty {
+                    let storage = await webView.getLocalStorage(keys: parent.localStorageKeys)
+                    parent.localStorage = storage
+                }
             }
         }
 
@@ -67,6 +77,10 @@ struct WebView: UIViewRepresentable {
             Task {
                 let cookies = await parent.webView.getCookies(for: parent.url.host)
                 parent.cookies = cookies
+                if !parent.localStorageKeys.isEmpty {
+                    let storage = await parent.webView.getLocalStorage(keys: parent.localStorageKeys)
+                    parent.localStorage = storage
+                }
             }
         }
     }

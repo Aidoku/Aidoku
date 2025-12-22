@@ -92,6 +92,15 @@ enum Settings {
                 ))
             ),
             .init(
+                key: "Insights",
+                title: NSLocalizedString("INSIGHTS"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "chart.bar.xaxis", color: "indigo")
+                ))
+            ),
+            .init(
                 key: "SourceLists",
                 title: NSLocalizedString("SOURCE_LISTS"),
                 value: .page(.init(
@@ -271,7 +280,7 @@ extension Settings {
                 value: .toggle(.init())
             )
         ]
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
             return .init(
                 title: NSLocalizedString("LIBRARY_UPDATING"),
                 value: .group(.init(
@@ -335,6 +344,11 @@ extension Settings {
             .init(
                 key: "Reader.disableQuickActions",
                 title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.liveText",
+                title: NSLocalizedString("LIVE_TEXT"),
                 value: .toggle(.init())
             ),
             .init(
@@ -569,7 +583,7 @@ extension Settings {
 
 extension Settings {
     static let downloadSettings: [Setting] = {
-        let baseItems: [Setting] = [
+        var baseItems: [Setting] = [
             .init(
                 key: "Library.downloadOnlyOnWifi",
                 title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
@@ -584,18 +598,27 @@ extension Settings {
                 key: "Downloads.compress",
                 title: NSLocalizedString("COMPRESS_DOWNLOADS"),
                 value: .toggle(.init())
+            ),
+            .init(
+                key: "Downloads.parallel",
+                title: NSLocalizedString("PARALLEL_DOWNLOADS"),
+                value: .toggle(.init())
             )
         ]
-        if #available(iOS 26.0, *) {
-            return baseItems + [
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
+            baseItems.append(
                 .init(
                     key: "Downloads.background",
                     title: NSLocalizedString("BACKGROUND_DOWNLOADING"),
                     value: .toggle(.init())
                 )
-            ]
-        } else {
-            return baseItems
+            )
         }
+        return [
+            .init(
+                title: NSLocalizedString("SETTINGS"),
+                value: .group(.init(items: baseItems))
+            )
+        ]
     }()
 }

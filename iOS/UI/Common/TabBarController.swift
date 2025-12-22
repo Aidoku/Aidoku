@@ -5,10 +5,18 @@
 //  Created by Skitty on 7/26/25.
 //
 
+import Combine
 import SwiftUI
 import SwiftUIIntrospect
 
 class TabBarController: UITabBarController {
+    private var originalFrame: CGRect = .zero
+    private var shrunkFrame: CGRect = .zero
+    private var cancellables: [AnyCancellable] = []
+
+    private var settingsPath: NavigationCoordinator?
+    private var previousSelectedIndex: Int?
+
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
     private lazy var libraryRefreshAccessory: UIView = {
@@ -59,33 +67,48 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let libraryViewController = SwiftUINavigationController(rootViewController: LibraryViewController())
-        let browseViewController = UINavigationController(rootViewController: BrowseViewController())
-        let searchViewController = UINavigationController(rootViewController: SearchViewController())
+        delegate = self
+
+        let libraryViewController = NavigationController(rootViewController: LibraryViewController())
+        let browseViewController = NavigationController(rootViewController: BrowseViewController())
+        let searchViewController = NavigationController(rootViewController: SearchViewController())
 
         let historyPath = NavigationCoordinator(rootViewController: nil)
         let historyHostingController = UIHostingController(rootView: HistoryView()
             .environmentObject(historyPath))
         historyPath.rootViewController = historyHostingController
-        let historyViewController = UINavigationController(rootViewController: historyHostingController)
+        let historyViewController = NavigationController(rootViewController: historyHostingController)
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
-        let settingsViewController = if UIDevice.current.userInterfaceIdiom == .pad {
+        let settingsViewController: UIViewController
+        if UIDevice.current.userInterfaceIdiom == .pad {
             // this breaks the zoom transitions from the toolbar buttons in the backups setting page
-            UINavigationController(rootViewController: UIHostingController(rootView: SettingsView().environmentObject(settingsPath)))
+            let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
+            let entity = NavigationController(rootViewController: hosting)
+            settingsPath.rootViewController = entity
+            settingsViewController = entity
         } else {
-            UIHostingController(
-                rootView: NavigationView {
-                    SettingsView()
-                        .environmentObject(settingsPath)
-                }.introspect(.navigationView(style: .stack), on: .iOS(.v15)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-                .introspect(.navigationStack, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-            )
+            if #available(iOS 17.0, *) {
+                settingsViewController = UIHostingController(
+                    rootView: NavigationStack {
+                        SettingsView()
+                            .environmentObject(settingsPath)
+                    }.introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { entity in
+                        settingsPath.rootViewController = entity
+                    }
+                )
+            } else {
+                settingsViewController = UIHostingController(
+                    rootView: NavigationView {
+                        SettingsView()
+                            .environmentObject(settingsPath)
+                    }.introspect(.navigationView(style: .stack), on: .iOS(.v15, .v16)) { entity in
+                        settingsPath.rootViewController = entity
+                    }
+                )
+            }
         }
+        self.settingsPath = settingsPath
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
@@ -167,6 +190,39 @@ class TabBarController: UITabBarController {
 
         let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
+
+        NotificationCenter.default.publisher(for: .incognitoMode)
+            .sink { [weak self] _ in
+                self?.updateFrame(animated: true)
+            }
+            .store(in: &cancellables)
+    }
+
+    func updateFrame(animated: Bool = false) {
+        if originalFrame == .zero {
+            let bannerHeight = (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.totalBannerHeight ?? 0
+            originalFrame = view.frame
+            shrunkFrame = .init(
+                x: originalFrame.origin.x,
+                y: originalFrame.origin.y + bannerHeight,
+                width: originalFrame.width,
+                height: originalFrame.height - bannerHeight
+            )
+        }
+        func commit() {
+            if UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                view.frame = shrunkFrame
+            } else {
+                view.frame = originalFrame
+            }
+        }
+        if animated {
+            UIView.animate(withDuration: CATransaction.animationDuration()) {
+                commit()
+            }
+        } else {
+            commit()
+        }
     }
 }
 
@@ -213,6 +269,51 @@ extension TabBarController {
                 height: height
             )
         }
+        updateFrame()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        originalFrame = .init(origin: self.originalFrame.origin, size: size)
+        shrunkFrame = self.originalFrame
+        coordinator.animate { _ in
+            self.view.setNeedsLayout()
+        } completion: { _ in
+            let bannerHeight = (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.totalBannerHeight ?? 0
+            self.shrunkFrame = .init(
+                x: self.originalFrame.origin.x,
+                y: self.originalFrame.origin.y + bannerHeight,
+                width: self.originalFrame.width,
+                height: self.originalFrame.height - bannerHeight
+            )
+            self.updateFrame(animated: true)
+        }
+    }
+}
+
+extension TabBarController: UITabBarControllerDelegate {
+    @available(iOS 18.0, *)
+    func tabBarController(_ tabBarController: UITabBarController, didSelectTab selectedTab: UITab, previousTab: UITab?) {
+        checkForSettingsPop()
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        if #unavailable(iOS 18.0) {
+            checkForSettingsPop()
+        }
+    }
+
+    private func checkForSettingsPop() {
+        let settingsIndex: Int
+        if #available(iOS 26.0, *) {
+            settingsIndex = 3
+        } else {
+            settingsIndex = 4
+        }
+        if selectedIndex == previousSelectedIndex && previousSelectedIndex == settingsIndex {
+            settingsPath?.navigationController?.popToRootViewController(animated: true)
+        }
+        previousSelectedIndex = selectedIndex
     }
 }
 

@@ -10,6 +10,7 @@ import AsyncDisplayKit
 import Gifu
 import Nuke
 import SwiftUI
+import VisionKit
 import ZIPFoundation
 
 class ReaderWebtoonPageNode: BaseObservingCellNode {
@@ -27,6 +28,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var text: String?
     var ratio: CGFloat?
     private var loading = false
+    private var shouldShowLiveTextButton = false
 
     // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
@@ -245,7 +247,7 @@ extension ReaderWebtoonPageNode {
         } else if let base64 = page.base64 {
             await loadImage(base64: base64)
         } else if let text = page.text {
-             loadText(text)
+            loadText(text)
         } else {
             // TODO: show error
         }
@@ -347,8 +349,9 @@ extension ReaderWebtoonPageNode {
     }
 
     private func loadImage(base64: String) async {
+        let fullKey = "\(page.key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(
-            id: page.key,
+            id: fullKey,
             data: { Data() },
             userInfo: [:]
         )
@@ -412,8 +415,9 @@ extension ReaderWebtoonPageNode {
         hasher.combine(filePath)
         let key = String(hasher.finalize())
 
+        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
         let request = ImageRequest(
-            id: key,
+            id: fullKey,
             data: { Data() },
             userInfo: [:]
         )
@@ -466,6 +470,11 @@ extension ReaderWebtoonPageNode {
                     if let processedImage = processedImage {
                         image = processedImage
                     }
+                } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                    let processor = UpscaleProcessor()
+                    if let processedImage = processor.process(image) {
+                        image = processedImage
+                    }
                 }
 
                 return image
@@ -507,6 +516,12 @@ extension ReaderWebtoonPageNode {
                 if let delegate {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
+                if #available(iOS 16.0, *), UserDefaults.standard.bool(forKey: "Reader.liveText"), ImageAnalyzer.isSupported {
+                    let interaction = ImageAnalysisInteraction()
+                    interaction.preferredInteractionTypes = .automatic
+                    imageNode.addInteraction(interaction)
+                }
+                await analyzeLiveText()
             }
         } else if let text {
             progressNode.isHidden = true
@@ -528,8 +543,33 @@ extension ReaderWebtoonPageNode {
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
     }
 
-    // MARK: - Image Reload Functionality
+    @MainActor
+    private func analyzeLiveText() async {
+        if #available(iOS 16.0, *) {
+            guard let image else {
+                imageNode.imageAnalaysisInteraction?.analysis = nil
+                return
+            }
+            let analyzer = ImageAnalyzer()
+            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+            imageNode.imageAnalaysisInteraction?.analysis = analysis
+            imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+        }
+    }
 
+    @MainActor
+    func setLiveTextHidden(_ hidden: Bool) {
+        if #available(iOS 16.0, *) {
+            shouldShowLiveTextButton = !hidden
+            // don't hide if the text highlighting is active
+            guard imageNode.imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
+            imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
+        }
+    }
+}
+
+// MARK: - Image Reload Functionality
+extension ReaderWebtoonPageNode {
     /// Reloads the current image by clearing its cache and re-fetching from the source
     @MainActor
     func reloadCurrentImage() async -> Bool {
@@ -551,6 +591,7 @@ extension ReaderWebtoonPageNode {
 
     /// Clears the cache entry for the current image
     private func clearCurrentImageCache() {
+        let settingsKey = ImageProcessingSettingsKey.getProcessorSettingsKey()
         // Handle different image types
         if let urlString = page.imageURL, let url = URL(string: urlString) {
             // For URL-based images, remove from both memory and disk cache
@@ -564,7 +605,8 @@ extension ReaderWebtoonPageNode {
 
         } else if page.base64 != nil {
             // For base64 images, remove using the page key
-            let request = ImageRequest(id: page.key, data: { Data() })
+            let fullKey = "\(page.key)-\(settingsKey)"
+            let request = ImageRequest(id: fullKey, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
 
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
@@ -573,7 +615,8 @@ extension ReaderWebtoonPageNode {
             hasher.combine(url)
             hasher.combine(filePath)
             let key = String(hasher.finalize())
-            let request = ImageRequest(id: key, data: { Data() })
+            let fullKey = "\(key)-\(settingsKey)"
+            let request = ImageRequest(id: fullKey, data: { Data() })
             ImagePipeline.shared.cache.removeCachedImage(for: request)
         }
     }
