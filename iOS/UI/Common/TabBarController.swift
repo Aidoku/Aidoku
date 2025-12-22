@@ -64,27 +64,27 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let libraryViewController = SwiftUINavigationController(rootViewController: LibraryViewController())
-        let browseViewController = UINavigationController(rootViewController: BrowseViewController())
-        let searchViewController = UINavigationController(rootViewController: SearchViewController())
+        let libraryViewController = NavigationController(rootViewController: LibraryViewController())
+        let browseViewController = NavigationController(rootViewController: BrowseViewController())
+        let searchViewController = NavigationController(rootViewController: SearchViewController())
 
         let historyPath = NavigationCoordinator(rootViewController: nil)
         let historyHostingController = UIHostingController(rootView: HistoryView()
             .environmentObject(historyPath))
         historyPath.rootViewController = historyHostingController
-        let historyViewController = UINavigationController(rootViewController: historyHostingController)
+        let historyViewController = NavigationController(rootViewController: historyHostingController)
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
         let settingsViewController: UIViewController
         if UIDevice.current.userInterfaceIdiom == .pad {
             // this breaks the zoom transitions from the toolbar buttons in the backups setting page
             let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
-            let entity = UINavigationController(rootViewController: hosting)
+            let entity = NavigationController(rootViewController: hosting)
             settingsPath.rootViewController = entity
             settingsViewController = entity
         } else {
             settingsViewController = UIHostingController(
-                rootView: NavigationView {
+                rootView: PlatformNavigationStack {
                     SettingsView()
                         .environmentObject(settingsPath)
                 }.introspect(.navigationView(style: .stack), on: .iOS(.v15)) { entity in
