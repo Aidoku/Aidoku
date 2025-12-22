@@ -14,6 +14,9 @@ class TabBarController: UITabBarController {
     private var shrunkFrame: CGRect = .zero
     private var cancellables: [AnyCancellable] = []
 
+    private var settingsPath: NavigationCoordinator?
+    private var previousSelectedIndex: Int?
+
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
     private lazy var libraryRefreshAccessory: UIView = {
@@ -64,6 +67,8 @@ class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        delegate = self
+
         let libraryViewController = NavigationController(rootViewController: LibraryViewController())
         let browseViewController = NavigationController(rootViewController: BrowseViewController())
         let searchViewController = NavigationController(rootViewController: SearchViewController())
@@ -95,6 +100,7 @@ class TabBarController: UITabBarController {
                 }
             )
         }
+        self.settingsPath = settingsPath
 
         libraryViewController.navigationBar.prefersLargeTitles = true
         browseViewController.navigationBar.prefersLargeTitles = true
@@ -274,6 +280,32 @@ extension TabBarController {
             )
             self.updateFrame(animated: true)
         }
+    }
+}
+
+extension TabBarController: UITabBarControllerDelegate {
+    @available(iOS 18.0, *)
+    func tabBarController(_ tabBarController: UITabBarController, didSelectTab selectedTab: UITab, previousTab: UITab?) {
+        checkForSettingsPop()
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        if #unavailable(iOS 18.0) {
+            checkForSettingsPop()
+        }
+    }
+
+    private func checkForSettingsPop() {
+        let settingsIndex: Int
+        if #available(iOS 26.0, *) {
+            settingsIndex = 3
+        } else {
+            settingsIndex = 4
+        }
+        if selectedIndex == previousSelectedIndex && previousSelectedIndex == settingsIndex {
+            settingsPath?.navigationController?.popToRootViewController(animated: true)
+        }
+        previousSelectedIndex = selectedIndex
     }
 }
 
