@@ -113,6 +113,7 @@ extension SettingsView {
                 }
             }
         }
+        .listStyle(.insetGrouped)
         .overlay {
             if let searchResult, searchResult.sections.isEmpty {
                 UnavailableView.search(text: searchText)

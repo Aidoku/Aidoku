@@ -88,17 +88,25 @@ class TabBarController: UITabBarController {
             settingsPath.rootViewController = entity
             settingsViewController = entity
         } else {
-            settingsViewController = UIHostingController(
-                rootView: PlatformNavigationStack {
-                    SettingsView()
-                        .environmentObject(settingsPath)
-                }.introspect(.navigationView(style: .stack), on: .iOS(.v15)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-                .introspect(.navigationStack, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
-                    settingsPath.rootViewController = entity
-                }
-            )
+            if #available(iOS 17.0, *) {
+                settingsViewController = UIHostingController(
+                    rootView: NavigationStack {
+                        SettingsView()
+                            .environmentObject(settingsPath)
+                    }.introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { entity in
+                        settingsPath.rootViewController = entity
+                    }
+                )
+            } else {
+                settingsViewController = UIHostingController(
+                    rootView: NavigationView {
+                        SettingsView()
+                            .environmentObject(settingsPath)
+                    }.introspect(.navigationView(style: .stack), on: .iOS(.v15, .v16)) { entity in
+                        settingsPath.rootViewController = entity
+                    }
+                )
+            }
         }
         self.settingsPath = settingsPath
 
