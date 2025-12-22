@@ -58,22 +58,26 @@ class ReaderSliderView: UIControl {
     }()
 
     private lazy var grabberView: UIView = {
+        let grabberView: UIView
         if #available(iOS 26.0, *) {
             // same aspect ratio as a UISlider knob
-            let grabberView = LiquidLensView(frame: .init(x: 0, y: 0, width: 18.5, height: 12))
-            grabberView.restingBackgroundColor = .white
-            return grabberView
+            grabberView = {
+                let grabberView = LiquidLensView(frame: .init(x: 0, y: 0, width: 18.5, height: 12))
+                grabberView.restingBackgroundColor = .white
+                return grabberView as UIView
+            }()
+            grabberView.layer.shadowPath = UIBezierPath(roundedRect: grabberView.bounds, cornerRadius: 6).cgPath
         } else {
-            let grabberView = UIView(frame: .init(x: 0, y: 0, width: 10, height: 10))
+            grabberView = UIView(frame: .init(x: 0, y: 0, width: 10, height: 10))
             grabberView.backgroundColor = .white
             grabberView.layer.shadowPath = UIBezierPath(roundedRect: grabberView.bounds, cornerRadius: 5).cgPath
-            grabberView.layer.shadowRadius = 1.5
-            grabberView.layer.shadowOffset = CGSize(width: 0, height: 1)
-            grabberView.layer.shadowColor = UIColor.black.cgColor
-            grabberView.layer.shadowOpacity = 0.1
-            grabberView.layer.cornerRadius = frame.height / 2
-            return grabberView
         }
+        grabberView.layer.shadowRadius = 1.5
+        grabberView.layer.shadowOffset = CGSize(width: 0, height: 1)
+        grabberView.layer.shadowColor = UIColor.black.cgColor
+        grabberView.layer.shadowOpacity = 0.1
+        grabberView.layer.cornerRadius = frame.height / 2
+        return grabberView
     }()
 
     private var trackWidthConstraint: NSLayoutConstraint?
