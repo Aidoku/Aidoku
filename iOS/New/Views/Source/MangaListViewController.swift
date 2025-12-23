@@ -54,15 +54,18 @@ extension MangaListViewController {
             let result = try await getEntries?(nextPage)
             guard let result else { return }
 
-            await CoreDataManager.shared.container.performBackgroundTask { context in
+            let newBookmarks = await CoreDataManager.shared.container.performBackgroundTask { context in
+                var items: Set<String> = []
                 for manga in result.entries where CoreDataManager.shared.hasLibraryManga(
                     sourceId: manga.sourceKey,
                     mangaId: manga.key,
                     context: context
                 ) {
-                    self.bookmarkedItems.insert(manga.key)
+                    items.insert(manga.key)
                 }
+                return items
             }
+            bookmarkedItems.formUnion(newBookmarks)
 
             hasMore = result.hasNextPage
             entries += result.entries.filter { hashValues.insert($0.hashValue).inserted }

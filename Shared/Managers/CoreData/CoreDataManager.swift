@@ -141,7 +141,7 @@ final class CoreDataManager {
     }
 
     // TODO: clean this up
-    func migrateChapterHistory(progress: ((Float) -> Void)? = nil) async {
+    func migrateChapterHistory(progress: (@Sendable (Float) -> Void)? = nil) async {
         LogManager.logger.info("Beginning chapter history migration for 0.6")
 
         await container.performBackgroundTask { context in

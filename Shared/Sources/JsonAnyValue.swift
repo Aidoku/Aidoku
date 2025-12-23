@@ -18,7 +18,7 @@ enum JsonAnyType: Int {
     case intArray = 8
 }
 
-struct JsonAnyValue: Hashable {
+struct JsonAnyValue: Hashable, Sendable {
     let type: JsonAnyType
 
     var boolValue: Bool?

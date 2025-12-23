@@ -8,8 +8,8 @@
 import Foundation
 import AidokuRunner
 
+@MainActor
 class BrowseViewModel {
-
     var updatesSources: [SourceInfo2] = []
     var pinnedSources: [SourceInfo2] = []
     var installedSources: [SourceInfo2] = []

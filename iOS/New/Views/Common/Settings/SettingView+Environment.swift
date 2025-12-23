@@ -9,11 +9,11 @@ import AidokuRunner
 import SwiftUI
 
 struct SettingPageContentKey: EnvironmentKey {
-    static let defaultValue: ((String) -> AnyView?)? = nil
+    static var defaultValue: ((String) -> AnyView?)? { nil }
 }
 
 struct SettingCustomContentKey: EnvironmentKey {
-    static let defaultValue: ((Setting) -> AnyView)? = nil
+    static var defaultValue: ((Setting) -> AnyView)? { nil }
 }
 
 extension EnvironmentValues {

@@ -564,7 +564,7 @@ extension AppDelegate {
                             for (mangaId, oldId) in historyChapterIds where newChapterIds[oldId] == nil  {
                                 newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
                             }
-                            await CoreDataManager.shared.container.performBackgroundTask { context in
+                            await CoreDataManager.shared.container.performBackgroundTask { [newMangaIds, newChapterIds] context in
                                 let libraryObjects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
                                 let chapterObjects = CoreDataManager.shared.getChapters(sourceId: source.id, context: context)
                                 let historyObjects = CoreDataManager.shared.getHistory(sourceId: source.id, context: context)
@@ -632,8 +632,10 @@ extension AppDelegate {
                     actions.last?.isEnabled = !(textField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
 
                     NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: .main) { _ in
-                        let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                        actions.last?.isEnabled = !text.isEmpty
+                        Task { @MainActor in
+                            let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                            actions.last?.isEnabled = !text.isEmpty
+                        }
                     }
                 }
             }
@@ -654,7 +656,7 @@ extension AppDelegate {
 }
 
 extension AppDelegate: ImagePipelineDelegate {
-    func imageDecoder(for context: ImageDecodingContext, pipeline: ImagePipeline) -> (any ImageDecoding)? {
+    nonisolated func imageDecoder(for context: ImageDecodingContext, pipeline: ImagePipeline) -> (any ImageDecoding)? {
         if context.request.userInfo[.processesKey] as? Bool == true {
             // when using a page processor, don't decode data as an image since it may be invalid
             ImageDecoders.Empty.init()

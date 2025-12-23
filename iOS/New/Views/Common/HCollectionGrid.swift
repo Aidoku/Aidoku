@@ -13,7 +13,7 @@ struct HCollectionGrid<Data, ID, Content>: View
 where
     Data: RandomAccessCollection & Sendable,
     ID: Hashable & Sendable,
-    Content: View & Sendable
+    Content: View
 {
     private let rows: Int
     private let data: Data

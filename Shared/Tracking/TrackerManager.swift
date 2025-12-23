@@ -379,7 +379,7 @@ actor TrackerManager {
         guard !result.isEmpty else { return }
 
         // create local history
-        let (completed, progressed) = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let (completed, progressed) = await CoreDataManager.shared.container.performBackgroundTask { [result] context in
             var completed: [String] = []
             var progressed: [String: Int] = [:]
 

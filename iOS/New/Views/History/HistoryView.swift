@@ -268,7 +268,7 @@ struct HistoryView: View {
     }
 }
 
-private struct HistoryEntryCell: View, Equatable {
+private struct HistoryEntryCell: View, @MainActor Equatable {
     let entry: HistoryEntry
 
     let manga: AidokuRunner.Manga?

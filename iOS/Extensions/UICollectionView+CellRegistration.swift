@@ -8,6 +8,7 @@
 import UIKit
 
 extension UICollectionView.CellRegistration {
+    @MainActor
     var cellProvider: (UICollectionView, IndexPath, Item) -> Cell {
         { collectionView, indexPath, item in
             collectionView.dequeueConfiguredReusableCell(
