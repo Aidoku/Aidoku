@@ -14,11 +14,8 @@ struct BackupsView: View {
 
     @State private var loadedInitialBackupInfo = false
     @State private var targetRestoreBackup: Backup?
-    @State private var targetRenameBackupUrl: URL?
-    @State private var backupName: String = ""
     @State private var showCreateSheet = false
     @State private var showAutoBackupsSheet = false
-    @State private var showRenameAlert = false
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -68,22 +65,6 @@ struct BackupsView: View {
         }
         .sheet(item: $targetRestoreBackup) { backup in
             BackupContentView(backup: backup)
-        }
-        .alert(NSLocalizedString("RENAME_BACKUP"), isPresented: $showRenameAlert) {
-            TextField(NSLocalizedString("BACKUP_NAME"), text: $backupName)
-                .autocorrectionDisabled()
-                .submitLabel(.done)
-            Button(NSLocalizedString("CANCEL"), role: .cancel) {
-                backupName = ""
-            }
-            Button(NSLocalizedString("OK")) {
-                if let targetRenameBackupUrl {
-                    renameBackup(url: targetRenameBackupUrl, name: backupName)
-                }
-                backupName = ""
-            }
-        } message: {
-            Text(NSLocalizedString("RENAME_BACKUP_TEXT"))
         }
         .onAppear {
             guard !loadedInitialBackupInfo else { return }
@@ -194,9 +175,7 @@ struct BackupsView: View {
                 Label(NSLocalizedString("DELETE"), systemImage: "trash")
             }
             Button {
-                targetRenameBackupUrl = url
-                backupName = backup.name ?? ""
-                showRenameAlert = true
+                showRenamePrompt(targetRenameBackupUrl: url, initialName: backup.name)
             } label: {
                 Label(NSLocalizedString("RENAME"), systemImage: "pencil")
             }
@@ -231,6 +210,31 @@ struct BackupsView: View {
             backups.removeValue(forKey: url)
         }
         backupUrls.remove(atOffsets: offsets)
+    }
+
+    func showRenamePrompt(targetRenameBackupUrl: URL, initialName: String?) {
+        var alertTextField: UITextField?
+        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+            title: NSLocalizedString("RENAME_BACKUP"),
+            message: NSLocalizedString("RENAME_BACKUP_TEXT"),
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
+                    guard let text = alertTextField?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
+                    renameBackup(url: targetRenameBackupUrl, name: text)
+                }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    textField.placeholder = NSLocalizedString("BACKUP_NAME")
+                    textField.text = initialName
+                    textField.autocorrectionType = .no
+                    textField.returnKeyType = .done
+                    alertTextField = textField
+                }
+            ],
+            textFieldDisablesLastActionWhenEmpty: true
+        )
     }
 }
 

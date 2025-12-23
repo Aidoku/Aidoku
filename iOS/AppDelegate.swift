@@ -619,6 +619,7 @@ extension AppDelegate {
         message: String? = nil,
         actions: [UIAlertAction] = [],
         textFieldHandlers: [((UITextField) -> Void)] = [],
+        textFieldDisablesLastActionWhenEmpty: Bool = false,
         completion: (() -> Void)? = nil
     ) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -626,6 +627,15 @@ extension AppDelegate {
         for handler in textFieldHandlers {
             alertController.addTextField { textField in
                 handler(textField)
+
+                if textFieldDisablesLastActionWhenEmpty && textFieldHandlers.count == 1 {
+                    actions.last?.isEnabled = !(textField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+
+                    NotificationCenter.default.addObserver(forName: UITextField.textDidChangeNotification, object: textField, queue: .main) { _ in
+                        let text = textField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                        actions.last?.isEnabled = !text.isEmpty
+                    }
+                }
             }
         }
 

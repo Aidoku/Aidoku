@@ -32,7 +32,6 @@ struct SettingView: View {
     @State private var toggleValue: Bool
 
     @State private var valueChangeTask: Task<Void, Never>?
-    @State private var showAddAlert = false
     @State private var showLoginAlert = false
     @State private var showLogoutAlert = false
     @State private var showLoginFailAlert = false
@@ -44,7 +43,6 @@ struct SettingView: View {
     @State private var loginLocalStorage: [String: String] = [:]
     @State private var username = ""
     @State private var password = ""
-    @State private var listAddItem = ""
     @State private var skippedFirst = false
     @State private var loginLoading = false
     @State private var loginReload = false
@@ -1276,7 +1274,7 @@ extension SettingView {
             if value.inline ?? false {
                 items
                 Button {
-                    showAddAlert = true
+                    showListAddPrompt(value: value)
                 } label: {
                     HStack {
                         Image(systemName: "plus")
@@ -1298,7 +1296,7 @@ extension SettingView {
 #endif
                         ToolbarItem(placement: placement) {
                             Button {
-                                showAddAlert = true
+                                showListAddPrompt(value: value)
                             } label: {
                                 Image(systemName: "plus")
                             }
@@ -1310,21 +1308,29 @@ extension SettingView {
                 .disabled(disabled)
             }
         }
-        .alert(setting.title, isPresented: $showAddAlert) {
-            TextField(value.placeholder ?? "", text: $listAddItem)
-            Button(NSLocalizedString("CANCEL"), role: .cancel) {
-                listAddItem = ""
-            }
-            let is16 = UIDevice.current.systemVersion.hasPrefix("16.")
-            Button(NSLocalizedString("ADD")) {
-                if !listAddItem.isEmpty {
-                    stringListBinding.append(listAddItem)
-                    listAddItem = ""
+    }
+
+    func showListAddPrompt(value: EditableListSetting) {
+        var alertTextField: UITextField?
+        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+            title: setting.title,
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("ADD"), style: .default) { _ in
+                    guard let text = alertTextField?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
+                    stringListBinding.append(text)
                 }
-            }
-            // the disabled modifier just hides the button on iOS 15/16, so don't use it if we're on those versions
-            .disabled(!is16 && listAddItem.isEmpty)
-        }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    textField.placeholder = value.placeholder ?? ""
+                    textField.autocorrectionType = .no
+                    textField.returnKeyType = .done
+                    alertTextField = textField
+                }
+            ],
+            textFieldDisablesLastActionWhenEmpty: true
+        )
     }
 }
 
