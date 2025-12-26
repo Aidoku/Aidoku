@@ -9,7 +9,7 @@ import Foundation
 
 extension Sequence where Self: Sendable, Element: Sendable {
     func concurrentMap<T: Sendable>(
-        _ transform: @escaping (Element) async throws -> T
+        _ transform: @Sendable @escaping (Element) async throws -> T
     ) async rethrows -> [T] {
         let tasks = map { element in
             Task {
@@ -22,7 +22,7 @@ extension Sequence where Self: Sendable, Element: Sendable {
     }
 
     func concurrentFilter(
-        _ predicate: @escaping (Element) async -> Bool
+        _ predicate: @Sendable @escaping (Element) async -> Bool
     ) async -> [Element] {
         await withTaskGroup(of: Element?.self) { group in
             for element in self {
@@ -44,7 +44,7 @@ extension Sequence where Self: Sendable, Element: Sendable {
 
 extension Sequence where Element: Sendable {
     func asyncMap<T>(
-        _ transform: (Element) async throws -> T
+        _ transform: @Sendable (Element) async throws -> T
     ) async rethrows -> [T] {
         var values = [T]()
 
@@ -56,7 +56,7 @@ extension Sequence where Element: Sendable {
     }
 
     func asyncCompactMap<T>(
-        _ transform: (Element) async throws -> T?
+        _ transform: @Sendable (Element) async throws -> T?
     ) async rethrows -> [T] {
         var values = [T]()
 

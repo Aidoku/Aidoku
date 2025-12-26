@@ -6,20 +6,18 @@
 //
 
 import AsyncDisplayKit
+import Combine
 
 class BaseObservingCellNode: ASCellNode {
+    private var cancellables = Set<AnyCancellable>()
 
-    private var observers: [NSObjectProtocol] = []
-
-    deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
+    func addObserver(forName name: NSNotification.Name, object: Any? = nil, using block: @escaping (Notification) -> Void) {
+        NotificationCenter.default.publisher(for: name)
+            .sink(receiveValue: block)
+            .store(in: &cancellables)
     }
 
     func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {
-        observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name(name), object: object, queue: nil, using: block
-        ))
+        addObserver(forName: NSNotification.Name(name), object: object, using: block)
     }
 }

@@ -34,8 +34,8 @@ class CategorySelectViewController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
 
         Task {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                self.categories = CoreDataManager.shared.getCategories(context: context).map {
+            (categories, selectedCategories) = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let categories = CoreDataManager.shared.getCategories(context: context).map {
                     $0.title ?? ""
                 }
                 let inLibrary = CoreDataManager.shared.hasLibraryManga(
@@ -43,14 +43,17 @@ class CategorySelectViewController: UITableViewController {
                     mangaId: self.manga.key,
                     context: context
                 )
-                if inLibrary {
-                    self.selectedCategories = CoreDataManager.shared.getCategories(
+                let selectedCategories: [String] = if inLibrary {
+                    CoreDataManager.shared.getCategories(
                         sourceId: self.manga.sourceKey,
                         mangaId: self.manga.key,
                         context: context
                     )
                     .compactMap { $0.title }
+                } else {
+                    []
                 }
+                return (categories, selectedCategories)
             }
             tableView.reloadData()
         }

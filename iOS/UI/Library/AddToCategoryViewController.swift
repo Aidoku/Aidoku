@@ -8,7 +8,6 @@
 import UIKit
 
 class AddToCategoryViewController: BaseTableViewController {
-
     let manga: [MangaInfo]
     var disabledCategories: [String] // categories disabled for selection
 
@@ -67,12 +66,12 @@ class AddToCategoryViewController: BaseTableViewController {
     @objc func done() {
         close()
         Task {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
+            await CoreDataManager.shared.container.performBackgroundTask { [selectedCategories] context in
                 for manga in self.manga {
                     CoreDataManager.shared.addCategoriesToManga(
                         sourceId: manga.sourceId,
                         mangaId: manga.mangaId,
-                        categories: self.selectedCategories,
+                        categories: selectedCategories,
                         context: context
                     )
                     try? context.save()

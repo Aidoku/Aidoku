@@ -230,11 +230,11 @@ extension SettingsView {
                 ) {
                     Task {
                         (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator(style: .progress)
-                        await CoreDataManager.shared.migrateChapterHistory(progress: { progress in
+                        await CoreDataManager.shared.migrateChapterHistory { progress in
                             Task { @MainActor in
                                 (UIApplication.shared.delegate as? AppDelegate)?.indicatorProgress = progress
                             }
-                        })
+                        }
                         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
                         await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
                     }

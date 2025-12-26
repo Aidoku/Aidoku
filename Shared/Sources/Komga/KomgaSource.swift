@@ -246,19 +246,40 @@ actor KomgaSourceRunner: Runner {
             case releaseDates = "series/release-dates"
             case sharingLabels = "sharing-labels"
         }
-        let result = try await withThrowingTaskGroup(of: (ResultType, Any).self, returning: [ResultType: Any].self) { [helper] taskGroup in
+        enum TaskResult {
+            case libraries([KomgaLibrary])
+            case strings([String])
+
+            var libraries: [KomgaLibrary]? {
+                switch self {
+                    case .libraries(let libs): libs
+                    default: nil
+                }
+            }
+
+            var strings: [String]? {
+                switch self {
+                    case .strings(let strs): strs
+                    default: nil
+                }
+            }
+        }
+        let result = try await withThrowingTaskGroup(
+            of: (ResultType, TaskResult).self,
+            returning: [ResultType: TaskResult].self
+        ) { [helper] taskGroup in
             for type in ResultType.allCases {
                 taskGroup.addTask {
                     if type == .libraries {
                         let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/\(type.rawValue)")
-                        return (type, libraries)
+                        return (type, .libraries(libraries))
                     } else {
                         let result: [String] = try await helper.request(path: "/api/v1/\(type.rawValue)")
-                        return (type, result)
+                        return (type, .strings(result))
                     }
                 }
             }
-            var result: [ResultType: Any] = [:]
+            var result: [ResultType: TaskResult] = [:]
             for try await value in taskGroup {
                 result[value.0] = value.1
             }
@@ -266,7 +287,7 @@ actor KomgaSourceRunner: Runner {
         }
         var filters: [AidokuRunner.Filter] = []
 
-        if let libraryObjects = result[.libraries] as? [KomgaLibrary], libraryObjects.count > 1 {
+        if let libraryObjects = result[.libraries]?.libraries, libraryObjects.count > 1 {
             filters.append(
                 .init(
                     id: "library",
@@ -281,7 +302,7 @@ actor KomgaSourceRunner: Runner {
             )
         }
 
-        if let genres = result[.genres] as? [String], !genres.isEmpty {
+        if let genres = result[.genres]?.strings, !genres.isEmpty {
             filters.append(
                 .init(
                     id: "genre",
@@ -296,7 +317,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let tags = result[.tags] as? [String], !tags.isEmpty {
+        if let tags = result[.tags]?.strings, !tags.isEmpty {
             storedTags = tags
             filters.append(
                 .init(
@@ -312,7 +333,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let publishers = result[.publishers] as? [String], !publishers.isEmpty {
+        if let publishers = result[.publishers]?.strings, !publishers.isEmpty {
             filters.append(
                 .init(
                     id: "publisher",
@@ -326,7 +347,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let languages = result[.languages] as? [String], !languages.isEmpty {
+        if let languages = result[.languages]?.strings, !languages.isEmpty {
             filters.append(
                 .init(
                     id: "language",
@@ -346,7 +367,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let ratings = result[.ageRatings] as? [String], ratings.count > 1 {
+        if let ratings = result[.ageRatings]?.strings, ratings.count > 1 {
             filters.append(
                 .init(
                     id: "age_rating",
@@ -359,7 +380,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let releaseDates = result[.releaseDates] as? [String], !releaseDates.isEmpty {
+        if let releaseDates = result[.releaseDates]?.strings, !releaseDates.isEmpty {
             filters.append(
                 .init(
                     id: "release_date",
@@ -373,7 +394,7 @@ actor KomgaSourceRunner: Runner {
                 )
             )
         }
-        if let labels = result[.sharingLabels] as? [String], !labels.isEmpty {
+        if let labels = result[.sharingLabels]?.strings, !labels.isEmpty {
             filters.append(
                 .init(
                     id: "sharing_label",
@@ -665,7 +686,7 @@ extension KomgaSourceRunner {
         return .init(components: components.compactMap { $0 })
     }
 
-    private func createLinks<T: Codable>(
+    private func createLinks<T: Codable & Sendable>(
         for items: [T],
         sourceKey: String,
         baseUrl: String,

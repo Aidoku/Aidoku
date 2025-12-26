@@ -8,7 +8,7 @@
 import AidokuRunner
 import CoreData
 
-class MangaUpdateManager {
+struct MangaUpdateManager {
     static let shared = MangaUpdateManager()
 }
 

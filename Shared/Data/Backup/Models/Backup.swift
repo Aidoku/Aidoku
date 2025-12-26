@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Backup: Codable, Hashable, Identifiable {
+struct Backup: Codable, Hashable, Identifiable, Sendable {
     var id: Int { hashValue }
 
     var library: [BackupLibraryManga]?

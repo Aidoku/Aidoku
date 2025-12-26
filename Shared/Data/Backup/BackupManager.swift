@@ -164,7 +164,7 @@ actor BackupManager {
         }
     }
 
-    private func exportSettings(includeSensitive: Bool) -> [String: JsonAnyValue] {
+    private nonisolated func exportSettings(includeSensitive: Bool) -> [String: JsonAnyValue] {
         var allSettings = UserDefaults.standard.dictionaryRepresentation()
 
         // filter out potentially sensitive info
@@ -478,10 +478,11 @@ actor BackupManager {
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
 
 #if !os(macOS)
-        let delegate = await UIApplication.shared.delegate as? AppDelegate
-        await delegate?.hideLoadingIndicator()
 
-        await MainActor.run { [backupError] in
+        await Task { @MainActor [backupError] in
+            let delegate = UIApplication.shared.delegate as? AppDelegate
+            await delegate?.hideLoadingIndicator()
+
             UIApplication.shared.isIdleTimerDisabled = false
 
             if let backupError {
@@ -507,7 +508,7 @@ actor BackupManager {
                     )
                 }
             }
-        }
+        }.value
 #endif
 
         return backupError == nil

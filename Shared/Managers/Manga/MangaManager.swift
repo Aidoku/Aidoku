@@ -45,7 +45,7 @@ extension MangaManager {
                 chapters = manga.chapters ?? chapters
             }
         }
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        await CoreDataManager.shared.container.performBackgroundTask { [manga, chapters] context in
             CoreDataManager.shared.addToLibrary(
                 sourceId: sourceId,
                 manga: manga,
@@ -283,7 +283,7 @@ extension MangaManager {
     func refreshLibrary(
         category: String? = nil,
         forceAll: Bool = false,
-        task: ProgressReporting? = nil
+        task: (ProgressReporting & Sendable)? = nil
     ) async {
 #if !os(macOS)
         let tabController = await UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
