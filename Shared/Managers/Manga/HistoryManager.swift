@@ -15,7 +15,6 @@ final class HistoryManager: Sendable {
 extension HistoryManager {
     func setProgress(chapter: Chapter, progress: Int, totalPages: Int? = nil, completed: Bool) async {
         let identifier = chapter.identifier
-        let chapter = chapter.toNew()
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.setRead(sourceId: identifier.sourceKey, mangaId: identifier.mangaKey, context: context)
             CoreDataManager.shared.setProgress(
@@ -37,7 +36,7 @@ extension HistoryManager {
             await TrackerManager.shared.setProgress(
                 sourceKey: identifier.sourceKey,
                 mangaKey: identifier.mangaKey,
-                chapter: chapter,
+                chapter: chapter.toNew(),
                 progress: .init(completed: false, page: progress)
             )
         }
