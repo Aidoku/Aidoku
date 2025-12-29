@@ -345,3 +345,4 @@
 "SKIPPING_CHAPTERS" = "Ignorando %i capítulos, ou a fonte está faltando ou eles foram filtrados";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "Sem scanlator";
+"INVALID" = "Inválido";
