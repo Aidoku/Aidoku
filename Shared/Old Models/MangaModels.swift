@@ -72,16 +72,37 @@ enum MediaType: Int, Codable {
     }
 }
 
-enum MangaContentRating: Int, Codable {
+enum MangaContentRating: Int, Codable, CaseIterable {
     case safe = 0
     case suggestive = 1
     case nsfw = 2
+
+    init?(stringValue: String) {
+        switch stringValue {
+            case "safe": self = .safe
+            case "suggestive": self = .suggestive
+            case "nsfw": self = .nsfw
+            default: return nil
+        }
+    }
 
     func toNew() -> AidokuRunner.ContentRating {
         switch self {
             case .safe: .safe
             case .suggestive: .suggestive
             case .nsfw: .nsfw
+        }
+    }
+
+    var title: String {
+        toNew().title
+    }
+
+    var stringValue: String {
+        switch self {
+            case .safe: "safe"
+            case .suggestive: "suggestive"
+            case .nsfw: "nsfw"
         }
     }
 }

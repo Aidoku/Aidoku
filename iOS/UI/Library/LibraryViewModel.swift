@@ -108,6 +108,7 @@ class LibraryViewModel {
         case started
         case completed
         case source
+        case contentRating
 
         var title: String {
             switch self {
@@ -117,6 +118,7 @@ class LibraryViewModel {
                 case .started: NSLocalizedString("FILTER_STARTED")
                 case .completed: NSLocalizedString("COMPLETED")
                 case .source: NSLocalizedString("SOURCES")
+                case .contentRating: NSLocalizedString("CONTENT_RATING")
             }
         }
 
@@ -128,6 +130,7 @@ class LibraryViewModel {
                 case .started: "clock"
                 case .completed: "checkmark.circle"
                 case .source: "globe"
+                case .contentRating: "exclamationmark.triangle.fill"
             }
             return UIImage(systemName: name)
         }
@@ -135,7 +138,7 @@ class LibraryViewModel {
         var isAvailable: Bool {
             switch self {
                 case .tracking: TrackerManager.hasAvailableTrackers
-                case .source: false // needs custom handling
+                case .source, .contentRating: false // needs custom handling
                 default: true
             }
         }
@@ -274,6 +277,7 @@ extension LibraryViewModel {
 
                 // process filters
                 var filteredSourceKeys: Set<String> = []
+                var filteredContentRatings: Set<Int16> = []
                 for filter in filters {
                     let condition: Bool
                     switch filter.type {
@@ -306,6 +310,15 @@ extension LibraryViewModel {
                                 filteredSourceKeys.insert(sourceId)
                                 continue
                             }
+                        case .contentRating:
+                            guard let contentRating = filter.value.flatMap(MangaContentRating.init) else { continue }
+                            if filter.exclude {
+                                condition = mangaObject.nsfw == contentRating.rawValue
+                            } else {
+                                // handle included content rating filters as OR
+                                filteredContentRatings.insert(Int16(contentRating.rawValue))
+                                continue
+                            }
                     }
                     let shouldSkip = filter.exclude ? condition : !condition
                     if shouldSkip {
@@ -313,6 +326,9 @@ extension LibraryViewModel {
                     }
                 }
                 if !filteredSourceKeys.isEmpty && !filteredSourceKeys.contains(info.sourceId) {
+                    continue main
+                }
+                if !filteredContentRatings.isEmpty && !filteredContentRatings.contains(mangaObject.nsfw) {
                     continue main
                 }
 
