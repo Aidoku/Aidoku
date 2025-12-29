@@ -423,17 +423,22 @@ extension SourceManager {
     }
 
     func loadSourceList(url: URL) async -> SourceList? {
-        let sourceList: CodableSourceList? = try? await URLSession.shared.object(from: url)
+        // set request timeout to 15s
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 15
+        let session = URLSession(configuration: config)
+
+        guard let (data, _) = try? await session.data(from: url) else { return nil }
+        let sourceList = try? JSONDecoder().decode(CodableSourceList.self, from: data)
+
         if let sourceList {
             return sourceList.into(url: url)
         } else {
             // fall back to legacy source loading
             let externalSources: [ExternalSourceInfo]? = if !url.pathExtension.isEmpty {
-                try? await URLSession.shared.object(
-                    from: url
-                ) as [ExternalSourceInfo]
+                try? JSONDecoder().decode([ExternalSourceInfo].self, from: data)
             } else {
-                if let sources = try? await URLSession.shared.object(
+                if let sources = try? await session.object(
                     from: url.appendingPathComponent("index.min.json")
                 ) as [ExternalSourceInfo] {
                     sources

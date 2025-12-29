@@ -127,8 +127,31 @@ struct SourceListsView: View {
             showAddListFailAlert = true
             return
         }
+
+        actor Done {
+            var value: Bool = false
+            func set() {
+                value = true
+            }
+        }
+        let done = Done()
+
         Task {
+            // show loading indicator if it takes longer than 0.5s
+            Task {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                let finished = await done.value
+                if !finished {
+                    await MainActor.run {
+                        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                    }
+                }
+            }
+
             let success = await SourceManager.shared.addSourceList(url: url)
+            await done.set()
+            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+
             if success {
                 withAnimation {
                     sourceLists = SourceManager.shared.sourceLists
