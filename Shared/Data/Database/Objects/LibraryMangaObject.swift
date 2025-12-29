@@ -12,15 +12,14 @@ import CoreData
 public class LibraryMangaObject: NSManagedObject {
     public override func awakeFromInsert() {
         super.awakeFromInsert()
-        lastOpened = Date()
-        lastUpdated = Date().addingTimeInterval(-5)
-        lastRead = Date()
-        dateAdded = Date()
+        let now = Date.now
+        lastOpened = now
+        lastUpdated = now.addingTimeInterval(-5)
+        dateAdded = now
     }
 }
 
 extension LibraryMangaObject {
-
     @nonobjc public class func fetchRequest() -> NSFetchRequest<LibraryMangaObject> {
         NSFetchRequest<LibraryMangaObject>(entityName: "LibraryManga")
     }
@@ -29,15 +28,14 @@ extension LibraryMangaObject {
     @NSManaged public var lastUpdated: Date
     @NSManaged public var lastRead: Date?
     @NSManaged public var dateAdded: Date
+    @NSManaged public var lastChapter: Date?
     @NSManaged public var manga: MangaObject?
 
     @NSManaged public var categories: NSSet?
-
 }
 
 // MARK: Generated accessors for categories
 extension LibraryMangaObject {
-
     @objc(addCategoriesObject:)
     @NSManaged public func addToCategories(_ value: CategoryObject)
 
@@ -49,9 +47,6 @@ extension LibraryMangaObject {
 
 //    @objc(removeCategories:)
 //    @NSManaged public func removeFromCategories(_ values: NSSet)
-
 }
 
-extension LibraryMangaObject: Identifiable {
-
-}
+extension LibraryMangaObject: Identifiable {}

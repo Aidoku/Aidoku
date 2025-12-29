@@ -98,6 +98,7 @@ extension CoreDataManager {
         let mangaObject = self.getOrCreateManga(manga, sourceId: sourceId, context: context)
         let libraryObject = LibraryMangaObject(context: context ?? self.context)
         libraryObject.manga = mangaObject
+        libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
         self.setChapters(chapters, sourceId: sourceId, mangaId: manga.key, context: context)
     }
 }

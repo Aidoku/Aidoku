@@ -31,6 +31,7 @@ class LibraryViewModel {
         case lastOpened
         case lastUpdated
         case dateAdded
+        case lastChapter
         case unreadChapters
         case totalChapters
 
@@ -41,6 +42,7 @@ class LibraryViewModel {
                 case .lastOpened: NSLocalizedString("LAST_OPENED")
                 case .lastUpdated: NSLocalizedString("LAST_UPDATED")
                 case .dateAdded: NSLocalizedString("DATE_ADDED")
+                case .lastChapter: NSLocalizedString("LATEST_CHAPTER")
                 case .unreadChapters: NSLocalizedString("UNREAD_CHAPTERS")
                 case .totalChapters: NSLocalizedString("TOTAL_CHAPTERS")
             }
@@ -53,6 +55,7 @@ class LibraryViewModel {
                 case .lastOpened: NSLocalizedString("NEWEST_FIRST")
                 case .lastUpdated: NSLocalizedString("NEWEST_FIRST")
                 case .dateAdded: NSLocalizedString("NEWEST_FIRST")
+                case .lastChapter: NSLocalizedString("NEWEST_FIRST")
                 case .unreadChapters: NSLocalizedString("HIGHEST_FIRST")
                 case .totalChapters: NSLocalizedString("HIGHEST_FIRST")
             }
@@ -65,6 +68,7 @@ class LibraryViewModel {
                 case .lastOpened: NSLocalizedString("OLDEST_FIRST")
                 case .lastUpdated: NSLocalizedString("OLDEST_FIRST")
                 case .dateAdded: NSLocalizedString("OLDEST_FIRST")
+                case .lastChapter: NSLocalizedString("OLDEST_FIRST")
                 case .unreadChapters: NSLocalizedString("LOWEST_FIRST")
                 case .totalChapters: NSLocalizedString("LOWEST_FIRST")
             }
@@ -77,6 +81,7 @@ class LibraryViewModel {
                 case .lastOpened: "lastOpened"
                 case .lastUpdated: "lastUpdated"
                 case .dateAdded: "dateAdded"
+                case .lastChapter: "lastChapter"
                 case .unreadChapters: ""
                 case .totalChapters: "manga.chapterCount"
             }

@@ -101,7 +101,8 @@ public class MangaObject: NSManagedObject {
             lastUpdated: libraryObject?.lastUpdated,
             lastOpened: libraryObject?.lastOpened,
             lastRead: libraryObject?.lastRead,
-            dateAdded: libraryObject?.dateAdded
+            dateAdded: libraryObject?.dateAdded,
+            lastChapter: libraryObject?.lastChapter
         )
     }
 

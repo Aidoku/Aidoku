@@ -125,7 +125,10 @@ extension MangaManager {
     }
 
     func restoreToLibrary(
-        manga: Manga, chapters: [Chapter], trackItems: [TrackItem], categories: [String]
+        manga: Manga,
+        chapters: [Chapter],
+        trackItems: [TrackItem],
+        categories: [String]
     ) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.addToLibrary(
@@ -140,13 +143,16 @@ extension MangaManager {
                 mangaId: manga.id,
                 context: context
             ) {
-                if let lastOpened = manga.lastOpened, let lastUpdated = manga.lastUpdated,
-                   let dateAdded = manga.dateAdded
+                if
+                    let lastOpened = manga.lastOpened,
+                    let lastUpdated = manga.lastUpdated,
+                    let dateAdded = manga.dateAdded
                 {
                     libraryObject.lastOpened = lastOpened
                     libraryObject.lastUpdated = lastUpdated
                     libraryObject.lastRead = manga.lastRead
                     libraryObject.dateAdded = dateAdded
+                    libraryObject.lastChapter = manga.lastChapter
                 }
             }
 
@@ -489,7 +495,8 @@ extension MangaManager {
                     let oldLockedCount = (mangaObject.chapters?.allObjects as? [ChapterObject])?.filter { $0.locked }.count ?? 0
                     let newLockedCount = chapters.filter { $0.locked }.count
 
-                    if mangaObject.chapters?.count != chapters.count || oldLockedCount != newLockedCount {
+                    let shouldUpdateChapters = mangaObject.chapters?.count != chapters.count || oldLockedCount != newLockedCount
+                    if shouldUpdateChapters {
                         let newChapters = CoreDataManager.shared.setChapters(
                             chapters,
                             sourceId: manga.sourceId,
@@ -510,6 +517,9 @@ extension MangaManager {
                                 context: context
                             )
                         }
+                        libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
+                    }
+                    if updateMetadata || shouldUpdateChapters {
                         libraryObject.lastUpdated = Date.now
                         try? context.save()
                     }

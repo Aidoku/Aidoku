@@ -37,6 +37,7 @@
     </entity>
     <entity name="LibraryManga" representedClassName="LibraryMangaObject" syncable="YES">
         <attribute name="dateAdded" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
+        <attribute name="lastChapter" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastOpened" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="lastRead" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>

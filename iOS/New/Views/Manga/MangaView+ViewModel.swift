@@ -396,15 +396,15 @@ extension MangaView.ViewModel {
         }
 
         let sourceKey = source.key
-        let mangaId = manga.key
+        let mangaKey = manga.key
 
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-            CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaId, context: context)
+            CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaKey, context: context)
         }
 
         do {
             let oldManga = self.manga
-            var newManga = try await source.getMangaUpdate(
+            let newManga = try await source.getMangaUpdate(
                 manga: oldManga,
                 needsDetails: true,
                 needsChapters: true
@@ -412,20 +412,29 @@ extension MangaView.ViewModel {
 
             // update manga in db
             if inLibrary {
-                let result = await CoreDataManager.shared.updateMangaDetails(manga: newManga.toOld())
-                newManga = result?.toNew(chapters: newManga.chapters) ?? newManga
+                await CoreDataManager.shared.container.performBackgroundTask { [chapterLangFilter, chapterScanlatorFilter] context in
+                    guard
+                        let libraryObject = CoreDataManager.shared.getLibraryManga(
+                            sourceId: sourceKey,
+                            mangaId: mangaKey,
+                            context: context
+                        ),
+                        let mangaObject = libraryObject.manga
+                    else {
+                        return
+                    }
 
-                if let chapters = newManga.chapters {
-                    let sourceKey = source.key
-                    let mangaKey = newManga.key
-                    await CoreDataManager.shared.container.performBackgroundTask { @Sendable [chapterLangFilter, chapterScanlatorFilter] context in
+                    // update details
+                    mangaObject.load(from: newManga)
+
+                    if let chapters = newManga.chapters {
                         let newChapters = CoreDataManager.shared.setChapters(
                             chapters,
                             sourceId: sourceKey,
                             mangaId: mangaKey,
                             context: context
                         )
-                        // update manga updates
+                        // add manga updates
                         for chapter in newChapters
                         where
                             chapterLangFilter != nil ? chapter.lang == chapterLangFilter : true
@@ -438,8 +447,15 @@ extension MangaView.ViewModel {
                                 context: context
                             )
                         }
-                        try? context.save()
+                        libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
                     }
+
+                    libraryObject.lastUpdated = Date.now
+
+                    try? context.save()
+                }
+
+                if newManga.chapters != nil {
                     await markOpened()
                 }
             }

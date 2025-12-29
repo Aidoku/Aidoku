@@ -12,6 +12,7 @@ struct BackupLibraryManga: Codable, Hashable {
     var lastUpdated: Date
     var lastRead: Date?
     var dateAdded: Date
+    var lastChapter: Date?
     var categories: [String]?
 
     var mangaId: String
@@ -22,6 +23,7 @@ struct BackupLibraryManga: Codable, Hashable {
         lastUpdated = libraryObject.lastUpdated
         lastRead = libraryObject.lastRead
         dateAdded = libraryObject.dateAdded
+        lastChapter = libraryObject.lastChapter
         mangaId = libraryObject.manga?.id ?? ""
         sourceId = libraryObject.manga?.sourceId ?? ""
         if !skipCategories {
@@ -40,6 +42,7 @@ struct BackupLibraryManga: Codable, Hashable {
         obj.lastUpdated = lastUpdated
         obj.lastRead = lastRead
         obj.dateAdded = dateAdded
+        obj.lastChapter = lastChapter
         return obj
     }
 }

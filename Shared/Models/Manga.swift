@@ -44,6 +44,7 @@ class Manga: Codable, Hashable {
     var lastOpened: Date?
     var lastRead: Date?
     var dateAdded: Date?
+    var lastChapter: Date?
 
     init(
         sourceId: String,
@@ -66,7 +67,8 @@ class Manga: Codable, Hashable {
         lastUpdated: Date? = nil,
         lastOpened: Date? = nil,
         lastRead: Date? = nil,
-        dateAdded: Date? = nil
+        dateAdded: Date? = nil,
+        lastChapter: Date? = nil
     ) {
         self.sourceId = sourceId
         self.id = id
@@ -89,6 +91,7 @@ class Manga: Codable, Hashable {
         self.lastOpened = lastOpened
         self.lastRead = lastRead
         self.dateAdded = dateAdded
+        self.lastChapter = lastChapter
     }
 
     func load(from manga: Manga) {
@@ -111,6 +114,7 @@ class Manga: Codable, Hashable {
         lastOpened = manga.lastOpened ?? lastOpened
         lastRead = manga.lastRead ?? lastRead
         dateAdded = manga.dateAdded ?? dateAdded
+        lastChapter = manga.lastChapter ?? lastChapter
     }
 
     func copy(from manga: Manga) -> Manga {
@@ -135,7 +139,8 @@ class Manga: Codable, Hashable {
             lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
             lastRead: manga.lastRead ?? lastRead,
-            dateAdded: manga.dateAdded ?? dateAdded
+            dateAdded: manga.dateAdded ?? dateAdded,
+            lastChapter: manga.lastChapter ?? lastChapter
         )
     }
 
