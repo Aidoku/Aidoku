@@ -154,7 +154,6 @@
 "CATEGORY_ADD" = "إضافة تصنيف";
 "CATEGORY_ADD_TEXT" = "أدخل عنوان التصنيف الجديد التي تريد إنشائه.";
 "DEFAULT_CATEGORY" = "التصنيف الافتراضي";
-"CATEGORY_TITLE" = "عنوان التصنيف";
 "ALWAYS_ASK" = "اسأل دائماً";
 "LANGUAGES" = "اللغات";
 "BUILD" = "بناء";

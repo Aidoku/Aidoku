@@ -27,7 +27,6 @@
 "EDIT_CATEGORIES" = "แก้ไขหมวดหมู่";
 "CATEGORY_ADD" = "เพิ่มหมวดหมู่";
 "CATEGORY_ADD_TEXT" = "กรอกชื่อหมวดหมู่ที่จะเพิ่มใหม่";
-"CATEGORY_TITLE" = "ชื่อหมวดหมู่";
 "DEFAULT_CATEGORY" = "หมวดหมู่เริ่มต้น";
 "ALWAYS_ASK" = "ถามทุกครั้ง";
 

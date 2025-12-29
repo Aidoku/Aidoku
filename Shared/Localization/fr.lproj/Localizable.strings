@@ -166,7 +166,6 @@
 "GITHUB_REPO" = "Dépôt GitHub";
 "GENERAL" = "Général";
 "RESET_SETTINGS_TEXT" = "Cette action est irréversible. Tous les paramètres des applications et des sources seront réinitialisés.";
-"CATEGORY_TITLE" = "Titre de la catégorie";
 "VERSION" = "Version";
 "RTL" = "De droite à gauche";
 "VERTICAL" = "Vertical";

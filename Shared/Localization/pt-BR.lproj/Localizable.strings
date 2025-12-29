@@ -169,7 +169,6 @@
 // Categories
 "ALL" = "Todos";
 "EDIT_CATEGORIES" = "Editar categorias";
-"CATEGORY_TITLE" = "Título da categoria";
 "CATEGORY_ADD" = "Adicionar categoria";
 "LANGUAGES" = "Idiomas";
 "CANCELLED" = "Cancelado";

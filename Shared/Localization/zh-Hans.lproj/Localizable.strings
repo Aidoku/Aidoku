@@ -46,7 +46,6 @@
 "EDIT_CATEGORIES" = "编辑分类";
 "CATEGORY_ADD" = "添加分类";
 "CATEGORY_ADD_TEXT" = "请输入要创建的新类别标题。";
-"CATEGORY_TITLE" = "分类标题";
 "DEFAULT_CATEGORY" = "默认分类";
 "ALWAYS_ASK" = "始终询问";
 

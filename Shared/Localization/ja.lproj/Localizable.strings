@@ -80,7 +80,6 @@
 "EDIT_CATEGORIES" = "本棚を編集";
 "CATEGORY_ADD" = "本棚を新規作成";
 "CATEGORY_ADD_TEXT" = "新たな本棚の名称を入力。";
-"CATEGORY_TITLE" = "本棚名";
 "DEFAULT_CATEGORY" = "デフォルトの本棚";
 "ALWAYS_ASK" = "常に尋ねる";
 "BROWSE_NO_SOURCES" = "ソースなし";

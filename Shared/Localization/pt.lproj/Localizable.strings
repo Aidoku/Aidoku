@@ -32,7 +32,6 @@
 // Categories
 "ALL" = "Todos";
 "CATEGORY_ADD_TEXT" = "Insira o Título da nova categoria a ser criada.";
-"CATEGORY_TITLE" = "Título da categoria";
 "DEFAULT_CATEGORY" = "Categoria Padrão";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Guia para Adicionar Fontas";
 "UPDATES" = "Atualizações";

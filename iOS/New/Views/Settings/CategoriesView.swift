@@ -107,7 +107,7 @@ struct CategoriesView: View {
             ],
             textFieldHandlers: [
                 { textField in
-                    textField.placeholder = NSLocalizedString("CATEGORY_TITLE")
+                    textField.placeholder = NSLocalizedString("CATEGORY_NAME")
                     textField.autocorrectionType = .no
                     textField.returnKeyType = .done
                     alertTextField = textField

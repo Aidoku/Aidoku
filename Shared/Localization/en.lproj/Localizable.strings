@@ -108,10 +108,16 @@
 "CATEGORIES" = "Categories";
 "EDIT_CATEGORIES" = "Edit Categories";
 "CATEGORY_ADD" = "Add Category";
-"CATEGORY_ADD_TEXT" = "Enter the title of the new category to create.";
-"CATEGORY_TITLE" = "Category Title";
+"CATEGORY_ADD_TEXT" = "Enter the name of the new category to create.";
+"CATEGORY_NAME" = "Category Name";
 "DEFAULT_CATEGORY" = "Default Category";
 "ALWAYS_ASK" = "Always Ask";
+"ADD_TO_CATEGORY" = "Add to Category";
+"ADD_TO_CATEGORIES" = "Add to Categories";
+"RENAME_CATEGORY_INFO" = "Enter a new name for this category.";
+"RENAME_CATEGORY_FAIL" = "Failed to Rename Category";
+"RENAME_CATEGORY" = "Rename Category";
+"RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
 
 // Browse
 "BROWSE" = "Browse";
@@ -633,15 +639,8 @@
 "UPCOMING" = "Upcoming";
 "SELECT" = "Select";
 "ADD" = "Add";
-"ADD_TO_CATEGORY" = "Add to Category";
-"ADD_TO_CATEGORIES" = "Add to Categories";
-"RENAME_CATEGORY_INFO" = "Enter a new name for this category.";
-"RENAME_CATEGORY_FAIL" = "Failed to Rename Category";
 "SKIP_DUPLICATE_CHAPTERS" = "Skip Duplicate Chapters";
 "MARK_DUPLICATE_CHAPTERS" = "Mark Duplicate Chapters as Read";
-"RENAME_CATEGORY" = "Rename Category";
-"RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
-"CATEGORY_NAME" = "Category Name";
 
 // Migration
 "MIGRATE_SOURCES" = "Migrate Sources";

@@ -172,7 +172,6 @@
 "NONE" = "कुनै हैन";
 "CATEGORY_ADD" = "वर्ग थप्नुहोस्";
 "CATEGORY_ADD_TEXT" = "सिर्जना गर्न नयाँ वर्गको शीर्षक प्रविष्ट गर्नुहोस्।";
-"CATEGORY_TITLE" = "वर्ग शीर्षक";
 "BROWSE_NO_SOURCES" = "कुनै स्रोत छैन";
 "ADDING_SOURCES_GUIDE_BUTTON" = "स्रोत गाइड थप्दै";
 "UPDATES" = "अपडेटहरू";

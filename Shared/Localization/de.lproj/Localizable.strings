@@ -81,7 +81,6 @@
 "CATEGORY_ADD" = "Kategorie hinzufügen";
 "EDIT_CATEGORIES" = "Kategorien bearbeiten";
 "CATEGORY_ADD_TEXT" = "Gib den Titel der zu erstellenden neuen Kategorie ein.";
-"CATEGORY_TITLE" = "Kategorietitel";
 "BUTTON_ERROR" = "FEHLER";
 "LIST_ALL" = "Alle";
 "CANCELLED" = "Abgesagt";

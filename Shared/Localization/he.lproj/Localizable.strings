@@ -41,7 +41,6 @@
 "EDIT_CATEGORIES" = "ערוך קטגוריות";
 "CATEGORY_ADD" = "הוסף קטגוריה";
 "CATEGORY_ADD_TEXT" = "נא להכניס את הכותרת של הקטגוריה החדשה.";
-"CATEGORY_TITLE" = "כותרת הקטגוריה";
 "DEFAULT_CATEGORY" = "קטגוריית ברירת-מחדל";
 "ALWAYS_ASK" = "תמיד תשאל";
 "BROWSE_NO_SOURCES" = "אין מקורות";

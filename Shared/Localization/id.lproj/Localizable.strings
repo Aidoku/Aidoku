@@ -39,7 +39,6 @@
 "ALL" = "Semua";
 "NONE" = "Tidak ada";
 "CATEGORIES" = "Kategori";
-"CATEGORY_TITLE" = "Judul Kategori";
 "DEFAULT_CATEGORY" = "Kategori Bawaan";
 "ALWAYS_ASK" = "Selalu tanyakan";
 
