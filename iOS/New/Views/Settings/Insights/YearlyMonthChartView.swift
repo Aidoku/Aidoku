@@ -66,10 +66,13 @@ struct YearlyMonthChartView: View {
                     !isCJK || (isCJK && intValue % 2 == 1) // skip every other in cjk (because labels are wider)
                 {
                     let value = data.value(for: month)
-                    AxisValueLabel(month.axisLabel, anchor: .top)
-                        .foregroundStyle(value == 0 ? .secondary : .primary)
-                        .font(.caption2.weight(.semibold))
-                        .offset(y: 2)
+                    AxisValueLabel(anchor: .top) {
+                        Text(month.axisLabel)
+                            .font(.caption2.weight(.semibold))
+                            .offset(y: 2)
+                            .fixedSize()
+                    }
+                    .foregroundStyle(value == 0 ? .secondary : .primary)
                 }
             }
         }
