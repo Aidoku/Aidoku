@@ -162,6 +162,7 @@ struct SortFilterGroupView: View {
                 }
             } label: {
                 Text(option)
+                    .lineLimit(1)
             }
             .buttonStyle(SortButtonStyle(state: {
                 if selectedOption == offset {

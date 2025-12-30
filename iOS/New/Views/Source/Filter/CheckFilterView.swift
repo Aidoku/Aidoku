@@ -139,6 +139,7 @@ struct CheckFilterGroupView: View {
                 }
                 Text(name ?? filter.title ?? "")
                     .padding(.leading, 1)
+                    .lineLimit(1)
                 Spacer()
             }
             .contentShape(Rectangle())

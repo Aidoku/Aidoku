@@ -316,6 +316,7 @@ extension SettingView {
             ) {
                 HStack {
                     Text(setting.title)
+                        .lineLimit(1)
                     Spacer()
                     if let item = stringListBinding.first {
                         let title = value.values
@@ -323,6 +324,7 @@ extension SettingView {
                             .flatMap { value.titles?[safe: $0] }
                         Text(title ?? item)
                             .foregroundStyle(Color.secondaryLabel)
+                            .lineLimit(1)
                     }
                 }
             }
@@ -411,6 +413,7 @@ extension SettingView {
                 isActive: $pageIsActive
             )
             .environment(\.isEnabled, true) // remove double disabled effect
+            .lineLimit(1)
         }
         .foregroundStyle(.primary)
         .disabled(disabled)
@@ -532,6 +535,7 @@ extension SettingView {
             if value.maximumValue >= value.minimumValue {
                 Text(String(format: "%g", doubleBinding))
                     .foregroundStyle(Color.secondaryLabel)
+                    .lineLimit(1)
                 Stepper(
                     "",
                     value: $doubleBinding,
@@ -557,6 +561,7 @@ extension SettingView {
             Text(setting.title)
                 .opacity(disabled ? disabledOpacity : 1)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(1)
             Spacer()
             Picker("", selection: SettingsStore.shared.binding(key: key(setting.key)) as Binding<Int>) {
                 ForEach(value.options.indices, id: \.self) { offset in
@@ -606,6 +611,7 @@ extension SettingView {
             if !setting.title.isEmpty {
                 Text(setting.title)
                     .opacity(disabled ? disabledOpacity : 1)
+                    .lineLimit(1)
                 Spacer()
             }
             let text: Binding<String> = SettingsStore.shared.binding(key: key(setting.key))
@@ -649,6 +655,7 @@ extension SettingView {
                 handleValueChange()
             }
         }
+        .lineLimit(1)
         .disabled(disabled)
         .confirmationDialogOrAlert(
             value.confirmTitle ?? "",
@@ -674,6 +681,7 @@ extension SettingView {
         Button(setting.title) {
             showSafari = true
         }
+        .lineLimit(1)
         .fullScreenCover(isPresented: $showSafari) {
             SafariView(url: Binding.constant(URL(string: value.url)))
                 .ignoresSafeArea()
@@ -718,6 +726,7 @@ extension SettingView {
                     .frame(width: 20, height: 20)
             } else {
                 Text(loggedIn ? value.logoutTitle ?? NSLocalizedString("LOGOUT") : setting.title)
+                    .lineLimit(1)
             }
         }
         .disabled(disabled)
@@ -1135,11 +1144,13 @@ extension SettingView {
                         SettingHeaderView.iconView(source: source, icon: SettingHeaderView.Icon.from(icon), size: 29)
 
                         Text(setting.title)
+                            .lineLimit(1)
 
                         Spacer()
                     }
                 } else {
                     Text(setting.title)
+                        .lineLimit(1)
                 }
             }
             .environment(\.isEnabled, true) // remove double disabled effect

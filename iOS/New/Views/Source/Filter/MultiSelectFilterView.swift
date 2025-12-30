@@ -245,6 +245,7 @@ struct MultiSelectFilterGroupView: View {
                         }
                         Text(option)
                             .padding(.leading, 1)
+                            .lineLimit(1)
                         Spacer()
                     }
                     .contentShape(Rectangle())
