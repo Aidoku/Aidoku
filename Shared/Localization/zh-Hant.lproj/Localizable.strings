@@ -120,7 +120,6 @@
 "USE_SYSTEM_APPEARANCE" = "使用系統外觀";
 "MANGA_PER_ROW" = "漫畫欄數";
 "PORTRAIT" = "直向";
-"PIN_MANGA" = "釘選漫畫";
 "ONLY_UPDATE_ON_WIFI" = "只在使用Wi-Fi時更新";
 "NEVER" = "永不";
 "LIBRARY_UPDATING" = "書庫更新";
@@ -179,9 +178,7 @@
 "AUTH_TO_DISABLE" = "解鎖以禁用。";
 "GITHUB_REPO" = "GitHub原始碼";
 "READER" = "閱讀";
-"PIN_MANGA_TYPE" = "釘選類型";
-"PIN_MANGA_UNREAD" = "未讀";
-"PIN_MANGA_UPDATED" = "更新";
+"PIN_UNREAD" = "未讀";
 "SKIP_TITLES" = "跳過類型";
 "EXCLUDED_CATEGORIES" = "排除類別";
 "REFRESH_METADATA" = "更新漫畫資訊";

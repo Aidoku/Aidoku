@@ -146,13 +146,15 @@ extension MangaManager {
                 if
                     let lastOpened = manga.lastOpened,
                     let lastUpdated = manga.lastUpdated,
+                    let lastUpdatedChapters = manga.lastUpdatedChapters,
                     let dateAdded = manga.dateAdded
                 {
                     libraryObject.lastOpened = lastOpened
                     libraryObject.lastUpdated = lastUpdated
+                    libraryObject.lastUpdatedChapters = lastUpdatedChapters
+                    libraryObject.lastChapter = manga.lastChapter
                     libraryObject.lastRead = manga.lastRead
                     libraryObject.dateAdded = dateAdded
-                    libraryObject.lastChapter = manga.lastChapter
                 }
             }
 
@@ -518,7 +520,9 @@ extension MangaManager {
                             )
                         }
                         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
+                        libraryObject.lastUpdatedChapters = Date.now
                     }
+
                     if updateMetadata || shouldUpdateChapters {
                         libraryObject.lastUpdated = Date.now
                         try? context.save()

@@ -98,11 +98,12 @@ public class MangaObject: NSManagedObject {
             chapterFlags: Int(chapterFlags),
             langFilter: langFilter,
             scanlatorFilter: scanlatorFilter,
-            lastUpdated: libraryObject?.lastUpdated,
             lastOpened: libraryObject?.lastOpened,
+            lastUpdated: libraryObject?.lastUpdated,
+            lastUpdatedChapters: libraryObject?.lastUpdatedChapters,
+            lastChapter: libraryObject?.lastChapter,
             lastRead: libraryObject?.lastRead,
-            dateAdded: libraryObject?.dateAdded,
-            lastChapter: libraryObject?.lastChapter
+            dateAdded: libraryObject?.dateAdded
         )
     }
 

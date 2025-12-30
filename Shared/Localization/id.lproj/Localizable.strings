@@ -113,7 +113,6 @@
 "READER" = "Pembaca";
 "OPEN_READER_VIEW" = "Buka Tampilan Pembaca";
 "UNREAD_CHAPTER_BADGES" = "Tanda Chapter yang Belum Dibaca";
-"PIN_MANGA" = "Tandai Manga";
 "LIBRARY_UPDATING" = "Pembaruan Perpustakaan";
 "SKIP_TITLES" = "Lewati Judul";
 "ONLY_UPDATE_ON_WIFI" = "Hanya Perbarui di Wi-Fi";
@@ -209,10 +208,8 @@
 "VIEW_HISTORY" = "Lihat Riwayat";
 "AUTH_FOR_HISTORY" = "Otentikasi untuk melihat riwayat membaca.";
 "DISCORD_SERVER" = "Server Discord";
-"PIN_MANGA_UPDATED" = "Diperbarui";
-"PIN_MANGA_UNREAD" = "Belum dibaca";
+"PIN_UNREAD" = "Belum dibaca";
 "SOURCE_LIST_ADDED_TEXT" = "Anda sekarang dapat menjelajahi sumber eksternal di tab Jelajahi.";
-"PIN_MANGA_TYPE" = "Tipe Tanda";
 "UPDATE_INTERVAL" = "Pembaruan Interval";
 "REFRESH_METADATA" = "Segarkan Metadata";
 "WEEKLY" = "Mingguan";

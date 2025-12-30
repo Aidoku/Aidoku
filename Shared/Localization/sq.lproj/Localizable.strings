@@ -134,7 +134,7 @@
 "PAGE_X" = "Faqja %i";
 "APPEARANCE" = "Pamja";
 "INCOGNITO_MODE" = "Mënyra Inkognito";
-"PIN_MANGA_UNREAD" = "Pa Lexuar";
+"PIN_UNREAD" = "Pa Lexuar";
 "RESTORE_BACKUP_TEXT" = "Të gjitha të dhënat aktuale do të hiqen dhe do të zëvendësohen me të dhënat nga kjo kopje rezervë.";
 "BACKUP_IMPORT_SUCCESS" = "Kopja Rezervë u Importua";
 "RESTORE" = "Rikthe";
@@ -276,9 +276,6 @@
 "READER" = "Lexuesi";
 "OPEN_READER_VIEW" = "Hap Pamjen e Lexuesit";
 "UNREAD_CHAPTER_BADGES" = "Distinktivët e Kapitujve të Palexuar";
-"PIN_MANGA" = "Ngjit Mangën";
-"PIN_MANGA_TYPE" = "Lloji i Ngjitjes";
-"PIN_MANGA_UPDATED" = "Përditësuar";
 "LIBRARY_UPDATING" = "Përditësimi i Bibliotekës";
 "UPDATE_INTERVAL" = "Intervali i Përditësimit";
 "SKIP_TITLES" = "Anashkalo Titujt";

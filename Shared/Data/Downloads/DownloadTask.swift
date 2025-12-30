@@ -36,6 +36,10 @@ actor DownloadTask: Identifiable {
 
     private static let maxConcurrentPageTasks = 5
 
+    enum DownloadError: Error {
+        case pageProcessorFailed
+    }
+
     init(id: String, cache: DownloadCache, downloads: [Download]) {
         self.id = id
         self.cache = cache
@@ -326,12 +330,12 @@ extension DownloadTask {
         if let pageInterceptor {
             let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
             do {
-                let container = ImageContainer(image: image)
+                let container = ImageContainer(image: image, data: result?.0)
                 let request = ImageRequest(
                     urlRequest: urlRequest,
                     userInfo: [.contextKey: page.context ?? [:]]
                 )
-                let newImage = try pageInterceptor.process(
+                let newImage = try await pageInterceptor.processAsync(
                     container,
                     context: .init(
                         request: request,
@@ -350,8 +354,10 @@ extension DownloadTask {
                         isCompleted: true
                     )
                 )
-                let data = newImage.image.pngData()
-                resultData = data
+                guard let newImage else {
+                    throw DownloadError.pageProcessorFailed
+                }
+                resultData = newImage.pngData()
                 resultPath = page.targetPath.appendingPathExtension("png")
             } catch {
                 LogManager.logger.error("Error processing image: \(error)")

@@ -162,10 +162,7 @@
 "LANDSCAPE" = "Yatay";
 "READER" = "Okuyucu";
 "OPEN_READER_VIEW" = "Okuyucu Görünüşünü Aç";
-"PIN_MANGA" = "Mangayı Sabitle";
-"PIN_MANGA_TYPE" = "Türü Sabitle";
-"PIN_MANGA_UNREAD" = "Okunmamış Yap";
-"PIN_MANGA_UPDATED" = "Güncellenmiş";
+"PIN_UNREAD" = "Okunmamış Yap";
 "LIBRARY_UPDATING" = "Kütüphane Güncellemesi";
 "UPDATE_INTERVAL" = "Güncelleme Sıklığı";
 "SKIP_TITLES" = "Başlıkları Geç";

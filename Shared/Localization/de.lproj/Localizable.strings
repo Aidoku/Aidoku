@@ -191,10 +191,7 @@
 "VERTICAL_SCROLL" = "Vertikal Scrollen";
 "INFINITE_VERTICAL_SCROLL" = "Endlos vertikal scrollen";
 "UNREAD_CHAPTER_BADGES" = "Ungelesene Kapitel Emblem";
-"PIN_MANGA" = "Manga anpinnen";
-"PIN_MANGA_TYPE" = "Anpinn-Typ";
-"PIN_MANGA_UNREAD" = "Ungelesen";
-"PIN_MANGA_UPDATED" = "Aktualisiert";
+"PIN_UNREAD" = "Ungelesen";
 "UPDATE_INTERVAL" = "Aktualisierungsintervall";
 "EVERY_2_DAYS" = "Alle 2 Tage";
 "WEEKLY" = "Wöchentlich";

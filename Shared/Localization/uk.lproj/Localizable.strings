@@ -132,9 +132,6 @@
 "LANDSCAPE" = "Горизонтальний";
 "READER" = "Рідер";
 "UNREAD_CHAPTER_BADGES" = "Значки непрочитаних глав";
-"PIN_MANGA" = "Закріпити мангу";
-"PIN_MANGA_TYPE" = "Тип закріплення";
-"PIN_MANGA_UPDATED" = "Оновлене";
 "LIBRARY_UPDATING" = "Оновлення бібліотеки";
 "UPDATE_INTERVAL" = "Інтервал оновлення";
 "SKIP_TITLES" = "Пропускати назви";
@@ -211,7 +208,7 @@
 "SUPPPORT_DEVELOPMENT" = "Підтримати розробку";
 "OPEN_READER_VIEW" = "Відкрити вікно рідера";
 "ONLY_UPDATE_ON_WIFI" = "Оновлюватися лише на Wi-Fi";
-"PIN_MANGA_UNREAD" = "Непрочитане";
+"PIN_UNREAD" = "Непрочитане";
 "WITH_COMPLETED_STATUS" = "Із завершеним статусом";
 "SOURCE_LISTS" = "Список джерел";
 "SOURCE_LIST_ADDED" = "Додано список джерел";

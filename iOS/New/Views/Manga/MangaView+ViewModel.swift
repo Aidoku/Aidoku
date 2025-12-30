@@ -448,9 +448,12 @@ extension MangaView.ViewModel {
                             )
                         }
                         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
+                        libraryObject.lastUpdatedChapters = Date.now
                     }
 
-                    libraryObject.lastUpdated = Date.now
+                    let now = Date.now
+                    libraryObject.lastUpdated = now
+                    libraryObject.lastOpened = now.addingTimeInterval(1) // ensure item isn't re-pinned, since it's already open
 
                     try? context.save()
                 }

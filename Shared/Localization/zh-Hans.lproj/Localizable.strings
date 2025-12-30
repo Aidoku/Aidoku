@@ -157,10 +157,7 @@
 "READER" = "阅读";
 "OPEN_READER_VIEW" = "打开阅读界面";
 "UNREAD_CHAPTER_BADGES" = "未读章节数";
-"PIN_MANGA" = "置顶漫画";
-"PIN_MANGA_TYPE" = "置顶类型";
-"PIN_MANGA_UNREAD" = "未读";
-"PIN_MANGA_UPDATED" = "更新";
+"PIN_UNREAD" = "未读";
 "LIBRARY_UPDATING" = "书架更新";
 "UPDATE_INTERVAL" = "更新间隔";
 "SKIP_TITLES" = "跳过标题";

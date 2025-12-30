@@ -110,10 +110,7 @@
 "LANDSCAPE" = "நிலப்பரப்பு";
 "READER" = "வாசகர்";
 "UNREAD_CHAPTER_BADGES" = "படிக்காத அத்தியாயம் பேட்ச்கள்";
-"PIN_MANGA" = "மங்கா முள்";
-"PIN_MANGA_TYPE" = "முள் வகை";
-"PIN_MANGA_UNREAD" = "படிக்காதது";
-"PIN_MANGA_UPDATED" = "புதுப்பிக்கப்பட்டது";
+"PIN_UNREAD" = "படிக்காதது";
 "LIBRARY_UPDATING" = "நூலக புதுப்பித்தல்";
 "UPDATE_INTERVAL" = "இடைவெளியை புதுப்பி";
 "EXCLUDED_CATEGORIES" = "விலக்கப்பட்ட பிரிவுகள்";

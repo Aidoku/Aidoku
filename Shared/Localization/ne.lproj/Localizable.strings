@@ -47,10 +47,7 @@
 "ICLOUD_SYNC" = "iCloud सिंक";
 "APPEARANCE" = "थीम";
 "MANGA_PER_ROW" = "माङ्गा प्रति रो";
-"PIN_MANGA" = "माङ्गा पिन गर्नुहोस्";
-"PIN_MANGA_TYPE" = "पिन प्रकार";
-"PIN_MANGA_UNREAD" = "नपढिएको";
-"PIN_MANGA_UPDATED" = "अपडेट गरिएको";
+"PIN_UNREAD" = "नपढिएको";
 "PORTRAIT" = "पोर्ट्रेट";
 "LANDSCAPE" = "ल्याण्डस्केप";
 "OPEN_READER_VIEW" = "रिडर भ्यू खोल्नुहोस्";

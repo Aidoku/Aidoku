@@ -162,10 +162,7 @@
 "READER" = "Trình đọc";
 "OPEN_READER_VIEW" = "Hiển thị trình đọc";
 "UNREAD_CHAPTER_BADGES" = "Hiển thị số chương chưa đọc";
-"PIN_MANGA" = "Ghim truyện";
-"PIN_MANGA_TYPE" = "Cách ghim";
-"PIN_MANGA_UNREAD" = "Chưa đọc";
-"PIN_MANGA_UPDATED" = "Cập nhật mới";
+"PIN_UNREAD" = "Chưa đọc";
 "LIBRARY_UPDATING" = "Cập nhật Thư viện";
 "UPDATE_INTERVAL" = "Tần suất cập nhật";
 "SKIP_TITLES" = "Bỏ qua truyện";

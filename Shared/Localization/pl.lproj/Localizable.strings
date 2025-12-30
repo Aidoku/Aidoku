@@ -156,10 +156,7 @@
 "READER" = "Czytacz";
 "OPEN_READER_VIEW" = "Otwórz okno czytacza";
 "UNREAD_CHAPTER_BADGES" = "Ikonka nieprzeczytanego rozdziału";
-"PIN_MANGA" = "Przypnij mangę";
-"PIN_MANGA_TYPE" = "Rodzaj przypięcia";
-"PIN_MANGA_UNREAD" = "Nieprzeczytane";
-"PIN_MANGA_UPDATED" = "Nowe";
+"PIN_UNREAD" = "Nieprzeczytane";
 "LIBRARY_UPDATING" = "Aktualizacja biblioteki";
 "UPDATE_INTERVAL" = "Częstotliwość aktualizacji";
 "SKIP_TITLES" = "Pomiń wybrane tytuły";

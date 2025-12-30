@@ -103,10 +103,7 @@
 "LANDSCAPE" = "Horizontal";
 "OPEN_READER_VIEW" = "Abrir vista del lector";
 "UNREAD_CHAPTER_BADGES" = "Etiqueta de capítulos sin leer";
-"PIN_MANGA" = "Anclar Manga";
-"PIN_MANGA_TYPE" = "Anclar por Tipo";
-"PIN_MANGA_UNREAD" = "No leído";
-"PIN_MANGA_UPDATED" = "Actualizado";
+"PIN_UNREAD" = "No leído";
 "SOURCE_LISTS" = "Lista de fuentes";
 "SOURCE_LIST_ADDED" = "Lista de fuentes agregada";
 "SOURCE_LIST_ADDED_TEXT" = "Ahora puedes buscar fuentes externas en la pestaña de exploración.";

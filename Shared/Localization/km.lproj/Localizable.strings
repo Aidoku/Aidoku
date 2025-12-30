@@ -113,8 +113,6 @@
 "LANDSCAPE" = "រូបផ្តេក";
 "READER" = "អ្នកអាន";
 "UNREAD_CHAPTER_BADGES" = "បង្ហាញផ្លាកសញ្ញវគ្គមិនទាន់អាន";
-"PIN_MANGA" = "ខ្ទាស់ម៉ានហ្គាសំខាន់";
-"PIN_MANGA_UPDATED" = "បានធ្វើអាប់ដេត";
 "LIBRARY_UPDATING" = "កំពុងធ្វើការអាប់ដេតបណ្ណាល័យ";
 "UPDATE_INTERVAL" = "ចន្លោះពេលធ្វើការអាប់ដេត";
 "ONLY_UPDATE_ON_WIFI" = "អាប់ដេតនៅមាន Wi-Fi ប៉ុណ្ណោះ";
@@ -284,8 +282,7 @@
 "ABOUT" = "អំពី";
 "INCOGNITO_MODE_TEXT" = "ប្រវត្តិនៃការអានមិនត្រូវបានកត់ត្រាទេ នៅពេលបើក";
 "OPEN_READER_VIEW" = "ចូលអានម៉ានហ្គា";
-"PIN_MANGA_TYPE" = "ប្រភេទខ្ទាស់សំខាន់";
-"PIN_MANGA_UNREAD" = "មិនទាន់អាន";
+"PIN_UNREAD" = "មិនទាន់អាន";
 "SKIP_TITLES" = "រំលងចំណងជើង";
 "EXCLUDED_CATEGORIES" = "ធ្នើសៀវភៅម៉ានហ្គាដែលមិនរាប់បញ្ចូល";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "ដើម្បីស្តារ Backup នេះ ស្វែងរកវានៅក្នុងទំព័រ Backups នៅក្នុងការកំណត់។";

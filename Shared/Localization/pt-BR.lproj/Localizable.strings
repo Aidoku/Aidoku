@@ -105,10 +105,7 @@
 "READER" = "Leitor";
 "OPEN_READER_VIEW" = "Abrir visualização do leitor";
 "UNREAD_CHAPTER_BADGES" = "Bolha de capítulos não lidos";
-"PIN_MANGA" = "Fixar mangás";
-"PIN_MANGA_TYPE" = "Tipo de fixação";
-"PIN_MANGA_UNREAD" = "Não lido";
-"PIN_MANGA_UPDATED" = "Atualizado";
+"PIN_UNREAD" = "Não lido";
 "SOURCE_LISTS" = "Listas de fontes";
 "SOURCE_LIST_ADDED" = "Lista de fontes adicionada";
 "SOURCE_LIST_ADDED_TEXT" = "Agora você pode procurar fontes externas na guia \"Explorar\".";

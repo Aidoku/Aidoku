@@ -151,7 +151,6 @@
 "READER" = "Lettore";
 "OPEN_READER_VIEW" = "Apri la vista del lettore";
 "UNREAD_CHAPTER_BADGES" = "Badge dei capitoli non letti";
-"PIN_MANGA_UPDATED" = "Aggiornato";
 "ONLY_UPDATE_ON_WIFI" = "Aggiornamento solo su Wi-Fi";
 "EXCLUDED_CATEGORIES" = "Categorie escluse";
 "SOURCE_LISTS" = "Elenchi delle fonti";
@@ -201,7 +200,7 @@
 "VIEW_HISTORY" = "Visualizza la cronologia";
 "UPDATE_INTERVAL" = "Frequenza di aggiornamento";
 "SKIP_TITLES" = "Salta i titoli";
-"PIN_MANGA_UNREAD" = "Non letto";
+"PIN_UNREAD" = "Non letto";
 "REFRESH_METADATA" = "Aggiorna i metadati";
 "EVERY_12_HOURS" = "Ogni 12 ore";
 "WEEKLY" = "Settimanale";
@@ -240,8 +239,6 @@
 "VOL_SPACE_X" = "Vol. %g";
 "PORTRAIT" = "Verticale";
 "LANDSCAPE" = "Orizzontale";
-"PIN_MANGA" = "Manga in evidenza";
-"PIN_MANGA_TYPE" = "In evidenza come";
 "UNREAD_CHAPTERS" = "Capitoli non letti";
 "FAILED_CHAPTER_LOAD_INFO" = "Potresti essere offline o la fonte potrebbe avere dei problemi.";
 "RELOAD" = "Ricarica";

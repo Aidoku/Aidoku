@@ -328,7 +328,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
 
-        let updatePinType: (Notification) -> Void = { [weak self] _ in
+        addObserver(forName: .pinTitles) { [weak self] _ in
             guard let self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
             Task { @MainActor in
@@ -336,8 +336,6 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
-        addObserver(forName: "Library.pinManga", using: updatePinType)
-        addObserver(forName: "Library.pinMangaType", using: updatePinType)
 
         // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
@@ -916,7 +914,7 @@ extension LibraryViewController {
         contextMenuInteraction.updateVisibleMenu { menu in
             if menu.title == NSLocalizedString("BUTTON_FILTER") {
                 updateFilterSubmenu(menu)
-            } else if menu.title == NSLocalizedString("SOURCES") {
+            } else if menu.title == LibraryViewModel.FilterMethod.source.title {
                 menu.replacingChildren(self.viewModel.sourceKeys.map { key in
                     UIAction(
                         title: SourceManager.shared.source(for: key)?.name ?? key,
@@ -924,6 +922,16 @@ extension LibraryViewController {
                         state: self.filterState(for: .source, value: key)
                     ) { [weak self] _ in
                         self?.toggleFilter(method: .source, value: key)
+                    }
+                })
+            } else if menu.title == LibraryViewModel.FilterMethod.contentRating.title {
+                menu.replacingChildren(MangaContentRating.allCases.map { rating in
+                    UIAction(
+                        title: rating.title,
+                        attributes: .keepsMenuPresented,
+                        state: self.filterState(for: .contentRating, value: rating.stringValue)
+                    ) { [weak self] _ in
+                        self?.toggleFilter(method: .contentRating, value: rating.stringValue)
                     }
                 })
             } else {
@@ -1046,6 +1054,19 @@ extension LibraryViewController {
                         self?.toggleFilter(method: method)
                     }
                 } + [
+                    UIMenu(
+                        title: LibraryViewModel.FilterMethod.contentRating.title,
+                        image: LibraryViewModel.FilterMethod.contentRating.image,
+                        children: MangaContentRating.allCases.map { rating in
+                            UIAction(
+                                title: rating.title,
+                                attributes: attributes,
+                                state: self.filterState(for: .contentRating, value: rating.stringValue)
+                            ) { [weak self] _ in
+                                self?.toggleFilter(method: .contentRating, value: rating.stringValue)
+                            }
+                        }
+                    ),
                     UIMenu(
                         title: LibraryViewModel.FilterMethod.source.title,
                         image: LibraryViewModel.FilterMethod.source.image,

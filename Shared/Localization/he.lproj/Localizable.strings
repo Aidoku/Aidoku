@@ -161,7 +161,6 @@
 "SOURCE_ORDER" = "סדר מקורות";
 "UPDATE_INTERVAL" = "השהיית עדכון";
 "OPEN_READER_VIEW" = "פתח תצוגת קורא";
-"PIN_MANGA_UPDATED" = "עודכן";
 "LIBRARY_UPDATING" = "ספריה מתעדכנת";
 "RESTORE_BACKUP" = "לשחזר לעדכון הזה?";
 "SOURCE_LISTS" = "רשימת מקורות";
@@ -177,7 +176,7 @@
 "MISSING_SOURCES" = "מקורות חסרים";
 "UNREAD_CHAPTER_BADGES" = "תגי פרקים שלא נקראו";
 "COVER" = "כריכה";
-"PIN_MANGA_UNREAD" = "לא נקרא";
+"PIN_UNREAD" = "לא נקרא";
 "SKIP_TITLES" = "דלג על";
 "REFRESH_METADATA" = "רענן מחדש את מטא הנתונים";
 "NEVER" = "אף פעם";
@@ -288,8 +287,6 @@
 "ALL_CHAPTERS_READ" = "כל הפרקים נקראו";
 "UPLOAD_DATE" = "תאריך העלאה";
 "IS_TRACKING" = "מעקב";
-"PIN_MANGA" = "להצמיד מאנגה";
-"PIN_MANGA_TYPE" = "סוג הצמדה";
 "EVERY_12_HOURS" = "כל 12 שעות";
 "DAILY" = "יום-יומי";
 "EVERY_2_DAYS" = "כל 2 ימים";
