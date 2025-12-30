@@ -239,8 +239,6 @@
 "READER" = "Čtečka";
 "OPEN_READER_VIEW" = "Otevřít zobrazení čtečky";
 "UNREAD_CHAPTER_BADGES" = "Odznaky nepřečtených kapitol";
-"PIN_MANGA" = "Připnout mangu";
-"PIN_MANGA_UPDATED" = "Aktualizováno";
 "LIBRARY_UPDATING" = "Aktualizace knihovny";
 "UPDATE_INTERVAL" = "Interval aktualizace";
 "SKIP_TITLES" = "Přeskočit tituly";
@@ -312,8 +310,7 @@
 "PILLARBOX" = "Pillarbox";
 "RESET_TEXT" = "Tato akce je nevratná. Všechna data, nastavení a mezipaměť budou vymazány a resetovány.";
 "GITHUB_REPO" = "Úložiště GitHub";
-"PIN_MANGA_TYPE" = "Typ připnutí";
-"PIN_MANGA_UNREAD" = "Nepřečteno";
+"PIN_UNREAD" = "Nepřečteno";
 "ONGOING" = "Pokračující";
 "DISCORD_SERVER" = "Discord server";
 "NEVER" = "Nikdy";

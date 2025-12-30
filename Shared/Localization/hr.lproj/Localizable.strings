@@ -164,16 +164,13 @@
 "REFRESH_METADATA" = "Osvježi metapodatke";
 "EVERY_12_HOURS" = "Svakih 12 sati";
 "INCOGNITO_MODE" = "Inkognito modus";
-"PIN_MANGA_TYPE" = "Prikvači vrstu";
-"PIN_MANGA_UNREAD" = "Nepročitano";
+"PIN_UNREAD" = "Nepročitano";
 "UPDATE_INTERVAL" = "Interval aktualiziranja";
 "ONLY_UPDATE_ON_WIFI" = "Aktualiziraj samo na Wi-Fi vezi";
 "EXCLUDED_CATEGORIES" = "Isključene kategorije";
 "NEVER" = "Nikada";
 "DAILY" = "Dnevno";
 "EVERY_2_DAYS" = "Svaka 2 dana";
-"PIN_MANGA" = "Prikvači mangu";
-"PIN_MANGA_UPDATED" = "Aktualizirano";
 "LIBRARY_UPDATING" = "Aktualiziranje biblioteke";
 "SKIP_TITLES" = "Preskoči naslove";
 "SOURCE_LIST_ADDED" = "Popis izvora dodan";

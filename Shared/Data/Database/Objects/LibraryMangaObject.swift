@@ -15,7 +15,16 @@ public class LibraryMangaObject: NSManagedObject {
         let now = Date.now
         lastOpened = now
         lastUpdated = now.addingTimeInterval(-5)
+        lastUpdatedChapters = lastUpdated
         dateAdded = now
+    }
+
+    public override func awakeFromFetch() {
+        super.awakeFromFetch()
+        // if lastUpdatedChapters is set to the default value, update default to lastUpdated
+        if lastUpdatedChapters.timeIntervalSince1970 == 21600 {
+            lastUpdatedChapters = lastUpdated
+        }
     }
 }
 
@@ -26,9 +35,10 @@ extension LibraryMangaObject {
 
     @NSManaged public var lastOpened: Date
     @NSManaged public var lastUpdated: Date
+    @NSManaged public var lastUpdatedChapters: Date
+    @NSManaged public var lastChapter: Date?
     @NSManaged public var lastRead: Date?
     @NSManaged public var dateAdded: Date
-    @NSManaged public var lastChapter: Date?
     @NSManaged public var manga: MangaObject?
 
     @NSManaged public var categories: NSSet?

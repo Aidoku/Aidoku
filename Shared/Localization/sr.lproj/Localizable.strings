@@ -39,11 +39,8 @@
 "USE_SYSTEM_APPEARANCE" = "Користи системски изглед";
 "READER" = "Читач";
 "MANGA_PER_ROW" = "Манга по реду";
-"PIN_MANGA_TYPE" = "Закачи тип";
-"PIN_MANGA_UNREAD" = "Непрочитано";
-"PIN_MANGA_UPDATED" = "Ажурирано";
+"PIN_UNREAD" = "Непрочитано";
 "UNREAD_CHAPTER_BADGES" = "Ознаке непрочитаних поглавља";
-"PIN_MANGA" = "Закачи мангу";
 "LIBRARY_UPDATING" = "Ажурирање библиотеке";
 "UPDATE_INTERVAL" = "Интервал ажурирања";
 "SKIP_TITLES" = "Прескочи наслове";

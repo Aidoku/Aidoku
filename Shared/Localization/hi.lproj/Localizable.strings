@@ -161,10 +161,7 @@
 "READER" = "रीडर";
 "OPEN_READER_VIEW" = "रीडर व्यू खोले";
 "UNREAD_CHAPTER_BADGES" = "अपठित अध्याय बैजेज़";
-"PIN_MANGA" = "माँगा को पिन करे";
-"PIN_MANGA_TYPE" = "पिन टाइप";
-"PIN_MANGA_UNREAD" = "अपठित";
-"PIN_MANGA_UPDATED" = "अप्डेटेड";
+"PIN_UNREAD" = "अपठित";
 "LIBRARY_UPDATING" = "लाइब्रेरी अप्डेटिंग";
 "UPDATE_INTERVAL" = "अप्डेट इंटर्वल";
 "SKIP_TITLES" = "टाइटल स्किप करे";

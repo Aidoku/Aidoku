@@ -190,10 +190,7 @@
 "LANDSCAPE" = "Paisagem";
 "OPEN_READER_VIEW" = "Abrir Visualização do Leitor";
 "UNREAD_CHAPTER_BADGES" = "Bolha de Capítulos Não Lidos";
-"PIN_MANGA" = "Fixar Mangás";
-"PIN_MANGA_TYPE" = "Tipo de Fixação";
-"PIN_MANGA_UNREAD" = "Não Lido";
-"PIN_MANGA_UPDATED" = "Atualizado";
+"PIN_UNREAD" = "Não Lido";
 "LIBRARY_UPDATING" = "Atualização da biblioteca";
 "UPDATE_INTERVAL" = "Intervalo de Atualização";
 "SKIP_TITLES" = "Pular Obras";

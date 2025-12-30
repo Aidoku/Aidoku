@@ -328,7 +328,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
 
-        let updatePinType: (Notification) -> Void = { [weak self] _ in
+        addObserver(forName: .pinTitles) { [weak self] _ in
             guard let self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
             Task { @MainActor in
@@ -336,8 +336,6 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
-        addObserver(forName: "Library.pinManga", using: updatePinType)
-        addObserver(forName: "Library.pinMangaType", using: updatePinType)
 
         // refresh badges
         addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in

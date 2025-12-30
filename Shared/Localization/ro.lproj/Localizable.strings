@@ -60,10 +60,7 @@
 "READER" = "Cititor";
 "OPEN_READER_VIEW" = "Deschideți Vizualizare cititor";
 "UNREAD_CHAPTER_BADGES" = "Insigne de capitol necitite";
-"PIN_MANGA" = "Pin Manga";
-"PIN_MANGA_TYPE" = "Tip de pin";
-"PIN_MANGA_UNREAD" = "Necitit";
-"PIN_MANGA_UPDATED" = "Actualizat";
+"PIN_UNREAD" = "Necitit";
 "LIBRARY_UPDATING" = "Actualizarea bibliotecii";
 "UPDATE_INTERVAL" = "Interval de actualizare";
 "SKIP_TITLES" = "Săriți peste titluri";

@@ -162,9 +162,7 @@
 "MANGA_PER_ROW" = "一行に表示されるタイトルの数";
 "UNREAD_CHAPTER_BADGES" = "未読通知ドット";
 "READER" = "リーダー";
-"PIN_MANGA" = "漫画をトップに固定";
-"PIN_MANGA_UNREAD" = "未読";
-"PIN_MANGA_UPDATED" = "更新済み";
+"PIN_UNREAD" = "未読";
 "LIBRARY_UPDATING" = "ライブラリ更新";
 "ONLY_UPDATE_ON_WIFI" = "Wi-Fiでのみ更新する";
 "UPDATE_INTERVAL" = "更新間隔";
@@ -201,7 +199,6 @@
 "OPEN_READER_VIEW" = "リーダービューを開く";
 "MARK_READ" = "既読にする";
 "VOL_SPACE_X" = "%g巻";
-"PIN_MANGA_TYPE" = "固定の漫画";
 "EXCLUDED_CATEGORIES" = "除外された本棚";
 "AUTH_FOR_LIBRARY" = "ライブラリを表示するために認証してください。";
 "LOCK_LIBRARY" = "ライブラリをロックする";

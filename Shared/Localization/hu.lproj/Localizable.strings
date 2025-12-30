@@ -8,7 +8,7 @@
 "REFRESH_METADATA" = "Metaadatok frissítése";
 "UPDATES" = "Frissítések";
 "DOWNLOAD_QUEUE" = "Letöltési sor";
-"PIN_MANGA_UNREAD" = "Olvasatlan";
+"PIN_UNREAD" = "Olvasatlan";
 "READ" = "Olvasott";
 "ADD_TO_LIBRARY" = "Hozzáadás a Könyvtárhoz";
 "MARK_ALL" = "Összes megjelölése";
@@ -109,7 +109,6 @@
 "LIBRARY_EMPTY" = "A könyvtár üres";
 "VERSION" = "Verzió";
 "EXPORT" = "Exportálás";
-"PIN_MANGA_UPDATED" = "Frissítve";
 "MARK_UNREAD" = "Megjelölés olvasatlanként";
 "MARK" = "Megjelelölés";
 "RENAME" = "Átnevezés";
@@ -176,8 +175,6 @@
 "SUPPPORT_DEVELOPMENT" = "Támogasd A Fejlesztést";
 "OPEN_READER_VIEW" = "Olvasói Nézet Megnyitása";
 "UNREAD_CHAPTER_BADGES" = "Olvasatlan Fejezetjelvények";
-"PIN_MANGA" = "Manga Kitűzése";
-"PIN_MANGA_TYPE" = "Kitűzés Tipusa";
 "LIBRARY_UPDATING" = "Könyvtár Frissít";
 "UPDATE_INTERVAL" = "Frissítési Időszakas";
 "SKIP_TITLES" = "Címek Átugrása";

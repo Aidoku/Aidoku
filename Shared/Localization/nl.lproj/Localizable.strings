@@ -129,9 +129,7 @@
 "PORTRAIT" = "Portret";
 "LANDSCAPE" = "Landschap";
 "UNREAD_CHAPTER_BADGES" = "Ongelezen hoofdstuk badge";
-"PIN_MANGA_TYPE" = "Pin type";
-"PIN_MANGA_UNREAD" = "Ongelezen";
-"PIN_MANGA_UPDATED" = "Bijgewerkt";
+"PIN_UNREAD" = "Ongelezen";
 "LIBRARY_UPDATING" = "Bibliotheek bijwerken";
 "UPDATE_INTERVAL" = "Update interval";
 "SKIP_TITLES" = "Sla titels over";
@@ -298,7 +296,6 @@
 "ADD_TO_CATEGORY" = "Voeg toe aan categorie";
 "RENAME_CATEGORY_INFO" = "Voer een nieuwe naam in voor deze categorie.";
 "RENAME_CATEGORY_FAIL" = "Kan de naam van de categorie niet wijzigen";
-"PIN_MANGA" = "Manga vastzetten";
 "ONLY_UPDATE_ON_WIFI" = "Alleen over Wifi updaten";
 "CLEAR_NETWORK_CACHE" = "Netwerk-cache legen";
 "CLEAR_NETWORK_CACHE_TEXT" = "Deze actie is onomkeerbaar. Netwerkverzoeken en afbeeldingen in de cache worden verwijderd.";

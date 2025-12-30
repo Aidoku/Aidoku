@@ -17,7 +17,7 @@
 "UPDATES" = "Uppdateringar";
 "DOWNLOAD_QUEUE" = "Nedladdningskö";
 "LAST_READ" = "Senast läst";
-"PIN_MANGA_UNREAD" = "Oläst";
+"PIN_UNREAD" = "Oläst";
 "SOURCE_LIST_ADD" = "Lägg till källista";
 "READ" = "Läst";
 "ONESHOT" = "One-shot";
@@ -132,7 +132,6 @@
 "FAILED_CHAPTER_LOAD_INFO" = "Du tycks vara offline eller så har källan problem.";
 "LOGOUT" = "Logga ut";
 "PILLARBOX" = "Svarta fält";
-"PIN_MANGA_TYPE" = "Fästningstyp";
 "UPCOMING" = "Kommande";
 "EVERY_12_HOURS" = "Var tolfte timme";
 "LAST_OPENED" = "Senast öppnad";
@@ -197,7 +196,6 @@
 "MULTI_LANGUAGE" = "Flerspråkig";
 "LIST_HEADER" = "Lista";
 "TOTAL_CHAPTERS" = "Antal kapitel";
-"PIN_MANGA" = "Fäst manga";
 "MORE" = "mer";
 "REMOVE_DOWNLOAD" = "Ta bort nedladdning";
 "%i_PAGES_LEFT" = "%i sidor kvar";
@@ -303,7 +301,6 @@
 "VERSION" = "Version";
 "EXPORT" = "Exportera";
 "CLEAR_TRACKED_MANGA_TEXT" = "Denna handling är oåterkallelig. Spårning för alla spårare tillagda i manga kommer att tas bort.";
-"PIN_MANGA_UPDATED" = "Uppdaterad";
 "ONGOING" = "Pågående";
 "START_MATCHING" = "Börja matcha";
 "VOL_SPACE_X" = "Vol. %g";

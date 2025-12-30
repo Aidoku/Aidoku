@@ -125,8 +125,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.opensReaderView": false,
                 "Library.unreadChapterBadges": true,
                 "Library.downloadedChapterBadges": true,
-                "Library.pinManga": false,
-                "Library.pinMangaType": 0,
+                "Library.pinTitles": LibraryViewModel.PinType.none.rawValue,
                 "Library.lockLibrary": false,
 
                 "Library.lockedCategories": [String](),
@@ -287,6 +286,18 @@ extension AppDelegate {
         if UserDefaults.standard.bool(forKey: "Browse.showNsfwSources") {
             UserDefaults.standard.setValue(["safe", "containsNsfw", "primarilyNsfw"], forKey: "Browse.contentRatings")
             UserDefaults.standard.removeObject(forKey: "Browse.showNsfwSources")
+        }
+
+        // migrate pin settings
+        if UserDefaults.standard.bool(forKey: "Library.pinManga") {
+            let newValue = switch UserDefaults.standard.integer(forKey: "Library.pinMangaType") {
+                case 0: LibraryViewModel.PinType.unread.rawValue
+                case 1: LibraryViewModel.PinType.updatedChapters.rawValue
+                default: LibraryViewModel.PinType.none.rawValue
+            }
+            UserDefaults.standard.set(newValue, forKey: "Library.pinTitles")
+            UserDefaults.standard.removeObject(forKey: "Library.pinManga")
+            UserDefaults.standard.removeObject(forKey: "Library.pinMangaType")
         }
 
         UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")

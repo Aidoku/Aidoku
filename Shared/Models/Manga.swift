@@ -40,11 +40,12 @@ class Manga: Codable, Hashable {
     var langFilter: String?
     var scanlatorFilter: [String]?
 
-    var lastUpdated: Date?
     var lastOpened: Date?
+    var lastUpdated: Date?
+    var lastUpdatedChapters: Date?
+    var lastChapter: Date?
     var lastRead: Date?
     var dateAdded: Date?
-    var lastChapter: Date?
 
     init(
         sourceId: String,
@@ -64,11 +65,12 @@ class Manga: Codable, Hashable {
         chapterFlags: Int = 0,
         langFilter: String? = nil,
         scanlatorFilter: [String]? = nil,
-        lastUpdated: Date? = nil,
         lastOpened: Date? = nil,
+        lastUpdated: Date? = nil,
+        lastUpdatedChapters: Date? = nil,
+        lastChapter: Date? = nil,
         lastRead: Date? = nil,
-        dateAdded: Date? = nil,
-        lastChapter: Date? = nil
+        dateAdded: Date? = nil
     ) {
         self.sourceId = sourceId
         self.id = id
@@ -87,11 +89,12 @@ class Manga: Codable, Hashable {
         self.chapterFlags = chapterFlags
         self.langFilter = langFilter
         self.scanlatorFilter = scanlatorFilter
-        self.lastUpdated = lastUpdated
         self.lastOpened = lastOpened
+        self.lastUpdated = lastUpdated
+        self.lastUpdatedChapters = lastUpdatedChapters
+        self.lastChapter = lastChapter
         self.lastRead = lastRead
         self.dateAdded = dateAdded
-        self.lastChapter = lastChapter
     }
 
     func load(from manga: Manga) {
@@ -110,11 +113,12 @@ class Manga: Codable, Hashable {
         chapterFlags = manga.chapterFlags
         langFilter = manga.langFilter ?? langFilter
         scanlatorFilter = manga.scanlatorFilter ?? scanlatorFilter
-        lastUpdated = manga.lastUpdated ?? lastUpdated
         lastOpened = manga.lastOpened ?? lastOpened
+        lastUpdated = manga.lastUpdated ?? lastUpdated
+        lastUpdatedChapters = manga.lastUpdatedChapters ?? lastUpdatedChapters
+        lastChapter = manga.lastChapter ?? lastChapter
         lastRead = manga.lastRead ?? lastRead
         dateAdded = manga.dateAdded ?? dateAdded
-        lastChapter = manga.lastChapter ?? lastChapter
     }
 
     func copy(from manga: Manga) -> Manga {
@@ -136,11 +140,12 @@ class Manga: Codable, Hashable {
             chapterFlags: manga.chapterFlags,
             langFilter: manga.langFilter ?? langFilter,
             scanlatorFilter: manga.scanlatorFilter ?? scanlatorFilter,
-            lastUpdated: manga.lastUpdated ?? lastUpdated,
             lastOpened: manga.lastOpened ?? lastOpened,
+            lastUpdated: manga.lastUpdated ?? lastUpdated,
+            lastUpdatedChapters: manga.lastUpdatedChapters ?? lastUpdatedChapters,
+            lastChapter: manga.lastChapter ?? lastChapter,
             lastRead: manga.lastRead ?? lastRead,
-            dateAdded: manga.dateAdded ?? dateAdded,
-            lastChapter: manga.lastChapter ?? lastChapter
+            dateAdded: manga.dateAdded ?? dateAdded
         )
     }
 

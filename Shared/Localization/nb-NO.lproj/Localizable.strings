@@ -121,8 +121,7 @@
 "LANDSCAPE" = "Liggende";
 "READER" = "Leser";
 "OPEN_READER_VIEW" = "Åpne leservisning";
-"PIN_MANGA" = "Fest manga";
-"PIN_MANGA_UNREAD" = "Ulest";
+"PIN_UNREAD" = "Ulest";
 "DAILY" = "Daglig";
 "EVERY_2_DAYS" = "Annenhver dag";
 "WEEKLY" = "Ukentlig";

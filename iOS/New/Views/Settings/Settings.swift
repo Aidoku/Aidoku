@@ -184,18 +184,12 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.pinManga",
-                title: NSLocalizedString("PIN_MANGA"),
-                value: .toggle(.init())
-            ),
-            .init(
-                key: "Library.pinMangaType",
-                title: NSLocalizedString("PIN_MANGA_TYPE"),
-                requires: "Library.pinManga",
-                value: .segment(.init(options: [
-                    NSLocalizedString("PIN_MANGA_UNREAD"),
-                    NSLocalizedString("PIN_MANGA_UPDATED")
-                ]))
+                key: "Library.pinTitles",
+                title: NSLocalizedString("PIN_TITLES"),
+                value: .select(.init(
+                    values: LibraryViewModel.PinType.allCases.map(\.rawValue),
+                    titles: LibraryViewModel.PinType.allCases.map(\.title)
+                ))
             )
         ]))),
         .init(value: .group(.init(items: [

@@ -41,6 +41,7 @@
         <attribute name="lastOpened" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="lastRead" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
+        <attribute name="lastUpdatedChapters" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <relationship name="categories" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Category" inverseName="libraryObjects" inverseEntity="Category"/>
         <relationship name="manga" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Manga" inverseName="libraryObject" inverseEntity="Manga"/>
     </entity>

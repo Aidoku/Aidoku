@@ -120,8 +120,6 @@
 "READER" = "리더";
 "OPEN_READER_VIEW" = "리더 보기 열기";
 "UNREAD_CHAPTER_BADGES" = "읽지 않은 챕터 배지";
-"PIN_MANGA" = "핀 만화";
-"PIN_MANGA_TYPE" = "핀 유형";
 "SKIP_TITLES" = "제목 건너뛰기";
 "ONLY_UPDATE_ON_WIFI" = "Wi-Fi에서만 업데이트";
 "WITH_COMPLETED_STATUS" = "완료된 상태로";
@@ -203,8 +201,7 @@
 "AUTH_FOR_HISTORY" = "읽은 기록을 보려면 인증하세요.";
 "ABOUT" = "정보";
 "MISSING_SOURCE_TEXT" = "이 만화의 원본 소스가 누락된 것 같습니다. 다시 다운로드하거나 라이브러리에서 이 제목을 제거하세요.";
-"PIN_MANGA_UNREAD" = "읽지 않음";
-"PIN_MANGA_UPDATED" = "업데이트됨";
+"PIN_UNREAD" = "읽지 않음";
 "DAILY" = "매일";
 "EVERY_2_DAYS" = "2일마다";
 "EXCLUDED_CATEGORIES" = "제외된 카테고리";

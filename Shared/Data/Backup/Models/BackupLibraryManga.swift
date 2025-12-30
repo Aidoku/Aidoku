@@ -10,9 +10,10 @@ import CoreData
 struct BackupLibraryManga: Codable, Hashable {
     var lastOpened: Date
     var lastUpdated: Date
+    var lastUpdatedChapters: Date?
+    var lastChapter: Date?
     var lastRead: Date?
     var dateAdded: Date
-    var lastChapter: Date?
     var categories: [String]?
 
     var mangaId: String
@@ -21,9 +22,10 @@ struct BackupLibraryManga: Codable, Hashable {
     init(libraryObject: LibraryMangaObject, skipCategories: Bool = false) {
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
+        lastUpdatedChapters = libraryObject.lastUpdatedChapters
+        lastChapter = libraryObject.lastChapter
         lastRead = libraryObject.lastRead
         dateAdded = libraryObject.dateAdded
-        lastChapter = libraryObject.lastChapter
         mangaId = libraryObject.manga?.id ?? ""
         sourceId = libraryObject.manga?.sourceId ?? ""
         if !skipCategories {
@@ -40,9 +42,10 @@ struct BackupLibraryManga: Codable, Hashable {
         }
         obj.lastOpened = lastOpened
         obj.lastUpdated = lastUpdated
+        obj.lastUpdatedChapters = lastUpdatedChapters ?? lastUpdated
+        obj.lastChapter = lastChapter
         obj.lastRead = lastRead
         obj.dateAdded = dateAdded
-        obj.lastChapter = lastChapter
         return obj
     }
 }

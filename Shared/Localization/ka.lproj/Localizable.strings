@@ -88,10 +88,7 @@
 "MANGA_PER_ROW" = "მანგა თითოეულ რიგში";
 "PORTRAIT" = "პორტრეტი";
 "UNREAD_CHAPTER_BADGES" = "წაუკითხავი თავების ნიშნები";
-"PIN_MANGA" = "მანგას დაპინვა";
-"PIN_MANGA_TYPE" = "პინის ტიპი";
-"PIN_MANGA_UNREAD" = "წაუკითხავი";
-"PIN_MANGA_UPDATED" = "განახლებული";
+"PIN_UNREAD" = "წაუკითხავი";
 "LIBRARY_UPDATING" = "ბიბლიოთეკის განახლება";
 "UPDATE_INTERVAL" = "განახლების ინტერვალი";
 "EVERY_12_HOURS" = "ყოველ 12 საათში";

@@ -119,9 +119,6 @@
 "READER" = "Читалка";
 "OPEN_READER_VIEW" = "Сразу открывать главу";
 "UNREAD_CHAPTER_BADGES" = "Кол-во непрочитанных глав";
-"PIN_MANGA" = "Закрепить мангу";
-"PIN_MANGA_TYPE" = "Закрепить";
-"PIN_MANGA_UPDATED" = "Обновленное";
 "EXCLUDED_CATEGORIES" = "Исключенные категории";
 "REFRESH_METADATA" = "Обновлять метаданные";
 "NEVER" = "Никогда";
@@ -212,7 +209,7 @@
 "HISTORY" = "История";
 "INCOGNITO_MODE" = "Режим инкогнито";
 "ONLY_UPDATE_ON_WIFI" = "Обновлять только по Wi-Fi";
-"PIN_MANGA_UNREAD" = "Непрочитанное";
+"PIN_UNREAD" = "Непрочитанное";
 "SOURCE_LIST_ADD" = "Добавить список источников";
 "REMOVE_ALL_MANGA_HISTORY" = "Удалить Всю Историю Манги";
 "MARK_PREVIOUS" = "Отметить Предыдущие";
