@@ -19,5 +19,5 @@ protocol ReaderReaderDelegate: UIViewController {
 
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)
-    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, startOffset: CGFloat?)
 }

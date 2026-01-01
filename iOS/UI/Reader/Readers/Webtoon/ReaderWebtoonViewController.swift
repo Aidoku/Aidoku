@@ -26,7 +26,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var loadingNext = false
 
     // The chapters currently shown in the reader view
-    private var chapters: [AidokuRunner.Chapter] = []
+    var chapters: [AidokuRunner.Chapter] = []
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
 
@@ -559,7 +559,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         scrollViewDidScroll(collectionNode.view)
     }
 
-    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, startOffset: CGFloat?) {
         self.chapter = chapter
         chapters = [chapter]
 
@@ -588,23 +588,27 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
                 )
             ]]
 
-            var startPage = startPage
-            if startPage < 1 {
-                startPage = 1
-            } else if startPage > viewModel.pages.count {
-                startPage = viewModel.pages.count
-            }
-
             await collectionNode.reloadData()
             zoomView.adjustContentSize()
 
-            // scroll to first page
+            // scroll to first item to load cells
             collectionNode.scrollToItem(
-                at: IndexPath(row: startPage, section: 0),
+                at: IndexPath(row: 0, section: 0),
                 at: .top,
                 animated: false
             )
             scrollView.contentOffset = collectionNode.contentOffset
+
+            // Restore scroll position after image loading
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.collectionNode.view.layoutIfNeeded()
+                self.zoomView.adjustContentSize()
+                if let offset = startOffset {
+                    let maxOffset = max(0, self.scrollView.contentSize.height - self.scrollView.bounds.height)
+                    let finalOffset = min(offset, maxOffset)
+                    self.scrollView.setContentOffset(CGPoint(x: 0, y: finalOffset), animated: false)
+                }
+            }
         }
     }
 }

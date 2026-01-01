@@ -692,7 +692,7 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         move(toPage: displayPage, animated: false)
     }
 
-    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, startOffset: CGFloat?) {
         self.chapter = chapter
         Task {
             await loadChapter(startPage: startPage)
@@ -748,14 +748,14 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         guard let previousChapter else { return }
         nextPreviewSplitPages = splitPages[1]
         delegate?.setChapter(previousChapter)
-        setChapter(previousChapter, startPage: Int.max)
+        setChapter(previousChapter, startPage: Int.max, startOffset: nil)
     }
 
     func loadNextChapter() {
         guard let nextChapter else { return }
         previousPreviewSplitPages = splitPages[viewModel.pages.count]
         delegate?.setChapter(nextChapter)
-        setChapter(nextChapter, startPage: 1)
+        setChapter(nextChapter, startPage: 1, startOffset: nil)
     }
 }
 
