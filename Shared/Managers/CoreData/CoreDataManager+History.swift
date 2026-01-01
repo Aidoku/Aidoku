@@ -143,6 +143,8 @@ extension CoreDataManager {
                     ) {
                         context.delete(object)
                     }
+                    // Clear saved webtoon scroll position
+                    UserDefaults.standard.removeObject(forKey: "WebtoonScrollPosition.\(chapter.mangaId).\(chapter.id)")
                 }
                 try context.save()
             } catch {
@@ -163,6 +165,8 @@ extension CoreDataManager {
                     ) {
                         context.delete(object)
                     }
+                    // Clear saved webtoon scroll position
+                    UserDefaults.standard.removeObject(forKey: "WebtoonScrollPosition.\(mangaId).\(chapterId)")
                 }
                 try context.save()
             } catch {
