@@ -593,13 +593,15 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             )
             scrollView.contentOffset = collectionNode.contentOffset
 
-            // Restore scroll position after image loading
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.collectionNode.view.layoutIfNeeded()
-                self.zoomView.adjustContentSize()
-                if let offset = effectiveStartOffset {
-                    let maxOffset = max(0, self.scrollView.contentSize.height - self.scrollView.bounds.height)
-                    let finalOffset = min(offset, maxOffset)
+            // Restore scroll position after images load
+            if let relativeOffset = effectiveStartOffset {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.collectionNode.view.layoutIfNeeded()
+                    self.zoomView.adjustContentSize()
+                    let contentHeight = self.scrollView.contentSize.height
+                    let boundsHeight = self.scrollView.bounds.height
+                    let maxOffset = max(0, contentHeight - boundsHeight)
+                    let finalOffset = min(relativeOffset, maxOffset)
                     self.scrollView.setContentOffset(CGPoint(x: 0, y: finalOffset), animated: false)
                 }
             }

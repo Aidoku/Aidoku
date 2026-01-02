@@ -214,7 +214,23 @@ class ReaderViewController: BaseObservingViewController {
     override func observe() {
         addObserver(forName: "Reader.readingMode.\(manga.key)") { [weak self] _ in
             guard let self else { return }
+            let oldMode = self.readingMode
+            let chapterKey = self.chapter.key
             self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.manga.key)"))
+            if oldMode == .webtoon && self.readingMode != .webtoon {
+                // Clear scroll position when switching from webtoon to non-webtoon
+                CoreDataManager.shared.container.performBackgroundTask { context in
+                    if let historyObject = CoreDataManager.shared.getHistory(
+                        sourceId: self.manga.sourceKey,
+                        mangaId: self.manga.key,
+                        chapterId: chapterKey,
+                        context: context
+                    ) {
+                        historyObject.scrollPosition = 0
+                        try? context.save()
+                    }
+                }
+            }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage, startOffset: nil)
             // if the tap zone is auto, it will changed based on the current reader
             self.updateTapZone()
@@ -377,8 +393,16 @@ class ReaderViewController: BaseObservingViewController {
                 }
             }
             let relativeOffset = webtoonReader.scrollView.contentOffset.y - chapterOffset
-            let key = "WebtoonScrollPosition.\(manga.key).\(chapter.key)"
-            UserDefaults.standard.set(relativeOffset, forKey: key)
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                let historyObject = CoreDataManager.shared.getOrCreateHistory(
+                    sourceId: self.manga.sourceKey,
+                    mangaId: self.manga.key,
+                    chapterId: chapter.key,
+                    context: context
+                )
+                historyObject.scrollPosition = relativeOffset
+                try? context.save()
+            }
         }
 
         await saveReadingSession(chapter: chapter)
@@ -425,9 +449,14 @@ class ReaderViewController: BaseObservingViewController {
         }
 
         let offset: CGFloat?
-        if readingMode == .webtoon {
-            let key = "WebtoonScrollPosition.\(manga.key).\(chapter.key)"
-            offset = UserDefaults.standard.object(forKey: key) as? CGFloat
+        if readingMode == .webtoon && !completed {
+            let historyObject = CoreDataManager.shared.getHistory(
+                sourceId: source?.key ?? manga.sourceKey,
+                mangaId: manga.key,
+                chapterId: chapter.key
+            )
+            let relativeOffset = historyObject?.scrollPosition ?? 0
+            offset = relativeOffset > 0 ? CGFloat(relativeOffset) : nil
         } else {
             offset = nil
         }
