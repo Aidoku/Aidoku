@@ -30,6 +30,7 @@
         <attribute name="dateRead" attributeType="Date" defaultDateTimeInterval="665122680" usesScalarValueType="NO"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
         <attribute name="progress" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="scrollPosition" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="sourceId" attributeType="String" defaultValueString=""/>
         <attribute name="total" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="chapter" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Chapter" inverseName="history" inverseEntity="Chapter"/>
