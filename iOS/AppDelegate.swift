@@ -228,6 +228,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ImagePipeline.shared = pipeline
 
         performMigration()
+        handleChaptersToBeDeleted()
 
         networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
             switch connectionType {
@@ -303,7 +304,7 @@ extension AppDelegate {
         UserDefaults.standard.set(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, forKey: "currentVersion")
     }
 
-    func migrateHistory() async {
+    private func migrateHistory() async {
         showLoadingIndicator(style: .progress)
         try? await Task.sleep(nanoseconds: 500 * 1000000)
         await CoreDataManager.shared.migrateChapterHistory(progress: { @Sendable progress in
@@ -313,6 +314,22 @@ extension AppDelegate {
         })
         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
         await hideLoadingIndicator()
+    }
+
+    // delete chapters queued for deletion in last launch
+    func handleChaptersToBeDeleted() {
+        guard
+            let data = UserDefaults.standard.data(forKey: "chaptersToBeDeleted"),
+            let chapterKeys = try? JSONDecoder().decode([ChapterIdentifier].self, from: data)
+        else {
+            return
+        }
+        Task {
+            await DownloadManager.shared.delete(chapters: chapterKeys.map {
+                .init(sourceKey: $0.sourceKey, mangaKey: $0.mangaKey, chapterKey: $0.chapterKey)
+            })
+            UserDefaults.standard.removeObject(forKey: "chaptersToBeDeleted")
+        }
     }
 
     enum LoadingStyle {

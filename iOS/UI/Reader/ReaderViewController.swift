@@ -27,7 +27,19 @@ class ReaderViewController: BaseObservingViewController {
 
     private var chapterList: [AidokuRunner.Chapter]
     private var chaptersToMark: [AidokuRunner.Chapter] = []
-    private var chaptersToRemoveDownload: [AidokuRunner.Chapter] = []
+    private var chaptersToRemoveDownload: [AidokuRunner.Chapter] = [] {
+        didSet {
+            // ensure chapters queued for deletion are persistent, in case of app termination
+            if chaptersToRemoveDownload.isEmpty {
+                UserDefaults.standard.removeObject(forKey: "chaptersToBeDeleted")
+            } else {
+                let data = try? JSONEncoder().encode(chaptersToRemoveDownload.map {
+                    ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
+                })
+                UserDefaults.standard.set(data, forKey: "chaptersToBeDeleted")
+            }
+        }
+    }
     private var currentPage = 1
     private var sessionReadPages: Set<Int> = []
     private var sessionStartDate: Date?
@@ -282,6 +294,7 @@ class ReaderViewController: BaseObservingViewController {
                 await DownloadManager.shared.delete(chapters: chaptersToRemoveDownload.map {
                     .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
                 })
+                chaptersToRemoveDownload = []
             }
         }
 
