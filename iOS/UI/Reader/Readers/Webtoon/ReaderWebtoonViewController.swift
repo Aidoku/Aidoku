@@ -31,7 +31,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var pages: [[Page]] = []
 
     // Indicates if the page slider is currently in use
-    private var isSliding = false
+    var isSliding = false
     // Indicates if a zoom gesture is in progress
     var isZooming = false
     // Indicates if a scroll is in progress
@@ -188,6 +188,29 @@ extension ReaderWebtoonViewController {
         if previousPage != page {
             previousPage = page
             delegate?.setCurrentPage(page)
+        }
+
+        // update slider position
+        if let layout = self.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout,
+           let currentPages = pages[safe: chapterIndex] {
+            var offset: CGFloat = 0
+            for idx in 0..<chapterIndex {
+                offset += layout.getHeightFor(section: idx)
+            }
+
+            let hasStartInfo = currentPages.first?.type != .imagePage
+            if hasStartInfo {
+                offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
+            }
+
+            let height = layout.getHeightFor(
+                section: chapterIndex,
+                range: (hasStartInfo ? 1 : 0)..<currentPages.count - (currentPages.last?.type != .imagePage ? 1 : 0)
+            ) - collectionNode.bounds.height
+
+            let currentOffset = collectionNode.contentOffset.y
+            let sliderValue = max(0, min(1, (currentOffset - offset) / height))
+            delegate?.setSliderOffset(sliderValue)
         }
     }
 
