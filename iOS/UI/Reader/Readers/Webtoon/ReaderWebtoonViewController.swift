@@ -191,26 +191,16 @@ extension ReaderWebtoonViewController {
         }
 
         // update slider position
-        if let layout = self.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout,
-           let currentPages = pages[safe: chapterIndex] {
-            var offset: CGFloat = 0
-            for idx in 0..<chapterIndex {
-                offset += layout.getHeightFor(section: idx)
+        if let currentPages = pages[safe: chapterIndex] {
+            let imagePages = currentPages.filter { $0.type == .imagePage }
+            let totalPages = imagePages.count
+            let page = getCurrentPage()
+            if totalPages > 1 {
+                let sliderValue = CGFloat(page - 1) / CGFloat(totalPages - 1)
+                delegate?.setSliderOffset(sliderValue)
+            } else {
+                delegate?.setSliderOffset(0)
             }
-
-            let hasStartInfo = currentPages.first?.type != .imagePage
-            if hasStartInfo {
-                offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
-            }
-
-            let height = layout.getHeightFor(
-                section: chapterIndex,
-                range: (hasStartInfo ? 1 : 0)..<currentPages.count - (currentPages.last?.type != .imagePage ? 1 : 0)
-            ) - collectionNode.bounds.height
-
-            let currentOffset = collectionNode.contentOffset.y
-            let sliderValue = max(0, min(1, (currentOffset - offset) / height))
-            delegate?.setSliderOffset(sliderValue)
         }
     }
 
@@ -542,30 +532,32 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             let currentPages = pages[safe: chapterIndex]
         else { return }
 
+        let imagePages = currentPages.filter { $0.type == .imagePage }
+        let totalPages = imagePages.count
+        if totalPages == 0 { return }
+
+        let targetPage = Int(round(value * CGFloat(totalPages - 1))) + 1
+
+        let hasStartInfo = currentPages.first?.type != .imagePage
+        let row = hasStartInfo ? targetPage : targetPage - 1
+
         var offset: CGFloat = 0
         for idx in 0..<chapterIndex {
             offset += layout.getHeightFor(section: idx)
         }
 
-        let hasStartInfo = currentPages.first?.type != .imagePage
-        let hasEndInfo = currentPages.last?.type != .imagePage
-
         if hasStartInfo {
             offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
         }
 
-        let height = layout.getHeightFor(
-            section: chapterIndex,
-            range: (hasStartInfo ? 1 : 0)..<currentPages.count - (hasEndInfo ? 1 : 0)
-        ) - collectionNode.bounds.height
+        offset += layout.getHeightFor(section: chapterIndex, range: (hasStartInfo ? 1 : 0)..<row)
 
         scrollView.setContentOffset(
-            CGPoint(x: collectionNode.contentOffset.x, y: offset + height * value),
+            CGPoint(x: collectionNode.contentOffset.x, y: offset),
             animated: false
         )
 
-        let page = getCurrentPage()
-        delegate?.displayPage(page)
+        delegate?.displayPage(targetPage)
     }
 
     func sliderStopped(value: CGFloat) {
