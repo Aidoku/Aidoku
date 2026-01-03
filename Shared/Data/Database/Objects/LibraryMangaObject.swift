@@ -16,6 +16,7 @@ public class LibraryMangaObject: NSManagedObject {
         lastOpened = now
         lastUpdated = now.addingTimeInterval(-5)
         lastUpdatedChapters = lastUpdated
+        lastRead = now
         dateAdded = now
     }
 
