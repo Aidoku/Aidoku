@@ -16,6 +16,13 @@ struct Page: Hashable {
         case nextInfoPage
     }
 
+    enum DownloadState: Int {
+        case notLoaded
+        case dimensionsLoaded
+        case imageLoaded
+        case failed
+    }
+
     var type: PageType = .imagePage
     var sourceId: String
     var chapterId: String
@@ -29,6 +36,12 @@ struct Page: Hashable {
     var context: PageContext?
     var hasDescription: Bool = false
     var description: String?
+
+    // Preloaded dimensions for layout
+    var width: CGFloat?
+    var height: CGFloat?
+    var aspectRatio: CGFloat?
+    var downloadState: DownloadState = .notLoaded
 
     var key: String {
         "\(chapterId)|\(index)"

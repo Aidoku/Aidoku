@@ -127,7 +127,7 @@ extension ReaderTextViewController: ReaderReaderDelegate {
         isSliding = false
     }
 
-    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, startOffset: CGFloat?) {
         guard chapter != viewModel.chapter else { return }
 
         Task {

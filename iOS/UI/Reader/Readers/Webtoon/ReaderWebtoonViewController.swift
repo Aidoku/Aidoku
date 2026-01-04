@@ -26,12 +26,12 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var loadingNext = false
 
     // The chapters currently shown in the reader view
-    private var chapters: [AidokuRunner.Chapter] = []
+    var chapters: [AidokuRunner.Chapter] = []
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
 
     // Indicates if the page slider is currently in use
-    private var isSliding = false
+    var isSliding = false
     // Indicates if a zoom gesture is in progress
     var isZooming = false
     // Indicates if a scroll is in progress
@@ -189,6 +189,19 @@ extension ReaderWebtoonViewController {
             previousPage = page
             delegate?.setCurrentPage(page)
         }
+
+        // update slider position
+        if let currentPages = pages[safe: chapterIndex] {
+            let imagePages = currentPages.filter { $0.type == .imagePage }
+            let totalPages = imagePages.count
+            let page = getCurrentPage()
+            if totalPages > 1 {
+                let sliderValue = CGFloat(page - 1) / CGFloat(totalPages - 1)
+                delegate?.setSliderOffset(sliderValue)
+            } else {
+                delegate?.setSliderOffset(0)
+            }
+        }
     }
 
     // disable slider movement while zooming
@@ -313,6 +326,8 @@ extension ReaderWebtoonViewController {
 
     // check if at the top or bottom to append the next/prev chapter
     func checkInfiniteLoad() {
+        // don't load while sliding to prevent layout changes during use
+        guard !isSliding else { return }
         // prepend previous chapter
         if !loadingPrevious {
             let topPath = getCurrentPagePath(pos: .top)
@@ -338,102 +353,91 @@ extension ReaderWebtoonViewController {
         }
     }
 
+    @MainActor
+    private func waitForStableState() async {
+        var waitCount = 0
+        while isZooming || isScrolling || isSliding {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            waitCount += 1
+            if waitCount > 20 {
+                break
+            }
+        }
+    }
+
+    private func insertChapter(_ chapter: AidokuRunner.Chapter, at index: Int, infoPageType: Page.PageType) async {
+        let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
+        let infoPage = Page(
+            type: infoPageType,
+            sourceId: sourceId,
+            chapterId: chapter.key,
+            index: infoPageType == .prevInfoPage ? -1 : -2
+        )
+
+        if index == 0 {
+            chapters.insert(chapter, at: 0)
+            pages.insert([infoPage] + viewModel.preloadedPages, at: 0)
+            let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+            layout?.isInsertingCellsAbove = true
+            await collectionNode.performBatch(animated: false) {
+                collectionNode.insertSections(IndexSet(integer: 0))
+            }
+            if chapters.count > 3 {
+                chapters.removeLast()
+                pages.removeLast()
+                await collectionNode.performBatch(animated: false) {
+                    self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
+                }
+                collectionNode.collectionViewLayout.invalidateLayout()
+                zoomView.adjustContentSize()
+            }
+        } else {
+            chapters.append(chapter)
+            pages.append(viewModel.preloadedPages + [infoPage])
+            await collectionNode.performBatch(animated: false) {
+                collectionNode.insertSections(IndexSet(integer: pages.count - 1))
+            }
+            if chapters.count > 3 {
+                chapters.removeFirst()
+                pages.removeFirst()
+                await collectionNode.performBatch(animated: false) {
+                    collectionNode.deleteSections(IndexSet(integer: 0))
+                }
+                collectionNode.collectionViewLayout.invalidateLayout()
+                zoomView.adjustContentSize()
+            }
+        }
+
+        await waitForStableState()
+
+        await MainActor.run {
+            collectionNode.view.layoutIfNeeded()
+            zoomView.layoutIfNeeded()
+
+            let maxOffset = max(0, scrollView.contentSize.height - scrollView.bounds.height)
+            let safeOffset = min(scrollView.contentOffset.y, maxOffset)
+
+            zoomView.adjustContentSize()
+            scrollView.setContentOffset(CGPoint(x: 0, y: safeOffset), animated: false)
+        }
+    }
+
     /// Prepend the previous chapter's pages
     func prependPreviousChapter() async {
         guard let prevChapter = delegate?.getPreviousChapter() else { return }
         await viewModel.preload(chapter: prevChapter)
-
-        // check if pages failed to load
-        if viewModel.preloadedPages.isEmpty {
-            return
-        }
-
-        // wait until zooming and scrolling stops
-        while isZooming || isScrolling {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-        }
-
-        // queue remove last section if we have three already
-//        let removeLast = chapters.count >= 3
-
-        chapters.insert(prevChapter, at: 0)
-        pages.insert(
-            [Page(
-                type: .prevInfoPage,
-                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
-                chapterId: prevChapter.key,
-                index: -1
-            )]  + viewModel.preloadedPages,
-            at: 0
-        )
-
-        let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
-        layout?.isInsertingCellsAbove = true
-
-        // disable animations and adjust offset before re-enabling
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        CATransaction.setAnimationDuration(0)
-        await collectionNode.performBatch(animated: false) {
-            collectionNode.insertSections(IndexSet(integer: 0))
-        }
-//        if removeLast {
-//            chapters.removeLast()
-//            pages.removeLast()
-//
-//            // remove last section
-//            await collectionNode.performBatchUpdates {
-//                self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
-//            }
-//        }
-        self.scrollView.contentOffset = self.collectionNode.contentOffset
-        self.zoomView.adjustContentSize()
-        CATransaction.commit()
+        if viewModel.preloadedPages.isEmpty { return }
+        await waitForStableState()
+        await insertChapter(prevChapter, at: 0, infoPageType: .prevInfoPage)
     }
 
     /// Append the next chapter's pages
     func appendNextChapter() async {
         guard let nextChapter = delegate?.getNextChapter() else { return }
         await viewModel.preload(chapter: nextChapter)
-
-        // check if pages failed to load
-        if viewModel.preloadedPages.isEmpty {
-            return
-        }
-
-        // wait until zooming and scrolling stops
-        while isZooming || isScrolling {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-        }
-
-        // queue remove first section if we have three already
-//        let removeFirst = chapters.count >= 3
-
-        chapters.append(nextChapter)
-        pages.append(viewModel.preloadedPages + [Page(
-            type: .nextInfoPage,
-            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
-            chapterId: nextChapter.id,
-            index: -2
-        )])
-
-        // disable animations and adjust offset before re-enabling
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        CATransaction.setAnimationDuration(0)
-        await collectionNode.performBatch(animated: false) {
-            collectionNode.insertSections(IndexSet(integer: pages.count - 1))
-        }
-//        if removeFirst {
-//            chapters.removeFirst()
-//            pages.removeFirst()
-//            await collectionNode.performBatchUpdates {
-//                collectionNode.deleteSections(IndexSet(integer: 0))
-//            }
-//        }
-        scrollView.contentOffset = self.collectionNode.contentOffset
-        zoomView.adjustContentSize()
-        CATransaction.commit()
+        if viewModel.preloadedPages.isEmpty { return }
+        await waitForStableState()
+        await insertChapter(nextChapter, at: chapters.count, infoPageType: .nextInfoPage)
     }
 
     /// Switch current chapter to previous
@@ -528,30 +532,32 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             let currentPages = pages[safe: chapterIndex]
         else { return }
 
+        let imagePages = currentPages.filter { $0.type == .imagePage }
+        let totalPages = imagePages.count
+        if totalPages == 0 { return }
+
+        let targetPage = Int(round(value * CGFloat(totalPages - 1))) + 1
+
+        let hasStartInfo = currentPages.first?.type != .imagePage
+        let row = hasStartInfo ? targetPage : targetPage - 1
+
         var offset: CGFloat = 0
         for idx in 0..<chapterIndex {
             offset += layout.getHeightFor(section: idx)
         }
 
-        let hasStartInfo = currentPages.first?.type != .imagePage
-        let hasEndInfo = currentPages.last?.type != .imagePage
-
         if hasStartInfo {
             offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
         }
 
-        let height = layout.getHeightFor(
-            section: chapterIndex,
-            range: (hasStartInfo ? 1 : 0)..<currentPages.count - (hasEndInfo ? 1 : 0)
-        ) - collectionNode.bounds.height
+        offset += layout.getHeightFor(section: chapterIndex, range: (hasStartInfo ? 1 : 0)..<row)
 
         scrollView.setContentOffset(
-            CGPoint(x: collectionNode.contentOffset.x, y: offset + height * value),
+            CGPoint(x: collectionNode.contentOffset.x, y: offset),
             animated: false
         )
 
-        let page = getCurrentPage()
-        delegate?.displayPage(page)
+        delegate?.displayPage(targetPage)
     }
 
     func sliderStopped(value: CGFloat) {
@@ -559,9 +565,12 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
         scrollViewDidScroll(collectionNode.view)
     }
 
-    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+    func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, startOffset: CGFloat?) {
         self.chapter = chapter
         chapters = [chapter]
+
+        // Reset offset if chapter is unread (startOffset is nil when unread)
+        let effectiveStartOffset = startOffset
 
         Task {
             await viewModel.loadPages(chapter: chapter)
@@ -588,23 +597,29 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
                 )
             ]]
 
-            var startPage = startPage
-            if startPage < 1 {
-                startPage = 1
-            } else if startPage > viewModel.pages.count {
-                startPage = viewModel.pages.count
-            }
-
             await collectionNode.reloadData()
             zoomView.adjustContentSize()
 
-            // scroll to first page
+            // scroll to first item to load cells
             collectionNode.scrollToItem(
-                at: IndexPath(row: startPage, section: 0),
+                at: IndexPath(row: 0, section: 0),
                 at: .top,
                 animated: false
             )
             scrollView.contentOffset = collectionNode.contentOffset
+
+            // Restore scroll position after images load
+            if let relativeOffset = effectiveStartOffset {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    self.collectionNode.view.layoutIfNeeded()
+                    self.zoomView.adjustContentSize()
+                    let contentHeight = self.scrollView.contentSize.height
+                    let boundsHeight = self.scrollView.bounds.height
+                    let maxOffset = max(0, contentHeight - boundsHeight)
+                    let finalOffset = min(relativeOffset, maxOffset)
+                    self.scrollView.setContentOffset(CGPoint(x: 0, y: finalOffset), animated: false)
+                }
+            }
         }
     }
 }
