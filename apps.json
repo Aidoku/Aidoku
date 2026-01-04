@@ -1,0 +1,67 @@
+{
+  "name": "Aidoku Source",
+  "identifier": "app.aidoku.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/altstore/apps.json",
+  "subtitle": "Home of Aidoku, free and open source manga reader for iOS and iPadOS",
+  "description": "This is the AltStore Source for Aidoku, free and open source manga reader for iOS and iPadOS.\n\nFor full details on what's included, check the website: https://aidoku.app/",
+  "website": "https://aidoku.app/",
+  "featuredApps": [
+    "app.aidoku.Aidoku"
+  ],
+  "apps": [
+    {
+      "name": "Aidoku",
+      "bundleIdentifier": "app.aidoku.Aidoku",
+      "developerName": "Skitty",
+      "subtitle": "Free and open source manga reader for iOS and iPadOS",
+      "localizedDescription": "A free and open source manga reading application for iOS and iPadOS.",
+      "iconURL": "https://aidoku.app/images/apple-touch-icon.png",
+      "tintColor": "ff375f",
+      "category": "entertainment",
+      "screenshots": [
+        {
+          "imageURL": "https://aidoku.app/images/library.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/source.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/reader.png",
+          "width": 450,
+          "height": 908
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "aps-environment",
+          "com.apple.developer.icloud-container-environment",
+          "com.apple.developer.icloud-container-identifiers",
+          "com.apple.developer.icloud-services",
+          "com.apple.developer.ubiquity-container-identifiers",
+          "com.apple.developer.ubiquity-kvstore-identifier"
+        ],
+        "privacy": {
+          "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
+          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library",
+          "NSLocalNetworkUsageDescription": "Aidoku needs permission to connect to local Komga servers"
+        }
+      },
+      "versions": [
+        {
+          "version": "0.8",
+          "date": "2026-01-03",
+          "localizedDescription": "\u2022 New icon: updated for liquid glass.\n\u2022 Fluid transitions: Aidoku now fits in with more iOS 26 apps, letting you swipe to close the reader and other views.\n\u2022 Insights: reading time is now tracked (starting from this update), and you can see reading statistics in the insights page.\n\u2022 Library improvements: list mode, additional filter options, persistent filters, and improved multi\u2022select.\n\u2022 Auto reader background color option: determine the reader background based on page color.\n\u2022 Live Text support: copy text and use Apple's built in image text translation feature by pressing the live text icon in the bottom right corner of page images.\n\u2022 Incognito indicator: a noticeable banner at the top now reminds you when reading history won't be tracked.\n\u2022 Fixed library refresh: should be more stable/consistent now, as I've seen a lot of people with issues recently.\n\u2022 Lots of other things! Check [the website](https://aidoku.app/release\u2022notes/) for a more complete list.",
+          "downloadURL": "https://github.com/Aidoku/Aidoku/releases/download/v0.8/Aidoku.ipa",
+          "size": 8599915,
+          "minOSVersion": "15.0",
+          "buildVersion": "3"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
