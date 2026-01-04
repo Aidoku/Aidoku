@@ -153,7 +153,7 @@
 "REMOVE_FROM_LIBRARY" = "Retirer de la bibliothèque";
 "CATEGORIES" = "Catégories";
 "EDIT_CATEGORIES" = "Modifier les catégories";
-"CATEGORY_ADD_TEXT" = "Saisissez le titre de la nouvelle catégorie à créer.";
+"CATEGORY_ADD_TEXT" = "Saisissez le nom de la nouvelle catégorie à créer.";
 "INFO" = "Infos";
 "BUILD" = "Version";
 "LIST_ALL" = "Tout";
@@ -658,3 +658,6 @@
 "%@_TRACKER_LOGIN_NEEDED" = "%@ login nécessaire";
 "PARALLEL_DOWNLOADS" = "Téléchargements parallèles";
 "PILLARBOX_ORIENTATION_INFO" = "L'orientation des colonnes détermines dans directions cette opération peut être activée.";
+"PIN_TITLES" = "Épingler les titres";
+"PIN_DISABLED" = "Désactivé";
+"PIN_UPDATED_CHAPTERS" = "Chapitres mis à jours";

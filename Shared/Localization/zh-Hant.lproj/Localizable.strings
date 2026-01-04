@@ -543,3 +543,6 @@
 "ALL_TIME" = "總計";
 "NO_CURRENT_STREAK" = "未連續閱讀";
 "NO_CURRENT_STREAK_TEXT" = "每天閱讀來開啟新紀錄。";
+"PIN_TITLES" = "釘選項目";
+"PIN_DISABLED" = "已停用";
+"PIN_UPDATED_CHAPTERS" = "新章節";
