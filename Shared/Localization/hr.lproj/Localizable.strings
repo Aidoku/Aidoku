@@ -102,7 +102,7 @@
 "LIBRARY_EMPTY" = "Biblioteka je prazna";
 "REMOVE_FROM_LIBRARY" = "Ukloni iz biblioteke";
 "LATEST_CHAPTER" = "Najnovije poglavlje";
-"CATEGORY_ADD_TEXT" = "Unesi naslov nove kategorije za stvaranje.";
+"CATEGORY_ADD_TEXT" = "Unesi ime nove kategorije koju želiš stvoriti.";
 "UPDATES" = "Aktualiziranja";
 "VOLUME_X" = "Svezak %g";
 "COVER" = "Naslovnica";
@@ -657,3 +657,6 @@
 "NO_CURRENT_STREAK" = "Nema trenutačnog niza";
 "NO_CURRENT_STREAK_TEXT" = "Čitajte svaki dan za izgradnju niza.";
 "LONGEST_STREAK" = "Najduži niz";
+"PIN_TITLES" = "Prikvači naslove";
+"PIN_DISABLED" = "Isključeno";
+"PIN_UPDATED_CHAPTERS" = "Aktualizirana poglavlja";
