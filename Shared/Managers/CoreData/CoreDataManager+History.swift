@@ -373,7 +373,11 @@ extension CoreDataManager {
 
         let uniqueKey = "\(sourceId).\(mangaId)"
         let key = "Manga.chapterDisplayMode.\(uniqueKey)"
-        let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+        let displayMode: ChapterTitleDisplayMode = if sourceId.hasPrefix("komga") {
+            UserDefaults.standard.bool(forKey: "\(sourceId).useChapters") ? .chapter : .volume
+        } else {
+            .init(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
+        }
 
         switch displayMode {
             case .default:

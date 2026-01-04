@@ -29,7 +29,7 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
         let (sourceKey, seriesId) = try getIdParts(from: trackId)
 
         let state = try? await api.getState(sourceKey: sourceKey, seriesId: seriesId)
-        if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
+        if state?.lastReadVolume == nil || highestChapterRead > state?.lastReadChapter ?? 0 {
             try await api.update(
                 sourceKey: sourceKey,
                 seriesId: seriesId,
