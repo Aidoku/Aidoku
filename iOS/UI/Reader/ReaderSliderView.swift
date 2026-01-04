@@ -76,7 +76,7 @@ class ReaderSliderView: UIControl {
         grabberView.layer.shadowOffset = CGSize(width: 0, height: 1)
         grabberView.layer.shadowColor = UIColor.black.cgColor
         grabberView.layer.shadowOpacity = 0.1
-        grabberView.layer.cornerRadius = frame.height / 2
+        grabberView.layer.cornerRadius = grabberView.frame.height / 2
         return grabberView
     }()
 
