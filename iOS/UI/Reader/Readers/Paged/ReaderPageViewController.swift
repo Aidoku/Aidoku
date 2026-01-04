@@ -60,6 +60,7 @@ class ReaderPageViewController: BaseObservingViewController {
     var isInDoublePageController = false {
         didSet {
             loadPageBackground()
+            zoomView?.zoomEnabled = !(isInDoublePageController)
         }
     }
 
@@ -164,7 +165,7 @@ class ReaderPageViewController: BaseObservingViewController {
         zoomView?.zoomEnabled = false
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
-            zoomView?.zoomEnabled = result
+            zoomView?.zoomEnabled = result && !isInDoublePageController
             reloadButton.isHidden = result
 
             // Update aspect ratio
