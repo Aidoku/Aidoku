@@ -6,7 +6,7 @@
 //
 
 import AidokuRunner
-import Foundation
+import UIKit
 
 enum Settings {
     static let settings: [Setting] = [
@@ -358,20 +358,27 @@ extension Settings {
                     ]
                 ))
             ),
-            .init(
-                key: "Reader.orientation",
-                title: NSLocalizedString("READER_ORIENTATION"),
-                notification: "Reader.orientation",
-                value: .select(.init(
-                    values: ["device", "portrait", "landscape"],
-                    titles: [
-                        NSLocalizedString("FOLLOW_DEVICE"),
-                        NSLocalizedString("PORTRAIT"),
-                        NSLocalizedString("LANDSCAPE")
-                    ]
-                ))
-            )
-        ]))),
+        ] + {
+            if UIDevice.current.userInterfaceIdiom != .pad {
+                [
+                    .init(
+                        key: "Reader.orientation",
+                        title: NSLocalizedString("READER_ORIENTATION"),
+                        notification: "Reader.orientation",
+                        value: .select(.init(
+                            values: ["device", "portrait", "landscape"],
+                            titles: [
+                                NSLocalizedString("FOLLOW_DEVICE"),
+                                NSLocalizedString("PORTRAIT"),
+                                NSLocalizedString("LANDSCAPE")
+                            ]
+                        ))
+                    )
+                ]
+            } else {
+                []
+            }
+        }()))),
         .init(
             title: NSLocalizedString("TAP_ZONES"),
             value: .group(.init(items: [
