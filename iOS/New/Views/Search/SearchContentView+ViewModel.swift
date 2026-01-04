@@ -54,7 +54,7 @@ extension SearchContentView.ViewModel {
         searchTask = Task {
             isLoading = true
             if delay {
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // wait 1s
+                try? await Task.sleep(nanoseconds: 3_000_000_000) // wait 1s
             }
             guard !Task.isCancelled else { return }
             searchQuery = query
