@@ -626,12 +626,25 @@ extension ReaderPagedViewController {
 
     private func setLiveTextButtonHidden(_ hidden: Bool) {
         pageViewController.viewControllers?.forEach {
-            guard let pageController = $0 as? ReaderPageViewController else { return }
-            if hidden {
-                pageController.pageView?.setLiveTextHidden(true)
+            let pageControllers: [ReaderPageViewController]
+            let zoomScale: CGFloat?
+            if let pageController = $0 as? ReaderPageViewController {
+                pageControllers = [pageController]
+                zoomScale = pageController.zoomView?.zoomScale
+            } else if let doublePageController = $0 as? ReaderDoublePageViewController {
+                pageControllers = [doublePageController.firstPageController, doublePageController.secondPageController]
+                zoomScale = doublePageController.zoomView.zoomScale
             } else {
-                guard let scale = pageController.zoomView?.zoomScale else { return }
-                pageController.pageView?.setLiveTextHidden(scale != 1)
+                pageControllers = []
+                zoomScale = nil
+            }
+            for pageController in pageControllers {
+                if hidden {
+                    pageController.pageView?.setLiveTextHidden(true)
+                } else {
+                    guard let zoomScale else { return }
+                    pageController.pageView?.setLiveTextHidden(zoomScale != 1)
+                }
             }
         }
     }
