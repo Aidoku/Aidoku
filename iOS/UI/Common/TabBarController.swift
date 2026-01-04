@@ -88,12 +88,12 @@ class TabBarController: UITabBarController {
             settingsPath.rootViewController = entity
             settingsViewController = entity
         } else {
-            if #available(iOS 17.0, *) {
+            if #available(iOS 26.0, *) {
                 settingsViewController = UIHostingController(
                     rootView: NavigationStack {
                         SettingsView()
                             .environmentObject(settingsPath)
-                    }.introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { entity in
+                    }.introspect(.navigationStack, on: .iOS(.v26)) { entity in
                         settingsPath.rootViewController = entity
                     }
                 )
@@ -102,7 +102,7 @@ class TabBarController: UITabBarController {
                     rootView: NavigationView {
                         SettingsView()
                             .environmentObject(settingsPath)
-                    }.introspect(.navigationView(style: .stack), on: .iOS(.v15, .v16)) { entity in
+                    }.introspect(.navigationView(style: .stack), on: .iOS(.v15, .v16, .v17, .v18)) { entity in
                         settingsPath.rootViewController = entity
                     }
                 )
