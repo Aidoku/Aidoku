@@ -59,6 +59,7 @@ extension Notification.Name {
     static let readerHidingBars = Self("readerHidingBars")
     static let readerReadingMode = Self("Reader.readingMode")
     static let readerTapZones = Self("Reader.tapZones")
+    static let readerOrientation = Self("Reader.orientation")
 
     // settings
     static let portraitRowsSetting = Self("General.portraitRows")

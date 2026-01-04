@@ -272,6 +272,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard let networkObserverId else { return }
         Reachability.unregisterConnectionTypeObserver(networkObserverId)
     }
+
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        InterfaceOrientationCoordinator.shared.supportedOrientations
+    }
 }
 
 extension AppDelegate {
