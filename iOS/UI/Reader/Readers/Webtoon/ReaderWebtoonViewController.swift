@@ -99,6 +99,18 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         addObserver(forName: .readerHidingBars) { [weak self] _ in
             self?.setLiveTextButtonHidden(true)
         }
+
+        addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
+            // clear live text analysis
+            LogManager.logger.warn("Received memory warning")
+
+            if #available(iOS 16.0, *) {
+                self?.collectionNode.visibleNodes.forEach { node in
+                    guard let node = node as? ReaderWebtoonPageNode else { return }
+                    node.imageNode.imageAnalaysisInteraction = nil
+                }
+            }
+        }
     }
 
     enum ScreenPosition {
@@ -214,7 +226,6 @@ extension ReaderWebtoonViewController {
 
 // MARK: - Context Menu
 extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
-
     func contextMenuInteraction(
         _ interaction: UIContextMenuInteraction,
         configurationForMenuAtLocation location: CGPoint
@@ -228,7 +239,8 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
         else {
             return nil
         }
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { [weak self] _ in
+            guard let self else { return nil }
             let saveToPhotosAction = UIAction(
                 title: NSLocalizedString("SAVE_TO_PHOTOS", comment: ""),
                 image: UIImage(systemName: "photo")
@@ -644,7 +656,8 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
         var page = pages[indexPath.section][indexPath.item]
         if page.type == .imagePage {
             // image page
-            return {
+            return { [weak self] in
+                guard let self else { return ASCellNode() }
                 let cell = ReaderWebtoonPageNode(source: self.viewModel.source, page: page)
                 cell.delegate = self
                 return cell
@@ -664,8 +677,9 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
             let to = page.type == .prevInfoPage
                 ? self.delegate?.getPreviousChapter()
                 : self.delegate?.getNextChapter()
-            return {
-                ReaderWebtoonTransitionNode(transition: .init(
+            return { [weak self] in
+                guard let self else { return ASCellNode() }
+                return ReaderWebtoonTransitionNode(transition: .init(
                     type: page.type == .prevInfoPage ? .prev : .next,
                     from: chapter.toOld(
                         sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,

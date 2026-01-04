@@ -36,7 +36,17 @@ class GIFImageNode: ASControlNode {
 
     @available(iOS 16.0, *)
     var imageAnalaysisInteraction: ImageAnalysisInteraction? {
-        imageView?.interactions.first(where: { $0 is ImageAnalysisInteraction }) as? ImageAnalysisInteraction
+        get {
+            imageView?.interactions.first(where: { $0 is ImageAnalysisInteraction }) as? ImageAnalysisInteraction
+        }
+        set {
+            if let index = imageView?.interactions.firstIndex(where: { $0 is ImageAnalysisInteraction }) {
+                imageView?.interactions.remove(at: index)
+            }
+            if let newValue {
+                addInteraction(newValue)
+            }
+        }
     }
 
     override init() {

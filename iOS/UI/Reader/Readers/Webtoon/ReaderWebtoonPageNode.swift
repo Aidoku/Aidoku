@@ -29,6 +29,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var ratio: CGFloat?
     private var loading = false
     private var shouldShowLiveTextButton = false
+    private var liveTextAnalysisTask: Task<Void, Never>?
 
     // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
@@ -52,10 +53,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         return node
     }()
 
-    lazy var textNode = HostingNode(
-        parentViewController: delegate,
-        content: MarkdownView(page.text ?? "")
-    )
+    lazy var textNode = HostingNode(content: MarkdownView(page.text ?? ""))
 
     lazy var progressNode = ASCellNode(viewBlock: {
         CircularProgressView()
@@ -516,12 +514,18 @@ extension ReaderWebtoonPageNode {
                 if let delegate {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
-                if #available(iOS 16.0, *), UserDefaults.standard.bool(forKey: "Reader.liveText"), ImageAnalyzer.isSupported {
+
+                if
+                    #available(iOS 16.0, *),
+                    UserDefaults.standard.bool(forKey: "Reader.liveText"),
+                    ImageAnalyzer.isSupported,
+                    imageNode.imageAnalaysisInteraction == nil
+                {
                     let interaction = ImageAnalysisInteraction()
                     interaction.preferredInteractionTypes = .automatic
                     imageNode.addInteraction(interaction)
+                    await analyzeLiveText()
                 }
-                await analyzeLiveText()
             }
         } else if let text {
             progressNode.isHidden = true
@@ -546,14 +550,20 @@ extension ReaderWebtoonPageNode {
     @MainActor
     private func analyzeLiveText() async {
         if #available(iOS 16.0, *) {
-            guard let image else {
-                imageNode.imageAnalaysisInteraction?.analysis = nil
-                return
+            if let liveTextAnalysisTask {
+                return await liveTextAnalysisTask.value
             }
-            let analyzer = ImageAnalyzer()
-            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
-            imageNode.imageAnalaysisInteraction?.analysis = analysis
-            imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+            liveTextAnalysisTask = Task {
+                guard let image else {
+                    imageNode.imageAnalaysisInteraction?.analysis = nil
+                    return
+                }
+                let analyzer = ImageAnalyzer()
+                let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+                imageNode.imageAnalaysisInteraction?.analysis = analysis
+                imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+            }
+            await liveTextAnalysisTask?.value
         }
     }
 

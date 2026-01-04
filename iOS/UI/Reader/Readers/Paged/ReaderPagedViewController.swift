@@ -121,6 +121,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         }
         addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
             // clear pages that aren't in the preload range if we get a memory warning
+            LogManager.logger.warn("Received memory warning")
             guard
                 let self,
                 let viewController = pageViewController.viewControllers?.first,
