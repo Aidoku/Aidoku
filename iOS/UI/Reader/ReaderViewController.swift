@@ -317,7 +317,7 @@ class ReaderViewController: BaseObservingViewController {
     }
 
     func disableSwipeGestures() {
-        let isWebtoonReader = reader is ReaderWebtoonViewController
+        let isVerticalReader = reader is ReaderWebtoonViewController || readingMode == .vertical
 
         // the view with the target gesture recognizers changes based on if it was presented from uikit or swiftui
         let gestureRecognizers = (parent?.view.gestureRecognizers ?? []) + (parent?.view.superview?.superview?.gestureRecognizers ?? [])
@@ -325,10 +325,10 @@ class ReaderViewController: BaseObservingViewController {
         for recognizer in gestureRecognizers {
             switch String(describing: type(of: recognizer)) {
                 case "_UIParallaxTransitionPanGestureRecognizer": // swipe edge gesture
-                    recognizer.isEnabled = isWebtoonReader
+                    recognizer.isEnabled = isVerticalReader
 
                 case "_UIContentSwipeDismissGestureRecognizer": // swipe down gesture
-                    recognizer.isEnabled = !isWebtoonReader
+                    recognizer.isEnabled = !isVerticalReader
                     recognizer.delegate = self // ensure gesture only activates on swipe down, not swipe right
 
 //                case "_UITransformGestureRecognizer": // pinch gesture
