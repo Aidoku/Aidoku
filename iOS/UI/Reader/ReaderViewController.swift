@@ -845,7 +845,7 @@ extension ReaderViewController {
 extension ReaderViewController {
     @objc func toggleBarVisibility() {
         guard let navigationController else { return }
-        if navigationController.navigationBar.alpha > 0 {
+        if !navigationController.navigationBar.isHidden {
             hideBars()
         } else {
             showBars()
