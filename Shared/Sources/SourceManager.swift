@@ -399,6 +399,8 @@ extension SourceManager {
         for source in result.sources {
             if let sourceLanguages = source.languages {
                 sourceListLanguages.formUnion(sourceLanguages)
+            } else if let sourceLang = source.lang {
+                sourceListLanguages.insert(sourceLang)
             }
         }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
