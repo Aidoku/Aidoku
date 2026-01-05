@@ -30,7 +30,7 @@
 "LIBRARY_EMPTY" = "书架为空";
 "ADD_TO_LIBRARY" = "添加到书架";
 "REMOVE_FROM_LIBRARY" = "从书架删除";
-"MANGA_INFO" = "漫画信息";
+"MANGA_INFO" = "漫画详情";
 "SORT_BY" = "排序方式";
 "FILTER_BY" = "筛选方式";
 "TITLE" = "标题";
@@ -151,7 +151,7 @@
 "APPEARANCE_LIGHT" = "浅色";
 "APPEARANCE_DARK" = "深色";
 "USE_SYSTEM_APPEARANCE" = "使用系统外观";
-"MANGA_PER_ROW" = "漫画行数";
+"MANGA_PER_ROW" = "每行漫画数量";
 "PORTRAIT" = "竖屏";
 "LANDSCAPE" = "横屏";
 "READER" = "阅读";
@@ -351,8 +351,8 @@
 "%lld_PLUS_MORE" = "+%lld 更多";
 "DELETE_DOWNLOAD_AFTER_READING" = "阅读后删除下载";
 "SKIPPING_CHAPTERS" = "跳过第%i章，可能因为来源缺失或被过滤";
-"SCANLATOR" = "翻译组";
-"NO_SCANLATOR" = "没有翻译组";
+"SCANLATOR" = "汉化组";
+"NO_SCANLATOR" = "无汉化组";
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "此操作无法撤销。除书架外的所有阅读历史都被删除。";
 "CLEAR_EXCLUDING_LIBRARY" = "清除书架外的阅读历史";
 "ENABLE_PERMISSION" = "启用权限";
@@ -401,7 +401,7 @@
 "LOCAL_FILES_SETUP" = "本机来源设置";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本机文件导入";
-"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的 CBZ 或 ZIP 文件以供阅读。";
+"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的CBZ或ZIP文件进行阅读。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
 "DESCRIPTION" = "简介";
@@ -414,7 +414,7 @@
 "SERVER_URL_INFO" = "要连接的服务器的网址。";
 "SELECT_SERIES" = "选择系列";
 "VOLUME_CHAPTER_INVALID_ERROR" = "具有此配置的章节已存在。";
-"VOLUME_CHAPTER_EMPTY_ERROR" = "需要卷号和/或章节数。";
+"VOLUME_CHAPTER_EMPTY_ERROR" = "需要卷号和/或章节号。";
 "SERIES_TITLE_UNIQUE_ERROR" = "这个标题系列已经存在。";
 "SERIES_TITLE_EMPTY_ERROR" = "必须为新系列提供标题。";
 "CREATE_NEW_SERIES_INFO" = "下一页将创建一个新系列，你也可以选择一个现有系列来添加该文件。";
@@ -570,7 +570,7 @@
 "CONTENT_RATING" = "内容评级";
 "SAFE" = "安全";
 "CONTAINS_NSFW" = "包含 NSFW";
-"PRIMARILY_NSFW" = "主要为NSFW";
+"PRIMARILY_NSFW" = "主要 NSFW";
 "KAVITA_TAGLINE" = "自托管数字图书馆";
 "KAVITA_INFO" = "Kavita 是一个自托管的漫画媒体服务器。您需要设置并运行 Kavita 服务器才能使用此资源。";
 "KAVITA_SETUP" = "Kavita 设置";
@@ -597,8 +597,8 @@
 "CANCEL_ALL_DOWNLOADS" = "取消所有下载";
 "DOWNLOADS" = "下载";
 "COMPRESS_DOWNLOADS" = "压缩下载";
-"METADATA_DETECTED" = "检测到的旧版元数据";
-"METADATA_DETECTED_TEXT" = "旧版 JSON 元数据将迁移到 ComicInfo.xml 文件。";
+"METADATA_DETECTED" = "检测到旧版元数据";
+"METADATA_DETECTED_TEXT" = "旧版JSON元数据将迁移至ComicInfo.xml文件。";
 "DOWNLOADED_CHAPTER_BADGES" = "已下载章节数";
 "VIEW_FILES" = "查看文件";
 "PROCESSING_ENTRIES" = "处理条目中…";
@@ -636,13 +636,13 @@
 "REMOVE_LOCAL_SOURCE" = "移除本地源？";
 "REMOVE_LOCAL_SOURCE_TEXT" = "这将删除所有导入的本地文件。";
 "LIVE_TEXT" = "实时文本";
-"INSIGHTS" = "洞察";
+"INSIGHTS" = "阅读分析";
 "STREAKS" = "连续记录";
 "STATS" = "统计";
 "CURRENT_STREAK" = "当前趋势";
 "NO_CURRENT_STREAK" = "无当前趋势";
 "NO_CURRENT_STREAK_TEXT" = "每天阅读积累阅读记录。";
-"LONGEST_STREAK" = "最长连续时间";
+"LONGEST_STREAK" = "最长连续阅读天数";
 "DAYS" = "天";
 "CHAPTER_PLURAL" = "章节";
 "CHAPTER_SINGULAR" = "章节";
@@ -657,3 +657,6 @@
 "THIS_YEAR" = "今年";
 "READING_SESSIONS" = "阅读时段";
 "PARALLEL_DOWNLOADS" = "并行下载";
+"PIN_DISABLED" = "禁用";
+"PIN_UPDATED_CHAPTERS" = "更新章节";
+"PIN_TITLES" = "置顶标题";
