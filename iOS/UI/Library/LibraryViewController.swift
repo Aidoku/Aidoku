@@ -319,10 +319,16 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
-        addObserver(forName: .updateChapters) { [weak self] notification in
+        addObserver(forName: .updateManga) { [weak self] notification in
             if let id = notification.object as? MangaIdentifier {
                 Task {
-                    await self?.viewModel.fetchUnreads(for: id)
+                    if self?.viewModel.sortMethod == .lastUpdated || self?.viewModel.sortMethod == .lastChapter {
+                        // if sorting by updated or last chapter, we need to reload the library to update the order
+                        await self?.viewModel.loadLibrary()
+                    } else {
+                        // otherwise, just update the unread count (in case chapters were added)
+                        await self?.viewModel.fetchUnreads(for: id)
+                    }
                     self?.updateDataSource()
                 }
             }

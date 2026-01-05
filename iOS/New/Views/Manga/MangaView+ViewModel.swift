@@ -463,7 +463,7 @@ extension MangaView.ViewModel {
                 }
             }
 
-            NotificationCenter.default.post(name: .updateChapters, object: newManga.identifier)
+            NotificationCenter.default.post(name: .updateManga, object: newManga.identifier)
 
             await loadHistory()
 
