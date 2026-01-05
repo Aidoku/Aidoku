@@ -300,8 +300,8 @@ extension BrowseViewController {
             return
         }
         if
-//            case let sectionId = dataSource.sectionIdentifier(for: indexPath.section),
-//            sectionId == .installed || sectionId == .pinned,
+            case let sectionId = dataSource.sectionIdentifier(for: indexPath.section),
+            sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         {
@@ -353,7 +353,7 @@ extension BrowseViewController {
         guard
             !tableView.isEditing, // do not allow context menu when the sources are being edited
             case let section = dataSource.sectionIdentifier(for: indexPath.section),
-//            section == .installed || section == .pinned,
+            section == .installed || section == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
         else {
