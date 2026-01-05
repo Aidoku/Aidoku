@@ -690,8 +690,12 @@ extension LibraryViewModel {
         manga = storedManga.filter { $0.title?.lowercased().fuzzyMatch(query) ?? false || $0.author?.lowercased().fuzzyMatch(query) ?? false }
     }
 
-    func mangaOpened(sourceId: String, mangaId: String) async {
-        guard sortMethod == .lastOpened || pinType.needsUpdateOnContentOpen else { return }
+    // returns true if library was reloaded
+    @discardableResult
+    func mangaOpened(sourceId: String, mangaId: String) async -> Bool {
+        guard sortMethod == .lastOpened || pinType.needsUpdateOnContentOpen else { return false }
+
+        var libraryReloaded = false
 
         let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
         if let pinnedIndex {
@@ -704,6 +708,7 @@ extension LibraryViewModel {
                 }
             } else {
                 await loadLibrary() // don't know where to put in manga array, just refresh
+                libraryReloaded = true
             }
         } else if sortMethod == .lastOpened {
             let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
@@ -718,6 +723,8 @@ extension LibraryViewModel {
                 }
             }
         }
+
+        return libraryReloaded
     }
 
     func mangaRead(sourceId: String, mangaId: String) {

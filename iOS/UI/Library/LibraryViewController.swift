@@ -320,17 +320,23 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
         addObserver(forName: .updateManga) { [weak self] notification in
-            if let id = notification.object as? MangaIdentifier {
-                Task {
-                    if self?.viewModel.sortMethod == .lastUpdated || self?.viewModel.sortMethod == .lastChapter {
-                        // if sorting by updated or last chapter, we need to reload the library to update the order
-                        await self?.viewModel.loadLibrary()
+            guard let self, let id = notification.object as? MangaIdentifier else { return }
+            Task {
+                let libraryReloaded = if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                    await self.viewModel.mangaOpened(sourceId: id.sourceKey, mangaId: id.mangaKey)
+                } else {
+                    false
+                }
+                if !libraryReloaded {
+                    if self.viewModel.sortMethod == .lastUpdated || self.viewModel.sortMethod == .lastChapter {
+                        // if sorting by updated or last chapter, or pinning updated, we need to reload the library to update the order
+                        await self.viewModel.loadLibrary()
                     } else {
                         // otherwise, just update the unread count (in case chapters were added)
-                        await self?.viewModel.fetchUnreads(for: id)
+                        await self.viewModel.fetchUnreads(for: id)
                     }
-                    self?.updateDataSource()
                 }
+                self.updateDataSource()
             }
         }
 
