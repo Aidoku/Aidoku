@@ -357,7 +357,7 @@ extension Settings {
                         NSLocalizedString("READER_BG_COLOR_BLACK")
                     ]
                 ))
-            ),
+            )
         ] + {
             if UIDevice.current.userInterfaceIdiom != .pad {
                 [

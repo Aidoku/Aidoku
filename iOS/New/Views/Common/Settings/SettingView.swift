@@ -136,7 +136,7 @@ struct SettingView: View {
 
     var body: some View {
         content
-            .id(key(setting.key))
+            .id(setting.type.requiresKey ? key(setting.key) : String(setting.hashValue))
             .onReceive(userDefaultsObserver.$observedValues) { _ in
                 // skip the initial value load
                 if !skippedFirst {
