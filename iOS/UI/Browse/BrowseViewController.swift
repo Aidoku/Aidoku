@@ -295,12 +295,16 @@ extension BrowseViewController {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let sectionId = dataSource.sectionIdentifier(for: indexPath.section)
         guard !isEditing else {
-            updateToolbar()
+            if sectionId != .pinned && sectionId != .installed {
+                tableView.deselectRow(at: indexPath, animated: false)
+            } else {
+                updateToolbar()
+            }
             return
         }
         if
-            case let sectionId = dataSource.sectionIdentifier(for: indexPath.section),
             sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
             let source = SourceManager.shared.source(for: info.sourceId)
@@ -415,14 +419,7 @@ extension BrowseViewController {
         var onReorder: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
         // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-            if #available(iOS 15.0, *) {
-                return sectionIdentifier(for: indexPath.section) == .pinned
-            } else {
-                let section = indexPath.section
-                guard section >= 0 else { return false }
-                let sections = self.snapshot().sectionIdentifiers
-                return (sections.count > section ? sections[section] : Section.installed) == Section.pinned
-            }
+            sectionIdentifier(for: indexPath.section) == .pinned
         }
 
         // Move a selected source row from pinned section to a destination index.
@@ -454,6 +451,10 @@ extension BrowseViewController {
             onReorder?(snapshot)
         }
 
+        override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+            let identifier = sectionIdentifier(for: indexPath.section)
+            return identifier == .pinned || identifier == .installed
+        }
     }
 
     private func makeDataSource() -> SourceCellDataSource {
