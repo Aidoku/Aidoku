@@ -226,14 +226,30 @@ class ReaderViewController: BaseObservingViewController {
     override func observe() {
         addObserver(forName: "Reader.readingMode.\(manga.key)") { [weak self] _ in
             guard let self else { return }
+            let oldMode = self.readingMode
+            let chapterKey = self.chapter.key
             self.setReadingMode(UserDefaults.standard.string(forKey: "Reader.readingMode.\(self.manga.key)"))
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+            if oldMode == .webtoon && self.readingMode != .webtoon {
+                // Clear scroll position when switching from webtoon to non-webtoon
+                CoreDataManager.shared.container.performBackgroundTask { context in
+                    if let historyObject = CoreDataManager.shared.getHistory(
+                        sourceId: self.manga.sourceKey,
+                        mangaId: self.manga.key,
+                        chapterId: chapterKey,
+                        context: context
+                    ) {
+                        historyObject.scrollPosition = 0
+                        try? context.save()
+                    }
+                }
+            }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage, startOffset: nil)
             // if the tap zone is auto, it will changed based on the current reader
             self.updateTapZone()
         }
         let reloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage, startOffset: nil)
         }
         // reload pages when processors change
         addObserver(forName: "Reader.downsampleImages", using: reloadBlock)
@@ -379,6 +395,29 @@ class ReaderViewController: BaseObservingViewController {
             totalPages: toolbarView.totalPages,
             completed: completed
         )
+
+        // Save scroll position for webtoon
+        if readingMode == .webtoon, let webtoonReader = reader as? ReaderWebtoonViewController {
+            let layout = webtoonReader.collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+            var chapterOffset: CGFloat = 0
+            if let chapterIndex = webtoonReader.chapters.firstIndex(of: chapter) {
+                for idx in 0..<chapterIndex {
+                    chapterOffset += layout?.getHeightFor(section: idx) ?? 0
+                }
+            }
+            let relativeOffset = webtoonReader.scrollView.contentOffset.y - chapterOffset
+            await CoreDataManager.shared.container.performBackgroundTask { context in
+                let historyObject = CoreDataManager.shared.getOrCreateHistory(
+                    sourceId: self.manga.sourceKey,
+                    mangaId: self.manga.key,
+                    chapterId: chapter.key,
+                    context: context
+                )
+                historyObject.scrollPosition = relativeOffset
+                try? context.save()
+            }
+        }
+
         await saveReadingSession(chapter: chapter)
     }
 
@@ -421,7 +460,20 @@ class ReaderViewController: BaseObservingViewController {
         } else {
             currentPage = -1
         }
-        reader?.setChapter(chapter, startPage: currentPage)
+
+        let offset: CGFloat?
+        if readingMode == .webtoon && !completed {
+            let historyObject = CoreDataManager.shared.getHistory(
+                sourceId: source?.key ?? manga.sourceKey,
+                mangaId: manga.key,
+                chapterId: chapter.key
+            )
+            let relativeOffset = historyObject?.scrollPosition ?? 0
+            offset = relativeOffset > 0 ? CGFloat(relativeOffset) : nil
+        } else {
+            offset = nil
+        }
+        reader?.setChapter(chapter, startPage: currentPage, startOffset: offset)
     }
 
     func loadNavbarTitle() {
@@ -1003,14 +1055,14 @@ extension ReaderViewController {
 
     @objc func nextChapter() {
         if let nextChapter = getNextChapter() {
-            reader?.setChapter(nextChapter, startPage: 1)
+            reader?.setChapter(nextChapter, startPage: 1, startOffset: nil)
             setChapter(nextChapter)
         }
     }
 
     @objc func previousChapter() {
         if let previousChaoter = getPreviousChapter() {
-            reader?.setChapter(previousChaoter, startPage: 1)
+            reader?.setChapter(previousChaoter, startPage: 1, startOffset: nil)
             setChapter(previousChaoter)
         }
     }

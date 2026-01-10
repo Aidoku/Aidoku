@@ -17,6 +17,7 @@ public class HistoryObject: NSManagedObject {
         progress = -1
         total = 0
         completed = false
+        scrollPosition = 0
     }
 }
 
@@ -34,6 +35,7 @@ extension HistoryObject {
     @NSManaged public var progress: Int16
     @NSManaged public var total: Int16
     @NSManaged public var completed: Bool
+    @NSManaged public var scrollPosition: Double
 
     @NSManaged public var chapter: ChapterObject?
     @NSManaged public var sessions: NSSet?
