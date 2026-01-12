@@ -234,6 +234,9 @@
 "DISPLAY_VOLUME" = "Volume";
 "USE_CHAPTERS" = "Use Chapters";
 "USE_CHAPTERS_TEXT" = "Treat books as chapters instead of volumes";
+"AUTO_ENHANCED_TRACKER" = "Enable Enhanced Tracker";
+"AUTO_ENHANCED_TRACKER_KOMGA_TEXT" = "Automatically track reading progress with enhanced Komga tracker";
+"AUTO_ENHANCED_TRACKER_KAVITA_TEXT" = "Automatically track reading progress with enhanced Kavita tracker";
 "%@_BOOKS" = "%@ Books";
 "1_BOOK" = "1 Book";
 "ON_DECK" = "On Deck";

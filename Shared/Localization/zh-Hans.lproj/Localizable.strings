@@ -241,7 +241,7 @@
 "MULTI_LANGUAGE" = "多语言";
 "TRACKERS" = "追踪器";
 "UPDATE_AFTER_READING" = "阅读后自动更新进度";
-"UPDATE_AFTER_READING_INFO" = "阅读一章后，更新跟踪器以匹配当前读取的章节和（或）卷。";
+"UPDATE_AFTER_READING_INFO" = "阅读一章后，更新追踪器以匹配当前读取的章节和（或）卷。";
 "AUTO_SYNC_HISTORY" = "自动从追踪器同步";
 "AUTO_SYNC_HISTORY_INFO" = "在追踪器上检测到较新的章节和（或）卷时，自动更新匹配的本地历史记录。";
 "LOGOUT" = "退出";
@@ -494,6 +494,9 @@
 "DISPLAY_CHAPTER" = "章节";
 "USE_CHAPTERS" = "使用章节";
 "USE_CHAPTERS_TEXT" = "将书籍视为章节而非卷册";
+"AUTO_ENHANCED_TRACKER" = "启用增强型追踪器";
+"AUTO_ENHANCED_TRACKER_KOMGA_TEXT" = "自动使用 Komga 追踪器追踪阅读进度";
+"AUTO_ENHANCED_TRACKER_KAVITA_TEXT" = "自动使用 Kavita 追踪器追踪阅读进度";
 "OTHER_SETTINGS" = "其他设置";
 "TRACK_COMPLETED" = "完成";
 "TOGGLE_LOCK" = "切换锁定";

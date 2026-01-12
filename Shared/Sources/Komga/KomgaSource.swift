@@ -119,6 +119,11 @@ extension AidokuRunner.Source {
                                 key: "useChapters",
                                 title: "USE_CHAPTERS",
                                 value: .toggle(.init(subtitle: "USE_CHAPTERS_TEXT"))
+                            ),
+                            .init(
+                                key: "autoEnhancedTracker",
+                                title: "AUTO_ENHANCED_TRACKER",
+                                value: .toggle(.init(subtitle: "AUTO_ENHANCED_TRACKER_KOMGA_TEXT", defaultValue: true))
                             )
                         ]
                     ))

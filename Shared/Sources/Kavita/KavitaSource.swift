@@ -114,6 +114,18 @@ extension AidokuRunner.Source {
                             )
                         ]
                     ))
+                ),
+                .init(
+                    title: "OTHER_SETTINGS",
+                    value: .group(.init(
+                        items: [
+                            .init(
+                                key: "autoEnhancedTracker",
+                                title: "AUTO_ENHANCED_TRACKER",
+                                value: .toggle(.init(subtitle: "AUTO_ENHANCED_TRACKER_KAVITA_TEXT", defaultValue: true))
+                            )
+                        ]
+                    ))
                 )
             ],
             runner: KavitaSourceRunner(sourceKey: key)

@@ -234,6 +234,12 @@ actor TrackerManager {
                 title: item.title ?? manga.title
             ))
 
+            // If registering an enhanced tracker, clear the manually disabled flag
+            if tracker is EnhancedTracker {
+                let key = "Tracker.manuallyDisabled.\(manga.sourceKey).\(manga.key).\(tracker.id)"
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+
             // Sync progress from tracker if enabled or is enhanced tracker
             if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") || (tracker is EnhancedTracker) || (tracker is PageTracker) {
                 if tracker is PageTracker {
@@ -272,6 +278,12 @@ actor TrackerManager {
     func removeTrackItem(item: TrackItem) async {
         await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             self.removeTrackItem(item: item, context: context)
+        }
+
+        // If removing an enhanced tracker, mark it as manually disabled
+        if let tracker = Self.getTracker(id: item.trackerId), tracker is EnhancedTracker {
+            let key = "Tracker.manuallyDisabled.\(item.sourceId).\(item.mangaId).\(item.trackerId)"
+            UserDefaults.standard.set(true, forKey: key)
         }
     }
 
@@ -476,6 +488,42 @@ actor TrackerManager {
     /// Add all applicable enhanced trackers to a given manga.
     func bindEnhancedTrackers(manga: AidokuRunner.Manga) async {
         for tracker in Self.trackers where tracker is EnhancedTracker {
+            // Check if Komga tracker and if auto-add is disabled
+            if tracker.id == "komga" && manga.sourceKey.hasPrefix("komga") {
+                let autoAdd = UserDefaults.standard.object(forKey: "\(manga.sourceKey).autoEnhancedTracker") as? Bool ?? true
+                if !autoAdd {
+                    continue
+                }
+            }
+            // Check if Kavita tracker and if auto-add is disabled
+            if tracker.id == "kavita" && manga.sourceKey.hasPrefix("kavita") {
+                let autoAdd = UserDefaults.standard.object(forKey: "\(manga.sourceKey).autoEnhancedTracker") as? Bool ?? true
+                if !autoAdd {
+                    continue
+                }
+            }
+
+            // Check if this tracker was manually disabled by user
+            let manuallyDisabledKey = "Tracker.manuallyDisabled.\(manga.sourceKey).\(manga.key).\(tracker.id)"
+            let manuallyDisabled = UserDefaults.standard.bool(forKey: manuallyDisabledKey)
+            if manuallyDisabled {
+                continue
+            }
+
+            // Check if already registered
+            let hasTracker = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getTracks(
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    context: context
+                ).contains { $0.trackerId == tracker.id }
+            }
+
+            // Skip if already registered
+            if hasTracker {
+                continue
+            }
+
             if (try? await tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key)) == true {
                 do {
                     let items = try await tracker.search(for: manga, includeNsfw: true)
@@ -484,6 +532,7 @@ actor TrackerManager {
                         return
                     }
                     await TrackerManager.shared.register(tracker: tracker, manga: manga, item: item)
+                    LogManager.logger.info("Auto-registered enhanced tracker \(tracker.id) for manga \(manga.key)")
                 } catch {
                     LogManager.logger.error("Unable to find track item from tracker \(tracker.id): \(error)")
                 }

@@ -326,6 +326,9 @@ extension MangaView.ViewModel {
         await loadDownloadStatus()
         updateReadButton()
         initialDataLoaded = true
+
+        // Auto-register enhanced tracker if enabled
+        await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
     }
 
     func fetchDownloadedChapters() async {

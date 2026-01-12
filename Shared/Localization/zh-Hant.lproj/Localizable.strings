@@ -368,6 +368,9 @@
 "DISPLAY_CHAPTER" = "章節";
 "USE_CHAPTERS" = "使用章節";
 "USE_CHAPTERS_TEXT" = "將書籍視爲章節而非冊";
+"AUTO_ENHANCED_TRACKER" = "啓用增强型追蹤器";
+"AUTO_ENHANCED_TRACKER_KOMGA_TEXT" = "自動使用 Komga 追蹤器追蹤閲讀進度";
+"AUTO_ENHANCED_TRACKER_KAVITA_TEXT" = "自動使用 Kavita 追蹤器追蹤閲讀進度";
 "CONTENT" = "漫畫";
 "DONE" = "完成";
 "INVALID" = "無效";
