@@ -86,10 +86,10 @@ class BrowseViewController: BaseTableViewController {
         view.addSubview(emptyStackView)
 
         // load data
-        viewModel.loadInstalledSources()
-        viewModel.loadPinnedSources()
-        updateDataSource()
         Task {
+            await viewModel.loadInstalledSources()
+            await viewModel.loadPinnedSources()
+            updateDataSource()
             await viewModel.loadExternalSources()
             viewModel.loadUpdates()
             updateDataSource()
@@ -110,8 +110,8 @@ class BrowseViewController: BaseTableViewController {
         addObserver(forName: .updateSourceList) { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                self.viewModel.loadInstalledSources()
-                self.viewModel.loadPinnedSources()
+                await self.viewModel.loadInstalledSources()
+                await self.viewModel.loadPinnedSources()
                 self.viewModel.loadUpdates()
                 if let query = self.navigationItem.searchController?.searchBar.text, !query.isEmpty {
                     self.viewModel.search(query: query)
@@ -139,8 +139,8 @@ class BrowseViewController: BaseTableViewController {
 
             if sourceList.isEmpty { self.stopEditing() }
             Task { @MainActor in
-                self.viewModel.loadInstalledSources()
-                self.viewModel.loadPinnedSources()
+                await self.viewModel.loadInstalledSources()
+                await self.viewModel.loadPinnedSources()
                 self.updateDataSource()
             }
         }
@@ -179,9 +179,11 @@ extension BrowseViewController {
             for source in sources {
                 SourceManager.shared.remove(source: source)
             }
-            self.viewModel.loadInstalledSources()
-            self.updateDataSource()
-            self.setEditing(false, animated: true)
+            Task {
+                await self.viewModel.loadInstalledSources()
+                self.updateDataSource()
+                self.setEditing(false, animated: true)
+            }
         }
 
         if containsLocalSource {
@@ -382,8 +384,10 @@ extension BrowseViewController {
                 } else {
                     SourceManager.shared.pin(source: source)
                 }
-                self.viewModel.loadPinnedSources()
-                self.updateDataSource()
+                Task {
+                    await self.viewModel.loadPinnedSources()
+                    self.updateDataSource()
+                }
             }
 
             let uninstallAction = UIAction(

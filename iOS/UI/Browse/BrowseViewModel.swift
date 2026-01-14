@@ -23,13 +23,14 @@ class BrowseViewModel {
     private var storedInstalledSources: [SourceInfo2]?
     private var storedExternalSources: [SourceInfo2]?
 
-    private func getInstalledSources() -> [SourceInfo2] {
-        SourceManager.shared.sources.map { $0.toInfo() }
+    private func getInstalledSources() async -> [SourceInfo2] {
+        await SourceManager.shared.loadSources()
+        return SourceManager.shared.sources.map { $0.toInfo() }
     }
 
     // load installed sources
-    func loadInstalledSources() {
-        let installedSources = getInstalledSources()
+    func loadInstalledSources() async {
+        let installedSources = await getInstalledSources()
         if storedInstalledSources != nil {
             storedInstalledSources = installedSources
             search(query: query)
@@ -38,15 +39,16 @@ class BrowseViewModel {
         }
     }
 
-    func loadPinnedSources() {
-        let installedSources = getInstalledSources()
-        let defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
+    func loadPinnedSources() async {
+        let installedSources = await getInstalledSources()
+        var defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
 
         var pinnedSources: [SourceInfo2] = []
         for sourceId in defaultPinnedSources {
             guard let source = installedSources.first(where: { $0.sourceId == sourceId }) else {
                 // remove sourceId from userdefault stored pinned list in cases such as uninstall.
-                UserDefaults.standard.set(defaultPinnedSources.filter({ $0 != sourceId }), forKey: "Browse.pinnedList")
+                defaultPinnedSources = defaultPinnedSources.filter({ $0 != sourceId })
+                UserDefaults.standard.set(defaultPinnedSources, forKey: "Browse.pinnedList")
                 continue
             }
 
