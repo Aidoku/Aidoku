@@ -159,7 +159,7 @@ struct MangaView: View {
             }
             .task {
                 guard !detailsLoaded else { return }
-                await viewModel.markOpened()
+                await viewModel.markUpdatesViewed()
                 await viewModel.fetchDetails()
                 if let scrollToChapterKey {
                     withAnimation {

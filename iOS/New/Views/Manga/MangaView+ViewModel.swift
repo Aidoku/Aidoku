@@ -52,6 +52,7 @@ extension MangaView {
         @Published var error: Error?
 
         private var fetchedDetails = false
+        private var markedOpened = false
         private var cancellables = Set<AnyCancellable>()
 
         init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
@@ -110,8 +111,10 @@ extension MangaView {
             // history
             NotificationCenter.default.publisher(for: .updateHistory)
                 .sink { [weak self] _ in
+                    guard let self else { return }
                     Task {
-                        await self?.loadHistory()
+                        await self.loadHistory()
+                        self.updateReadButton()
                     }
                 }
                 .store(in: &cancellables)
@@ -127,6 +130,7 @@ extension MangaView {
                         self.readingHistory[chapter.id] = (page: -1, date: date)
                     }
                     self.updateReadButton()
+                    self.checkForAllReadMarkOpened()
                 }
                 .store(in: &cancellables)
 
@@ -161,6 +165,7 @@ extension MangaView {
                         date: Int(Date().timeIntervalSince1970)
                     )
                     self.updateReadButton()
+                    self.checkForAllReadMarkOpened()
                 }
                 .store(in: &cancellables)
 
@@ -238,9 +243,20 @@ extension MangaView {
 }
 
 extension MangaView.ViewModel {
-    func markOpened() async {
+    func markUpdatesViewed() async {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             await MangaUpdateManager.shared.viewAllUpdates(of: manga)
+        }
+    }
+
+    private func checkForAllReadMarkOpened() {
+        guard !markedOpened else { return }
+        if getNextChapter() == .allRead {
+            markedOpened = true
+            Task {
+                await CoreDataManager.shared.setOpened(sourceId: manga.sourceKey, mangaId: manga.key)
+                NotificationCenter.default.post(name: .updateLibrary, object: nil)
+            }
         }
     }
 
@@ -462,7 +478,7 @@ extension MangaView.ViewModel {
                 }
 
                 if newManga.chapters != nil {
-                    await markOpened()
+                    await markUpdatesViewed()
                 }
             }
 
@@ -674,7 +690,7 @@ extension MangaView.ViewModel {
         return chapters
     }
 
-    enum ChapterResult {
+    enum ChapterResult: Equatable {
         case none
         case allRead
         case allLocked
