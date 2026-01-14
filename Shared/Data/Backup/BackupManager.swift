@@ -386,7 +386,7 @@ actor BackupManager {
             }
         }
         let updatesTask = Task {
-            try await chaptersTask.value // need to link updates with
+            try await chaptersTask.value // need to link updates with chapters
             if let backupUpdates = backup.updates {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearUpdates(context: context)
@@ -412,7 +412,7 @@ actor BackupManager {
             }
         }
         let sessionsTask = Task {
-            try await historyTask.value // need to link sessions with history
+            try await chaptersTask.value // need to link sessions with history, after being updated by chapters
             if let backupSessions = backup.readingSessions {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearSessions(context: context)
@@ -437,7 +437,7 @@ actor BackupManager {
                     }
                 }
                 if !result {
-                    throw BackupError.updates
+                    throw BackupError.sessions
                 }
             }
         }
