@@ -93,7 +93,7 @@ extension JsonAnyValue: Codable {
             stringArrayValue = nil
             objectValue = nil
         } else if let ints = try? container.decode([Int].self) {
-            type = .array
+            type = .intArray
             boolValue = nil
             intValue = nil
             doubleValue = nil
