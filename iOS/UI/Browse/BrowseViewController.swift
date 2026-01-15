@@ -245,11 +245,13 @@ extension BrowseViewController {
     }
 
     @objc func openAddSourcePage() {
+        let path = NavigationCoordinator(rootViewController: self)
         let hostingController = UIHostingController(
             rootView: AddSourceView(externalSources: viewModel.unfilteredExternalSources)
                 .ignoresSafeArea() // fixes some weird keyboard clipping stuff
-                .environmentObject(NavigationCoordinator(rootViewController: self))
+                .environmentObject(path)
         )
+        path.rootViewController = hostingController
         if #available(iOS 26.0, *) {
             hostingController.preferredTransition = .zoom { _ in
                 self.navigationItem.rightBarButtonItems?.first
