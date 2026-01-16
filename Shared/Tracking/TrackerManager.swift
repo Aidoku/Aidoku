@@ -183,7 +183,9 @@ actor TrackerManager {
         var failedUpdates: [PageTrackUpdate] = []
 
         for item in trackItems {
-            guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
+            guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else {
+                continue
+            }
             for chapter in chapters {
                 do {
                     try await tracker.setProgress(trackId: item.id, chapter: chapter, progress: progress)
