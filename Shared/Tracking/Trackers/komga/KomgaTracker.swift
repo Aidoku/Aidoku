@@ -30,10 +30,16 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
 
         let state = try? await api.getState(sourceKey: sourceKey, seriesId: seriesId)
         if state?.lastReadVolume == nil || highestChapterRead > state?.lastReadChapter ?? 0 {
+            let useChapters = await api.shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
+            let update: TrackUpdate = if useChapters {
+                .init(lastReadChapter: highestChapterRead)
+            } else {
+                .init(lastReadVolume: Int(floor(highestChapterRead)))
+            }
             try await api.update(
                 sourceKey: sourceKey,
                 seriesId: seriesId,
-                update: .init(lastReadVolume: Int(floor(highestChapterRead)))
+                update: update
             )
         }
 
