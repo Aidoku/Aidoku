@@ -611,6 +611,7 @@ extension TrackerManager {
         guard !trackingState.failedPageUpdates.isEmpty else { return }
 
         var remainingFailedUpdates: [PageTrackUpdate] = []
+        var successes = 0
 
         for var update in trackingState.failedPageUpdates {
             guard let tracker = TrackerManager.getTracker(id: update.trackerId) as? PageTracker else {
@@ -622,14 +623,20 @@ extension TrackerManager {
                     chapter: update.chapter,
                     progress: update.progres
                 )
+                successes += 1
             } catch {
-                LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
+                LogManager.logger.error("Failed to set tracker progress again (\(tracker.id)): \(error)")
                 update.failCount += 1
                 if update.failCount >= 3 {
+                    LogManager.logger.warn("Removing failed page update after 3 attempts: \(update)")
                     continue // remove update after three failed attempts (initial + two retries)
                 }
                 remainingFailedUpdates.append(update)
             }
+        }
+
+        if successes > 0 {
+            LogManager.logger.info("Processed \(successes) previously failed page tracker update\(successes > 1 ? "s" : "")")
         }
 
         trackingState.failedPageUpdates = remainingFailedUpdates
