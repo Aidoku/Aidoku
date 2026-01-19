@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import UIKit
+import VisionKit
 
 class ReaderPagedViewController: BaseObservingViewController {
 
@@ -965,6 +966,14 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
             let pageView = interaction.view as? UIImageView,
             pageView.image != nil
         else {
+            return nil
+        }
+        // disable when live text highlighting is active
+        if
+            #available(iOS 16.0, *),
+            let imageAnalaysisInteraction = pageView.interactions.first as? ImageAnalysisInteraction,
+            imageAnalaysisInteraction.selectableItemsHighlighted
+        {
             return nil
         }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in

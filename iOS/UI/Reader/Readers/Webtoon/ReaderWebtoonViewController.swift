@@ -239,6 +239,14 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
         else {
             return nil
         }
+        // disable when live text highlighting is active
+        if
+            #available(iOS 16.0, *),
+            let imageAnalaysisInteraction = node.imageNode.imageAnalaysisInteraction,
+            imageAnalaysisInteraction.selectableItemsHighlighted
+        {
+            return nil
+        }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { [weak self] _ in
             guard let self else { return nil }
             let saveToPhotosAction = UIAction(
