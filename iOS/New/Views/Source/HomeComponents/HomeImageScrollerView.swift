@@ -109,7 +109,7 @@ struct HomeImageScrollerView: View {
                 if let timer {
                     scrollView
                         .onReceive(timer) { _ in
-                            guard !timerPaused else { return }
+                            guard !timerPaused, !links.isEmpty else { return }
                             let nextPage = ((currentPage ?? 0) + 1) % links.count
                             timerPublish = true
                             withAnimation {
