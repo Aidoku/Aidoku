@@ -49,6 +49,15 @@ final class ShikimoriTracker: OAuthTracker {
         await getSearch(query: title, includeNsfw: includeNsfw)
     }
 
+    func getAuthenticationUrl() async -> URL? {
+        await api.oauth.getAuthenticationUrl(
+            responseType: "code",
+            path: "/oauth/authorize",
+            redirectUri: "aidoku://shikimori-auth",
+            extraQueryItems: ["scope": "user_rates"]
+        )
+    }
+
     func handleAuthenticationCallback(url: URL) async {
         if let authCode = url.queryParameters?["code"] {
             let oauth = await api.getAccessToken(authCode: authCode)

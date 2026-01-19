@@ -42,8 +42,13 @@ actor OAuthClient {
         self.challengeMethod = challengeMethod
     }
 
-    func getAuthenticationUrl(responseType: String = "code", redirectUri: String? = nil) -> URL? {
-        guard let url = URL(string: baseUrl + "/authorize") else { return nil }
+    func getAuthenticationUrl(
+        responseType: String = "code",
+        path: String = "/authorize",
+        redirectUri: String? = nil,
+        extraQueryItems: [String: String]? = nil
+    ) -> URL? {
+        guard let url = URL(string: baseUrl + path) else { return nil }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         var queryItems = [
             URLQueryItem(name: "client_id", value: clientId),
@@ -54,6 +59,11 @@ actor OAuthClient {
         }
         if challengeMethod != .none {
             queryItems.append(URLQueryItem(name: "code_challenge", value: generatePkceChallenge(method: challengeMethod)))
+        }
+        if let extraQueryItems {
+            for (key, value) in extraQueryItems {
+                queryItems.append(URLQueryItem(name: key, value: value))
+            }
         }
         components?.queryItems = queryItems
         return components?.url

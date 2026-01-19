@@ -23,11 +23,6 @@ actor ShikimoriApi {
 }
 
 extension ShikimoriApi {
-    func getAuthenticationUrl() async -> String? {
-        guard let baseUrl = await oauth.getAuthenticationUrl(responseType: "code", redirectUri: "aidoku://shikimori-auth") else { return nil }
-        return baseUrl.absoluteString + "&scope=user_rates"
-    }
-
     func getAccessToken(authCode: String) async -> OAuthResponse? {
         guard let url = URL(string: oauth.baseUrl + "/oauth/token") else { return nil }
         let boundary = "--" + String(UUID().hashValue)
