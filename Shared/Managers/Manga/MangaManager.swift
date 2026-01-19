@@ -488,7 +488,7 @@ extension MangaManager {
 
                     // update details
                     if updateMetadata {
-                        mangaObject.load(from: manga)
+                        mangaObject.load(from: newManga.toOld())
                     }
 
                     // update chapters
