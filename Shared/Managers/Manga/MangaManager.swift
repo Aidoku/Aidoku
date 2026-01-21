@@ -411,8 +411,9 @@ extension MangaManager {
         task: ProgressReporting? = nil,
         refreshStarted: (() async -> Void)? = nil
     ) async {
-        // make sure user agent has loaded before doing library refresh
+        // make sure user agent and sources have loaded before doing library refresh
         _ = await UserAgentProvider.shared.getUserAgent()
+        await SourceManager.shared.loadSources()
 
         // process failed tracker updates first
         await TrackerManager.shared.processFailedUpdates()
