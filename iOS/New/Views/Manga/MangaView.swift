@@ -238,7 +238,7 @@ extension MangaView {
     var headerView: some View {
         ZStack {
             MangaDetailsHeaderView(
-                source: viewModel.source,
+                source: $viewModel.source,
                 manga: $viewModel.manga,
                 chapters: $viewModel.chapters,
                 nextChapter: $viewModel.nextChapter,

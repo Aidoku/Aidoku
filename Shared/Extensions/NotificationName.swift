@@ -10,9 +10,14 @@ import Foundation
 extension Notification.Name {
     static let orientationDidChange = Self("orientationDidChange")
 
+    static let updateBackupList = Self("updateBackupList")
+
+    // sources
     static let updateSourceList = Self("updateSourceList")
     static let updateSourceLists = Self("updateSourceLists")
-    static let updateBackupList = Self("updateBackupList")
+    static let loadedSourceFilters = Self("loadedSourceFilters")
+    static let sourceLoaded = Self("sourceLoaded")
+    static let sourceUnloaded = Self("sourceUnloaded")
 
     // general
     static let incognitoMode = Self("General.incognitoMode")

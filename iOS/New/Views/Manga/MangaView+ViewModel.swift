@@ -12,7 +12,7 @@ import SwiftUI
 extension MangaView {
     @MainActor
     class ViewModel: ObservableObject {
-        weak var source: AidokuRunner.Source?
+        @Published var source: AidokuRunner.Source?
 
         @Published var manga: AidokuRunner.Manga
         @Published var chapters: [AidokuRunner.Chapter] = []
@@ -107,6 +107,21 @@ extension MangaView {
                     manga = migration.to.toNew()
                 }
                 .store(in: &cancellables)
+
+            for notification in [Notification.Name.sourceLoaded, Notification.Name.sourceUnloaded] {
+                NotificationCenter.default.publisher(for: notification)
+                    .sink { [weak self] output in
+                        guard
+                            let self,
+                            let sourceKey = output.object as? String,
+                            self.manga.sourceKey == sourceKey
+                        else {
+                            return
+                        }
+                        self.source = SourceManager.shared.source(for: sourceKey)
+                    }
+                    .store(in: &cancellables)
+            }
 
             // history
             NotificationCenter.default.publisher(for: .updateHistory)

@@ -12,7 +12,7 @@ import NukeUI
 import SafariServices
 
 struct MangaDetailsHeaderView: View {
-    let source: AidokuRunner.Source?
+    @Binding var source: AidokuRunner.Source?
 
     @Binding var manga: AidokuRunner.Manga
     @Binding var chapters: [AidokuRunner.Chapter]
@@ -52,7 +52,7 @@ struct MangaDetailsHeaderView: View {
     static let coverWidth: CGFloat = 114
 
     init(
-        source: AidokuRunner.Source?,
+        source: Binding<AidokuRunner.Source?>,
         manga: Binding<AidokuRunner.Manga>,
         chapters: Binding<[AidokuRunner.Chapter]>,
         nextChapter: Binding<AidokuRunner.Chapter?>,
@@ -73,7 +73,7 @@ struct MangaDetailsHeaderView: View {
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
-        self.source = source
+        self._source = source
         self._manga = manga
         self._chapters = chapters
         self._nextChapter = nextChapter
@@ -242,6 +242,9 @@ struct MangaDetailsHeaderView: View {
             updateReadButtonText()
         }
         .onChange(of: allChaptersRead) { _ in
+            updateReadButtonText()
+        }
+        .onChange(of: source != nil) { _ in
             updateReadButtonText()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateTrackers)) { _ in
@@ -549,7 +552,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
     @Previewable @State var chapterTitleDisplayMode = ChapterTitleDisplayMode.default
 
     MangaDetailsHeaderView(
-        source: AidokuRunner.Source.demo(),
+        source: Binding.constant(AidokuRunner.Source.demo()),
         manga: Binding.constant(AidokuRunner.Manga(
             sourceKey: "",
             key: "",

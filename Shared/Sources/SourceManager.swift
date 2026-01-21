@@ -46,7 +46,10 @@ class SourceManager {
             // load installed sources
             sources = await getInstalledSources()
             sortSources()
-            NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+            for source in sources {
+                NotificationCenter.default.post(name: .sourceLoaded, object: source.key)
+            }
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
 
             // load source filters
             await withTaskGroup(of: Void.self) { group in
@@ -58,7 +61,7 @@ class SourceManager {
                     }
                 }
             }
-            NotificationCenter.default.post(name: Notification.Name("loadedSourceFilters"), object: nil)
+            NotificationCenter.default.post(name: .loadedSourceFilters, object: nil)
         }
 
         Task {
@@ -256,6 +259,7 @@ extension SourceManager {
         sources.append(result)
         sortSources()
 
+        NotificationCenter.default.post(name: .sourceLoaded, object: result.key)
         NotificationCenter.default.post(name: .updateSourceList, object: nil)
 
         return result
@@ -331,6 +335,7 @@ extension SourceManager {
     }
 
     func clearSources() {
+        let sourceKeys = sources.map { $0.key }
         for source in sources {
             guard let url = source.url else { continue }
             try? FileManager.default.removeItem(at: url)
@@ -340,6 +345,9 @@ extension SourceManager {
             await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.clearSources(context: context)
                 try? context.save()
+            }
+            for key in sourceKeys {
+                NotificationCenter.default.post(name: .sourceUnloaded, object: key)
             }
             NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
@@ -355,6 +363,7 @@ extension SourceManager {
                 CoreDataManager.shared.removeSource(id: source.id, context: context)
                 try? context.save()
             }
+            NotificationCenter.default.post(name: .sourceUnloaded, object: source.key)
             NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
     }
