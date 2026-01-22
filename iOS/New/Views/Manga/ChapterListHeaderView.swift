@@ -49,8 +49,12 @@ struct ChapterListHeaderView: View {
             var languages: Set<String> = []
             var scanlators: Set<String> = []
             for chapter in allChapters {
-                for scanlator in chapter.scanlators ?? [] {
-                    scanlators.insert(scanlator)
+                if let chapterScanlators = chapter.scanlators, !scanlators.isEmpty {
+                    for scanlator in chapterScanlators {
+                        scanlators.insert(scanlator)
+                    }
+                } else {
+                    scanlators.insert("")
                 }
                 if let lang = chapter.language {
                     languages.insert(lang)

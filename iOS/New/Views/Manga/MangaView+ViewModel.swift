@@ -673,7 +673,11 @@ extension MangaView.ViewModel {
                     true
                 }
                 let cond2 = if !chapterScanlatorFilter.isEmpty  {
-                    chapterScanlatorFilter.contains(where: (chapter.scanlators ?? []).contains)
+                    if let chapterScanlators = chapter.scanlators, !chapterScanlators.isEmpty {
+                        chapterScanlatorFilter.contains(where: chapterScanlators.contains)
+                    } else {
+                        chapterScanlatorFilter.contains("")
+                    }
                 } else {
                     true
                 }
