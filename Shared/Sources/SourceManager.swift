@@ -354,6 +354,7 @@ extension SourceManager {
     }
 
     func remove(source: AidokuRunner.Source) {
+        removeSettings(from: source)
         if let url = source.url {
             try? FileManager.default.removeItem(at: url)
         }
@@ -365,6 +366,15 @@ extension SourceManager {
             }
             NotificationCenter.default.post(name: .sourceUnloaded, object: source.key)
             NotificationCenter.default.post(name: .updateSourceList, object: nil)
+        }
+    }
+
+    func removeSettings(from source: AidokuRunner.Source) {
+        let userDefaults = UserDefaults.standard
+        let keys = userDefaults.dictionaryRepresentation().keys
+
+        for key in keys where key.hasPrefix(source.key) {
+            userDefaults.removeObject(forKey: key)
         }
     }
 

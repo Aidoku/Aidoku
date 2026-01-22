@@ -124,12 +124,7 @@ struct SourceSettingsView: View {
 
     // find every userdefaults key with the source id as the prefix and remove it
     func resetSettings() {
-        let userDefaults = UserDefaults.standard
-        let keys = userDefaults.dictionaryRepresentation().keys
-
-        for key in keys where key.hasPrefix(source.id) {
-            userDefaults.removeObject(forKey: key)
-        }
+        SourceManager.shared.removeSettings(from: source)
 
         let currentSettings = settings
         settings = []
