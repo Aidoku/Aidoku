@@ -27,7 +27,7 @@
 
 // Browse
 "BROWSE" = "Explorar";
-"BROWSE_NO_SOURCES" = "Nenhuma fonte";
+"BROWSE_NO_SOURCES" = "Nenhuma Fonte";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Guia de adição de fontes";
 "UPDATES" = "Atualizações";
 "INSTALLED" = "Instalado";
@@ -161,7 +161,7 @@
 
 // Downloads
 "DOWNLOAD" = "Download";
-"CATEGORY_ADD_TEXT" = "Digite o título da nova categoria a ser criada.";
+"CATEGORY_ADD_TEXT" = "Digite o nome da nova categoria a ser criada.";
 
 // Categories
 "ALL" = "Todos";
@@ -343,3 +343,31 @@
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "Sem scanlator";
 "INVALID" = "Inválido";
+"DONE" = "Feito";
+"ENABLE_PERMISSION" = "Conceda a Permissão";
+"CONTENT" = "Conteúdo";
+"%@_EXPERIMENTAL" = "%@ (Experimental)";
+"DOWNLOADING" = "Baixando";
+"DOWNLOADING_PAUSED" = "Download Pausado";
+"PAUSED" = "Pausado";
+"CANCEL_ALL_DOWNLOADS" = "Cancelar todos os Downloads";
+"DOWNLOADS" = "Downloads";
+"NO_DOWNLOADS" = "Sem Downloads";
+"NO_DOWNLOADS_TEXT" = "O conteúdo baixado irá aparecer aqui.";
+"DOWNLOADED_CHAPTERS" = "Capítulos Baixados";
+"TOTAL_DOWNLOADS" = "Total de Downloads";
+"VIEW_FILES" = "Visualizar Arquivos";
+"PARALLEL_DOWNLOADS" = "Downloads Paralelos";
+"BACKGROUND_DOWNLOADING" = "Baixando em Segundo Plano";
+"METADATA_DETECTED" = "Metadados Antigos Detectados";
+"LIBRARY_ADJUST_FILTERS" = "Ajuste os seus filtros para ver mais conteúdo.";
+"REMOVE_FILTER" = "Remover Filtro";
+"AND_MORE" = "e mais";
+"NOT_%@" = "Não %@";
+"FILTER_SEPARATOR" = ", ";
+"FILTER_STARTED" = "Iniciado";
+"OLDEST_FIRST" = "Mais Antigos Primeiro";
+"NEWEST_FIRST" = "Mais Novos Primeiro";
+"LAYOUT_LIST" = "Lista";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Removendo Item da Biblioteca";
+"REMOVING_%i_ITEMS_FROM_LIBRARY" = "Removendo %i Itens da Biblioteca";
