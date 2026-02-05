@@ -484,15 +484,18 @@ struct KavitaSetupView: View {
             let providerName: String
         }
         let response: OIDCResponse? = try? await URLSession.shared.object(from: oidcCheckUrl)
-
-        guard let response else {
-            return ServerCheck(canLoginBasic: false)
+        if let response {
+            return ServerCheck(
+                canLoginBasic: !response.disablePasswordAuthentication,
+                canLoginOIDC: response.enabled,
+                oidcLoginURL: URL(string: server + "/oidc/login?returnURL=aidoku://oidc-auth")
+            )
         }
 
         return ServerCheck(
-            canLoginBasic: !response.disablePasswordAuthentication,
-            canLoginOIDC: response.enabled,
-            oidcLoginURL: URL(string: server + "/oidc/login?returnURL=aidoku://oidc-auth")
+            canLoginBasic: true,
+            canLoginOIDC: false,
+            oidcLoginURL: nil
         )
     }
 
