@@ -265,7 +265,7 @@ struct ReaderSettingsView: View {
                                 key: "Reader.pillarboxAmount",
                                 title: NSLocalizedString("PILLARBOX_AMOUNT"),
                                 requires: "Reader.pillarbox",
-                                value: .stepper(.init(minimumValue: 0, maximumValue: 100, stepValue: 5))
+                                value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
                             )
                         )
                         SettingView(
