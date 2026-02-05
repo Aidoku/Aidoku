@@ -220,8 +220,18 @@ struct SettingView: View {
                 }
             }
             refresh()
+
+            let value: Any? = switch setting.value {
+                case .select: stringListBinding.first
+                case .multiselect: stringListBinding
+                case .toggle: toggleValue
+                case .stepper: doubleBinding
+                case .segment: SettingsStore.shared.get(key: key(setting.key)) as Int
+                case .editableList: stringListBinding
+                default: nil
+            }
             let notificationName = setting.notification ?? key(setting.key)
-            NotificationCenter.default.post(name: .init(notificationName), object: nil)
+            NotificationCenter.default.post(name: .init(notificationName), object: value)
         }
     }
 
