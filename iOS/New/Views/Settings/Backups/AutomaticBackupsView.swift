@@ -51,7 +51,7 @@ struct AutomaticBackupsView: View {
                         toggle(key: "AutomaticBackups.history", title: NSLocalizedString("HISTORY"))
                         toggle(key: "AutomaticBackups.categories", title: NSLocalizedString("CATEGORIES"))
                         toggle(key: "AutomaticBackups.readingSessions", title: NSLocalizedString("READING_SESSIONS"))
-                        toggle(key: "AutomaticBackups.updates", title: NSLocalizedString("UPDATES"))
+                        toggle(key: "AutomaticBackups.updates", title: NSLocalizedString("MANGA_UPDATES"))
                     }
                     Section(NSLocalizedString("SETTINGS")) {
                         toggle(key: "AutomaticBackups.settings", title: NSLocalizedString("SETTINGS"))

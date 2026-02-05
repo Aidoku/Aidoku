@@ -31,7 +31,7 @@ struct BackupCreateView: View {
                     Toggle(NSLocalizedString("HISTORY"), isOn: $history)
                     Toggle(NSLocalizedString("CATEGORIES"), isOn: $categories)
                     Toggle(NSLocalizedString("READING_SESSIONS"), isOn: $readingSessions)
-                    Toggle(NSLocalizedString("UPDATES"), isOn: $updates)
+                    Toggle(NSLocalizedString("MANGA_UPDATES"), isOn: $updates)
                 } header: {
                     Text(NSLocalizedString("LIBRARY"))
                 }
