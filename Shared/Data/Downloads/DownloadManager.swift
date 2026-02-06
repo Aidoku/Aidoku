@@ -228,22 +228,24 @@ extension DownloadManager {
         for chapter in chapters {
             let directory = cache.directory(for: chapter)
             let archiveURL = directory.appendingPathExtension("cbz")
-            directory.removeItem()
-            archiveURL.removeItem()
-            await cache.remove(chapter: chapter)
+            if directory.exists || archiveURL.exists {
+                directory.removeItem()
+                archiveURL.removeItem()
+                await cache.remove(chapter: chapter)
 
-            // check if all chapters have been removed (then remove manga directory)
-            let manga = chapter.mangaIdentifier
-            let hasRemainingChapters = cache.directory(for: manga)
-                .contents
-                .contains {
-                    ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+                // check if all chapters have been removed (then remove manga directory)
+                let manga = chapter.mangaIdentifier
+                let hasRemainingChapters = cache.directory(for: manga)
+                    .contents
+                    .contains {
+                        ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+                    }
+                if !hasRemainingChapters {
+                    await deleteChapters(for: manga)
+                } else {
+                    NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
                 }
-            if !hasRemainingChapters {
-                await deleteChapters(for: manga)
             }
-
-            NotificationCenter.default.post(name: .downloadRemoved, object: chapter)
         }
         // Invalidate cache for UI
         invalidateDownloadedMangaCache()

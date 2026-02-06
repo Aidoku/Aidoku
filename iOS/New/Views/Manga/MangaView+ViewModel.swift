@@ -633,9 +633,7 @@ extension MangaView.ViewModel {
             manga == self.manga.identifier
         { // all chapters
             downloadProgress = [:]
-            for chapter in self.manga.chapters ?? chapters {
-                downloadStatus[chapter.key] = DownloadStatus.none
-            }
+            downloadStatus = [:]
         }
     }
 
