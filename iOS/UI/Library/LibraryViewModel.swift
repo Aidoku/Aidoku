@@ -16,6 +16,7 @@ class LibraryViewModel {
     var sourceKeys: [String] = []
 
     // temporary storage when searching
+    private var searchQuery: String = ""
     private var storedManga: [MangaInfo]?
     private var storedPinnedManga: [MangaInfo]?
 
@@ -362,6 +363,8 @@ extension LibraryViewModel {
 
         self.pinnedManga = pinnedManga
         self.manga = manga
+        self.storedPinnedManga = nil
+        self.storedManga = nil
         self.sourceKeys = sourceKeys.sorted()
         self.actuallyEmpty = actuallyEmpty
 
@@ -403,6 +406,10 @@ extension LibraryViewModel {
 
         if sortMethod == .unreadChapters {
             await sortLibrary()
+        }
+
+        if !searchQuery.isEmpty {
+            await search(query: searchQuery)
         }
     }
 
@@ -660,14 +667,16 @@ extension LibraryViewModel {
     }
 
     func search(query: String) async {
+        searchQuery = query
+
         guard !query.isEmpty else {
             var shouldResort = false
-            if let storedManga = storedManga {
+            if let storedManga {
                 manga = storedManga
                 self.storedManga = nil
                 shouldResort = true
             }
-            if let storedPinnedManga = storedPinnedManga {
+            if let storedPinnedManga {
                 pinnedManga = storedPinnedManga
                 self.storedPinnedManga = nil
                 shouldResort = true
@@ -681,7 +690,7 @@ extension LibraryViewModel {
             storedManga = manga
             storedPinnedManga = pinnedManga
         }
-        guard let storedManga = storedManga, let storedPinnedManga = storedPinnedManga else {
+        guard let storedManga, let storedPinnedManga else {
             return
         }
 
