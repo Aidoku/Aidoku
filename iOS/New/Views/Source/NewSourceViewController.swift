@@ -205,6 +205,12 @@ class NewSourceViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        // if it isn't removed, an old search bar can potentially block pressing the filter
+        // header buttons in a newer source view controller for some reason
+        searchController.searchBar.removeFromSuperview()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
@@ -252,6 +258,7 @@ class NewSourceViewController: UIViewController {
         // add search filters to scope bar
         searchController.searchBar.showsScopeBar = onlySearch
         searchController.searchBar.scopeButtonTitles = [""]
+        searchController.searchBar.scopeBarBackgroundImage = nil
         (searchController.searchBar.value(forKey: "_scopeBar") as? UIView)?.isHidden = true
 
         if
@@ -421,6 +428,8 @@ extension NewSourceViewController {
             // show search bar drawer if it was hidden
             if !self.source.hasListings {
                 self.navigationItem.searchController = self.searchController
+                // prevent the scope bar background from appearing
+                self.searchController.searchBar.scopeBarBackgroundImage = nil
             }
         } completion: { _ in
             // fade in search content
