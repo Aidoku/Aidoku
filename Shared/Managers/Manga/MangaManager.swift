@@ -416,7 +416,7 @@ extension MangaManager {
         await SourceManager.shared.loadSources()
 
         // process failed tracker updates first
-        await TrackerManager.shared.processFailedUpdates()
+        await TrackerManager.shared.processPendingUpdates()
 
         // fetch all library items from db
         let allManga = await CoreDataManager.shared.container.performBackgroundTask { context in

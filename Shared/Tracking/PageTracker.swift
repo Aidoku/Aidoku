@@ -29,6 +29,6 @@ struct PageTrackUpdate: Codable {
     let trackerId: String
     let trackId: String
     let chapter: AidokuRunner.Chapter
-    let progres: ChapterReadProgress
-    var failCount: Int = 1
+    let progress: ChapterReadProgress
+    var failCount: Int = 0
 }

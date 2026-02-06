@@ -41,9 +41,10 @@ actor TrackerManager {
     }
 
     struct TrackingState: Codable {
-        var failedPageUpdates: [PageTrackUpdate] = []
+        var pendingPageUpdates: [PageTrackUpdate] = []
     }
     private var trackingState: TrackingState
+    private var pageUpdateTask: Task<(), Never>?
 
     init() {
         self.trackingState = UserDefaults.standard.data(forKey: "Tracker.pageTrackingState")
@@ -180,30 +181,24 @@ actor TrackerManager {
             ).map { $0.toItem() }
         }
 
-        var failedUpdates: [PageTrackUpdate] = []
+        var newUpdates: [PageTrackUpdate] = []
 
         for item in trackItems {
             guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else {
                 continue
             }
             for chapter in chapters {
-                do {
-                    try await tracker.setProgress(trackId: item.id, chapter: chapter, progress: progress)
-                } catch {
-                    LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
-                    failedUpdates.append(.init(
-                        trackerId: tracker.id,
-                        trackId: item.id,
-                        chapter: chapter,
-                        progres: progress
-                    ))
-                }
+                newUpdates.append(.init(
+                    trackerId: tracker.id,
+                    trackId: item.id,
+                    chapter: chapter,
+                    progress: progress
+                ))
             }
         }
 
-        if !failedUpdates.isEmpty {
-            logFailedUpdates(failedUpdates)
-        }
+        queuePageUpdates(newUpdates)
+        await processPendingUpdates()
     }
 
     /// Register a new track item to a manga and save to the data store.
@@ -607,40 +602,50 @@ extension TrackerManager {
 
 // MARK: Tracking State
 extension TrackerManager {
-    func processFailedUpdates() async {
-        guard !trackingState.failedPageUpdates.isEmpty else { return }
+    func processPendingUpdates() async {
+        guard !trackingState.pendingPageUpdates.isEmpty else { return }
 
-        var remainingFailedUpdates: [PageTrackUpdate] = []
-        var successes = 0
+        if let pageUpdateTask {
+            await pageUpdateTask.value
+            return
+        }
 
-        for var update in trackingState.failedPageUpdates {
-            guard let tracker = TrackerManager.getTracker(id: update.trackerId) as? PageTracker else {
-                continue // tracker no longer exists, remove the update
-            }
-            do {
-                try await tracker.setProgress(
-                    trackId: update.trackId,
-                    chapter: update.chapter,
-                    progress: update.progres
-                )
-                successes += 1
-            } catch {
-                LogManager.logger.error("Failed to set tracker progress again (\(tracker.id)): \(error)")
-                update.failCount += 1
-                if update.failCount >= 3 {
-                    LogManager.logger.warn("Removing failed page update after 3 attempts: \(update)")
-                    continue // remove update after three failed attempts (initial + two retries)
+        pageUpdateTask = Task {
+            var stillPending: [PageTrackUpdate] = []
+            var successes = 0
+
+            for var update in trackingState.pendingPageUpdates {
+                guard let tracker = TrackerManager.getTracker(id: update.trackerId) as? PageTracker else {
+                    continue // tracker no longer exists, remove the update
                 }
-                remainingFailedUpdates.append(update)
+                do {
+                    try await tracker.setProgress(
+                        trackId: update.trackId,
+                        chapter: update.chapter,
+                        progress: update.progress
+                    )
+                    if update.failCount > 0 {
+                        successes += 1
+                    }
+                } catch {
+                    LogManager.logger.error("Failed to set tracker progress (\(tracker.id)): \(error)")
+                    update.failCount += 1
+                    if update.failCount >= 3 {
+                        LogManager.logger.warn("Removing failed page update after 3 attempts: \(update)")
+                        continue // remove update after three failed attempts (initial + two retries)
+                    }
+                    stillPending.append(update)
+                }
             }
-        }
 
-        if successes > 0 {
-            LogManager.logger.info("Processed \(successes) previously failed page tracker update\(successes > 1 ? "s" : "")")
-        }
+            if successes > 0 {
+                LogManager.logger.info("Processed \(successes) previously failed page tracker update\(successes > 1 ? "s" : "")")
+            }
 
-        trackingState.failedPageUpdates = remainingFailedUpdates
-        savePageTrackingState()
+            trackingState.pendingPageUpdates = stillPending
+            savePageTrackingState()
+            pageUpdateTask = nil
+        }
     }
 
     private func savePageTrackingState() {
@@ -650,18 +655,18 @@ extension TrackerManager {
         }
     }
 
-    private func logFailedUpdates(_ updates: [PageTrackUpdate]) {
+    private func queuePageUpdates(_ updates: [PageTrackUpdate]) {
         // merge new updates into existing failed updates, preserving the latest ones
         for update in updates {
             // remove any old update, assuming it's not as recent as the new one
-            let existingUpdateIndex = trackingState.failedPageUpdates.firstIndex(where: {
+            let existingUpdateIndex = trackingState.pendingPageUpdates.firstIndex(where: {
                 $0.trackerId == update.trackerId && $0.trackId == update.trackId && $0.chapter.key == update.chapter.key
             })
             if let existingUpdateIndex {
-                trackingState.failedPageUpdates.remove(at: existingUpdateIndex)
+                trackingState.pendingPageUpdates.remove(at: existingUpdateIndex)
             }
             // add new update
-            trackingState.failedPageUpdates.append(update)
+            trackingState.pendingPageUpdates.append(update)
         }
         savePageTrackingState()
     }
