@@ -2,3 +2,23 @@
 
 // General
 "CONTINUE" = "kuendelea";
+"CANCEL" = "kataa";
+"OK" = "sawa";
+"DONE" = "kwisha";
+"UNKNOWN" = "haijulikani";
+"UNAVAILABLE" = "Haupatikani";
+"INVALID" = "Haiwezi";
+"RESET" = "Anzisha";
+"DELETE" = "Ondoa";
+"REMOVE" = "Toa";
+"RENAME" = "geuza jina";
+"CLEAR" = "safisha";
+"PAUSE" = "tulia";
+"RESUME" = "endelea";
+"LOADING_ELLIPSIS" = "tegea…";
+"SHARE" = "tuma";
+"WARNING" = "ilaani";
+"ENABLE_PERMISSION" = "Wezesha ruhusa";
+"PHOTOS_ACCESS_DENIED_TEXT" = "Kuingia umekataliwa. samahani ruhusu Aidoku kuingia kwa ifadhi ya picha ndio iweke picha. Unaweza peana ruhusa katika mipangilio fiche.";
+"CONTENT" = "yaliyomo";
+"%@_EXPERIMENTAL" = "%@(Majaribio)";
