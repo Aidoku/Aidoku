@@ -505,6 +505,14 @@
 "DISABLED" = "Disabled";
 "INVERT_TAP_ZONES" = "Invert Tap Zones";
 "ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
+"TEXT_READER" = "Text Reader";
+"TEXT_READER_STYLE" = "Reader Style";
+"TEXT_READER_PAGED" = "Paged (Kindle)";
+"TEXT_READER_SCROLL" = "Scroll";
+"TEXT_FONT_FAMILY" = "Font";
+"TEXT_FONT_SIZE" = "Font Size";
+"TEXT_LINE_SPACING" = "Line Spacing";
+"TEXT_HORIZONTAL_PADDING" = "Horizontal Padding";
 
 // Backups
 "BACKUPS" = "Backups";

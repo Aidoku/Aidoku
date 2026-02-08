@@ -325,6 +325,14 @@
 "PAUSE" = "Pausieren";
 "RESUME" = "Fortfahren";
 "WARNING" = "Warnung";
+"TEXT_READER" = "Textansicht";
+"TEXT_READER_STYLE" = "Lesemodus";
+"TEXT_READER_PAGED" = "Seitenweise (Kindle)";
+"TEXT_READER_SCROLL" = "Scrollen";
+"TEXT_FONT_FAMILY" = "Schriftart";
+"TEXT_FONT_SIZE" = "Schriftgröße";
+"TEXT_LINE_SPACING" = "Zeilenabstand";
+"TEXT_HORIZONTAL_PADDING" = "Seitenrand";
 
 // Manga Updates
 "MANGA_UPDATES" = "Updates";
