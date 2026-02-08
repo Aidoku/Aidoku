@@ -15,6 +15,14 @@ struct ReaderSettingsView: View {
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
+    
+    // All available font families on the system
+    private static let availableFonts: [String] = {
+        var fonts = UIFont.familyNames.sorted()
+        // Add "System" at the beginning for the default SF font
+        fonts.insert("System", at: 0)
+        return fonts
+    }()
 
     @Environment(\.dismiss) private var dismiss
 
@@ -288,6 +296,60 @@ struct ReaderSettingsView: View {
                     } footer: {
                         Text(NSLocalizedString("PILLARBOX_ORIENTATION_INFO"))
                     }
+                }
+
+                // Text Reader Settings
+                Section {
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.textReaderStyle",
+                            title: NSLocalizedString("TEXT_READER_STYLE", value: "Reader Style", comment: ""),
+                            value: .select(.init(
+                                values: ["paged", "scroll"],
+                                titles: [
+                                    NSLocalizedString("TEXT_READER_PAGED", value: "Paged (Kindle)", comment: ""),
+                                    NSLocalizedString("TEXT_READER_SCROLL", value: "Scroll", comment: "")
+                                ]
+                            ))
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.textFontFamily",
+                            title: NSLocalizedString("TEXT_FONT_FAMILY", value: "Font", comment: ""),
+                            notification: .init("Reader.textFontFamily"),
+                            value: .select(.init(
+                                values: Self.availableFonts,
+                                titles: Self.availableFonts
+                            ))
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.textFontSize",
+                            title: NSLocalizedString("TEXT_FONT_SIZE", value: "Font Size", comment: ""),
+                            notification: .init("Reader.textFontSize"),
+                            value: .stepper(.init(minimumValue: 12, maximumValue: 32, stepValue: 2))
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.textLineSpacing",
+                            title: NSLocalizedString("TEXT_LINE_SPACING", value: "Line Spacing", comment: ""),
+                            notification: .init("Reader.textLineSpacing"),
+                            value: .stepper(.init(minimumValue: 0, maximumValue: 24, stepValue: 2))
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.textHorizontalPadding",
+                            title: NSLocalizedString("TEXT_HORIZONTAL_PADDING", value: "Horizontal Padding", comment: ""),
+                            notification: .init("Reader.textHorizontalPadding"),
+                            value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
+                        )
+                    )
+                } header: {
+                    Text(NSLocalizedString("TEXT_READER", value: "Text Reader", comment: ""))
                 }
             }
             .animation(.default, value: downsampleImages.value)
