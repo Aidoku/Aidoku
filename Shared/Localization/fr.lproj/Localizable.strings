@@ -422,7 +422,7 @@
 "ADD_TO_OTHER_SERIES_INFO" = "Le fichier sera ajouté à la série sélectionnée.";
 "%i_PAGES" = "%i pages";
 "1_PAGE" = "1 page";
-"CBZ_NAME" = "Archive ZIP de bande dessinée";
+"CBZ_NAME" = "Archive ZIP du Comic Book";
 "ZIP_NAME" = "Archive ZIP";
 "KOMGA" = "Komga";
 "KOMGA_TAGLINE" = "Serveur multimédia auto-hébergé";

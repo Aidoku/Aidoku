@@ -142,7 +142,7 @@
 "DOWNLOAD" = "Descargar";
 "DOWNLOADED" = "Descargados";
 "DOWNLOAD_QUEUE" = "Cola de descargas";
-"CATEGORY_ADD_TEXT" = "Escribe el título de la nueva categoría a crear.";
+"CATEGORY_ADD_TEXT" = "Escribe el nombre de la nueva categoría a crear.";
 "DEFAULT_CATEGORY" = "Categoría por defecto";
 "ALWAYS_ASK" = "Siempre preguntar";
 "DESELECT_ALL" = "Deseleccionar";
@@ -656,3 +656,7 @@
 "ON_DECK" = "Listo para la acción";
 "SHARING_LABEL" = "Etiqueta para compartir";
 "OEL" = "OEL";
+"PARALLEL_DOWNLOADS" = "Descargas paralelas";
+"PIN_TITLES" = "Fijar títulos";
+"PIN_DISABLED" = "Desactivado";
+"PIN_UPDATED_CHAPTERS" = "Capítulos actualizados";
