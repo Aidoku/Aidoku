@@ -121,21 +121,13 @@ class TextPaginator {
                 guard let existingFont = value as? UIFont else { return }
                 let traits = existingFont.fontDescriptor.symbolicTraits
                 var newFont = config.font
-                if traits.contains(.traitBold) {
-                    if let bold = UIFont(
-                        descriptor: newFont.fontDescriptor.withSymbolicTraits(.traitBold) ?? newFont.fontDescriptor,
-                        size: newFont.pointSize
-                    ) {
-                        newFont = bold
-                    }
+                if traits.contains(.traitBold),
+                   let boldDescriptor = newFont.fontDescriptor.withSymbolicTraits(.traitBold) {
+                    newFont = UIFont(descriptor: boldDescriptor, size: newFont.pointSize)
                 }
-                if traits.contains(.traitItalic) {
-                    if let italic = UIFont(
-                        descriptor: newFont.fontDescriptor.withSymbolicTraits(.traitItalic) ?? newFont.fontDescriptor,
-                        size: newFont.pointSize
-                    ) {
-                        newFont = italic
-                    }
+                if traits.contains(.traitItalic),
+                   let italicDescriptor = newFont.fontDescriptor.withSymbolicTraits(.traitItalic) {
+                    newFont = UIFont(descriptor: italicDescriptor, size: newFont.pointSize)
                 }
                 mutable.addAttribute(.font, value: newFont, range: range)
             }
