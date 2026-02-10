@@ -47,6 +47,21 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     private var lastPaginationSize: CGSize = .zero  // Track size to avoid repagination loops
     private var pendingStartPage: Int?  // Track requested start page for after pagination
 
+    // MARK: - Persistent Character Offset
+
+    /// Save character offset for the current chapter so position survives font/size changes
+    /// and cross-session restores.
+    private func saveCharacterOffset() {
+        guard let chapterKey = chapter?.key else { return }
+        UserDefaults.standard.set(currentCharacterOffset, forKey: "TextReader.offset.\(chapterKey)")
+    }
+
+    /// Load a previously saved character offset for a chapter. Returns nil if none stored.
+    private func loadCharacterOffset(for chapterKey: String) -> Int? {
+        let value = UserDefaults.standard.object(forKey: "TextReader.offset.\(chapterKey)")
+        return value as? Int
+    }
+
     // Double page support - DISABLED FOR NOW until single page works
     private var usesDoublePages = false  // TODO: Re-enable after fixing
     private var usesAutoPageLayout = false
@@ -259,12 +274,22 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
         // Determine which page to show
         let targetIndex: Int
-        if let pending = pendingStartPage, pending > 0 {
-            // Use the requested start page (1-indexed from History)
-            targetIndex = min(pending - 1, pages.count - 1)
+        if let pending = pendingStartPage {
             pendingStartPage = nil  // Clear after using
+
+            // First try to restore from our stored character offset (survives font changes)
+            if let chapterKey = chapter?.key,
+               let storedOffset = loadCharacterOffset(for: chapterKey) {
+                currentCharacterOffset = storedOffset
+                targetIndex = pages.lastIndex(where: { $0.range.location <= storedOffset }) ?? 0
+            } else if pending > 0 {
+                // Fall back to page number from History (first open, no stored offset)
+                targetIndex = min(pending - 1, pages.count - 1)
+            } else {
+                targetIndex = 0
+            }
         } else {
-            // Restore position using character offset - find which page contains our saved offset
+            // In-session repagination (font/size change) – use current character offset
             targetIndex = pages.lastIndex(where: { $0.range.location <= currentCharacterOffset }) ?? 0
         }
 
@@ -328,6 +353,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         // Track character offset for position restoration after repagination
         if targetIndex < pages.count {
             currentCharacterOffset = pages[targetIndex].range.location
+            saveCharacterOffset()
         }
 
         let viewController = createPageViewController(for: targetIndex)
@@ -538,6 +564,7 @@ extension ReaderPagedTextViewController: UIPageViewControllerDelegate {
             currentPageIndex = doublePage.leftPage.id
             currentCharacterOffset = doublePage.leftPage.range.location
         }
+        saveCharacterOffset()
 
         delegate?.setCurrentPage(currentPageIndex + 1)
         updateSliderPosition()
