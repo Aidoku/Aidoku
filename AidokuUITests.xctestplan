@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "A10558D4-6C33-4898-80A4-A153C2E0CF74",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Aidoku.xcodeproj",
+        "identifier" : "430448A72F3BC8F800D0038F",
+        "name" : "AidokuUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
