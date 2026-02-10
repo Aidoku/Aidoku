@@ -507,12 +507,18 @@
 "ANIMATE_PAGE_TRANSITIONS" = "Animate Page Transitions";
 "TEXT_READER" = "Text Reader";
 "TEXT_READER_STYLE" = "Reader Style";
-"TEXT_READER_PAGED" = "Paged (Kindle)";
+"TEXT_READER_PAGED" = "Paged";
 "TEXT_READER_SCROLL" = "Scroll";
 "TEXT_FONT_FAMILY" = "Font";
 "TEXT_FONT_SIZE" = "Font Size";
 "TEXT_LINE_SPACING" = "Line Spacing";
 "TEXT_HORIZONTAL_PADDING" = "Horizontal Padding";
+"NEXT_CHAPTER" = "Next Chapter";
+"PREVIOUS_CHAPTER" = "Previous Chapter";
+"SWIPE_TO_CONTINUE" = "Swipe to continue";
+"SWIPE_TO_GO_BACK" = "Swipe to go back";
+"END_OF_MANGA" = "You've reached the end";
+"START_OF_MANGA" = "This is the first chapter";
 
 // Backups
 "BACKUPS" = "Backups";
