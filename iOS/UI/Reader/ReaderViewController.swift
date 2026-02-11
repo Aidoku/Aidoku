@@ -599,28 +599,15 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let firstCandidate = chapterList[index]
         let currentScanlators = Set(chapter.scanlators ?? [])
         
-        // If current chapter has no scanlators, we don't care about affinity.
-        if currentScanlators.isEmpty {
-            return firstCandidate
-        }
-        
-        // Check if the first candidate is already a match
-        if let firstScanlators = firstCandidate.scanlators, !currentScanlators.isDisjoint(with: firstScanlators) {
-            return firstCandidate
-        }
+        if currentScanlators.isEmpty { return firstCandidate }
 
-        var i = index + step
+        var i = index
         while i >= 0 && i < chapterList.count {
             let next = chapterList[i]
-            
-            // Stop if we've left the group of duplicates
             guard areDuplicates(next, firstCandidate) else { break }
 
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
-            let isReadable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-            
-            if isReadable {
-                // If this duplicate matches our scanlator, return it immediately
+            if !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished {
                 if let nextScanlators = next.scanlators, !currentScanlators.isDisjoint(with: nextScanlators) {
                     return next
                 }
@@ -628,7 +615,6 @@ extension ReaderViewController: ReaderHoldingDelegate {
             i += step
         }
 
-        // Fallback to the first available candidate if no specific scanlator match was found
         return firstCandidate
     }
 
