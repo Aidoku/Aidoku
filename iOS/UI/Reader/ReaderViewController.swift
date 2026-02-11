@@ -597,37 +597,38 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     private func findBestChapterMatch(from index: Int, step: Int) -> AidokuRunner.Chapter {
         let firstCandidate = chapterList[index]
-        var candidates: [AidokuRunner.Chapter] = [firstCandidate]
+        let currentScanlators = Set(chapter.scanlators ?? [])
+        
+        // If current chapter has no scanlators, we don't care about affinity.
+        if currentScanlators.isEmpty {
+            return firstCandidate
+        }
+        
+        // Check if the first candidate is already a match
+        if let firstScanlators = firstCandidate.scanlators, !currentScanlators.isDisjoint(with: firstScanlators) {
+            return firstCandidate
+        }
 
         var i = index + step
         while i >= 0 && i < chapterList.count {
             let next = chapterList[i]
-            if areDuplicates(next, firstCandidate) {
-                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
-                let readable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-                if readable {
-                    candidates.append(next)
+            
+            // Stop if we've left the group of duplicates
+            guard areDuplicates(next, firstCandidate) else { break }
+
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
+            let isReadable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+            
+            if isReadable {
+                // If this duplicate matches our scanlator, return it immediately
+                if let nextScanlators = next.scanlators, !currentScanlators.isDisjoint(with: nextScanlators) {
+                    return next
                 }
-            } else {
-                break
             }
             i += step
         }
 
-        guard let currentScanlators = chapter.scanlators, !currentScanlators.isEmpty else {
-            return firstCandidate
-        }
-
-        for candidate in candidates {
-            if let scanlators = candidate.scanlators, !scanlators.isEmpty {
-                for scanlator in currentScanlators {
-                    if scanlators.contains(scanlator) {
-                        return candidate
-                    }
-                }
-            }
-        }
-
+        // Fallback to the first available candidate if no specific scanlator match was found
         return firstCandidate
     }
 
