@@ -33,7 +33,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
             try await api.update(
                 sourceKey: sourceKey,
                 seriesId: seriesId,
-                update: .init(lastReadVolume: Int(floor(highestChapterRead)))
+                update: .init(lastReadChapter: highestChapterRead)
             )
         }
 

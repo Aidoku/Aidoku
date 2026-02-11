@@ -78,7 +78,7 @@ actor KavitaApi {
         let response: Response = try await helper.request(path: "/api/reader/chapter-info?chapterId=\(chapterId)")
 
         let pageNum = if progress.completed {
-            response.pages
+            response.pages + 1
         } else {
             progress.page
         }
@@ -95,7 +95,7 @@ actor KavitaApi {
             seriesId: seriesId,
             volumeId: response.volumeId,
             chapterId: chapterId,
-            pageNum: pageNum
+            pageNum: pageNum - 1
         )
 
         // newer versions return an empty response instead of a bool, so we ignore the thrown error
@@ -121,7 +121,7 @@ actor KavitaApi {
                 }
                 progressMap["\(chapter.id)"] = .init(
                     completed: completed,
-                    page: chapter.pagesRead,
+                    page: chapter.pagesRead + 1,
                     date: chapter.lastReadingProgressUtc
                 )
             }
