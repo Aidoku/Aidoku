@@ -51,7 +51,6 @@ struct KavitaHelper: Sendable {
         body: Data? = nil,
     ) async throws(SourceError) -> T {
         func doRequest() async throws(SourceError) -> T? {
-
             let url = try getServerUrl(path: path)
             var request = URLRequest(url: url)
             guard authorize(request: &request) else {

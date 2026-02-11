@@ -98,7 +98,8 @@ actor KavitaApi {
             pageNum: pageNum
         )
 
-        let _: Bool = try await helper.request(
+        // newer versions return an empty response instead of a bool, so we ignore the thrown error
+        let _: Bool? = try? await helper.request(
             path: "/api/reader/progress",
             method: .POST,
             body: JSONEncoder().encode(payload)
