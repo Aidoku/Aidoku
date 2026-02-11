@@ -24,6 +24,12 @@ actor BackupManager {
     private static let backupTaskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
     private static let maxAutoBackups = 4
 
+    private static let excludedSettings = [
+        "Browse.sourceLists", // stored separately
+        "isiCloudAvailable",
+        "isSideloaded"
+    ]
+
     func save(backup: Backup, url: URL? = nil) {
         Self.directory.createDirectory()
         let encoder = PropertyListEncoder()
@@ -179,8 +185,8 @@ actor BackupManager {
 
         // convert to export compatible types
         for (key, value) in allSettings {
-            if key == "Browse.sourceLists" {
-                continue // skip source lists, as these are stored separately
+            guard !Self.excludedSettings.contains(key) else {
+                continue
             }
             if let value = value as? String {
                 convertedSettings[key] = .string(value)
@@ -250,6 +256,7 @@ actor BackupManager {
             // restore settings
             if let settings = backup.settings {
                 for (key, value) in settings {
+                    guard !Self.excludedSettings.contains(key) else { continue }
                     UserDefaults.standard.set(value.toRaw(), forKey: key)
                 }
             }
