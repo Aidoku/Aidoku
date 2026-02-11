@@ -589,6 +589,48 @@ extension ReaderViewController {
 extension ReaderViewController: ReaderHoldingDelegate {
     var barsHidden: Bool { statusBarHidden }
 
+    private func areDuplicates(_ a: AidokuRunner.Chapter, _ b: AidokuRunner.Chapter) -> Bool {
+        a.chapterNumber == b.chapterNumber
+            && a.volumeNumber == b.volumeNumber
+            && (!(a.chapterNumber == nil && a.volumeNumber == nil) || a.title == b.title)
+    }
+
+    private func findBestChapterMatch(from index: Int, step: Int) -> AidokuRunner.Chapter {
+        let firstCandidate = chapterList[index]
+        var candidates: [AidokuRunner.Chapter] = [firstCandidate]
+
+        var i = index + step
+        while i >= 0 && i < chapterList.count {
+            let next = chapterList[i]
+            if areDuplicates(next, firstCandidate) {
+                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
+                let readable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+                if readable {
+                    candidates.append(next)
+                }
+            } else {
+                break
+            }
+            i += step
+        }
+
+        guard let currentScanlators = chapter.scanlators, !currentScanlators.isEmpty else {
+            return firstCandidate
+        }
+
+        for candidate in candidates {
+            if let scanlators = candidate.scanlators, !scanlators.isEmpty {
+                for scanlator in currentScanlators {
+                    if scanlators.contains(scanlator) {
+                        return candidate
+                    }
+                }
+            }
+        }
+
+        return firstCandidate
+    }
+
     func getNextChapter() -> AidokuRunner.Chapter? {
         guard
             var index = chapterList.firstIndex(of: chapter)
@@ -610,10 +652,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
 
             if readable {
-                let isDuplicate =
-                    new.chapterNumber == chapter.chapterNumber
-                    && new.volumeNumber == chapter.volumeNumber
-                    && (!(new.chapterNumber == nil && new.volumeNumber == nil) || new.title == chapter.title)
+                let isDuplicate = areDuplicates(new, chapter)
 
                 if nextChapterInList == nil {
                     nextChapterInList = new
@@ -622,7 +661,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                     chaptersToMark.append(new)
                 }
                 if !isDuplicate {
-                    return skipDuplicates ? new : nextChapterInList
+                    return skipDuplicates ? findBestChapterMatch(from: index, step: -1) : nextChapterInList
                 } else if !skipDuplicates && !markDuplicates {
                     return new
                 }
@@ -650,12 +689,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
 
             if readable {
-                let isDuplicate =
-                    new.chapterNumber == chapter.chapterNumber
-                    && new.volumeNumber == chapter.volumeNumber
-                    && (!(new.chapterNumber == nil && new.volumeNumber == nil) || new.title == chapter.title)
+                let isDuplicate = areDuplicates(new, chapter)
                 if !isDuplicate {
-                    return new
+                    return findBestChapterMatch(from: index, step: 1)
                 }
                 if markDuplicates {
                     chaptersToMark.append(new)
