@@ -612,7 +612,7 @@ extension KavitaSourceRunner {
                                 return (index, "", "", [])
                             }
                         case .moreInGenre:
-                            let genres = try await helper.getAllGenres()
+                            let genres = try await helper.getAllGenres(context: .dashboard)
                             guard let randomGenre = genres.randomElement() else {
                                 return (index, "", "", [])
                             }
