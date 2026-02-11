@@ -513,12 +513,13 @@ actor KavitaSourceRunner: Runner {
             let response,
             let token = response.token,
             let refreshToken = response.refreshToken,
+            let apiKey = response.getApiKey(),
             response.username == username
         else {
             return false
         }
 
-        UserDefaults.standard.setValue(response.apiKey, forKey: "\(sourceKey).apiKey")
+        UserDefaults.standard.setValue(apiKey, forKey: "\(sourceKey).apiKey")
         UserDefaults.standard.setValue(token, forKey: "\(sourceKey).token")
         UserDefaults.standard.setValue(refreshToken, forKey: "\(sourceKey).refreshToken")
 
@@ -544,12 +545,13 @@ actor KavitaSourceRunner: Runner {
 
         guard
             let response,
-            let cookie = response.cookie
+            let cookie = response.cookie,
+            let apiKey = response.getApiKey()
         else {
             return false
         }
 
-        UserDefaults.standard.setValue(response.apiKey, forKey: "\(sourceKey).apiKey")
+        UserDefaults.standard.setValue(apiKey, forKey: "\(sourceKey).apiKey")
         UserDefaults.standard.setValue(cookie, forKey: "\(sourceKey).cookie")
 
         return true
@@ -639,11 +641,21 @@ extension KavitaSourceRunner {
 
 extension KavitaSourceRunner {
     struct LoginResponse: Decodable {
-        let apiKey: String
+        let apiKey: String?
         let username: String
         let token: String?
         let refreshToken: String?
+        let authKeys: [AuthKey]?
         var cookie: String?
+
+        func getApiKey() -> String? {
+            authKeys?.first(where: { $0.name == "opds" })?.key ?? apiKey
+        }
+
+        struct AuthKey: Decodable {
+            let key: String
+            let name: String
+        }
     }
 
     static func getLoginResponse(server: String, username: String, password: String) async -> LoginResponse? {
