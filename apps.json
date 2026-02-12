@@ -1,0 +1,67 @@
+{
+  "name": "Aidoku Source",
+  "identifier": "app.aidoku.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/altstore/apps.json",
+  "subtitle": "Home of Aidoku, free and open source manga reader for iOS and iPadOS",
+  "description": "This is the AltStore Source for Aidoku, free and open source manga reader for iOS and iPadOS.\n\nFor full details on what's included, check the website: https://aidoku.app/",
+  "website": "https://aidoku.app/",
+  "featuredApps": [
+    "app.aidoku.Aidoku"
+  ],
+  "apps": [
+    {
+      "name": "Aidoku",
+      "bundleIdentifier": "app.aidoku.Aidoku",
+      "developerName": "Skitty",
+      "subtitle": "Free and open source manga reader for iOS and iPadOS",
+      "localizedDescription": "A free and open source manga reading application for iOS and iPadOS.",
+      "iconURL": "https://aidoku.app/images/apple-touch-icon.png",
+      "tintColor": "ff375f",
+      "category": "entertainment",
+      "screenshots": [
+        {
+          "imageURL": "https://aidoku.app/images/library.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/source.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/reader.png",
+          "width": 450,
+          "height": 908
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "aps-environment",
+          "com.apple.developer.icloud-container-environment",
+          "com.apple.developer.icloud-container-identifiers",
+          "com.apple.developer.icloud-services",
+          "com.apple.developer.ubiquity-container-identifiers",
+          "com.apple.developer.ubiquity-kvstore-identifier"
+        ],
+        "privacy": {
+          "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
+          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library",
+          "NSLocalNetworkUsageDescription": "Aidoku needs permission to connect to local Komga servers"
+        }
+      },
+      "versions": [
+        {
+          "version": "0.8.1",
+          "date": "2026-02-09",
+          "localizedDescription": "\u2022 Pinned sources should stay pinned\n\u2022 Error when restoring chapters from backup resolved\n\u2022 Insights page more accurately determines chapter read count\n\u2022 Kavita source login issues resolved\n\u2022 Lots of other fixes (30+)! Check [the website](https://aidoku.app/release\u2022notes/) for a more complete list.",
+          "downloadURL": "https://github.com/Aidoku/Aidoku/releases/download/v0.8.1/Aidoku.ipa",
+          "size": 8636349,
+          "minOSVersion": "15.0",
+          "buildVersion": "3"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
