@@ -508,6 +508,9 @@ extension MangaView.ViewModel {
 
             // ensure downloaded chapters are in the correct section if they were added/removed from the main list
             await fetchDownloadedChapters()
+
+            // sync history with tracker
+            await syncTrackerProgress()
         } catch {
             withAnimation {
                 self.manga.chapters = []
