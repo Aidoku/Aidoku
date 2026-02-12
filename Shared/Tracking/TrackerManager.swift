@@ -311,24 +311,36 @@ actor TrackerManager {
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter]? = nil
     ) async {
-        let chaptersToMark = await getChaptersToSyncProgressFromTracker(
-            tracker: tracker,
-            trackId: trackId,
-            manga: manga,
-            chapters: chapters
-        )
-        if !chaptersToMark.isEmpty {
-            await HistoryManager.shared.addHistory(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
-                chapters: chaptersToMark,
-                skipTracker: tracker
+        if tracker is PageTracker {
+            await syncPageTrackerHistory(
+                tracker: tracker,
+                manga: manga,
+                chapters: chapters
             )
+        } else {
+            let chaptersToMark = await getChaptersToSyncProgressFromTracker(
+                tracker: tracker,
+                trackId: trackId,
+                manga: manga,
+                chapters: chapters
+            )
+            if !chaptersToMark.isEmpty {
+                await HistoryManager.shared.addHistory(
+                    sourceId: manga.sourceKey,
+                    mangaId: manga.key,
+                    chapters: chaptersToMark,
+                    skipTracker: tracker
+                )
+            }
         }
     }
 
     /// Sync progress with all linked trackers that support page progress.
-    func syncPageTrackerHistory(manga: AidokuRunner.Manga, chapters: [AidokuRunner.Chapter]? = nil) async {
+    func syncPageTrackerHistory(
+        tracker: Tracker? = nil,
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter]? = nil
+    ) async {
         let chapters = if let chapters {
             chapters
         } else {
@@ -348,9 +360,12 @@ actor TrackerManager {
         }
 
         for item in trackItems {
-            guard let tracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
+            guard let targetTracker = Self.getTracker(id: item.trackerId) as? PageTracker else { continue }
+            if let tracker, targetTracker.id != tracker.id {
+                continue // if a specific tracker is provided, only sync that one
+            }
             do {
-                let batchProgress = try await tracker.getProgress(trackId: item.id, chapters: chapters)
+                let batchProgress = try await targetTracker.getProgress(trackId: item.id, chapters: chapters)
                 if result.isEmpty {
                     result = batchProgress
                 } else {
@@ -369,7 +384,7 @@ actor TrackerManager {
                     }
                 }
             } catch {
-                LogManager.logger.error("Failed to get tracker progress (\(tracker.id)): \(error)")
+                LogManager.logger.error("Failed to get tracker progress (\(targetTracker.id)): \(error)")
             }
         }
 
