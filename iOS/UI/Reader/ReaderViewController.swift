@@ -598,7 +598,6 @@ extension ReaderViewController: ReaderHoldingDelegate {
     private func findBestChapterMatch(from index: Int, step: Int) -> AidokuRunner.Chapter {
         let firstCandidate = chapterList[index]
         let currentScanlators = Set(chapter.scanlators ?? [])
-        
         guard !currentScanlators.isEmpty else {
             return firstCandidate
         }
