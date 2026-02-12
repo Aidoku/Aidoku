@@ -607,7 +607,8 @@ extension ReaderViewController: ReaderHoldingDelegate {
             guard areDuplicates(next, firstCandidate) else { break }
 
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
-            if !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished {
+            let isReadable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+            if isReadble {
                 if let nextScanlators = next.scanlators, !currentScanlators.isDisjoint(with: nextScanlators) {
                     return next
                 }
