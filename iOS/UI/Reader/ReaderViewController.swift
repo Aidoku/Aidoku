@@ -599,7 +599,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let firstCandidate = chapterList[index]
         let currentScanlators = Set(chapter.scanlators ?? [])
         
-        if currentScanlators.isEmpty { return firstCandidate }
+        guard !currentScanlators.isEmpty else {
+            return firstCandidate
+        }
 
         var i = index
         while i >= 0 && i < chapterList.count {
