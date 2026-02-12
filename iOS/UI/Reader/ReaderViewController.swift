@@ -609,7 +609,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
             let isReadable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-            if isReadble {
+            if isReadable {
                 if let nextScanlators = next.scanlators, !currentScanlators.isDisjoint(with: nextScanlators) {
                     return next
                 }
