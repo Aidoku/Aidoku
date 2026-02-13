@@ -26,7 +26,7 @@ struct TextPage: Identifiable, Equatable {
 /// Configuration for text pagination
 struct PaginationConfig {
     var fontSize: CGFloat = 16
-    var fontName: String = "Georgia"
+    var fontName: String = "System"
     var lineSpacing: CGFloat = 6
     var paragraphSpacing: CGFloat = 12
     var horizontalPadding: CGFloat = 24

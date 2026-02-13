@@ -169,7 +169,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 // Text Reader defaults
                 "Reader.textReaderStyle": "paged",
-                "Reader.textFontFamily": "Georgia",
+                "Reader.textFontFamily": "System",
                 "Reader.textFontSize": 18,
                 "Reader.textLineSpacing": 8,
                 "Reader.textHorizontalPadding": 24,
