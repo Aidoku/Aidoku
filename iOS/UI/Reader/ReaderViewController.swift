@@ -609,14 +609,8 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
             if isReadable {
                 let nextScanlators = Set(next.scanlators ?? [])
-                if currentScanlators.isEmpty {
-                    if nextScanlators.isEmpty {
-                        return next
-                    }
-                } else {
-                    if !currentScanlators.isDisjoint(with: nextScanlators) {
-                        return next
-                    }
+                if currentScanlators.isEmpty ? nextScanlators.isEmpty : !currentScanlators.isDisjoint(with: nextScanlators) {
+                    return next
                 }
             }
             i += step
