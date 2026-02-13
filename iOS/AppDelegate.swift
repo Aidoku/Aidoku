@@ -167,6 +167,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarboxOrientation": "both",
                 "Reader.orientation": "device",
 
+                // Text Reader defaults
+                "Reader.textReaderStyle": "paged",
+                "Reader.textFontFamily": "System",
+                "Reader.textFontSize": 18,
+                "Reader.textLineSpacing": 8,
+                "Reader.textHorizontalPadding": 24,
+
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,
 
@@ -191,6 +198,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Downloads.background": true
             ]
         )
+
+        // Explicitly set text reader defaults if not already set
+        // (SettingsStore may not recognize registered defaults)
+        let textReaderNumberDefaults: [String: Double] = [
+            "Reader.textFontSize": 18,
+            "Reader.textLineSpacing": 8,
+            "Reader.textHorizontalPadding": 24
+        ]
+        for (key, value) in textReaderNumberDefaults {
+            if UserDefaults.standard.object(forKey: key) == nil {
+                UserDefaults.standard.set(value, forKey: key)
+            }
+        }
+        if UserDefaults.standard.string(forKey: "Reader.textFontFamily") == nil {
+            UserDefaults.standard.set("Georgia", forKey: "Reader.textFontFamily")
+        }
 
         // check for icloud availability
         // https://developer.apple.com/documentation/foundation/filemanager/url(forubiquitycontaineridentifier:)

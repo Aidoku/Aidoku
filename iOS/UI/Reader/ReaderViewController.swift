@@ -345,14 +345,17 @@ class ReaderViewController: BaseObservingViewController {
         totalPages: Int? = nil,
         chapter: AidokuRunner.Chapter? = nil
     ) async {
+        let effectiveTotalPages = totalPages ?? toolbarView.totalPages ?? 0
+        let effectiveCurrentPage = currentPage ?? self.currentPage
+        
         guard
             !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
-            (totalPages ?? toolbarView.totalPages ?? 0) > 0 // ensure chapter pages are loaded
+            effectiveTotalPages > 0 // ensure chapter pages are loaded
         else {
             return
         }
 
-        let currentPage = currentPage ?? self.currentPage
+        let currentPage = effectiveCurrentPage
         let chapter = chapter ?? self.chapter
 
         let sourceId = manga.sourceKey
@@ -567,11 +570,25 @@ extension ReaderViewController {
                     pageController = nil
                 }
             case .text:
+                // Text always reads left-to-right, regardless of manga setting
                 toolbarView.sliderView.direction = .forward
-                if !(reader is ReaderTextViewController) {
-                    pageController = ReaderTextViewController(source: source, manga: manga)
+                
+                // Check user preference for text reader style
+                let textReaderStyle = UserDefaults.standard.string(forKey: "Reader.textReaderStyle") ?? "paged"
+                if textReaderStyle == "paged" {
+                    // Kindle-like paginated experience
+                    if !(reader is ReaderPagedTextViewController) {
+                        pageController = ReaderPagedTextViewController(source: source, manga: manga)
+                    } else {
+                        pageController = nil
+                    }
                 } else {
-                    pageController = nil
+                    // Original scroll-based text reader
+                    if !(reader is ReaderTextViewController) {
+                        pageController = ReaderTextViewController(source: source, manga: manga)
+                    } else {
+                        pageController = nil
+                    }
                 }
         }
         if let pageController {
@@ -704,8 +721,11 @@ extension ReaderViewController: ReaderHoldingDelegate {
         currentPage = page
         toolbarView.currentPage = page
         toolbarView.updateSliderPosition()
-        if pages.upperBound >= totalPages {
+        // Don't mark as completed if this is a single text page (pre-pagination placeholder)
+        let isSingleTextPage = totalPages == 1 && self.pages.first?.isTextPage == true
+        if pages.upperBound >= totalPages && !isSingleTextPage {
             setCompleted()
+        } else if isSingleTextPage {
         }
     }
 
@@ -730,6 +750,14 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     func setPages(_ pages: [Page]) {
+        
+        // If already in paginated text reader with text pages, just update toolbar - don't trigger any switches
+        if reader is ReaderPagedTextViewController && pages.allSatisfy({ $0.isTextPage }) && pages.count > 1 {
+            self.pages = pages
+            toolbarView.totalPages = pages.count
+            activityIndicator.stopAnimating()
+            return
+        }
         self.pages = pages
         toolbarView.totalPages = pages.count
         activityIndicator.stopAnimating()
@@ -737,15 +765,20 @@ extension ReaderViewController: ReaderHoldingDelegate {
             // no pages, show error
             showLoadFailAlert()
         } else if pages.count == 1 && pages[0].isTextPage {
-            // single text page, should switch to text reader
-            if !(reader is ReaderTextViewController) {
+            // single text page, should switch to text reader (paginated)
+            if !(reader is ReaderPagedTextViewController) && !(reader is ReaderTextViewController) {
                 setReader(.text)
                 setChapter(chapter)
                 loadCurrentChapter()
+            } else {
             }
+        } else if reader is ReaderPagedTextViewController && pages.allSatisfy({ $0.isTextPage }) {
+            // Already in paginated text reader with multiple text pages (from pagination)
+            // Don't switch away - this is our internal page count update
+            // Just update the toolbar, don't reload
         } else {
             // otherwise, make sure we're not in the text reader
-            if reader is ReaderTextViewController {
+            if reader is ReaderTextViewController || reader is ReaderPagedTextViewController {
                 switch readingMode {
                     case .ltr, .rtl, .vertical:
                         setReader(.paged)
@@ -791,6 +824,7 @@ extension ReaderViewController {
                 case is ReaderPagedViewController: .leftRight
                 case is ReaderWebtoonViewController: .lShaped
                 case is ReaderTextViewController: .lShaped
+                case is ReaderPagedTextViewController: .leftRight  // Kindle-style tap zones
                 default: .leftRight
             }
             case "left-right": .leftRight
