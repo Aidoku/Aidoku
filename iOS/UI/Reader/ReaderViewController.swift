@@ -598,9 +598,6 @@ extension ReaderViewController: ReaderHoldingDelegate {
     private func findBestChapterMatch(from index: Int, step: Int) -> AidokuRunner.Chapter {
         let firstCandidate = chapterList[index]
         let currentScanlators = Set(chapter.scanlators ?? [])
-        guard !currentScanlators.isEmpty else {
-            return firstCandidate
-        }
 
         var i = index
         while i >= 0 && i < chapterList.count {
@@ -609,9 +606,17 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
             let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: next.key)
             let isReadable = !next.locked || DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+
             if isReadable {
-                if let nextScanlators = next.scanlators, !currentScanlators.isDisjoint(with: nextScanlators) {
-                    return next
+                let nextScanlators = Set(next.scanlators ?? [])
+                if currentScanlators.isEmpty {
+                    if nextScanlators.isEmpty {
+                        return next
+                    }
+                } else {
+                    if !currentScanlators.isDisjoint(with: nextScanlators) {
+                        return next
+                    }
                 }
             }
             i += step
