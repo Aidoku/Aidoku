@@ -761,6 +761,11 @@ extension MangaView.ViewModel {
 
         let lastReadChapter = chapters.compactMap { chapter -> (AidokuRunner.Chapter, Int)? in
             guard let history = readingHistory[chapter.id], history.page != -1 else { return nil }
+            
+            // Ensure chapter is accessible
+            let isDownloaded = downloadStatus[chapter.key] == .finished
+            if chapter.locked && !isDownloaded { return nil }
+            
             return (chapter, history.date)
         }.max(by: { $0.1 < $1.1 })?.0
 
