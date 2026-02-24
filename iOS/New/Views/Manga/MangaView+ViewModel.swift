@@ -759,37 +759,12 @@ extension MangaView.ViewModel {
     private func getNextChapter() -> ChapterResult {
         guard !chapters.isEmpty else { return .none }
 
-        var lastReadChapter: AidokuRunner.Chapter?
-        var lastReadDate: Int = -1
-
-        for chapter in chapters {
-            if let history = readingHistory[chapter.id], history.page != -1 {
-                // Ensure chapter is accessible
-                let isDownloaded = downloadStatus[chapter.key] == .finished
-                if !chapter.locked || isDownloaded {
-                    if history.date > lastReadDate {
-                        lastReadDate = history.date
-                        lastReadChapter = chapter
-                    }
-                }
-            }
-        }
-
-        if let lastReadChapter {
-            return .chapter(lastReadChapter)
-        }
-
-        // 2. Fallback: Find first uncompleted chapter in sort order (Start Reading)
-        let sorted = chapterSortAscending ? chapters : chapters.reversed()
-
-        let chapter = sorted.first(where: { chapter in
-            let isDownloaded = downloadStatus[chapter.key] == .finished
-            let isUnlocked = !chapter.locked || isDownloaded
-            let history = readingHistory[chapter.id]
-            let isCompleted = history?.page ?? 0 == -1
-
-            return isUnlocked && !isCompleted
-        })
+        let chapter = MangaManager.shared.getNextChapter(
+            manga: manga,
+            chapters: chapters,
+            readingHistory: readingHistory,
+            sortAscending: chapterSortAscending
+        )
 
         if let chapter {
             return .chapter(chapter)

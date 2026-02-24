@@ -26,6 +26,48 @@ actor MangaManager {
     private var targetCategory: String?
 
     private static let maxConcurrentLibraryUpdateTasks = 10
+
+    nonisolated func getNextChapter(
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter],
+        readingHistory: [String: (page: Int, date: Int)],
+        sortAscending: Bool
+    ) -> AidokuRunner.Chapter? {
+        // 1. Resume Reading: Find the most recently read chapter that isn't completed
+        var lastReadChapter: AidokuRunner.Chapter?
+        var lastReadDate: Int = -1
+
+        for chapter in chapters {
+            if let history = readingHistory[chapter.id], history.page != -1 {
+                // Ensure chapter is accessible
+                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+                if !chapter.locked || isDownloaded {
+                    if history.date > lastReadDate {
+                        lastReadDate = history.date
+                        lastReadChapter = chapter
+                    }
+                }
+            }
+        }
+
+        if let lastReadChapter {
+            return lastReadChapter
+        }
+
+        // 2. Fallback: Find first uncompleted chapter in sort order (Start Reading)
+        let sorted = sortAscending ? chapters : chapters.reversed()
+
+        return sorted.first(where: { chapter in
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+            let isUnlocked = !chapter.locked || isDownloaded
+            let history = readingHistory[chapter.id]
+            let isCompleted = history?.page ?? 0 == -1
+
+            return isUnlocked && !isCompleted
+        })
+    }
 }
 
 // MARK: - Library Managing

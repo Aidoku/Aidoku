@@ -1188,23 +1188,63 @@ extension LibraryViewController {
                     mangaId: info.mangaId
                 )
                 let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.mangaId)
-                let chapter = chapters.reversed().first(where: { history[$0.id]?.page ?? 0 != -1 })
+                    .map { $0.toNew() }
 
-                if let chapter = chapter {
+                let filters = CoreDataManager.shared.getMangaChapterFilters(
+                    sourceId: info.sourceId,
+                    mangaId: info.mangaId
+                )
+                let sortOption = ChapterSortOption(flags: filters.flags)
+                let sortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
+
+                let sortedChapters: [AidokuRunner.Chapter] = {
+                    switch sortOption {
+                        case .sourceOrder:
+                            return sortAscending ? chapters.reversed() : chapters
+                        case .chapter:
+                            return chapters.sorted {
+                                let lhs = $0.chapterNumber ?? -1
+                                let rhs = $1.chapterNumber ?? -1
+                                return sortAscending ? lhs < rhs : lhs > rhs
+                            }
+                        case .uploadDate:
+                            return chapters.sorted {
+                                let lhs = $0.dateUploaded ?? .distantPast
+                                let rhs = $1.dateUploaded ?? .distantPast
+                                return sortAscending ? lhs < rhs : lhs > rhs
+                            }
+                    }
+                }()
+
+                let manga = AidokuRunner.Manga(
+                    sourceKey: info.sourceId,
+                    key: info.mangaId,
+                    title: info.title ?? "",
+                    chapters: sortedChapters
+                )
+
+                let nextChapter = MangaManager.shared.getNextChapter(
+                    manga: manga,
+                    chapters: sortedChapters,
+                    readingHistory: history,
+                    sortAscending: sortAscending
+                )
+
+                if let chapter = nextChapter {
                     // open reader view
-                    guard let source = SourceManager.shared.source(for: chapter.sourceId) else {
+                    guard let source = SourceManager.shared.source(for: info.sourceId) else {
                         return
                     }
                     let manga = AidokuRunner.Manga(
-                        sourceKey: chapter.sourceId,
-                        key: chapter.mangaId,
+                        sourceKey: info.sourceId,
+                        key: info.mangaId,
                         title: info.title ?? "",
-                        chapters: chapters.map { $0.toNew() }
+                        chapters: sortedChapters
                     )
                     let readerController = ReaderViewController(
                         source: source,
                         manga: manga,
-                        chapter: chapter.toNew()
+                        chapter: chapter
                     )
                     let navigationController = ReaderNavigationController(
                         readerViewController: readerController,
