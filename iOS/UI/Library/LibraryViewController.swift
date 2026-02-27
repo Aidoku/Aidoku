@@ -627,7 +627,9 @@ extension LibraryViewController {
         }
 
         Task {
-            await MangaManager.shared.backgroundRefreshLibrary(category: viewModel.currentCategory)
+            await MangaManager.shared.backgroundRefreshLibrary(
+                category: viewModel.isInRealCategory ? viewModel.currentCategory : nil
+            )
         }
     }
 
