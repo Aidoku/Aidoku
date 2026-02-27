@@ -21,7 +21,7 @@ struct SettingsView: View {
     static let settings = Settings.settings
 
     init() {
-        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles())
+        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false))
     }
 }
 
@@ -125,7 +125,7 @@ extension SettingsView {
             search()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateCategories)) { _ in
-            categories = CoreDataManager.shared.getCategoryTitles()
+            categories = CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false)
             if
                 let selected = UserDefaults.standard.string(forKey: "Library.defaultCategory"),
                 !selected.isEmpty && selected != "none" && !categories.contains(selected)
@@ -282,6 +282,8 @@ extension SettingsView {
     func pageContentHandler(_ key: String) -> (some View)? {
         if key == "Library.categories" {
             CategoriesView()
+        } else if key == "Library.filterGroups" {
+            FilterGroupsView()
         } else if key == "Reader.tapZones" {
             TapZonesSelectView()
         } else if key == "Reader.upscalingModels" {

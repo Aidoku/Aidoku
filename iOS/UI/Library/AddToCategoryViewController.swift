@@ -53,7 +53,7 @@ class AddToCategoryViewController: BaseTableViewController {
 
         Task {
             categories = await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+                CoreDataManager.shared.getCategoryTitles(context: context)
             }
             updateDataSource()
         }

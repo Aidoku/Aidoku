@@ -35,9 +35,7 @@ class CategorySelectViewController: UITableViewController {
 
         Task {
             (categories, selectedCategories) = await CoreDataManager.shared.container.performBackgroundTask { context in
-                let categories = CoreDataManager.shared.getCategories(context: context).map {
-                    $0.title ?? ""
-                }
+                let categories = CoreDataManager.shared.getCategoryTitles(context: context)
                 let inLibrary = CoreDataManager.shared.hasLibraryManga(
                     sourceId: self.manga.sourceKey,
                     mangaId: self.manga.key,

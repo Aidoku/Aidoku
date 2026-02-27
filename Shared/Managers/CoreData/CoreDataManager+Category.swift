@@ -8,7 +8,6 @@
 import CoreData
 
 extension CoreDataManager {
-
     /// Remove all category objects.
     func clearCategories(context: NSManagedObjectContext? = nil) {
         clear(request: CategoryObject.fetchRequest(), context: context)
@@ -24,11 +23,17 @@ extension CoreDataManager {
     }
 
     /// Get all category objects.
-    func getCategories(sorted: Bool = true, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
+    func getCategories(sorted: Bool = true, groupsOnly: Bool = false, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
         let context = context ?? self.context
         let request = CategoryObject.fetchRequest()
+        if groupsOnly {
+            request.predicate = NSPredicate(format: "group == %@", NSNumber(value: true))
+        }
         if sorted {
-            request.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: true)]
+            request.sortDescriptors = [
+                NSSortDescriptor(key: "group", ascending: true), // put filter groups on the bottom, if they're included
+                NSSortDescriptor(key: "sort", ascending: true)
+            ]
         }
         let objects = try? context.fetch(request)
         return objects ?? []
@@ -40,8 +45,29 @@ extension CoreDataManager {
         return (libraryObject?.categories?.allObjects as? [CategoryObject]) ?? []
     }
 
-    func getCategoryTitles(sorted: Bool = true, context: NSManagedObjectContext? = nil) -> [String] {
-        getCategories(sorted: sorted, context: context).compactMap { $0.title }
+    func getCategoryTitles(
+        sorted: Bool = true,
+        excludeFilterGroups: Bool = true,
+        context: NSManagedObjectContext? = nil
+    ) -> [String] {
+        getCategories(sorted: sorted, context: context)
+            .filter { excludeFilterGroups ? !$0.group : true }
+            .compactMap { $0.title }
+    }
+
+    func getFilterGroups(context: NSManagedObjectContext? = nil) -> [FilterGroup] {
+        let decoder = JSONDecoder()
+        return CoreDataManager.shared.getCategories(groupsOnly: true, context: context)
+            .compactMap { (object: CategoryObject) -> FilterGroup? in
+                guard
+                    let title = object.title,
+                    let data = object.data as? Data,
+                    let filters = try? decoder.decode([LibraryViewModel.LibraryFilter].self, from: data)
+                else {
+                    return nil
+                }
+                return FilterGroup(title: title, filters: filters)
+            }
     }
 
     /// Check if category exists.
@@ -55,10 +81,11 @@ extension CoreDataManager {
 
     /// Create a category object.
     @discardableResult
-    func createCategory(title: String, context: NSManagedObjectContext? = nil) -> CategoryObject {
+    func createCategory(title: String, group: Bool = false, context: NSManagedObjectContext? = nil) -> CategoryObject {
         let context = context ?? self.context
 
         let request = CategoryObject.fetchRequest()
+        request.predicate = NSPredicate(format: "group == %@", NSNumber(value: group))
         request.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: false)]
         request.fetchLimit = 1
         let lastCategoryIndex = (try? context.fetch(request))?.first?.sort ?? -1
@@ -66,6 +93,7 @@ extension CoreDataManager {
         let categoryObject = CategoryObject(context: context)
         categoryObject.title = title
         categoryObject.sort = lastCategoryIndex + 1
+        categoryObject.group = group
         return categoryObject
     }
 

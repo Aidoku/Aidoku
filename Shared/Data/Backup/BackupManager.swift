@@ -138,8 +138,8 @@ actor BackupManager {
             } else {
                 []
             }
-            let categories: [String] = if options.categories {
-                CoreDataManager.shared.getCategoryTitles(context: context)
+            let categories: [BackupCategory] = if options.categories {
+                CoreDataManager.shared.getCategories(context: context).compactMap(BackupCategory.init)
             } else {
                 []
             }
@@ -305,7 +305,7 @@ actor BackupManager {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearCategories(context: context)
                     for category in backupCategories {
-                        CoreDataManager.shared.createCategory(title: category, context: context)
+                        _ = category.toObject(context: context)
                     }
                     do {
                         try context.save()
