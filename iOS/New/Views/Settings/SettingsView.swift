@@ -11,7 +11,8 @@ import SwiftUI
 import WebKit
 
 struct SettingsView: View {
-    @State private var categories: [String]
+    @State private var categoriesOnly: [String]
+    @State private var categoriesAndGroups: [String]
 
     @State private var searchText: String = ""
     @State private var searchResult: SettingSearchResult?
@@ -21,7 +22,8 @@ struct SettingsView: View {
     static let settings = Settings.settings
 
     init() {
-        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false))
+        self._categoriesOnly = State(initialValue: CoreDataManager.shared.getCategoryTitles())
+        self._categoriesAndGroups = State(initialValue: CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false))
     }
 }
 
@@ -125,10 +127,11 @@ extension SettingsView {
             search()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateCategories)) { _ in
-            categories = CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false)
+            categoriesOnly = CoreDataManager.shared.getCategoryTitles()
+            categoriesAndGroups = CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false)
             if
                 let selected = UserDefaults.standard.string(forKey: "Library.defaultCategory"),
-                !selected.isEmpty && selected != "none" && !categories.contains(selected)
+                !selected.isEmpty && selected != "none" && !categoriesOnly.contains(selected)
             {
                 UserDefaults.standard.removeObject(forKey: "Library.defaultCategory")
             }
@@ -309,10 +312,10 @@ extension SettingsView {
             let newSetting = {
                 var setting = setting
                 setting.value = .select(.init(
-                    values: ["", "none"] + categories,
+                    values: ["", "none"] + categoriesOnly,
                     titles: [
                         NSLocalizedString("ALWAYS_ASK"), NSLocalizedString("NONE")
-                    ] + categories
+                    ] + categoriesOnly
                 ))
                 return setting
             }()
@@ -320,14 +323,14 @@ extension SettingsView {
         } else if setting.key == "Library.lockedCategories" {
             let newSetting = {
                 var setting = setting
-                setting.value = .multiselect(.init(values: categories, authToOpen: true))
+                setting.value = .multiselect(.init(values: categoriesAndGroups, authToOpen: true))
                 return setting
             }()
             SettingView(setting: newSetting)
         } else if setting.key == "Library.excludedUpdateCategories" {
             let newSetting = {
                 var setting = setting
-                setting.value = .multiselect(.init(values: categories))
+                setting.value = .multiselect(.init(values: categoriesOnly))
                 return setting
             }()
             SettingView(setting: newSetting)
