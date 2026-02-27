@@ -141,6 +141,7 @@ struct FilterGroupCreateView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboardImmediately()
             .navigationTitle(editingGroupTitle != nil ? NSLocalizedString("EDIT_FILTER_GROUP") : NSLocalizedString("CREATE_FILTER_GROUP"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
