@@ -107,9 +107,6 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler
 
             // check for old (expired) clearance cookie
             let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
-            if let oldCookie {
-                HTTPCookieStorage.shared.deleteCookie(oldCookie)
-            }
 
             // delay captcha check by 3s (so it loads in)
 #if !os(macOS)
@@ -139,7 +136,10 @@ class WasmNetWebViewHandler: NSObject, WKNavigationDelegate, PopupWebViewHandler
             self.popup?.dismiss(animated: true)
 #endif
 
-            // save cookies for future requests
+            // remove old cookie and save new cookies for future requests
+            if let oldCookie {
+                HTTPCookieStorage.shared.deleteCookie(oldCookie)
+            }
             HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
             if let cookies = HTTPCookie.requestHeaderFields(with: webViewCookies)["Cookie"] {
                 self.request.addValue(cookies, forHTTPHeaderField: "Cookie")
