@@ -140,6 +140,13 @@ struct FilterGroupCreateView: View {
                         }
                     }
                 }
+
+                Section {
+                    Button(NSLocalizedString("CLEAR_FILTERS")) {
+                        filters = []
+                    }
+                    .disabled(filters.isEmpty)
+                }
             }
             .scrollDismissesKeyboardImmediately()
             .navigationTitle(editingGroupTitle != nil ? NSLocalizedString("EDIT_FILTER_GROUP") : NSLocalizedString("CREATE_FILTER_GROUP"))
@@ -218,6 +225,22 @@ extension FilterGroupCreateView {
         // if we're editing a group, it's okay if it has the same title when checking validity
         if let editingGroupTitle, let index = allCategoryAndGroupTitles.firstIndex(of: editingGroupTitle) {
             allCategoryAndGroupTitles.remove(at: index)
+        }
+
+        // add any existing filtered items if they're missing from the data (e.g. removed source/category)
+        for filter in filters {
+            guard let value = filter.value else { continue }
+            switch filter.type {
+                case .source:
+                    if !sourceKeys.contains(value) {
+                        sourceKeys.append(value)
+                    }
+                case .category:
+                    if !categories.contains(value) {
+                        categories.append(value)
+                    }
+                default: break
+            }
         }
     }
 

@@ -124,6 +124,7 @@
 "FILTER_GROUPS" = "Filter Groups";
 "CREATE_FILTER_GROUP" = "Create Filter Group";
 "EDIT_FILTER_GROUP" = "Edit Filter Group";
+"CLEAR_FILTERS" = "Clear Filters";
 "SHOW_UNCATEGORIZED_CATEGORY" = "Show Uncategorized Category";
 
 // Browse
