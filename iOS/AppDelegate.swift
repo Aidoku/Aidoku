@@ -130,6 +130,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.lockLibrary": false,
 
                 "Library.lockedCategories": [String](),
+                "Library.showUncategorizedCategory": false,
 
                 "Library.updateInterval": "daily",
                 "Library.skipTitles": ["hasUnread", "completed", "notStarted"],

@@ -229,6 +229,12 @@ extension Settings {
                     notification: "updateLibraryLock",
                     requires: "Library.lockLibrary",
                     value: .custom
+                ),
+                .init(
+                    key: "Library.showUncategorizedCategory",
+                    title: NSLocalizedString("SHOW_UNCATEGORIZED_CATEGORY"),
+                    notification: "updateCategories",
+                    value: .toggle(.init())
                 )
             ]))
         ),

@@ -164,9 +164,12 @@ class LibraryViewController: OldMangaCollectionViewController {
         ) { [weak self] header, _, _ in
             guard let self else { return }
             header.delegate = self
-            var options: [LibraryCategorySelectionHeader.Section] = [
-                .init(options: [NSLocalizedString("ALL")])
-            ]
+            var options: [LibraryCategorySelectionHeader.Section] = []
+            if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
+                options.append(.init(options: [NSLocalizedString("ALL"), NSLocalizedString("UNCATEGORIZED")]))
+            } else {
+                options.append(.init(options: [NSLocalizedString("ALL")]))
+            }
             if !viewModel.categories.isEmpty {
                 options.append(.init(title: NSLocalizedString("CATEGORIES"), options: viewModel.categories))
             }
@@ -179,6 +182,8 @@ class LibraryViewController: OldMangaCollectionViewController {
                     header.setSelectedOption(IndexPath(row: index, section: 1))
                 } else if let index = viewModel.filterGroups.firstIndex(where: { $0.title == currentCategory }) {
                     header.setSelectedOption(IndexPath(row: index, section: viewModel.categories.isEmpty ? 1 : 2))
+                } else if currentCategory.isEmpty {
+                    header.setSelectedOption(.init(row: 1, section: 0))
                 }
             }
             header.updateMenu()
@@ -853,9 +858,12 @@ extension LibraryViewController {
             return
         }
         ignoreOptionChange = true
-        var options: [LibraryCategorySelectionHeader.Section] = [
-            .init(options: [NSLocalizedString("ALL")])
-        ]
+        var options: [LibraryCategorySelectionHeader.Section] = []
+        if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
+            options.append(.init(options: [NSLocalizedString("ALL"), NSLocalizedString("UNCATEGORIZED")]))
+        } else {
+            options.append(.init(options: [NSLocalizedString("ALL")]))
+        }
         if !viewModel.categories.isEmpty {
             options.append(.init(title: NSLocalizedString("CATEGORIES"), options: viewModel.categories))
         }
@@ -868,7 +876,11 @@ extension LibraryViewController {
                 header.setSelectedOption(IndexPath(row: index, section: 1))
             } else if let index = viewModel.filterGroups.firstIndex(where: { $0.title == currentCategory }) {
                 header.setSelectedOption(IndexPath(row: index, section: viewModel.categories.isEmpty ? 1 : 2))
+            } else if currentCategory.isEmpty {
+                header.setSelectedOption(.init(row: 1, section: 0))
             }
+        } else {
+            header.setSelectedOption(.init(row: 0, section: 0))
         }
     }
 }
@@ -1190,8 +1202,12 @@ extension LibraryViewController: LibraryCategorySelectionHeaderDelegate {
                 ignoreOptionChange = false
                 return
             }
-            if indexPath.section == 0 && indexPath.row == 0 {
-                viewModel.currentCategory = nil
+            if indexPath.section == 0 {
+                if indexPath.row == 0 {
+                    viewModel.currentCategory = nil
+                } else {
+                    viewModel.currentCategory = ""
+                }
             } else if indexPath.section == 1 && !viewModel.categories.isEmpty {
                 viewModel.currentCategory = viewModel.categories[indexPath.row]
             } else if indexPath.section == 2 || (indexPath.section == 1 && viewModel.categories.isEmpty) {

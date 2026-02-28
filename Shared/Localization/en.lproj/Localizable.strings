@@ -108,6 +108,7 @@
 "NONE" = "None";
 "CATEGORIES" = "Categories";
 "CATEGORY" = "Category";
+"UNCATEGORIZED" = "Uncategorized";
 "EDIT_CATEGORIES" = "Edit Categories";
 "CATEGORY_ADD" = "Add Category";
 "CATEGORY_ADD_TEXT" = "Enter the name of the new category to create.";
@@ -123,6 +124,7 @@
 "FILTER_GROUPS" = "Filter Groups";
 "CREATE_FILTER_GROUP" = "Create Filter Group";
 "EDIT_FILTER_GROUP" = "Edit Filter Group";
+"SHOW_UNCATEGORIZED_CATEGORY" = "Show Uncategorized Category";
 
 // Browse
 "BROWSE" = "Browse";

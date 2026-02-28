@@ -195,11 +195,14 @@ class LibraryViewModel {
         }
     }
     var isInRealCategory: Bool {
-        if let currentCategory {
+        if let currentCategory, !currentCategory.isEmpty {
             categories.contains(currentCategory)
         } else {
             false
         }
+    }
+    var isInUncategorizedCategory: Bool {
+        currentCategory?.isEmpty ?? false
     }
     private(set) var actuallyEmpty = true
 
@@ -217,7 +220,7 @@ class LibraryViewModel {
 extension LibraryViewModel {
     func isCategoryLocked() -> Bool {
         guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
-        if let currentCategory {
+        if let currentCategory, !currentCategory.isEmpty {
             let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
             return lockedCategories.contains(currentCategory)
         }
@@ -236,7 +239,8 @@ extension LibraryViewModel {
             )
         }
         let isInFilterGroup = filterGroups.contains(where: { $0.title == currentCategory })
-        if let currentCategory, !categories.contains(currentCategory) && !isInFilterGroup {
+        let showUncategorized = UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory")
+        if let currentCategory, (!categories.contains(currentCategory) && !isInFilterGroup) || (currentCategory.isEmpty && !showUncategorized) {
             self.currentCategory = nil
             await loadLibrary()
         } else if isInFilterGroup {
@@ -247,15 +251,13 @@ extension LibraryViewModel {
 
     // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
+        // handle filter groups
         let filters = if let currentCategory, let group = filterGroups.first(where: { $0.title == currentCategory }) {
             group.filters + self.filters
         } else {
             self.filters
         }
-        let currentCategory = isInRealCategory ? self.currentCategory : nil
-        let sortMethod = self.sortMethod
-        let sortAscending = self.sortAscending
-        let pinType = self.pinType
+        let currentCategory = (isInUncategorizedCategory || isInRealCategory) ? self.currentCategory : nil
 
         let (
             success,
@@ -264,7 +266,7 @@ extension LibraryViewModel {
             manga,
             sourceKeys,
             unappliedFilters
-        ) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+        ) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable [sortMethod, sortAscending, pinType] context in
             var pinnedManga: [MangaInfo] = []
             var manga: [MangaInfo] = []
             var sourceKeys: Set<String> = []
@@ -272,7 +274,11 @@ extension LibraryViewModel {
 
             let request = LibraryMangaObject.fetchRequest()
             if let currentCategory {
-                request.predicate = NSPredicate(format: "manga != nil AND ANY categories.title == %@", currentCategory)
+                if currentCategory.isEmpty {
+                    request.predicate = NSPredicate(format: "manga != nil AND categories.@count == 0")
+                } else {
+                    request.predicate = NSPredicate(format: "manga != nil AND ANY categories.title == %@", currentCategory)
+                }
             } else {
                 request.predicate = NSPredicate(format: "manga != nil")
             }
