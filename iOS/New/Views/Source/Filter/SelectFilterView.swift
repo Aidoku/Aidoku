@@ -113,19 +113,39 @@ struct SelectFilterView: View {
 
 struct SelectFilterGroupView: View {
     let filter: AidokuRunner.Filter
+    var searchText: String?
 
     @Binding var selectedOption: String
 
-    private let selectFilter: AidokuRunner.SelectFilter
+    struct Option: Identifiable {
+        var id = UUID()
+        let title: String
+        let value: String
+    }
 
-    init(filter: AidokuRunner.Filter, selectedOption: Binding<String>) {
+    private let selectFilter: AidokuRunner.SelectFilter
+    private let allOptions: [Option]
+
+    @State private var filteredOptions: [Option]
+
+    init(filter: AidokuRunner.Filter, searchText: String? = nil, selectedOption: Binding<String>) {
         self.filter = filter
+        self.searchText = searchText
         self._selectedOption = selectedOption
 
         guard case let .select(value) = filter.value else {
             fatalError("invalid filter type")
         }
         self.selectFilter = value
+        self.allOptions = value.options.enumerated().map { offset, option in
+            let id = value.ids?[safe: offset] ?? option
+            return Option(title: option, value: id)
+        }
+        if let searchText, !searchText.isEmpty {
+            self._filteredOptions = State(initialValue: allOptions.filter { $0.title.localizedCaseInsensitiveContains(searchText) })
+        } else {
+            self._filteredOptions = State(initialValue: allOptions)
+        }
     }
 
     var body: some View {
@@ -136,20 +156,25 @@ struct SelectFilterGroupView: View {
                 listBody
             }
         }
+        .onChange(of: searchText) { newValue in
+            if let newValue, !newValue.isEmpty {
+                filteredOptions = allOptions.filter { $0.title.localizedCaseInsensitiveContains(newValue) }
+            } else {
+                filteredOptions = allOptions
+            }
+        }
     }
 
     var tagBody: some View {
-        WrappingHStack(selectFilter.options.indices, id: \.self) { offset in
-            let option = selectFilter.options[offset]
-            let value = selectFilter.ids?[safe: offset] ?? option
+        WrappingHStack(filteredOptions, id: \.id) { option in
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    selectedOption = value
+                    selectedOption = option.value
                 }
             } label: {
-                Text(option)
+                Text(option.title)
             }
-            .buttonStyle(SelectButtonStyle(selected: selectedOption == value))
+            .buttonStyle(SelectButtonStyle(selected: selectedOption == option.value))
             .padding([.trailing, .bottom], 8)
         }
         .padding(.horizontal)
@@ -158,15 +183,13 @@ struct SelectFilterGroupView: View {
 
     var listBody: some View {
         VStack(spacing: 0) {
-            ForEach(selectFilter.options.indices, id: \.self) { offset in
-                let option = selectFilter.options[offset]
-                let value = selectFilter.ids?[safe: offset] ?? option
+            ForEach(filteredOptions) { option in
                 Button {
-                    selectedOption = value
+                    selectedOption = option.value
                 } label: {
                     HStack {
                         ZStack {
-                            let selected = selectedOption == value
+                            let selected = selectedOption == option.value
                             RoundedRectangle(cornerRadius: 5)
                                 .fill(selected ? Color.accentColor : Color(uiColor: .secondarySystemFill))
                                 .aspectRatio(1, contentMode: .fill)
@@ -177,7 +200,7 @@ struct SelectFilterGroupView: View {
                                     .font(.system(size: 14).weight(.semibold))
                             }
                         }
-                        Text(option)
+                        Text(option.title)
                             .padding(.leading, 1)
                             .lineLimit(1)
                         Spacer()

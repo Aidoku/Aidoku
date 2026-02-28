@@ -144,13 +144,23 @@ struct MultiSelectFilterView: View {
 
 struct MultiSelectFilterGroupView: View {
     let filter: AidokuRunner.Filter
+    var searchText: String?
 
     @Binding var includedOptions: [String]
     @Binding var excludedOptions: [String]
 
-    private let multiSelectFilter: MultiSelectFilter
+    struct Option: Identifiable {
+        var id = UUID()
+        let title: String
+        let value: String
+    }
 
-    private enum State {
+    private let multiSelectFilter: MultiSelectFilter
+    private let allOptions: [Option]
+
+    @State private var filteredOptions: [Option]
+
+    private enum FilterState {
         case normal
         case included
         case excluded
@@ -158,15 +168,27 @@ struct MultiSelectFilterGroupView: View {
 
     init(
         filter: AidokuRunner.Filter,
+        searchText: String? = nil,
         includedOptions: Binding<[String]>,
         excludedOptions: Binding<[String]>
     ) {
         self.filter = filter
+        self.searchText = searchText
         self._includedOptions = includedOptions
         self._excludedOptions = excludedOptions
 
         if case let .multiselect(filter) = filter.value {
             self.multiSelectFilter = filter
+
+            self.allOptions = filter.options.enumerated().map { offset, option in
+                let id = filter.ids?[safe: offset] ?? option
+                return Option(title: option, value: id)
+            }
+            if let searchText, !searchText.isEmpty {
+                self._filteredOptions = State(initialValue: allOptions.filter { $0.title.localizedCaseInsensitiveContains(searchText) })
+            } else {
+                self._filteredOptions = State(initialValue: allOptions)
+            }
         } else {
             fatalError("invalid filter type")
         }
@@ -180,6 +202,13 @@ struct MultiSelectFilterGroupView: View {
                 listBody
             }
         }
+        .onChange(of: searchText) { newValue in
+            if let newValue, !newValue.isEmpty {
+                filteredOptions = allOptions.filter { $0.title.localizedCaseInsensitiveContains(newValue) }
+            } else {
+                filteredOptions = allOptions
+            }
+        }
     }
 
     var tagBody: some View {
@@ -188,16 +217,16 @@ struct MultiSelectFilterGroupView: View {
                 rows: min(Int(multiSelectFilter.options.count / 12), 4) + 1,
                 verticalSpacing: 8,
                 horizontalSpacing: 8,
-                Array(multiSelectFilter.options.enumerated()),
-                id: \.offset
-            ) { offset, option in
-                let id = multiSelectFilter.ids?[safe: offset] ?? option
+                filteredOptions,
+                id: \.id
+            ) { option in
+                let id = option.value
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         toggle(option: id)
                     }
                 } label: {
-                    Text(option)
+                    Text(option.title)
                 }
                 .buttonStyle(
                     GenreButtonStyle(state: {
@@ -219,14 +248,14 @@ struct MultiSelectFilterGroupView: View {
 
     var listBody: some View {
         VStack(spacing: 0) {
-            ForEach(Array(multiSelectFilter.options.enumerated()), id: \.offset) { offset, option in
-                let id = multiSelectFilter.ids?[safe: offset] ?? option
+            ForEach(filteredOptions) { option in
+                let id = option.value
                 Button {
                     toggle(option: id)
                 } label: {
                     HStack {
                         ZStack {
-                            let state: State = if includedOptions.contains(id) {
+                            let state: FilterState = if includedOptions.contains(id) {
                                 .included
                             } else if multiSelectFilter.canExclude, excludedOptions.contains(id) {
                                 .excluded
@@ -243,7 +272,7 @@ struct MultiSelectFilterGroupView: View {
                                     .font(.system(size: 14).weight(.semibold))
                             }
                         }
-                        Text(option)
+                        Text(option.title)
                             .padding(.leading, 1)
                             .lineLimit(1)
                         Spacer()

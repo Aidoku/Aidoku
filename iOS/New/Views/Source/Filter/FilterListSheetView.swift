@@ -134,7 +134,10 @@ private struct FilterListView: View {
     @State private var selectedIndexes: [String: Int]
     @State private var ascending: [String: Bool]
 
+    @State private var search: [String: String] = [:]
     @State private var hasError: [String: Bool] = [:]
+
+    @FocusState private var fieldFocused: String?
 
     init(filters: [AidokuRunner.Filter], showTitles: Bool = true, enabledFilters: Binding<[FilterValue]>) {
         self.filters = filters
@@ -180,7 +183,8 @@ private struct FilterListView: View {
 
     var body: some View {
         VStack(spacing: 22) {
-            ForEach(Array(filters.enumerated()), id: \.offset) { _, filter in
+            ForEach(filters.indices, id: \.self) { index in
+                let filter = filters[index]
                 VStack(spacing: 6) {
                     switch filter.value {
                         case let .text(placeholder):
@@ -231,10 +235,16 @@ private struct FilterListView: View {
 
                         case let .select(value):
                             if showTitles {
-                                titleView(filter.title)
+                                let shouldShowSearch = value.usesTagStyle && value.options.count >= 15
+                                titleView(filter.title, searchId: shouldShowSearch ? filter.id : nil)
+                            }
+                            let searchText = search[filter.id]
+                            if searchText != nil {
+                                searchField(id: filter.id)
                             }
                             SelectFilterGroupView(
                                 filter: filter,
+                                searchText: searchText,
                                 selectedOption: selectedOptionBinding(
                                     for: filter.id,
                                     default: value.resolvedDefaultValue
@@ -243,10 +253,16 @@ private struct FilterListView: View {
 
                         case let .multiselect(value):
                             if showTitles {
-                                titleView(filter.title)
+                                let shouldShowSearch = value.usesTagStyle && value.options.count >= 15
+                                titleView(filter.title, searchId: shouldShowSearch ? filter.id : nil)
+                            }
+                            let searchText = search[filter.id]
+                            if searchText != nil {
+                                searchField(id: filter.id)
                             }
                             MultiSelectFilterGroupView(
                                 filter: filter,
+                                searchText: searchText,
                                 includedOptions: includedOptionsBinding(for: filter.id, default: value.defaultIncluded ?? []),
                                 excludedOptions: excludedOptionsBinding(for: filter.id, default: value.defaultExcluded ?? [])
                             )
@@ -287,13 +303,46 @@ private struct FilterListView: View {
         }
     }
 
-    private func titleView(_ title: String?) -> some View {
+    private func titleView(_ title: String?, searchId: String? = nil) -> some View {
         HStack {
             Text(title ?? "")
                 .font(.title3.weight(.semibold))
             Spacer()
+            if let searchId {
+                let isSearching = search[searchId] != nil
+                Button {
+                    withAnimation {
+                        if isSearching {
+                            search[searchId] = nil
+                        } else {
+                            search[searchId] = ""
+                            fieldFocused = searchId
+                        }
+                    }
+                } label: {
+                    Image(systemName: isSearching ? "xmark" : "magnifyingglass")
+                }
+            }
         }
         .padding(.horizontal)
+    }
+
+    @ViewBuilder
+    private func searchField(id: String) -> some View {
+        let searchText = search[id] ?? ""
+        textField {
+            HStack {
+                TextField(NSLocalizedString("SEARCH"), text: searchBinding(for: id))
+                    .focused($fieldFocused, equals: id)
+                if !searchText.isEmpty {
+                    ClearFieldButton {
+                        search[id] = ""
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 2)
     }
 
     private func textField<Content: View>(content: @escaping () -> Content) -> some View {
@@ -366,7 +415,9 @@ private struct FilterListView: View {
             }
         }
     }
+}
 
+extension FilterListView {
     private func updateMultiSelectFilters() {
         let ids = Set(Array(includedOptions.keys) + Array(excludedOptions.keys))
         for id in ids {
@@ -510,7 +561,9 @@ private struct FilterListView: View {
             enabledFilters.append(filterValue)
         }
     }
+}
 
+extension FilterListView {
     private func textBinding(for id: String) -> Binding<String> {
         Binding(
             get: { text[id, default: ""] },
@@ -564,6 +617,13 @@ private struct FilterListView: View {
         Binding(
             get: { ascending[id, default: def] },
             set: { ascending[id] = $0 }
+        )
+    }
+
+    private func searchBinding(for id: String) -> Binding<String> {
+        Binding(
+            get: { search[id, default: ""] },
+            set: { search[id] = $0 }
         )
     }
 }
