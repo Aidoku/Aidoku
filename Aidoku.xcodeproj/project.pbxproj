@@ -56,6 +56,11 @@
 		FB077DAC2E7DC83100C9C214 /* SettingsTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */; };
 		FB077DAE2E7DC85A00C9C214 /* BackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAD2E7DC85800C9C214 /* BackupsView.swift */; };
 		FB077DB02E7DCFFA00C9C214 /* String+Highlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */; };
+		FB0AB8942F50B98300AF1451 /* BackupCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8932F50B98000AF1451 /* BackupCategory.swift */; };
+		FB0AB8952F50B98300AF1451 /* BackupCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8932F50B98000AF1451 /* BackupCategory.swift */; };
+		FB0AB8A32F51FD8D00AF1451 /* FilterGroupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */; };
+		FB0AB8A52F52047100AF1451 /* FilterGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */; };
+		FB0AB8A62F52047100AF1451 /* FilterGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */; };
 		FB0C088C280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0C088D280E4D1C00A7332B /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0C088B280E4D1C00A7332B /* DeepLink.swift */; };
 		FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */; };
@@ -561,6 +566,8 @@
 		FBF9259B2F4DFB7A0049CB43 /* MangaBakaApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF925992F4DFB780049CB43 /* MangaBakaApi.swift */; };
 		FBF9259D2F4DFB810049CB43 /* MangaBakaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9259C2F4DFB7E0049CB43 /* MangaBakaModels.swift */; };
 		FBF9259E2F4DFB810049CB43 /* MangaBakaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9259C2F4DFB7E0049CB43 /* MangaBakaModels.swift */; };
+		FBF925B62F4F6FF20049CB43 /* FilterGroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF925B52F4F6FF10049CB43 /* FilterGroupsView.swift */; };
+		FBF925B82F4F79750049CB43 /* LibraryCategorySelectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF925B72F4F79740049CB43 /* LibraryCategorySelectionHeader.swift */; };
 		FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
@@ -627,6 +634,10 @@
 		FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTrackingView.swift; sourceTree = "<group>"; };
 		FB077DAD2E7DC85800C9C214 /* BackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupsView.swift; sourceTree = "<group>"; };
 		FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Highlight.swift"; sourceTree = "<group>"; };
+		FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.2.xcdatamodel; sourceTree = "<group>"; };
+		FB0AB8932F50B98000AF1451 /* BackupCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCategory.swift; sourceTree = "<group>"; };
+		FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroupCreateView.swift; sourceTree = "<group>"; };
+		FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroup.swift; sourceTree = "<group>"; };
 		FB0C088B280E4D1C00A7332B /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Manga.swift"; sourceTree = "<group>"; };
 		FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+LibraryManga.swift"; sourceTree = "<group>"; };
@@ -1030,6 +1041,8 @@
 		FBF925952F4DFB6B0049CB43 /* MangaBakaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaBakaTracker.swift; sourceTree = "<group>"; };
 		FBF925992F4DFB780049CB43 /* MangaBakaApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaBakaApi.swift; sourceTree = "<group>"; };
 		FBF9259C2F4DFB7E0049CB43 /* MangaBakaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaBakaModels.swift; sourceTree = "<group>"; };
+		FBF925B52F4F6FF10049CB43 /* FilterGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroupsView.swift; sourceTree = "<group>"; };
+		FBF925B72F4F79740049CB43 /* LibraryCategorySelectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryCategorySelectionHeader.swift; sourceTree = "<group>"; };
 		FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
 		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
 		FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInfoPageView.swift; sourceTree = "<group>"; };
@@ -1167,6 +1180,7 @@
 				FBE975CB2EC39329008C7633 /* ComicInfo.swift */,
 				FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */,
 				FB63D5002E38124A004FF4DC /* EditedKeys.swift */,
+				FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */,
 				FB02E1F3288D7C0C00B9E2DE /* Manga.swift */,
 				FB034EA32EAC275C0072EEEB /* MangaIdentifier.swift */,
 				FB90F6CD28A032FC000C37E6 /* MangaInfo.swift */,
@@ -1193,6 +1207,16 @@
 				FB05F86A2964BFBC00D1EA2D /* SourceViewModel.swift */,
 			);
 			path = Source;
+			sourceTree = "<group>";
+		};
+		FB0AB8A72F52119D00AF1451 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				FB077DA72E7DC5F700C9C214 /* CategoriesView.swift */,
+				FBF925B52F4F6FF10049CB43 /* FilterGroupsView.swift */,
+				FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */,
+			);
+			path = Categories;
 			sourceTree = "<group>";
 		};
 		FB0CAA4A28A2AD2E0024561A /* CoreData */ = {
@@ -1882,6 +1906,7 @@
 				FB72501227CAAC9F0037F1C9 /* Backup.swift */,
 				FB72501527CAACAB0037F1C9 /* BackupManga.swift */,
 				FB72501827CAACB60037F1C9 /* BackupLibraryManga.swift */,
+				FB0AB8932F50B98000AF1451 /* BackupCategory.swift */,
 				FB72501B27CAACC00037F1C9 /* BackupChapter.swift */,
 				FB72501E27CAACC90037F1C9 /* BackupHistory.swift */,
 				FBCA1B2C2889AEE0007149C5 /* BackupTrackItem.swift */,
@@ -1915,6 +1940,7 @@
 		FB7984152E0C9F4D000761A9 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				FB0AB8A72F52119D00AF1451 /* Categories */,
 				FB947D3A2EF33BCF00FC6226 /* Insights */,
 				FB7C288F2E898D85009FF6AF /* Backups */,
 				FBB516482E2F057200749F4E /* Downloads */,
@@ -1923,7 +1949,6 @@
 				FB077DA52E7DC5C300C9C214 /* SettingSearchResult.swift */,
 				FB077DA92E7DC76F00C9C214 /* SettingsAboutView.swift */,
 				FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */,
-				FB077DA72E7DC5F700C9C214 /* CategoriesView.swift */,
 				FB55C0AE2DF1E2650019A551 /* SourceListsView.swift */,
 				FB7984132E0C9F1D000761A9 /* UpscaleModelListView.swift */,
 				FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */,
@@ -1995,6 +2020,7 @@
 			isa = PBXGroup;
 			children = (
 				FB90E8B32EAD175B00A8ACF3 /* DownloadQueueView.swift */,
+				FBF925B72F4F79740049CB43 /* LibraryCategorySelectionHeader.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -2505,6 +2531,7 @@
 				FB0E1CD4288AEA8A00B67BA9 /* AniListQueries.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */,
+				FBF925B82F4F79750049CB43 /* LibraryCategorySelectionHeader.swift in Sources */,
 				FBD7966A2ED270B500BD05F4 /* PageBackground.swift in Sources */,
 				FB248CC42EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
 				FB8E318B2DB98AFE0084F899 /* ChapterListHeaderView.swift in Sources */,
@@ -2527,8 +2554,10 @@
 				FB1A4E612E78A829006F4BA8 /* KomgaTracker.swift in Sources */,
 				FBD7966C2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */,
 				FBE3E4992DD4047100EF8145 /* ReaderTextViewModel.swift in Sources */,
+				FB0AB8942F50B98300AF1451 /* BackupCategory.swift in Sources */,
 				FBED232927BDF4C90095D0C0 /* TextInputTableViewCell.swift in Sources */,
 				FB2E024D286606FC00786F21 /* JsonAnyValue.swift in Sources */,
+				FBF925B62F4F6FF20049CB43 /* FilterGroupsView.swift in Sources */,
 				FBF059C82EF8330B00907B0E /* BackupUpdate.swift in Sources */,
 				FB90F6CE28A032FC000C37E6 /* MangaInfo.swift in Sources */,
 				FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */,
@@ -2734,6 +2763,7 @@
 				FB3DDA112ECEACE20081232F /* MangaListViewController.swift in Sources */,
 				FB72501627CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB8E48E12DC15DCF002A3621 /* NotificationName.swift in Sources */,
+				FB0AB8A32F51FD8D00AF1451 /* FilterGroupCreateView.swift in Sources */,
 				FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */,
 				FBD796682ED1333D00BD05F4 /* DoubleBadgeView.swift in Sources */,
 				FB67EE6027F3708400C468EA /* WasmImports.swift in Sources */,
@@ -2862,6 +2892,7 @@
 				FB0CAA4C28A2AD480024561A /* CoreDataManager+Manga.swift in Sources */,
 				FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
+				FB0AB8A52F52047100AF1451 /* FilterGroup.swift in Sources */,
 				FB9A48422968943400FFC414 /* SwiftUINavigationView.swift in Sources */,
 				FB58C6B02999B44100A6F49F /* WasmNetWebViewHandler.swift in Sources */,
 				FB947CFB2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */,
@@ -2922,6 +2953,7 @@
 				FBF059C92EF8330B00907B0E /* BackupUpdate.swift in Sources */,
 				FBF9259E2F4DFB810049CB43 /* MangaBakaModels.swift in Sources */,
 				FB248CCA2EA5818400BECD2E /* KavitaHelper.swift in Sources */,
+				FB0AB8A62F52047100AF1451 /* FilterGroup.swift in Sources */,
 				FBB44E6C2EC634B40032EFBB /* LocalFileNameParser.swift in Sources */,
 				FBD7966D2ED35BFB00BD05F4 /* TrackerInfo.swift in Sources */,
 				FB4B0AE9285D0A0E0066A13B /* Dictionary.swift in Sources */,
@@ -3033,6 +3065,7 @@
 				FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
 				FBF059BD2EF7015500907B0E /* YearlyMonthData.swift in Sources */,
 				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,
+				FB0AB8952F50B98300AF1451 /* BackupCategory.swift in Sources */,
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB619E402E94A62000E3B565 /* PageTracker.swift in Sources */,
@@ -3629,6 +3662,7 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */,
 				FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */,
 				FB63D4FF2E37CBEF004FF4DC /* 0.7.1.xcdatamodel */,
 				FBAE7BF02AF58A0000D530EE /* 0.7.xcdatamodel */,
@@ -3639,7 +3673,7 @@
 				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */;
+			currentVersion = FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

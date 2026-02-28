@@ -24,7 +24,6 @@ struct BackupsView: View {
     @Namespace private var transitionNamespace
 
     private enum SheetID: String {
-        case create
         case autoBackup
     }
 

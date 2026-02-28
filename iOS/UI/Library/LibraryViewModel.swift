@@ -112,7 +112,7 @@ class LibraryViewModel {
         static let downloaded = BadgeType(rawValue: 1 << 1)
     }
 
-    struct LibraryFilter: Codable {
+    struct LibraryFilter: Codable, Hashable {
         var type: FilterMethod
         var value: String?
         var exclude: Bool
@@ -141,8 +141,8 @@ class LibraryViewModel {
             }
         }
 
-        var image: UIImage? {
-            let name = switch self {
+        var systemImageName: String {
+            switch self {
                 case .downloaded: "arrow.down.circle"
                 case .tracking: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                 case .hasUnread: "eye.slash"
@@ -152,7 +152,10 @@ class LibraryViewModel {
                 case .contentRating: "exclamationmark.triangle.fill"
                 case .category: "folder"
             }
-            return UIImage(systemName: name)
+        }
+
+        var image: UIImage? {
+            UIImage(systemName: systemImageName)
         }
 
         var isAvailable: Bool {
@@ -185,9 +188,17 @@ class LibraryViewModel {
     }
 
     var categories: [String] = []
+    var filterGroups: [FilterGroup] = []
     lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
         didSet {
             UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+        }
+    }
+    var isInRealCategory: Bool {
+        if let currentCategory {
+            categories.contains(currentCategory)
+        } else {
+            false
         }
     }
     private(set) var actuallyEmpty = true
@@ -206,8 +217,9 @@ class LibraryViewModel {
 extension LibraryViewModel {
     func isCategoryLocked() -> Bool {
         guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
-        if let currentCategory = currentCategory {
-            return UserDefaults.standard.stringArray(forKey: "Library.lockedCategories")?.contains(currentCategory) ?? false
+        if let currentCategory {
+            let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+            return lockedCategories.contains(currentCategory)
         }
         return true
     }
@@ -217,21 +229,32 @@ extension LibraryViewModel {
     }
 
     func refreshCategories() async {
-        categories = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-            CoreDataManager.shared.getCategories(context: context).map { $0.title ?? "" }
+        (categories, filterGroups) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+            (
+                CoreDataManager.shared.getCategoryTitles(context: context),
+                CoreDataManager.shared.getFilterGroups()
+            )
         }
-        if currentCategory != nil && !categories.contains(currentCategory!) {
-            currentCategory = nil
+        let isInFilterGroup = filterGroups.contains(where: { $0.title == currentCategory })
+        if let currentCategory, !categories.contains(currentCategory) && !isInFilterGroup {
+            self.currentCategory = nil
+            await loadLibrary()
+        } else if isInFilterGroup {
+            // refresh filter group in case filters changed
             await loadLibrary()
         }
     }
 
     // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
-        let currentCategory = self.currentCategory
+        let filters = if let currentCategory, let group = filterGroups.first(where: { $0.title == currentCategory }) {
+            group.filters + self.filters
+        } else {
+            self.filters
+        }
+        let currentCategory = isInRealCategory ? self.currentCategory : nil
         let sortMethod = self.sortMethod
         let sortAscending = self.sortAscending
-        let filters = self.filters
         let pinType = self.pinType
 
         let (
@@ -775,7 +798,7 @@ extension LibraryViewModel {
     }
 
     func addToCurrentCategory(manga: MangaInfo) async {
-        guard let currentCategory = currentCategory else { return }
+        guard let currentCategory, isInRealCategory else { return }
         await CoreDataManager.shared.addCategoriesToManga(
             sourceId: manga.sourceId,
             mangaId: manga.mangaId,
@@ -784,7 +807,7 @@ extension LibraryViewModel {
     }
 
     func removeFromCurrentCategory(manga: MangaInfo) async {
-        guard let currentCategory = currentCategory else { return }
+        guard let currentCategory, isInRealCategory else { return }
         pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
         await CoreDataManager.shared.removeCategoriesFromManga(

@@ -11,6 +11,7 @@
 "CANCEL" = "Cancel";
 "OK" = "OK";
 "DONE" = "Done";
+"EDIT" = "Edit";
 "UNKNOWN" = "Unknown";
 "UNAVAILABLE" = "Unavailable";
 "INVALID" = "Invalid";
@@ -119,6 +120,9 @@
 "RENAME_CATEGORY_FAIL" = "Failed to Rename Category";
 "RENAME_CATEGORY" = "Rename Category";
 "RENAME_CATEGORY_FAIL_INFO" = "Category names must be unique.";
+"FILTER_GROUPS" = "Filter Groups";
+"CREATE_FILTER_GROUP" = "Create Filter Group";
+"EDIT_FILTER_GROUP" = "Edit Filter Group";
 
 // Browse
 "BROWSE" = "Browse";

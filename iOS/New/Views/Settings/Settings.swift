@@ -214,6 +214,11 @@ extension Settings {
                     value: .page(.init(items: []))
                 ),
                 .init(
+                    key: "Library.filterGroups",
+                    title: NSLocalizedString("FILTER_GROUPS"),
+                    value: .page(.init(items: []))
+                ),
+                .init(
                     key: "Library.defaultCategory",
                     title: NSLocalizedString("DEFAULT_CATEGORY"),
                     value: .custom

@@ -308,7 +308,7 @@ struct MangaDetailsHeaderView: View {
                     .onEnded { _ in
                         if
                             bookmarked,
-                            !CoreDataManager.shared.getCategories(sorted: false).isEmpty
+                            !CoreDataManager.shared.getCategoryTitles(sorted: false).isEmpty
                         {
                             longHeldBookmark = true
                             path.present(

@@ -13,8 +13,11 @@ struct CategoriesView: View {
     @State private var categoryTitle: String = ""
     @State private var showRenameFailedAlert = false
 
+    @State private var groupTitles: [String] = []
+
     init() {
         self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles())
+        self._groupTitles = State(initialValue: CoreDataManager.shared.getCategories(groupsOnly: true).compactMap { $0.title })
     }
 
     var body: some View {
@@ -144,7 +147,7 @@ struct CategoriesView: View {
 
 extension CategoriesView {
     func addCategory(title: String) {
-        if !title.isEmpty, title.lowercased() != "none", !categories.contains(title) {
+        if !title.isEmpty, title.lowercased() != "none", !categories.contains(title), !groupTitles.contains(title) {
             Task {
                 await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.createCategory(title: title, context: context)
@@ -179,7 +182,7 @@ extension CategoriesView {
     }
 
     func renameCategory(title: String, newTitle: String) {
-        if newTitle.lowercased() == "none" || self.categories.contains(newTitle) || newTitle.isEmpty {
+        if newTitle.lowercased() == "none" || categories.contains(newTitle) || groupTitles.contains(newTitle) || newTitle.isEmpty {
             showRenameFailedAlert = true
         } else {
             Task {
@@ -208,5 +211,4 @@ extension CategoriesView {
             }
         }
     }
-
 }
