@@ -294,14 +294,13 @@ private struct FilterListView: View {
                                 titleView(filter.title)
                             }
                             TextFieldWrapper {
-                                if #available(iOS 16.0, *) {
-                                    TextField(
-                                        "",
-                                        text: textBinding(for: filter.id),
-                                        prompt: Text(placeholder ?? "").foregroundColor(.gray)
-                                    )
-                                } else {
-                                    TextField(placeholder ?? "", text: textBinding(for: filter.id))
+                                let textBinding = textBinding(for: filter.id)
+                                TextField(placeholder ?? "", text: textBinding)
+                                    .autocorrectionDisabled()
+                                if !textBinding.wrappedValue.isEmpty {
+                                    ClearFieldButton {
+                                        textBinding.wrappedValue = ""
+                                    }
                                 }
                             }
                             .padding(.horizontal)
@@ -474,6 +473,7 @@ private struct FilterListView: View {
             HStack {
                 TextField(NSLocalizedString("SEARCH"), text: searchBinding(for: id))
                     .focused($fieldFocused, equals: id)
+                    .autocorrectionDisabled()
                 if !searchText.isEmpty {
                     ClearFieldButton {
                         search[id] = ""
