@@ -194,6 +194,13 @@
 "NO_AVAILABLE_SOURCES_INFO" = "Adjust your filters to view more external sources.";
 "ALL_SOURCES_INSTALLED" = "All Sources Installed";
 "ALL_SOURCES_INSTALLED_INFO" = "There are no remaining external sources to install.";
+"SAVE" = "Save";
+"SAVED_SEARCHES" = "Saved Searches";
+"NAME_SAVED_SEARCH" = "Name Saved Search";
+"NAME_SAVED_SEARCH_INFO" = "Saving this search will store the currently configured filters and search text.";
+"SAVED_SEARCH_NAME" = "Name";
+"SAVE_SEARCH_FAIL" = "Save Failed";
+"SAVE_SEARCH_FAIL_INFO" = "An existing saved search with this name already exists. Please choose a unique name.";
 
 // Local Source
 "LOCAL_FILES" = "Local Files";

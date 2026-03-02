@@ -9,32 +9,51 @@ import AidokuRunner
 import SwiftUI
 
 struct FilterListSheetView: View {
+    let sourceKey: String?
     let filters: [AidokuRunner.Filter]
-    var showResetButton = false
 
+    @Binding var search: String
     @Binding var enabledFilters: [FilterValue]
 
+    @State private var newSearch: String?
     @State private var newEnabledFilters: [FilterValue]
+    @State private var savedSearches: [SavedSearch]
     @State private var showConfirm = false
+    @State private var showSaveErrorAlert = false
     @State private var discardChanges = false
 
     @Environment(\.dismiss) private var dismiss
 
     init(
+        sourceKey: String? = nil,
         filters: [AidokuRunner.Filter],
-        showResetButton: Bool = false,
+        search: Binding<String>,
         enabledFilters: Binding<[FilterValue]>
     ) {
+        self.sourceKey = sourceKey
         self.filters = filters
-        self.showResetButton = showResetButton
+        self._search = search
         self._enabledFilters = enabledFilters
         self._newEnabledFilters = State(initialValue: enabledFilters.wrappedValue)
+
+        if let sourceKey {
+            let data = UserDefaults.standard.data(forKey: "\(sourceKey).savedSearches")
+            let decodedSearches = data.flatMap { try? JSONDecoder().decode([SavedSearch].self, from: $0) }
+            self._savedSearches = State(initialValue: decodedSearches ?? [])
+        } else {
+            self._savedSearches = State(initialValue: [])
+        }
     }
 
     var body: some View {
         PlatformNavigationStack {
             let scrollView = ScrollView(.vertical) {
-                FilterListView(filters: filters, enabledFilters: $newEnabledFilters)
+                FilterListView(
+                    filters: filters,
+                    newSearch: $newSearch,
+                    enabledFilters: $newEnabledFilters,
+                    savedSearches: $savedSearches
+                )
             }
             .scrollDismissesKeyboardInteractively()
             .navigationTitle(NSLocalizedString("FILTERS"))
@@ -53,8 +72,17 @@ struct FilterListSheetView: View {
             } message: {
                 Text(NSLocalizedString("CANCEL_CONFIRM_TEXT"))
             }
+            .alert(NSLocalizedString("SAVE_SEARCH_FAIL"), isPresented: $showSaveErrorAlert) {
+                Button(NSLocalizedString("OK"), role: .cancel) {}
+            } message: {
+                Text(NSLocalizedString("SAVE_SEARCH_FAIL_INFO"))
+            }
             .onDisappear {
-                guard !discardChanges, newEnabledFilters != enabledFilters else { return }
+                saveSavedSearches()
+                guard !discardChanges, newEnabledFilters != enabledFilters || newSearch != nil else { return }
+                if let newSearch {
+                    search = newSearch
+                }
                 enabledFilters = newEnabledFilters
             }
 
@@ -66,14 +94,14 @@ struct FilterListSheetView: View {
             } else {
                 scrollView
                     .toolbar {
-                        toolbarContent
+                        toolbarContentiOS18
                     }
             }
         }
     }
 
     @ToolbarContentBuilder
-    var toolbarContent: some ToolbarContent {
+    var commonToolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button(NSLocalizedString("CANCEL")) {
                 if newEnabledFilters == enabledFilters {
@@ -89,41 +117,103 @@ struct FilterListSheetView: View {
             }
             .font(.body.weight(.medium))
         }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    var toolbarContentiOS26: some ToolbarContent {
+        commonToolbarContent
 
         ToolbarItem(placement: .bottomBar) {
-            if showResetButton {
-                if #available(iOS 26.0, *) {
-                    Button(NSLocalizedString("RESET")) {
-                        newEnabledFilters = []
-                        dismiss()
-                    }
-                } else {
-                    HStack {
-                        Button(NSLocalizedString("RESET")) {
-                            newEnabledFilters = []
-                            dismiss()
-                        }
-                        Spacer()
+            Button(NSLocalizedString("RESET")) {
+                newEnabledFilters = []
+                dismiss()
+            }
+        }
+
+        ToolbarSpacer(.flexible, placement: .bottomBar)
+
+        if sourceKey != nil {
+            ToolbarItem(placement: .bottomBar) {
+                Button(NSLocalizedString("SAVE")) {
+                    promptSearchSave()
+                }
+            }
+        }
+    }
+
+    @ToolbarContentBuilder
+    var toolbarContentiOS18: some ToolbarContent {
+        commonToolbarContent
+
+        ToolbarItem(placement: .bottomBar) {
+            HStack {
+                Button(NSLocalizedString("RESET")) {
+                    newEnabledFilters = []
+                    dismiss()
+                }
+                Spacer()
+                if sourceKey != nil {
+                    Button(NSLocalizedString("SAVE")) {
+                        promptSearchSave()
                     }
                 }
             }
         }
     }
 
-    @available(iOS 26.0, *)
-    @ToolbarContentBuilder
-    var toolbarContentiOS26: some ToolbarContent {
-        toolbarContent
+    func promptSearchSave() {
+        var alertTextField: UITextField?
+        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+            title: NSLocalizedString("NAME_SAVED_SEARCH"),
+            message: NSLocalizedString("NAME_SAVED_SEARCH_INFO"),
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
+                    guard let text = alertTextField?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
+                    guard !savedSearches.contains(where: { $0.name == text }) else {
+                        showSaveErrorAlert = true
+                        return
+                    }
+                    let savedSearch = SavedSearch(
+                        name: text,
+                        search: newSearch ?? search,
+                        filters: newEnabledFilters
+                    )
+                    savedSearches.append(savedSearch)
+                }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    textField.placeholder = NSLocalizedString("SAVED_SEARCH_NAME")
+                    textField.autocorrectionType = .no
+                    textField.returnKeyType = .done
+                    alertTextField = textField
+                }
+            ],
+            textFieldDisablesLastActionWhenEmpty: true
+        )
+    }
 
-        ToolbarSpacer(.flexible, placement: .bottomBar)
+    func saveSavedSearches() {
+        guard let sourceKey else { return }
+        let key = "\(sourceKey).savedSearches"
+        if savedSearches.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            let data = try? JSONEncoder().encode(savedSearches)
+            UserDefaults.standard.set(data, forKey: key)
+        }
     }
 }
 
 private struct FilterListView: View {
     let filters: [AidokuRunner.Filter]
-    var showTitles = true
+    let showTitles: Bool
 
+    @Binding var newSearch: String?
     @Binding var enabledFilters: [FilterValue]
+    @Binding var savedSearches: [SavedSearch]
 
     @State private var text: [String: String]
     @State private var from: [String: Float]
@@ -139,10 +229,20 @@ private struct FilterListView: View {
 
     @FocusState private var fieldFocused: String?
 
-    init(filters: [AidokuRunner.Filter], showTitles: Bool = true, enabledFilters: Binding<[FilterValue]>) {
+    @Environment(\.dismiss) var dismiss
+
+    init(
+        filters: [AidokuRunner.Filter],
+        showTitles: Bool = true,
+        newSearch: Binding<String?>,
+        enabledFilters: Binding<[FilterValue]>,
+        savedSearches: Binding<[SavedSearch]>
+    ) {
         self.filters = filters
         self.showTitles = showTitles
+        self._newSearch = newSearch
         self._enabledFilters = enabledFilters
+        self._savedSearches = savedSearches
 
         var text: [String: String] = [:]
         var from: [String: Float] = [:]
@@ -183,6 +283,8 @@ private struct FilterListView: View {
 
     var body: some View {
         VStack(spacing: 22) {
+            savedSearchesView
+
             ForEach(filters.indices, id: \.self) { index in
                 let filter = filters[index]
                 VStack(spacing: 6) {
@@ -300,6 +402,44 @@ private struct FilterListView: View {
         }
         .onChange(of: text) { _ in
             updateTextFilters()
+        }
+    }
+
+    @ViewBuilder
+    var savedSearchesView: some View {
+        if !savedSearches.isEmpty {
+            VStack(spacing: 6) {
+                titleView(NSLocalizedString("SAVED_SEARCHES"))
+
+                VStack(spacing: 0) {
+                    ForEach(savedSearches, id: \.name) { savedSearch in
+                        Button {
+                            newSearch = savedSearch.search
+                            enabledFilters = savedSearch.filters
+                            dismiss()
+                        } label: {
+                            HStack {
+                                Text(savedSearch.name)
+                                    .lineLimit(1)
+                                Spacer()
+                                Button {
+                                    if let index = savedSearches.firstIndex(where: { $0.name == savedSearch.name }) {
+                                        withAnimation {
+                                            _ = savedSearches.remove(at: index)
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.vertical, 8)
+                            .padding(.horizontal)
+                        }
+                        .buttonStyle(SelectHighlightButtonStyle())
+                    }
+                }
+            }
         }
     }
 

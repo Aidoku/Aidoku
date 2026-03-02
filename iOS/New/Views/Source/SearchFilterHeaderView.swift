@@ -12,6 +12,7 @@ struct SearchFilterHeaderView: View {
     let source: AidokuRunner.Source
 
     @Binding var filters: [AidokuRunner.Filter]?
+    @Binding var search: String
     @Binding var enabledFilters: [FilterValue]
     @Binding var filtersEmpty: Bool
 
@@ -46,7 +47,9 @@ struct SearchFilterHeaderView: View {
                     EmptyView()
                 } else {
                     FilterHeaderView(
+                        sourceKey: source.key,
                         filters: filters,
+                        search: $search,
                         enabledFilters: $enabledFilters,
                         onFilterButtonClick: onFilterButtonClick
                     )

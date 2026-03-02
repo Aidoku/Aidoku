@@ -9,7 +9,9 @@ import AidokuRunner
 import SwiftUI
 
 struct FilterHeaderView: View {
+    let sourceKey: String?
     let filters: [AidokuRunner.Filter]
+    @Binding var search: String
     @Binding var enabledFilters: [FilterValue]
     let onFilterButtonClick: (() -> Void)?
     let onFilterSheetDismiss: (() -> Void)?
@@ -18,12 +20,16 @@ struct FilterHeaderView: View {
     @State private var showingSheet = false
 
     init(
+        sourceKey: String? = nil,
         filters: [AidokuRunner.Filter],
+        search: Binding<String> = .constant(""),
         enabledFilters: Binding<[FilterValue]>,
         onFilterButtonClick: (() -> Void)? = nil,
         onFilterSheetDismiss: (() -> Void)? = nil
     ) {
+        self.sourceKey = sourceKey
         self.filters = filters
+        self._search = search
         self._enabledFilters = enabledFilters
         self.onFilterButtonClick = onFilterButtonClick
         self.onFilterSheetDismiss = onFilterSheetDismiss
@@ -90,8 +96,9 @@ struct FilterHeaderView: View {
         .padding(.top, -11)
         .sheet(isPresented: $showingSheet, onDismiss: onFilterSheetDismiss) {
             FilterListSheetView(
+                sourceKey: sourceKey,
                 filters: filters,
-                showResetButton: true,
+                search: $search,
                 enabledFilters: $enabledFilters
             )
         }

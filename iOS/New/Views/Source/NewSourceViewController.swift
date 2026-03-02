@@ -73,6 +73,17 @@ class NewSourceViewController: UIViewController {
         }
     }
 
+    private var searchBinding: Binding<String> {
+        .init(
+            get: { [weak self] in self?.searchText ?? "" },
+            set: { [weak self] in
+                guard let self else { return }
+                self.searchController.searchBar.text = $0
+                self.searchBar(self.searchController.searchBar, textDidChange: $0)
+                self.searchBarSearchButtonClicked(self.searchController.searchBar)
+            }
+        )
+    }
     private var listingsBinding: Binding<[AidokuRunner.Listing]> {
         .init(
             get: { [weak self] in self?.listings ?? [] },
@@ -115,6 +126,7 @@ class NewSourceViewController: UIViewController {
         SearchFilterHeaderView(
             source: source,
             filters: filtersBinding,
+            search: searchBinding,
             enabledFilters: enabledFiltersBinding,
             filtersEmpty: filtersEmptyBinding
         ) { [weak self] in
@@ -145,8 +157,9 @@ class NewSourceViewController: UIViewController {
 
     private var filterSheetView: FilterListSheetView {
         FilterListSheetView(
+            sourceKey: source.key,
             filters: filters ?? [],
-            showResetButton: true,
+            search: searchBinding,
             enabledFilters: enabledFiltersBinding
         )
     }
@@ -193,7 +206,7 @@ class NewSourceViewController: UIViewController {
         self.searchViewController.searchText = self.searchText
 
         // load filters from defaults
-        let filtersData: Data? = SettingsStore.shared.get(key: "\(source.id).filters")
+        let filtersData: Data? = SettingsStore.shared.get(key: "\(source.key).filters")
         if let filtersData {
             let enabledFilters = try? JSONDecoder().decode([FilterValue].self, from: filtersData)
             self.enabledFilters = enabledFilters ?? []
