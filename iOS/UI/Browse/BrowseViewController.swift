@@ -82,6 +82,7 @@ class BrowseViewController: BaseTableViewController {
         emptyStackView.buttonText = NSLocalizedString("ADDING_SOURCES_GUIDE_BUTTON", comment: "")
         emptyStackView.addButtonTarget(self, action: #selector(openGuidePage))
         emptyStackView.showsButton = true
+        emptyStackView.isHidden = true
         emptyStackView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(emptyStackView)
 
