@@ -66,17 +66,46 @@ class TextDoublePageViewController: UIViewController {
             rightTextView.attributedText = rightPage.attributedContent
         }
 
-        // Use safe area for proper positioning
+        // Pin to view edges (not safe area) so text doesn't shift when bars hide/show.
+        // The paginator already accounts for toolbar/safe-area space via its buffer.
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            stackView.topAnchor.constraint(equalTo: view.topAnchor),
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             dividerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             dividerView.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 20),
             dividerView.bottomAnchor.constraint(equalTo: stackView.bottomAnchor, constant: -20),
             dividerView.widthAnchor.constraint(equalToConstant: 1)
         ])
+
+        updateTextInsets()
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        updateTextInsets()
+    }
+
+    /// Position text content within the full-screen view by accounting for safe area
+    /// and toolbar buffer. Keeps text stable when bars hide/show.
+    private func updateTextInsets() {
+        let safeArea = view.safeAreaInsets
+        let toolbarBuffer: CGFloat = 100
+        let verticalPadding: CGFloat = 32
+        let horizontalPadding: CGFloat = 24
+
+        let topInset = safeArea.top + toolbarBuffer / 2 + verticalPadding
+        let bottomInset = safeArea.bottom + toolbarBuffer / 2 + verticalPadding
+        let leftInset = safeArea.left + horizontalPadding
+        let rightInset = safeArea.right + horizontalPadding
+
+        let insets = UIEdgeInsets(
+            top: topInset, left: leftInset,
+            bottom: bottomInset, right: rightInset
+        )
+        leftTextView.textContainerInset = insets
+        rightTextView.textContainerInset = insets
     }
 
     private func createTextView() -> UITextView {
@@ -84,8 +113,6 @@ class TextDoublePageViewController: UIViewController {
         tv.isEditable = false
         tv.isScrollEnabled = false
         tv.backgroundColor = .systemBackground
-        // Must match TextPaginator's padding: horizontalPadding=24, verticalPadding=32
-        tv.textContainerInset = UIEdgeInsets(top: 32, left: 24, bottom: 32, right: 24)
         return tv
     }
 }

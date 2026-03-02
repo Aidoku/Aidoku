@@ -93,105 +93,94 @@ class TextPaginator {
         return paginateAttributedString(attributedString, contentSize: contentArea, originalMarkdown: markdown)
     }
 
-    /// Convert markdown to NSAttributedString with proper styling.
-    /// Handles headers, bold, italic, and preserves paragraph structure.
-    ///
-    /// Follows standard Markdown newline rules:
-    /// - A single newline is treated as a soft break (space) — text flows together.
-    /// - A blank line (two consecutive newlines) starts a new paragraph.
-    /// - A line ending with two or more trailing spaces is a hard line break.
+    /// Convert markdown to NSAttributedString using Apple's built-in CommonMark parser,
+    /// then apply custom styling (fonts, paragraph styles, list formatting) from `config`.
     private func markdownToAttributedString(_ markdown: String) -> NSAttributedString {
+        // Parse the full CommonMark document via Apple's AttributedString API
+        guard let parsed = try? AttributedString(
+            markdown: markdown,
+            options: .init(interpretedSyntax: .full)
+        ) else {
+            // Fallback: plain text with base styling
+            return NSAttributedString(string: markdown, attributes: config.attributes)
+        }
+
         let result = NSMutableAttributedString()
+        var lastBlockIdentity: Int?
 
-        // Split into paragraphs on blank lines (two+ consecutive newlines)
-        let paragraphs = markdown.components(separatedBy: "\n\n")
+        for run in parsed.runs {
+            let text = String(parsed[run.range].characters)
+            let blockIntent = run.presentationIntent
+            let inlineIntent = run.inlinePresentationIntent
+            let currentIdentity = blockIntent?.components.first?.identity
 
-        for (pIndex, paragraph) in paragraphs.enumerated() {
-            let lines = paragraph.components(separatedBy: "\n")
+            // Insert paragraph separator when the block changes
+            if let current = currentIdentity, current != lastBlockIdentity, result.length > 0 {
+                result.append(NSAttributedString(string: "\n", attributes: config.attributes))
+            }
 
-            for (lIndex, line) in lines.enumerated() {
-                let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            // Determine block-level attributes
+            var runAttrs = config.attributes
+            if let intent = blockIntent {
+                mergeBlockAttributes(into: &runAttrs, intent: intent)
 
-                // Skip empty lines within a paragraph block
-                guard !trimmedLine.isEmpty else { continue }
-
-                // Check for headers
-                var headerLevel = 0
-                var headerText = line
-                if trimmedLine.hasPrefix("######") {
-                    headerLevel = 6
-                    headerText = String(trimmedLine.dropFirst(6)).trimmingCharacters(in: .whitespaces)
-                } else if trimmedLine.hasPrefix("#####") {
-                    headerLevel = 5
-                    headerText = String(trimmedLine.dropFirst(5)).trimmingCharacters(in: .whitespaces)
-                } else if trimmedLine.hasPrefix("####") {
-                    headerLevel = 4
-                    headerText = String(trimmedLine.dropFirst(4)).trimmingCharacters(in: .whitespaces)
-                } else if trimmedLine.hasPrefix("###") {
-                    headerLevel = 3
-                    headerText = String(trimmedLine.dropFirst(3)).trimmingCharacters(in: .whitespaces)
-                } else if trimmedLine.hasPrefix("##") {
-                    headerLevel = 2
-                    headerText = String(trimmedLine.dropFirst(2)).trimmingCharacters(in: .whitespaces)
-                } else if trimmedLine.hasPrefix("#") {
-                    headerLevel = 1
-                    headerText = String(trimmedLine.dropFirst(1)).trimmingCharacters(in: .whitespaces)
-                }
-
-                if headerLevel > 0 {
-                    // Headers always get their own block
-                    if result.length > 0 {
-                        result.append(NSAttributedString(string: "\n", attributes: config.attributes))
-                    }
-                    result.append(createHeaderAttributedString(headerText, level: headerLevel))
-                    // Ensure a newline after the header so subsequent text starts on a new line
-                    result.append(NSAttributedString(string: "\n", attributes: config.attributes))
-                } else {
-                    // Regular text line
-                    let hasHardBreak = line.hasSuffix("  ") // two+ trailing spaces = hard break
-
-                    // Join with previous line in the same paragraph using a space (soft break)
-                    if lIndex > 0 && result.length > 0 {
-                        // Check if the previous content ended with a hard break newline
-                        let lastChar = result.string.last
-                        if lastChar != "\n" {
-                            result.append(NSAttributedString(string: " ", attributes: config.attributes))
-                        }
-                    }
-
-                    let lineText = hasHardBreak ? String(line.dropLast(2)) : line
-                    result.append(parseInlineMarkdown(lineText))
-
-                    // If the line had trailing spaces, insert a hard line break
-                    if hasHardBreak {
-                        result.append(NSAttributedString(string: "\n", attributes: config.attributes))
+                // Insert list bullet/number at the start of a new list item block
+                if let current = currentIdentity, current != lastBlockIdentity {
+                    if let bulletStr = listBulletString(for: intent) {
+                        result.append(NSAttributedString(string: bulletStr, attributes: runAttrs))
                     }
                 }
             }
 
-            // Add paragraph separator between paragraphs (except after the last one)
-            if pIndex < paragraphs.count - 1 {
-                // Avoid double newlines if the paragraph ended with a header or hard break
-                let endsWithNewline = result.string.hasSuffix("\n")
-                if !endsWithNewline {
-                    result.append(NSAttributedString(string: "\n", attributes: config.attributes))
-                }
+            // Apply inline styling on top of block attributes
+            if let inline = inlineIntent {
+                mergeInlineAttributes(into: &runAttrs, intent: inline)
             }
+
+            // Preserve hyperlinks
+            if let link = run.link {
+                runAttrs[.link] = link
+            }
+
+            result.append(NSAttributedString(string: text, attributes: runAttrs))
+            lastBlockIdentity = currentIdentity
         }
 
         return result
     }
 
-    /// Create an attributed string for a header
-    private func createHeaderAttributedString(_ text: String, level: Int) -> NSAttributedString {
-        // Scale font size based on header level
+    // MARK: - Block Styling
+
+    /// Merge block-level attributes (header, list, quote, code) into the given dictionary.
+    private func mergeBlockAttributes(
+        into attrs: inout [NSAttributedString.Key: Any],
+        intent: PresentationIntent
+    ) {
+        for component in intent.components {
+            switch component.kind {
+            case .header(level: let level):
+                mergeHeaderAttributes(into: &attrs, level: level)
+            case .listItem:
+                mergeListItemAttributes(into: &attrs)
+            case .blockQuote:
+                mergeBlockQuoteAttributes(into: &attrs)
+            case .codeBlock:
+                mergeCodeBlockAttributes(into: &attrs)
+            default:
+                break
+            }
+        }
+    }
+
+    /// Merge header attributes (scaled bold font, extra spacing).
+    private func mergeHeaderAttributes(into attrs: inout [NSAttributedString.Key: Any], level: Int) {
         let sizeMultiplier: CGFloat = switch level {
-            case 1: 1.75
-            case 2: 1.5
-            case 3: 1.25
-            case 4: 1.15
-            case 5: 1.1
-            default: 1.05
+        case 1: 1.75
+        case 2: 1.5
+        case 3: 1.25
+        case 4: 1.15
+        case 5: 1.1
+        default: 1.05
         }
 
         let headerFontSize = config.fontSize * sizeMultiplier
@@ -199,66 +188,102 @@ class TextPaginator {
         if config.fontName == "San Francisco" || config.fontName == "System" {
             headerFont = UIFont.systemFont(ofSize: headerFontSize, weight: .bold)
         } else {
-            headerFont = UIFont(name: config.fontName, size: headerFontSize) ?? UIFont.systemFont(ofSize: headerFontSize)
-            // Apply bold trait
+            headerFont = UIFont(name: config.fontName, size: headerFontSize)
+                ?? UIFont.systemFont(ofSize: headerFontSize)
             if let boldDescriptor = headerFont.fontDescriptor.withSymbolicTraits(.traitBold) {
                 headerFont = UIFont(descriptor: boldDescriptor, size: headerFontSize)
             }
         }
 
-        // Header paragraph style with extra spacing
-        let headerParagraphStyle = NSMutableParagraphStyle()
-        headerParagraphStyle.lineSpacing = config.lineSpacing
-        headerParagraphStyle.paragraphSpacingBefore = config.paragraphSpacing
-        headerParagraphStyle.paragraphSpacing = config.paragraphSpacing / 2
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = config.lineSpacing
+        style.paragraphSpacingBefore = config.paragraphSpacing
+        style.paragraphSpacing = config.paragraphSpacing / 2
 
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: headerFont,
-            .paragraphStyle: headerParagraphStyle,
-            .foregroundColor: UIColor.label
-        ]
-
-        // Parse inline markdown within the header text
-        let inlineAttributed = parseInlineMarkdown(text)
-        let mutable = NSMutableAttributedString(attributedString: inlineAttributed)
-        mutable.addAttributes(attributes, range: NSRange(location: 0, length: mutable.length))
-
-        return mutable
+        attrs[.font] = headerFont
+        attrs[.paragraphStyle] = style
     }
 
-    /// Parse inline markdown (bold, italic) within a line
-    private func parseInlineMarkdown(_ text: String) -> NSAttributedString {
-        // Try Apple's built-in markdown parser for inline elements
-        if let attributed = try? AttributedString(
-            markdown: text,
-            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
-        ) {
-            let mutable = NSMutableAttributedString(attributed)
-            let fullRange = NSRange(location: 0, length: mutable.length)
+    /// Merge list item attributes (hanging indent, tab stops).
+    private func mergeListItemAttributes(into attrs: inout [NSAttributedString.Key: Any]) {
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = config.lineSpacing
+        style.headIndent = config.fontSize * 1.5
+        style.firstLineHeadIndent = 0
+        style.paragraphSpacing = config.paragraphSpacing / 3
+        style.tabStops = [NSTextTab(textAlignment: .left, location: config.fontSize * 1.5)]
 
-            // Apply base styling
-            mutable.addAttributes(config.attributes, range: fullRange)
+        attrs[.paragraphStyle] = style
+    }
 
-            // Re-apply bold/italic from the markdown parse
-            mutable.enumerateAttribute(.font, in: fullRange) { value, range, _ in
-                guard let existingFont = value as? UIFont else { return }
-                let traits = existingFont.fontDescriptor.symbolicTraits
-                var newFont = config.font
-                if traits.contains(.traitBold),
-                   let boldDescriptor = newFont.fontDescriptor.withSymbolicTraits(.traitBold) {
-                    newFont = UIFont(descriptor: boldDescriptor, size: newFont.pointSize)
-                }
-                if traits.contains(.traitItalic),
-                   let italicDescriptor = newFont.fontDescriptor.withSymbolicTraits(.traitItalic) {
-                    newFont = UIFont(descriptor: italicDescriptor, size: newFont.pointSize)
-                }
-                mutable.addAttribute(.font, value: newFont, range: range)
+    /// Return the bullet/number prefix for a list item, or nil if the intent is not a list item.
+    private func listBulletString(for intent: PresentationIntent) -> String? {
+        for component in intent.components {
+            if case .listItem(ordinal: let ordinal) = component.kind {
+                let isOrdered = intent.components.contains { $0.kind == .orderedList }
+                return isOrdered ? "\(ordinal).\t" : "\u{2022}\t"
             }
-            return mutable
+        }
+        return nil
+    }
+
+    /// Merge block quote attributes (indentation, secondary color).
+    private func mergeBlockQuoteAttributes(into attrs: inout [NSAttributedString.Key: Any]) {
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = config.lineSpacing
+        style.headIndent = config.fontSize * 1.5
+        style.firstLineHeadIndent = config.fontSize * 1.5
+        style.paragraphSpacing = config.paragraphSpacing
+
+        attrs[.paragraphStyle] = style
+        attrs[.foregroundColor] = UIColor.secondaryLabel
+    }
+
+    /// Merge code block attributes (monospace font, indentation).
+    private func mergeCodeBlockAttributes(into attrs: inout [NSAttributedString.Key: Any]) {
+        let monoFont = UIFont.monospacedSystemFont(ofSize: config.fontSize * 0.9, weight: .regular)
+
+        let style = NSMutableParagraphStyle()
+        style.lineSpacing = config.lineSpacing * 0.75
+        style.paragraphSpacing = config.paragraphSpacing
+        style.headIndent = config.fontSize * 0.75
+        style.firstLineHeadIndent = config.fontSize * 0.75
+
+        attrs[.font] = monoFont
+        attrs[.paragraphStyle] = style
+        attrs[.foregroundColor] = UIColor.secondaryLabel
+    }
+
+    // MARK: - Inline Styling
+
+    /// Merge inline attributes (bold, italic, code, strikethrough) into the given dictionary.
+    private func mergeInlineAttributes(
+        into attrs: inout [NSAttributedString.Key: Any],
+        intent: InlinePresentationIntent
+    ) {
+        var font = (attrs[.font] as? UIFont) ?? config.font
+        var traits: UIFontDescriptor.SymbolicTraits = []
+
+        if intent.contains(.stronglyEmphasized) {
+            traits.insert(.traitBold)
+        }
+        if intent.contains(.emphasized) {
+            traits.insert(.traitItalic)
         }
 
-        // Fallback: plain text
-        return NSAttributedString(string: text, attributes: config.attributes)
+        if !traits.isEmpty, let descriptor = font.fontDescriptor.withSymbolicTraits(traits) {
+            font = UIFont(descriptor: descriptor, size: font.pointSize)
+        }
+
+        if intent.contains(.code) {
+            font = UIFont.monospacedSystemFont(ofSize: config.fontSize * 0.9, weight: .regular)
+        }
+
+        attrs[.font] = font
+
+        if intent.contains(.strikethrough) {
+            attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+        }
     }
 
     /// Split attributed string into pages based on available height

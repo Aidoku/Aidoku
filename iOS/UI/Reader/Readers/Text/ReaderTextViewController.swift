@@ -496,6 +496,13 @@ class ReaderTextViewController: BaseViewController {
                 return
             }
 
+            // Don't infinite-scroll into non-text chapters — the reading mode
+            // would switch abruptly. The boundary transition view stays visible.
+            guard newPages.allSatisfy({ $0.isTextPage }) else {
+                loadingNext = false
+                return
+            }
+
             await MainActor.run {
                 // Add an inline transition view after the last section
                 let lastSection = sections.last!
@@ -554,6 +561,12 @@ class ReaderTextViewController: BaseViewController {
             await viewModel.preload(chapter: prevCh)
             let newPages = viewModel.preloadedPages
             guard !newPages.isEmpty else {
+                loadingPrevious = false
+                return
+            }
+
+            // Don't infinite-scroll into non-text chapters
+            guard newPages.allSatisfy({ $0.isTextPage }) else {
                 loadingPrevious = false
                 return
             }
@@ -627,15 +640,18 @@ class ReaderTextViewController: BaseViewController {
 
         chapter = sectionChapter
         delegate?.setChapter(sectionChapter)
-        delegate?.setPages(sections[index].pages)
 
         // Refresh navigation pointers
         previousChapter = delegate?.getPreviousChapter()
         nextChapter = delegate?.getNextChapter()
 
         hasReachedEnd = false
+        lastReportedPage = 0
+
+        // Recalculate virtual pages for the new section and report to toolbar.
+        // Use a deferred update so hosting controller frames are finalized first.
         needsPageCountUpdate = true
-        updateEstimatedPageCount()
+        view.setNeedsLayout()
     }
 }
 

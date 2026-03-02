@@ -14,8 +14,6 @@ class TextSinglePageViewController: UIViewController {
         tv.isScrollEnabled = false
         tv.backgroundColor = .systemBackground
         tv.font = .systemFont(ofSize: 18)
-        // Content padding (matches TextPaginator)
-        tv.textContainerInset = UIEdgeInsets(top: 32, left: 24, bottom: 32, right: 24)
         return tv
     }()
 
@@ -37,12 +35,13 @@ class TextSinglePageViewController: UIViewController {
 
         textView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Use safe area for proper positioning under status bar and above home indicator
+        // Pin to view edges (not safe area) so text doesn't shift when bars hide/show.
+        // The paginator already accounts for toolbar/safe-area space via its buffer.
         NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            textView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            textView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            textView.topAnchor.constraint(equalTo: view.topAnchor),
+            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            textView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
         // Set the text content
@@ -51,5 +50,33 @@ class TextSinglePageViewController: UIViewController {
         } else {
             textView.text = page.markdownContent
         }
+
+        updateTextInsets()
+    }
+
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        updateTextInsets()
+    }
+
+    /// Position the text content within the full-screen view by accounting
+    /// for safe area insets and a toolbar buffer in the text container inset.
+    /// This keeps text stable when bars hide/show (safe area changes).
+    private func updateTextInsets() {
+        let safeArea = view.safeAreaInsets
+        let toolbarBuffer: CGFloat = 100
+        let verticalPadding: CGFloat = 32
+        let horizontalPadding: CGFloat = 24
+
+        // Distribute toolbar buffer evenly between top and bottom
+        let topInset = safeArea.top + toolbarBuffer / 2 + verticalPadding
+        let bottomInset = safeArea.bottom + toolbarBuffer / 2 + verticalPadding
+        let leftInset = safeArea.left + horizontalPadding
+        let rightInset = safeArea.right + horizontalPadding
+
+        textView.textContainerInset = UIEdgeInsets(
+            top: topInset, left: leftInset,
+            bottom: bottomInset, right: rightInset
+        )
     }
 }

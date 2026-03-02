@@ -262,10 +262,20 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         if !pages.isEmpty {
             let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
             let chapterId = chapter?.key ?? ""
+            // Check if any source page has a description
+            let sourceHasDescription = viewModel.pages.contains { $0.hasDescription }
             let placeholderPages: [Page] = pages.map { textPage in
                 var page = Page(sourceId: sourceId, chapterId: chapterId)
                 page.index = textPage.id
                 page.text = "page"  // Mark as text page
+                // Carry description info so the info button appears on every page
+                if sourceHasDescription {
+                    page.hasDescription = true
+                    // Copy the actual description from source pages if available
+                    if let desc = viewModel.pages.compactMap({ $0.description }).first {
+                        page.description = desc
+                    }
+                }
                 return page
             }
             delegate?.setPages(placeholderPages)
@@ -280,6 +290,10 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             if pending <= 0 {
                 targetIndex = 0
                 currentCharacterOffset = 0
+            } else if pending == Int.max {
+                // Coming from next chapter (swiping back) — always go to last page
+                targetIndex = pages.count - 1
+                currentCharacterOffset = pages[targetIndex].range.location
             } else if let chapterKey = chapter?.key,
                let storedOffset = loadCharacterOffset(for: chapterKey) {
                 // First try to restore from our stored character offset (survives font changes)
