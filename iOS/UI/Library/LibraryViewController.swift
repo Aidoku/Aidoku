@@ -358,6 +358,13 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
+        addObserver(forName: .openedManga) { [weak self] notification in
+            guard let self, let id = notification.object as? MangaIdentifier else { return }
+            Task {
+                await self.viewModel.mangaOpened(sourceId: id.sourceKey, mangaId: id.mangaKey)
+                self.updateDataSource()
+            }
+        }
 
         addObserver(forName: .pinTitles) { [weak self] _ in
             guard let self else { return }

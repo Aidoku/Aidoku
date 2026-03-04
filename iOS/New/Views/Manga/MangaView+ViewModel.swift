@@ -263,7 +263,7 @@ extension MangaView.ViewModel {
             markedOpened = true
             Task {
                 await CoreDataManager.shared.setOpened(sourceId: manga.sourceKey, mangaId: manga.key)
-                NotificationCenter.default.post(name: .updateLibrary, object: nil)
+                NotificationCenter.default.post(name: .openedManga, object: manga.identifier)
             }
         }
     }
