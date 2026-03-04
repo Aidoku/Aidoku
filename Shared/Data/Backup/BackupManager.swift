@@ -504,16 +504,14 @@ actor BackupManager {
             UIApplication.shared.isIdleTimerDisabled = false
 
             if let backupError {
-                Task {
-                    // show error alert
-                    delegate?.presentAlert(
-                        title: NSLocalizedString("BACKUP_ERROR"),
-                        message: String(
-                            format: NSLocalizedString("BACKUP_ERROR_TEXT"),
-                            (backupError as? BackupError)?.stringValue ?? NSLocalizedString("UNKNOWN")
-                        )
+                // show error alert
+                delegate?.presentAlert(
+                    title: NSLocalizedString("BACKUP_ERROR"),
+                    message: String(
+                        format: NSLocalizedString("BACKUP_ERROR_TEXT"),
+                        (backupError as? BackupError)?.stringValue ?? NSLocalizedString("UNKNOWN")
                     )
-                }
+                )
             } else {
                 // show missing sources alert if there are any
                 let missingSources = (backup.sources ?? []).filter {
