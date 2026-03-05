@@ -42,6 +42,11 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     private var isLoadingChapter = false  // Prevent race conditions
     private var lastPaginationSize: CGSize = .zero  // Track size to avoid repagination loops
 
+    /// Fixed text insets used by child page view controllers.
+    /// Computed once during pagination and kept constant so text doesn't shift
+    /// when bars hide/show.
+    private(set) var textInsets: UIEdgeInsets = .zero
+
     /// Indicates whether pagination has been performed for the current chapter.
     /// Used to distinguish between the pre-pagination placeholder and actual paginated content.
     private(set) var hasPaginated = false
@@ -186,24 +191,9 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         }
     }
 
-    private var lastSafeAreaInsets: UIEdgeInsets = .zero
-
-    override func viewSafeAreaInsetsDidChange() {
-        super.viewSafeAreaInsetsDidChange()
-
-        // Only repaginate on significant safe area changes (rotation, not menu toggle)
-        // Menu changes typically only affect top/bottom by small amounts
-        let newInsets = view.safeAreaInsets
-        let leftRightChange = abs(newInsets.left - lastSafeAreaInsets.left) + abs(newInsets.right - lastSafeAreaInsets.right)
-
-        // Significant change = rotation (left/right insets change significantly)
-        if leftRightChange > 20 && !pages.isEmpty {
-            lastSafeAreaInsets = newInsets
-            repaginate()
-        } else if lastSafeAreaInsets == .zero {
-            lastSafeAreaInsets = newInsets
-        }
-    }
+    // Safe area changes from bar toggles are intentionally ignored.
+    // We use the window's safe area (constant physical insets) for pagination.
+    // Rotation is handled by viewWillTransition(to:with:) and viewDidLayoutSubviews.
 
     // MARK: - Layout
 
@@ -234,13 +224,22 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             return
         }
 
-        // Calculate page size accounting for safe area (notch, home indicator)
-        // Reserve extra space for toolbar (~100pt) so pagination is consistent
-        // whether toolbar is visible or hidden
-        let safeArea = view.safeAreaInsets
-        let toolbarBuffer: CGFloat = 100  // Space for nav bar + toolbar when visible
-        let safeWidth = view.bounds.width - safeArea.left - safeArea.right
-        let safeHeight = view.bounds.height - safeArea.top - safeArea.bottom - toolbarBuffer
+        // Use the window's safe area (physical notch/home indicator) which stays
+        // constant regardless of bar visibility. This prevents text from shifting
+        // when bars are toggled.
+        let windowSafeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
+        let toolbarBuffer: CGFloat = 100  // Fixed space reserved for nav bar + toolbar
+        let safeWidth = view.bounds.width - windowSafeArea.left - windowSafeArea.right
+        let safeHeight = view.bounds.height - windowSafeArea.top - windowSafeArea.bottom - toolbarBuffer
+
+        // Compute fixed text insets for child page VCs (must match pagination geometry)
+        let config = paginator.currentConfig
+        textInsets = UIEdgeInsets(
+            top: windowSafeArea.top + toolbarBuffer / 2 + config.verticalPadding,
+            left: windowSafeArea.left + config.horizontalPadding,
+            bottom: windowSafeArea.bottom + toolbarBuffer / 2 + config.verticalPadding,
+            right: windowSafeArea.right + config.horizontalPadding
+        )
 
         let pageSize: CGSize
         if usesDoublePages {
@@ -446,6 +445,17 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             return
         }
 
+        // Don't paginate non-text chapters — the reading mode would need to
+        // switch. Inform the delegate about the pages and let the parent
+        // controller handle the mode change.
+        guard viewModel.pages.allSatisfy({ $0.isTextPage }) else {
+            await MainActor.run {
+                delegate?.setPages(viewModel.pages)
+                isLoadingChapter = false
+            }
+            return
+        }
+
         await MainActor.run {
             previousChapter = delegate?.getPreviousChapter()
             nextChapter = delegate?.getNextChapter()
@@ -547,18 +557,44 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
 
     func loadPreviousChapter() {
         guard let previousChapter else { return }
-        delegate?.setChapter(previousChapter)
         Task {
+            // Preload and verify the chapter has text pages before switching.
+            // Non-text chapters would require a reading-mode change that the
+            // paged text reader can't handle — snap back to the transition page.
+            await viewModel.preload(chapter: previousChapter)
+            let preloaded = viewModel.preloadedPages
+            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+                await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            delegate?.setChapter(previousChapter)
             await loadChapter(previousChapter, startPage: Int.max)
         }
     }
 
     func loadNextChapter() {
         guard let nextChapter else { return }
-        delegate?.setChapter(nextChapter)
         Task {
+            await viewModel.preload(chapter: nextChapter)
+            let preloaded = viewModel.preloadedPages
+            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+                await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            delegate?.setChapter(nextChapter)
             await loadChapter(nextChapter, startPage: 0)
         }
+    }
+
+    /// Navigate back from the blank trigger page to the visible transition page.
+    private func snapBackToTransitionPage() {
+        guard let currentVC = pageViewController.viewControllers?.first,
+              let triggerVC = currentVC as? ChapterLoadTriggerViewController else { return }
+        pageViewController.setViewControllers(
+            [triggerVC.transitionVC],
+            direction: .reverse,
+            animated: true
+        )
     }
 }
 
@@ -611,10 +647,17 @@ extension ReaderPagedTextViewController: UIPageViewControllerDataSource {
             return nil
         }
 
-        // The transition info page: allow one more swipe to trigger the chapter load
+        // Transition info page
         if let transitionVC = viewController as? ChapterTransitionViewController {
-            guard transitionVC.chapter != nil else { return nil }
-            return ChapterLoadTriggerViewController(transitionVC: transitionVC)
+            if transitionVC.direction == .next {
+                // "Next chapter" transition: swiping forward = trigger load
+                guard transitionVC.chapter != nil else { return nil }
+                return ChapterLoadTriggerViewController(transitionVC: transitionVC)
+            } else {
+                // "Previous chapter" transition: swiping forward = back to first text page
+                guard !pages.isEmpty else { return nil }
+                return createPageViewController(for: 0)
+            }
         }
 
         let currentIndex = getCurrentIndex(from: viewController)
@@ -653,10 +696,17 @@ extension ReaderPagedTextViewController: UIPageViewControllerDataSource {
             return nil
         }
 
-        // The transition info page: allow one more swipe to trigger the chapter load
+        // Transition info page
         if let transitionVC = viewController as? ChapterTransitionViewController {
-            guard transitionVC.chapter != nil else { return nil }
-            return ChapterLoadTriggerViewController(transitionVC: transitionVC)
+            if transitionVC.direction == .previous {
+                // "Previous chapter" transition: swiping backward = trigger load
+                guard transitionVC.chapter != nil else { return nil }
+                return ChapterLoadTriggerViewController(transitionVC: transitionVC)
+            } else {
+                // "Next chapter" transition: swiping backward = back to last text page
+                guard !pages.isEmpty else { return nil }
+                return createPageViewController(for: pages.count - 1)
+            }
         }
 
         let currentIndex = getCurrentIndex(from: viewController)

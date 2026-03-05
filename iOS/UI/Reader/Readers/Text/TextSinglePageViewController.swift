@@ -54,29 +54,12 @@ class TextSinglePageViewController: UIViewController {
         updateTextInsets()
     }
 
-    override func viewSafeAreaInsetsDidChange() {
-        super.viewSafeAreaInsetsDidChange()
-        updateTextInsets()
-    }
-
-    /// Position the text content within the full-screen view by accounting
-    /// for safe area insets and a toolbar buffer in the text container inset.
-    /// This keeps text stable when bars hide/show (safe area changes).
+    /// Position the text content within the full-screen view using fixed insets
+    /// derived from the parent reader's pagination geometry. These insets never
+    /// change when bars hide/show, so text stays perfectly stable.
     private func updateTextInsets() {
-        let safeArea = view.safeAreaInsets
-        let toolbarBuffer: CGFloat = 100
-        let verticalPadding: CGFloat = 32
-        let horizontalPadding: CGFloat = 24
-
-        // Distribute toolbar buffer evenly between top and bottom
-        let topInset = safeArea.top + toolbarBuffer / 2 + verticalPadding
-        let bottomInset = safeArea.bottom + toolbarBuffer / 2 + verticalPadding
-        let leftInset = safeArea.left + horizontalPadding
-        let rightInset = safeArea.right + horizontalPadding
-
-        textView.textContainerInset = UIEdgeInsets(
-            top: topInset, left: leftInset,
-            bottom: bottomInset, right: rightInset
-        )
+        guard let parentReader else { return }
+        let insets = parentReader.textInsets
+        textView.textContainerInset = insets
     }
 }

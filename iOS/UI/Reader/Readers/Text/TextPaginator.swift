@@ -58,6 +58,9 @@ class TextPaginator {
     private var config: PaginationConfig
     private var pageSize: CGSize = .zero
 
+    /// Read-only access to the current pagination configuration.
+    var currentConfig: PaginationConfig { config }
+
     init(config: PaginationConfig = PaginationConfig()) {
         self.config = config
     }

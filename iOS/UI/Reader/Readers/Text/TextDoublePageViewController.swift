@@ -82,28 +82,11 @@ class TextDoublePageViewController: UIViewController {
         updateTextInsets()
     }
 
-    override func viewSafeAreaInsetsDidChange() {
-        super.viewSafeAreaInsetsDidChange()
-        updateTextInsets()
-    }
-
-    /// Position text content within the full-screen view by accounting for safe area
-    /// and toolbar buffer. Keeps text stable when bars hide/show.
+    /// Position text content using fixed insets from the parent reader's pagination
+    /// geometry. These never change when bars hide/show, so text stays stable.
     private func updateTextInsets() {
-        let safeArea = view.safeAreaInsets
-        let toolbarBuffer: CGFloat = 100
-        let verticalPadding: CGFloat = 32
-        let horizontalPadding: CGFloat = 24
-
-        let topInset = safeArea.top + toolbarBuffer / 2 + verticalPadding
-        let bottomInset = safeArea.bottom + toolbarBuffer / 2 + verticalPadding
-        let leftInset = safeArea.left + horizontalPadding
-        let rightInset = safeArea.right + horizontalPadding
-
-        let insets = UIEdgeInsets(
-            top: topInset, left: leftInset,
-            bottom: bottomInset, right: rightInset
-        )
+        guard let parentReader else { return }
+        let insets = parentReader.textInsets
         leftTextView.textContainerInset = insets
         rightTextView.textContainerInset = insets
     }
