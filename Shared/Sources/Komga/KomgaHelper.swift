@@ -21,80 +21,133 @@ struct KomgaHelper: Sendable {
         return "Basic \(encoded)"
     }
 
-    func getConfiguredServer() throws(SourceError) -> String {
-        guard var server = UserDefaults.standard.string(forKey: "\(sourceKey).server") else {
+    func getConfiguredServer() throws(SourceError) -> URL {
+        guard let server = UserDefaults.standard.string(forKey: "\(sourceKey).server").flatMap(URL.init) else {
             throw SourceError.message("NO_SERVER_CONFIGURED")
-        }
-        if server.last == "/" {
-            server.removeLast()
         }
         return server
     }
 
     func getServerUrl(path: String) throws(SourceError) -> URL {
         let baseUrl = try getConfiguredServer()
-        guard let serverUrl = URL(string: "\(baseUrl)\(path)") else {
+        guard let serverUrl = URL(string: path, relativeTo: baseUrl) else {
             throw SourceError.message("INVALID_SERVER_URL")
         }
         return serverUrl
     }
 
-    func request<T: Codable>(
+    func getMirrors() -> [URL] {
+        UserDefaults.standard.stringArray(forKey: "\(sourceKey).mirrors")?.compactMap(URL.init) ?? []
+    }
+
+    func request<T: Decodable>(
         path: String,
         method: HttpMethod = .GET,
-        body: KomgaSearchBody? = nil
+        body: KomgaSearchBody? = nil,
+    ) async throws(SourceError) -> T {
+        var dummy: URL?
+        return try await request(path: path, method: method, body: body, lastWorkingMirror: &dummy)
+    }
+
+    func request<T: Decodable>(
+        path: String,
+        method: HttpMethod = .GET,
+        body: KomgaSearchBody? = nil,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> T {
         guard let auth = getAuthorizationHeader() else {
             throw SourceError.message("NOT_LOGGED_IN")
         }
 
-        let url = try getServerUrl(path: path)
-        var request = URLRequest(url: url)
-        request.setValue(auth, forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.httpMethod = method.stringValue
-        if let body {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .custom({ date, encoder in
-                var container = encoder.singleValueContainer()
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-                try container.encode(formatter.string(from: date))
-            })
-            request.httpBody = try? encoder.encode(body)
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let mainUrl = try getConfiguredServer()
+        let mirrors = getMirrors()
+        var allBaseUrls: [URL] = []
+        if let lastWorkingMirror {
+            allBaseUrls.append(lastWorkingMirror)
         }
+        allBaseUrls.append(mainUrl)
+        allBaseUrls.append(contentsOf: mirrors.filter { $0 != lastWorkingMirror })
 
-        let result = try? await URLSession.shared.data(for: request)
-        guard let data = result?.0 else {
-            throw SourceError.networkError
-        }
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom({ decoder in
-            let container = try decoder.singleValueContainer()
-            let string = try container.decode(String.self)
-            let formatter = DateFormatter()
-            formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
-                .gmt
-            } else {
-                .init(secondsFromGMT: 0)
-            }
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-            var date = formatter.date(from: string)
-            if date == nil {
-                formatter.dateFormat = "yyyy-MM-dd"
-                date = formatter.date(from: string)
-            }
-            return date ?? .distantPast
-        })
-        if let result = try? decoder.decode(T.self, from: data) as T? {
-            return result
-        } else if let error = try? decoder.decode(KomgaError.self, from: data) {
-            throw SourceError.message(error.error)
+        let session = if !mirrors.isEmpty {
+            URLSession(configuration: {
+                let config = URLSessionConfiguration.default
+                config.timeoutIntervalForRequest = 5 // time out requests after 5s so we can try next mirror
+                return config
+            }())
         } else {
-            throw SourceError.message("UNKNOWN_ERROR")
+            URLSession.shared
         }
+
+        func doRequest(baseUrl: URL) async throws(SourceError) -> T {
+            guard let url = URL(string: path, relativeTo: baseUrl) else {
+                throw SourceError.message("INVALID_SERVER_URL")
+            }
+            var request = URLRequest(url: url)
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            request.httpMethod = method.stringValue
+            if let body {
+                let encoder = JSONEncoder()
+                encoder.dateEncodingStrategy = .custom({ date, encoder in
+                    var container = encoder.singleValueContainer()
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                    try container.encode(formatter.string(from: date))
+                })
+                request.httpBody = try? encoder.encode(body)
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+
+            let result = try? await session.data(for: request)
+            guard let data = result?.0 else {
+                throw SourceError.networkError
+            }
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .custom({ decoder in
+                let container = try decoder.singleValueContainer()
+                let string = try container.decode(String.self)
+                let formatter = DateFormatter()
+                formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
+                    .gmt
+                } else {
+                    .init(secondsFromGMT: 0)
+                }
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+                var date = formatter.date(from: string)
+                if date == nil {
+                    formatter.dateFormat = "yyyy-MM-dd"
+                    date = formatter.date(from: string)
+                }
+                return date ?? .distantPast
+            })
+            if let result = try? decoder.decode(T.self, from: data) as T? {
+                return result
+            } else if let error = try? decoder.decode(KomgaError.self, from: data) {
+                throw SourceError.message(error.error)
+            } else {
+                throw SourceError.message("UNKNOWN_ERROR")
+            }
+        }
+
+        for (idx, baseUrl) in allBaseUrls.enumerated() {
+            do {
+                let result = try await doRequest(baseUrl: baseUrl)
+                lastWorkingMirror = baseUrl == mainUrl ? nil : baseUrl
+                return result
+            } catch {
+                if error == SourceError.networkError && idx < allBaseUrls.count - 1 {
+                    continue // try the next mirror
+                } else {
+                    if idx == allBaseUrls.count - 1 {
+                        lastWorkingMirror = nil // reset last working mirror if all urls failed
+                    }
+                    throw error
+                }
+            }
+        }
+
+        throw SourceError.networkError
     }
 }
 
@@ -104,7 +157,11 @@ extension KomgaHelper {
         var ascending: Bool
     }
 
-    func getConditions(filters: [AidokuRunner.FilterValue], storedTags: [String]) async throws -> (Sort, [KomgaSearchCondition]) {
+    func getConditions(
+        filters: [AidokuRunner.FilterValue],
+        storedTags: [String],
+        lastWorkingMirror: inout URL?
+    ) async throws -> (Sort, [KomgaSearchCondition]) {
         var conditions: [KomgaSearchCondition] = []
         var sort = Sort(value: 0, ascending: true)
 
@@ -115,12 +172,14 @@ extension KomgaHelper {
                     var authors: [KomgaBook.Metadata.Author] = []
                     if id == "author" {
                         let result: KomgaPageResponse<[KomgaBook.Metadata.Author]> = try await request(
-                            path: "/api/v2/authors?search=\(search)&role=writer"
+                            path: "api/v2/authors?search=\(search)&role=writer",
+                            lastWorkingMirror: &lastWorkingMirror
                         )
                         authors.append(contentsOf: result.content)
                     } else if id == "artist" {
                         let result: KomgaPageResponse<[KomgaBook.Metadata.Author]> = try await request(
-                            path: "/api/v2/authors?search=\(search)&role=penciller"
+                            path: "api/v2/authors?search=\(search)&role=penciller",
+                            lastWorkingMirror: &lastWorkingMirror
                         )
                         authors.append(contentsOf: result.content)
                     }
@@ -213,7 +272,11 @@ extension KomgaHelper {
         return (sort, conditions)
     }
 
-    func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
+    func getMangaList(
+        listing: AidokuRunner.Listing,
+        page: Int,
+        lastWorkingMirror: inout URL?
+    ) async throws -> AidokuRunner.MangaPageResult {
         let baseUrl = try getConfiguredServer()
 
         // Extract library ID if this is a library-specific listing
@@ -241,9 +304,10 @@ extension KomgaHelper {
                     .deleted(false)
                 ] + (libraryId.map { [.libraryId($0)] } ?? [])
                 let res: KomgaPageResponse<[KomgaBook]> = try await request(
-                    path: "/api/v1/books/list?page=\(page - 1)&size=20&sort=readProgress.readDate%2Cdesc",
+                    path: "api/v1/books/list?page=\(page - 1)&size=20&sort=readProgress.readDate%2Cdesc",
                     method: .POST,
-                    body: .init(condition: .allOf(conditions))
+                    body: .init(condition: .allOf(conditions)),
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -253,8 +317,8 @@ extension KomgaHelper {
             case "on_deck":
                 let libraryParam = libraryId.map { "&library_id=\($0)" } ?? ""
                 let res: KomgaPageResponse<[KomgaBook]> = try await request(
-                    path: "/api/v1/books/ondeck?page=\(page - 1)&size=20&sort=createdDate%2Cdesc\(libraryParam)",
-                    method: .GET
+                    path: "api/v1/books/ondeck?page=\(page - 1)&size=20&sort=createdDate%2Cdesc\(libraryParam)",
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -264,9 +328,10 @@ extension KomgaHelper {
             case "recently_added_books":
                 let conditions: [KomgaSearchCondition] = [.deleted(false)] + (libraryId.map { [.libraryId($0)] } ?? [])
                 let res: KomgaPageResponse<[KomgaBook]> = try await request(
-                    path: "/api/v1/books/list?page=\(page - 1)&size=20&sort=createdDate%2Cdesc",
+                    path: "api/v1/books/list?page=\(page - 1)&size=20&sort=createdDate%2Cdesc",
                     method: .POST,
-                    body: .init(condition: .allOf(conditions))
+                    body: .init(condition: .allOf(conditions)),
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -276,8 +341,8 @@ extension KomgaHelper {
             case "recently_added_series":
                 let libraryParam = libraryId.map { "&library_id=\($0)" } ?? ""
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/new?page=\(page - 1)&size=20&oneshot=false&deleted=false\(libraryParam)",
-                    method: .GET
+                    path: "api/v1/series/new?page=\(page - 1)&size=20&oneshot=false&deleted=false\(libraryParam)",
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -287,8 +352,8 @@ extension KomgaHelper {
             case "recently_updated_series":
                 let libraryParam = libraryId.map { "&library_id=\($0)" } ?? ""
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/updated?page=\(page - 1)&size=20&oneshot=false&deleted=false\(libraryParam)",
-                    method: .GET
+                    path: "api/v1/series/updated?page=\(page - 1)&size=20&oneshot=false&deleted=false\(libraryParam)",
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -301,9 +366,10 @@ extension KomgaHelper {
                     .deleted(false)
                 ] + (libraryId.map { [.libraryId($0)] } ?? [])
                 let res: KomgaPageResponse<[KomgaBook]> = try await request(
-                    path: "/api/v1/books/list?page=\(page - 1)&size=20&sort=readProgress.readDate%2Cdesc",
+                    path: "api/v1/books/list?page=\(page - 1)&size=20&sort=readProgress.readDate%2Cdesc",
                     method: .POST,
-                    body: .init(condition: .allOf(conditions))
+                    body: .init(condition: .allOf(conditions)),
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
@@ -313,12 +379,13 @@ extension KomgaHelper {
             case _ where listing.id.hasPrefix("library-"):
                 let id = String(listing.id[listing.id.index(listing.id.startIndex, offsetBy: 8)...])
                 let res: KomgaPageResponse<[KomgaSeries]> = try await request(
-                    path: "/api/v1/series/list?page=\(page - 1)&size=20&sort=metadata.titleSort%2Casc",
+                    path: "api/v1/series/list?page=\(page - 1)&size=20&sort=metadata.titleSort%2Casc",
                     method: .POST,
                     body: .init(condition: .allOf([
                         .libraryId(id),
                         .deleted(false)
-                    ]))
+                    ])),
+                    lastWorkingMirror: &lastWorkingMirror
                 )
                 return .init(
                     entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },

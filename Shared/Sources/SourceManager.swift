@@ -279,7 +279,7 @@ extension SourceManager {
     func createCustomSource(
         kind: CustomSourceKind,
         name: String,
-        server: String,
+        server: URL,
         username: String? = nil,
         password: String? = nil,
     ) async -> String {
@@ -298,8 +298,8 @@ extension SourceManager {
         }
 
         let config = switch kind {
-            case .komga: CustomSourceConfig.komga(key: key, name: name, server: server)
-            case .kavita: CustomSourceConfig.kavita(key: key, name: name, server: server)
+            case .komga: CustomSourceConfig.komga(key: key, name: name, server: server.absoluteString)
+            case .kavita: CustomSourceConfig.kavita(key: key, name: name, server: server.absoluteString)
         }
         let source = config.toSource()
 
@@ -311,7 +311,7 @@ extension SourceManager {
         }
 
         // register details
-        UserDefaults.standard.setValue(server, forKey: "\(key).server")
+        UserDefaults.standard.setValue(server.absoluteString, forKey: "\(key).server")
         if username != nil || password != nil {
             UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
         }

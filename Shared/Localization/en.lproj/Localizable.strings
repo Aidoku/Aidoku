@@ -242,6 +242,8 @@
 "SERVER_URL" = "Server URL";
 "SERVER_URL_INFO" = "The base URL of a server to connect to.";
 "SERVER_URL_UNIQUE_ERROR" = "A source configured with that server already exists.";
+"MIRRORS" = "Mirrors";
+"MIRRORS_INFO" = "Additional URLs to try using as a base URL if the main one fails to connect.";
 "SERVER_ERROR" = "Server Error";
 "SERVER_ERROR_CONNECTION" = "Unable to connect to the given server. Ensure a server instance is running and the URL is entered correctly.";
 "SERVER_ERROR_AUTHENTICATION" = "Unable to log in. Ensure your credentials are entered correctly.";

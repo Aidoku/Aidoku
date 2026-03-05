@@ -239,19 +239,19 @@ struct KomgaBookReadProgress: Codable {
 }
 
 extension KomgaBook {
-    func intoManga(sourceKey: String, baseUrl: String) -> AidokuRunner.Manga {
+    func intoManga(sourceKey: String, baseUrl: URL) -> AidokuRunner.Manga {
         .init(
             sourceKey: sourceKey,
             key: seriesId,
             title: metadata.title,
-            cover: "\(baseUrl)/api/v1/books/\(id)/thumbnail",
+            cover: URL(string: "api/v1/books/\(id)/thumbnail", relativeTo: baseUrl)?.absoluteString,
             authors: metadata.authors.map { $0.name },
-            url: URL(string: "\(baseUrl)/series/\(seriesId)"),
+            url: URL(string: "series/\(seriesId)", relativeTo: baseUrl),
             tags: metadata.tags,
         )
     }
 
-    func intoChapter(baseUrl: String, useChapters: Bool) -> AidokuRunner.Chapter {
+    func intoChapter(baseUrl: URL, useChapters: Bool) -> AidokuRunner.Chapter {
         .init(
             key: id,
             title: metadata.title,
@@ -265,9 +265,9 @@ extension KomgaBook {
                     nil
                 }
             },
-            url: URL(string: "\(baseUrl)/book/\(id)"),
+            url: URL(string: "book/\(id)", relativeTo: baseUrl),
             language: "en",
-            thumbnail: "\(baseUrl)/api/v1/books/\(id)/thumbnail",
+            thumbnail: URL(string: "api/v1/books/\(id)/thumbnail", relativeTo: baseUrl)?.absoluteString,
         )
     }
 }
@@ -315,7 +315,7 @@ struct KomgaSeries: Codable, Sendable {
 }
 
 extension KomgaSeries {
-    func intoManga(sourceKey: String, baseUrl: String) -> AidokuRunner.Manga {
+    func intoManga(sourceKey: String, baseUrl: URL) -> AidokuRunner.Manga {
         let status: AidokuRunner.PublishingStatus = switch metadata.status {
             case .ended: .completed
             case .ongoing: .ongoing
@@ -343,7 +343,7 @@ extension KomgaSeries {
             sourceKey: sourceKey,
             key: id,
             title: metadata.title,
-            cover: "\(baseUrl)/api/v1/series/\(id)/thumbnail",
+            cover: URL(string: "api/v1/series/\(id)/thumbnail", relativeTo: baseUrl)?.absoluteString,
             artists: booksMetadata.authors.compactMap {
                 if $0.role == "penciller" {
                     $0.name
@@ -360,7 +360,7 @@ extension KomgaSeries {
             },
             description: (metadata.summary.isEmpty ? booksMetadata.summary : metadata.summary)?
                 .replacingOccurrences(of: "\n", with: "  \n"),
-            url: URL(string: "\(baseUrl)/series/\(id)"),
+            url: URL(string: "series/\(id)", relativeTo: baseUrl),
             tags: (metadata.genres + metadata.tags).sorted(),
             status: status,
             contentRating: contentRating,

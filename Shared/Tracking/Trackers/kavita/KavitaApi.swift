@@ -10,7 +10,7 @@ import Foundation
 actor KavitaApi {
     func getState(sourceKey: String, seriesId: String) async throws -> TrackState? {
         let helper = KavitaHelper(sourceKey: sourceKey)
-        let volumes: [KavitaVolume] = try await helper.request(path: "/api/Series/volumes?seriesId=\(seriesId)")
+        let volumes: [KavitaVolume] = try await helper.request(path: "api/Series/volumes?seriesId=\(seriesId)")
 
         var totalVolumes = 0
         var totalChapters = 0
@@ -34,7 +34,7 @@ actor KavitaApi {
             }
         }
 
-        let latestChapter: KavitaVolume.Chapter? = try? await helper.request(path: "/api/Tachiyomi/latest-chapter?seriesId=\(seriesId)")
+        let latestChapter: KavitaVolume.Chapter? = try? await helper.request(path: "api/Tachiyomi/latest-chapter?seriesId=\(seriesId)")
 
         return .init(
             lastReadChapter: latestChapter.flatMap { chapter -> Float? in
@@ -56,7 +56,7 @@ actor KavitaApi {
         let helper = KavitaHelper(sourceKey: sourceKey)
 
         let _: Bool = try await helper.request(
-            path: "/api/Tachiyomi/mark-chapter-until-as-read?seriesId=\(seriesId)&chapterNumber=\(lastReadChapter)",
+            path: "api/Tachiyomi/mark-chapter-until-as-read?seriesId=\(seriesId)&chapterNumber=\(lastReadChapter)",
             method: .POST,
             body: Data("{}".utf8)
         )
@@ -75,7 +75,7 @@ actor KavitaApi {
             let volumeId: Int
             let pages: Int
         }
-        let response: Response = try await helper.request(path: "/api/reader/chapter-info?chapterId=\(chapterId)")
+        let response: Response = try await helper.request(path: "api/reader/chapter-info?chapterId=\(chapterId)")
 
         let pageNum = if progress.completed {
             response.pages + 1
@@ -100,7 +100,7 @@ actor KavitaApi {
 
         // newer versions return an empty response instead of a bool, so we ignore the thrown error
         let _: Bool? = try? await helper.request(
-            path: "/api/reader/progress",
+            path: "api/reader/progress",
             method: .POST,
             body: JSONEncoder().encode(payload)
         )
@@ -108,7 +108,7 @@ actor KavitaApi {
 
     func getSeriesReadProgress(sourceKey: String, seriesId: String) async throws -> [String: ChapterReadProgress] {
         let helper = KavitaHelper(sourceKey: sourceKey)
-        let volumes: [KavitaVolume] = try await helper.request(path: "/api/Series/volumes?seriesId=\(seriesId)")
+        let volumes: [KavitaVolume] = try await helper.request(path: "api/Series/volumes?seriesId=\(seriesId)")
 
         var progressMap: [String: ChapterReadProgress] = [:]
 

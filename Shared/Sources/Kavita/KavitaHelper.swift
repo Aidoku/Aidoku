@@ -11,10 +11,6 @@ import Foundation
 struct KavitaHelper: Sendable {
     let sourceKey: String
 
-    func getApiKey() -> String {
-        UserDefaults.standard.string(forKey: "\(sourceKey).apiKey") ?? ""
-    }
-
     func authorize(request: inout URLRequest) -> Bool {
         if let token = UserDefaults.standard.string(forKey: "\(sourceKey).token") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -27,31 +23,67 @@ struct KavitaHelper: Sendable {
         }
     }
 
-    func getConfiguredServer() throws(SourceError) -> String {
-        guard var server = UserDefaults.standard.string(forKey: "\(sourceKey).server") else {
+    func getApiKey() -> String {
+        UserDefaults.standard.string(forKey: "\(sourceKey).apiKey") ?? ""
+    }
+
+    func getConfiguredServer() throws(SourceError) -> URL {
+        guard let server = UserDefaults.standard.string(forKey: "\(sourceKey).server").flatMap(URL.init) else {
             throw SourceError.message("NO_SERVER_CONFIGURED")
-        }
-        if server.last == "/" {
-            server.removeLast()
         }
         return server
     }
 
     func getServerUrl(path: String) throws(SourceError) -> URL {
         let baseUrl = try getConfiguredServer()
-        guard let serverUrl = URL(string: "\(baseUrl)\(path)") else {
+        guard let serverUrl = URL(string: path, relativeTo: baseUrl) else {
             throw SourceError.message("INVALID_SERVER_URL")
         }
         return serverUrl
+    }
+
+    func getMirrors() -> [URL] {
+        UserDefaults.standard.stringArray(forKey: "\(sourceKey).mirrors")?.compactMap(URL.init) ?? []
+    }
+
+    func request<T: Decodable>(
+        path: String,
+        method: HttpMethod = .GET,
+        body: Data? = nil
+    ) async throws(SourceError) -> T {
+        var dummy: URL?
+        return try await request(path: path, method: method, body: body, lastWorkingMirror: &dummy)
     }
 
     func request<T: Decodable>(
         path: String,
         method: HttpMethod = .GET,
         body: Data? = nil,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> T {
-        func doRequest() async throws(SourceError) -> T? {
-            let url = try getServerUrl(path: path)
+        let mainUrl = try getConfiguredServer()
+        let mirrors = getMirrors()
+        var allBaseUrls: [URL] = []
+        if let lastWorkingMirror {
+            allBaseUrls.append(lastWorkingMirror)
+        }
+        allBaseUrls.append(mainUrl)
+        allBaseUrls.append(contentsOf: mirrors.filter { $0 != lastWorkingMirror })
+
+        let session = if !mirrors.isEmpty {
+            URLSession(configuration: {
+                let config = URLSessionConfiguration.default
+                config.timeoutIntervalForRequest = 5 // time out requests after 5s so we can try next mirror
+                return config
+            }())
+        } else {
+            URLSession.shared
+        }
+
+        func doRequest(baseUrl: URL) async throws(SourceError) -> T? {
+            guard let url = URL(string: path, relativeTo: baseUrl) else {
+                throw SourceError.message("INVALID_SERVER_URL")
+            }
             var request = URLRequest(url: url)
             guard authorize(request: &request) else {
                 throw SourceError.message("NOT_LOGGED_IN")
@@ -63,7 +95,7 @@ struct KavitaHelper: Sendable {
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             }
 
-            let result = try? await URLSession.shared.data(for: request)
+            let result = try? await session.data(for: request)
             guard
                 let data = result?.0,
                 let response = result?.1 as? HTTPURLResponse
@@ -101,14 +133,33 @@ struct KavitaHelper: Sendable {
             }
         }
 
-        let result = try await doRequest()
+        func tryRequests() async throws(SourceError) -> T? {
+            for baseUrl in allBaseUrls {
+                do {
+                    if let result = try await doRequest(baseUrl: baseUrl) {
+                        lastWorkingMirror = baseUrl == mainUrl ? nil : baseUrl
+                        return result
+                    }
+                } catch {
+                    if error == SourceError.networkError {
+                        continue
+                    } else {
+                        throw error
+                    }
+                }
+            }
+            lastWorkingMirror = nil
+            return nil
+        }
+
+        let result = try await tryRequests()
         if let result {
             return result
         } else {
             // try request again after re-auth
             guard
                 try await refreshToken(),
-                let result = try await doRequest()
+                let result = try await tryRequests()
             else {
                 throw SourceError.message("NOT_LOGGED_IN")
             }
@@ -117,7 +168,7 @@ struct KavitaHelper: Sendable {
     }
 
     func refreshToken() async throws(SourceError) -> Bool {
-        let url = try getServerUrl(path: "/api/account/refresh-token")
+        let url = try getServerUrl(path: "api/account/refresh-token")
 
         let token = UserDefaults.standard.string(forKey: "\(sourceKey).token")
         let refreshToken = UserDefaults.standard.string(forKey: "\(sourceKey).refreshToken")
@@ -150,31 +201,36 @@ extension KavitaHelper {
     func getOnDeck(
         libraryId: Int = 0,
         pageNum: Int = 1,
-        itemsPerPage: Int = 20
+        itemsPerPage: Int = 20,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> [KavitaSeries] {
         try await request(
-            path: "/api/series/on-deck?libraryId=\(libraryId)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
+            path: "api/series/on-deck?libraryId=\(libraryId)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
             method: .POST,
-            body: Data("{}".utf8)
+            body: Data("{}".utf8),
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 
     func getRecentlyAdded(
         pageNum: Int = 1,
-        itemsPerPage: Int = 20
+        itemsPerPage: Int = 20,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> [KavitaSeries] {
         try await request(
-            path: "/api/series/recently-added-v2?pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
+            path: "api/series/recently-added-v2?pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
             method: .POST,
-            body: Data("{}".utf8)
+            body: Data("{}".utf8),
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 
-    func getRecentlyUpdatedSeries() async throws(SourceError) -> [KavitaSeries] {
+    func getRecentlyUpdatedSeries(lastWorkingMirror: inout URL?) async throws(SourceError) -> [KavitaSeries] {
         let result: [KavitaSeriesGroup] = try await request(
-            path: "/api/series/recently-updated-series",
+            path: "api/series/recently-updated-series",
             method: .POST,
-            body: Data("{}".utf8)
+            body: Data("{}".utf8),
+            lastWorkingMirror: &lastWorkingMirror
         )
         return result.map { $0.into() }
     }
@@ -190,10 +246,11 @@ extension KavitaHelper {
         pageNum: Int = 1,
         itemsPerPage: Int = 20,
         filter: KavitaFilterV2? = nil,
-        context: QueryContext = .none
+        context: QueryContext = .none,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> [KavitaSeries] {
         try await request(
-            path: "/api/series/all-v2?context=\(context.rawValue)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
+            path: "api/series/all-v2?context=\(context.rawValue)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
             method: .POST,
             body: {
                 if let filter {
@@ -201,13 +258,18 @@ extension KavitaHelper {
                 } else {
                     Data("{}".utf8)
                 }
-            }()
+            }(),
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 
-    func getAllGenres(context: QueryContext = .none) async throws(SourceError) -> [KavitaGenre] {
+    func getAllGenres(
+        context: QueryContext = .none,
+        lastWorkingMirror: inout URL?
+    ) async throws(SourceError) -> [KavitaGenre] {
         try await request(
-            path: "/api/metadata/genres?context=\(context.rawValue)"
+            path: "api/metadata/genres?context=\(context.rawValue)",
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 
@@ -215,21 +277,24 @@ extension KavitaHelper {
         libraryId: Int = 0,
         genreId: Int,
         pageNum: Int = 1,
-        itemsPerPage: Int = 20
+        itemsPerPage: Int = 20,
+        lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> [KavitaSeries] {
         try await request(
-            path: "/api/recommended/more-in?libraryId=\(libraryId)&genreId=\(genreId)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)"
+            path: "api/recommended/more-in?libraryId=\(libraryId)&genreId=\(genreId)&pageNumber=\(pageNum)&pageSize=\(itemsPerPage)",
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 
-    func decodeFilter(_ encodedFilter: String) async throws(SourceError) -> KavitaFilterV2 {
+    func decodeFilter(_ encodedFilter: String, lastWorkingMirror: inout URL?) async throws(SourceError) -> KavitaFilterV2 {
         struct Payload: Encodable {
             let encodedFilter: String
         }
         return try await request(
-            path: "/api/filter/decode",
+            path: "api/filter/decode",
             method: .POST,
-            body: try? JSONEncoder().encode(Payload(encodedFilter: encodedFilter))
+            body: try? JSONEncoder().encode(Payload(encodedFilter: encodedFilter)),
+            lastWorkingMirror: &lastWorkingMirror
         )
     }
 }
@@ -256,12 +321,12 @@ extension KavitaHelper {
                         let name: String
                     }
                     if id == "author" {
-                        let authors: [Result] = try await request(path: "/api/metadata/people-by-role?role=3")
+                        let authors: [Result] = try await request(path: "api/metadata/people-by-role?role=3")
                         if let author = authors.first(where: { $0.name == value }) {
                             statements.append(.init(comparison: .equal, field: .writers, value: String(author.id)))
                         }
                     } else if id == "artist" {
-                        let artists: [Result] = try await request(path: "/api/metadata/people-by-role?role=4")
+                        let artists: [Result] = try await request(path: "api/metadata/people-by-role?role=4")
                         if let artist = artists.first(where: { $0.name == value }) {
                             statements.append(.init(comparison: .equal, field: .penciller, value: String(artist.id)))
                         }

@@ -29,7 +29,7 @@ actor KomgaApi {
             throw KomgaTrackerError.notLoggedIn
         }
 
-        let url = try helper.getServerUrl(path: "/api/v2/series/\(seriesId)/read-progress/tachiyomi")
+        let url = try helper.getServerUrl(path: "api/v2/series/\(seriesId)/read-progress/tachiyomi")
 
         var request = URLRequest(url: url)
         request.setValue(auth, forHTTPHeaderField: "Authorization")
@@ -61,7 +61,7 @@ actor KomgaApi {
             throw KomgaTrackerError.notLoggedIn
         }
 
-        let url = try helper.getServerUrl(path: "/api/v2/series/\(seriesId)/read-progress/tachiyomi")
+        let url = try helper.getServerUrl(path: "api/v2/series/\(seriesId)/read-progress/tachiyomi")
 
         var request = URLRequest(url: url)
         request.setValue(auth, forHTTPHeaderField: "Authorization")
@@ -80,9 +80,9 @@ actor KomgaApi {
         progress: ChapterReadProgress
     ) async throws {
         let helper = KomgaHelper(sourceKey: sourceKey)
-        let bookUrl = try helper.getServerUrl(path: "/api/v1/books/\(bookId)")
+        let bookUrl = try helper.getServerUrl(path: "api/v1/books/\(bookId)")
 
-        guard let url = URL(string: "\(bookUrl)/read-progress") else { return }
+        guard let url = URL(string: "read-progress", relativeTo: bookUrl) else { return }
 
         guard let auth = helper.getAuthorizationHeader() else {
             throw KomgaTrackerError.notLoggedIn
@@ -102,7 +102,7 @@ actor KomgaApi {
             let page = try await {
                 if progress.completed {
                     // if marking completed, we need to set the page to the total pages
-                    let book: KomgaBook = try await helper.request(path: "/api/v1/books/\(bookId)")
+                    let book: KomgaBook = try await helper.request(path: "api/v1/books/\(bookId)")
                     return book.media.pagesCount
                 } else {
                     return progress.page
@@ -121,7 +121,7 @@ actor KomgaApi {
 
     func getSeriesReadProgress(sourceKey: String, seriesId: String) async throws -> [String: ChapterReadProgress] {
         let helper = KomgaHelper(sourceKey: sourceKey)
-        let response: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: "/api/v1/series/\(seriesId)/books?unpaged=true")
+        let response: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: "api/v1/series/\(seriesId)/books?unpaged=true")
 
         var progressMap: [String: ChapterReadProgress] = [:]
 

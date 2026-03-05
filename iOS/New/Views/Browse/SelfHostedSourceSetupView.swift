@@ -26,8 +26,8 @@ struct SelfHostedSourceSetupView: View {
     let demoInfo: String
 
     private let checkHandler: (String) async -> ServerCheck
-    private let logInHandler: (String, String, String, String) async -> Bool
-    private let oidcLogInHandler: ((String, String, [HTTPCookie]) async -> Bool)?
+    private let logInHandler: (String, URL, String, String) async -> Bool
+    private let oidcLogInHandler: ((String, URL, [HTTPCookie]) async -> Bool)?
 
     @State private var name: String
     @State private var server: String = ""
@@ -95,8 +95,8 @@ struct SelfHostedSourceSetupView: View {
         demoTitle: String,
         demoInfo: String,
         checkServer: @escaping (String) async -> ServerCheck,
-        logIn: @escaping (String, String, String, String) async -> Bool,
-        oidcLogIn: ((String, String, [HTTPCookie]) async -> Bool)? = nil
+        logIn: @escaping (String, URL, String, String) async -> Bool,
+        oidcLogIn: ((String, URL, [HTTPCookie]) async -> Bool)? = nil
     ) {
         self.icon = icon
         self.title = title
@@ -363,10 +363,16 @@ struct SelfHostedSourceSetupView: View {
         // trim whitespace (again, in case name was changed)
         name = name.trimmingCharacters(in: .whitespaces)
 
+        guard let serverURL = URL(string: server) else {
+            state = .logIn(check)
+            error = .connection
+            return
+        }
+
         let didLogIn = if !cookies.isEmpty, let oidcLogInHandler {
-            await oidcLogInHandler(name, server, cookies)
+            await oidcLogInHandler(name, serverURL, cookies)
         } else {
-            await logInHandler(name, server, username, password)
+            await logInHandler(name, serverURL, username, password)
         }
 
         guard didLogIn else {
@@ -413,9 +419,9 @@ struct KomgaSetupView: View {
         return ServerCheck(canLoginBasic: true)
     }
 
-    private func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+    private func logIn(name: String, server: URL, username: String, password: String) async -> Bool {
         // request the user info endpoint to ensure we can authenticate
-        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
+        guard let testUrl = URL(string: "api/v2/users/me", relativeTo: server) else {
             return false
         }
 
@@ -499,7 +505,7 @@ struct KavitaSetupView: View {
         )
     }
 
-    private func logIn(name: String, server: String, username: String, password: String) async -> Bool {
+    private func logIn(name: String, server: URL, username: String, password: String) async -> Bool {
         let response = await Self.getLoginResponse(server: server, username: username, password: password)
 
         guard
@@ -526,7 +532,7 @@ struct KavitaSetupView: View {
         return true
     }
 
-    private func logIn(name: String, server: String, cookies: [HTTPCookie]) async -> Bool {
+    private func logIn(name: String, server: URL, cookies: [HTTPCookie]) async -> Bool {
         let response = await Self.getLoginResponse(server: server, cookies: cookies)
 
         guard let response, let cookie = response.cookie else { return false }
@@ -544,11 +550,11 @@ struct KavitaSetupView: View {
         return true
     }
 
-    static func getLoginResponse(server: String, username: String, password: String) async -> KavitaSourceRunner.LoginResponse? {
+    static func getLoginResponse(server: URL, username: String, password: String) async -> KavitaSourceRunner.LoginResponse? {
         await KavitaSourceRunner.getLoginResponse(server: server, username: username, password: password)
     }
 
-    static func getLoginResponse(server: String, cookies: [HTTPCookie]) async -> KavitaSourceRunner.LoginResponse? {
+    static func getLoginResponse(server: URL, cookies: [HTTPCookie]) async -> KavitaSourceRunner.LoginResponse? {
         await KavitaSourceRunner.getLoginResponse(server: server, cookies: cookies)
     }
 }

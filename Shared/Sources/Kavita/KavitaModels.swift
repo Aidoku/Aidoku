@@ -178,7 +178,7 @@ struct KavitaSeriesMetadata: Codable, Sendable {
 extension KavitaSeries {
     func intoManga(
         sourceKey: String,
-        baseUrl: String,
+        baseUrl: URL,
         apiKey: String,
         metadata: KavitaSeriesMetadata? = nil
     ) -> AidokuRunner.Manga {
@@ -210,11 +210,11 @@ extension KavitaSeries {
             sourceKey: sourceKey,
             key: "\(id)",
             title: name,
-            cover: "\(baseUrl)/api/image/series-cover?seriesId=\(id)&apiKey=\(apiKey)",
+            cover: URL(string: "api/image/series-cover?seriesId=\(id)&apiKey=\(apiKey)", relativeTo: baseUrl)?.absoluteString,
             artists: metadata?.pencillers.map { $0.name },
             authors: metadata?.writers.map { $0.name },
             description: metadata?.summary,
-            url: URL(string: "\(baseUrl)/library/\(libraryId)/series/\(id)"),
+            url: URL(string: "library/\(libraryId)/series/\(id)", relativeTo: baseUrl),
             tags: (metadata?.genres.map { $0.title } ?? []) + (metadata?.tags.map { $0.title } ?? []),
             status: status,
             contentRating: contentRating,
@@ -246,7 +246,7 @@ struct KavitaVolume: Codable, Sendable {
 }
 
 extension KavitaVolume {
-    func intoChapters(baseUrl: String, apiKey: String) -> [AidokuRunner.Chapter] {
+    func intoChapters(baseUrl: URL, apiKey: String) -> [AidokuRunner.Chapter] {
         chapters.compactMap { chapter -> AidokuRunner.Chapter? in
             let isEpub = chapter.files.contains(where: { $0.format == 3 })
             guard !isEpub else { return nil }
@@ -259,9 +259,12 @@ extension KavitaVolume {
                 chapterNumber: noChapter ? nil : chapterNumber,
                 volumeNumber: noVolume ? nil : Float(number),
                 dateUploaded: chapter.createdUtc,
-                url: URL(string: "\(baseUrl)/library/1/series/\(seriesId)/chapter/\(chapter.id)"),
+                url: URL(string: "library/1/series/\(seriesId)/chapter/\(chapter.id)", relativeTo: baseUrl),
                 language: chapter.language,
-                thumbnail: "\(baseUrl)/api/image/chapter-cover?chapterId=\(chapter.id)&apiKey=\(apiKey)"
+                thumbnail: URL(
+                    string: "api/image/chapter-cover?chapterId=\(chapter.id)&apiKey=\(apiKey)",
+                    relativeTo: baseUrl
+                )?.absoluteString
             )
         }
     }

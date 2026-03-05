@@ -99,6 +99,23 @@ extension AidokuRunner.Source {
                     ))
                 ),
                 .init(
+                    title: "MIRRORS",
+                    value: .group(.init(
+                        footer: "MIRRORS_INFO",
+                        items: [
+                            .init(
+                                key: "mirrors",
+                                title: "MIRRORS",
+                                value: .editableList(.init(
+                                    lineLimit: 1,
+                                    inline: true,
+                                    placeholder: NSLocalizedString("SERVER_URL")
+                                ))
+                            )
+                        ]
+                    ))
+                ),
+                .init(
                     value: .group(.init(
                         items: [
                             .init(
@@ -143,7 +160,8 @@ actor KomgaSourceRunner: Runner {
         handlesBasicLogin: true
     )
 
-    var storedTags: [String] = []
+    private var storedTags: [String] = []
+    private var lastWorkingMirror: URL?
 
     init(sourceKey: String) {
         self.sourceKey = sourceKey
@@ -151,7 +169,15 @@ actor KomgaSourceRunner: Runner {
     }
 
     func getSearchMangaList(query: String?, page: Int, filters: [AidokuRunner.FilterValue]) async throws -> AidokuRunner.MangaPageResult {
-        let (sort, conditions) = try await helper.getConditions(filters: filters, storedTags: storedTags)
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer {
+            lastWorkingMirror = lastWorkingMirrorCopy
+        }
+        let (sort, conditions) = try await helper.getConditions(
+            filters: filters,
+            storedTags: storedTags,
+            lastWorkingMirror: &lastWorkingMirrorCopy
+        )
         let sortOption = [
             "metadata.titleSort", // name
             "createdDate", // date added
@@ -163,14 +189,19 @@ actor KomgaSourceRunner: Runner {
             "random" // random
         ][sort.value]
         let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(
-            path: "/api/v1/series/list?page=\(page - 1)&size=20&sort=\(sortOption)%2C\(sort.ascending ? "asc" : "desc")",
+            path: "api/v1/series/list?page=\(page - 1)&size=20&sort=\(sortOption)%2C\(sort.ascending ? "asc" : "desc")",
             method: .POST,
             body: .init(
                 condition: .allOf([.deleted(false)] + conditions),
                 fullTextSearch: (query?.isEmpty ?? true) ? nil : query
-            )
+            ),
+            lastWorkingMirror: &lastWorkingMirrorCopy
         )
-        let baseUrl = try helper.getConfiguredServer()
+        let baseUrl = if let lastWorkingMirrorCopy {
+            lastWorkingMirrorCopy
+        } else {
+            try helper.getConfiguredServer()
+        }
         return .init(
             entries: res.content.map { $0.intoManga(sourceKey: sourceKey, baseUrl: baseUrl) },
             hasNextPage: res.totalPages > page
@@ -180,28 +211,34 @@ actor KomgaSourceRunner: Runner {
     func getMangaUpdate(manga: AidokuRunner.Manga, needsDetails: Bool, needsChapters: Bool) async throws -> AidokuRunner.Manga {
         let baseUrl = try helper.getConfiguredServer()
 
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer {
+            lastWorkingMirror = lastWorkingMirrorCopy
+        }
+
         var manga = manga
 
         if needsDetails {
-            let series: KomgaSeries = try await helper.request(path: "/api/v1/series/\(manga.key)")
-            manga = manga.copy(from: series.intoManga(sourceKey: sourceKey, baseUrl: baseUrl))
+            let series: KomgaSeries = try await helper.request(path: "api/v1/series/\(manga.key)", lastWorkingMirror: &lastWorkingMirrorCopy)
+            manga = manga.copy(from: series.intoManga(sourceKey: sourceKey, baseUrl: lastWorkingMirrorCopy ?? baseUrl))
         }
 
         if needsChapters {
             let chapters: KomgaPageResponse<[KomgaBook]> = try await helper.request(
-                path: "/api/v1/books/list?unpaged=true&sort=metadata.numberSort%2Cdesc",
+                path: "api/v1/books/list?unpaged=true&sort=metadata.numberSort%2Cdesc",
                 method: .POST,
                 body: .init(condition: .allOf([
                     .seriesId(manga.key),
                     .deleted(false)
-                ]))
+                ])),
+                lastWorkingMirror: &lastWorkingMirrorCopy
             )
 
             manga.chapters = chapters.content
                 .filter { $0.media.mediaProfile != "EPUB" || $0.media.epubDivinaCompatible } // can't read epubs (yet?)
                 .map {
                     $0.intoChapter(
-                        baseUrl: baseUrl,
+                        baseUrl: lastWorkingMirrorCopy ?? baseUrl,
                         useChapters: UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
                     )
                 }
@@ -211,12 +248,21 @@ actor KomgaSourceRunner: Runner {
     }
 
     func getPageList(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) async throws -> [AidokuRunner.Page] {
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer {
+            lastWorkingMirror = lastWorkingMirrorCopy
+        }
         let pages: [KomgaPage] = try await helper.request(
-            path: "/api/v1/books/\(chapter.id)/pages"
+            path: "api/v1/books/\(chapter.id)/pages",
+            lastWorkingMirror: &lastWorkingMirrorCopy
         )
 
-        let baseUrl = try helper.getConfiguredServer()
-        let pageBaseUrl = "\(baseUrl)/api/v1/books/\(chapter.id)/pages"
+        let baseUrl = if let lastWorkingMirrorCopy {
+            lastWorkingMirrorCopy
+        } else {
+            try helper.getConfiguredServer()
+        }
+        let pageBaseUrl = URL(string: "api/v1/books/\(chapter.id)/pages", relativeTo: baseUrl)
 
         return pages.compactMap { page in
             let convert = if !["image/jpeg", "image/png", "image/gif", "image/webp"].contains(page.mediaType) {
@@ -224,15 +270,19 @@ actor KomgaSourceRunner: Runner {
             } else {
                 ""
             }
-            let url = "\(pageBaseUrl)/\(page.number)\(convert)"
-            return URL(string: url).flatMap {
+            let url = URL(string: "\(page.number)\(convert)", relativeTo: pageBaseUrl)
+            return url.flatMap {
                 .init(content: .url(url: $0))
             }
         }
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
-        try await helper.getMangaList(listing: listing, page: page)
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer {
+            lastWorkingMirror = lastWorkingMirrorCopy
+        }
+        return try await helper.getMangaList(listing: listing, page: page, lastWorkingMirror: &lastWorkingMirrorCopy)
     }
 
     func getSearchFilters() async throws -> [AidokuRunner.Filter] {
@@ -269,12 +319,16 @@ actor KomgaSourceRunner: Runner {
             returning: [ResultType: TaskResult].self
         ) { [helper] taskGroup in
             for type in ResultType.allCases {
-                taskGroup.addTask {
+                taskGroup.addTask { [lastWorkingMirror] in
+                    var lastWorkingMirrorCopy = lastWorkingMirror
                     if type == .libraries {
-                        let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/\(type.rawValue)")
+                        let libraries: [KomgaLibrary] = try await helper.request(
+                            path: "api/v1/\(type.rawValue)",
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
                         return (type, .libraries(libraries))
                     } else {
-                        let result: [String] = try await helper.request(path: "/api/v1/\(type.rawValue)")
+                        let result: [String] = try await helper.request(path: "api/v1/\(type.rawValue)", lastWorkingMirror: &lastWorkingMirrorCopy)
                         return (type, .strings(result))
                     }
                 }
@@ -412,7 +466,11 @@ actor KomgaSourceRunner: Runner {
     }
 
     func getListings() async throws -> [AidokuRunner.Listing] {
-        let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/libraries")
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer {
+            lastWorkingMirror = lastWorkingMirrorCopy
+        }
+        let libraries: [KomgaLibrary] = try await helper.request(path: "api/v1/libraries", lastWorkingMirror: &lastWorkingMirrorCopy)
 
         return libraries.map {
             .init(id: "library-\($0.id)", name: $0.name, kind: .default)
@@ -420,7 +478,7 @@ actor KomgaSourceRunner: Runner {
     }
 
     func getImageRequest(url: String, context: PageContext?) async throws -> URLRequest {
-        guard let url = URL(string: url) else { throw SourceError.message("Invalid URL") }
+        guard let url = URL(string: url) else { throw SourceError.message("INVALID_URL") }
         var request = URLRequest(url: url)
         request.setValue(helper.getAuthorizationHeader(), forHTTPHeaderField: "Authorization")
         request.setValue("image/*", forHTTPHeaderField: "Accept")
@@ -428,12 +486,12 @@ actor KomgaSourceRunner: Runner {
     }
 
     func getBaseUrl() async throws -> URL? {
-        URL(string: try helper.getConfiguredServer())
+        try helper.getConfiguredServer()
     }
 
     func handleBasicLogin(key _: String, username email: String, password: String) async throws -> Bool {
         let server = try helper.getConfiguredServer()
-        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
+        guard let testUrl = URL(string: "api/v2/users/me", relativeTo: server) else {
             return false
         }
 
@@ -495,6 +553,7 @@ extension KomgaSourceRunner {
     }
 
     func getHome() async throws -> Home {
+        let baseUrl = try helper.getConfiguredServer()
         let listingTypes: [HomeListingType] = [
             .keepReading,
             .onDeck,
@@ -507,9 +566,8 @@ extension KomgaSourceRunner {
 
         try await withThrowingTaskGroup(of: (Int, AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { [helper, sourceKey] taskGroup in
             for (index, listingType) in listingTypes.enumerated() {
-                taskGroup.addTask { [self] in
+                taskGroup.addTask { [self, lastWorkingMirror] in
                     let listing = AidokuRunner.Listing(id: listingType.id, name: listingType.name, kind: .default)
-                    let baseUrl = try helper.getConfiguredServer()
 
                     if listingType.isBookBased {
                         let path: String
@@ -518,26 +576,33 @@ extension KomgaSourceRunner {
 
                         switch listingType {
                             case .onDeck:
-                                path = "/api/v1/books/ondeck?sort=createdDate%2Cdesc"
+                                path = "api/v1/books/ondeck?sort=createdDate%2Cdesc"
                                 method = .GET
                                 body = nil
                             case .keepReading:
-                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([.readStatus(.inProgress), .deleted(false)]))
                             case .recentlyAddedBooks:
-                                path = "/api/v1/books/list?page=0&size=20&sort=createdDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=createdDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([.deleted(false)]))
                             case .recentlyReadBooks:
-                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([.readStatus(.read), .deleted(false)]))
                             default:
                                 throw SourceError.message("Invalid listing type")
                         }
 
-                        let res: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: path, method: method, body: body)
+                        var lastWorkingMirrorCopy = lastWorkingMirror
+                        let res: KomgaPageResponse<[KomgaBook]> = try await helper.request(
+                            path: path,
+                            method: method,
+                            body: body,
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
+                        let baseUrl = lastWorkingMirrorCopy ?? baseUrl
                         let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: true)
                         return (index, listing, links)
                     } else {
@@ -546,16 +611,22 @@ extension KomgaSourceRunner {
 
                         switch listingType {
                             case .recentlyAddedSeries:
-                                path = "/api/v1/series/new?page=0&size=20&oneshot=false&deleted=false"
+                                path = "api/v1/series/new?page=0&size=20&oneshot=false&deleted=false"
                                 method = .GET
                             case .recentlyUpdatedSeries:
-                                path = "/api/v1/series/updated?page=0&size=20&oneshot=false&deleted=false"
+                                path = "api/v1/series/updated?page=0&size=20&oneshot=false&deleted=false"
                                 method = .GET
                             default:
                                 throw SourceError.message("Invalid listing type")
                         }
 
-                        let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(path: path, method: method)
+                        var lastWorkingMirrorCopy = lastWorkingMirror
+                        let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(
+                            path: path,
+                            method: method,
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
+                        let baseUrl = lastWorkingMirrorCopy ?? baseUrl
                         let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: false)
                         return (index, listing, links)
                     }
@@ -577,8 +648,12 @@ extension KomgaSourceRunner {
     }
 
     func getListingHome(listing: AidokuRunner.Listing) async throws -> Home? {
+        let baseUrl = try helper.getConfiguredServer()
+
         // Check if there are multiple libraries
-        let libraries: [KomgaLibrary] = try await helper.request(path: "/api/v1/libraries")
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        let libraries: [KomgaLibrary] = try await helper.request(path: "api/v1/libraries", lastWorkingMirror: &lastWorkingMirrorCopy)
+        lastWorkingMirror = lastWorkingMirrorCopy
 
         // If only one library, use default HomeGridView instead of Home-like layout
         guard libraries.count > 1 else { return nil }
@@ -601,14 +676,15 @@ extension KomgaSourceRunner {
 
         try await withThrowingTaskGroup(of: (Int, AidokuRunner.Listing, [HomeComponent.Value.Link]).self) { [helper, sourceKey] taskGroup in
             for (index, listingType) in listingTypes.enumerated() {
-                taskGroup.addTask { [self] in
+                taskGroup.addTask { [self, lastWorkingMirror] in
                     // Create a listing for this specific type within the library
                     let componentListing = AidokuRunner.Listing(
                         id: "library-\(libraryId)-\(listingType.id)",
                         name: listingType.name,
                         kind: .default
                     )
-                    let baseUrl = try helper.getConfiguredServer()
+
+                    var lastWorkingMirrorCopy = lastWorkingMirror
 
                     if listingType.isBookBased {
                         let path: String
@@ -617,11 +693,11 @@ extension KomgaSourceRunner {
 
                         switch listingType {
                             case .onDeck:
-                                path = "/api/v1/books/ondeck?library_id=\(libraryId)&size=20&sort=createdDate%2Cdesc"
+                                path = "api/v1/books/ondeck?library_id=\(libraryId)&size=20&sort=createdDate%2Cdesc"
                                 method = .GET
                                 body = nil
                             case .keepReading:
-                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([
                                     .readStatus(.inProgress),
@@ -629,14 +705,14 @@ extension KomgaSourceRunner {
                                     .libraryId(libraryId)
                                 ]))
                             case .recentlyAddedBooks:
-                                path = "/api/v1/books/list?page=0&size=20&sort=createdDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=createdDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([
                                     .deleted(false),
                                     .libraryId(libraryId)
                                 ]))
                             case .recentlyReadBooks:
-                                path = "/api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
+                                path = "api/v1/books/list?page=0&size=20&sort=readProgress.readDate%2Cdesc"
                                 method = .POST
                                 body = .init(condition: .allOf([
                                     .readStatus(.read),
@@ -647,7 +723,13 @@ extension KomgaSourceRunner {
                                 throw SourceError.message("Invalid listing type")
                         }
 
-                        let res: KomgaPageResponse<[KomgaBook]> = try await helper.request(path: path, method: method, body: body)
+                        let res: KomgaPageResponse<[KomgaBook]> = try await helper.request(
+                            path: path,
+                            method: method,
+                            body: body,
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
+                        let baseUrl = lastWorkingMirrorCopy ?? baseUrl
                         let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: true)
                         return (index, componentListing, links)
                     } else {
@@ -656,16 +738,21 @@ extension KomgaSourceRunner {
 
                         switch listingType {
                             case .recentlyAddedSeries:
-                                path = "/api/v1/series/new?library_id=\(libraryId)&page=0&size=20&oneshot=false&deleted=false"
+                                path = "api/v1/series/new?library_id=\(libraryId)&page=0&size=20&oneshot=false&deleted=false"
                                 method = .GET
                             case .recentlyUpdatedSeries:
-                                path = "/api/v1/series/updated?library_id=\(libraryId)&page=0&size=20&oneshot=false&deleted=false"
+                                path = "api/v1/series/updated?library_id=\(libraryId)&page=0&size=20&oneshot=false&deleted=false"
                                 method = .GET
                             default:
                                 throw SourceError.message("Invalid listing type")
                         }
 
-                        let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(path: path, method: method)
+                        let res: KomgaPageResponse<[KomgaSeries]> = try await helper.request(
+                            path: path,
+                            method: method,
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
+                        let baseUrl = lastWorkingMirrorCopy ?? baseUrl
                         let links = try await self.createLinks(for: res.content, sourceKey: sourceKey, baseUrl: baseUrl, isBookBased: false)
                         return (index, componentListing, links)
                     }
@@ -689,16 +776,20 @@ extension KomgaSourceRunner {
     private func createLinks<T: Codable & Sendable>(
         for items: [T],
         sourceKey: String,
-        baseUrl: String,
+        baseUrl: URL,
         isBookBased: Bool
     ) async throws -> [HomeComponent.Value.Link] {
         var links: [HomeComponent.Value.Link?] = Array(repeating: nil, count: items.count)
         try await withThrowingTaskGroup(of: (Int, HomeComponent.Value.Link).self) { [helper] taskGroup in
             for (index, item) in items.enumerated() {
-                taskGroup.addTask {
+                taskGroup.addTask { [lastWorkingMirror] in
+                    var lastWorkingMirrorCopy = lastWorkingMirror
                     let link: HomeComponent.Value.Link
                     if isBookBased, let book = item as? KomgaBook {
-                        let series: KomgaSeries = try await helper.request(path: "/api/v1/series/\(book.seriesId)")
+                        let series: KomgaSeries = try await helper.request(
+                            path: "api/v1/series/\(book.seriesId)",
+                            lastWorkingMirror: &lastWorkingMirrorCopy
+                        )
                         let manga = book.intoManga(sourceKey: sourceKey, baseUrl: baseUrl)
                         let bookTitle = book.metadata.title.isEmpty ? book.name : book.metadata.title
                         let subtitle = "\(book.metadata.number) - \(bookTitle)"
