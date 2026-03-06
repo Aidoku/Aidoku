@@ -46,11 +46,13 @@ struct SourceSettingsView: View {
                             await loadSettings()
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
-                    frame(maxWidth: .infinity)
                 }
-            } else if !settings.isEmpty {
-                ForEach(Array(settings.enumerated()), id: \.offset) { _, setting in
+            }
+            if !settings.isEmpty {
+                ForEach(settings.indices, id: \.self) { index in
+                    let setting = settings[index]
                     SettingView(source: source, setting: setting, namespace: source.id)
                 }
             }
@@ -68,6 +70,7 @@ struct SourceSettingsView: View {
                 }
             }
         }
+        .scrollDismissesKeyboardImmediately()
         .navigationTitle(NSLocalizedString("SOURCE_SETTINGS"))
         .navigationBarTitleDisplayMode(.inline)
         // for ios 15

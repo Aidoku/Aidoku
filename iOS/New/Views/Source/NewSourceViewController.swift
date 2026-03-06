@@ -590,16 +590,17 @@ extension NewSourceViewController {
             // there's a bug where navigationlinks in settingview don't work in NavigationView/NavigationStack,
             // so we need to use a uikit navigation controller instead
 
+            var coordinator = NavigationCoordinator(rootViewController: self)
+
             let hostingController = UIHostingController(
                 rootView: SourceSettingsView(source: self.source)
-                    .environmentObject(NavigationCoordinator(rootViewController: self))
+                    .environmentObject(coordinator)
             )
             let navigationController = UINavigationController(rootViewController: hostingController)
             navigationController.navigationBar.prefersLargeTitles = true
 
             // update navigation coordinator
-            hostingController.rootView = SourceSettingsView(source: self.source)
-                .environmentObject(NavigationCoordinator(rootViewController: hostingController))
+            coordinator.rootViewController = hostingController
 
             present(navigationController, animated: true)
         }
