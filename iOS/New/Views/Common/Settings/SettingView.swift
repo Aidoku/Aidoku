@@ -30,6 +30,7 @@ struct SettingView: View {
     @State private var requires: Bool
     @State private var requiresFalse: Bool
     @State private var toggleValue: Bool
+    @State private var textValue: String
 
     @State private var valueChangeTask: Task<Void, Never>?
     @State private var showLoginAlert = false
@@ -132,6 +133,11 @@ struct SettingView: View {
         } else {
             _toggleValue = State(initialValue: false)
         }
+        if case .text = setting.value {
+            _textValue = State(initialValue: SettingsStore.shared.get(key: key(setting.key)))
+        } else {
+            _textValue = State(initialValue: "")
+        }
     }
 
     var body: some View {
@@ -221,12 +227,19 @@ struct SettingView: View {
             }
             refresh()
 
+            switch setting.value {
+                case .toggle: toggleValue = SettingsStore.shared.get(key: key(setting.key)) as Bool
+                case .text: textValue = SettingsStore.shared.get(key: key(setting.key)) as String
+                default: break
+            }
+
             let value: Any? = switch setting.value {
                 case .select: stringListBinding.first
                 case .multiselect: stringListBinding
                 case .toggle: toggleValue
                 case .stepper: doubleBinding
                 case .segment: SettingsStore.shared.get(key: key(setting.key)) as Int
+                case .text: textValue
                 case .editableList: stringListBinding
                 default: nil
             }
@@ -624,14 +637,13 @@ extension SettingView {
                     .lineLimit(1)
                 Spacer()
             }
-            let text: Binding<String> = SettingsStore.shared.binding(key: key(setting.key))
 
             HStack(spacing: 4) {
                 Group {
                     if value.secure ?? false {
-                        SecureField(value.placeholder ?? "", text: text)
+                        SecureField(value.placeholder ?? "", text: $textValue)
                     } else {
-                        TextField(value.placeholder ?? "", text: text)
+                        TextField(value.placeholder ?? "", text: $textValue)
                     }
                 }
                 .focused($fieldFocused)
@@ -642,10 +654,16 @@ extension SettingView {
                 .keyboardType(value.keyboardType.flatMap { UIKeyboardType(rawValue: $0) } ?? .default)
                 .submitLabel(returnKeyType)
                 .disabled(disabled)
+                .onChange(of: fieldFocused) { isFocused in
+                    // update setting value on unfocus (keyboard dismiss or submit)
+                    if !isFocused {
+                        SettingsStore.shared.set(key: key(setting.key), value: textValue)
+                    }
+                }
 
-                if !text.wrappedValue.isEmpty && fieldFocused {
+                if !textValue.isEmpty && fieldFocused {
                     ClearFieldButton {
-                        text.wrappedValue = ""
+                        textValue = ""
                     }
                     .buttonStyle(.borderless)
                 }
