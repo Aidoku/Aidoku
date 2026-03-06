@@ -235,7 +235,7 @@ extension LibraryViewModel {
         (categories, filterGroups) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             (
                 CoreDataManager.shared.getCategoryTitles(context: context),
-                CoreDataManager.shared.getFilterGroups()
+                CoreDataManager.shared.getFilterGroups(context: context)
             )
         }
         let isInFilterGroup = filterGroups.contains(where: { $0.title == currentCategory })
