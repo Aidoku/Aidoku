@@ -119,6 +119,8 @@ class SourceManager {
                 } else {
                     sources.append(source)
                 }
+            } else {
+                LogManager.logger.error("Failed to load source \(dbSource.id)")
             }
         }
         return sources
@@ -408,6 +410,25 @@ extension SourceManager {
             UserDefaults.standard.set(pinnedList, forKey: key)
         }
         NotificationCenter.default.post(name: .updateSourceList, object: nil)
+    }
+
+    func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) {
+        Task {
+            let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let source = CoreDataManager.shared.getSource(id: key, context: context)
+                source?.customSource = config.encode() as NSObject
+                try? context.save()
+                return source?.toData()
+            }
+            if updateSourceList, let newSource = await newDbSource?.toNewSource() {
+                await MainActor.run {
+                    if let index = self.sources.firstIndex(where: { $0.id == newSource.id }) {
+                        self.sources[index] = newSource
+                    }
+                    NotificationCenter.default.post(name: .updateSourceList, object: nil)
+                }
+            }
+        }
     }
 }
 

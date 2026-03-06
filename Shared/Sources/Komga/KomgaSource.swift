@@ -431,6 +431,24 @@ actor KomgaSourceRunner: Runner {
     func getSettings() async throws -> [Setting] {
         var settings: [Setting] = [
             .init(
+                title: "SOURCE_NAME",
+                value: .group(.init(
+                    footer: "SOURCE_NAME_INFO",
+                    items: [
+                        .init(
+                            key: "name",
+                            notification: "name_change",
+                            value: .text(.init(
+                                placeholder: NSLocalizedString("KAVITA"),
+                                returnKeyType: UIReturnKeyType.done.rawValue,
+                                autocorrectionDisabled: true,
+                                defaultValue: name
+                            ))
+                        )
+                    ]
+                ))
+            ),
+            .init(
                 title: "SERVER_URL",
                 value: .group(.init(
                     footer: "SERVER_URL_INFO",
@@ -483,7 +501,7 @@ actor KomgaSourceRunner: Runner {
                             title: "LOGIN",
                             requires: "server",
                             refreshes: ["content", "listings", "filters"],
-                            value: .login(.init(method: .basic))
+                            value: .login(.init(method: .basic, useEmail: true))
                         )
                     ]
                 ))
@@ -533,6 +551,23 @@ actor KomgaSourceRunner: Runner {
 
     func handleNotification(notification: String) async throws {
         switch notification {
+            case "name_change":
+                let key = "\(sourceKey).name"
+                let newValue = UserDefaults.standard.string(forKey: key) ?? ""
+
+                // ensure normalized value
+                let normalizedValue = newValue.trimmingCharacters(in: .whitespaces)
+                if newValue != normalizedValue {
+                    UserDefaults.standard.set(normalizedValue, forKey: key)
+                    return // the function will be called again with the new value
+                }
+
+                if newValue != name {
+                    // update db source config with new name
+                    name = newValue
+                    updateSourceConfig(updateSourceList: true)
+                }
+
             case "server_change":
                 let key = "\(sourceKey).server"
                 let newValue = UserDefaults.standard.string(forKey: key) ?? ""
@@ -545,20 +580,20 @@ actor KomgaSourceRunner: Runner {
                     return // the function will be called again with the new value
                 }
 
-                // update db source config with new server url
-                server = newValue
-                let config = CustomSourceConfig.komga(key: key, name: name, server: server)
-                Task {
-                    await CoreDataManager.shared.container.performBackgroundTask { [sourceKey] context in
-                        let source = CoreDataManager.shared.getSource(id: sourceKey, context: context)
-                        source?.customSource = config.encode() as NSObject
-                        try? context.save()
-                    }
+                if newValue != server {
+                    // update db source config with new server url
+                    server = newValue
+                    updateSourceConfig()
                 }
 
             default:
                 break
         }
+    }
+
+    private func updateSourceConfig(updateSourceList: Bool = false) {
+        let config = CustomSourceConfig.komga(key: sourceKey, name: name, server: server)
+        SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }
 
