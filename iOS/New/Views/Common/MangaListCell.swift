@@ -361,6 +361,10 @@ private class TagScrollView: UIView {
         return fadeView
     }()
 
+    override var intrinsicContentSize: CGSize {
+        stackView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+    }
+
     init() {
         super.init(frame: .zero)
         configure()
@@ -457,6 +461,7 @@ private class FadeView: UIView {
 private class TagLabelView: UIView {
     private lazy var label = {
         let label = UILabel()
+        label.adjustsFontForContentSizeCategory = true
         label.font = UIFont.preferredFont(forTextStyle: .caption2)
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
