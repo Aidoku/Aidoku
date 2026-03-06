@@ -564,6 +564,9 @@ extension MangaManager {
 
                     if updateMetadata || !newChapters.isEmpty {
                         libraryObject.lastUpdated = Date.now
+                    }
+
+                    if context.hasChanges {
                         try? context.save()
                     }
                 }

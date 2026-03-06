@@ -143,14 +143,19 @@ extension CoreDataManager {
                 if !inserted {
                     context.delete(object) // remove duplicates
                 }
-                object.load(
-                    from: newChapter.element,
-                    sourceId: sourceId,
-                    mangaId: mangaId,
-                    sourceOrder: newChapter.offset
-                )
-                object.manga = manga
-                newChapters.removeAll { $0.element.id == object.id }
+                let becameUnlocked = object.locked && !newChapter.element.locked
+                if becameUnlocked {
+                    context.delete(object) // treat unlocked chapters as new ones
+                } else {
+                    object.load(
+                        from: newChapter.element,
+                        sourceId: sourceId,
+                        mangaId: mangaId,
+                        sourceOrder: newChapter.offset
+                    )
+                    object.manga = manga
+                    newChapters.removeAll { $0.element.id == object.id }
+                }
             } else {
                 context.delete(object)
             }
