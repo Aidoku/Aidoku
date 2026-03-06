@@ -15,13 +15,13 @@ import UIKit
 extension AidokuRunner.Source {
     static func kavita(
         key: String = "kavita",
-        name: String? = nil,
-        server: String? = nil
+        name: String,
+        server: String
     ) -> AidokuRunner.Source {
         .init(
             url: nil,
             key: key,
-            name: name ?? NSLocalizedString("KAVITA"),
+            name: name,
             version: 1,
             languages: ["multi"],
             urls: UserDefaults.standard.string(forKey: "\(key).server")
@@ -95,45 +95,8 @@ extension AidokuRunner.Source {
                     ))
                 )
             ],
-            staticSettings: [
-                .init(
-                    title: "SERVER_URL",
-                    value: .group(.init(
-                        footer: "SERVER_URL_INFO",
-                        items: [
-                            .init(
-                                key: "server",
-                                value: .text(.init(
-                                    placeholder: "https://demo.kavitareader.com",
-                                    autocapitalizationType: UITextAutocapitalizationType.none.rawValue,
-                                    keyboardType: UIKeyboardType.URL.rawValue,
-                                    returnKeyType: UIReturnKeyType.done.rawValue,
-                                    autocorrectionDisabled: true,
-                                    defaultValue: server
-                                ))
-                            )
-                        ]
-                    ))
-                ),
-                .init(
-                    title: "MIRRORS",
-                    value: .group(.init(
-                        footer: "MIRRORS_INFO",
-                        items: [
-                            .init(
-                                key: "mirrors",
-                                title: "MIRRORS",
-                                value: .editableList(.init(
-                                    lineLimit: 1,
-                                    inline: true,
-                                    placeholder: NSLocalizedString("SERVER_URL")
-                                ))
-                            )
-                        ]
-                    ))
-                )
-            ],
-            runner: KavitaSourceRunner(sourceKey: key)
+            staticSettings: [],
+            runner: KavitaSourceRunner(sourceKey: key, name: name, server: server)
         )
     }
 }
@@ -155,9 +118,14 @@ actor KavitaSourceRunner: Runner {
         handlesWebLogin: true
     )
 
-    init(sourceKey: String) {
+    private var name: String
+    private var server: String
+
+    init(sourceKey: String, name: String, server: String) {
         self.sourceKey = sourceKey
         self.helper = .init(sourceKey: sourceKey)
+        self.name = name
+        self.server = server
     }
 
     struct FilterItem {
@@ -504,10 +472,58 @@ actor KavitaSourceRunner: Runner {
     }
 
     func getSettings() async throws -> [Setting] {
+        var settings: [Setting] = [
+            .init(
+                title: "SERVER_URL",
+                value: .group(.init(
+                    footer: "SERVER_URL_INFO",
+                    items: [
+                        .init(
+                            key: "server",
+                            notification: "server_change",
+                            refreshes: ["settings", "listings", "content"],
+                            value: .text(.init(
+                                placeholder: "https://demo.kavitareader.com",
+                                autocapitalizationType: UITextAutocapitalizationType.none.rawValue,
+                                keyboardType: UIKeyboardType.URL.rawValue,
+                                returnKeyType: UIReturnKeyType.done.rawValue,
+                                autocorrectionDisabled: true,
+                                defaultValue: server
+                            ))
+                        )
+                    ]
+                ))
+            )
+        ]
+        let currentServer = UserDefaults.standard.string(forKey: "\(sourceKey).server") ?? server
+        if !currentServer.isEmpty {
+            settings.append(
+                .init(
+                    title: "MIRRORS",
+                    value: .group(.init(
+                        footer: "MIRRORS_INFO",
+                        items: [
+                            .init(
+                                key: "mirrors",
+                                title: "MIRRORS",
+                                value: .editableList(.init(
+                                    lineLimit: 1,
+                                    inline: true,
+                                    placeholder: NSLocalizedString("SERVER_URL")
+                                ))
+                            )
+                        ]
+                    ))
+                )
+            )
+        }
+
         // check for oidc support
-        let server = try helper.getConfiguredServer()
-        guard let oidcCheckUrl = URL(string: "api/settings/oidc", relativeTo: server) else {
-            return []
+        guard
+            let server = URL(string: currentServer),
+            let oidcCheckUrl = URL(string: "api/settings/oidc", relativeTo: server)
+        else {
+            return settings
         }
 
         struct OIDCResponse: Decodable {
@@ -521,9 +537,7 @@ actor KavitaSourceRunner: Runner {
             return config
         }())
         let response: OIDCResponse? = try? await session.object(from: oidcCheckUrl)
-        guard let response else { return [] }
-
-        var settings: [Setting] = []
+        guard let response else { return settings }
 
         let isBasicLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login") != nil
         let isOidcLoggedIn = UserDefaults.standard.string(forKey: "\(sourceKey).login_oidc") != nil
@@ -569,7 +583,9 @@ actor KavitaSourceRunner: Runner {
     func getBaseUrl() async throws -> URL? {
         try helper.getConfiguredServer()
     }
+}
 
+extension KavitaSourceRunner {
     func handleBasicLogin(key _: String, username: String, password: String) async throws -> Bool {
         let server = try helper.getConfiguredServer()
         let response = await Self.getLoginResponse(server: server, username: username, password: password)
@@ -638,6 +654,29 @@ actor KavitaSourceRunner: Runner {
                 if !isLoggedIn {
                     UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).apiKey")
                     UserDefaults.standard.setValue(nil, forKey: "\(sourceKey).cookie")
+                }
+
+            case "server_change":
+                let key = "\(sourceKey).server"
+                let newValue = UserDefaults.standard.string(forKey: key) ?? ""
+
+                // ensure normalized value
+                let normalizedValue = (newValue.last == "/" ? String(newValue[..<newValue.index(before: newValue.endIndex)]) : newValue)
+                    .trimmingCharacters(in: .whitespaces)
+                if newValue != normalizedValue {
+                    UserDefaults.standard.set(normalizedValue, forKey: key)
+                    return // the function will be called again with the new value
+                }
+
+                // update db source config with new server url
+                server = newValue
+                let config = CustomSourceConfig.kavita(key: key, name: name, server: server)
+                Task {
+                    await CoreDataManager.shared.container.performBackgroundTask { [sourceKey] context in
+                        let source = CoreDataManager.shared.getSource(id: sourceKey, context: context)
+                        source?.customSource = config.encode() as NSObject
+                        try? context.save()
+                    }
                 }
 
             default:

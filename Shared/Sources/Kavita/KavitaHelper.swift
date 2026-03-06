@@ -133,15 +133,15 @@ struct KavitaHelper: Sendable {
             }
         }
 
-        func tryRequests() async throws(SourceError) -> T? {
-            for baseUrl in allBaseUrls {
+        func tryRequests(ignoreFinalError: Bool = false) async throws(SourceError) -> T? {
+            for (idx, baseUrl) in allBaseUrls.enumerated() {
                 do {
                     if let result = try await doRequest(baseUrl: baseUrl) {
                         lastWorkingMirror = baseUrl == mainUrl ? nil : baseUrl
                         return result
                     }
                 } catch {
-                    if error == SourceError.networkError {
+                    if error == SourceError.networkError && (!ignoreFinalError ? idx < allBaseUrls.count - 1 : true) {
                         continue
                     } else {
                         throw error
@@ -152,7 +152,7 @@ struct KavitaHelper: Sendable {
             return nil
         }
 
-        let result = try await tryRequests()
+        let result = try await tryRequests(ignoreFinalError: true)
         if let result {
             return result
         } else {

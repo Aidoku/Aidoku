@@ -15,13 +15,13 @@ import UIKit
 extension AidokuRunner.Source {
     static func komga(
         key: String = "komga",
-        name: String? = nil,
-        server: String? = nil
+        name: String,
+        server: String
     ) -> AidokuRunner.Source {
         .init(
             url: nil,
             key: key,
-            name: name ?? NSLocalizedString("KOMGA"),
+            name: name,
             version: 1,
             languages: ["multi"],
             urls: UserDefaults.standard.string(forKey: "\(key).server")
@@ -78,70 +78,7 @@ extension AidokuRunner.Source {
                     ))
                 )
             ],
-            staticSettings: [
-                .init(
-                    title: "SERVER_URL",
-                    value: .group(.init(
-                        footer: "SERVER_URL_INFO",
-                        items: [
-                            .init(
-                                key: "server",
-                                value: .text(.init(
-                                    placeholder: "https://demo.komga.org",
-                                    autocapitalizationType: UITextAutocapitalizationType.none.rawValue,
-                                    keyboardType: UIKeyboardType.URL.rawValue,
-                                    returnKeyType: UIReturnKeyType.done.rawValue,
-                                    autocorrectionDisabled: true,
-                                    defaultValue: server
-                                ))
-                            )
-                        ]
-                    ))
-                ),
-                .init(
-                    title: "MIRRORS",
-                    value: .group(.init(
-                        footer: "MIRRORS_INFO",
-                        items: [
-                            .init(
-                                key: "mirrors",
-                                title: "MIRRORS",
-                                value: .editableList(.init(
-                                    lineLimit: 1,
-                                    inline: true,
-                                    placeholder: NSLocalizedString("SERVER_URL")
-                                ))
-                            )
-                        ]
-                    ))
-                ),
-                .init(
-                    value: .group(.init(
-                        items: [
-                            .init(
-                                key: "login",
-                                title: "LOGIN",
-                                requires: "server",
-                                refreshes: ["content", "listings", "filters"],
-                                value: .login(.init(method: .basic))
-                            )
-                        ]
-                    ))
-                ),
-                .init(
-                    title: "OTHER_SETTINGS",
-                    value: .group(.init(
-                        items: [
-                            .init(
-                                key: "useChapters",
-                                title: "USE_CHAPTERS",
-                                value: .toggle(.init(subtitle: "USE_CHAPTERS_TEXT"))
-                            )
-                        ]
-                    ))
-                )
-            ],
-            runner: KomgaSourceRunner(sourceKey: key)
+            runner: KomgaSourceRunner(sourceKey: key, name: name, server: server)
         )
     }
 }
@@ -154,18 +91,24 @@ actor KomgaSourceRunner: Runner {
         providesListings: true,
         providesHome: true,
         dynamicFilters: true,
+        dynamicSettings: true,
         dynamicListings: true,
         providesImageRequests: true,
         providesBaseUrl: true,
+        handlesNotifications: true,
         handlesBasicLogin: true
     )
 
+    private var name: String
+    private var server: String
     private var storedTags: [String] = []
     private var lastWorkingMirror: URL?
 
-    init(sourceKey: String) {
+    init(sourceKey: String, name: String, server: String) {
         self.sourceKey = sourceKey
         self.helper = KomgaHelper(sourceKey: sourceKey)
+        self.name = name
+        self.server = server
     }
 
     func getSearchMangaList(query: String?, page: Int, filters: [AidokuRunner.FilterValue]) async throws -> AidokuRunner.MangaPageResult {
@@ -485,6 +428,82 @@ actor KomgaSourceRunner: Runner {
         return request
     }
 
+    func getSettings() async throws -> [Setting] {
+        var settings: [Setting] = [
+            .init(
+                title: "SERVER_URL",
+                value: .group(.init(
+                    footer: "SERVER_URL_INFO",
+                    items: [
+                        .init(
+                            key: "server",
+                            notification: "server_change",
+                            refreshes: ["settings", "listings", "content"],
+                            value: .text(.init(
+                                placeholder: "https://demo.komga.org",
+                                autocapitalizationType: UITextAutocapitalizationType.none.rawValue,
+                                keyboardType: UIKeyboardType.URL.rawValue,
+                                returnKeyType: UIReturnKeyType.done.rawValue,
+                                autocorrectionDisabled: true,
+                                defaultValue: server
+                            ))
+                        )
+                    ]
+                ))
+            )
+        ]
+        let currentServer = UserDefaults.standard.string(forKey: "\(sourceKey).server") ?? server
+        if !currentServer.isEmpty {
+            settings.append(
+                .init(
+                    title: "MIRRORS",
+                    value: .group(.init(
+                        footer: "MIRRORS_INFO",
+                        items: [
+                            .init(
+                                key: "mirrors",
+                                title: "MIRRORS",
+                                value: .editableList(.init(
+                                    lineLimit: 1,
+                                    inline: true,
+                                    placeholder: NSLocalizedString("SERVER_URL")
+                                ))
+                            )
+                        ]
+                    ))
+                )
+            )
+        }
+        settings.append(contentsOf: [
+            .init(
+                value: .group(.init(
+                    items: [
+                        .init(
+                            key: "login",
+                            title: "LOGIN",
+                            requires: "server",
+                            refreshes: ["content", "listings", "filters"],
+                            value: .login(.init(method: .basic))
+                        )
+                    ]
+                ))
+            ),
+            .init(
+                title: "OTHER_SETTINGS",
+                value: .group(.init(
+                    items: [
+                        .init(
+                            key: "useChapters",
+                            title: "USE_CHAPTERS",
+                            value: .toggle(.init(subtitle: "USE_CHAPTERS_TEXT"))
+                        )
+                    ]
+                ))
+            )
+        ])
+        return settings
+    }
+
     func getBaseUrl() async throws -> URL? {
         try helper.getConfiguredServer()
     }
@@ -510,6 +529,36 @@ actor KomgaSourceRunner: Runner {
         }
 
         return true
+    }
+
+    func handleNotification(notification: String) async throws {
+        switch notification {
+            case "server_change":
+                let key = "\(sourceKey).server"
+                let newValue = UserDefaults.standard.string(forKey: key) ?? ""
+
+                // ensure normalized value
+                let normalizedValue = (newValue.last == "/" ? String(newValue[..<newValue.index(before: newValue.endIndex)]) : newValue)
+                    .trimmingCharacters(in: .whitespaces)
+                if newValue != normalizedValue {
+                    UserDefaults.standard.set(normalizedValue, forKey: key)
+                    return // the function will be called again with the new value
+                }
+
+                // update db source config with new server url
+                server = newValue
+                let config = CustomSourceConfig.komga(key: key, name: name, server: server)
+                Task {
+                    await CoreDataManager.shared.container.performBackgroundTask { [sourceKey] context in
+                        let source = CoreDataManager.shared.getSource(id: sourceKey, context: context)
+                        source?.customSource = config.encode() as NSObject
+                        try? context.save()
+                    }
+                }
+
+            default:
+                break
+        }
     }
 }
 
