@@ -10,6 +10,7 @@ import Gifu
 import MarkdownUI
 import Nuke
 import SwiftUI
+import Vision
 import VisionKit
 import ZIPFoundation
 
@@ -26,6 +27,13 @@ class ReaderPageView: UIView {
 
     private var textView: UIHostingController<MarkdownView>?
 
+    private var _textRecognizer: Any?
+    @available(iOS 18.0, *)
+    var textRecognizer: TextRecognizer? {
+        get { _textRecognizer as? TextRecognizer }
+        set { _textRecognizer = newValue }
+    }
+
     private var imageWidthConstraint: NSLayoutConstraint?
     private var imageHeightConstraint: NSLayoutConstraint?
     private var imageTask: ImageTask?
@@ -35,6 +43,10 @@ class ReaderPageView: UIView {
     private static let sharedImageAnalyzer = ImageAnalyzer()
     private var liveTextTask: Task<Void, Never>?
     private var liveTextGeneration = 0
+    private var dictionaryAnalysisTask: Task<Void, Never>?
+    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)?
+    private let dictionaryOverlayContainerView = DictionaryOverlayPassthroughView()
+    private weak var activeDictionaryOverlayButton: DictionaryOverlayButton?
 
     private var completion: ((Bool) -> Void)?
 
@@ -57,6 +69,10 @@ class ReaderPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        dictionaryAnalysisTask?.cancel()
+    }
+
     func configure() {
         progressView.trackColor = .quaternaryLabel
         progressView.progressColor = tintColor
@@ -74,6 +90,11 @@ class ReaderPageView: UIView {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
 
+        dictionaryOverlayContainerView.translatesAutoresizingMaskIntoConstraints = false
+        dictionaryOverlayContainerView.backgroundColor = .clear
+        dictionaryOverlayContainerView.isUserInteractionEnabled = true
+        imageView.addSubview(dictionaryOverlayContainerView)
+
         imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
         imageWidthConstraint?.isActive = true
     }
@@ -88,7 +109,11 @@ class ReaderPageView: UIView {
             imageView.heightAnchor.constraint(lessThanOrEqualTo: heightAnchor),
             imageView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor),
             imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            imageView.centerYAnchor.constraint(equalTo: centerYAnchor)
+            imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            dictionaryOverlayContainerView.topAnchor.constraint(equalTo: imageView.topAnchor),
+            dictionaryOverlayContainerView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
+            dictionaryOverlayContainerView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
+            dictionaryOverlayContainerView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor)
         ])
     }
 
@@ -115,6 +140,7 @@ class ReaderPageView: UIView {
             imageView.image = image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
@@ -232,6 +258,7 @@ class ReaderPageView: UIView {
             }
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             completion?(true)
             return true
         } catch {
@@ -255,6 +282,7 @@ class ReaderPageView: UIView {
                         }
                         fixImageSize()
                         startLiveTextAnalysis()
+                        scheduleDictionaryTextAnalysis()
                         completion?(true)
                         return true
                     }
@@ -288,6 +316,7 @@ class ReaderPageView: UIView {
             imageView.image = imageContainer?.image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         }
 
@@ -325,6 +354,7 @@ class ReaderPageView: UIView {
         imageView.image = image
         fixImageSize()
         startLiveTextAnalysis()
+        scheduleDictionaryTextAnalysis()
 
         return true
     }
@@ -350,6 +380,7 @@ class ReaderPageView: UIView {
             imageView.image = imageContainer?.image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         }
 
@@ -420,6 +451,7 @@ class ReaderPageView: UIView {
         }
         fixImageSize()
         startLiveTextAnalysis()
+        scheduleDictionaryTextAnalysis()
 
         return true
     }
@@ -456,6 +488,11 @@ class ReaderPageView: UIView {
     }
 
     func setPageText(text: String) {
+        dictionaryAnalysisTask?.cancel()
+        if #available(iOS 18.0, *) {
+            textRecognizer?.reset()
+        }
+        clearDictionaryOverlays()
         imageView.image = nil
         progressView.isHidden = true
 
@@ -502,6 +539,36 @@ class ReaderPageView: UIView {
         }
     }
 
+    private func scheduleDictionaryTextAnalysis() {
+        dictionaryAnalysisTask?.cancel()
+        clearDictionaryOverlays()
+
+        if #available(iOS 18.0, *),
+           UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+           LookupEngine.shared.isReady,
+           let image = imageView.image {
+            if textRecognizer == nil {
+                textRecognizer = TextRecognizer()
+            }
+            textRecognizer?.reset()
+            dictionaryAnalysisTask = Task { [weak self, image] in
+                await self?.analyzeDictionaryText(image)
+            }
+        } else if #available(iOS 18.0, *) {
+            textRecognizer?.reset()
+        }
+    }
+
+    @available(iOS 18.0, *)
+    private func analyzeDictionaryText(_ image: UIImage) async {
+        guard !Task.isCancelled else { return }
+        await textRecognizer?.analyze(image)
+        guard !Task.isCancelled else { return }
+        await MainActor.run {
+            self.renderDictionaryOverlaysIfNeeded()
+        }
+    }
+
     func setLiveTextHidden(_ hidden: Bool) {
         if #available(iOS 16.0, *) {
             shouldShowLiveTextButton = !hidden
@@ -543,6 +610,111 @@ class ReaderPageView: UIView {
         liveTextTask = nil
         guard #available(iOS 16.0, *) else { return }
         imageAnalaysisInteraction?.analysis = nil
+    }
+}
+
+// MARK: - Dictionary Overlay
+extension ReaderPageView {
+    private func clearDictionaryOverlays() {
+        dictionaryOverlayContainerView.subviews.forEach { $0.removeFromSuperview() }
+        activeDictionaryOverlayButton = nil
+    }
+
+    private func setActiveDictionaryOverlayButton(_ button: DictionaryOverlayButton?) {
+        activeDictionaryOverlayButton = button
+        for case let overlay as DictionaryOverlayButton in dictionaryOverlayContainerView.subviews {
+            overlay.setOverlayVisible(overlay === button)
+        }
+        if let button {
+            dictionaryOverlayContainerView.bringSubviewToFront(button)
+        }
+    }
+
+    @MainActor
+    private func renderDictionaryOverlaysIfNeeded() {
+        clearDictionaryOverlays()
+
+        guard #available(iOS 18.0, *),
+              UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+              UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode"),
+              let textRecognizer,
+              let image = imageView.image
+        else { return }
+
+        let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
+        let usesSingleTapLookup = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+        let usesLongPressLookup = UserDefaults.standard.isDictionaryLongPressLookupEnabled
+        for overlay in overlays {
+            let button = DictionaryOverlayButton(type: .system)
+            button.apply(overlay: overlay)
+            button.setOverlayVisible(false)
+            if usesSingleTapLookup {
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchDown(_:)), for: .touchDown)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchDown(_:)), for: .touchDragEnter)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchUpOutside)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchCancel)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchDragExit)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchUpInside(_:for:)), for: .touchUpInside)
+            } else if usesLongPressLookup {
+                let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleDictionaryOverlayLongPress(_:)))
+                longPress.minimumPressDuration = 0.25
+                longPress.allowableMovement = 60
+                longPress.cancelsTouchesInView = true
+                button.addGestureRecognizer(longPress)
+            }
+            dictionaryOverlayContainerView.addSubview(button)
+        }
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchDown(_ sender: DictionaryOverlayButton) {
+        setActiveDictionaryOverlayButton(sender)
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchCancel(_ sender: DictionaryOverlayButton) {
+        if activeDictionaryOverlayButton === sender {
+            setActiveDictionaryOverlayButton(nil)
+        }
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchUpInside(_ sender: DictionaryOverlayButton, for event: UIEvent) {
+        let touch = event.touches(for: sender)?.first ?? event.allTouches?.first
+        let point = touch?.location(in: sender) ?? CGPoint(x: sender.bounds.midX, y: sender.bounds.midY)
+        performDictionaryOverlayLookup(sender, at: point)
+    }
+
+    @objc
+    private func handleDictionaryOverlayLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard let sender = gestureRecognizer.view as? DictionaryOverlayButton else { return }
+        let point = gestureRecognizer.location(in: sender)
+        switch gestureRecognizer.state {
+        case .began, .changed:
+            setActiveDictionaryOverlayButton(sender)
+        case .ended:
+            performDictionaryOverlayLookup(sender, at: point)
+        default:
+            if activeDictionaryOverlayButton === sender {
+                setActiveDictionaryOverlayButton(nil)
+            }
+        }
+    }
+
+    private func performDictionaryOverlayLookup(_ sender: DictionaryOverlayButton, at point: CGPoint) {
+        setActiveDictionaryOverlayButton(sender)
+        if let payload = sender.lookupPayload(at: point) {
+            let anchorRect = payload.localRect.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY)
+            let charRects = payload.localRects.map { $0.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY) }
+            onDictionaryOverlayTap?(payload.text, anchorRect, charRects)
+        }
+    }
+
+    @discardableResult
+    func dismissActiveDictionaryOverlay() -> Bool {
+        guard activeDictionaryOverlayButton != nil else { return false }
+        setActiveDictionaryOverlayButton(nil)
+        return true
     }
 }
 

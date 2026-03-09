@@ -35,6 +35,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var chapters: [AidokuRunner.Chapter] = []
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
+    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
 
     // Indicates if the page slider is currently in use
     private var isSliding = false
@@ -93,8 +94,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 5
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
 
-        zoomView.doubleTapEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap")
         zoomView.onZoomScaleChanged = { [weak self] scale in
             self?.setLiveTextButtonHidden(scale != 1)
         }
@@ -104,8 +105,14 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
         }
-        addObserver(forName: "Reader.disableDoubleTap") { [weak self] notification in
-            self?.zoomView.doubleTapEnabled = !(notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap"))
+        addObserver(forName: "Reader.disableDoubleTap") { [weak self] _ in
+            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        }
+        addObserver(forName: "Reader.dictionary") { [weak self] _ in
+            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        }
+        addObserver(forName: "Reader.dictionaryLookupGesture") { [weak self] _ in
+            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
         }
         addObserver(forName: .readerShowingBars) { [weak self] _ in
             self?.setLiveTextButtonHidden(false)
@@ -249,7 +256,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
             let indexPath = collectionNode.indexPathForItem(at: point),
             let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
             let image = node.imageNode.image,
-            !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions")
+            !UserDefaults.standard.isReaderQuickActionsDisabledEffective
         else {
             return nil
         }
@@ -316,6 +323,65 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
         )
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default))
         present(alert, animated: true)
+    }
+}
+
+// MARK: - Dictionary Lookup
+extension ReaderWebtoonViewController {
+    @available(iOS 18.0, *)
+    private func forwardDictionaryOverlayTap(
+        text: String,
+        rect: CGRect,
+        charRects: [CGRect],
+        from imageView: UIImageView
+    ) {
+        let rectInView = imageView.convert(rect, to: view)
+        let rectsInView = charRects.map { imageView.convert($0, to: view) }
+        dictionaryOverlayTapHandler?(text, rectInView, rectsInView)
+    }
+
+    @available(iOS 18.0, *)
+    private func bindDictionaryOverlayTap(to cell: ReaderWebtoonPageNode) {
+        cell.onDictionaryOverlayTap = { [weak self, weak cell] text, rect, charRects in
+            guard let self, let imageView = cell?.imageNode.imageView else { return }
+            self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
+        }
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+        dictionaryOverlayTapHandler = handler
+    }
+
+    @available(iOS 18.0, *)
+    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
+        let collectionPoint = view.convert(point, to: collectionNode.view)
+        guard let indexPath = collectionNode.indexPathForItem(at: collectionPoint),
+              let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
+              let image = node.image,
+              let recognizer = node.textRecognizer,
+              let imageView = node.imageNode.imageView
+        else { return nil }
+
+        let localPoint = collectionNode.view.convert(collectionPoint, to: imageView)
+        guard imageView.bounds.contains(localPoint) else { return nil }
+
+        if let result = recognizer.findText(at: localPoint, in: imageView, imageSize: image.size) {
+            let rectInView = imageView.convert(result.charRect, to: view)
+            let rectsInView = result.charRects.map { imageView.convert($0, to: view) }
+            return (result.text, result.fullText, rectInView, rectsInView)
+        }
+        return nil
+    }
+
+    @available(iOS 18.0, *)
+    func dismissActiveDictionaryOverlay() -> Bool {
+        for case let node as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+            if node.dismissActiveDictionaryOverlay() {
+                return true
+            }
+        }
+        return false
     }
 }
 
@@ -692,6 +758,9 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 guard let self else { return ASCellNode() }
                 let cell = ReaderWebtoonPageNode(source: self.viewModel.source, page: page)
                 cell.delegate = self
+                if #available(iOS 18.0, *) {
+                    self.bindDictionaryOverlayTap(to: cell)
+                }
                 return cell
             }
         } else {

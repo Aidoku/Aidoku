@@ -21,6 +21,24 @@ protocol ReaderReaderDelegate: UIViewController {
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
+
+    /// Returns recognized text at the given point (in the reader's view coordinates)
+    /// along with the character rect for popup positioning and per-character rects for highlighting.
+    @available(iOS 18.0, *)
+    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?)
+
+    @available(iOS 18.0, *)
+    func dismissActiveDictionaryOverlay() -> Bool
+}
+
+extension ReaderReaderDelegate {
+    @available(iOS 18.0, *)
+    func dismissActiveDictionaryOverlay() -> Bool {
+        false
+    }
 }
 
 extension ReaderReaderDelegate {

@@ -10,6 +10,7 @@ import AsyncDisplayKit
 import Gifu
 import Nuke
 import SwiftUI
+import Vision
 import VisionKit
 import ZIPFoundation
 
@@ -30,6 +31,16 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var loading = false
     private var shouldShowLiveTextButton = false
     private var liveTextAnalysisTask: Task<Void, Never>?
+    private var dictionaryAnalysisTask: Task<Void, Never>?
+    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)?
+    private weak var activeDictionaryOverlayButton: DictionaryOverlayButton?
+
+    private var _textRecognizer: Any?
+    @available(iOS 18.0, *)
+    var textRecognizer: TextRecognizer? {
+        get { _textRecognizer as? TextRecognizer }
+        set { _textRecognizer = newValue }
+    }
 
     // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
@@ -83,6 +94,10 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         }
     }
 
+    deinit {
+        dictionaryAnalysisTask?.cancel()
+    }
+
     override func didEnterDisplayState() {
         super.didEnterDisplayState()
         displayPage()
@@ -95,9 +110,14 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         if let delegate, delegate.isZooming {
             return
         }
+        dictionaryAnalysisTask?.cancel()
+        if #available(iOS 18.0, *) {
+            textRecognizer?.reset()
+        }
         imageNode.image = nil
         image = nil
         text = nil
+        clearDictionaryOverlays()
         imageNode.alpha = 0
         textNode.alpha = 0
         progressNode.isHidden = false
@@ -229,6 +249,10 @@ extension ReaderWebtoonPageNode {
 
     func loadPage() async {
         guard image == nil, text == nil, !loading else { return }
+        dictionaryAnalysisTask?.cancel()
+        if #available(iOS 18.0, *) {
+            textRecognizer?.reset()
+        }
         loading = true
         imageNode.alpha = 0
         textNode.alpha = 0
@@ -513,7 +537,10 @@ extension ReaderWebtoonPageNode {
 
             Task { @MainActor in
                 imageNode.isUserInteractionEnabled = true
-                if let delegate {
+                imageNode.view.interactions
+                    .filter { $0 is UIContextMenuInteraction }
+                    .forEach { imageNode.view.removeInteraction($0) }
+                if let delegate, !UserDefaults.standard.isReaderQuickActionsDisabledEffective {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
 
@@ -528,10 +555,12 @@ extension ReaderWebtoonPageNode {
                     imageNode.addInteraction(interaction)
                     await analyzeLiveText()
                 }
+                scheduleDictionaryTextAnalysis()
             }
         } else if let text {
             progressNode.isHidden = true
             textNode.content = MarkdownView(text)
+            clearDictionaryOverlays()
         }
 
         transition()
@@ -570,6 +599,36 @@ extension ReaderWebtoonPageNode {
     }
 
     @MainActor
+    private func scheduleDictionaryTextAnalysis() {
+        dictionaryAnalysisTask?.cancel()
+        clearDictionaryOverlays()
+
+        if #available(iOS 18.0, *),
+           UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+           LookupEngine.shared.isReady,
+           let image {
+            if textRecognizer == nil {
+                textRecognizer = TextRecognizer()
+            }
+            textRecognizer?.reset()
+            dictionaryAnalysisTask = Task { [weak self, image] in
+                await self?.analyzeDictionaryText(image)
+            }
+        } else if #available(iOS 18.0, *) {
+            textRecognizer?.reset()
+        }
+    }
+
+    @MainActor
+    @available(iOS 18.0, *)
+    private func analyzeDictionaryText(_ image: UIImage) async {
+        guard !Task.isCancelled else { return }
+        await textRecognizer?.analyze(image)
+        guard !Task.isCancelled else { return }
+        renderDictionaryOverlaysIfNeeded()
+    }
+
+    @MainActor
     func setLiveTextHidden(_ hidden: Bool) {
         if #available(iOS 16.0, *) {
             shouldShowLiveTextButton = !hidden
@@ -577,6 +636,114 @@ extension ReaderWebtoonPageNode {
             guard imageNode.imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
             imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
         }
+    }
+}
+
+// MARK: - Dictionary Overlay
+extension ReaderWebtoonPageNode {
+    private func clearDictionaryOverlays() {
+        imageNode.view.subviews
+            .filter { $0 is DictionaryOverlayButton }
+            .forEach { $0.removeFromSuperview() }
+        activeDictionaryOverlayButton = nil
+    }
+
+    private func setActiveDictionaryOverlayButton(_ button: DictionaryOverlayButton?) {
+        activeDictionaryOverlayButton = button
+        guard let imageView = imageNode.imageView else { return }
+        for case let overlay as DictionaryOverlayButton in imageView.subviews {
+            overlay.setOverlayVisible(overlay === button)
+        }
+        if let button {
+            imageView.bringSubviewToFront(button)
+        }
+    }
+
+    private func renderDictionaryOverlaysIfNeeded() {
+        clearDictionaryOverlays()
+
+        guard #available(iOS 18.0, *),
+              UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+              UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode"),
+              let textRecognizer,
+              let image,
+              let imageView = imageNode.imageView
+        else { return }
+
+        let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
+        let usesSingleTapLookup = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+        let usesLongPressLookup = UserDefaults.standard.isDictionaryLongPressLookupEnabled
+        for overlay in overlays {
+            let button = DictionaryOverlayButton(type: .system)
+            button.apply(overlay: overlay)
+            button.setOverlayVisible(false)
+            if usesSingleTapLookup {
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchDown(_:)), for: .touchDown)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchDown(_:)), for: .touchDragEnter)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchUpOutside)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchCancel)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchCancel(_:)), for: .touchDragExit)
+                button.addTarget(self, action: #selector(handleDictionaryOverlayTouchUpInside(_:for:)), for: .touchUpInside)
+            } else if usesLongPressLookup {
+                let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleDictionaryOverlayLongPress(_:)))
+                longPress.minimumPressDuration = 0.25
+                longPress.allowableMovement = 60
+                longPress.cancelsTouchesInView = true
+                button.addGestureRecognizer(longPress)
+            }
+            imageView.addSubview(button)
+        }
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchDown(_ sender: DictionaryOverlayButton) {
+        setActiveDictionaryOverlayButton(sender)
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchCancel(_ sender: DictionaryOverlayButton) {
+        if activeDictionaryOverlayButton === sender {
+            setActiveDictionaryOverlayButton(nil)
+        }
+    }
+
+    @objc
+    private func handleDictionaryOverlayTouchUpInside(_ sender: DictionaryOverlayButton, for event: UIEvent) {
+        let touch = event.touches(for: sender)?.first ?? event.allTouches?.first
+        let point = touch?.location(in: sender) ?? CGPoint(x: sender.bounds.midX, y: sender.bounds.midY)
+        performDictionaryOverlayLookup(sender, at: point)
+    }
+
+    @objc
+    private func handleDictionaryOverlayLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard let sender = gestureRecognizer.view as? DictionaryOverlayButton else { return }
+        let point = gestureRecognizer.location(in: sender)
+        switch gestureRecognizer.state {
+        case .began, .changed:
+            setActiveDictionaryOverlayButton(sender)
+        case .ended:
+            performDictionaryOverlayLookup(sender, at: point)
+        default:
+            if activeDictionaryOverlayButton === sender {
+                setActiveDictionaryOverlayButton(nil)
+            }
+        }
+    }
+
+    private func performDictionaryOverlayLookup(_ sender: DictionaryOverlayButton, at point: CGPoint) {
+        setActiveDictionaryOverlayButton(sender)
+        if let payload = sender.lookupPayload(at: point) {
+            let anchorRect = payload.localRect.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY)
+            let charRects = payload.localRects.map { $0.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY) }
+            onDictionaryOverlayTap?(payload.text, anchorRect, charRects)
+        }
+    }
+
+    @discardableResult
+    func dismissActiveDictionaryOverlay() -> Bool {
+        guard activeDictionaryOverlayButton != nil else { return false }
+        setActiveDictionaryOverlayButton(nil)
+        return true
     }
 }
 

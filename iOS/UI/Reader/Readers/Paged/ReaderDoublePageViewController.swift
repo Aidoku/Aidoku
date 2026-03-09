@@ -46,6 +46,7 @@ class ReaderDoublePageViewController: BaseViewController {
     }
 
     override func configure() {
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
         zoomView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(zoomView)
 
