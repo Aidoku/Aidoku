@@ -30,78 +30,53 @@ extension TextRecognizer {
             return lhs.offset < rhs.offset
         }
 
-        guard let (primaryIndex, primaryObservation) = primary,
-              let candidate = primaryObservation.observation.topCandidates(1).first else {
+        guard let (primaryIndex, primaryObservation) = primary else {
             return nil
         }
-
-        let pressedObservationText = candidate.string
-        guard !pressedObservationText.isEmpty else { return nil }
-
-        var bestIndex: String.Index?
-        for i in pressedObservationText.indices {
-            let range = i..<pressedObservationText.index(after: i)
-            guard let charObs = candidate.boundingBox(for: range) else { continue }
-            let charBox = charObs.boundingBox.cgRect
-            if charBox.contains(normalizedPoint) {
-                bestIndex = i
-                break
-            }
-        }
-
-        guard let bestIndex else { return nil }
-
-        let firstCharRange = bestIndex..<pressedObservationText.index(after: bestIndex)
-        guard candidate.boundingBox(for: firstCharRange) != nil else { return nil }
+        let primaryCharacters = primaryObservation.characters
+        guard !primaryCharacters.isEmpty else { return nil }
+        guard let bestOffset = primaryCharacters.firstIndex(where: { $0.boundingRect.contains(normalizedPoint) }) else { return nil }
         let anchorRect = viewRect(from: primaryObservation.boundingRect, in: imageView, imageSize: imageSize)
 
-        let cluster = clusterIndices().first(where: { $0.contains(primaryIndex) }) ?? [primaryIndex]
-        let orderedCluster = orderedClusterIndices(cluster)
+        let orderedCluster = orderedClusterForObservation(primaryIndex) ?? [primaryIndex]
 
         var lookupSlice = ""
         var charRects: [CGRect] = []
         var includeFromCurrent = false
 
         for clusterIndex in orderedCluster {
-            guard let clusterCandidate = observations[clusterIndex].observation.topCandidates(1).first else { continue }
-            let text = clusterCandidate.string
+            let clusterObservation = observations[clusterIndex]
+            let text = clusterObservation.text
             guard !text.isEmpty else { continue }
 
-            let startIndex: String.Index
+            let startOffset: Int
             if clusterIndex == primaryIndex {
                 includeFromCurrent = true
-                startIndex = bestIndex
+                startOffset = bestOffset
             } else if includeFromCurrent {
-                startIndex = text.startIndex
+                startOffset = 0
             } else {
                 continue
             }
 
-            lookupSlice += String(text[startIndex...])
-                .replacingOccurrences(of: "\n", with: "")
-                .replacingOccurrences(of: "\r", with: "")
+            guard startOffset < clusterObservation.characters.count else { continue }
 
-            for idx in text[startIndex...].indices {
-                let range = idx..<text.index(after: idx)
-                if let obs = clusterCandidate.boundingBox(for: range) {
-                    charRects.append(viewRect(from: obs.boundingBox.cgRect, in: imageView, imageSize: imageSize))
-                }
+            let startIndex = text.index(text.startIndex, offsetBy: startOffset)
+            lookupSlice += String(text[startIndex...])
+
+            for character in clusterObservation.characters[startOffset...] {
+                charRects.append(viewRect(from: character.boundingRect, in: imageView, imageSize: imageSize))
             }
         }
 
         let contextText = orderedCluster
             .map { observations[$0].text }
-            .map {
-                $0
-                    .replacingOccurrences(of: "\n", with: "")
-                    .replacingOccurrences(of: "\r", with: "")
-            }
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         return Result(
             text: lookupSlice,
-            fullText: contextText.isEmpty ? pressedObservationText : contextText,
+            fullText: contextText.isEmpty ? primaryObservation.text : contextText,
             charRect: anchorRect,
             charRects: charRects
         )
@@ -130,25 +105,12 @@ extension TextRecognizer {
             }
 
             let segmentBuilds = indices.compactMap { index -> SegmentBuild? in
-                guard let candidate = observations[index].observation.topCandidates(1).first else { return nil }
-                let rawText = candidate.string
-                guard !rawText.isEmpty else { return nil }
-
-                var chars: [String] = []
-                var charRects: [CGRect] = []
-                for i in rawText.indices {
-                    let char = rawText[i]
-                    if char == "\n" || char == "\r" { continue }
-                    let range = i..<rawText.index(after: i)
-                    guard let box = candidate.boundingBox(for: range) else { continue }
-                    chars.append(String(char))
-                    charRects.append(viewRect(from: box.boundingBox.cgRect, in: imageView, imageSize: imageSize))
-                }
-
-                let text = chars.joined().trimmingCharacters(in: .whitespacesAndNewlines)
+                let observation = observations[index]
+                let text = observation.text.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else { return nil }
-                let rect = viewRect(from: observations[index].boundingRect, in: imageView, imageSize: imageSize)
+                let rect = viewRect(from: observation.boundingRect, in: imageView, imageSize: imageSize)
                 guard !rect.isNull, !rect.isEmpty else { return nil }
+                let charRects = observation.characters.map { viewRect(from: $0.boundingRect, in: imageView, imageSize: imageSize) }
                 guard !charRects.isEmpty else { return nil }
                 return .init(text: text, rect: rect, charRects: charRects)
             }

@@ -248,7 +248,13 @@ final class DictionaryOverlayController: NSObject {
     }
 
     func clear() {
-        containerView?.subviews.forEach { $0.removeFromSuperview() }
+        guard let containerView else {
+            activeButton = nil
+            return
+        }
+        for case let overlay as DictionaryOverlayButton in containerView.subviews {
+            overlay.removeFromSuperview()
+        }
         activeButton = nil
     }
 

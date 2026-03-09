@@ -23,12 +23,17 @@ class TextRecognizer {
         case unknown
     }
 
+    struct OCRCharacter {
+        let text: String
+        let boundingRect: CGRect
+    }
+
     struct OCRObservation {
-        let observation: RecognizedTextObservation
         let text: String
         let boundingRect: CGRect
         let direction: ObservationDirection
         let confidence: Float
+        let characters: [OCRCharacter]
     }
 
     struct Result {
@@ -56,9 +61,15 @@ class TextRecognizer {
     }
 
     var observations: [OCRObservation] = []
+    var cachedClusters: [[Int]] = []
+    var cachedOrderedClusters: [[Int]] = []
+    var clusterIndexByObservation: [Int: Int] = [:]
 
     func reset() {
         observations = []
+        cachedClusters = []
+        cachedOrderedClusters = []
+        clusterIndexByObservation = [:]
     }
 }
 

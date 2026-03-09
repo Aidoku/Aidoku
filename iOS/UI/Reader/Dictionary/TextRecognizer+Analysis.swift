@@ -14,6 +14,7 @@ extension TextRecognizer {
         guard let cgImage = image.cgImage else { return }
         let preprocessedImage = preprocessForOCR(cgImage)
         observations = await recognizeObservations(in: preprocessedImage)
+        rebuildClusterCache()
 #if DEBUG
         debugDumpClusters()
 #endif
@@ -37,10 +38,10 @@ extension TextRecognizer {
         let results = (try? await request.perform(on: cgImage)) ?? []
         return results.compactMap { observation in
             guard let candidate = observation.topCandidates(1).first else { return nil }
-            let text = candidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !text.isEmpty else { return nil }
+            let characters = recognizedCharacters(from: candidate)
+            let text = characters.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty, !characters.isEmpty else { return nil }
             return .init(
-                observation: observation,
                 text: text,
                 boundingRect: observation.boundingBox.cgRect,
                 direction: {
@@ -61,9 +62,26 @@ extension TextRecognizer {
                         return .unknown
                     }
                 }(),
-                confidence: candidate.confidence
+                confidence: candidate.confidence,
+                characters: characters
             )
         }
+    }
+
+    private func recognizedCharacters(from candidate: RecognizedText) -> [OCRCharacter] {
+        let rawText = candidate.string
+        guard !rawText.isEmpty else { return [] }
+
+        var characters: [OCRCharacter] = []
+        characters.reserveCapacity(rawText.count)
+        for index in rawText.indices {
+            let char = rawText[index]
+            if char == "\n" || char == "\r" { continue }
+            let range = index..<rawText.index(after: index)
+            guard let box = candidate.boundingBox(for: range) else { continue }
+            characters.append(.init(text: String(char), boundingRect: box.boundingBox.cgRect))
+        }
+        return characters
     }
 
     private func preprocessForOCR(_ cgImage: CGImage) -> CGImage {

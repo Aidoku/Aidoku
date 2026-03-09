@@ -9,7 +9,46 @@ import UIKit
 
 @available(iOS 18.0, *)
 extension TextRecognizer {
+    func rebuildClusterCache() {
+        guard !observations.isEmpty else {
+            cachedClusters = []
+            cachedOrderedClusters = []
+            clusterIndexByObservation = [:]
+            return
+        }
+
+        let clusters = computeClusterIndices()
+        cachedClusters = clusters
+        cachedOrderedClusters = clusters.map(orderedClusterIndicesUncached)
+
+        var indexMap: [Int: Int] = [:]
+        for (clusterIndex, cluster) in clusters.enumerated() {
+            for observationIndex in cluster {
+                indexMap[observationIndex] = clusterIndex
+            }
+        }
+        clusterIndexByObservation = indexMap
+    }
+
+    func orderedClusterForObservation(_ index: Int) -> [Int]? {
+        guard let clusterIndex = clusterIndexByObservation[index] else { return nil }
+        guard cachedOrderedClusters.indices.contains(clusterIndex) else { return nil }
+        return cachedOrderedClusters[clusterIndex]
+    }
+
     func orderedClusterIndices(_ indices: [Int]) -> [Int] {
+        if let clusterIndex = cachedClusters.firstIndex(where: { $0 == indices }),
+           cachedOrderedClusters.indices.contains(clusterIndex) {
+            return cachedOrderedClusters[clusterIndex]
+        }
+        return orderedClusterIndicesUncached(indices)
+    }
+
+    func clusterIndices() -> [[Int]] {
+        cachedClusters
+    }
+
+    private func orderedClusterIndicesUncached(_ indices: [Int]) -> [Int] {
         guard !indices.isEmpty else { return [] }
 
         let orientation = clusterOrientation(indices)
@@ -28,8 +67,7 @@ extension TextRecognizer {
         }
     }
 
-    func clusterIndices() -> [[Int]] {
-        guard !observations.isEmpty else { return [] }
+    private func computeClusterIndices() -> [[Int]] {
         var unvisited = Set(observations.indices)
         var clusters: [[Int]] = []
 
@@ -299,10 +337,8 @@ extension TextRecognizer {
 
 #if DEBUG
     func debugDumpClusters() {
-        let clusters = clusterIndices()
-        guard !clusters.isEmpty else { return }
-        for (clusterIndex, cluster) in clusters.enumerated() {
-            let ordered = orderedClusterIndices(cluster)
+        guard !cachedClusters.isEmpty else { return }
+        for (clusterIndex, ordered) in cachedOrderedClusters.enumerated() {
             let text = ordered
                 .map { observations[$0].text.replacingOccurrences(of: "\n", with: " ") }
                 .joined(separator: " | ")
