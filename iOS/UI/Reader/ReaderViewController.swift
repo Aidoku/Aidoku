@@ -49,12 +49,14 @@ class ReaderViewController: BaseObservingViewController {
     weak var reader: ReaderReaderDelegate?
 
     // Dictionary popup state
-    private var dictionaryPopupControllers: [UIViewController] = []
-    private var highlightViews: [UIView] = []
-    private var dictionarySelectionHighlightView: UIView?
+    private lazy var dictionaryCoordinator = ReaderDictionaryCoordinator(owner: self)
     private var dictionaryLongPressSelection: (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
     private var isDictionaryPopupVisible: Bool {
-        !dictionaryPopupControllers.isEmpty
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.isPopupVisible
+        } else {
+            false
+        }
     }
 
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
@@ -1050,42 +1052,13 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     @available(iOS 18.0, *)
     private func updateDictionarySelectionHighlight(text: String, charRects: [CGRect]) {
-        let entries = LookupEngine.shared.lookup(text)
-        guard let matched = entries.first?.matched else {
-            clearDictionarySelectionHighlight()
-            return
-        }
-        let rects = charRects.prefix(matched.count).map { $0.insetBy(dx: -2, dy: -2) }
-        guard !rects.isEmpty else {
-            clearDictionarySelectionHighlight()
-            return
-        }
-
-        let highlight = dictionarySelectionHighlightView ?? {
-            let view = UIView(frame: self.view.bounds)
-            view.isUserInteractionEnabled = false
-            self.view.addSubview(view)
-            self.dictionarySelectionHighlightView = view
-            return view
-        }()
-        highlight.frame = view.bounds
-        highlight.layer.sublayers?.removeAll()
-
-        let path = UIBezierPath()
-        for rect in rects {
-            path.append(UIBezierPath(roundedRect: rect, cornerRadius: 2))
-        }
-        let shapeLayer = CAShapeLayer()
-        shapeLayer.path = path.cgPath
-        shapeLayer.fillColor = UIColor.systemYellow.withAlphaComponent(0.38).cgColor
-        shapeLayer.strokeColor = UIColor.systemOrange.withAlphaComponent(0.9).cgColor
-        shapeLayer.lineWidth = 1.5
-        highlight.layer.addSublayer(shapeLayer)
+        dictionaryCoordinator.updateSelectionHighlight(text: text, charRects: charRects)
     }
 
     private func clearDictionarySelectionHighlight() {
-        dictionarySelectionHighlightView?.removeFromSuperview()
-        dictionarySelectionHighlightView = nil
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.clearSelectionHighlight()
+        }
     }
 }
 
@@ -1478,94 +1451,23 @@ extension ReaderViewController {
         charRects: [CGRect] = [],
         appendPopup: Bool = false
     ) -> Bool {
-        let entries = LookupEngine.shared.lookup(text)
-        guard !entries.isEmpty else { return false }
-
-        let styles = LookupEngine.shared.getStyles()
-
-        if !appendPopup {
-            dismissDictionaryPopup()
-        }
-
-        if !appendPopup {
-            // highlight matched characters using a single shape layer to avoid overlap darkening
-            if let matched = entries.first?.matched {
-                let rects = charRects.prefix(matched.count).map { $0.insetBy(dx: -2, dy: -2) }
-                if !rects.isEmpty {
-                    let path = UIBezierPath()
-                    for rect in rects {
-                        path.append(UIBezierPath(roundedRect: rect, cornerRadius: 2))
-                    }
-
-                    let highlight = UIView(frame: view.bounds)
-                    highlight.isUserInteractionEnabled = false
-                    let shapeLayer = CAShapeLayer()
-                    shapeLayer.path = path.cgPath
-                    shapeLayer.fillColor = UIColor.systemGray.withAlphaComponent(0.3).cgColor
-                    highlight.layer.addSublayer(shapeLayer)
-                    view.addSubview(highlight)
-                    highlightViews.append(highlight)
-                }
-            }
-        }
-
-        let popupView = DictionaryPopupView(
-            entries: entries,
-            dictionaryStyles: styles,
+        dictionaryCoordinator.performLookup(
+            text: text,
             anchorRect: anchorRect,
-            screenSize: view.bounds.size,
-            onLookup: { [weak self] selection in
-                guard let self else { return }
-                _ = self.performDictionaryLookup(
-                    text: selection.text,
-                    anchorRect: selection.rect ?? anchorRect,
-                    appendPopup: true
-                )
-            },
-            onDismiss: { [weak self] in
-                self?.dismissTopDictionaryPopup()
-            }
+            charRects: charRects,
+            appendPopup: appendPopup
         )
-
-        let hostingController = UIHostingController(rootView: popupView)
-        hostingController.view.backgroundColor = .clear
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-
-        add(child: hostingController)
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-
-        dictionaryPopupControllers.append(hostingController)
-        return true
     }
 
     private func dismissTopDictionaryPopup() {
-        guard let controller = dictionaryPopupControllers.popLast() else { return }
-        controller.view.removeFromSuperview()
-        controller.removeFromParent()
-
-        if dictionaryPopupControllers.isEmpty {
-            for highlight in highlightViews {
-                highlight.removeFromSuperview()
-            }
-            highlightViews.removeAll()
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.dismissTopPopup()
         }
     }
 
     func dismissDictionaryPopup() {
-        for highlight in highlightViews {
-            highlight.removeFromSuperview()
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.dismissAllPopups()
         }
-        highlightViews.removeAll()
-
-        for controller in dictionaryPopupControllers.reversed() {
-            controller.view.removeFromSuperview()
-            controller.removeFromParent()
-        }
-        dictionaryPopupControllers.removeAll()
     }
 }

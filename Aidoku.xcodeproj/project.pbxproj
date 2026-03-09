@@ -53,6 +53,7 @@
 		EE7A42122F5E31A10044AF4C /* TextRecognizer+Lookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */; };
 		EE7A42132F5E31A10044AF4C /* TextRecognizer+Clustering.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */; };
 		EE7A42142F5E31A10044AF4C /* DictionaryOverlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */; };
+		EE7A42262F5E90010044AF4C /* ReaderDictionaryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */; };
 		EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */; };
 		EE7A41C62F5CF6460044AF4C /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C52F5CF6460044AF4C /* popup.js */; };
 		EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C72F5CF65B0044AF4C /* popup.css */; };
@@ -676,6 +677,7 @@
 		EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Lookup.swift"; sourceTree = "<group>"; };
 		EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Clustering.swift"; sourceTree = "<group>"; };
 		EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryOverlayButton.swift; sourceTree = "<group>"; };
+		EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDictionaryCoordinator.swift; sourceTree = "<group>"; };
 		EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryPopupView.swift; sourceTree = "<group>"; };
 		EE7A41C52F5CF6460044AF4C /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
 		EE7A41C72F5CF65B0044AF4C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
@@ -1230,6 +1232,7 @@
 				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
 				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
 				EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */,
+				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
 				EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */,
 				EE7A41C52F5CF6460044AF4C /* popup.js */,
 				EE7A41C72F5CF65B0044AF4C /* popup.css */,
@@ -3019,6 +3022,7 @@
 				EE7A42122F5E31A10044AF4C /* TextRecognizer+Lookup.swift in Sources */,
 				EE7A42132F5E31A10044AF4C /* TextRecognizer+Clustering.swift in Sources */,
 				EE7A42142F5E31A10044AF4C /* DictionaryOverlayButton.swift in Sources */,
+				EE7A42262F5E90010044AF4C /* ReaderDictionaryCoordinator.swift in Sources */,
 				FBF8C5842DCD01E30066F53D /* BlockingTask.swift in Sources */,
 				FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */,
 				66C7E95B2ED77BBD0026FD6C /* ImageProcessingSettingsKey.swift in Sources */,
