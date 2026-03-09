@@ -214,7 +214,7 @@ class ReaderViewController: BaseObservingViewController {
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
         }
         configureDictionaryLookupGesture()
-        configureDictionaryOverlayTapHandler()
+        configureDictionaryOverlayInteractionMode()
 
         // page offset tap gesture
         let pageOffsetGesture = UITapGestureRecognizer(target: self, action: #selector(toggleOffset))
@@ -281,7 +281,7 @@ class ReaderViewController: BaseObservingViewController {
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
             self?.configureBarToggleTapGestures()
             self?.configureDictionaryLookupGesture()
-            self?.configureDictionaryOverlayTapHandler()
+            self?.configureDictionaryOverlayInteractionMode()
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
@@ -289,11 +289,13 @@ class ReaderViewController: BaseObservingViewController {
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
             self?.configureBarToggleTapGestures()
             self?.configureDictionaryLookupGesture()
+            self?.configureDictionaryOverlayInteractionMode()
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
         addObserver(forName: "Reader.dictionaryTextOverlayMode") { [weak self] _ in
             self?.configureBarToggleTapGestures()
+            self?.configureDictionaryOverlayInteractionMode()
             self?.configureDictionaryOverlayTapHandler()
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
@@ -683,6 +685,7 @@ extension ReaderViewController {
             add(child: pageController, below: descriptionButtonController.view)
         }
         reader?.readingMode = readingMode
+        configureDictionaryOverlayInteractionMode()
         configureDictionaryOverlayTapHandler()
         disableSwipeGestures()
     }
@@ -1255,6 +1258,23 @@ extension ReaderViewController: UIPencilInteractionDelegate {
 }
 
 extension ReaderViewController {
+    private func configureDictionaryOverlayInteractionMode() {
+        guard #available(iOS 18.0, *) else { return }
+
+        let mode: DictionaryOverlayInteractionMode
+        if !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") {
+            mode = .none
+        } else if UserDefaults.standard.isDictionarySingleTapLookupEnabled {
+            mode = .singleTap
+        } else if UserDefaults.standard.isDictionaryLongPressLookupEnabled {
+            mode = .longPress
+        } else {
+            mode = .none
+        }
+
+        reader?.setDictionaryOverlayInteractionMode(mode)
+    }
+
     private func configureDictionaryOverlayTapHandler() {
         guard #available(iOS 18.0, *) else { return }
         reader?.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in

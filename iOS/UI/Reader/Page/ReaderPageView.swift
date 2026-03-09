@@ -634,6 +634,10 @@ extension ReaderPageView {
     func dismissActiveDictionaryOverlay() -> Bool {
         dictionaryOverlayController.dismissActive()
     }
+
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayController.interactionMode = mode
+    }
 }
 
 // MARK: - Image Reload Functionality

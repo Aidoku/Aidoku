@@ -7,6 +7,12 @@
 
 import UIKit
 
+enum DictionaryOverlayInteractionMode {
+    case none
+    case singleTap
+    case longPress
+}
+
 final class DictionaryOverlayPassthroughView: UIView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let hitView = super.hitTest(point, with: event)
@@ -223,6 +229,7 @@ final class DictionaryOverlayButton: UIButton {
 final class DictionaryOverlayController: NSObject {
     weak var containerView: UIView?
     var onLookup: ((String, CGRect, [CGRect]) -> Void)?
+    var interactionMode: DictionaryOverlayInteractionMode = .none
 
     private weak var activeButton: DictionaryOverlayButton?
 
@@ -231,27 +238,11 @@ final class DictionaryOverlayController: NSObject {
         clear()
         guard let containerView else { return }
 
-        let usesSingleTapLookup = UserDefaults.standard.isDictionarySingleTapLookupEnabled
-        let usesLongPressLookup = UserDefaults.standard.isDictionaryLongPressLookupEnabled
-
         for overlay in overlays {
             let button = DictionaryOverlayButton(type: .system)
             button.apply(overlay: overlay)
             button.setOverlayVisible(false)
-            if usesSingleTapLookup {
-                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDown)
-                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDragEnter)
-                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchUpOutside)
-                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchCancel)
-                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchDragExit)
-                button.addTarget(self, action: #selector(handleTouchUpInside(_:for:)), for: .touchUpInside)
-            } else if usesLongPressLookup {
-                let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-                longPress.minimumPressDuration = 0.25
-                longPress.allowableMovement = 60
-                longPress.cancelsTouchesInView = true
-                button.addGestureRecognizer(longPress)
-            }
+            applyInteractionMode(to: button)
             containerView.addSubview(button)
         }
     }
@@ -259,6 +250,30 @@ final class DictionaryOverlayController: NSObject {
     func clear() {
         containerView?.subviews.forEach { $0.removeFromSuperview() }
         activeButton = nil
+    }
+
+    func activateOverlay(at point: CGPoint) -> Bool {
+        guard let button = overlayButton(at: point) else {
+            setActiveButton(nil)
+            return false
+        }
+        setActiveButton(button)
+        return true
+    }
+
+    func lookupPayload(at point: CGPoint) -> (text: String, rect: CGRect, charRects: [CGRect])? {
+        guard let button = overlayButton(at: point) else { return nil }
+        setActiveButton(button)
+
+        let localPoint = containerView?.convert(point, to: button) ?? CGPoint(
+            x: button.bounds.midX,
+            y: button.bounds.midY
+        )
+        guard let payload = button.lookupPayload(at: localPoint) else { return nil }
+
+        let anchorRect = payload.localRect.offsetBy(dx: button.frame.minX, dy: button.frame.minY)
+        let charRects = payload.localRects.map { $0.offsetBy(dx: button.frame.minX, dy: button.frame.minY) }
+        return (payload.text, anchorRect, charRects)
     }
 
     @discardableResult
@@ -276,6 +291,42 @@ final class DictionaryOverlayController: NSObject {
         }
         if let button {
             containerView.bringSubviewToFront(button)
+        }
+    }
+
+    private func overlayButton(at point: CGPoint) -> DictionaryOverlayButton? {
+        guard let containerView else { return nil }
+        let localPoint = containerView.convert(point, to: containerView)
+        for subview in containerView.subviews.reversed() {
+            guard let button = subview as? DictionaryOverlayButton else { continue }
+            let pointInButton = containerView.convert(localPoint, to: button)
+            if button.bounds.contains(pointInButton) {
+                return button
+            }
+        }
+        return nil
+    }
+
+    private func applyInteractionMode(to button: DictionaryOverlayButton) {
+        button.removeTarget(nil, action: nil, for: .allEvents)
+        button.gestureRecognizers?.forEach { button.removeGestureRecognizer($0) }
+
+        switch interactionMode {
+            case .singleTap:
+                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDown)
+                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDragEnter)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchUpOutside)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchCancel)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchDragExit)
+                button.addTarget(self, action: #selector(handleTouchUpInside(_:for:)), for: .touchUpInside)
+            case .longPress:
+                let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+                longPress.minimumPressDuration = 0.25
+                longPress.allowableMovement = 60
+                longPress.cancelsTouchesInView = true
+                button.addGestureRecognizer(longPress)
+            case .none:
+                break
         }
     }
 

@@ -31,10 +31,16 @@ protocol ReaderReaderDelegate: UIViewController {
     func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?)
 
     @available(iOS 18.0, *)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode)
+
+    @available(iOS 18.0, *)
     func dismissActiveDictionaryOverlay() -> Bool
 }
 
 extension ReaderReaderDelegate {
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {}
+
     @available(iOS 18.0, *)
     func dismissActiveDictionaryOverlay() -> Bool {
         false

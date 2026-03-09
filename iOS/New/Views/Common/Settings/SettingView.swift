@@ -502,7 +502,7 @@ extension SettingView {
 extension (SettingView) {
     private var shouldShowDisabledOnlyToggleSubtitle: Bool {
         switch setting.key {
-            case "Reader.disableQuickActions", "Reader.disableDoubleTapZoom", "Reader.dictionaryOCRPreUpscale":
+            case "Reader.disableQuickActions", "Reader.dictionaryOCRPreUpscale":
                 return true
             default:
                 return false
@@ -513,7 +513,7 @@ extension (SettingView) {
         guard disabled else { return toggleValue }
 
         switch setting.key {
-            case "Reader.disableQuickActions", "Reader.disableDoubleTapZoom":
+            case "Reader.disableQuickActions":
                 // Lookup gesture lock effectively forces these protections on.
                 return true
             case "Reader.dictionaryOCRPreUpscale":

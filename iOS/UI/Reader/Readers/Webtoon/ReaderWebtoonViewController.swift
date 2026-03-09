@@ -36,6 +36,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
     private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     // Indicates if the page slider is currently in use
     private var isSliding = false
@@ -342,6 +343,7 @@ extension ReaderWebtoonViewController {
 
     @available(iOS 18.0, *)
     private func bindDictionaryOverlayTap(to cell: ReaderWebtoonPageNode) {
+        cell.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
         cell.onDictionaryOverlayTap = { [weak self, weak cell] text, rect, charRects in
             guard let self, let imageView = cell?.imageNode.imageView else { return }
             self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
@@ -351,6 +353,14 @@ extension ReaderWebtoonViewController {
     @available(iOS 18.0, *)
     func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
         dictionaryOverlayTapHandler = handler
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayInteractionMode = mode
+        for case let cell as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+            cell.setDictionaryOverlayInteractionMode(mode)
+        }
     }
 
     @available(iOS 18.0, *)

@@ -30,6 +30,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     var pageViewControllers: [ReaderPageViewController] = []
     var currentPage = 0
     private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     private var usesDoublePages = false
     private var usesAutoPageLayout = false
@@ -204,6 +205,7 @@ extension ReaderPagedViewController {
 
     @available(iOS 18.0, *)
     private func bindDictionaryOverlayTap(to controller: ReaderPageViewController?) {
+        controller?.pageView?.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
         controller?.pageView?.onDictionaryOverlayTap = { [weak self, weak controller] text, rect, charRects in
             guard let self, let imageView = controller?.pageView?.imageView else { return }
             self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
@@ -215,6 +217,14 @@ extension ReaderPagedViewController {
         dictionaryOverlayTapHandler = handler
         for controller in pageViewControllers {
             bindDictionaryOverlayTap(to: controller)
+        }
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayInteractionMode = mode
+        for controller in pageViewControllers {
+            controller.pageView?.setDictionaryOverlayInteractionMode(mode)
         }
     }
 
