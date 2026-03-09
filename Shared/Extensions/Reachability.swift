@@ -25,9 +25,13 @@ final class Reachability {
         }
 
         var flags = SCNetworkReachabilityFlags()
-        SCNetworkReachabilityGetFlags(reachability, &flags)
+        let gotFlags: Bool = withUnsafeMutablePointer(to: &flags) {
+            $0.withMemoryRebound(to: UInt32.self, capacity: 1) { ptr in
+                SCNetworkReachabilityGetFlags(reachability, ptr)
+            }
+        }
 
-        guard flags.contains(.reachable) else { return .none }
+        guard gotFlags, flags.contains(.reachable) else { return .none }
 
         #if os(OSX)
             return .wifi

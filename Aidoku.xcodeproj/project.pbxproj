@@ -42,6 +42,23 @@
 		FB0051262FAF0574004B4A6F /* MigrateResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */; };
 		FB0051282FB7F926004B4A6F /* MigrateSingleSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */; };
 		FB0051422FB970FF004B4A6F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051412FB970FD004B4A6F /* SafariView.swift */; };
+		EE7A41B92F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
+		EE7A41BA2F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
+		EE7A41BC2F5CF4ED0044AF4C /* LookupEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */; };
+		EE7A41BD2F5CF4ED0044AF4C /* LookupEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */; };
+		EE7A41BF2F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
+		EE7A41C02F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
+		EE7A41C22F5CF5960044AF4C /* TextRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */; };
+		EE7A42112F5E31A10044AF4C /* TextRecognizer+Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */; };
+		EE7A42122F5E31A10044AF4C /* TextRecognizer+Lookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */; };
+		EE7A42132F5E31A10044AF4C /* TextRecognizer+Clustering.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */; };
+		EE7A42142F5E31A10044AF4C /* DictionaryOverlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */; };
+		EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */; };
+		EE7A41C62F5CF6460044AF4C /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C52F5CF6460044AF4C /* popup.js */; };
+		EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C72F5CF65B0044AF4C /* popup.css */; };
+		EE7A41EE2F5D04B40044AF4C /* selection.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41ED2F5D04B40044AF4C /* selection.js */; };
+		EE7A41CB2F5CF7710044AF4C /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */; };
+		EE7A41E52F5CFA630044AF4C /* DictionaryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -651,6 +668,19 @@
 		FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateResultsView.swift; sourceTree = "<group>"; };
 		FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSingleSearchView.swift; sourceTree = "<group>"; };
 		FB0051412FB970FD004B4A6F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryModels.swift; sourceTree = "<group>"; };
+		EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupEngine.swift; sourceTree = "<group>"; };
+		EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryManager.swift; sourceTree = "<group>"; };
+		EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognizer.swift; sourceTree = "<group>"; };
+		EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Analysis.swift"; sourceTree = "<group>"; };
+		EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Lookup.swift"; sourceTree = "<group>"; };
+		EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Clustering.swift"; sourceTree = "<group>"; };
+		EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryOverlayButton.swift; sourceTree = "<group>"; };
+		EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryPopupView.swift; sourceTree = "<group>"; };
+		EE7A41C52F5CF6460044AF4C /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		EE7A41C72F5CF65B0044AF4C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
+		EE7A41ED2F5D04B40044AF4C /* selection.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = selection.js; sourceTree = "<group>"; };
+		EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryListView.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -1113,6 +1143,7 @@
 				FB662EDE2DA816CF00007514 /* MarkdownUI in Frameworks */,
 				FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */,
 				FBAED40C2E3A762800B81E74 /* SwiftUIIntrospect in Frameworks */,
+				EE7A41CB2F5CF7710044AF4C /* CHoshiDicts in Frameworks */,
 				FBFDF5F82DF799180064F603 /* AidokuRunner in Frameworks */,
 				FB4EEBE027A4F5C1005081A3 /* CloudKit.framework in Frameworks */,
 				FBBCB31D2E08D6B000ED5CAB /* Gifu in Frameworks */,
@@ -1181,6 +1212,30 @@
 				FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */,
 			);
 			path = Migration;
+		EE7A41B62F5CF4CE0044AF4C /* Dictionary */ = {
+			isa = PBXGroup;
+			children = (
+				EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */,
+				EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */,
+				EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */,
+			);
+			path = Dictionary;
+			sourceTree = "<group>";
+		};
+		EE7A41B72F5CF4CE0044AF4C /* Dictionary */ = {
+			isa = PBXGroup;
+			children = (
+				EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */,
+				EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */,
+				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
+				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
+				EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */,
+				EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */,
+				EE7A41C52F5CF6460044AF4C /* popup.js */,
+				EE7A41C72F5CF65B0044AF4C /* popup.css */,
+				EE7A41ED2F5D04B40044AF4C /* selection.js */,
+			);
+			path = Dictionary;
 			sourceTree = "<group>";
 		};
 		FB02E1EE288D7B9D00B9E2DE /* UI */ = {
@@ -1319,6 +1374,7 @@
 				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
 				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
 				FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */,
+				EE7A41B72F5CF4CE0044AF4C /* Dictionary */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -1410,6 +1466,7 @@
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
+				EE7A41B62F5CF4CE0044AF4C /* Dictionary */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -2041,6 +2098,7 @@
 				FB55C0AE2DF1E2650019A551 /* SourceListsView.swift */,
 				FB7984132E0C9F1D000761A9 /* UpscaleModelListView.swift */,
 				FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */,
+				EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -2423,6 +2481,7 @@
 				FBBCB31C2E08D6B000ED5CAB /* Gifu */,
 				FBAED40B2E3A762800B81E74 /* SwiftUIIntrospect */,
 				FB2C83982E43F074003CA85F /* SwiftSoup */,
+				EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */,
 			);
 			productName = "Aidoku (iOS)";
 			productReference = FB1B4835277CE1920056D02C /* Aidoku.app */;
@@ -2555,6 +2614,7 @@
 				FBBCB31B2E08D6AF00ED5CAB /* XCRemoteSwiftPackageReference "Gifu" */,
 				FBAED40A2E3A762800B81E74 /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
 				FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				EE7A41EF2F5D20000044AF4C /* XCRemoteSwiftPackageReference "hoshidicts" */,
 			);
 			productRefGroup = FB1B4836277CE1920056D02C /* Products */;
 			projectDirPath = "";
@@ -2574,6 +2634,9 @@
 			files = (
 				FB1B4846277CE1920056D02C /* Assets.xcassets in Resources */,
 				FB4ADCA72815A75700F6D7FB /* InfoPlist.strings in Resources */,
+				EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */,
+				EE7A41C62F5CF6460044AF4C /* popup.js in Resources */,
+				EE7A41EE2F5D04B40044AF4C /* selection.js in Resources */,
 				FB4ADCA22814DD4600F6D7FB /* Localizable.strings in Resources */,
 				FB1DD89D2EF1A6BC0007FC78 /* AppIcon.icon in Resources */,
 			);
@@ -2718,6 +2781,7 @@
 				FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */,
 				FBCA1B2D2889AEE0007149C5 /* BackupTrackItem.swift in Sources */,
 				FB7F06002DDF79420036B116 /* KomgaSource.swift in Sources */,
+				EE7A41BC2F5CF4ED0044AF4C /* LookupEngine.swift in Sources */,
 				FB4ADC75281206AD00F6D7FB /* UIStepper.swift in Sources */,
 				FBED231F27BB10950095D0C0 /* FilterStackView.swift in Sources */,
 				FBE88BF02886FC5800A61122 /* TrackerListView.swift in Sources */,
@@ -2762,6 +2826,7 @@
 				FB9A483E2967E48300FFC414 /* MigrationStrategy.swift in Sources */,
 				FB077DAE2E7DC85A00C9C214 /* BackupsView.swift in Sources */,
 				FB7864862848215500125DC0 /* Reachability.swift in Sources */,
+				EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */,
 				FBF059CC2EF8331200907B0E /* BackupReadingSession.swift in Sources */,
 				FB662EEA2DA81A5C00007514 /* MangaView.swift in Sources */,
 				FB662EEB2DA81A5C00007514 /* CollectionView.swift in Sources */,
@@ -2803,6 +2868,7 @@
 				48177B922B75C67300AD41B4 /* MangaUpdateObject.swift in Sources */,
 				FB0E1CCA288AE50700B67BA9 /* OAuthTracker.swift in Sources */,
 				FB82A5C62DF874D500366BC8 /* LocalFileDataManager.swift in Sources */,
+				EE7A41B92F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */,
 				FB7B7ED4278CE692001E6EAF /* Source.swift in Sources */,
 				FBE578F728983C3C00F9F1B5 /* OldMangaCollectionViewController.swift in Sources */,
 				FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */,
@@ -2820,6 +2886,7 @@
 				7CF79D3D2F31E81300BF0800 /* ReaderPagedTextViewController.swift in Sources */,
 				7CF79D3E2F31E81300BF0800 /* TextPaginator.swift in Sources */,
 				FBC338012EC78C48007465BA /* SearchViewController.swift in Sources */,
+				EE7A41E52F5CFA630044AF4C /* DictionaryListView.swift in Sources */,
 				FBED62B4279DB89A0096B717 /* MangaCoverCell.swift in Sources */,
 				FB4B0ADA285BD7CF0066A13B /* TrackScoreType.swift in Sources */,
 				FB6340B62791DA130072A2A2 /* KVCObject.swift in Sources */,
@@ -2857,6 +2924,7 @@
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
 				FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB0518322E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
+				EE7A41C02F5CF5050044AF4C /* DictionaryManager.swift in Sources */,
 				FB42750B295FB7B400131377 /* BrowseViewController.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FB55AFA728AAAFE10083EFC3 /* UINavigationItem.swift in Sources */,
@@ -2946,6 +3014,11 @@
 				FB662ED72DA813E300007514 /* HCollectionGrid.swift in Sources */,
 				FB619E3F2E94A62000E3B565 /* PageTracker.swift in Sources */,
 				FB662ED82DA813E300007514 /* MangaGridItem.swift in Sources */,
+				EE7A41C22F5CF5960044AF4C /* TextRecognizer.swift in Sources */,
+				EE7A42112F5E31A10044AF4C /* TextRecognizer+Analysis.swift in Sources */,
+				EE7A42122F5E31A10044AF4C /* TextRecognizer+Lookup.swift in Sources */,
+				EE7A42132F5E31A10044AF4C /* TextRecognizer+Clustering.swift in Sources */,
+				EE7A42142F5E31A10044AF4C /* DictionaryOverlayButton.swift in Sources */,
 				FBF8C5842DCD01E30066F53D /* BlockingTask.swift in Sources */,
 				FBB44E6A2EC53A460032EFBB /* ListDivider.swift in Sources */,
 				66C7E95B2ED77BBD0026FD6C /* ImageProcessingSettingsKey.swift in Sources */,
@@ -3055,6 +3128,7 @@
 				FB3F49E62B7C3BA500D3CC75 /* ChapterSortOption.swift in Sources */,
 				FB3F49EC2B7C6B7700D3CC75 /* ChapterFlagMask.swift in Sources */,
 				FB3D20782FA4A1A1004DAC5E /* BackupSource.swift in Sources */,
+				EE7A41BA2F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */,
 				FB034EA52EAC27600072EEEB /* MangaIdentifier.swift in Sources */,
 				FBE7A5952DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */,
 				FBA748A82E81C12400D9BE86 /* BangumiModels.swift in Sources */,
@@ -3065,6 +3139,7 @@
 				FB0CAA5E28A998690024561A /* CoreDataManager+History.swift in Sources */,
 				FB6340BC2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB14B1262DF4CFE90067E4D4 /* UIKitShim.swift in Sources */,
+				EE7A41BF2F5CF5050044AF4C /* DictionaryManager.swift in Sources */,
 				FB72501D27CAACC00037F1C9 /* BackupChapter.swift in Sources */,
 				FB14B12C2DF4D27E0067E4D4 /* CoreDataManager+MangaUpdates.swift in Sources */,
 				002C0AC12EC0F44D0071CE82 /* LAPolicy.swift in Sources */,
@@ -3142,6 +3217,7 @@
 				FB67EE6427F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB4B0AEF285D2EE30066A13B /* MyAnimeListModels.swift in Sources */,
 				FBE975CC2EC3932D008C7633 /* ComicInfo.swift in Sources */,
+				EE7A41BD2F5CF4ED0044AF4C /* LookupEngine.swift in Sources */,
 				FB716DFD283DA2D400F1BB5D /* Logger.swift in Sources */,
 				04B48CFB2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */,
 				FB72501027CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
@@ -3450,6 +3526,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -3493,6 +3570,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -3669,6 +3747,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		EE7A41EF2F5D20000044AF4C /* XCRemoteSwiftPackageReference "hoshidicts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Manhhao/hoshidicts.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kean/Nuke";
@@ -3736,6 +3822,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EE7A41EF2F5D20000044AF4C /* XCRemoteSwiftPackageReference "hoshidicts" */;
+			productName = CHoshiDicts;
+		};
 		FB14B1342DF4D4E70067E4D4 /* Nuke */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FB171149296770CC00AD523D /* XCRemoteSwiftPackageReference "Nuke" */;

@@ -159,6 +159,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.disableQuickActions": false,
                 "Reader.disableDoubleTap": false,
                 "Reader.liveText": false,
+                "Reader.dictionaryLookupGesture": "single-tap",
+                "Reader.dictionaryTextOverlayMode": false,
+                "Reader.dictionaryOCRLanguage": "ja",
+                "Reader.dictionaryOCRPreUpscale": true,
+                "Reader.dictionaryOverlayPadding": 5,
+                "Reader.dictionaryOverlayTextScaleMultiplier": 1.0,
+                "Reader.lookupGestureLocksQuickActions": false,
+                "Reader.dictionaryPopupWidth": 320,
+                "Reader.dictionaryPopupHeight": 250,
                 "Reader.hideBarsOnSwipe": false,
                 "Reader.tapZones": "disabled",
                 "Reader.invertTapZones": false,
@@ -206,6 +215,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Downloads.background": true
             ]
         )
+        UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
 
         // PlayCover fix: eagerly initialize the Core Data stack on the main thread
         // before any background migration task touches it. The `lazy var container`
@@ -875,5 +885,39 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             }
         }
         completionHandler()
+    }
+}
+
+extension UserDefaults {
+    var dictionaryLookupGestureMode: String {
+        string(forKey: "Reader.dictionaryLookupGesture") ?? "single-tap"
+    }
+
+    var isDictionaryLookupEnabledForReader: Bool {
+        if #available(iOS 18.0, *) {
+            bool(forKey: "Reader.dictionary")
+        } else {
+            false
+        }
+    }
+
+    var isDictionaryLongPressLookupEnabled: Bool {
+        isDictionaryLookupEnabledForReader && dictionaryLookupGestureMode == "long-press"
+    }
+
+    var isDictionarySingleTapLookupEnabled: Bool {
+        isDictionaryLookupEnabledForReader && dictionaryLookupGestureMode == "single-tap"
+    }
+
+    var isReaderQuickActionsDisabledEffective: Bool {
+        bool(forKey: "Reader.disableQuickActions") || isDictionaryLongPressLookupEnabled
+    }
+
+    var isReaderDoubleTapZoomDisabledEffective: Bool {
+        bool(forKey: "Reader.disableDoubleTap") || isDictionarySingleTapLookupEnabled
+    }
+
+    func syncReaderLookupGestureCompatibilityLocks() {
+        set(isDictionaryLongPressLookupEnabled, forKey: "Reader.lookupGestureLocksQuickActions")
     }
 }
