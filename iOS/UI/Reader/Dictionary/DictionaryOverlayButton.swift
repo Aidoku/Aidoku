@@ -219,3 +219,106 @@ final class DictionaryOverlayButton: UIButton {
         return String(text.prefix(matchLength))
     }
 }
+
+final class DictionaryOverlayController: NSObject {
+    weak var containerView: UIView?
+    var onLookup: ((String, CGRect, [CGRect]) -> Void)?
+
+    private weak var activeButton: DictionaryOverlayButton?
+
+    @available(iOS 18.0, *)
+    func render(overlays: [TextRecognizer.ParagraphOverlay]) {
+        clear()
+        guard let containerView else { return }
+
+        let usesSingleTapLookup = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+        let usesLongPressLookup = UserDefaults.standard.isDictionaryLongPressLookupEnabled
+
+        for overlay in overlays {
+            let button = DictionaryOverlayButton(type: .system)
+            button.apply(overlay: overlay)
+            button.setOverlayVisible(false)
+            if usesSingleTapLookup {
+                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDown)
+                button.addTarget(self, action: #selector(handleTouchDown(_:)), for: .touchDragEnter)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchUpOutside)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchCancel)
+                button.addTarget(self, action: #selector(handleTouchCancel(_:)), for: .touchDragExit)
+                button.addTarget(self, action: #selector(handleTouchUpInside(_:for:)), for: .touchUpInside)
+            } else if usesLongPressLookup {
+                let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+                longPress.minimumPressDuration = 0.25
+                longPress.allowableMovement = 60
+                longPress.cancelsTouchesInView = true
+                button.addGestureRecognizer(longPress)
+            }
+            containerView.addSubview(button)
+        }
+    }
+
+    func clear() {
+        containerView?.subviews.forEach { $0.removeFromSuperview() }
+        activeButton = nil
+    }
+
+    @discardableResult
+    func dismissActive() -> Bool {
+        guard activeButton != nil else { return false }
+        setActiveButton(nil)
+        return true
+    }
+
+    private func setActiveButton(_ button: DictionaryOverlayButton?) {
+        activeButton = button
+        guard let containerView else { return }
+        for case let overlay as DictionaryOverlayButton in containerView.subviews {
+            overlay.setOverlayVisible(overlay === button)
+        }
+        if let button {
+            containerView.bringSubviewToFront(button)
+        }
+    }
+
+    @objc
+    private func handleTouchDown(_ sender: DictionaryOverlayButton) {
+        setActiveButton(sender)
+    }
+
+    @objc
+    private func handleTouchCancel(_ sender: DictionaryOverlayButton) {
+        if activeButton === sender {
+            setActiveButton(nil)
+        }
+    }
+
+    @objc
+    private func handleTouchUpInside(_ sender: DictionaryOverlayButton, for event: UIEvent) {
+        let touch = event.touches(for: sender)?.first ?? event.allTouches?.first
+        let point = touch?.location(in: sender) ?? CGPoint(x: sender.bounds.midX, y: sender.bounds.midY)
+        performLookup(sender: sender, point: point)
+    }
+
+    @objc
+    private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard let sender = gestureRecognizer.view as? DictionaryOverlayButton else { return }
+        let point = gestureRecognizer.location(in: sender)
+        switch gestureRecognizer.state {
+        case .began, .changed:
+            setActiveButton(sender)
+        case .ended:
+            performLookup(sender: sender, point: point)
+        default:
+            if activeButton === sender {
+                setActiveButton(nil)
+            }
+        }
+    }
+
+    private func performLookup(sender: DictionaryOverlayButton, point: CGPoint) {
+        setActiveButton(sender)
+        guard let payload = sender.lookupPayload(at: point) else { return }
+        let anchorRect = payload.localRect.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY)
+        let charRects = payload.localRects.map { $0.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY) }
+        onLookup?(payload.text, anchorRect, charRects)
+    }
+}

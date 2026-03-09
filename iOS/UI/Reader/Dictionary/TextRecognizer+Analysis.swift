@@ -94,3 +94,45 @@ extension TextRecognizer {
     }
 
 }
+
+@available(iOS 18.0, *)
+enum DictionaryTextAnalysisScheduler {
+    static func cancel(
+        task: inout Task<Void, Never>?,
+        recognizer: TextRecognizer?
+    ) {
+        task?.cancel()
+        task = nil
+        recognizer?.reset()
+    }
+
+    static func schedule(
+        task: inout Task<Void, Never>?,
+        recognizer: inout TextRecognizer?,
+        image: UIImage?,
+        onFinish: @MainActor @escaping () -> Void
+    ) {
+        task?.cancel()
+        guard UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+              LookupEngine.shared.isReady,
+              let image else {
+            recognizer?.reset()
+            task = nil
+            return
+        }
+
+        if recognizer == nil {
+            recognizer = TextRecognizer()
+        }
+        recognizer?.reset()
+        let currentRecognizer = recognizer
+        task = Task { [weak currentRecognizer] in
+            guard !Task.isCancelled, let currentRecognizer else { return }
+            await currentRecognizer.analyze(image)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                onFinish()
+            }
+        }
+    }
+}
