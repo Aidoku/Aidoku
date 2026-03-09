@@ -92,10 +92,6 @@ function showDescription(element) {
     overlay.style.display = 'block';
 }
 
-function closeOverlay() {
-    document.querySelector('.overlay').style.display = 'none';
-}
-
 // https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L171
 function createFuriganaSegment(text, reading) {
     return {text, reading};
@@ -315,6 +311,39 @@ function applyTableStyles(html) {
     .replace(/<td(?=[>\s])/g, `<td style="${cellStyle}"`);
 }
 
+function formatScopedCss(css, dictName) {
+    const scopedCss = constructDictCss(css, dictName);
+    return scopedCss
+    .replace(/\s+/g, ' ')
+    .replace(/\s*\{\s*/g, ' { ')
+    .replace(/\s*\}\s*/g, ' }\n')
+    .replace(/;\s*/g, '; ')
+    .trim();
+}
+
+function renderGlossaryContent(content) {
+    const tempDiv = document.createElement('div');
+    try {
+        renderStructuredContent(tempDiv, JSON.parse(content));
+    } catch {
+        renderStructuredContent(tempDiv, content);
+    }
+    return applyTableStyles(tempDiv.innerHTML);
+}
+
+function getFilteredGlossaryTags(rawTags, previousPosTagsSignature) {
+    const parsedTags = parseTags(rawTags).filter(tag => !NUMERIC_TAG.test(tag));
+    const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
+    const currentPosTagsSignature = JSON.stringify(posTags);
+    const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(
+        previousPosTagsSignature !== null && previousPosTagsSignature === currentPosTagsSignature
+    ));
+    return {
+        currentPosTagsSignature,
+        tagsText: filteredTags.length > 0 ? filteredTags.join(', ') : ''
+    };
+}
+
 // the following two should roughly match the glossary format of yomitan and keep compatibility with notetypes like lapis
 // 23.01.2026: this still has some differences
 // 24.01.2026: should be a bit closer now
@@ -338,14 +367,7 @@ function constructSingleGlossaryHtml(entryIndex) {
         let html = `<div style="text-align: left;" class="yomitan-glossary"><ol>${currentGlossary}</ol>`;
         const css = window.dictionaryStyles?.[lastDict] ?? '';
         if (css) {
-            const scopedCss = constructDictCss(css, lastDict);
-            const formatted = scopedCss
-            .replace(/\s+/g, ' ')
-            .replace(/\s*\{\s*/g, ' { ')
-            .replace(/\s*\}\s*/g, ' }\n')
-            .replace(/;\s*/g, '; ')
-            .trim();
-            html += `<style>${formatted}</style>`;
+            html += `<style>${formatScopedCss(css, lastDict)}</style>`;
         }
         html += `</div>`;
         
@@ -362,27 +384,13 @@ function constructSingleGlossaryHtml(entryIndex) {
             prevTags = null;
         }
         
-        const tempDiv = document.createElement('div');
-        try {
-            renderStructuredContent(tempDiv, JSON.parse(g.content));
-        } catch {
-            renderStructuredContent(tempDiv, g.content);
-        }
-        
-        const parsedTags = parseTags(g.definitionTags).filter(tag => !NUMERIC_TAG.test(tag));
-        const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
-        const currentTags = JSON.stringify(posTags);
-        const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(prevTags !== null && prevTags === currentTags));
-        const tags = filteredTags.length > 0 ? filteredTags.join(', ') : '';
-        const content = applyTableStyles(tempDiv.innerHTML);
-        let listIdentifier = '';
-        if (dictChanged) {
-            label = tags ? `(${tags}, ${dictName})` : `(${dictName})`;
-        } else {
-            label = tags ? `(${tags})` : '';
-        }
-        currentGlossary += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${content}</span></li>`
-        prevTags = currentTags;
+        const content = renderGlossaryContent(g.content);
+        const { currentPosTagsSignature, tagsText } = getFilteredGlossaryTags(g.definitionTags, prevTags);
+        const label = dictChanged
+            ? (tagsText ? `(${tagsText}, ${dictName})` : `(${dictName})`)
+            : (tagsText ? `(${tagsText})` : '');
+        currentGlossary += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${content}</span></li>`;
+        prevTags = currentPosTagsSignature;
     });
     
     flush();
@@ -404,31 +412,20 @@ function constructGlossaryHtml(entryIndex) {
     entry.glossaries.forEach(g => {
         const dictName = g.dictionary;
         
-        const tempDiv = document.createElement('div');
-        try {
-            renderStructuredContent(tempDiv, JSON.parse(g.content));
-        } catch {
-            renderStructuredContent(tempDiv, g.content);
-        }
-        
         index++;
         let label = '';
-        const parsedTags = parseTags(g.definitionTags).filter(tag => !NUMERIC_TAG.test(tag));
-        const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
-        const currentTags = JSON.stringify(posTags);
-        const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(prevTags !== null && prevTags === currentTags));
-        const tags = filteredTags.length > 0 ? filteredTags.join(', ') : '';
+        const { currentPosTagsSignature, tagsText } = getFilteredGlossaryTags(g.definitionTags, prevTags);
         if (dictName !== lastDict) {
             index = 1;
             lastDict = dictName;
-            label = tags ? `(${index}, ${tags}, ${dictName})` : `(${index}, ${dictName})`
+            label = tagsText ? `(${index}, ${tagsText}, ${dictName})` : `(${index}, ${dictName})`
         }
         else {
-            label = tags ? `(${index}, ${tags})` : `(${index})`
+            label = tagsText ? `(${index}, ${tagsText})` : `(${index})`
         }
         
-        glossaryItems += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${applyTableStyles(tempDiv.innerHTML)}</span></li>`;
-        prevTags = currentTags;
+        glossaryItems += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${renderGlossaryContent(g.content)}</span></li>`;
+        prevTags = currentPosTagsSignature;
         
         const css = window.dictionaryStyles?.[dictName];
         if (css && !styles[dictName]) {
@@ -441,14 +438,7 @@ function constructGlossaryHtml(entryIndex) {
     result += '</ol>';
     
     for (const [dictName, css] of Object.entries(styles)) {
-        const scopedCss = constructDictCss(css, dictName);
-        const formatted = scopedCss
-        .replace(/\s+/g, ' ')
-        .replace(/\s*\{\s*/g, ' { ')
-        .replace(/\s*\}\s*/g, ' }\n')
-        .replace(/;\s*/g, '; ')
-        .trim();
-        result += `<style>${formatted}</style>`;
+        result += `<style>${formatScopedCss(css, dictName)}</style>`;
     }
     
     result += '</div>';
