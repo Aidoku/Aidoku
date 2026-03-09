@@ -569,7 +569,7 @@
 "DICTIONARY_OCR_LANGUAGE_CHINESE" = "Chinese";
 "DICTIONARY_OCR_LANGUAGE_KOREAN" = "Korean";
 "DICTIONARY_OCR_PRE_UPSCALE" = "OCR Pre-Upscale";
-"DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO" = "Unavailable while Upscale Images is enabled.";
+"DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO" = "Locked while Upscale Images is enabled.";
 "DICTIONARY_POPUP_WIDTH" = "Popup Width";
 "DICTIONARY_POPUP_HEIGHT" = "Popup Height";
 "TERM_DICTIONARIES" = "Term Dictionaries";

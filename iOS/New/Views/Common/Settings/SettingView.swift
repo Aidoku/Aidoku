@@ -500,17 +500,52 @@ extension SettingView {
 
 // MARK: Toggle View
 extension (SettingView) {
+    private var shouldShowDisabledOnlyToggleSubtitle: Bool {
+        switch setting.key {
+            case "Reader.disableQuickActions", "Reader.disableDoubleTapZoom", "Reader.dictionaryOCRPreUpscale":
+                return true
+            default:
+                return false
+        }
+    }
+
+    private var effectiveToggleDisplayValue: Bool {
+        guard disabled else { return toggleValue }
+
+        switch setting.key {
+            case "Reader.disableQuickActions", "Reader.disableDoubleTapZoom":
+                // Lookup gesture lock effectively forces these protections on.
+                return true
+            case "Reader.dictionaryOCRPreUpscale":
+                // Upscale Images lock effectively forces OCR pre-upscale off.
+                return false
+            default:
+                return toggleValue
+        }
+    }
+
     @ViewBuilder
     func toggleView(value: ToggleSetting) -> some View {
+        let toggleBinding = Binding<Bool>(
+            get: { effectiveToggleDisplayValue },
+            set: { newValue in
+                guard !disabled else { return }
+                toggleValue = newValue
+            }
+        )
+
         HStack {
             VStack(alignment: .leading) {
                 Text(setting.title)
                     .lineLimit(1)
                 if let subtitle = value.subtitle {
-                    Text(NSLocalizedString(subtitle))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    let showSubtitle = shouldShowDisabledOnlyToggleSubtitle ? disabled : true
+                    if showSubtitle {
+                        Text(NSLocalizedString(subtitle))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
                 }
             }
             .opacity(disabled ? disabledOpacity : 1)
@@ -526,12 +561,13 @@ extension (SettingView) {
 
             Spacer()
 
-            Toggle(isOn: $toggleValue) {
+            Toggle(isOn: toggleBinding) {
                 EmptyView()
             }
             .labelsHidden()
-            .onChange(of: toggleValue) { _ in
-                if (value.authToDisable ?? false) && !toggleValue {
+            .onChange(of: toggleValue) { newValue in
+                guard !disabled else { return }
+                if (value.authToDisable ?? false) && !newValue {
                     Task {
                         let success = await auth()
                         if success {
@@ -541,7 +577,7 @@ extension (SettingView) {
                         }
                     }
                 } else {
-                    SettingsStore.shared.set(key: key(setting.key), value: toggleValue)
+                    SettingsStore.shared.set(key: key(setting.key), value: newValue)
                 }
             }
         }
