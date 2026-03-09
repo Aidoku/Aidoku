@@ -13,6 +13,7 @@ final class ReaderDictionaryCoordinator {
     private var popupControllers: [UIViewController] = []
     private var lookupHighlightViews: [UIView] = []
     private weak var selectionHighlightView: UIView?
+    private var cachedSelectionMatch: (text: String, matchedCount: Int?)?
 
     var isPopupVisible: Bool {
         !popupControllers.isEmpty
@@ -97,13 +98,20 @@ final class ReaderDictionaryCoordinator {
     @available(iOS 18.0, *)
     func updateSelectionHighlight(text: String, charRects: [CGRect]) {
         guard let owner else { return }
-        let entries = LookupEngine.shared.lookup(text)
-        guard let matched = entries.first?.matched else {
+        let matchedCount: Int?
+        if let cachedSelectionMatch, cachedSelectionMatch.text == text {
+            matchedCount = cachedSelectionMatch.matchedCount
+        } else {
+            matchedCount = LookupEngine.shared.lookup(text).first?.matched.count
+            cachedSelectionMatch = (text: text, matchedCount: matchedCount)
+        }
+
+        guard let matchedCount else {
             clearSelectionHighlight()
             return
         }
 
-        let rects = charRects.prefix(matched.count).map { $0.insetBy(dx: -2, dy: -2) }
+        let rects = charRects.prefix(matchedCount).map { $0.insetBy(dx: -2, dy: -2) }
         guard !rects.isEmpty else {
             clearSelectionHighlight()
             return
