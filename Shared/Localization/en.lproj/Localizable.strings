@@ -571,6 +571,13 @@
 "DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO" = "Locked while Upscale Images is enabled.";
 "DICTIONARY_POPUP_WIDTH" = "Popup Width";
 "DICTIONARY_POPUP_HEIGHT" = "Popup Height";
+"DICTIONARY_AUDIO_SOURCES" = "Audio Sources";
+"DICTIONARY_AUDIO_SOURCE_PLACEHOLDER" = "https://example.com/?term={term}&reading={reading}";
+"DICTIONARY_AUDIO_AUTOPLAY" = "Audio Autoplay";
+"DICTIONARY_AUDIO_PLAYBACK_MODE" = "Background Audio";
+"AUDIO_PLAYBACK_INTERRUPT" = "Interrupt";
+"AUDIO_PLAYBACK_DUCK" = "Lower Volume";
+"AUDIO_PLAYBACK_MIX" = "Keep Volume";
 "TERM_DICTIONARIES" = "Term Dictionaries";
 "FREQUENCY_DICTIONARIES" = "Frequency Dictionaries";
 "PITCH_DICTIONARIES" = "Pitch Dictionaries";

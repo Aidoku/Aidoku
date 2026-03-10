@@ -521,6 +521,31 @@ extension Settings {
                                         maximumValue: 350,
                                         stepValue: 10
                                     ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioSources",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_SOURCES"),
+                                    value: .editableList(.init(
+                                        lineLimit: 1,
+                                        placeholder: NSLocalizedString("DICTIONARY_AUDIO_SOURCE_PLACEHOLDER")
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioAutoplay",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_AUTOPLAY"),
+                                    value: .toggle(.init())
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioPlaybackMode",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_PLAYBACK_MODE"),
+                                    value: .select(.init(
+                                        values: ["interrupt", "duck", "mix"],
+                                        titles: [
+                                            NSLocalizedString("AUDIO_PLAYBACK_INTERRUPT"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_DUCK"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_MIX")
+                                        ]
+                                    ))
                                 )
                             ]))
                         )

@@ -6,8 +6,160 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+import AVFoundation
 import SwiftUI
 import WebKit
+
+private enum DictionaryAudioPlaybackMode: String {
+    case interrupt
+    case duck
+    case mix
+}
+
+private actor DictionaryWordAudioPlayer {
+    static let shared = DictionaryWordAudioPlayer()
+
+    private var player: AVPlayer?
+    private var playToEndObserver: NSObjectProtocol?
+    private var failedToPlayObserver: NSObjectProtocol?
+    private var playbackID: UUID?
+
+    private init() {}
+
+    func stop(id: UUID? = nil) {
+        if let id, id != playbackID {
+            return
+        }
+        stopPlayback(deactivateSession: true)
+    }
+
+    func play(urlString: String, mode: DictionaryAudioPlaybackMode, id: UUID) {
+        guard let url = URL(string: urlString) else { return }
+
+        stopPlayback(deactivateSession: false)
+
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, mode: .default, options: categoryOptions(for: mode))
+            try session.setActive(true, options: [])
+        } catch {
+            return
+        }
+
+        let item = AVPlayerItem(url: url)
+        let player = AVPlayer(playerItem: item)
+        self.player = player
+        playbackID = id
+
+        playToEndObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: item,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else { return }
+            Task {
+                await self.stop()
+            }
+        }
+
+        failedToPlayObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemFailedToPlayToEndTime,
+            object: item,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else { return }
+            Task {
+                await self.stop()
+            }
+        }
+
+        player.play()
+    }
+
+    private func stopPlayback(deactivateSession: Bool) {
+        player?.pause()
+        player = nil
+        playbackID = nil
+
+        if let playToEndObserver {
+            NotificationCenter.default.removeObserver(playToEndObserver)
+            self.playToEndObserver = nil
+        }
+        if let failedToPlayObserver {
+            NotificationCenter.default.removeObserver(failedToPlayObserver)
+            self.failedToPlayObserver = nil
+        }
+
+        if deactivateSession {
+            try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        }
+    }
+
+    private func categoryOptions(for mode: DictionaryAudioPlaybackMode) -> AVAudioSession.CategoryOptions {
+        switch mode {
+            case .interrupt:
+                []
+            case .duck:
+                [.mixWithOthers, .duckOthers]
+            case .mix:
+                [.mixWithOthers]
+        }
+    }
+}
+
+private final class DictionaryAudioURLSchemeHandler: NSObject, WKURLSchemeHandler {
+    private var activeTasks = Set<ObjectIdentifier>()
+
+    func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
+        guard let requestURL = task.request.url,
+              let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false),
+              let targetURLString = components.queryItems?.first(where: { $0.name == "url" })?.value,
+              let targetURL = URL(string: targetURLString)
+        else {
+            task.didFailWithError(URLError(.badURL))
+            return
+        }
+
+        let taskID = ObjectIdentifier(task)
+        activeTasks.insert(taskID)
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            do {
+                let request = URLRequest(url: targetURL, timeoutInterval: 2.0)
+                let (data, response) = try await URLSession.shared.data(for: request)
+
+                await MainActor.run {
+                    guard self.activeTasks.contains(taskID) else { return }
+                    let contentType = (response as? HTTPURLResponse)?
+                        .value(forHTTPHeaderField: "Content-Type") ?? "application/json"
+                    let proxyResponse = HTTPURLResponse(
+                        url: requestURL,
+                        statusCode: 200,
+                        httpVersion: "HTTP/1.1",
+                        headerFields: [
+                            "Access-Control-Allow-Origin": "*",
+                            "Content-Type": contentType
+                        ]
+                    )!
+                    task.didReceive(proxyResponse)
+                    task.didReceive(data)
+                    task.didFinish()
+                }
+            } catch {
+                await MainActor.run {
+                    guard self.activeTasks.contains(taskID) else { return }
+                    task.didFailWithError(error)
+                }
+            }
+        }
+    }
+
+    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {
+        activeTasks.remove(ObjectIdentifier(task))
+    }
+}
 
 @available(iOS 18.0, *)
 struct DictionaryPopupSelection {
@@ -162,6 +314,21 @@ struct DictionaryPopupWebView: UIViewRepresentable {
         return css
     }()
 
+    private var audioSources: [String] {
+        ((UserDefaults.standard.array(forKey: "Reader.dictionaryAudioSources") as? [String]) ?? [])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private var audioAutoplayEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "Reader.dictionaryAudioAutoplay")
+    }
+
+    private var audioPlaybackMode: DictionaryAudioPlaybackMode {
+        let rawValue = UserDefaults.standard.string(forKey: "Reader.dictionaryAudioPlaybackMode")
+        return rawValue.flatMap(DictionaryAudioPlaybackMode.init(rawValue:)) ?? .interrupt
+    }
+
     func makeCoordinator() -> Coordinator {
         Coordinator(
             popupOrigin: popupOrigin,
@@ -175,6 +342,9 @@ struct DictionaryPopupWebView: UIViewRepresentable {
         config.userContentController.add(context.coordinator, name: "openLink")
         config.userContentController.add(context.coordinator, name: "tapOutside")
         config.userContentController.add(context.coordinator, name: "textSelected")
+        config.userContentController.add(context.coordinator, name: "playWordAudio")
+        config.setURLSchemeHandler(DictionaryAudioURLSchemeHandler(), forURLScheme: "audio")
+        config.mediaTypesRequiringUserActionForPlayback = []
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
@@ -193,9 +363,13 @@ struct DictionaryPopupWebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
+        Task {
+            await DictionaryWordAudioPlayer.shared.stop(id: coordinator.audioPlaybackID)
+        }
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "openLink")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "tapOutside")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "textSelected")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "playWordAudio")
     }
 
     class Coordinator: NSObject, WKScriptMessageHandler {
@@ -203,6 +377,7 @@ struct DictionaryPopupWebView: UIViewRepresentable {
         let popupOrigin: CGPoint
         let onLookup: (DictionaryPopupSelection) -> Void
         let onTapOutside: () -> Void
+        let audioPlaybackID = UUID()
 
         init(
             popupOrigin: CGPoint,
@@ -248,6 +423,18 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                     selectionRect = nil
                 }
                 onLookup(.init(text: selectedText, rect: selectionRect))
+            } else if message.name == "playWordAudio",
+                      let body = message.body as? [String: Any],
+                      let urlString = body["url"] as? String {
+                let mode = (body["mode"] as? String)
+                    .flatMap(DictionaryAudioPlaybackMode.init(rawValue:)) ?? .interrupt
+                Task(priority: .userInitiated) {
+                    await DictionaryWordAudioPlayer.shared.play(
+                        urlString: urlString,
+                        mode: mode,
+                        id: audioPlaybackID
+                    )
+                }
             }
         }
     }
@@ -256,6 +443,8 @@ struct DictionaryPopupWebView: UIViewRepresentable {
         let stylesJson = (try? JSONEncoder().encode(dictionaryStyles))
             .flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
         let entriesJson = (try? JSONEncoder().encode(entries))
+            .flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
+        let audioSourcesJson = (try? JSONEncoder().encode(audioSources))
             .flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
 
         return """
@@ -291,8 +480,9 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                 window.entryCount = window.lookupEntries.length;
                 window.collapseDictionaries = false;
                 window.compactGlossaries = false;
-                window.audioSources = [];
-                window.audioEnableAutoplay = false;
+                window.audioSources = \(audioSourcesJson);
+                window.audioEnableAutoplay = \(audioAutoplayEnabled);
+                window.audioPlaybackMode = "\(audioPlaybackMode.rawValue)";
                 window.needsAudio = false;
                 window.customCSS = "";
             </script>
