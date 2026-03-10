@@ -361,6 +361,7 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.toolbar.alpha = 1
 
         disableSwipeGestures()
+        configureNavigationBarDismissTapGesture(enabled: UserDefaults.standard.isDictionarySingleTapLookupEnabled)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -379,6 +380,8 @@ class ReaderViewController: BaseObservingViewController {
         Task {
             await updateReadPosition()
         }
+
+        barDismissNavigationBarTapGesture?.isEnabled = false
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -1137,7 +1140,9 @@ extension ReaderViewController {
 
         if let type {
             // hide the bars when tapping regardless
-            if let navigationController, navigationController.navigationBar.alpha > 0 {
+            if !singleTapLookupEnabled,
+               let navigationController,
+               navigationController.navigationBar.alpha > 0 {
                 hideBars()
             }
             // handle page moving
@@ -1361,6 +1366,19 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
         guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return true }
         let velocity = pan.velocity(in: pan.view)
         return velocity.y > velocity.x && (abs(velocity.x) < 40 || abs(velocity.y) > abs(velocity.x) * 3)
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard gestureRecognizer === barDismissNavigationBarTapGesture else { return true }
+
+        var view: UIView? = touch.view
+        while let currentView = view {
+            if currentView is UIControl {
+                return false
+            }
+            view = currentView.superview
+        }
+        return true
     }
 }
 

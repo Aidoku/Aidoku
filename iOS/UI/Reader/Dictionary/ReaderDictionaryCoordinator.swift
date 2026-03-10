@@ -9,8 +9,13 @@ import SwiftUI
 import UIKit
 
 final class ReaderDictionaryCoordinator {
+    private struct PopupController {
+        let id: UUID
+        let controller: UIViewController
+    }
+
     private weak var owner: ReaderViewController?
-    private var popupControllers: [UIViewController] = []
+    private var popupControllers: [PopupController] = []
     private var lookupHighlightViews: [UIView] = []
     private weak var selectionHighlightView: UIView?
     private var cachedSelectionMatch: (text: String, matchedCount: Int?)?
@@ -41,6 +46,7 @@ final class ReaderDictionaryCoordinator {
             addLookupHighlight(for: entries, charRects: charRects)
         }
 
+        let popupID = UUID()
         let styles = LookupEngine.shared.getStyles()
         let popupView = DictionaryPopupView(
             entries: entries,
@@ -57,6 +63,9 @@ final class ReaderDictionaryCoordinator {
             },
             onDismiss: { [weak self] in
                 self?.dismissTopPopup()
+            },
+            onTapOutside: { [weak self] in
+                self?.dismissChildPopups(parentID: popupID)
             }
         )
 
@@ -72,12 +81,13 @@ final class ReaderDictionaryCoordinator {
             hostingController.view.bottomAnchor.constraint(equalTo: owner.view.bottomAnchor)
         ])
 
-        popupControllers.append(hostingController)
+        popupControllers.append(PopupController(id: popupID, controller: hostingController))
         return true
     }
 
     func dismissTopPopup() {
-        guard let controller = popupControllers.popLast() else { return }
+        guard let popup = popupControllers.popLast() else { return }
+        let controller = popup.controller
         controller.view.removeFromSuperview()
         controller.removeFromParent()
 
@@ -86,11 +96,23 @@ final class ReaderDictionaryCoordinator {
         }
     }
 
+    private func dismissChildPopups(parentID: UUID) {
+        guard let parentIndex = popupControllers.firstIndex(where: { $0.id == parentID }) else { return }
+        let childRange = popupControllers.index(after: parentIndex)..<popupControllers.endIndex
+        guard !childRange.isEmpty else { return }
+
+        for popup in popupControllers[childRange].reversed() {
+            popup.controller.view.removeFromSuperview()
+            popup.controller.removeFromParent()
+        }
+        popupControllers.removeSubrange(childRange)
+    }
+
     func dismissAllPopups() {
         clearLookupHighlights()
-        for controller in popupControllers.reversed() {
-            controller.view.removeFromSuperview()
-            controller.removeFromParent()
+        for popup in popupControllers.reversed() {
+            popup.controller.view.removeFromSuperview()
+            popup.controller.removeFromParent()
         }
         popupControllers.removeAll()
     }

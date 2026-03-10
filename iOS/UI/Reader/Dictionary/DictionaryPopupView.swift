@@ -23,6 +23,7 @@ struct DictionaryPopupView: View {
     let screenSize: CGSize
     let onLookup: (DictionaryPopupSelection) -> Void
     let onDismiss: () -> Void
+    let onTapOutside: () -> Void
 
     private var maxWidth: CGFloat {
         let storedValue = UserDefaults.standard.double(forKey: "Reader.dictionaryPopupWidth")
@@ -117,7 +118,8 @@ struct DictionaryPopupView: View {
                 entries: entries,
                 dictionaryStyles: dictionaryStyles,
                 popupOrigin: popupOrigin,
-                onLookup: onLookup
+                onLookup: onLookup,
+                onTapOutside: onTapOutside
             )
                 .frame(width: max(1, popupWidth), height: max(1, popupHeight))
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -137,6 +139,7 @@ struct DictionaryPopupWebView: UIViewRepresentable {
     let dictionaryStyles: [String: String]
     let popupOrigin: CGPoint
     let onLookup: (DictionaryPopupSelection) -> Void
+    let onTapOutside: () -> Void
 
     private static let popupJs: String = {
         guard let url = Bundle.main.url(forResource: "popup", withExtension: "js", subdirectory: nil),
@@ -160,7 +163,11 @@ struct DictionaryPopupWebView: UIViewRepresentable {
     }()
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(popupOrigin: popupOrigin, onLookup: onLookup)
+        Coordinator(
+            popupOrigin: popupOrigin,
+            onLookup: onLookup,
+            onTapOutside: onTapOutside
+        )
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -195,13 +202,16 @@ struct DictionaryPopupWebView: UIViewRepresentable {
         var wasLoaded = false
         let popupOrigin: CGPoint
         let onLookup: (DictionaryPopupSelection) -> Void
+        let onTapOutside: () -> Void
 
         init(
             popupOrigin: CGPoint,
-            onLookup: @escaping (DictionaryPopupSelection) -> Void
+            onLookup: @escaping (DictionaryPopupSelection) -> Void,
+            onTapOutside: @escaping () -> Void
         ) {
             self.popupOrigin = popupOrigin
             self.onLookup = onLookup
+            self.onTapOutside = onTapOutside
         }
 
         func userContentController(
@@ -212,6 +222,9 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                let urlString = message.body as? String,
                let url = URL(string: urlString) {
                 UIApplication.shared.open(url)
+            } else if message.name == "tapOutside" {
+                onTapOutside()
+                message.webView?.evaluateJavaScript("window.hoshiSelection.clearHighlight()")
             } else if message.name == "textSelected",
                       let selectedText = message.body as? String {
                 onLookup(.init(text: selectedText, rect: nil))
