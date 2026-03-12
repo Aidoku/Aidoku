@@ -16,13 +16,15 @@ class MangaViewController: UIHostingController<MangaView> {
         source: AidokuRunner.Source? = nil,
         manga: MangaInfo,
         parent: UIViewController?,
-        scrollToChapterKey: String? = nil
+        chapterKey: String? = nil,
+        openAction: MangaView.OpenAction? = nil,
     ) {
         self.init(
             source: source,
             manga: manga.toManga().toNew(),
             parent: parent,
-            scrollToChapterKey: scrollToChapterKey,
+            chapterKey: chapterKey,
+            openAction: openAction,
             mangaInfo: manga
         )
     }
@@ -31,7 +33,8 @@ class MangaViewController: UIHostingController<MangaView> {
         source: AidokuRunner.Source? = nil,
         manga: AidokuRunner.Manga,
         parent: UIViewController?,
-        scrollToChapterKey: String? = nil,
+        chapterKey: String? = nil,
+        openAction: MangaView.OpenAction? = nil,
         mangaInfo: MangaInfo? = nil
     ) {
         self.manga = manga
@@ -40,7 +43,8 @@ class MangaViewController: UIHostingController<MangaView> {
             source: source,
             manga: manga,
             path: NavigationCoordinator(rootViewController: parent),
-            scrollToChapterKey: scrollToChapterKey
+            chapterKey: chapterKey,
+            openAction: openAction
         ))
 
         navigationItem.title = manga.title

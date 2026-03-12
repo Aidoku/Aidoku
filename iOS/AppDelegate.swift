@@ -435,25 +435,39 @@ extension AppDelegate {
                     }
                 }
             } else if let host = url.host, let source = SourceManager.shared.source(for: host) {
+                // todo: we should support opening items in library even if the source isn't installed
                 Task { @MainActor in
-                    if url.pathComponents.count > 1 { // /sourceId/mangaId
-                        if let manga = try? await source.getMangaUpdate(
-                            manga: AidokuRunner.Manga(sourceKey: source.id, key: url.pathComponents[1], title: ""),
-                            needsDetails: true,
-                            needsChapters: false
-                        ) {
-                            if let navigationController {
-                                navigationController.pushViewController(
-                                    MangaViewController(
-                                        source: source,
-                                        manga: manga,
-                                        parent: navigationController.topViewController,
-                                        scrollToChapterKey: url.pathComponents[safe: 2] // /sourceId/mangaId/chapterId
-                                    ),
-                                    animated: true
-                                )
-                            }
+                    // support percent encoding characters like "/" for manga and chapter keys
+                    let pathComponents = url.percentEncodedPath
+                        .split(separator: "/")
+                        .map { String($0).removingPercentEncoding ?? String($0) }
+
+                    if !pathComponents.isEmpty { // /sourceId/mangaId
+                        let mangaKey = pathComponents[0].removingPercentEncoding ?? url.pathComponents[1]
+                        guard
+                            let navigationController,
+                            let manga = try? await source.getMangaUpdate(
+                                manga: AidokuRunner.Manga(sourceKey: source.id, key: mangaKey, title: ""),
+                                needsDetails: true,
+                                needsChapters: false
+                            )
+                        else {
+                            return
                         }
+                        let chapterKey = pathComponents[safe: 1]?.removingPercentEncoding ?? pathComponents[safe: 1]
+                        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                        let action = components?.queryItems?.first(where: { $0.name == "action" })?.value.flatMap(MangaView.OpenAction.init)
+
+                        navigationController.pushViewController(
+                            MangaViewController(
+                                source: source,
+                                manga: manga,
+                                parent: navigationController.topViewController,
+                                chapterKey: chapterKey, // /sourceId/mangaId/chapterId
+                                openAction: action // ?action={read,readNext,readLatest}
+                            ),
+                            animated: true
+                        )
                     } else { // /sourceId
                         let vc: UIViewController = if let legacySource = source.legacySource {
                             SourceViewController(source: legacySource)
@@ -566,14 +580,17 @@ extension AppDelegate {
                         ),
                         needsDetails: true,
                         needsChapters: false
-                    ) else { return false }
+                    ) else {
+                        return false
+                    }
 
                     navigationController.pushViewController(
                         MangaViewController(
                             source: targetSource,
                             manga: manga,
                             parent: navigationController.topViewController,
-                            scrollToChapterKey: link?.chapterKey
+                            chapterKey: link?.chapterKey,
+                            openAction: .read
                         ),
                         animated: true
                     )

@@ -61,4 +61,12 @@ extension URL {
             return host
         }
     }
+
+    var percentEncodedPath: String {
+        if #available(iOS 16.0, macOS 13.0, *) {
+            path(percentEncoded: true)
+        } else {
+            path
+        }
+    }
 }
