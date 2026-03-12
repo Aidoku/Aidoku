@@ -194,6 +194,12 @@ extension SourceManager {
             return nil
         }
 
+        // ensure id is valid
+        guard isValidSourceKey(id) else {
+            LogManager.logger.error("Invalid source key: \(id)")
+            return nil
+        }
+
         // move to final location
         let destination = Self.directory.appendingPathComponent(id)
         if destination.exists {
@@ -429,6 +435,48 @@ extension SourceManager {
                 }
             }
         }
+    }
+
+    // checks if a source key matches ^[A-Za-z0-9.\-]+$ and doesn't use a reserved prefix
+    private func isValidSourceKey(_ sourceKey: String) -> Bool {
+        guard !sourceKey.isEmpty else {
+            return false
+        }
+
+        let allowedCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: ".-"))
+        let allCharactersValid = sourceKey.unicodeScalars.allSatisfy { allowedCharacters.contains($0) }
+        guard allCharactersValid else {
+            return false
+        }
+
+        let reservedPrefixes = [
+            // built-in sources
+            "komga",
+            "kavita",
+            "local",
+            // userdefaults
+            "Flag",
+            "General",
+            "Library",
+            "Browse",
+            "History",
+            "Reader",
+            "Tracker",
+            "Tracking",
+            "AutomaticBackups",
+            "Downloads",
+            "Manga",
+            "Logs",
+            "Search",
+            "Token",
+            "Data"
+        ]
+        let usesReservedPrefix = reservedPrefixes.contains(where: { sourceKey.hasPrefix($0) })
+        guard !usesReservedPrefix else {
+            return false
+        }
+
+        return true
     }
 }
 
