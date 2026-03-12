@@ -173,6 +173,8 @@ struct SettingsTrackingView: View {
                     }
                 }
             }
+        } message: {
+            Text(NSLocalizedString("TRACKER_LOGOUT_INFO"))
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in
             loadEnhancedTrackerSources()

@@ -649,6 +649,7 @@
 "ENHANCED_TRACKERS" = "Enhanced Trackers";
 "ENHANCED_TRACKERS_INFO" = "Enhanced trackers can automatically link to items added to your library from supported sources, tracking two-way reading history.";
 "ENHANCED_TRACKERS_TOGGLE_INFO" = "Disabling tracking for a source will remove all linked trackers, and enabling will automatically link all items in your library.";
+"TRACKER_LOGOUT_INFO" = "Logging out will remove linked tracking info from this tracker for all series.";
 
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";
