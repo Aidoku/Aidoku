@@ -92,6 +92,7 @@
 	<array>
 		<string>remote-notification</string>
 		<string>processing</string>
+		<string>fetch</string>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
