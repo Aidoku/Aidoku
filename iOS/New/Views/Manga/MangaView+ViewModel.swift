@@ -441,7 +441,7 @@ extension MangaView.ViewModel {
 
         do {
             let oldManga = self.manga
-            let newManga = try await source.getMangaUpdate(
+            var newManga = try await source.getMangaUpdate(
                 manga: oldManga,
                 needsDetails: true,
                 needsChapters: true
@@ -449,63 +449,75 @@ extension MangaView.ViewModel {
 
             // update manga in db
             if inLibrary {
-                await CoreDataManager.shared.container.performBackgroundTask { [chapterLangFilter, chapterScanlatorFilter] context in
-                    guard
-                        let libraryObject = CoreDataManager.shared.getLibraryManga(
-                            sourceId: sourceKey,
-                            mangaId: mangaKey,
-                            context: context
-                        ),
-                        let mangaObject = libraryObject.manga
-                    else {
-                        return
-                    }
-
-                    // update details
-                    mangaObject.load(from: newManga)
-
-                    if let chapters = newManga.chapters {
-                        let newChapters = CoreDataManager.shared.setChapters(
-                            chapters,
-                            sourceId: sourceKey,
-                            mangaId: mangaKey,
-                            context: context
-                        )
-                        if !newChapters.isEmpty {
-                            // add manga updates
-                            for chapter in newChapters
-                            where
-                                chapterLangFilter != nil ? chapter.lang == chapterLangFilter : true
-                                && !chapterScanlatorFilter.isEmpty ? chapterScanlatorFilter.contains(chapter.scanlator ?? "") : true
-                            {
-                                CoreDataManager.shared.createMangaUpdate(
-                                    sourceId: sourceKey,
-                                    mangaId: mangaKey,
-                                    chapterObject: chapter,
-                                    context: context
-                                )
-                            }
-                            libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
-                            libraryObject.lastUpdatedChapters = Date.now
+                let resultManga: AidokuRunner.Manga? =
+                    await CoreDataManager.shared.container.performBackgroundTask { [
+                        newManga,
+                        chapterLangFilter,
+                        chapterScanlatorFilter
+                    ] context in
+                        guard
+                            let libraryObject = CoreDataManager.shared.getLibraryManga(
+                                sourceId: sourceKey,
+                                mangaId: mangaKey,
+                                context: context
+                            ),
+                            let mangaObject = libraryObject.manga
+                        else {
+                            return nil
                         }
+
+                        // update details
+                        mangaObject.load(from: newManga)
+
+                        if let chapters = newManga.chapters {
+                            let newChapters = CoreDataManager.shared.setChapters(
+                                chapters,
+                                sourceId: sourceKey,
+                                mangaId: mangaKey,
+                                context: context
+                            )
+                            if !newChapters.isEmpty {
+                                // add manga updates
+                                for chapter in newChapters
+                                where
+                                    chapterLangFilter != nil ? chapter.lang == chapterLangFilter : true
+                                    && !chapterScanlatorFilter.isEmpty ? chapterScanlatorFilter.contains(chapter.scanlator ?? "") : true
+                                {
+                                    CoreDataManager.shared.createMangaUpdate(
+                                        sourceId: sourceKey,
+                                        mangaId: mangaKey,
+                                        chapterObject: chapter,
+                                        context: context
+                                    )
+                                }
+                                libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
+                                libraryObject.lastUpdatedChapters = Date.now
+                            }
+                        }
+
+                        let now = Date.now
+                        libraryObject.lastUpdated = now
+
+                        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                            libraryObject.lastOpened = now.addingTimeInterval(1) // ensure item isn't re-pinned, since it's already open
+                        }
+
+                        try? context.save()
+
+                        return mangaObject.toNewManga()
                     }
-
-                    let now = Date.now
-                    libraryObject.lastUpdated = now
-
-                    if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-                        libraryObject.lastOpened = now.addingTimeInterval(1) // ensure item isn't re-pinned, since it's already open
-                    }
-
-                    try? context.save()
-                }
 
                 if newManga.chapters != nil {
                     await markUpdatesViewed()
                 }
-            }
 
-            NotificationCenter.default.post(name: .updateManga, object: newManga.identifier)
+                if var resultManga {
+                    resultManga.chapters = newManga.chapters
+                    newManga = resultManga
+                }
+
+                NotificationCenter.default.post(name: .updateManga, object: newManga.identifier)
+            }
 
             await loadHistory()
 

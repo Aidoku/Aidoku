@@ -5,6 +5,7 @@ disabled_rules:
   - switch_case_alignment
   - nesting
   - nslocalizedstring_key
+  - closure_parameter_position
 opt_in_rules:
   - closure_end_indentation
   - closure_spacing

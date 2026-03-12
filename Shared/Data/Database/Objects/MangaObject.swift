@@ -58,27 +58,50 @@ public class MangaObject: NSManagedObject {
         scanlatorFilter = manga.scanlatorFilter
     }
 
-    func load(from manga: AidokuRunner.Manga, sourceId: String? = nil) {
+    func load(from manga: AidokuRunner.Manga, sourceId: String? = nil, override: Bool = false) {
+        let editedKeys = EditedKeys(rawValue: editedKeys)
         id = manga.key
         self.sourceId = sourceId ?? manga.sourceKey
-        title = manga.title
-        author = manga.authors.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
-        artist = manga.artists.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
-        desc = manga.description
-        tags = manga.tags ?? []
-        cover = manga.cover
-        url = manga.url?.absoluteString
-        status = Int16(manga.status.rawValue)
-        let contentRating = manga.contentRating.rawValue
-        nsfw = Int16(contentRating > 0 ? contentRating - 1 : 0)
-        viewer = switch manga.viewer {
-            case .unknown: 0
-            case .rightToLeft: 1
-            case .leftToRight: 2
-            case .vertical: 3
-            case .webtoon: 4
+        if override || !editedKeys.contains(.title) {
+            title = manga.title
         }
-        neverUpdate = manga.updateStrategy == .never
+        if override || !editedKeys.contains(.authors) {
+            author = manga.authors.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
+        }
+        if override || !editedKeys.contains(.artists) {
+            artist = manga.artists.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }
+        }
+        if override || !editedKeys.contains(.description) {
+            desc = manga.description
+        }
+        if override || !editedKeys.contains(.tags) {
+            tags = manga.tags ?? []
+        }
+        if override || !editedKeys.contains(.cover) {
+            cover = manga.cover
+        }
+        if override || !editedKeys.contains(.url) {
+            url = manga.url?.absoluteString
+        }
+        if override || !editedKeys.contains(.status) {
+            status = Int16(manga.status.rawValue)
+        }
+        if override || !editedKeys.contains(.contentRating) {
+            let contentRating = manga.contentRating.rawValue
+            nsfw = Int16(contentRating > 0 ? contentRating - 1 : 0)
+        }
+        if override || !editedKeys.contains(.viewer) {
+            viewer = switch manga.viewer {
+                case .unknown: 0
+                case .rightToLeft: 1
+                case .leftToRight: 2
+                case .vertical: 3
+                case .webtoon: 4
+            }
+        }
+        if override || !editedKeys.contains(.neverUpdate) {
+            neverUpdate = manga.updateStrategy == .never
+        }
         nextUpdateTime = manga.nextUpdateTime.flatMap { Date(timeIntervalSince1970: TimeInterval($0)) }
     }
 
