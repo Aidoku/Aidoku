@@ -67,20 +67,24 @@ extension MangaView {
 
         private func setupNotifications() {
             NotificationCenter.default.publisher(for: .updateMangaDetails)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
-                    guard
-                        let self,
-                        let manga = output.object as? AidokuRunner.Manga,
-                        manga.sourceKey == self.manga.sourceKey,
-                        manga.key == self.manga.key
-                    else {
-                        return
+                    Task { @MainActor in
+                        guard
+                            let self,
+                            let manga = output.object as? AidokuRunner.Manga,
+                            manga.sourceKey == self.manga.sourceKey,
+                            manga.key == self.manga.key
+                        else {
+                            return
+                        }
+                        self.manga = manga
                     }
-                    self.manga = manga
                 }
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .addToLibrary)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
@@ -96,20 +100,22 @@ extension MangaView {
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .migratedManga)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
                         let migration = output.object as? (from: Manga, to: Manga),
-                        migration.from.id == self.manga.key && migration.from.sourceId == manga.sourceKey,
+                        migration.from.id == self.manga.key && migration.from.sourceId == self.manga.sourceKey,
                         let newSource = SourceManager.shared.source(for: migration.to.sourceId)
                     else { return }
                     self.source = newSource
-                    manga = migration.to.toNew()
+                    self.manga = migration.to.toNew()
                 }
                 .store(in: &cancellables)
 
             for notification in [Notification.Name.sourceLoaded, Notification.Name.sourceUnloaded] {
                 NotificationCenter.default.publisher(for: notification)
+                    .receive(on: DispatchQueue.main)
                     .sink { [weak self] output in
                         guard
                             let self,
@@ -127,7 +133,7 @@ extension MangaView {
             NotificationCenter.default.publisher(for: .updateHistory)
                 .sink { [weak self] _ in
                     guard let self else { return }
-                    Task {
+                    Task { @MainActor in
                         await self.loadHistory()
                         self.updateReadButton()
                     }
@@ -135,6 +141,7 @@ extension MangaView {
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .historyAdded)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
@@ -150,6 +157,7 @@ extension MangaView {
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .historyRemoved)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard let self else { return }
                     if let chapters = output.object as? [Chapter] {
@@ -166,6 +174,7 @@ extension MangaView {
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .historySet)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
@@ -188,7 +197,7 @@ extension MangaView {
             NotificationCenter.default.publisher(for: .syncTrackItem)
                 .sink { [weak self] output in
                     guard let self, let item = output.object as? TrackItem else { return }
-                    Task {
+                    Task { @MainActor in
                         await self.checkTrackerSync(item: item)
                     }
                 }
@@ -196,6 +205,7 @@ extension MangaView {
 
             // downloads
             NotificationCenter.default.publisher(for: .downloadsQueued)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard let self, let downloads = output.object as? [Download] else { return }
                     let chapters = downloads.compactMap {
@@ -213,6 +223,7 @@ extension MangaView {
                 .store(in: &cancellables)
 
             NotificationCenter.default.publisher(for: .downloadProgressed)
+                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
@@ -230,6 +241,7 @@ extension MangaView {
                 Notification.Name.downloadCancelled
             ] {
                 NotificationCenter.default.publisher(for: name)
+                    .receive(on: DispatchQueue.main)
                     .sink { [weak self] output in
                         self?.removeDownload(output)
                     }
@@ -241,6 +253,7 @@ extension MangaView {
                 Notification.Name.downloadsCancelled
             ] {
                 NotificationCenter.default.publisher(for: name)
+                    .receive(on: DispatchQueue.main)
                     .sink { [weak self] output in
                         self?.removeDownloads(output)
                     }

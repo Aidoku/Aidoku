@@ -53,6 +53,7 @@ extension HistoryView {
 extension HistoryView.ViewModel {
     private func setUpNotifications() {
         NotificationCenter.default.publisher(for: .updateHistory)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 // reset all cached history entries
                 guard let self else { return }
@@ -69,18 +70,20 @@ extension HistoryView.ViewModel {
                 guard
                     let self,
                     let chapters = output.object as? [Chapter]
-                else { return }
-                if chapters.count == 1, let chapter = chapters.first {
-                    // check if there's existing history to remove first
-                    let chapterCacheKey = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
-                    if
-                        self.chapterCache[chapterCacheKey] != nil
-                            || missingMangaQueue[MangaKey(sourceId: chapter.sourceId, mangaId: chapter.mangaId)] != nil
-                    {
-                        self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
-                    }
+                else {
+                    return
                 }
-                Task {
+                Task { @MainActor in
+                    if chapters.count == 1, let chapter = chapters.first {
+                        // check if there's existing history to remove first
+                        let chapterCacheKey = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
+                        if
+                            self.chapterCache[chapterCacheKey] != nil
+                                || self.missingMangaQueue[MangaKey(sourceId: chapter.sourceId, mangaId: chapter.mangaId)] != nil
+                        {
+                            self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
+                        }
+                    }
                     await self.fetchNew(count: chapters.count)
                 }
             }
@@ -90,13 +93,15 @@ extension HistoryView.ViewModel {
             .sink { [weak self] output in
                 // remove history entries
                 guard let self else { return }
-                if let chapters = output.object as? [Chapter] {
-                    for chapter in chapters {
-                        let chapterId = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
-                        self.removeStoredHistory(chapterCacheKey: chapterId)
+                Task { @MainActor in
+                    if let chapters = output.object as? [Chapter] {
+                        for chapter in chapters {
+                            let chapterId = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
+                            self.removeStoredHistory(chapterCacheKey: chapterId)
+                        }
+                    } else if let manga = output.object as? Manga {
+                        self.removeStoredHistory(mangaCacheKey: manga.key)
                     }
-                } else if let manga = output.object as? Manga {
-                    self.removeStoredHistory(mangaCacheKey: manga.key)
                 }
             }
             .store(in: &cancellables)
@@ -110,16 +115,16 @@ extension HistoryView.ViewModel {
                 else {
                     return
                 }
-                let chapterCacheKey = item.chapter.sourceId + "." + item.chapter.mangaId + "." + item.chapter.id
-                if
-                    self.chapterCache[chapterCacheKey] != nil
-                        || missingMangaQueue[MangaKey(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)] != nil
-                {
-                    // a history entry might exist already, so remove it
-                    self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
-                }
-                // add new chapter history to the top
-                Task {
+                Task { @MainActor in
+                    let chapterCacheKey = item.chapter.sourceId + "." + item.chapter.mangaId + "." + item.chapter.id
+                    if
+                        self.chapterCache[chapterCacheKey] != nil
+                            || self.missingMangaQueue[MangaKey(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)] != nil
+                    {
+                        // a history entry might exist already, so remove it
+                        self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
+                    }
+                    // add new chapter history to the top
                     await self.fetchNew(count: 1)
                 }
             }
