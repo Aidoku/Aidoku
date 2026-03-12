@@ -26,11 +26,26 @@ actor BackupManager {
 
     private static let excludedSettings = [
         "Browse.sourceLists", // stored separately
-        "General.icloudSync",
-        "currentVersion"
+        "General.icloudSync"
     ]
-    private static let excludedSettingsPrefixes = [
-        "Flag."
+    static let excludedSettingsPrefixes = [
+        "Flag",
+        "Data"
+    ]
+    static let allowedSettingsPrefixes = [
+        "General",
+        "Library",
+        "Browse",
+        "History",
+        "Reader",
+        "Tracker",
+        "Tracking",
+        "AutomaticBackups",
+        "Downloads",
+        "Manga",
+        "Logs",
+        "Search",
+        "Token"
     ]
 
     func save(backup: Backup, url: URL? = nil) {
@@ -143,13 +158,13 @@ actor BackupManager {
             } else {
                 []
             }
-            let sources = CoreDataManager.shared.getSources(context: context).compactMap {
+            let sources = SourceManager.shared.sources.compactMap {
                 $0.id
             }
             let sourceLists = options.sourceLists ? SourceManager.shared.sourceListsStrings : []
 
             let settings: [String: JsonAnyValue]? = if options.settings {
-                self.exportSettings(includeSensitive: options.sensitiveSettings)
+                self.exportSettings(includeSensitive: options.sensitiveSettings, sourceKeys: sources)
             } else {
                 nil
             }
@@ -173,7 +188,7 @@ actor BackupManager {
         }
     }
 
-    private nonisolated func exportSettings(includeSensitive: Bool) -> [String: JsonAnyValue] {
+    private nonisolated func exportSettings(includeSensitive: Bool, sourceKeys: [String]) -> [String: JsonAnyValue] {
         var allSettings = UserDefaults.standard.dictionaryRepresentation()
 
         // filter out potentially sensitive info
@@ -189,8 +204,8 @@ actor BackupManager {
         // convert to export compatible types
         for (key, value) in allSettings {
             guard
-                !Self.excludedSettings.contains(key),
-                !Self.excludedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
+                Self.allowedSettingsPrefixes.contains(where: { key.hasPrefix($0) }) || sourceKeys.contains(where: { key.hasPrefix($0) }),
+                !Self.excludedSettings.contains(key)
             else {
                 continue
             }
@@ -261,8 +276,12 @@ actor BackupManager {
         Task {
             // restore settings
             if let settings = backup.settings {
+                let sourceKeyPrefixes = SourceManager.shared.sources.map { "\($0.key)." }
                 for (key, value) in settings {
+                    let hasAllowedPrefix = Self.allowedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
+                        || sourceKeyPrefixes.contains(where: { key.hasPrefix($0) })
                     guard
+                        hasAllowedPrefix,
                         !Self.excludedSettings.contains(key),
                         !Self.excludedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
                     else {

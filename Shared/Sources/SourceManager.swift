@@ -449,28 +449,10 @@ extension SourceManager {
             return false
         }
 
-        let reservedPrefixes = [
-            // built-in sources
-            "komga",
-            "kavita",
-            "local",
-            // userdefaults
-            "Flag",
-            "General",
-            "Library",
-            "Browse",
-            "History",
-            "Reader",
-            "Tracker",
-            "Tracking",
-            "AutomaticBackups",
-            "Downloads",
-            "Manga",
-            "Logs",
-            "Search",
-            "Token",
-            "Data"
-        ]
+        let reservedPrefixes =
+            ["komga", "kavita", "local"] // built-in sources
+            + BackupManager.allowedSettingsPrefixes
+            + BackupManager.excludedSettingsPrefixes
         let usesReservedPrefix = reservedPrefixes.contains(where: { sourceKey.hasPrefix($0) })
         guard !usesReservedPrefix else {
             return false
