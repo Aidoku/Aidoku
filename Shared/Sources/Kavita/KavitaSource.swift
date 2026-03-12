@@ -102,6 +102,8 @@ extension AidokuRunner.Source {
 }
 
 actor KavitaSourceRunner: Runner {
+    static let sourceKeyPrefix = "kavita"
+
     let sourceKey: String
     let helper: KavitaHelper
 

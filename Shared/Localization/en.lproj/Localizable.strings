@@ -646,6 +646,9 @@
 "SYNC_WITH_TRACKER_INFO_%i" = "%i chapters were determined to be already read by the tracker. Would you like to update your local history to match?";
 "UNAVAILABLE_TRACKER_ITEM" = "Unavailable Tracker Item";
 "UNAVAILABLE_TRACKER_ITEM_INFO" = "This linked tracker item is associated with a tracker that is no longer available. You should either remove this item or log in to the associated tracker again.";
+"ENHANCED_TRACKERS" = "Enhanced Trackers";
+"ENHANCED_TRACKERS_INFO" = "Enhanced trackers can automatically link to items added to your library from supported sources, tracking two-way reading history.";
+"ENHANCED_TRACKERS_TOGGLE_INFO" = "Disabling tracking for a source will remove all linked trackers, and enabling will automatically link all items in your library.";
 
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Support via Ko-Fi";

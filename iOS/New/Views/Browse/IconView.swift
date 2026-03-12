@@ -40,8 +40,8 @@ struct SourceIconView: View {
         } else {
             let imageName = switch sourceId {
                 case LocalSourceRunner.sourceKey: "local"
-                case let x where x.hasPrefix("kavita"): "kavita"
-                case let x where x.hasPrefix("komga"): "komga"
+                case let x where x.hasPrefix(KomgaSourceRunner.sourceKeyPrefix): "komga"
+                case let x where x.hasPrefix(KavitaSourceRunner.sourceKeyPrefix): "kavita"
                 default: "MangaPlaceholder"
             }
             Image(imageName)

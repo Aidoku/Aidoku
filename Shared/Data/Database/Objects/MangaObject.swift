@@ -11,6 +11,9 @@ import AidokuRunner
 
 @objc(MangaObject)
 public class MangaObject: NSManagedObject {
+    var identifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: id)
+    }
 
     func load(from manga: Manga, override: Bool = false) {
         let editedKeys = EditedKeys(rawValue: editedKeys)

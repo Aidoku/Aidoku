@@ -286,8 +286,8 @@ extension SourceManager {
         password: String? = nil,
     ) async -> String {
         let keyPrefix = switch kind {
-            case .komga: "komga."
-            case .kavita: "kavita."
+            case .komga: KomgaSourceRunner.sourceKeyPrefix
+            case .kavita: KavitaSourceRunner.sourceKeyPrefix
         }
         let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
         var key = "\(keyPrefix)\(nameEncoded)"
@@ -367,9 +367,9 @@ extension SourceManager {
         }
         sources.removeAll { $0.id == source.id }
         Task {
-            if source.key.hasPrefix("komga") {
+            if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
                 await TrackerManager.komga.removeTrackItems(source: source)
-            } else if source.key.hasPrefix("kavita") {
+            } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
                 await TrackerManager.kavita.removeTrackItems(source: source)
             }
             await CoreDataManager.shared.container.performBackgroundTask { context in

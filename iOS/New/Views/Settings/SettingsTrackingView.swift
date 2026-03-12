@@ -5,6 +5,7 @@
 //  Created by Skitty on 9/19/25.
 //
 
+import AidokuRunner
 import AuthenticationServices
 import SwiftUI
 
@@ -12,6 +13,11 @@ struct SettingsTrackingView: View {
     @State private var trackers: [Tracker]
     @State private var trackersNeedingRelogin: Set<String> = []
 
+    @State private var komgaSources: [AidokuRunner.Source] = []
+    @State private var kavitaSources: [AidokuRunner.Source] = []
+    @State private var enhancedTrackingStates: [String: Bool] = [:]
+
+    @State private var loadedData = false
     @State private var loadingTrackerId: String?
     @State private var logoutTrackerName: String?
     @State private var showLogoutAlert = false
@@ -104,6 +110,43 @@ struct SettingsTrackingView: View {
                     }
                 }
             }
+
+            if !komgaSources.isEmpty || !kavitaSources.isEmpty {
+                Section {
+                    let items: [(tracker: Tracker, sources: [AidokuRunner.Source])] = [
+                        (TrackerManager.komga, komgaSources),
+                        (TrackerManager.kavita, kavitaSources)
+                    ]
+                    ForEach(items, id: \.tracker.id) { tracker, sources in
+                        if !sources.isEmpty {
+                            NavigationLink(destination: enhancedTrackerPage(name: tracker.name, sources: sources)) {
+                                HStack(spacing: 12) {
+                                    if let icon = tracker.icon {
+                                        Image(uiImage: icon)
+                                            .resizable()
+                                            .frame(width: iconSize, height: iconSize)
+                                            .clipShape(RoundedRectangle(cornerRadius: iconCornerRadius))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: iconCornerRadius)
+                                                    .strokeBorder(Color(UIColor.quaternarySystemFill), lineWidth: 1)
+                                            )
+                                    }
+                                    Text(tracker.name)
+                                        .foregroundStyle(.primary)
+                                        .tint(.primary)
+
+                                    Spacer()
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text(NSLocalizedString("ENHANCED_TRACKERS"))
+                } footer: {
+                    Text(NSLocalizedString("ENHANCED_TRACKERS_INFO"))
+                        .padding(.bottom, 8) // fix tab bar being too close to text on ios 26
+                }
+            }
         }
         .navigationTitle(NSLocalizedString("TRACKING"))
         .alert(String(format: NSLocalizedString("LOGOUT_FROM_%@"), logoutTrackerName ?? ""), isPresented: $showLogoutAlert) {
@@ -131,7 +174,12 @@ struct SettingsTrackingView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in
+            loadEnhancedTrackerSources()
+        }
         .task {
+            guard !loadedData else { return }
+
             for tracker in trackers {
                 guard let oauthTracker = tracker as? OAuthTracker else { return }
                 let needsRelogin = await oauthTracker.oauthClient.tokens?.askedForRefresh == true
@@ -139,11 +187,106 @@ struct SettingsTrackingView: View {
                     trackersNeedingRelogin.insert(tracker.id)
                 }
             }
+
+            loadEnhancedTrackerSources()
+
+            loadedData = true
         }
+    }
+
+    func enhancedTrackerPage(name: String, sources: [AidokuRunner.Source]) -> some View {
+        List {
+            Section {
+                ForEach(sources) { source in
+                    HStack(spacing: 12) {
+                        SourceIconView(sourceId: source.key, imageUrl: source.imageUrl)
+
+                        Text(source.name)
+                            .foregroundStyle(.primary)
+                            .tint(.primary)
+
+                        Spacer()
+
+                        Toggle(isOn: stateBinding(sourceKey: source.id)) {
+                            EmptyView()
+                        }
+                    }
+                }
+            } footer: {
+                Text(NSLocalizedString("ENHANCED_TRACKERS_TOGGLE_INFO"))
+            }
+        }
+        .navigationTitle(name)
     }
 }
 
 extension SettingsTrackingView {
+    func loadEnhancedTrackerSources() {
+        var komgaSources: [AidokuRunner.Source] = []
+        var kavitaSources: [AidokuRunner.Source] = []
+        for source in SourceManager.shared.sources {
+            if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
+                komgaSources.append(source)
+            } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
+                kavitaSources.append(source)
+            }
+        }
+        var enhancedTrackingStates: [String: Bool] = [:]
+        for source in (komgaSources + kavitaSources) {
+            let trackingDisabled = UserDefaults.standard.bool(forKey: "\(source.key).disableTracking")
+            enhancedTrackingStates[source.key] = !trackingDisabled
+        }
+        self.komgaSources = komgaSources
+        self.kavitaSources = kavitaSources
+        self.enhancedTrackingStates = enhancedTrackingStates
+    }
+
+    func handleEnhancedTrackingStateChange(sourceKey: String, enabled: Bool) {
+        UserDefaults.standard.set(!enabled, forKey: "\(sourceKey).disableTracking")
+        Task {
+            let tracker: EnhancedTracker
+            if sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
+                tracker = TrackerManager.komga
+            } else if sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
+                tracker = TrackerManager.kavita
+            } else {
+                return
+            }
+            if enabled {
+                // enable tracking for all items in library
+                let libraryManga = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    let manga = CoreDataManager.shared.getLibraryManga(sourceId: sourceKey, context: context)
+                    return manga.compactMap { $0.manga?.toNewManga() }
+                }
+                for manga in libraryManga {
+                    guard
+                        tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key)
+                    else {
+                        continue
+                    }
+                    do {
+                        let items = try await tracker.search(for: manga, includeNsfw: true)
+                        guard let item = items.first else {
+                            LogManager.logger.error("Unable to find track item from tracker \(tracker.id)")
+                            return
+                        }
+                        await TrackerManager.shared.register(tracker: tracker, manga: manga, item: item)
+                    } catch {
+                        LogManager.logger.error("Unable to find track item from tracker \(tracker.id): \(error)")
+                    }
+                }
+            } else {
+                // remove existing linked trackers on all items
+                guard let source = SourceManager.shared.source(for: sourceKey) else { return }
+                do {
+                    try await tracker.removeTrackItems(source: source)
+                } catch {
+                    LogManager.logger.error("Unable to remove tracker items from source: \(error)")
+                }
+            }
+        }
+    }
+
     func login(to tracker: Tracker) async {
         if let tracker = tracker as? OAuthTracker {
             guard let url = await tracker.getAuthenticationUrl() else { return }
@@ -175,6 +318,17 @@ extension SettingsTrackingView {
             }
             session.presentationContextProvider = Self.loginShimController
             session.start()
+        }
+    }
+}
+
+extension SettingsTrackingView {
+    func stateBinding(sourceKey: String) -> Binding<Bool> {
+        Binding {
+            enhancedTrackingStates[sourceKey, default: true]
+        } set: {
+            enhancedTrackingStates[sourceKey] = $0
+            handleEnhancedTrackingStateChange(sourceKey: sourceKey, enabled: $0)
         }
     }
 }

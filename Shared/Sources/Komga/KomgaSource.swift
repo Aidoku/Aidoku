@@ -84,6 +84,8 @@ extension AidokuRunner.Source {
 }
 
 actor KomgaSourceRunner: Runner {
+    static let sourceKeyPrefix = "komga"
+
     let sourceKey: String
     let helper: KomgaHelper
 

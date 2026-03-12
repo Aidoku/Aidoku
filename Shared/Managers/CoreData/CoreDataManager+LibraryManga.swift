@@ -15,7 +15,7 @@ extension CoreDataManager {
         clear(request: LibraryMangaObject.fetchRequest(), context: context)
     }
 
-    /// Get a particular library object.
+    /// Get library objects from a particular source.
     func getLibraryManga(sourceId: String, context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
         let context = context ?? self.context
         let request = LibraryMangaObject.fetchRequest()

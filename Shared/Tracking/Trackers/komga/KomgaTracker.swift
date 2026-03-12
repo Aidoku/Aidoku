@@ -78,7 +78,7 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
     }
 
     func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix("komga")
+        sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
