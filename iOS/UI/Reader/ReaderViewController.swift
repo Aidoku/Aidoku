@@ -1067,6 +1067,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
 // MARK: - Tap Zones
 extension ReaderViewController {
+    private enum ReaderControlTapZoneConstants {
+        static let minimumTapZoneHeight: CGFloat = 44
+    }
+
     func updateTapZone() {
         let enabledTapZone = UserDefaults.standard.string(forKey: "Reader.tapZones")
         let tapZone: TapZone? = switch enabledTapZone {
@@ -1101,6 +1105,11 @@ extension ReaderViewController {
         if #available(iOS 18.0, *),
            overlayModeEnabled,
            reader?.dismissActiveDictionaryOverlay() == true {
+            return
+        }
+
+        if singleTapLookupEnabled, isReaderControlToggleTapZone(point) {
+            toggleBarVisibility()
             return
         }
 
@@ -1161,6 +1170,34 @@ extension ReaderViewController {
             if singleTapLookupEnabled { return }
             toggleBarVisibility()
         }
+    }
+
+    private func isReaderControlToggleTapZone(_ point: CGPoint) -> Bool {
+        let topZoneHeight = readerControlTopTapZoneHeight
+        if point.y <= topZoneHeight {
+            return true
+        }
+
+        let bottomZoneMinY = view.bounds.height - readerControlBottomTapZoneHeight
+        return point.y >= bottomZoneMinY
+    }
+
+    private var readerControlTopTapZoneHeight: CGFloat {
+        let safeTop = view.safeAreaInsets.top
+        let navigationBarHeight = navigationController?.navigationBar.bounds.height ?? 0
+        return max(
+            ReaderControlTapZoneConstants.minimumTapZoneHeight,
+            safeTop + navigationBarHeight
+        )
+    }
+
+    private var readerControlBottomTapZoneHeight: CGFloat {
+        let safeBottom = view.safeAreaInsets.bottom
+        let toolbarHeight = navigationController?.toolbar.bounds.height ?? 0
+        return max(
+            ReaderControlTapZoneConstants.minimumTapZoneHeight,
+            safeBottom + toolbarHeight
+        )
     }
 }
 
