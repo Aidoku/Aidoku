@@ -8,24 +8,16 @@
 import UIKit
 
 class DoubleBadgeView: UIView {
-    var badgeNumber: Int {
-        get {
-            Int(badgeLabel.text ?? "") ?? 0
-        }
-        set {
-            badgeLabel.text = newValue == 0 ? nil : String(newValue)
-            badgeView.isHidden = badgeLabel.text == nil
+    var badgeNumber: Int = 0 {
+        didSet {
+            badgeLabel.text = badgeNumber == 0 ? nil : String(badgeNumber)
             updateLayout()
         }
     }
 
-    var badgeNumber2: Int {
-        get {
-            Int(badgeLabel2.text ?? "") ?? 0
-        }
-        set {
-            badgeLabel2.text = newValue == 0 ? nil : String(newValue)
-            badgeView2.isHidden = badgeLabel2.text == nil
+    var badgeNumber2: Int = 0 {
+        didSet {
+            badgeLabel2.text = badgeNumber2 == 0 ? nil : String(badgeNumber2)
             updateLayout()
         }
     }
@@ -141,7 +133,6 @@ class DoubleBadgeView: UIView {
             badgeConstraints = [
                 badgeView2.leadingAnchor.constraint(equalTo: badgeView.trailingAnchor)
             ]
-            NSLayoutConstraint.activate(badgeConstraints)
         } else if badgeNumber > 0 {
             // only first badge visible
             badgeView.isHidden = false
@@ -150,7 +141,6 @@ class DoubleBadgeView: UIView {
             badgeConstraints = [
                 badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
             ]
-            NSLayoutConstraint.activate(badgeConstraints)
         } else if badgeNumber2 > 0 {
             // only second badge visible
             badgeView.isHidden = true
@@ -159,15 +149,14 @@ class DoubleBadgeView: UIView {
             badgeConstraints = [
                 badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
             ]
-            NSLayoutConstraint.activate(badgeConstraints)
         } else {
             badgeView.isHidden = true
             badgeView2.isHidden = true
             badgeConstraints = [
                 badgeView2.leadingAnchor.constraint(equalTo: leadingAnchor)
             ]
-            NSLayoutConstraint.activate(badgeConstraints)
         }
+        NSLayoutConstraint.activate(badgeConstraints)
         invalidateIntrinsicContentSize()
     }
 }

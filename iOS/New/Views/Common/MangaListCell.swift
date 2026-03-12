@@ -196,7 +196,7 @@ extension MangaListCell {
         if editing {
             selectionView.setSelected(false, animated: false)
         }
-        let shouldShowBadge = editing ? false : badgeView.badgeNumber > 0 || badgeView.badgeNumber2 > 2
+        let shouldShowBadge = editing ? false : badgeView.badgeNumber > 0 || badgeView.badgeNumber2 > 0
         if animated {
             if editing {
                 self.selectionView.isHidden = false
