@@ -13,7 +13,9 @@ extension TextRecognizer {
     func analyze(_ image: UIImage) async {
         guard let cgImage = image.cgImage else { return }
         let preprocessedImage = preprocessForOCR(cgImage)
-        observations = await recognizeObservations(in: preprocessedImage)
+        let recognizedObservations = await recognizeObservations(in: preprocessedImage)
+        guard !Task.isCancelled else { return }
+        observations = recognizedObservations
         rebuildClusterCache()
 #if DEBUG
         debugDumpClusters()
@@ -139,14 +141,11 @@ enum DictionaryTextAnalysisScheduler {
             return
         }
 
-        if recognizer == nil {
-            recognizer = TextRecognizer()
-        }
-        recognizer?.reset()
-        let currentRecognizer = recognizer
-        task = Task { [weak currentRecognizer] in
-            guard !Task.isCancelled, let currentRecognizer else { return }
-            await currentRecognizer.analyze(image)
+        let runRecognizer = TextRecognizer()
+        recognizer = runRecognizer
+        task = Task { [weak runRecognizer] in
+            guard !Task.isCancelled, let runRecognizer else { return }
+            await runRecognizer.analyze(image)
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 onFinish()
