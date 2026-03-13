@@ -325,6 +325,20 @@
 "PAUSE" = "Pausieren";
 "RESUME" = "Fortfahren";
 "WARNING" = "Warnung";
+"TEXT_READER" = "Textansicht";
+"TEXT_READER_STYLE" = "Lesemodus";
+"TEXT_READER_PAGED" = "Seitenweise";
+"TEXT_READER_SCROLL" = "Scrollen";
+"TEXT_FONT_FAMILY" = "Schriftart";
+"TEXT_FONT_SIZE" = "Schriftgröße";
+"TEXT_LINE_SPACING" = "Zeilenabstand";
+"TEXT_HORIZONTAL_PADDING" = "Seitenrand";
+"NEXT_CHAPTER" = "Nächstes Kapitel";
+"PREVIOUS_CHAPTER" = "Vorheriges Kapitel";
+"SWIPE_TO_CONTINUE" = "Wischen zum Weiterlesen";
+"SWIPE_TO_GO_BACK" = "Wischen zum Zurückgehen";
+"END_OF_MANGA" = "Du hast das Ende erreicht";
+"START_OF_MANGA" = "Das ist das erste Kapitel";
 
 // Manga Updates
 "MANGA_UPDATES" = "Updates";

@@ -170,6 +170,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarboxOrientation": "both",
                 "Reader.orientation": "device",
 
+                // Text Reader defaults
+                "Reader.textReaderStyle": "scroll",
+                "Reader.textFontFamily": "System",
+                "Reader.textFontSize": 18,
+                "Reader.textLineSpacing": 8,
+                "Reader.textHorizontalPadding": 24,
+
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,
 
