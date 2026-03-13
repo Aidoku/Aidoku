@@ -74,6 +74,8 @@
 
 // Manga
 "UNTITLED" = "无标题";
+"EXPAND_TAGS" = "展开";
+"COLLAPSE_TAGS" = "收起";
 "ONGOING" = "连载中";
 "CANCELLED" = "已取消";
 "COMPLETED" = "已完结";
