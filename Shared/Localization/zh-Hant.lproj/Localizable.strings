@@ -3,6 +3,8 @@
 "OK" = "確認";
 "RESET" = "重置";
 "DELETE" = "刪除";
+"EXPAND_TAGS" = "展開";
+"COLLAPSE_TAGS" = "收起";
 "REMOVE" = "移除";
 "RENAME" = "重新命名";
 "CLEAR" = "清除";

@@ -48,6 +48,7 @@ struct MangaDetailsHeaderView: View {
     @State private var longHeldSafari = false
     @State private var isTracking = false
     @State private var hasAvailableTrackers = false
+    @State private var tagsExpanded = false
 
     static let coverWidth: CGFloat = 114
 
@@ -364,30 +365,59 @@ struct MangaDetailsHeaderView: View {
     @ViewBuilder
     var tagsView: some View {
         if let tags = manga.tags, !tags.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(manga.tags ?? [], id: \.self) { tag in
-                        let label = TagView(text: tag)
-                        if let source, let filter = source.matchingGenreFilter(for: tag) {
-                            Button {
-                                let viewController = MangaListViewController(source: source, title: tag)
-                                viewController.getEntries = { page in
-                                    try await source.getSearchMangaList(query: nil, page: page, filters: [
-                                        filter
-                                    ])
-                                }
-                                path.push(viewController)
-                            } label: {
-                                label
+            let maxCollapsedTags = 10
+            let displayTags = tagsExpanded ? tags : Array(tags.prefix(maxCollapsedTags))
+            let shouldShowButton = tags.count > maxCollapsedTags
+
+            VStack(alignment: .leading, spacing: 6) {
+                WrappingHStack(displayTags, id: \.self) { tagText in
+                    let label = TagView(text: tagText)
+                    if let source, let filter = source.matchingGenreFilter(for: tagText) {
+                        Button {
+                            let viewController = MangaListViewController(source: source, title: tagText)
+                            viewController.getEntries = { page in
+                                try await source.getSearchMangaList(query: nil, page: page, filters: [
+                                    filter
+                                ])
                             }
-                        } else {
+                            path.push(viewController)
+                        } label: {
                             label
                         }
+                        .buttonStyle(.borderless)
+                        .padding([.trailing, .bottom], 8)
+                    } else {
+                        label
+                            .padding([.trailing, .bottom], 8)
                     }
                 }
-                .padding(.horizontal, 20)
+
+                if shouldShowButton {
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                tagsExpanded.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "chevron.down")
+                                    .rotationEffect(.degrees(tagsExpanded ? 180 : 0))
+                                    .animation(.easeInOut(duration: 0.18), value: tagsExpanded)
+                                    .font(.caption)
+                                Text(LocalizedStringKey(tagsExpanded ? "COLLAPSE_TAGS" : "EXPAND_TAGS"))
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+
+                        Spacer()
+                    }
+                }
             }
-            .padding(.bottom, 16)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 6)
+            .padding(.bottom, 8)
         }
     }
 
