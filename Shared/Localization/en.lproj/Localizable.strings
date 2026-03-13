@@ -558,8 +558,7 @@
 "SINGLE_TAP" = "Single Tap";
 "LONG_PRESS" = "Long Press";
 "LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS" = "Locked by Lookup Gesture: Long Press.";
-"LOOKUP_GESTURE_LOCKS_DOUBLE_TAP_ZOOM" = "Locked by Lookup Gesture: Single Tap.";
-"LOOKUP_GESTURE_SINGLE_TAP_HINT" = "Single tap is used for lookup. Double tap to show or hide reader bars.";
+"LOOKUP_GESTURE_SINGLE_TAP_HINT" = "Single tap is used for lookup. Tap top or bottom edge to show or hide reader bars.";
 "DICTIONARY_TEXT_OVERLAY_MODE" = "OCR Text Overlay";
 "DICTIONARY_TEXT_OVERLAY_MODE_INFO" = "Shows OCR text boxes on image regions. Tap a box to look up that text.";
 "DICTIONARY_OVERLAY_PADDING" = "Overlay Padding";
