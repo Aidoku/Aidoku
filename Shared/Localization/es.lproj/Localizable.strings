@@ -660,3 +660,13 @@
 "PIN_TITLES" = "Fijar títulos";
 "PIN_DISABLED" = "Desactivado";
 "PIN_UPDATED_CHAPTERS" = "Capítulos actualizados";
+"EDIT" = "Editar";
+"CATEGORY" = "Categoría";
+"UNCATEGORIZED" = "Sin categoría";
+"FILTER_GROUPS" = "Grupos de filtros";
+"CREATE_FILTER_GROUP" = "Crear grupo de filtros";
+"EDIT_FILTER_GROUP" = "Editar grupo de filtros";
+"SAVE" = "Buscar";
+"SAVED_SEARCHES" = "Búsquedas guardadas";
+"SAVED_SEARCH_NAME" = "Nombre";
+"CLEAR_FILTERS" = "Borrar filtros";
