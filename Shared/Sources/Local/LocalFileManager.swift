@@ -22,7 +22,7 @@ actor LocalFileManager {
     private var scanTask: Task<Void, Never>?
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
-    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic"])
+    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif"])
 
     private var localFolderFileDescriptor: CInt?
     private var localFolderSource: DispatchSourceFileSystemObject?
