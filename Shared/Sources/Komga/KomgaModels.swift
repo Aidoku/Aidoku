@@ -341,6 +341,14 @@ extension KomgaSeries {
             case .unknown: .unknown
         }
 
+        // genres first (sorted), then series tags (sorted), then book-only tags (sorted)
+        let genres = metadata.genres.filter { !$0.isEmpty }.sorted()
+        let seriesTags = metadata.tags.filter { !$0.isEmpty }.sorted()
+        let bookTags = booksMetadata.tags.filter { !$0.isEmpty }
+        let seriesSet = Set(seriesTags)
+        let bookOnly = Set(bookTags).subtracting(seriesSet).sorted()
+        let tags = genres + seriesTags + bookOnly
+
         return .init(
             sourceKey: sourceKey,
             key: id,
@@ -363,7 +371,7 @@ extension KomgaSeries {
             description: (metadata.summary.isEmpty ? booksMetadata.summary : metadata.summary)?
                 .replacingOccurrences(of: "\n", with: "  \n"),
             url: URL(string: "series/\(id)", relativeTo: baseUrl),
-            tags: (oneshot == true ? (metadata.genres + booksMetadata.tags) : (metadata.genres + metadata.tags)).sorted(),
+            tags: tags,
             status: status,
             contentRating: contentRating,
             viewer: viewer,
