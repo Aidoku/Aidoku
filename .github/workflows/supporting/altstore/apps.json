@@ -42,7 +42,8 @@
           "com.apple.developer.icloud-container-identifiers",
           "com.apple.developer.icloud-services",
           "com.apple.developer.ubiquity-container-identifiers",
-          "com.apple.developer.ubiquity-kvstore-identifier"
+          "com.apple.developer.ubiquity-kvstore-identifier",
+          "com.apple.developer.user-fonts"
         ],
         "privacy": {
           "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
