@@ -235,7 +235,6 @@
 "SINGLE_PAGE" = "单页";
 "PAGED" = "分页";
 "DOUBLE_PAGE" = "双页";
-"ISOLATE_FIRST_PAGE" = "首页总是单独显示";
 "SPLIT_WIDE_IMAGES" = "切割宽图";
 "REVERSE_SPLIT_ORDER" = "交换切割顺序";
 "MULTI_LANGUAGE" = "多语言";

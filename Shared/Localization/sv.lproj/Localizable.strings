@@ -627,7 +627,6 @@
 "READING_SESSIONS" = "Lästillfällen";
 "CLEAR_SOURCE_CACHE" = "Rensa källcache";
 "CLEAR_SOURCE_CACHE_TEXT" = "Cachad nätverksdata för källornas adresser kommer att rensas. Detta kan leda till tillfälligt längre laddningstider.";
-"ISOLATE_FIRST_PAGE" = "Isolera alltid första sidan";
 "SPLIT_WIDE_IMAGES" = "Dela breda bilder";
 "REVERSE_SPLIT_ORDER" = "Omvänd delningsordning";
 "TRACKING" = "Spårning";

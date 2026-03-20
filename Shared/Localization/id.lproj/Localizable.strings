@@ -471,7 +471,6 @@
 "CLEAR_EXCLUDING_LIBRARY_TEXT" = "Tindakan ini tidak dapat dibatalkan. Semua riwayat pembacaan kecuali perpustakaan akan dihapus.";
 "CLEAR_SOURCE_CACHE" = "Hapus Cache Sumber";
 "CLEAR_SOURCE_CACHE_TEXT" = "Data jaringan yang disimpan untuk URL sumber akan dihapus. Hal ini dapat menyebabkan waktu muat yang lebih lama secara sementara.";
-"ISOLATE_FIRST_PAGE" = "Selalu Isolasi Halaman Pertama";
 "TRACK_COMPLETED" = "Selesai";
 "TITLE_DISPLAY_MODE" = "Mode Tampilan Judul";
 "OEL" = "OEL";

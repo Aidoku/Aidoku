@@ -63,6 +63,7 @@ class ReaderPageViewController: BaseObservingViewController {
             zoomView?.zoomEnabled = !(isInDoublePageController)
         }
     }
+    var doublePageRestorationConstraints: [NSLayoutConstraint] = []
 
     /// Callback when image aspect ratio is updated
     var onAspectRatioUpdated: (() -> Void)?
@@ -156,7 +157,7 @@ class ReaderPageViewController: BaseObservingViewController {
         loadPageBackground() // fix page background resetting on system appearance change
     }
 
-    func setPage(_ page: Page, sourceId: String? = nil) {
+    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) {
         guard !pageSet, let pageView else { return }
         pageSet = true
         self.page = page
@@ -164,7 +165,7 @@ class ReaderPageViewController: BaseObservingViewController {
         reloadButton.isHidden = true
         zoomView?.zoomEnabled = false
         Task {
-            let result = await pageView.setPage(page, sourceId: sourceId)
+            let result = await pageView.setPage(page, sourceId: sourceId, skipProcessing: skipProcessing)
             zoomView?.zoomEnabled = result && !isInDoublePageController
             reloadButton.isHidden = result
 

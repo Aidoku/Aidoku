@@ -551,7 +551,6 @@
 "NAME" = "Ime";
 "DATE" = "Datum";
 "BACKUP_INFO_TITLE" = "Informacije o sigurnosnoj kopiji";
-"ISOLATE_FIRST_PAGE" = "Uvijek izoliraj prvu stranicu";
 "TITLE_DISPLAY_MODE" = "Modus prikaza naslova";
 "UPDATE_AFTER_READING" = "Aktualiziraj nakon čitanja";
 "UPDATE_AFTER_READING_INFO" = "Nakon čitanja poglavlja, aktualiziraj praćenje kako bi odgovaralo trenutačno pročitanom poglavlju i/ili svesku.";

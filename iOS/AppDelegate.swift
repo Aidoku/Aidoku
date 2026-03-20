@@ -161,7 +161,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.backgroundColor": "black",
                 "Reader.pagesToPreload": 2,
                 "Reader.pagedPageLayout": "auto",
-                "Reader.pagedIsolateFirstPage": false,
+                "Reader.pagedPageOffset": false,
                 "Reader.splitWideImages": false,
                 "Reader.reverseSplitOrder": false,
                 "Reader.verticalInfiniteScroll": true,

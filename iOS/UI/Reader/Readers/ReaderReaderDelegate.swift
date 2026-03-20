@@ -16,8 +16,15 @@ protocol ReaderReaderDelegate: UIViewController {
 
     func moveLeft()
     func moveRight()
+    func toggleOffset()
 
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
+}
+
+extension ReaderReaderDelegate {
+    func toggleOffset() {
+        // do nothing by default
+    }
 }

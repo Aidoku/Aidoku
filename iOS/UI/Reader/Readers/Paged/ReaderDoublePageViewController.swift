@@ -34,6 +34,7 @@ class ReaderDoublePageViewController: BaseViewController {
     private var secondPageSet = false
     private var firstPage: Page?
     private var secondPage: Page?
+    private var pageLayoutConstraints: [NSLayoutConstraint] = []
 
     init(firstPage: ReaderPageViewController, secondPage: ReaderPageViewController, direction: Direction) {
         self.firstPageController = firstPage
@@ -54,26 +55,6 @@ class ReaderDoublePageViewController: BaseViewController {
         pageStack.translatesAutoresizingMaskIntoConstraints = false
         zoomView.addSubview(pageStack)
         zoomView.zoomView = pageStack
-
-        guard
-            let firstPageView = firstPageController.pageView,
-            let secondPageView = secondPageController.pageView
-        else {
-            return
-        }
-
-        firstPageView.translatesAutoresizingMaskIntoConstraints = false
-
-        if direction == .ltr {
-            pageStack.addArrangedSubview(firstPageView)
-        }
-
-        secondPageView.translatesAutoresizingMaskIntoConstraints = false
-        pageStack.addArrangedSubview(secondPageView)
-
-        if direction == .rtl {
-            pageStack.addArrangedSubview(firstPageView)
-        }
 
         firstReloadButton.isHidden = true
         firstReloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
@@ -112,7 +93,7 @@ class ReaderDoublePageViewController: BaseViewController {
             return
         }
 
-        NSLayoutConstraint.activate([
+        pageLayoutConstraints = [
             firstPageView.widthAnchor.constraint(equalTo: firstPageView.imageView.widthAnchor),
             firstPageView.heightAnchor.constraint(equalTo: pageStack.heightAnchor),
             secondPageView.widthAnchor.constraint(equalTo: secondPageView.imageView.widthAnchor),
@@ -123,7 +104,68 @@ class ReaderDoublePageViewController: BaseViewController {
 
             secondReloadButton.centerXAnchor.constraint(equalTo: secondPageView.centerXAnchor),
             secondReloadButton.centerYAnchor.constraint(equalTo: secondPageView.centerYAnchor)
-        ])
+        ]
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard
+            let firstPageView = firstPageController.pageView,
+            let secondPageView = secondPageController.pageView
+        else { return }
+
+        firstPageController.zoomView?.setZoomScale(1, animated: false)
+        secondPageController.zoomView?.setZoomScale(1, animated: false)
+
+        if
+            !firstPageView.isDescendant(of: pageStack)
+                || !secondPageView.isDescendant(of: pageStack)
+        {
+            for view in pageStack.arrangedSubviews {
+                pageStack.removeArrangedSubview(view)
+                view.removeFromSuperview()
+            }
+
+            for controller in [firstPageController, secondPageController] {
+                NSLayoutConstraint.deactivate(controller.doublePageRestorationConstraints)
+                controller.doublePageRestorationConstraints = []
+                if let pageView = controller.pageView, pageView.superview !== pageStack {
+                    pageView.removeFromSuperview()
+                }
+                controller.isInDoublePageController = true
+            }
+
+            let orderedViews = direction == .ltr
+                ? [firstPageView, secondPageView]
+                : [secondPageView, firstPageView]
+            for view in orderedViews {
+                pageStack.addArrangedSubview(view)
+            }
+        }
+        NSLayoutConstraint.activate(pageLayoutConstraints)
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NSLayoutConstraint.deactivate(pageLayoutConstraints)
+        for controller in [firstPageController, secondPageController] {
+            guard
+                let pageView = controller.pageView,
+                let zoomView = controller.zoomView,
+                pageView.isDescendant(of: pageStack)
+            else { continue }
+            controller.isInDoublePageController = false
+            pageStack.removeArrangedSubview(pageView)
+            pageView.removeFromSuperview()
+            zoomView.addSubview(pageView)
+            pageView.translatesAutoresizingMaskIntoConstraints = false
+            let constraints = [
+                pageView.widthAnchor.constraint(equalTo: zoomView.widthAnchor),
+                pageView.heightAnchor.constraint(equalTo: zoomView.heightAnchor)
+            ]
+            NSLayoutConstraint.activate(constraints)
+            controller.doublePageRestorationConstraints = constraints
+        }
     }
 
     // TODO: fix `SWIFT TASK CONTINUATION MISUSE: setPageImage(url:sourceId:) leaked its continuation!`

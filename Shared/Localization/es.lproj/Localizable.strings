@@ -630,7 +630,6 @@
 "READING_SESSIONS" = "Sesiones de lectura";
 "CLEAR_SOURCE_CACHE" = "Borrar caché de fuentes";
 "CLEAR_SOURCE_CACHE_TEXT" = "Se borrarán los datos de red almacenados en caché de las URL de las fuentes. Esto puede provocar un aumento temporal en los tiempos de carga.";
-"ISOLATE_FIRST_PAGE" = "Siempre aislar la primera página";
 "SPLIT_WIDE_IMAGES" = "Dividir imágenes anchas";
 "REVERSE_SPLIT_ORDER" = "Orden de división inverso";
 "TITLE_DISPLAY_MODE" = "Modo de visualización del título";

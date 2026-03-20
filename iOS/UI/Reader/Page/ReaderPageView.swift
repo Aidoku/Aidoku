@@ -31,6 +31,10 @@ class ReaderPageView: UIView {
     private var imageTask: ImageTask?
     private var sourceId: String?
     private var shouldShowLiveTextButton = false
+    @available(iOS 16.0, *)
+    private static let sharedImageAnalyzer = ImageAnalyzer()
+    private var liveTextTask: Task<Void, Never>?
+    private var liveTextGeneration = 0
 
     private var completion: ((Bool) -> Void)?
 
@@ -88,18 +92,29 @@ class ReaderPageView: UIView {
         ])
     }
 
-    func setPage(_ page: Page, sourceId: String? = nil) async -> Bool {
+    func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) async -> Bool {
         // Store current page data for reload functionality
         self.currentPage = page
 
         if sourceId != nil {
             self.sourceId = sourceId
         }
+        cancelLiveTextAnalysis()
 
-        if let image = page.image {
+        if var image = page.image {
+            if !skipProcessing {
+                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+                    image = CropBordersProcessor().process(image) ?? image
+                }
+                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+                    image = DownsampleProcessor(width: UIScreen.main.bounds.width).process(image) ?? image
+                } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+                    image = UpscaleProcessor().process(image) ?? image
+                }
+            }
             imageView.image = image
             fixImageSize()
-            await analyzeLiveText()
+            startLiveTextAnalysis()
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
@@ -216,7 +231,7 @@ class ReaderPageView: UIView {
                 imageView.animate(withGIFData: data)
             }
             fixImageSize()
-            await analyzeLiveText()
+            startLiveTextAnalysis()
             completion?(true)
             return true
         } catch {
@@ -241,7 +256,7 @@ class ReaderPageView: UIView {
                             imageView.animate(withGIFData: data)
                         }
                         fixImageSize()
-                        await analyzeLiveText()
+                        startLiveTextAnalysis()
                         completion?(true)
                         return true
                     }
@@ -274,7 +289,7 @@ class ReaderPageView: UIView {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
             fixImageSize()
-            await analyzeLiveText()
+            startLiveTextAnalysis()
             return true
         }
 
@@ -311,7 +326,7 @@ class ReaderPageView: UIView {
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
         imageView.image = image
         fixImageSize()
-        await analyzeLiveText()
+        startLiveTextAnalysis()
 
         return true
     }
@@ -336,7 +351,7 @@ class ReaderPageView: UIView {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
             imageView.image = imageContainer?.image
             fixImageSize()
-            await analyzeLiveText()
+            startLiveTextAnalysis()
             return true
         }
 
@@ -406,7 +421,7 @@ class ReaderPageView: UIView {
             imageView.animate(withGIFData: result.data)
         }
         fixImageSize()
-        await analyzeLiveText()
+        startLiveTextAnalysis()
 
         return true
     }
@@ -478,16 +493,14 @@ class ReaderPageView: UIView {
         }
     }
 
-    private func analyzeLiveText() async {
+    func clearLiveTextSelection() {
         if #available(iOS 16.0, *) {
-            guard let image = imageView.image else {
-                imageAnalaysisInteraction?.analysis = nil
-                return
-            }
-            let analyzer = ImageAnalyzer()
-            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
-            imageAnalaysisInteraction?.analysis = analysis
-            imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
+            guard let interaction = imageAnalaysisInteraction else { return }
+            interaction.resetTextSelection()
+            guard let analysis = interaction.analysis else { return }
+            interaction.analysis = nil
+            interaction.analysis = analysis
+            interaction.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
         }
     }
 
@@ -498,6 +511,36 @@ class ReaderPageView: UIView {
             guard imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
             imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
         }
+    }
+
+    // use Task to run LiveText analysis to prevent wide image jumps
+    private func startLiveTextAnalysis() {
+        if #available(iOS 16.0, *) {
+            guard imageAnalaysisInteraction != nil, let image = imageView.image else { return }
+            liveTextGeneration += 1
+            let generation = liveTextGeneration
+            liveTextTask?.cancel()
+            liveTextTask = Task { [weak self] in
+                guard !Task.isCancelled else { return }
+                let analysis = try? await Self.sharedImageAnalyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    guard let self, generation == self.liveTextGeneration else { return }
+                    self.imageAnalaysisInteraction?.analysis = analysis
+                    if analysis != nil {
+                        self.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !self.shouldShowLiveTextButton
+                    }
+                }
+            }
+        }
+    }
+
+    private func cancelLiveTextAnalysis() {
+        liveTextGeneration += 1
+        liveTextTask?.cancel()
+        liveTextTask = nil
+        guard #available(iOS 16.0, *) else { return }
+        imageAnalaysisInteraction?.analysis = nil
     }
 }
 
@@ -550,33 +593,22 @@ extension ReaderPageView {
     }
 
     /// Splits the current image into left and right halves
-    func splitImage() -> (left: UIImage?, right: UIImage?) {
-        guard let image = imageView.image else { return (nil, nil) }
+    func splitImage() -> (left: UIImage, right: UIImage)? {
+        guard let image = imageView.image, let cgImage = image.cgImage else { return nil }
+        let splitX = CGFloat(cgImage.width) / 2
+        let height = CGFloat(cgImage.height)
+        guard
+            let leftCGImage = cgImage.cropping(
+                to: CGRect(x: 0, y: 0, width: splitX, height: height)
+            ),
+            let rightCGImage = cgImage.cropping(
+                to: CGRect(x: splitX, y: 0, width: splitX, height: height)
+            )
+        else { return nil }
 
-        let imageSize = image.size
-        let imageScale = image.scale
-
-        // Calculate the split point (middle of the image)
-        let splitX = imageSize.width / 2
-
-        // Create left half rect
-        let leftRect = CGRect(x: 0, y: 0, width: splitX, height: imageSize.height)
-
-        // Create right half rect
-        let rightRect = CGRect(x: splitX, y: 0, width: splitX, height: imageSize.height)
-
-        // Extract left half
-        guard let leftCGImage = image.cgImage?.cropping(to: leftRect) else {
-            return (nil, nil)
-        }
-        let leftImage = UIImage(cgImage: leftCGImage, scale: imageScale, orientation: image.imageOrientation)
-
-        // Extract right half
-        guard let rightCGImage = image.cgImage?.cropping(to: rightRect) else {
-            return (nil, nil)
-        }
-        let rightImage = UIImage(cgImage: rightCGImage, scale: imageScale, orientation: image.imageOrientation)
-
-        return (leftImage, rightImage)
+        return (
+            UIImage(cgImage: leftCGImage, scale: image.scale, orientation: image.imageOrientation),
+            UIImage(cgImage: rightCGImage, scale: image.scale, orientation: image.imageOrientation)
+        )
     }
 }

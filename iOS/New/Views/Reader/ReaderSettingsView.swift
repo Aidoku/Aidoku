@@ -287,11 +287,12 @@ struct ReaderSettingsView: View {
                                     ))
                                 )
                             )
+                            let pageOffsetKey = "Reader.pagedPageOffset.\(mangaId)"
                             SettingView(
                                 setting: .init(
-                                    key: "Reader.pagedIsolateFirstPage",
-                                    title: NSLocalizedString("ISOLATE_FIRST_PAGE"),
-                                    notification: .init("Reader.pagedIsolateFirstPage"),
+                                    key: pageOffsetKey,
+                                    title: NSLocalizedString("PAGE_OFFSET"),
+                                    notification: .init(pageOffsetKey),
                                     value: .toggle(.init())
                                 )
                             )

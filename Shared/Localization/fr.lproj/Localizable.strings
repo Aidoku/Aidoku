@@ -525,7 +525,6 @@
 "NAME" = "Nom";
 "DATE" = "Date";
 "CLEAR_SOURCE_CACHE_TEXT" = "Les données réseau mises en cache pour l’URL (ou les URL) de la source seront effacées. Cela peut entraîner une augmentation temporaire des temps de chargement.";
-"ISOLATE_FIRST_PAGE" = "Toujours afficher la première page séparément";
 "SPLIT_WIDE_IMAGES" = "Scinder les images trop larges";
 "REVERSE_SPLIT_ORDER" = "Inverser l’ordre de découpe";
 "TITLE_DISPLAY_MODE" = "Mode d’affichage du titre";
