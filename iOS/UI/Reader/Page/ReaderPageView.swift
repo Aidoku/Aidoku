@@ -515,21 +515,25 @@ class ReaderPageView: UIView {
 
     // use Task to run LiveText analysis to prevent wide image jumps
     private func startLiveTextAnalysis() {
-        if #available(iOS 16.0, *) {
-            guard imageAnalaysisInteraction != nil, let image = imageView.image else { return }
-            liveTextGeneration += 1
-            let generation = liveTextGeneration
-            liveTextTask?.cancel()
-            liveTextTask = Task { [weak self] in
-                guard !Task.isCancelled else { return }
-                let analysis = try? await Self.sharedImageAnalyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    guard let self, generation == self.liveTextGeneration else { return }
-                    self.imageAnalaysisInteraction?.analysis = analysis
-                    if analysis != nil {
-                        self.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !self.shouldShowLiveTextButton
-                    }
+        guard
+            #available(iOS 16.0, *),
+            imageAnalaysisInteraction != nil,
+            let image = imageView.image
+        else {
+            return
+        }
+        liveTextGeneration += 1
+        let generation = liveTextGeneration
+        liveTextTask?.cancel()
+        liveTextTask = Task { [weak self] in
+            guard !Task.isCancelled else { return }
+            let analysis = try? await Self.sharedImageAnalyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard let self, generation == self.liveTextGeneration else { return }
+                self.imageAnalaysisInteraction?.analysis = analysis
+                if analysis != nil {
+                    self.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !self.shouldShowLiveTextButton
                 }
             }
         }

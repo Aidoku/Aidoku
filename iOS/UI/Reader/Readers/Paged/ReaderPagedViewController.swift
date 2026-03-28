@@ -92,7 +92,7 @@ class ReaderPagedViewController: BaseObservingViewController {
         addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
             // clear pages that aren't in the preload range if we get a memory warning
             LogManager.logger.warn("Received memory warning")
-            Self.clearSplitPageStore()
+            Self.clearSplitPageCache()
             guard
                 let self,
                 let viewController = pageViewController.viewControllers?.first,
@@ -110,12 +110,12 @@ class ReaderPagedViewController: BaseObservingViewController {
             self.splitWideImages = UserDefaults.standard.bool(forKey: "Reader.splitWideImages")
             self.splitPages.removeAll()
             if wasSplit, self.splitWideImages {
-                if let key = self.splitStoreKey {
+                if let key = self.splitPageCacheKey {
                     self.reverseSplitStoreEntries(for: key)
                 }
             }
-            self.resetIsolation()
             self.loadPageControllers(chapter: chapter)
+            self.resetIsolation()
             let targetPage = max(1, min(self.firstDisplayPage(forActual: actualPage), self.displayPageCount))
             self.move(toPage: targetPage, animated: false)
         }
@@ -225,7 +225,7 @@ extension ReaderPagedViewController {
             } else {
                 pageViewControllers.append(
                     makePageController(
-                        pageIndex: 0,
+                        hasImageCallbacks: true,
                         preloadPage: previousPreviewSplitPages?.last
                     )
                 )
@@ -256,7 +256,7 @@ extension ReaderPagedViewController {
             if let splitPageArray = splitPages[originalPageIndex] {
                 pageViewControllers.append(contentsOf: splitPageArray.map { makePageController(preloadPage: $0, skipProcessing: true) })
             } else {
-                pageViewControllers.append(makePageController(pageIndex: originalPageIndex))
+                pageViewControllers.append(makePageController(hasImageCallbacks: true))
             }
         }
 
@@ -283,7 +283,7 @@ extension ReaderPagedViewController {
             } else {
                 pageViewControllers.append(
                     makePageController(
-                        pageIndex: endPos + 3,
+                        hasImageCallbacks: true,
                         preloadPage: nextPreviewSplitPages?.first
                     )
                 )
@@ -293,20 +293,26 @@ extension ReaderPagedViewController {
         rebuildPageIndices()
     }
 
-    private func makePageController(pageIndex: Int? = nil, preloadPage: Page? = nil, skipProcessing: Bool = false) -> ReaderPageViewController {
+    private func makePageController(
+        hasImageCallbacks: Bool = false,
+        preloadPage: Page? = nil,
+        skipProcessing: Bool = false
+    ) -> ReaderPageViewController {
         let page = ReaderPageViewController(type: .page, delegate: delegate)
         page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
-        if let pageIndex {
+        if hasImageCallbacks {
             page.onImageisWideImage = { [weak self, weak page] isWide in
                 guard let self, let page, isWide else { return }
                 guard let vcIndex = self.pageViewControllers.firstIndex(of: page) else { return }
                 let liveDisplay = self.pageIndex(from: vcIndex)
+                let actualPage = self.actualPageIndex(from: liveDisplay)
                 if self.splitWideImages {
-                    self.checkAndSplitWideImage(at: self.actualPageIndex(from: liveDisplay), controller: page)
+                    self.checkAndSplitWideImage(at: actualPage, controller: page)
                 } else if
                     self.usesDoublePages,
                     abs(liveDisplay - self.currentPage) <= self.pagesToPreload
                 {
+                    self.adjustAutoIsolation()
                     if self.isTransitioning {
                         self.pendingSpreadRebuild = true
                     } else {
@@ -481,7 +487,7 @@ extension ReaderPagedViewController {
         let vc = pageViewControllers[vcIndex]
         guard case .page = vc.type else { return false }
         let actual = actualPageIndex(from: page)
-        if splitPages[actual] == nil, vc.isWideImage || isSplitStoreKnownWide(actual) {
+        if splitPages[actual] == nil, vc.isWideImage || hasCachedSplit(actual) {
             return false
         }
         return true
@@ -530,13 +536,12 @@ extension ReaderPagedViewController {
             usesDoublePages,
             !isTransitioning,
             let doubleVC = pageViewController.viewControllers?.first as? ReaderDoublePageViewController,
-            doubleVC.firstPageController == source || doubleVC.secondPageController == source,
-            let currentIndex = getIndex(of: doubleVC)
+            doubleVC.firstPageController == source || doubleVC.secondPageController == source
         else { return }
 
         if splitWideImages && source.isWideImage { return }
 
-        move(toPage: pageIndex(from: currentIndex), animated: false)
+        move(toPage: currentPage, animated: false)
     }
 
     private func makeSplitPages(leftImage: UIImage, rightImage: UIImage, pageIndex: Int) -> [Page] {
@@ -664,10 +669,10 @@ extension ReaderPagedViewController {
         guard isPagePairable(head) else { return }
 
         let wasIsolated = isPageIsolated(head)
-        setPageIsolated(head, !wasIsolated)
+        setPageIsolated(head, isolated: !wasIsolated)
 
         // other segment heads are toggled independently
-        if head == 1 {
+        if head == firstToggleableHead() {
             pageOffsetEnabled = !wasIsolated
             UserDefaults.standard.set(!wasIsolated, forKey: pageOffsetKey)
         }
@@ -682,6 +687,14 @@ extension ReaderPagedViewController {
             targetPage = spreadStart(for: reference, head: head)
         }
         move(toPage: targetPage, animated: false)
+    }
+
+    private func firstToggleableHead() -> Int {
+        let end = min(8, displayPageCount)
+        guard end >= 2 else { return 0 }
+        guard let first = (1...end).first(where: { isPagePairable($0) }) else { return 0 }
+        // skip offset if the first pairable page is sandwiched by non-pairable pages
+        return isPagePairable(first + 1) ? first : 0
     }
 
     private func findSegmentHead() -> Int {
@@ -717,7 +730,7 @@ extension ReaderPagedViewController {
         isolatedPages.contains(displayPage)
     }
 
-    private func setPageIsolated(_ page: Int, _ isolated: Bool, isManual: Bool = false) {
+    private func setPageIsolated(_ page: Int, isolated: Bool, isManual: Bool = false) {
         if isolated {
             isolatedPages.insert(page)
             if isManual { manuallyIsolatedPages.insert(page) }
@@ -732,8 +745,18 @@ extension ReaderPagedViewController {
         manuallyIsolatedPages = []
 
         if pageOffsetEnabled {
-            isolatedPages.insert(1)
+            let head = splitWideImages ? 1 : firstToggleableHead()
+            isolatedPages.insert(head > 0 ? head : 1)
         }
+    }
+
+    private func adjustAutoIsolation() {
+        guard pageOffsetEnabled else { return }
+        let autoIsolated = isolatedPages.subtracting(manuallyIsolatedPages)
+        let newHead = firstToggleableHead()
+        let desired: Set<Int> = newHead > 0 ? [newHead] : []
+        guard autoIsolated != desired else { return }
+        isolatedPages = manuallyIsolatedPages.union(desired)
     }
 }
 
@@ -810,20 +833,22 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
         delegate?.setPages(viewModel.pages)
         if !viewModel.pages.isEmpty {
             await MainActor.run {
-                if isChapterChange {
-                    resetIsolation()
-                } else if let key = splitStoreKey {
+                if !isChapterChange, let key = splitPageCacheKey {
                     Self.splitStore[key] = nil
                 }
                 splitPages = [:]
 
                 loadPageControllers(chapter: chapter)
 
+                if isChapterChange {
+                    resetIsolation()
+                }
+
                 let clampedStart = max(startPage, 1)
                 let targetPage: Int
                 if
                     splitWideImages,
-                    let key = splitStoreKey,
+                    let key = splitPageCacheKey,
                     let pos = savedSplitPosition(for: key),
                     pos.page == clampedStart,
                     splitPages[pos.page] != nil
@@ -939,9 +964,9 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
                 }
                 programmaticMove = false
 
-                let actualPage = actualPageIndex(from: page)
-                if let key = splitStoreKey {
-                    saveSplitPosition(for: key, page: actualPage, offset: splitIndex(for: page, actualPageIndex: actualPage))
+                let actualPage = actualPageIndex(from: currentPage)
+                if let key = splitPageCacheKey {
+                    saveSplitPosition(for: key, page: actualPage, offset: splitIndex(for: currentPage, actualPageIndex: actualPage))
                 }
                 if usesDoublePages {
                     delegate?.setCurrentPages(actualPage...min(actualPage + 1, viewModel.pages.count))
@@ -1203,7 +1228,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 readerPageView.imageView == imageView
             {
                 let page = pageIndex(from: index)
-                setPageIsolated(page, isolated, isManual: true)
+                setPageIsolated(page, isolated: isolated, isManual: true)
                 refreshChapter(startPage: page)
                 return
             }
@@ -1224,14 +1249,14 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
 // MARK: - Split Page Store
 extension ReaderPagedViewController {
     private static var splitStore: [String: [Int: [Page]]] = [:]
-    private static var lastSplitPage: [String: (page: Int, offset: Int)] = [:]
+    private static var splitPosition: [String: (page: Int, offset: Int)] = [:]
 
-    private static func clearSplitPageStore() {
+    private static func clearSplitPageCache() {
         splitStore.removeAll()
-        lastSplitPage.removeAll()
+        splitPosition.removeAll()
     }
 
-    private var splitStoreKey: String? {
+    private var splitPageCacheKey: String? {
         guard let chapterId = chapter?.id else { return nil }
         return "\(viewModel.manga.identifier)/\(chapterId)"
     }
@@ -1241,19 +1266,19 @@ extension ReaderPagedViewController {
         Self.splitStore[key] = cached.mapValues { $0.reversed() }
     }
 
-    private func isSplitStoreKnownWide(_ actualPage: Int) -> Bool {
-        guard let key = splitStoreKey else { return false }
+    private func hasCachedSplit(_ actualPage: Int) -> Bool {
+        guard let key = splitPageCacheKey else { return false }
         return Self.splitStore[key]?[actualPage] != nil
     }
 
     private func cacheSplitPages(_ pages: [Page], at pageIndex: Int) {
-        guard let key = splitStoreKey, pageIndex >= 1, pageIndex <= viewModel.pages.count else { return }
+        guard let key = splitPageCacheKey, pageIndex >= 1, pageIndex <= viewModel.pages.count else { return }
         Self.splitStore[key, default: [:]][pageIndex] = pages
     }
 
     private func restoreCachedSplitPages() {
         guard
-            let key = splitStoreKey,
+            let key = splitPageCacheKey,
             let cached = Self.splitStore[key]
         else { return }
         for (pageIndex, pages) in cached where splitPages[pageIndex] == nil {
@@ -1263,10 +1288,10 @@ extension ReaderPagedViewController {
     }
 
     private func savedSplitPosition(for key: String) -> (page: Int, offset: Int)? {
-        Self.lastSplitPage[key]
+        Self.splitPosition[key]
     }
 
     private func saveSplitPosition(for key: String, page: Int, offset: Int) {
-        Self.lastSplitPage[key] = (page, offset)
+        Self.splitPosition[key] = (page, offset)
     }
 }
