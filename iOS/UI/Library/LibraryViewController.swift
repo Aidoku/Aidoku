@@ -1312,7 +1312,8 @@ extension LibraryViewController {
                     manga: manga,
                     chapters: sortedChapters,
                     readingHistory: history,
-                    sortAscending: sortAscending
+                    sortAscending: sortAscending,
+                    resumeLastOpenedChapter: UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
                 )
 
                 if let chapter = nextChapter {

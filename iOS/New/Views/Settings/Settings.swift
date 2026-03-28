@@ -182,6 +182,11 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
+                key: "Library.resumeLastOpenedChapter",
+                title: NSLocalizedString("RESUME_LAST_OPENED_CHAPTER"),
+                value: .toggle(.init())
+            ),
+            .init(
                 key: "Library.unreadChapterBadges",
                 title: NSLocalizedString("UNREAD_CHAPTER_BADGES"),
                 value: .toggle(.init())

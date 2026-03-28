@@ -788,7 +788,8 @@ extension MangaView.ViewModel {
             manga: manga,
             chapters: chapters,
             readingHistory: readingHistory,
-            sortAscending: chapterSortAscending
+            sortAscending: chapterSortAscending,
+            resumeLastOpenedChapter: UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
         )
 
         if let chapter {
