@@ -33,27 +33,26 @@ actor MangaManager {
         readingHistory: [String: (page: Int, date: Int)],
         sortAscending: Bool
     ) -> AidokuRunner.Chapter? {
-        // 1. Resume Reading: reopen the most recently opened chapter, even if it
-        // was completed, so skipped chapters do not override the reader's latest position.
-        var lastOpenedChapter: AidokuRunner.Chapter?
-        var lastOpenedDate: Int = -1
+        // 1. Resume Reading: Find the most recently read chapter that isn't completed
+        var lastReadChapter: AidokuRunner.Chapter?
+        var lastReadDate: Int = -1
 
         for chapter in chapters {
-            if let history = readingHistory[chapter.id] {
+            if let history = readingHistory[chapter.id], history.page != -1 {
                 // Ensure chapter is accessible
                 let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
                 let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
                 if !chapter.locked || isDownloaded {
-                    if history.date > lastOpenedDate {
-                        lastOpenedDate = history.date
-                        lastOpenedChapter = chapter
+                    if history.date > lastReadDate {
+                        lastReadDate = history.date
+                        lastReadChapter = chapter
                     }
                 }
             }
         }
 
-        if let lastOpenedChapter {
-            return lastOpenedChapter
+        if let lastReadChapter {
+            return lastReadChapter
         }
 
         // 2. Fallback: Find first uncompleted chapter in sort order (Start Reading)
