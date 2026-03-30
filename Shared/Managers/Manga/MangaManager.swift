@@ -31,33 +31,32 @@ actor MangaManager {
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter],
         readingHistory: [String: (page: Int, date: Int)],
-        sortAscending: Bool,
-        resumeLastOpenedChapter: Bool = false
+        sortAscending: Bool
     ) -> AidokuRunner.Chapter? {
-        if resumeLastOpenedChapter {
-            // Resume the most recently opened chapter, even if it was completed.
-            var lastOpenedChapter: AidokuRunner.Chapter?
-            var lastOpenedDate: Int = -1
+        // 1. Resume Reading: reopen the most recently opened chapter, even if it
+        // was completed, so skipped chapters do not override the reader's latest position.
+        var lastOpenedChapter: AidokuRunner.Chapter?
+        var lastOpenedDate: Int = -1
 
-            for chapter in chapters {
-                if let history = readingHistory[chapter.id] {
-                    let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-                    let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-                    if !chapter.locked || isDownloaded {
-                        if history.date > lastOpenedDate {
-                            lastOpenedDate = history.date
-                            lastOpenedChapter = chapter
-                        }
+        for chapter in chapters {
+            if let history = readingHistory[chapter.id] {
+                // Ensure chapter is accessible
+                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+                if !chapter.locked || isDownloaded {
+                    if history.date > lastOpenedDate {
+                        lastOpenedDate = history.date
+                        lastOpenedChapter = chapter
                     }
                 }
             }
-
-            if let lastOpenedChapter {
-                return lastOpenedChapter
-            }
         }
 
-        // Find first uncompleted chapter in sort order (default Start Reading behavior)
+        if let lastOpenedChapter {
+            return lastOpenedChapter
+        }
+
+        // 2. Fallback: Find first uncompleted chapter in sort order (Start Reading)
         let sorted = sortAscending ? chapters : chapters.reversed()
 
         return sorted.first(where: { chapter in

@@ -124,7 +124,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,
 
                 "Library.opensReaderView": false,
-                "Library.resumeLastOpenedChapter": false,
                 "Library.unreadChapterBadges": true,
                 "Library.downloadedChapterBadges": true,
                 "Library.pinTitles": LibraryViewModel.PinType.none.rawValue,
