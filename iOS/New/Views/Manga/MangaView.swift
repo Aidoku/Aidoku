@@ -197,6 +197,9 @@ struct MangaView: View {
                 await viewModel.syncTrackerProgress()
                 detailsLoaded = true
             }
+            .onAppear {
+                viewModel.refreshReadButtonState()
+            }
             .onChange(of: editMode) { mode in
                 guard let navigationController = path.rootViewController?.navigationController
                 else { return }

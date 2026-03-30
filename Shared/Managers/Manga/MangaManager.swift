@@ -27,6 +27,28 @@ actor MangaManager {
 
     private static let maxConcurrentLibraryUpdateTasks = 10
 
+    nonisolated func getLastOpenedChapter(
+        manga: AidokuRunner.Manga,
+        chapters: [AidokuRunner.Chapter],
+        readingHistory: [String: (page: Int, date: Int)]
+    ) -> AidokuRunner.Chapter? {
+        var lastOpenedChapter: AidokuRunner.Chapter?
+        var lastOpenedDate: Int = -1
+
+        for chapter in chapters {
+            if let history = readingHistory[chapter.id] {
+                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+                if !chapter.locked || isDownloaded, history.date > lastOpenedDate {
+                    lastOpenedDate = history.date
+                    lastOpenedChapter = chapter
+                }
+            }
+        }
+
+        return lastOpenedChapter
+    }
+
     nonisolated func getNextChapter(
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter],

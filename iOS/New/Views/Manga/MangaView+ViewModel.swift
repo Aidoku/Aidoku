@@ -193,6 +193,13 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
+            NotificationCenter.default.publisher(for: Notification.Name("Library.resumeLastOpenedChapter"))
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    self?.updateReadButton()
+                }
+                .store(in: &cancellables)
+
             // tracking
             NotificationCenter.default.publisher(for: .syncTrackItem)
                 .sink { [weak self] output in
@@ -264,6 +271,10 @@ extension MangaView {
 }
 
 extension MangaView.ViewModel {
+    func refreshReadButtonState() {
+        updateReadButton()
+    }
+
     func markUpdatesViewed() async {
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             await MangaUpdateManager.shared.viewAllUpdates(of: manga)
@@ -784,12 +795,27 @@ extension MangaView.ViewModel {
     private func getNextChapter() -> ChapterResult {
         guard !chapters.isEmpty else { return .none }
 
-        let chapter = MangaManager.shared.getNextChapter(
-            manga: manga,
-            chapters: chapters,
-            readingHistory: readingHistory,
-            sortAscending: chapterSortAscending
-        )
+        let resumeLastOpened = UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
+
+        let chapter = if resumeLastOpened {
+            MangaManager.shared.getLastOpenedChapter(
+                manga: manga,
+                chapters: chapters,
+                readingHistory: readingHistory
+            ) ?? MangaManager.shared.getNextChapter(
+                manga: manga,
+                chapters: chapters,
+                readingHistory: readingHistory,
+                sortAscending: chapterSortAscending
+            )
+        } else {
+            MangaManager.shared.getNextChapter(
+                manga: manga,
+                chapters: chapters,
+                readingHistory: readingHistory,
+                sortAscending: chapterSortAscending
+            )
+        }
 
         if let chapter {
             return .chapter(chapter)

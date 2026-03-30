@@ -431,6 +431,7 @@
 "LANDSCAPE" = "Landscape";
 "READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
+"RESUME_LAST_OPENED_CHAPTER" = "Resume Last Opened Chapter";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
 "DOWNLOADED_CHAPTER_BADGES" = "Downloaded Chapter Badges";
 "PIN_TITLES" = "Pin Titles";
