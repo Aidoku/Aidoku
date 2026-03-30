@@ -193,13 +193,6 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: Notification.Name("Library.resumeLastOpenedChapter"))
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    self?.updateReadButton()
-                }
-                .store(in: &cancellables)
-
             // tracking
             NotificationCenter.default.publisher(for: .syncTrackItem)
                 .sink { [weak self] output in
@@ -821,11 +814,7 @@ extension MangaView.ViewModel {
             case .chapter(let nextChapter):
                 allChaptersRead = false
                 allChaptersLocked = false
-                if let history = readingHistory[nextChapter.id] {
-                    readingInProgress = history.date > 0 && history.page != -1
-                } else {
-                    readingInProgress = false
-                }
+                readingInProgress = readingHistory[nextChapter.id]?.date ?? 0 > 0
                 self.nextChapter = nextChapter
         }
     }
