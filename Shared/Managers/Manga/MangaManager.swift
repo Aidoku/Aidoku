@@ -27,54 +27,36 @@ actor MangaManager {
 
     private static let maxConcurrentLibraryUpdateTasks = 10
 
-    nonisolated func getLastOpenedChapter(
-        manga: AidokuRunner.Manga,
-        chapters: [AidokuRunner.Chapter],
-        readingHistory: [String: (page: Int, date: Int)]
-    ) -> AidokuRunner.Chapter? {
-        var lastOpenedChapter: AidokuRunner.Chapter?
-        var lastOpenedDate: Int = -1
-
-        for chapter in chapters {
-            if let history = readingHistory[chapter.id] {
-                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-                if !chapter.locked || isDownloaded, history.date > lastOpenedDate {
-                    lastOpenedDate = history.date
-                    lastOpenedChapter = chapter
-                }
-            }
-        }
-
-        return lastOpenedChapter
-    }
-
     nonisolated func getNextChapter(
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter],
         readingHistory: [String: (page: Int, date: Int)],
         sortAscending: Bool
     ) -> AidokuRunner.Chapter? {
-        // 1. Resume Reading: Find the most recently read chapter that isn't completed
-        var lastReadChapter: AidokuRunner.Chapter?
-        var lastReadDate: Int = -1
+        let resumeLastOpened = UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
+
+        // 1. Resume Reading: Find the most recently read chapter that isn't
+        // completed, unless the "resume last opened" option is enabled.
+        var selectedChapter: AidokuRunner.Chapter?
+        var selectedDate: Int = -1
 
         for chapter in chapters {
-            if let history = readingHistory[chapter.id], history.page != -1 {
-                // Ensure chapter is accessible
-                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-                if !chapter.locked || isDownloaded {
-                    if history.date > lastReadDate {
-                        lastReadDate = history.date
-                        lastReadChapter = chapter
-                    }
-                }
+            guard let history = readingHistory[chapter.id] else { continue }
+
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+            guard !chapter.locked || isDownloaded else { continue }
+
+            guard resumeLastOpened || history.page != -1 else { continue }
+
+            if history.date > selectedDate {
+                selectedDate = history.date
+                selectedChapter = chapter
             }
         }
 
-        if let lastReadChapter {
-            return lastReadChapter
+        if let selectedChapter {
+            return selectedChapter
         }
 
         // 2. Fallback: Find first uncompleted chapter in sort order (Start Reading)

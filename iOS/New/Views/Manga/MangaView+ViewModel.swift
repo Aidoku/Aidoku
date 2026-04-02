@@ -795,27 +795,12 @@ extension MangaView.ViewModel {
     private func getNextChapter() -> ChapterResult {
         guard !chapters.isEmpty else { return .none }
 
-        let resumeLastOpened = UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
-
-        let chapter = if resumeLastOpened {
-            MangaManager.shared.getLastOpenedChapter(
-                manga: manga,
-                chapters: chapters,
-                readingHistory: readingHistory
-            ) ?? MangaManager.shared.getNextChapter(
-                manga: manga,
-                chapters: chapters,
-                readingHistory: readingHistory,
-                sortAscending: chapterSortAscending
-            )
-        } else {
-            MangaManager.shared.getNextChapter(
-                manga: manga,
-                chapters: chapters,
-                readingHistory: readingHistory,
-                sortAscending: chapterSortAscending
-            )
-        }
+        let chapter = MangaManager.shared.getNextChapter(
+            manga: manga,
+            chapters: chapters,
+            readingHistory: readingHistory,
+            sortAscending: chapterSortAscending
+        )
 
         if let chapter {
             return .chapter(chapter)
