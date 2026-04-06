@@ -193,7 +193,7 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: Notification.Name("Library.resumeLastOpenedChapter"))
+            NotificationCenter.default.publisher(for: .init("Library.resumeLastOpenedChapter"))
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
                     self?.updateReadButton()
