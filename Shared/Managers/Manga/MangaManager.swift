@@ -41,18 +41,20 @@ actor MangaManager {
         var selectedDate: Int = -1
 
         for chapter in chapters {
-            guard let history = readingHistory[chapter.id] else { continue }
+            guard
+                let history = readingHistory[chapter.id],
+                resumeLastOpened || history.page != -1,
+                history.date > selectedDate
+            else { continue }
 
-            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
-            let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
-            guard !chapter.locked || isDownloaded else { continue }
-
-            guard resumeLastOpened || history.page != -1 else { continue }
-
-            if history.date > selectedDate {
-                selectedDate = history.date
-                selectedChapter = chapter
+            if chapter.locked {
+                let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+                let isDownloaded = DownloadManager.shared.getDownloadStatus(for: identifier) == .finished
+                guard isDownloaded else { continue }
             }
+
+            selectedDate = history.date
+            selectedChapter = chapter
         }
 
         if let selectedChapter {
