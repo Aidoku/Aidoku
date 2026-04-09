@@ -25,7 +25,7 @@ struct CollectionView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UICollectionViewController {
         collectionViewController.collectionView.isScrollEnabled = false
         collectionViewController.collectionView.dataSource = context.coordinator
-        collectionViewController.collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
+        collectionViewController.collectionView.register(UIHostingCollectionViewCell<AnyView>.self, forCellWithReuseIdentifier: "Cell")
         return collectionViewController
     }
 
@@ -53,24 +53,11 @@ struct CollectionView: UIViewControllerRepresentable {
         }
 
         func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
-            let hostingController = UIHostingController(
-                rootView: parent.sections[indexPath.section].items[indexPath.item],
-                // there's a bug on ios <=16 where the views will shift down after you scroll down
-                ignoreSafeArea: true
-            )
-            hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-            parent.collectionViewController.addChild(hostingController)
-            cell.contentView.addSubview(hostingController.view)
-            hostingController.didMove(toParent: parent.collectionViewController)
-
-            NSLayoutConstraint.activate([
-                hostingController.view.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
-                hostingController.view.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor),
-                hostingController.view.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor),
-                hostingController.view.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor)
-            ])
-
+            guard
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
+                    as? UIHostingCollectionViewCell<AnyView>
+            else { return UICollectionViewCell() }
+            cell.configure(with: parent.sections[indexPath.section].items[indexPath.item])
             return cell
         }
     }
