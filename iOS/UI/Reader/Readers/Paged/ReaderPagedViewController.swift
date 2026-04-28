@@ -1228,6 +1228,12 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
                 readerPageView.imageView == imageView
             {
                 let page = pageIndex(from: index)
+                if !isolated {
+                    let orphan = page + 1
+                    if isolatedPages.contains(orphan), !manuallyIsolatedPages.contains(orphan) {
+                        isolatedPages.remove(orphan)
+                    }
+                }
                 setPageIsolated(page, isolated: isolated, isManual: true)
                 refreshChapter(startPage: page)
                 return
