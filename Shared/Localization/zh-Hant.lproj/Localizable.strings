@@ -690,3 +690,11 @@
 "ENHANCED_TRACKERS_INFO" = "增強型追蹤器可以自動連結到從支援的來源中已新增到你的書庫的項目，追蹤雙向閱讀記錄。";
 "ENHANCED_TRACKERS_TOGGLE_INFO" = "停用某個來源的追蹤功將移除所有已連結的追蹤器，啟用該功能將自動連結你的書庫中的所有項目。";
 "TRACKER_LOGOUT_INFO" = "登出將從此追蹤器中刪除所有作品相關的追蹤資訊。";
+"TEXT_READER" = "文本閱讀器";
+"TEXT_READER_STYLE" = "閱讀器風格";
+"TEXT_READER_PAGED" = "分頁";
+"TEXT_READER_SCROLL" = "滾動";
+"TEXT_FONT_FAMILY" = "字體";
+"TEXT_FONT_SIZE" = "字體大小";
+"TEXT_LINE_SPACING" = "行距";
+"TEXT_HORIZONTAL_PADDING" = "水平間距";

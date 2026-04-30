@@ -659,3 +659,5 @@
 "SOURCE_IMPORT_FAIL_TEXT" = "Nhập nguồn thất bại. Vui lòng đảm bảo tệp aix của bạn hợp lệ.";
 "LIBRARY_ENTRIES" = "Mục trong thư viện";
 "VOLUME" = "Tập";
+"EDIT" = "Chỉnh sửa";
+"SAVE" = "Lưu";

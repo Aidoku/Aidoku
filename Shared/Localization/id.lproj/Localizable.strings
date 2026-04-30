@@ -684,3 +684,17 @@
 "SYNC_WITH_TRACKER_INFO_%i" = "%i chapter telah ditentukan sudah dibaca oleh pelacak. Apakah Anda ingin memperbarui riwayat lokal Anda agar sesuai?";
 "UNAVAILABLE_TRACKER_ITEM" = "Item Pelacak Tidak Tersedia";
 "UNAVAILABLE_TRACKER_ITEM_INFO" = "Item pelacak yang ditautkan ini terkait dengan pelacak yang tidak lagi tersedia. Anda harus menghapus item ini atau masuk kembali ke pelacak terkait.";
+"MIRRORS" = "Mirror";
+"MIRRORS_INFO" = "URL tambahan yang dicoba sebagai URL dasar jika URL utama gagal terhubung.";
+"TEXT_READER" = "Pembaca Teks";
+"TEXT_READER_STYLE" = "Gaya Pembaca";
+"TEXT_READER_PAGED" = "Per Halaman";
+"TEXT_READER_SCROLL" = "Gulir";
+"TEXT_FONT_FAMILY" = "Font";
+"TEXT_FONT_SIZE" = "Ukuran Font";
+"TEXT_LINE_SPACING" = "Spasi Baris";
+"TEXT_HORIZONTAL_PADDING" = "Padding Horizontal";
+"ENHANCED_TRACKERS" = "Pelacak yang Disempurnakan";
+"ENHANCED_TRACKERS_INFO" = "Pelacak yang disempurnakan dapat secara otomatis menautkan ke item yang ditambahkan ke perpustakaan Anda dari sumber yang didukung, melacak riwayat membaca dua arah.";
+"ENHANCED_TRACKERS_TOGGLE_INFO" = "Menonaktifkan pelacakan untuk suatu sumber akan menghapus semua pelacak yang tertaut, dan mengaktifkannya akan secara otomatis menautkan semua item di perpustakaan Anda.";
+"TRACKER_LOGOUT_INFO" = "Keluar akan menghapus info pelacakan yang tertaut dari pelacak ini untuk semua seri.";

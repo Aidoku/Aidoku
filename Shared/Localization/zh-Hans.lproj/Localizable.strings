@@ -163,7 +163,7 @@
 "SKIP_TITLES" = "跳过标题";
 "ONLY_UPDATE_ON_WIFI" = "仅在 Wi-Fi 更新";
 "EXCLUDED_CATEGORIES" = "排除类别";
-"REFRESH_METADATA" = "更新漫画信息";
+"REFRESH_METADATA" = "刷新元数据";
 "NEVER" = "从不";
 "EVERY_12_HOURS" = "每 12 小时";
 "DAILY" = "每天";
@@ -693,3 +693,15 @@
 "ENHANCED_TRACKERS_INFO" = "增强型追踪器可自动关联从支持的图源添加到书库的作品，并实现双向阅读历史同步。";
 "ENHANCED_TRACKERS_TOGGLE_INFO" = "禁用图源的追踪功能将移除所有已关联的追踪器，而启用后将自动关联您书库中的所有作品。";
 "TRACKER_LOGOUT_INFO" = "退出登录将移除此追踪器中所有作品的已关联追踪信息。";
+"TEXT_READER" = "文本阅读器";
+"TEXT_READER_STYLE" = "阅读器风格";
+"TEXT_READER_PAGED" = "分页";
+"TEXT_READER_SCROLL" = "滚动";
+"TEXT_FONT_FAMILY" = "字体";
+"TEXT_FONT_SIZE" = "字体大小";
+"TEXT_LINE_SPACING" = "行距";
+"TEXT_HORIZONTAL_PADDING" = "水平填充";
+"RESUME_LAST_OPENED_CHAPTER" = "续读上次章节";
+"PAGE_OFFSET" = "页面偏移";
+"UNSET_AS_SINGLE_PAGE" = "取消设为单页";
+"TOGGLE_PAGE_OFFSET" = "切换页面偏移";
