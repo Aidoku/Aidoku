@@ -6,10 +6,26 @@
 //
 
 import SwiftUI
+import UIKit
 import AidokuRunner
 import MarkdownUI
 import NukeUI
 import SafariServices
+
+private struct ContainerWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct ContainerWidthReader: View {
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(key: ContainerWidthPreferenceKey.self, value: proxy.size.width)
+        }
+    }
+}
 
 struct MangaDetailsHeaderView: View {
     @Binding var source: AidokuRunner.Source?
@@ -48,6 +64,8 @@ struct MangaDetailsHeaderView: View {
     @State private var longHeldSafari = false
     @State private var isTracking = false
     @State private var hasAvailableTrackers = false
+    @State private var tagsExpanded = false
+    @State private var containerWidth: CGFloat = 0
 
     static let coverWidth: CGFloat = 114
 
@@ -183,6 +201,11 @@ struct MangaDetailsHeaderView: View {
             }
 
             tagsView
+
+            ContainerWidthReader()
+                .onPreferenceChange(ContainerWidthPreferenceKey.self) { width in
+                    containerWidth = width
+                }
 
             // read button
             Button {
@@ -364,9 +387,10 @@ struct MangaDetailsHeaderView: View {
     @ViewBuilder
     var tagsView: some View {
         if let tags = manga.tags, !tags.isEmpty {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(manga.tags ?? [], id: \.self) { tag in
+            VStack(alignment: .leading, spacing: 6) {
+                if tagsExpanded {
+                    // Expanded: multi-line wrapping of all tags
+                    WrappingHStack(tags, id: \.self) { tag in
                         let label = TagView(text: tag)
                         if let source, let filter = source.matchingGenreFilter(for: tag) {
                             Button {
@@ -380,14 +404,69 @@ struct MangaDetailsHeaderView: View {
                             } label: {
                                 label
                             }
+                            .buttonStyle(.borderless)
+                            .padding([.trailing, .bottom], 8)
                         } else {
                             label
+                                .padding([.trailing, .bottom], 8)
+                        }
+                    }
+                } else {
+                    // Collapsed: horizontal scroll
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(tags, id: \.self) { tag in
+                                let label = TagView(text: tag)
+                                if let source, let filter = source.matchingGenreFilter(for: tag) {
+                                    Button {
+                                        let viewController = MangaListViewController(source: source, title: tag)
+                                        viewController.getEntries = { page in
+                                            try await source.getSearchMangaList(query: nil, page: page, filters: [
+                                                filter
+                                            ])
+                                        }
+                                        path.push(viewController)
+                                    } label: {
+                                        label
+                                    }
+                                    .buttonStyle(.borderless)
+                                } else {
+                                    label
+                                }
+                            }
                         }
                     }
                 }
-                .padding(.horizontal, 20)
+
+                // decide to show the button based on the container width
+                // subtract outer horizontal padding (20 left + 20 right)
+                let baseWidth = containerWidth
+                let availableWidth = max(0, baseWidth - 40)
+                if baseWidth > 0, !doesAllTagsFit(tags, in: availableWidth) {
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                tagsExpanded.toggle()
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "chevron.down")
+                                    .rotationEffect(.degrees(tagsExpanded ? 180 : 0))
+                                    .animation(.easeInOut(duration: 0.18), value: tagsExpanded)
+                                    .font(.caption)
+                                Text(LocalizedStringKey(tagsExpanded ? "COLLAPSE_TAGS" : "EXPAND_TAGS"))
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+
+                        Spacer()
+                    }
+                }
             }
-            .padding(.bottom, 16)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 8)
         }
     }
 
@@ -503,6 +582,24 @@ private struct TagView: View {
             .background(Color(UIColor.tertiarySystemFill))
             .clipShape(RoundedRectangle(cornerRadius: 100))
     }
+}
+
+// Estimate whether all tags fit within the available width using UIFont metrics.
+private func doesAllTagsFit(_ tags: [String], in width: CGFloat) -> Bool {
+    // TagView uses .font(.footnote) and horizontal padding 12 on each side (total 24),
+    // vertical padding doesn't affect width. HStack spacing is 8 between items.
+    let font = UIFont.preferredFont(forTextStyle: .footnote)
+    var total: CGFloat = 0
+
+    for (i, tag) in tags.enumerated() {
+        let ns = NSString(string: tag)
+        let textWidth = ns.size(withAttributes: [.font: font]).width
+        let chipWidth = textWidth + 24 // horizontal padding
+        total += chipWidth
+        if i < tags.count - 1 { total += 8 }
+    }
+
+    return total <= width
 }
 
 private struct MangaActionButtonStyle: ButtonStyle {

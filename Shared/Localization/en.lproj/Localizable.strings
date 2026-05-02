@@ -131,6 +131,8 @@
 "BROWSE" = "Browse";
 "BROWSE_NO_SOURCES" = "No Sources";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Add a source with the plus button.";
+"EXPAND_TAGS" = "Expand";
+"COLLAPSE_TAGS" = "Collapse";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Adding Sources Guide";
 "UPDATES" = "Updates";
 "INSTALLED" = "Installed";
