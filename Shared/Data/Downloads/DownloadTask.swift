@@ -264,7 +264,8 @@ extension DownloadTask {
         if UserDefaults.standard.bool(forKey: "Downloads.parallel") {
             // download pages from the network concurrently
             await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
-                for pageGroup in networkPages.chunked(into: Self.maxConcurrentPageTasks) {
+                let groupSize = max(1, min(source.config?.maximumParallelRequests ?? Self.maxConcurrentPageTasks, Self.maxConcurrentPageTasks))
+                for pageGroup in networkPages.chunked(into: groupSize) {
                     for page in pageGroup {
                         taskGroup.addTask {
                             await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor)
