@@ -51,7 +51,7 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
     }
 
     // MARK: Cell Registration
-    func configure(cell: MangaGridCell, info: MangaInfo) {
+    func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
         cell.sourceId = info.sourceId
         cell.mangaId = info.mangaId
         cell.title = info.title
@@ -61,11 +61,19 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
         }
 
         cell.setSelected(cell.isSelected, animated: false)
+
+        if indexPath == focusedIndexPath {
+            cell.highlight()
+        }
     }
 
-    func configure(cell: MangaListCell, info: MangaInfo) {
+    func configure(cell: MangaListCell, info: MangaInfo, indexPath: IndexPath) {
         cell.configure(with: info)
         cell.setSelected(cell.isSelected, animated: false)
+
+        if indexPath == focusedIndexPath {
+            cell.highlight()
+        }
     }
 
     // MARK: Collection View Layout
@@ -262,14 +270,14 @@ extension OldMangaCollectionViewController {
                     withReuseIdentifier: "MangaListCell",
                     for: indexPath
                 ) as! MangaListCell
-                self?.configure(cell: cell, info: item)
+                self?.configure(cell: cell, info: item, indexPath: indexPath)
                 return cell
             } else {
                 let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: "MangaGridCell",
                     for: indexPath
                 ) as! MangaGridCell
-                self?.configure(cell: cell, info: item)
+                self?.configure(cell: cell, info: item, indexPath: indexPath)
                 return cell
             }
             // swiftlint:enable force_cast
@@ -357,11 +365,15 @@ extension OldMangaCollectionViewController {
 
         var position = focusedIndexPath.row
         var section = focusedIndexPath.section
-        let itemsPerRow = UserDefaults.standard.integer(
-            forKey: UIScreen.main.bounds.width > UIScreen.main.bounds.height
-                ? "Appearance.customLandscapeRows"
-                : "Appearance.customPortraitRows"
-        )
+        let itemsPerRow = if usesListLayout {
+            1
+        } else {
+            UserDefaults.standard.integer(
+                forKey: UIScreen.main.bounds.width > UIScreen.main.bounds.height
+                    ? "Appearance.customLandscapeRows"
+                    : "Appearance.customPortraitRows"
+            )
+        }
         switch sender.input {
             case UIKeyCommand.inputLeftArrow: position -= 1
             case UIKeyCommand.inputRightArrow: position += 1

@@ -467,8 +467,8 @@ class LibraryViewController: OldMangaCollectionViewController {
     }
 
     // cells with badges
-    override func configure(cell: MangaGridCell, info: MangaInfo) {
-        super.configure(cell: cell, info: info)
+    override func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
+        super.configure(cell: cell, info: info, indexPath: indexPath)
 
         cell.badgeNumber = viewModel.badgeType.contains(.unread) ? info.unread : 0
         cell.badgeNumber2 = viewModel.badgeType.contains(.downloaded) ? info.downloads : 0
@@ -476,8 +476,8 @@ class LibraryViewController: OldMangaCollectionViewController {
         cell.setEditing(self.isEditing, animated: false)
     }
 
-    override func configure(cell: MangaListCell, info: MangaInfo) {
-        super.configure(cell: cell, info: info)
+    override func configure(cell: MangaListCell, info: MangaInfo, indexPath: IndexPath) {
+        super.configure(cell: cell, info: info, indexPath: indexPath)
 
         cell.badgeNumber = viewModel.badgeType.contains(.unread) ? info.unread : 0
         cell.badgeNumber2 = viewModel.badgeType.contains(.downloaded) ? info.downloads : 0

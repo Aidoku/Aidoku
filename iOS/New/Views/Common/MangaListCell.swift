@@ -163,6 +163,7 @@ class MangaListCell: UICollectionViewCell {
         imageTask?.cancel()
         imageTask = nil
         setBadgeVisible(false)
+        alpha = 1
     }
 
     private func setBadgeVisible(_ visible: Bool) {

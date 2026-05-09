@@ -184,6 +184,7 @@ class MangaGridCell: UICollectionViewCell {
         imageView.image = UIImage(named: "MangaPlaceholder")
         imageTask?.cancel()
         imageTask = nil
+        highlightView.alpha = 0
     }
 }
 
