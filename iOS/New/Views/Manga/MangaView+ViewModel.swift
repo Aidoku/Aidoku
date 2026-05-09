@@ -601,12 +601,16 @@ extension MangaView.ViewModel {
             trackId: item.id,
             manga: self.manga,
             chapters: self.chapters
-        )
+        ).filter {
+            readingHistory[$0.key]?.page != -1 // filter out chapters already marked read
+        }
 
         if !chaptersToMark.isEmpty {
             let alert = UIAlertController(
                 title: NSLocalizedString("SYNC_WITH_TRACKER"),
-                message: String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO_%i"), chaptersToMark.count),
+                message: chaptersToMark.count == 1
+                    ? NSLocalizedString("SYNC_WITH_TRACKER_INFO_1")
+                    : String(format: NSLocalizedString("SYNC_WITH_TRACKER_INFO_%i"), chaptersToMark.count),
                 preferredStyle: .alert
             )
 
