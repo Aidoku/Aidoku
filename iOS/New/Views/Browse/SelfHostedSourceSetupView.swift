@@ -405,6 +405,14 @@ struct SelfHostedSourceSetupView: View {
             return
         }
 
+        if serverCheck.canLoginApiKey {
+            loginMethod = .apiKey
+        } else if serverCheck.canLoginBasic {
+            loginMethod = .basic
+        } else {
+            loginMethod = .oidc
+        }
+
         state = .logIn(serverCheck)
     }
 
