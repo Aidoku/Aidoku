@@ -103,10 +103,8 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Emrat e kategorive duhet të jenë unikë.";
 "CATEGORY_NAME" = "Emri i Kategorisë";
 "MIGRATE_SOURCES" = "Migro Burimet";
-"START_MATCHING" = "Fillo Përputhjen";
 "SYNC_LOCAL_HISTORY" = "Sinkronizo Historinë Lokale";
 "OPTIONS" = "Opsionet";
-"TITLES" = "Titujt";
 "DESTINATION" = "Destinacioni";
 "SELECTED" = "Zgjedhur";
 "AVAILABLE" = "Disponueshëm";
@@ -149,7 +147,6 @@
 "SELECT" = "Zgjidh";
 "ADD_TO_CATEGORY" = "Shto në Kategori";
 "MIGRATE" = "Migro";
-"MIGRATION" = "Migrimi";
 "PILLARBOX_ORIENTATION" = "Orientimi i Pillarbox";
 "BOTH" = "Të dyja";
 "PILLARBOX_ORIENTATION_INFO" = "Orientimi përcakton për cilat orientime duhet të aktivizohet pillarboxing.";

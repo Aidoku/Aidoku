@@ -290,9 +290,7 @@
 "MIGRATE" = "Taşı";
 "MOST_CHAPTERS_SLOWER" = "Çoğu Bölüm (Yavaş)";
 "SYNC_LOCAL_HISTORY" = "Yerel Geçmişi Senkronize Et";
-"MIGRATION" = "Taşımak";
 "OPTIONS" = "Seçenekler";
-"TITLES" = "Başlıklar";
 "DESTINATION" = "Hedef";
 "SELECTED" = "Seçilmiş";
 "AVAILABLE" = "Mevcut";
@@ -301,7 +299,6 @@
 "MIGRATE_%i_ITEMS?" = "%i Öğeyi Taşı?";
 "MIGRATE_ONE_ITEM?" = "1 Öğeyi Taşı?";
 "MIGRATE_SOURCES" = "Kaynakları Taşı";
-"START_MATCHING" = "Eşleştirmeye Başla";
 "UPLOAD_DATE" = "Yükleme Zamanı";
 "ALL_CHAPTERS_READ" = "Tüm Bölümler Okundu";
 "DEFAULT_READING_MODE" = "Varsayılan Okuma Modu";

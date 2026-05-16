@@ -262,9 +262,7 @@
 "FIRST_ALTERNATIVE" = "Erste Alternative";
 "MIGRATE_%i_ITEMS?" = "%i Elemente migrieren?";
 "MIGRATE_ONE_ITEM?" = "1 Element migrieren?";
-"MIGRATION" = "Migration";
 "OPTIONS" = "Optionen";
-"TITLES" = "Titel";
 "DESTINATION" = "Ziel";
 "SELECTED" = "Ausgewählt";
 "UPLOAD_DATE" = "Upload-Datum";
@@ -273,7 +271,6 @@
 "AVAILABLE" = "Verfügbar";
 "SYNC_LOCAL_HISTORY" = "Lokalen Verlauf synchronisieren";
 "MIGRATE_SOURCES" = "Quellen Migrieren";
-"START_MATCHING" = "Vergleich starten";
 "SELECT" = "Auswählen";
 "ADD_TO_CATEGORY" = "Zur Kategorie hinzufügen";
 "ADD_TO_CATEGORIES" = "Zu Kategorien hinzufügen";

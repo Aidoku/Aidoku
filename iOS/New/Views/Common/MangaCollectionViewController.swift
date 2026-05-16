@@ -299,7 +299,6 @@ extension MangaCollectionViewController {
                         // add to library
                         Task {
                             await MangaManager.shared.addToLibrary(
-                                sourceId: entry.sourceKey,
                                 manga: entry,
                                 fetchMangaDetails: true
                             )

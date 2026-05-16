@@ -170,12 +170,9 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Numele categoriilor trebuie să fie unice.";
 "CATEGORY_NAME" = "Denumirea categoriei";
 "MIGRATE_SOURCES" = "Migrează sursele";
-"START_MATCHING" = "Începeți potrivirea";
 "SYNC_LOCAL_HISTORY" = "Sincronizează cu istoricului local";
 "MIGRATE" = "Migrează";
-"MIGRATION" = "Migrație";
 "OPTIONS" = "Opțiuni";
-"TITLES" = "Titluri";
 "DESTINATION" = "Destinație";
 "SELECTED" = "Selectate";
 "AVAILABLE" = "Valabil";

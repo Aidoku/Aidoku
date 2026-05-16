@@ -311,12 +311,9 @@
 "RENAME_CATEGORY_FAIL_INFO" = "類別名稱不可重複。";
 "CATEGORY_NAME" = "類別名稱";
 "MIGRATE_SOURCES" = "遷移來源";
-"START_MATCHING" = "開始配對";
 "SYNC_LOCAL_HISTORY" = "同步本機閱讀記錄";
 "MIGRATE" = "遷移";
-"MIGRATION" = "遷移";
 "OPTIONS" = "選項";
-"TITLES" = "作品";
 "MOST_CHAPTERS_SLOWER" = "最多章節（較慢）";
 "FIRST_ALTERNATIVE" = "第一個選擇";
 "MIGRATE_%i_ITEMS?" = "遷移%i個項目？";

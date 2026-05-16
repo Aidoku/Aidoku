@@ -13,6 +13,7 @@ struct HomeScrollerView: View {
     let source: AidokuRunner.Source
     let component: HomeComponent
     let partial: Bool
+    let pressAction: ((AidokuRunner.Manga) -> Void)?
 
     private let entries: [HomeComponent.Value.Link]
     private let listing: AidokuRunner.Listing?
@@ -22,17 +23,20 @@ struct HomeScrollerView: View {
 
     @State private var bookmarkedItems: Set<String> = .init()
     @State private var loadedBookmarks = false
+    @State private var longHeldItem = false
 
     @EnvironmentObject private var path: NavigationCoordinator
 
     init(
         source: AidokuRunner.Source,
         component: HomeComponent,
-        partial: Bool = false
+        partial: Bool = false,
+        pressAction: ((AidokuRunner.Manga) -> Void)? = nil
     ) {
         self.source = source
         self.component = component
         self.partial = partial
+        self.pressAction = pressAction
 
         guard case let .scroller(entries, listing) = component.value else {
             fatalError("invalid component type")
@@ -117,6 +121,10 @@ struct HomeScrollerView: View {
                             .frame(width: Self.coverHeight * 2/3)
                             if let value = entry.value {
                                 Button {
+                                    if longHeldItem {
+                                        longHeldItem = false
+                                        return
+                                    }
                                     switch value {
                                         case .url(let urlString):
                                             guard
@@ -127,13 +135,32 @@ struct HomeScrollerView: View {
                                         case .listing(let listing):
                                             path.push(SourceListingViewController(source: source, listing: listing))
                                         case .manga(let manga):
-                                            path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
+                                            if let pressAction {
+                                                pressAction(manga)
+                                            } else {
+                                                path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
+                                            }
                                     }
                                 } label: {
                                     label
                                 }
                                 .foregroundStyle(.primary)
                                 .buttonStyle(.borderless)
+                                .simultaneousGesture(
+                                    // on long hold, open if pressAction is set
+                                    LongPressGesture()
+                                        .onEnded { _ in
+                                            if pressAction != nil {
+                                                longHeldItem = true
+                                                switch value {
+                                                    case .manga(let manga):
+                                                        path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
+                                                    default:
+                                                        break
+                                                }
+                                            }
+                                        }
+                                )
                             } else {
                                 label
                             }

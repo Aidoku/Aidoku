@@ -415,6 +415,13 @@ extension SourceManager {
         NotificationCenter.default.post(name: .updateSourceList, object: nil)
     }
 
+    /// Gets a list of pinned sources.
+    func getPinned() -> [AidokuRunner.Source] {
+        let key = "Browse.pinnedList"
+        let pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        return self.sources.filter { pinnedList.contains($0.id) }
+    }
+
     // Unpin a source in browse tab.
     func unpin(source: AidokuRunner.Source) {
         let key = "Browse.pinnedList"

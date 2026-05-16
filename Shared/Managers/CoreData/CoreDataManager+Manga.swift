@@ -37,24 +37,22 @@ extension CoreDataManager {
     @discardableResult
     func createManga(
         _ manga: AidokuRunner.Manga,
-        sourceId: String,
         context: NSManagedObjectContext? = nil
     ) -> MangaObject {
         let context = context ?? self.context
         let object = MangaObject(context: context)
-        object.load(from: manga, sourceId: sourceId)
+        object.load(from: manga, sourceId: manga.sourceKey)
         return object
     }
 
     func getOrCreateManga(
         _ manga: AidokuRunner.Manga,
-        sourceId: String,
         context: NSManagedObjectContext? = nil
     ) -> MangaObject {
-        if let mangaObject = getManga(sourceId: sourceId, mangaId: manga.key, context: context) {
+        if let mangaObject = getManga(sourceId: manga.sourceKey, mangaId: manga.key, context: context) {
             return mangaObject
         }
-        return createManga(manga, sourceId: sourceId, context: context)
+        return createManga(manga, context: context)
     }
 
     /// Check if a manga object exists.

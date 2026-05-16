@@ -285,12 +285,9 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Imena kategorija moraju biti jedinstveni.";
 "CATEGORY_NAME" = "Ime kategorije";
 "MIGRATE_SOURCES" = "Migriraj izvore";
-"START_MATCHING" = "Započni uspoređivanje";
 "SYNC_LOCAL_HISTORY" = "Sinkroniziraj lokalnu povijest";
 "MIGRATE" = "Migriraj";
-"MIGRATION" = "Migracija";
 "OPTIONS" = "Opcije";
-"TITLES" = "Naslovi";
 "DESTINATION" = "Odredište";
 "SELECTED" = "Odabrano";
 "NOT_FOUND" = "Nije pronađeno";

@@ -556,10 +556,12 @@ extension MangaView {
                 )
             },
             migrate: {
-                let migrateView = MigrateMangaView(manga: [viewModel.manga.toOld()])
-                path.present(UIHostingController(
-                    rootView: SwiftUINavigationView(rootView: migrateView)
-                ))
+                let migrateView = MigrateSelectDestinationView(
+                    selectedSeries: [viewModel.manga],
+                    selectedSources: viewModel.source.flatMap { [$0.toInfo()] } ?? []
+                )
+                let viewController = SwiftUINavigationViewController(rootView: migrateView)
+                path.present(viewController)
             },
             showShareSheet: showShareSheet(item:),
             removeDownloads: {

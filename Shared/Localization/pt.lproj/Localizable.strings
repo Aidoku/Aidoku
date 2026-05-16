@@ -264,9 +264,7 @@
 "TYPE_COLON_%@" = "Tipo: %@";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Tem a certeza de que pretende remover todas as descargas?";
 "MIGRATE_SOURCES" = "Migrar fontes";
-"MIGRATION" = "Migração";
 "OPTIONS" = "Opções";
-"TITLES" = "Títulos";
 "ALL_CHAPTERS_READ" = "Todos os capítulos lidos";
 "UPLOAD_DATE" = "Data do upload";
 "SELECT" = "Selecionar";
@@ -302,7 +300,6 @@
 "1_CHAPTER" = "1 Capítulo";
 "MOST_CHAPTERS_SLOWER" = "Maioria dos capítulos (mais lento)";
 "MIGRATE_ONE_ITEM?" = "Migrar 1 elemento?";
-"START_MATCHING" = "Começar a combinar";
 "SYNC_LOCAL_HISTORY" = "Sincronizar História Local";
 "SELECTED" = "Selecionado";
 "MIGRATE" = "Migrar";

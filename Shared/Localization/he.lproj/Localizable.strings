@@ -260,9 +260,7 @@
 "CATEGORY_NAME" = "שם קטגוריה";
 "MIGRATE_SOURCES" = "העברת מקורות";
 "MIGRATE" = "העברה";
-"MIGRATION" = "העברה";
 "OPTIONS" = "אפשרויות";
-"TITLES" = "כותרות";
 "DESTINATION" = "יעד";
 "FIRST_ALTERNATIVE" = "אלטרנטיבה ראשונה";
 "DEFAULT_READING_MODE" = "מצב קריאה ברירת מחדל";

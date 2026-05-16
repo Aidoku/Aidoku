@@ -709,12 +709,9 @@
 
 // Migration
 "MIGRATE_SOURCES" = "Migrate Sources";
-"START_MATCHING" = "Start Matching";
 "SYNC_LOCAL_HISTORY" = "Sync Local History";
 "MIGRATE" = "Migrate";
-"MIGRATION" = "Migration";
 "OPTIONS" = "Options";
-"TITLES" = "Titles";
 "DESTINATION" = "Destination";
 "SELECTED" = "Selected";
 "AVAILABLE" = "Available";
@@ -723,6 +720,14 @@
 "FIRST_ALTERNATIVE" = "First Alternative";
 "MIGRATE_%i_ITEMS?" = "Migrate %i items?";
 "MIGRATE_ONE_ITEM?" = "Migrate 1 item?";
+"MIGRATE_CONFIRM_TEXT" = "Reading history for the original entries will be removed when migrating to a different source.";
+"SELECT_PINNED_SOURCES" = "Select Pinned Sources";
+"SEARCH_MANUALLY" = "Search Manually";
+"DONT_MIGRATE" = "Don't Migrate";
+"SELECTED_%i_OF_%i" = "Selected (%i/%i)";
+"MIGRATE_%i_OF_%i" = "Migrate (%i/%i)";
+"SHOW_ENTRY" = "Show Entry";
+
 "SOURCE_BREAKING_CHANGE" = "Source Breaking Change";
 "SOURCE_BREAKING_CHANGE_TEXT" = "This source had a breaking change and requires migration to keep your library and history.";
 "UPLOAD_DATE" = "Upload Date";

@@ -207,11 +207,8 @@
 "SKIP_DUPLICATE_CHAPTERS" = "நகல் அத்தியாயங்களைத் தவிர்க்கவும்";
 "RENAME_CATEGORY" = "வகை மறுபெயரிடுதல்";
 "MIGRATE_SOURCES" = "ஆதாரங்கள்";
-"START_MATCHING" = "பொருத்தத் தொடங்குங்கள்";
 "SYNC_LOCAL_HISTORY" = "உள்ளக வரலாற்றை ஒத்திசைக்கவும்";
-"MIGRATION" = "குடிபெயர்வு";
 "OPTIONS" = "விருப்பங்கள்";
-"TITLES" = "தலைப்புகள்";
 "DESTINATION" = "இலக்கு";
 "AVAILABLE" = "கிடைக்கிறது";
 "NOT_FOUND" = "கண்டுபிடிக்கப்படவில்லை";

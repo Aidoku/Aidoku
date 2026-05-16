@@ -511,12 +511,9 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Nama kategori harus unik.";
 "CATEGORY_NAME" = "Nama Kategori";
 "MIGRATE_SOURCES" = "Migrasi Sumber";
-"START_MATCHING" = "Mulai Pencocokan";
 "SYNC_LOCAL_HISTORY" = "Sinkronkan Riwayat Lokal";
 "MIGRATE" = "Migrasi";
-"MIGRATION" = "Migrasi";
 "OPTIONS" = "Pilihan";
-"TITLES" = "Judul";
 "DESTINATION" = "Tujuan";
 "SELECTED" = "Terpilih";
 "AVAILABLE" = "Tersedia";

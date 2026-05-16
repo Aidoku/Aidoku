@@ -230,7 +230,6 @@
 "MIGRATE_SOURCES" = "ソースの移行";
 "SELECTED" = "選択済み";
 "DESTINATION" = "目的地";
-"START_MATCHING" = "マッチングを開始";
 "SYNC_LOCAL_HISTORY" = "ローカル履歴の同期";
 "MIGRATE_ONE_ITEM?" = "1個のアイテムを移行しますか？";
 "ADD_TO_CATEGORIES" = "本棚に追加";
@@ -296,14 +295,12 @@
 "RENAME_CATEGORY_FAIL_INFO" = "本棚名は一意である必要があります。";
 "OPTIONS" = "オプション";
 "MIGRATE" = "移行";
-"MIGRATION" = "移行";
 "MIGRATE_%i_ITEMS?" = "%i個のアイテムを移行しますか?";
 "WITH_COMPLETED_STATUS" = "完結済みの漫画";
 "THAT_HAVENT_BEEN_READ" = "未読の漫画";
 "MISSING_SOURCES" = "ソースがありません";
 "%@_AGO" = "%@前";
 "WEBTOON" = "Webtoon";
-"TITLES" = "タイトル";
 "PILLARBOX_ORIENTATION" = "ピラーボックスの向き";
 "MANHWA" = "漫画（韓国）";
 "MANHUA" = "漫画（中国）";

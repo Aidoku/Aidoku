@@ -311,7 +311,6 @@
 "RENAME_CATEGORY_FAIL_INFO" = "ชื่อหมวดหมู่ต้องพิเศษ";
 "MIGRATE_SOURCES" = "โอนย้ายแหล่งข้อมูล";
 "MIGRATE" = "โอนย้าย";
-"MIGRATION" = "การโอนย้าย";
 "OPTIONS" = "ตัวเลือก";
 "SELECTED" = "เลือกแล้ว";
 "AVAILABLE" = "มีอยู่";
@@ -332,8 +331,6 @@
 "ADD_TO_CATEGORY" = "เพิ่มเข้าหมวดหมู่";
 "RENAME_CATEGORY_FAIL" = "แก้ไขชื่อหมวดหมู่ล้มเหลว";
 "RENAME_CATEGORY" = "แก้ไขชื่อหมวดหมู่";
-"START_MATCHING" = "เริ่มการจับคู่";
-"TITLES" = "ชื่อเรื่อง";
 "MIGRATE_%i_ITEMS?" = "โอนย้าย %i รายการ?";
 "SYNC_LOCAL_HISTORY" = "ซิงก์ประวัติในระบบ";
 "DESTINATION" = "ปลายทาง";

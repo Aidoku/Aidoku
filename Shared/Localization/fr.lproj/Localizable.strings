@@ -291,13 +291,10 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Les noms de catégorie doivent être uniques.";
 "CATEGORY_NAME" = "Nom de la catégorie";
 "MIGRATE_SOURCES" = "Migrer les sources";
-"START_MATCHING" = "Démarrer la correspondance";
 "UPLOAD_DATE" = "Date de téléversement";
 "SYNC_LOCAL_HISTORY" = "Synchroniser l’historique local";
 "MIGRATE" = "Migrer";
-"MIGRATION" = "Migration";
 "OPTIONS" = "Options";
-"TITLES" = "Titres";
 "DESTINATION" = "Destination";
 "SELECTED" = "Sélectionnés";
 "AVAILABLE" = "Disponible";

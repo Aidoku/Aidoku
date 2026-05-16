@@ -746,13 +746,11 @@ extension AppDelegate {
                         Task {
                             let sourceManga = await CoreDataManager.shared.container.performBackgroundTask { context in
                                 let objects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
-                                return objects.compactMap { $0.manga?.toManga() }
+                                return objects.compactMap { $0.manga?.toNewManga() }
                             }
-                            let migrateView = MigrateMangaView(manga: sourceManga, destination: source.id)
-                            self.topViewController?.present(
-                                UIHostingController(rootView: SwiftUINavigationView(rootView: migrateView)),
-                                animated: true
-                            )
+                            let migrateView = MigrateResultsView(targetSources: [source], selectedSeries: sourceManga)
+                            let viewController = SwiftUINavigationViewController(rootView: migrateView)
+                            self.topViewController?.present(viewController, animated: true)
                         }
                     }
                 }

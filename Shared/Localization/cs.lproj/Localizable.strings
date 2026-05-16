@@ -212,10 +212,8 @@
 "TYPE_COLON_%@" = "Typ: %@";
 "VIEW_ON_WEBSITE" = "Zobrazit na webu";
 "CLEAR_TRACKED_MANGA" = "Vymazat sledovanou mangu";
-"START_MATCHING" = "Spustit párování";
 "SYNC_LOCAL_HISTORY" = "Synchronizace místní historie";
 "MIGRATE" = "Migrovat";
-"MIGRATION" = "Migrace";
 "MIGRATE_%i_ITEMS?" = "Migrovat %i položek?";
 "MIGRATE_ONE_ITEM?" = "Migrovat 1 položku?";
 "UPLOAD_DATE" = "Datum nahrání";
@@ -286,7 +284,6 @@
 "RENAME_CATEGORY_FAIL" = "Přejmenování kategorie se nezdařilo";
 "SKIP_DUPLICATE_CHAPTERS" = "Přeskočit duplicitní kapitoly";
 "OPTIONS" = "Možnosti";
-"TITLES" = "Tituly";
 "DESTINATION" = "Destinace";
 "SELECTED" = "Vybrané";
 "ALL_CHAPTERS_READ" = "Všechny kapitoly přečtené";
