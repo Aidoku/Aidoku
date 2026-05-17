@@ -107,6 +107,9 @@ class LibraryCategorySelectionHeader: UICollectionReusableView {
     }
 
     func setSelectedOption(_ indexPath: IndexPath) {
+        guard selectedSection != indexPath.section || selectedOption != indexPath.row else {
+            return
+        }
         selectedSection = indexPath.section
         selectedOption = indexPath.row
         updateMenu()

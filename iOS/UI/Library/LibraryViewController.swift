@@ -162,7 +162,8 @@ class LibraryViewController: OldMangaCollectionViewController {
         let registration = UICollectionView.SupplementaryRegistration<LibraryCategorySelectionHeader>(
             elementKind: UICollectionView.elementKindSectionHeader
         ) { [weak self] header, _, _ in
-            guard let self else { return }
+            guard let self, header.options.isEmpty else { return }
+
             header.delegate = self
             var options: [LibraryCategorySelectionHeader.Section] = []
             if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
@@ -186,7 +187,6 @@ class LibraryViewController: OldMangaCollectionViewController {
                     header.setSelectedOption(.init(row: 1, section: 0))
                 }
             }
-            header.updateMenu()
 
             // load locked icons
             if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
