@@ -255,7 +255,7 @@ actor TrackerManager {
 
             // Sync progress from tracker if enabled or is enhanced tracker
             if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") || (tracker is EnhancedTracker) || (tracker is PageTracker) {
-                await syncProgressFromTracker(tracker: tracker, trackId: id ?? item.id, manga: manga)
+                await syncProgressFromTracker(tracker: tracker, trackItem: trackItem, manga: manga)
             } else {
                 NotificationCenter.default.post(name: .syncTrackItem, object: trackItem)
             }
@@ -347,7 +347,7 @@ actor TrackerManager {
     /// Sync progress from tracker to local history.
     func syncProgressFromTracker(
         tracker: Tracker,
-        trackId: String,
+        trackItem: TrackItem,
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter]? = nil
     ) async {
@@ -360,7 +360,7 @@ actor TrackerManager {
         } else {
             let chaptersToMark = await getChaptersToSyncProgressFromTracker(
                 tracker: tracker,
-                trackId: trackId,
+                trackItem: trackItem,
                 manga: manga,
                 chapters: chapters
             )
@@ -582,13 +582,13 @@ extension TrackerManager {
 
     func getChaptersToSyncProgressFromTracker(
         tracker: Tracker,
-        trackId: String,
+        trackItem: TrackItem,
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter]? = nil,
         currentHighestRead: Float? = nil
     ) async -> [AidokuRunner.Chapter] {
         guard
-            let state = try? await tracker.getState(trackId: trackId),
+            let state = try? await tracker.getState(trackId: trackItem.id),
             case let trackerLastReadChapter = state.lastReadChapter,
             case let trackerLastReadVolume = state.lastReadVolume,
             (trackerLastReadChapter ?? 0) > 0 || (trackerLastReadVolume ?? 0) > 0
@@ -624,8 +624,15 @@ extension TrackerManager {
         // Determine what to sync based on tracker progress and forced mode
         if displayMode == .chapter {
             // Forced chapter mode: sync chapter progress
-            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
-                chaptersToMark = chapters.filter { ($0.chapterNumber ?? $0.volumeNumber ?? 0) <= trackerLastReadChapter }
+            if let trackerLastReadChapter {
+                let offsetTrackerLastReadChapter = Self.applyChapterOffset(
+                    to: trackerLastReadChapter,
+                    offset: -trackItem.chapterOffset,
+                    maxChapters: state.totalChapters
+                )
+                if offsetTrackerLastReadChapter > currentHighestRead {
+                    chaptersToMark = chapters.filter { ($0.chapterNumber ?? $0.volumeNumber ?? 0) <= offsetTrackerLastReadChapter }
+                }
             }
         } else if displayMode == .volume {
             // Forced volume mode: sync volume progress
@@ -635,17 +642,24 @@ extension TrackerManager {
         } else {
             // Default mode: sync both chapter and volume progress
             var checkedForChapters = false
-            if let trackerLastReadChapter, trackerLastReadChapter > currentHighestRead {
-                // find all chapters with a chapter number less than or equal to the last tracker chapter
-                chaptersToMark = chapters.filter {
-                    // floor the chapter number so partial chapters are marked (e.g. 10.1 and 10.2 will be marked if the tracker is at 10)
-                    if let chapter = $0.chapterNumber, floor(chapter) <= trackerLastReadChapter {
-                        true
-                    } else {
-                        false
+            if let trackerLastReadChapter {
+                let offsetTrackerLastReadChapter = Self.applyChapterOffset(
+                    to: trackerLastReadChapter,
+                    offset: -trackItem.chapterOffset,
+                    maxChapters: state.totalChapters
+                )
+                if offsetTrackerLastReadChapter > currentHighestRead {
+                    // find all chapters with a chapter number less than or equal to the last tracker chapter
+                    chaptersToMark = chapters.filter {
+                        // floor the chapter number so partial chapters are marked (e.g. 10.1 and 10.2 will be marked if the tracker is at 10)
+                        if let chapter = $0.chapterNumber, floor(chapter) <= offsetTrackerLastReadChapter {
+                            true
+                        } else {
+                            false
+                        }
                     }
+                    checkedForChapters = true
                 }
-                checkedForChapters = true
             }
             // otherwise, if we didn't find any chapters, try using the volume number instead
             // note: ignores the case where we skipped checking chapters due to currentHighestRead <= trackerLastReadChapter (#753)

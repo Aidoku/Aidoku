@@ -429,7 +429,7 @@ extension MangaView.ViewModel {
                 guard let tracker = TrackerManager.getTracker(id: trackItem.trackerId) else { continue }
                 await TrackerManager.shared.syncProgressFromTracker(
                     tracker: tracker,
-                    trackId: trackItem.id,
+                    trackItem: trackItem,
                     manga: manga,
                     chapters: chapters
                 )
@@ -598,7 +598,7 @@ extension MangaView.ViewModel {
 
         let chaptersToMark = await TrackerManager.shared.getChaptersToSyncProgressFromTracker(
             tracker: tracker,
-            trackId: item.id,
+            trackItem: item,
             manga: self.manga,
             chapters: self.chapters
         ).filter {
