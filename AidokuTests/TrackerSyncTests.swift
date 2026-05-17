@@ -164,4 +164,19 @@ actor TestableTracker: Tracker {
         // all matching chapters should be returned even if there's only one unread
         #expect(result.count == 5)
     }
+
+    @Test func testApplyChapterOffset() {
+        let value = TrackerManager.applyChapterOffset(to: 9, offset: 2, maxChapters: nil)
+        #expect(value == 11)
+    }
+
+    @Test func testApplyChapterOffsetNegative() {
+        let value = TrackerManager.applyChapterOffset(to: 4, offset: -10, maxChapters: nil)
+        #expect(value == 0)
+    }
+
+    @Test func testApplyChapterOffsetMaxClamp() {
+        let value = TrackerManager.applyChapterOffset(to: 9, offset: 5, maxChapters: 10)
+        #expect(value == 10)
+    }
 }

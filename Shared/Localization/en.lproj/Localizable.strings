@@ -648,6 +648,8 @@
 "STARTED" = "Started";
 "FINISHED" = "Finished";
 "STOP_TRACKING" = "Stop Tracking";
+"SET_TRACK_CHAPTER_OFFSET" = "Set Chapter Offset";
+"TRACK_CHAPTER_OFFSET_TEXT" = "Adjust automatic tracker chapter updates for this title when source chapter numbers differ from tracker chapter numbers.";
 "TITLE_DISPLAY_MODE" = "Title Display Mode";
 "NOT_PUBLISHED" = "Not Published";
 "MANGA" = "Manga";

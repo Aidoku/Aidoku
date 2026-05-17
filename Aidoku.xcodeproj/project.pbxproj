@@ -652,6 +652,7 @@
 		FB077DAD2E7DC85800C9C214 /* BackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupsView.swift; sourceTree = "<group>"; };
 		FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Highlight.swift"; sourceTree = "<group>"; };
 		FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.2.xcdatamodel; sourceTree = "<group>"; };
+		FB0AB8B42F55D00100AF1451 /* 0.8.3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.3.xcdatamodel; sourceTree = "<group>"; };
 		FB0AB8932F50B98000AF1451 /* BackupCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCategory.swift; sourceTree = "<group>"; };
 		FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroupCreateView.swift; sourceTree = "<group>"; };
 		FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroup.swift; sourceTree = "<group>"; };
@@ -3720,6 +3721,7 @@
 		FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				FB0AB8B42F55D00100AF1451 /* 0.8.3.xcdatamodel */,
 				FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */,
 				FB947CF92EF1CC4D00FC6226 /* 0.8.xcdatamodel */,
 				FB63D4FF2E37CBEF004FF4DC /* 0.7.1.xcdatamodel */,
@@ -3731,7 +3733,7 @@
 				FBCA1B2228889F1D007149C5 /* 0.5.xcdatamodel */,
 				FB1B482C277CE18D0056D02C /* Shared.xcdatamodel */,
 			);
-			currentVersion = FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */;
+			currentVersion = FB0AB8B42F55D00100AF1451 /* 0.8.3.xcdatamodel */;
 			path = Aidoku.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

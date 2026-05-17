@@ -85,6 +85,7 @@ extension CoreDataManager {
         sourceId: String,
         mangaId: String,
         title: String?,
+        chapterOffset: Int = 0,
         context: NSManagedObjectContext? = nil
     ) -> TrackObject {
         let context = context ?? self.context
@@ -94,7 +95,24 @@ extension CoreDataManager {
         object.sourceId = sourceId
         object.mangaId = mangaId
         object.title = title
+        object.chapterOffset = Int16(chapterOffset)
         return object
+    }
+
+    func setTrackChapterOffset(
+        trackerId: String,
+        sourceId: String,
+        mangaId: String,
+        chapterOffset: Int,
+        context: NSManagedObjectContext? = nil
+    ) {
+        guard let object = getTrack(
+            trackerId: trackerId,
+            sourceId: sourceId,
+            mangaId: mangaId,
+            context: context
+        ) else { return }
+        object.chapterOffset = Int16(chapterOffset)
     }
 
     /// Removes a track item.

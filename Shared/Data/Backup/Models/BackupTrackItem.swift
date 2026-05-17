@@ -13,6 +13,7 @@ struct BackupTrackItem: Codable, Hashable {
     var mangaId: String
     var sourceId: String
     var title: String?
+    var chapterOffset: Int?
 
     init(trackObject: TrackObject) {
         id = trackObject.id ?? ""
@@ -20,6 +21,7 @@ struct BackupTrackItem: Codable, Hashable {
         mangaId = trackObject.mangaId ?? ""
         sourceId = trackObject.sourceId ?? ""
         title = trackObject.title
+        chapterOffset = Int(trackObject.chapterOffset)
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> TrackObject {
@@ -34,6 +36,7 @@ struct BackupTrackItem: Codable, Hashable {
         obj.mangaId = mangaId
         obj.sourceId = sourceId
         obj.title = title
+        obj.chapterOffset = Int16(chapterOffset ?? 0)
         return obj
     }
 }

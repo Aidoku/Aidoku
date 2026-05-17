@@ -257,6 +257,8 @@
 "TRACK_PLANNING" = "Planejamento";
 "TRACK_DROPPED" = "Abandonado";
 "STOP_TRACKING" = "Deixar de Seguir";
+"SET_TRACK_CHAPTER_OFFSET" = "Definir Compensação de Capítulo";
+"TRACK_CHAPTER_OFFSET_TEXT" = "Ajusta automaticamente as atualizações de capítulo no rastreador para este título quando a numeração dos capítulos na fonte difere da numeração no rastreador.";
 "ONESHOT" = "One-shot";
 "NOT_PUBLISHED" = "Não Publicado";
 "MANGA" = "Manga";

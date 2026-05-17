@@ -21,4 +21,6 @@ struct TrackItem: Sendable {
     var title: String?
     /// The paired tracking state of the item.
     var state: TrackState?
+    /// The chapter offset to apply for automatic tracker updates.
+    var chapterOffset: Int
 }
