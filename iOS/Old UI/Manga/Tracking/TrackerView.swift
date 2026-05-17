@@ -251,21 +251,22 @@ struct TrackerView: View {
         coordinator.pickerView.selectRow(chapterOffset - minValue, inComponent: 0, animated: false)
 
         let alert = UIAlertController(
-            title: NSLocalizedString("SET_TRACK_CHAPTER_OFFSET", comment: ""),
-            message: NSLocalizedString("TRACK_CHAPTER_OFFSET_TEXT", comment: "") + "\n\n\n\n\n\n\n\n",
+            title: NSLocalizedString("SET_TRACK_CHAPTER_OFFSET"),
+            message: NSLocalizedString("TRACK_CHAPTER_OFFSET_TEXT") + "\n\n\n\n\n\n\n\n",
             preferredStyle: .alert
         )
 
         alert.view.addSubview(coordinator.pickerView)
+
         coordinator.pickerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             coordinator.pickerView.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor),
             coordinator.pickerView.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor, constant: 35),
             coordinator.pickerView.widthAnchor.constraint(equalToConstant: 250),
-            coordinator.pickerView.heightAnchor.constraint(equalToConstant: 140),
+            coordinator.pickerView.heightAnchor.constraint(equalToConstant: 140)
         ])
 
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
             let selectedRow = coordinator.pickerView.selectedRow(inComponent: 0)
             let value = minValue + selectedRow
             guard value != chapterOffset else { return }
@@ -274,7 +275,7 @@ struct TrackerView: View {
                 await TrackerManager.shared.setTrackChapterOffset(item: item, chapterOffset: value)
             }
         })
-        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel, handler: nil))
 
         (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
     }

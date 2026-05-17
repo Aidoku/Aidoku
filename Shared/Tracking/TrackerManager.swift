@@ -106,21 +106,24 @@ actor TrackerManager {
             // update last read chapter and volume based on mode
             if displayMode == .chapter {
                 // chapter mode: only update chapter, don't update volume
-                if let chapterNum, chapterNum > 0 && state.lastReadChapter ?? 0 < chapterNum {
-                    update.lastReadChapter = applyChapterOffset(
+                if let chapterNum, chapterNum > 0 {
+                    let newChapterNumber = Self.applyChapterOffset(
                         to: chapterNum,
                         offset: item.chapterOffset,
                         maxChapters: state.totalChapters
                     )
+                    if state.lastReadChapter ?? 0 < newChapterNumber {
+                        update.lastReadChapter = newChapterNumber
+                    }
                 } else if let volumeNum {
                     // no chapter metadata, use volume number as chapter
-                    let chapterFromVolume = Float(volumeNum)
+                    let chapterFromVolume = Self.applyChapterOffset(
+                        to: Float(volumeNum),
+                        offset: item.chapterOffset,
+                        maxChapters: state.totalChapters
+                    )
                     if chapterFromVolume > state.lastReadChapter ?? 0 {
-                        update.lastReadChapter = applyChapterOffset(
-                            to: chapterFromVolume,
-                            offset: item.chapterOffset,
-                            maxChapters: state.totalChapters
-                        )
+                        update.lastReadChapter = chapterFromVolume
                     }
                 }
             } else if displayMode == .volume {
@@ -136,12 +139,15 @@ actor TrackerManager {
                 }
             } else {
                 // default mode: update both chapter and volume if available
-                if let chapterNum, chapterNum > 0 && state.lastReadChapter ?? 0 < chapterNum {
-                    update.lastReadChapter = applyChapterOffset(
+                if let chapterNum, chapterNum > 0 {
+                    let newChapterNumber = Self.applyChapterOffset(
                         to: chapterNum,
                         offset: item.chapterOffset,
                         maxChapters: state.totalChapters
                     )
+                    if state.lastReadChapter ?? 0 < newChapterNumber {
+                        update.lastReadChapter = newChapterNumber
+                    }
                 }
                 if let volumeNum, volumeNum > 0 && state.lastReadVolume ?? 0 < volumeNum {
                     update.lastReadVolume = volumeNum
@@ -539,17 +545,13 @@ actor TrackerManager {
 }
 
 extension TrackerManager {
-    nonisolated static func applyChapterOffset(to chapter: Float, offset: Int, maxChapters: Int?) -> Float {
+    static func applyChapterOffset(to chapter: Float, offset: Int, maxChapters: Int?) -> Float {
         var adjusted = chapter + Float(offset)
         adjusted = max(0, adjusted)
         if let maxChapters {
             adjusted = min(adjusted, Float(maxChapters))
         }
         return adjusted
-    }
-
-    private func applyChapterOffset(to chapter: Float, offset: Int, maxChapters: Int?) -> Float {
-        Self.applyChapterOffset(to: chapter, offset: offset, maxChapters: maxChapters)
     }
 }
 
