@@ -119,7 +119,9 @@ class LibraryViewController: OldMangaCollectionViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.placeholder = NSLocalizedString("LIBRARY_SEARCH")
+        searchController.searchBar.placeholder = viewModel.currentCategory == nil
+            ? NSLocalizedString("LIBRARY_SEARCH")
+            : NSLocalizedString("CATEGORY_SEARCH")
         navigationItem.searchController = searchController
 
         // navbar buttons
@@ -602,6 +604,10 @@ extension LibraryViewController {
         emptyStackView.text = viewModel.actuallyEmpty
             ? NSLocalizedString("LIBRARY_ADD_CONTENT")
             : NSLocalizedString("LIBRARY_ADJUST_FILTERS")
+
+        navigationItem.searchController?.searchBar.placeholder = viewModel.currentCategory == nil
+            ? NSLocalizedString("LIBRARY_SEARCH")
+            : NSLocalizedString("CATEGORY_SEARCH")
     }
 
     @objc func stopEditing() {

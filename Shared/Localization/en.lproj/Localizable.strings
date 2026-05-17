@@ -67,6 +67,7 @@
 // Library
 "LIBRARY" = "Library";
 "LIBRARY_SEARCH" = "Find in Library";
+"CATEGORY_SEARCH" = "Find in Category";
 "LIBRARY_EMPTY" = "Library Empty";
 "LIBRARY_ADD_CONTENT" = "Add content from the browse tab.";
 "LIBRARY_ADJUST_FILTERS" = "Adjust your filters to see more content.";
