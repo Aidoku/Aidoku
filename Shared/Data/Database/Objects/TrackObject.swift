@@ -9,7 +9,7 @@ import Foundation
 
 extension TrackObject {
     func toItem() -> TrackItem {
-        return TrackItem(
+       TrackItem(
             id: id ?? "",
             trackerId: trackerId ?? "",
             sourceId: sourceId ?? "",

@@ -84,13 +84,13 @@ struct TrackerView: View {
                             showOffsetPicker()
                         } label: {
                             Label(
-                                NSLocalizedString("SET_TRACK_CHAPTER_OFFSET", comment: ""),
+                                NSLocalizedString("SET_TRACK_CHAPTER_OFFSET"),
                                 systemImage: "number"
                             )
                         }
                     } label: {
                         Label(
-                            NSLocalizedString("ADVANCED", comment: ""),
+                            NSLocalizedString("ADVANCED"),
                             systemImage: "slider.horizontal.3"
                         )
                     }
@@ -258,10 +258,12 @@ struct TrackerView: View {
 
         alert.view.addSubview(coordinator.pickerView)
         coordinator.pickerView.translatesAutoresizingMaskIntoConstraints = false
-        coordinator.pickerView.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor).isActive = true
-        coordinator.pickerView.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor, constant: 35).isActive = true
-        coordinator.pickerView.widthAnchor.constraint(equalToConstant: 250).isActive = true
-        coordinator.pickerView.heightAnchor.constraint(equalToConstant: 140).isActive = true
+        NSLayoutConstraint.activate([
+            coordinator.pickerView.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor),
+            coordinator.pickerView.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor, constant: 35),
+            coordinator.pickerView.widthAnchor.constraint(equalToConstant: 250),
+            coordinator.pickerView.heightAnchor.constraint(equalToConstant: 140),
+        ])
 
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
             let selectedRow = coordinator.pickerView.selectedRow(inComponent: 0)
