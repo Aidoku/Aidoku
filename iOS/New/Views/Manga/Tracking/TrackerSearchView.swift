@@ -21,6 +21,8 @@ struct TrackerSearchView: View {
     @State private var results: [TrackSearchItem] = []
     @State private var selectedItem: String?
     @State private var searchTask: Task<Void, Never>?
+    @State private var safariUrl: URL?
+    @State private var showSafari = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -45,6 +47,20 @@ struct TrackerSearchView: View {
                         TrackerSearchItemCell(item: item, selected: selectedItem == item.id)
                     }
                     .offsetListSeparator()
+                    .contextMenu {
+                        Button {
+                            Task {
+                                safariUrl = await tracker.getUrl(trackId: item.id)
+                                guard safariUrl != nil else { return }
+                                showSafari = true
+                            }
+                        } label: {
+                            Label(
+                                NSLocalizedString("VIEW_ON_WEBSITE"),
+                                systemImage: "safari"
+                            )
+                        }
+                    }
                 }
             }
             .listStyle(.plain)
@@ -80,6 +96,9 @@ struct TrackerSearchView: View {
                 } else {
                     view
                 }
+            }
+            .sheet(isPresented: $showSafari) {
+                SafariView(url: $safariUrl)
             }
             .animation(.default, value: results)
             .navigationBarTitleDisplayMode(.inline)
