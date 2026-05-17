@@ -106,11 +106,22 @@ actor TrackerManager {
             // update last read chapter and volume based on mode
             if displayMode == .chapter {
                 // chapter mode: only update chapter, don't update volume
-                if let chapterNum, chapterNum > 0 && state.lastReadChapter ?? 0 < chapterNum {
-                    update.lastReadChapter = chapterNum
+                if let chapterNum, chapterNum > 0 {
+                    let newChapterNumber = Self.applyChapterOffset(
+                        to: chapterNum,
+                        offset: item.chapterOffset,
+                        maxChapters: state.totalChapters
+                    )
+                    if state.lastReadChapter ?? 0 < newChapterNumber {
+                        update.lastReadChapter = newChapterNumber
+                    }
                 } else if let volumeNum {
                     // no chapter metadata, use volume number as chapter
-                    let chapterFromVolume = Float(volumeNum)
+                    let chapterFromVolume = Self.applyChapterOffset(
+                        to: Float(volumeNum),
+                        offset: item.chapterOffset,
+                        maxChapters: state.totalChapters
+                    )
                     if chapterFromVolume > state.lastReadChapter ?? 0 {
                         update.lastReadChapter = chapterFromVolume
                     }
@@ -128,8 +139,15 @@ actor TrackerManager {
                 }
             } else {
                 // default mode: update both chapter and volume if available
-                if let chapterNum, chapterNum > 0 && state.lastReadChapter ?? 0 < chapterNum {
-                    update.lastReadChapter = chapterNum
+                if let chapterNum, chapterNum > 0 {
+                    let newChapterNumber = Self.applyChapterOffset(
+                        to: chapterNum,
+                        offset: item.chapterOffset,
+                        maxChapters: state.totalChapters
+                    )
+                    if state.lastReadChapter ?? 0 < newChapterNumber {
+                        update.lastReadChapter = newChapterNumber
+                    }
                 }
                 if let volumeNum, volumeNum > 0 && state.lastReadVolume ?? 0 < volumeNum {
                     update.lastReadVolume = volumeNum
@@ -230,7 +248,8 @@ actor TrackerManager {
                 trackerId: tracker.id,
                 sourceId: manga.sourceKey,
                 mangaId: manga.key,
-                title: item.title ?? manga.title
+                title: item.title ?? manga.title,
+                chapterOffset: 0
             )
             await TrackerManager.shared.saveTrackItem(item: trackItem)
 
@@ -254,6 +273,7 @@ actor TrackerManager {
                 sourceId: item.sourceId,
                 mangaId: item.mangaId,
                 title: item.title,
+                chapterOffset: item.chapterOffset,
                 context: context
             )
             do {
@@ -271,6 +291,25 @@ actor TrackerManager {
         await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             self.removeTrackItem(item: item, context: context)
         }
+    }
+
+    /// Sets the chapter offset for a track item.
+    func setTrackChapterOffset(item: TrackItem, chapterOffset: Int) async {
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.setTrackChapterOffset(
+                trackerId: item.trackerId,
+                sourceId: item.sourceId,
+                mangaId: item.mangaId,
+                chapterOffset: chapterOffset,
+                context: context
+            )
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("TrackManager.setTrackChapterOffset(item:chapterOffset:): \(error)")
+            }
+        }
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
     }
 
     nonisolated func removeTrackItem(item: TrackItem, context: NSManagedObjectContext) {
@@ -502,6 +541,17 @@ actor TrackerManager {
                 }
             }
         }
+    }
+}
+
+extension TrackerManager {
+    static func applyChapterOffset(to chapter: Float, offset: Int, maxChapters: Int?) -> Float {
+        var adjusted = chapter + Float(offset)
+        adjusted = max(0, adjusted)
+        if let maxChapters {
+            adjusted = min(adjusted, Float(maxChapters))
+        }
+        return adjusted
     }
 }
 

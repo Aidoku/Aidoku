@@ -9,6 +9,13 @@ import Foundation
 
 extension TrackObject {
     func toItem() -> TrackItem {
-        TrackItem(id: id ?? "", trackerId: trackerId ?? "", sourceId: sourceId ?? "", mangaId: mangaId ?? "", title: title)
+       TrackItem(
+            id: id ?? "",
+            trackerId: trackerId ?? "",
+            sourceId: sourceId ?? "",
+            mangaId: mangaId ?? "",
+            title: title,
+            chapterOffset: Int(chapterOffset)
+        )
     }
 }
