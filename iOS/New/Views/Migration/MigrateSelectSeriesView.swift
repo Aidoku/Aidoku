@@ -39,6 +39,11 @@ struct MigrateSelectSeriesView: View {
         .environment(\.editMode, $editMode)
         .navigationTitle(sourceName)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            guard let navigationController = path.rootViewController as? UINavigationController else { return }
+            navigationController.isToolbarHidden = false
+            navigationController.toolbar.alpha = 1
+        }
 
         if #available(iOS 26.0, *) {
             list
