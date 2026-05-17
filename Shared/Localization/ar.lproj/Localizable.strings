@@ -271,8 +271,6 @@
 "RELOAD" = "إعادة تحميل";
 "%i_OF_%i" = "%I من أصل %i";
 "MIGRATE_SOURCES" = "ترحيل المصادر";
-"START_MATCHING" = "بدء المطابقة";
-"MIGRATION" = "ترحيل";
 "OPTIONS" = "خيارات";
 "DESTINATION" = "وجهة";
 "SELECTED" = "محدد";
@@ -304,7 +302,6 @@
 "UPCOMING" = "قادم";
 "REMOVE_FROM_CATEGORY" = "أزل من الفئة";
 "FAILED_CHAPTER_LOAD" = "فشل تحميل الفصل";
-"TITLES" = "عناوين";
 "MOST_CHAPTERS_SLOWER" = "معظم الفصول (أبطأ)";
 "RENAME_CATEGORY_FAIL_INFO" = "يجب أن يكون اسم الفئة فريدًا.";
 "ALL_CHAPTERS_READ" = "جميع الفصول مقروءة";

@@ -248,16 +248,14 @@ extension BrowseViewController {
     }
 
     @objc func openMigrateSourcePage() {
-        let hostingController = UIHostingController(
-            rootView: SwiftUINavigationView(rootView: MigrateSourcesView())
-        )
+        let viewController = SwiftUINavigationViewController(rootView: MigrateSourcesView())
         if #available(iOS 26.0, *) {
-            hostingController.preferredTransition = .zoom { _ in
+            viewController.preferredTransition = .zoom { _ in
                 self.navigationItem.rightBarButtonItems?.last
             }
         }
-        hostingController.modalPresentationStyle = .pageSheet
-        present(hostingController, animated: true)
+        viewController.modalPresentationStyle = .pageSheet
+        present(viewController, animated: true)
     }
 
     @objc func openAddSourcePage() {

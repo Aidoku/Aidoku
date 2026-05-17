@@ -271,7 +271,6 @@
 "ONE_PAGE_LEFT" = "1 страница осталась";
 "LAST_UPDATED" = "Последний обновленный";
 "TOTAL_CHAPTERS" = "По количеству глав";
-"START_MATCHING" = "Начать поиск соответствий";
 "RENAME_CATEGORY_INFO" = "Введите новое название для категории.";
 "RENAME_CATEGORY_FAIL" = "Не удалось переименовать Категорию";
 "SKIP_DUPLICATE_CHAPTERS" = "Пропустить дублирующиеся главы";
@@ -285,10 +284,8 @@
 "MOST_CHAPTERS_SLOWER" = "Больше глав (медленнее)";
 "SYNC_LOCAL_HISTORY" = "Синхронизировать локальную историю";
 "MIGRATE" = "Мигрировать";
-"MIGRATION" = "Перемещение";
 "DESTINATION" = "Цель";
 "OPTIONS" = "Настройки";
-"TITLES" = "Названия";
 "SELECTED" = "Выбран";
 "NOT_FOUND" = "Не найден";
 "FIRST_ALTERNATIVE" = "Первая альтернатива";

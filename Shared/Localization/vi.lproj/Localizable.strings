@@ -293,7 +293,6 @@
 "PIN" = "Ghim";
 "COVER" = "Bìa";
 "OPTIONS" = "Tùy chọn";
-"TITLES" = "Tiêu đề";
 "COPY" = "Sao chép";
 "UNPIN" = "Bỏ ghim";
 "REORDER" = "Sắp xếp lại";
@@ -302,10 +301,8 @@
 "NOT_FOUND" = "Không tìm thấy";
 "DEFAULT_READING_MODE" = "Chế độ đọc mặc định";
 "BACKUP_ERROR_TEXT" = "Đã gặp lỗi khi khôi phục: %@. Bản sao lưu có thể không hợp lệ.";
-"START_MATCHING" = "Bắt đầu hợp nhất";
 "MIGRATE" = "Chuyển đổi";
 "CROP_BORDERS" = "Xoá viền";
-"MIGRATION" = "Chuyển đổi";
 
 // Manga Updates
 "MANGA_UPDATES" = "Cập nhật";

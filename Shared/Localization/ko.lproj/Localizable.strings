@@ -277,12 +277,9 @@
 "FAILED_CHAPTER_LOAD" = "장 불러오기 실패";
 "TOTAL_CHAPTERS" = "전체 장";
 "MIGRATE_SOURCES" = "소스 마이그레이션";
-"START_MATCHING" = "매칭 시작";
 "SYNC_LOCAL_HISTORY" = "로컬 기록 동기화";
 "MIGRATE" = "이동하다";
-"MIGRATION" = "이동";
 "OPTIONS" = "옵션";
-"TITLES" = "제목";
 "DESTINATION" = "목적지";
 "SELECTED" = "선택됨";
 "NOT_FOUND" = "찾을 수 없음";

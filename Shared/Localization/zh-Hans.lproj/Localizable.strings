@@ -293,13 +293,10 @@
 "DESTINATION" = "目标";
 "MIGRATE_SOURCES" = "迁移图源";
 "MIGRATE" = "迁移";
-"START_MATCHING" = "开始匹配";
 "SYNC_LOCAL_HISTORY" = "同步至本机历史";
-"MIGRATION" = "迁移";
 "OPTIONS" = "选项";
 "SELECTED" = "已选择";
 "NOT_FOUND" = "未找到";
-"TITLES" = "标题";
 "MOST_CHAPTERS_SLOWER" = "最多章节（较慢）";
 "MIGRATE_%i_ITEMS?" = "迁移%i个项目？";
 "RENAME_CATEGORY_INFO" = "为此类别输入新名称。";

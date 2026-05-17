@@ -372,7 +372,6 @@ extension SourceViewController {
                             } else {
                                 Task {
                                     await MangaManager.shared.addToLibrary(
-                                        sourceId: mangaInfo.sourceId,
                                         manga: entry,
                                         fetchMangaDetails: true
                                     )

@@ -277,14 +277,11 @@
 "CLEAR_TRACKED_MANGA_TEXT" = "L'azione è irreversibile. Sarà interrotto il tracciamento per tutti i manga.";
 "REMOVE_FROM_CATEGORY" = "Rimuovi dalla categoria";
 "MIGRATE" = "Migra";
-"MIGRATION" = "Migrazione";
-"TITLES" = "Titoli";
 "NOT_FOUND" = "Non trovato";
 "MOST_CHAPTERS_SLOWER" = "Più Capitoli (lento)";
 "MIGRATE_ONE_ITEM?" = "Migrare 1 elemento?";
 "UPCOMING" = "In arrivo";
 "MIGRATE_SOURCES" = "Migra le Fonti";
-"START_MATCHING" = "Inizia ad Abbinare";
 "OPTIONS" = "Opzioni";
 "SYNC_LOCAL_HISTORY" = "Sincronizza la cronologia locale";
 "DESTINATION" = "Destinazione";

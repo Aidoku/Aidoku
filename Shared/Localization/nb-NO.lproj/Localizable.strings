@@ -165,7 +165,6 @@
 "BACKUP_IMPORT_SUCCESS" = "Sikkerhetskopi importert";
 "LIBRARY_LOCKED" = "Biblioteket er låst.";
 "TITLE" = "Navn";
-"MIGRATION" = "Flytting";
 "MIGRATE" = "Flytt";
 "OPTIONS" = "Alternativer";
 "DESTINATION" = "Mål";

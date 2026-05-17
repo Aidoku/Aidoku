@@ -157,7 +157,6 @@ struct HomeGridView: View {
                         bookmarkedItems.insert(entry.key)
                         Task {
                             await MangaManager.shared.addToLibrary(
-                                sourceId: source.key,
                                 manga: entry,
                                 fetchMangaDetails: true
                             )

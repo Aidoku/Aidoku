@@ -209,12 +209,9 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Categorie namen moeten uniek zijn.";
 "CATEGORY_NAME" = "Categorie naam";
 "MIGRATE_SOURCES" = "Migreer Bronnen";
-"START_MATCHING" = "Begin met matchen";
 "SYNC_LOCAL_HISTORY" = "Synchroniseer lokale geschiedenis";
 "MIGRATE" = "Migreer";
-"MIGRATION" = "Migratie";
 "OPTIONS" = "Opties";
-"TITLES" = "Titels";
 "DESTINATION" = "Bestemming";
 "SELECTED" = "Geselecteerd";
 "AVAILABLE" = "Beschikbaar";

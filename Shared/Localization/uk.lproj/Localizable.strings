@@ -235,9 +235,7 @@
 "SYNC_LOCAL_HISTORY" = "Синхронізувати історію";
 "MIGRATE" = "Мігрувати";
 "MIGRATE_SOURCES" = "Мігрувати джерела";
-"MIGRATION" = "Міграція";
 "MIGRATE_ONE_ITEM?" = "Мігрувати 1 елемент?";
-"TITLES" = "Назви";
 "SELECTED" = "Обрані";
 "MIGRATE_%i_ITEMS?" = "Мігрувати %i елементів?";
 "UPLOAD_DATE" = "Дата завантаження";
@@ -274,7 +272,6 @@
 "ALL_CHAPTERS_READ" = "Усі глави прочитані";
 "SELECT" = "Обрати";
 "DESTINATION" = "Цілі";
-"START_MATCHING" = "Почніть підбирати";
 "DOWNSAMPLE_IMAGES" = "Зображення з меншою роздільною здатністю";
 "SET_AS_NORMAL_PAGE" = "Встановити як Звичайна сторінка";
 "PAGES_TO_PRELOAD" = "Попереднє завантаження сторінок";

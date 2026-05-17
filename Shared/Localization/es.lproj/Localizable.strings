@@ -298,12 +298,9 @@
 "MIGRATE_%i_ITEMS?" = "¿Migrar %i elementos?";
 "MIGRATE_ONE_ITEM?" = "¿Migrar 1 elemento?";
 "SYNC_LOCAL_HISTORY" = "Sincronizar el historial local";
-"TITLES" = "Títulos";
 "MIGRATE" = "Migrar";
 "SELECTED" = "Seleccionado";
 "MOST_CHAPTERS_SLOWER" = "Mayoría de capítulos (más lento)";
-"MIGRATION" = "Migración";
-"START_MATCHING" = "Empezar a emparejar";
 "UPLOAD_DATE" = "Fecha de subida";
 "IS_TRACKING" = "Seguimiento";
 "ALL_CHAPTERS_READ" = "Todos los capítulos leídos";

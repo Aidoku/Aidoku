@@ -323,12 +323,9 @@
 "RENAME_CATEGORY" = "Преименуване на категория";
 "RENAME_CATEGORY_FAIL_INFO" = "Имената на категориите трябва да са уникални.";
 "MIGRATE_SOURCES" = "Миграция на източника";
-"START_MATCHING" = "Начало на съвпаденията";
 "SYNC_LOCAL_HISTORY" = "Синхронизация на локалната история";
-"MIGRATION" = "Миграция";
 "MIGRATE" = "Миграция";
 "OPTIONS" = "Настройки";
-"TITLES" = "Заглавия";
 "SELECTED" = "Избран";
 "DESTINATION" = "Дестинация";
 "AVAILABLE" = "Достъпен";

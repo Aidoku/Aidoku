@@ -127,9 +127,7 @@
 "RENAME_CATEGORY_INFO" = "Унесите ново име за ову категорију.";
 "CATEGORY_NAME" = "Име категорије";
 "MIGRATE_SOURCES" = "Мигрирај изворе";
-"START_MATCHING" = "Почни упаривање";
 "OPTIONS" = "Опције";
-"TITLES" = "Наслови";
 "DESTINATION" = "Одредиште";
 "SELECTED" = "Изабрано";
 "NOT_FOUND" = "Није пронађено";
@@ -324,7 +322,6 @@
 "RENAME_CATEGORY_FAIL" = "Неуспело преименовање категорије";
 "SYNC_LOCAL_HISTORY" = "Синхронизуј локалну историју";
 "MIGRATE" = "Мигрирај";
-"MIGRATION" = "Миграција";
 "AVAILABLE" = "Доступно";
 "FIRST_ALTERNATIVE" = "Прва алтернатива";
 "MIGRATE_%i_ITEMS?" = "Мигрирај %i ставки?";

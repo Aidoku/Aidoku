@@ -90,15 +90,14 @@ extension CoreDataManager {
 
     /// Add a manga with the specified chapters to the library.
     func addToLibrary(
-        sourceId: String,
         manga: AidokuRunner.Manga,
         chapters: [AidokuRunner.Chapter],
         context: NSManagedObjectContext? = nil
     ) {
-        let mangaObject = self.getOrCreateManga(manga, sourceId: sourceId, context: context)
+        let mangaObject = self.getOrCreateManga(manga, context: context)
         let libraryObject = LibraryMangaObject(context: context ?? self.context)
         libraryObject.manga = mangaObject
         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
-        self.setChapters(chapters, sourceId: sourceId, mangaId: manga.key, context: context)
+        self.setChapters(chapters, sourceId: manga.sourceKey, mangaId: manga.key, context: context)
     }
 }

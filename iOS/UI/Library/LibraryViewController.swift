@@ -1493,9 +1493,15 @@ extension LibraryViewController {
                 title: NSLocalizedString("MIGRATE"),
                 image: UIImage(systemName: "arrow.left.arrow.right")
             ) { [weak self] _ in
-                let manga = mangaInfo.map { $0.toManga() }
-                let migrateView = MigrateMangaView(manga: manga)
-                self?.present(UIHostingController(rootView: SwiftUINavigationView(rootView: migrateView)), animated: true)
+                let manga = mangaInfo.map { $0.toManga().toNew() }
+                let migrateView = MigrateSelectDestinationView(
+                    selectedSeries: manga,
+                    selectedSources: manga.count == 1
+                        ? SourceManager.shared.source(for: manga[0].sourceKey).flatMap { [$0.toInfo()] } ?? []
+                        : []
+                )
+                let viewController = SwiftUINavigationViewController(rootView: migrateView)
+                self?.present(viewController, animated: true)
             })
 
             var bottomMenuChildren: [UIMenuElement] = []

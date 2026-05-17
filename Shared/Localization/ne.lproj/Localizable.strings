@@ -104,7 +104,6 @@
 "ADD_TO_CATEGORIES" = "वर्गमा थप्नुहोस्";
 "MIGRATE_SOURCES" = "स्रोतहरू स्थानान्तरण गर्नुहोस्";
 "MIGRATE" = "स्थानान्तरण";
-"TITLES" = "शीर्षकहरू";
 "SKIP_DUPLICATE_CHAPTERS" = "डुप्लिकेट अध्यायहरू स्किप गर्नुहोस्";
 "MIGRATE_%i_ITEMS?" = "%i वस्तुहरू स्थानान्तरण गर्ने हो?";
 "BOTH" = "दुबै";
@@ -298,9 +297,7 @@
 "RENAME_CATEGORY" = "वर्ग पुन:नामाकरण गर्नुहोस्";
 "RENAME_CATEGORY_FAIL_INFO" = "वर्ग नामहरू युनिक हुनुपर्छ।";
 "CATEGORY_NAME" = "वर्ग नाम";
-"START_MATCHING" = "मिलाउन सुरु गर्नुहोस्";
 "SYNC_LOCAL_HISTORY" = "लोकल इतिहास सिंक गर्नुहोस्";
-"MIGRATION" = "स्थानान्तरण";
 "OPTIONS" = "अप्शन";
 "DESTINATION" = "गन्तव्य";
 "SELECTED" = "चयन गरिएको";

@@ -16,7 +16,6 @@
 "RENAME_CATEGORY_FAIL_INFO" = "ឈ្មោះធ្នើសៀវភៅត្រូវតែប្លែក។";
 "CATEGORY_NAME" = "ឈ្មោះធ្នើសៀវភៅ";
 "MIGRATE_SOURCES" = "ផ្ទេរប្រភព";
-"MIGRATION" = "ផ្ទេរ";
 "MOST_CHAPTERS_SLOWER" = "វគ្គភាគច្រើន (យឺត)";
 "SELECTED" = "បានជ្រើសរើស";
 "MIGRATE_ONE_ITEM?" = "តើអ្នកចង់ផ្ទេរ 1 ធាតុ?";
@@ -176,11 +175,9 @@
 "ADD_TO_CATEGORIES" = "បន្ថែមទៅធ្នើសៀវភៅ";
 "RENAME_CATEGORY_FAIL" = "បរាជ័យក្នុងការផ្លាស់ប្តូរឈ្មោះធ្នើសៀវភៅ";
 "RENAME_CATEGORY" = "ប្តូរឈ្មោះសៀវភៅ";
-"START_MATCHING" = "ចាប់ផ្តើមការផ្គូផ្គង";
 "SYNC_LOCAL_HISTORY" = "សមកាលកម្មប្រវត្តិមូលដ្ឋាន";
 "MIGRATE" = "ផ្ទេរ";
 "OPTIONS" = "ជម្រើស";
-"TITLES" = "ចំណងជើង";
 "DESTINATION" = "គោលដៅ";
 "AVAILABLE" = "ការប្រើប្រាស់អាចធ្វើទៅបាន";
 "NOT_FOUND" = "រក​មិន​ឃើញ";

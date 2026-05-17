@@ -122,7 +122,6 @@
 "THAT_HAVENT_BEEN_READ" = "Olästa";
 "RENAME_CATEGORY" = "Döp om kategori";
 "SINGLE_PAGE" = "Enkelsidig";
-"MIGRATION" = "Överföring";
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Den angivna källistans URL är ogiltig eller redan tillagd.";
 "VIEW_ON_WEBSITE" = "Visa på webbsida";
 "RESET" = "Återställ";
@@ -145,7 +144,6 @@
 "REMOVE_FROM_LIBRARY" = "Ta bort från bibliotek";
 "LOCKED_CATEGORIES" = "Låsta kategorier";
 "REMOVE_ALL_DOWNLOADS" = "Ta bort alla nedladdningar";
-"TITLES" = "Titlar";
 "CLEAR" = "Rensa";
 "CURRENT_COLON" = "Nuvarande:";
 "AUTH_TO_DISABLE" = "Autentisera för att avaktivera.";
@@ -301,7 +299,6 @@
 "EXPORT" = "Exportera";
 "CLEAR_TRACKED_MANGA_TEXT" = "Denna handling är oåterkallelig. Spårning för alla spårare tillagda i manga kommer att tas bort.";
 "ONGOING" = "Pågående";
-"START_MATCHING" = "Börja matcha";
 "VOL_SPACE_X" = "Vol. %g";
 "MARK_UNREAD" = "Markera som oläst";
 "MARK" = "Markera";

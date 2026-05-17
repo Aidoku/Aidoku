@@ -275,7 +275,6 @@
 "ONE_PAGE_LEFT" = "Została 1 strona";
 "TOTAL_CHAPTERS" = "Wszystkie rozdziały";
 "MIGRATE_SOURCES" = "Migruj źródła";
-"START_MATCHING" = "Rozpocznij dopasowywanie";
 "SYNC_LOCAL_HISTORY" = "Synchronizuj historię lokalną";
 "MOST_CHAPTERS_SLOWER" = "Większość rozdziałów (wolniej)";
 "MIGRATE" = "Migruj";
@@ -284,7 +283,6 @@
 "SELECTED" = "Wybrane";
 "AVAILABLE" = "Dostępne";
 "NOT_FOUND" = "Nie znaleziono";
-"TITLES" = "Tytuły";
 "MIGRATE_ONE_ITEM?" = "Migrować 1 element?";
 "UPLOAD_DATE" = "Data przesłania";
 "SELECT" = "Wybierz";
@@ -295,7 +293,6 @@
 "RENAME_CATEGORY_INFO" = "Wprowadź nową nazwę dla tej kategorii.";
 "SKIP_DUPLICATE_CHAPTERS" = "Pomijanie powtarzających się rozdziałów";
 "RENAME_CATEGORY" = "Zmień nazwę kategorii";
-"MIGRATION" = "Migracja";
 "MIGRATE_%i_ITEMS?" = "Migrować %i elementów?";
 "PINNED" = "Przypięte";
 "%i_CHAPTERS" = "%i Rozdziały";

@@ -268,10 +268,8 @@
 "SUPPORT_VIA_KOFI" = "Ajude-nos via Ko-Fi";
 "PILLARBOX_ORIENTATION_INFO" = "Orientação Pillarbox determina para quais orientações deve ser habilitada.";
 "MIGRATE_SOURCES" = "Migrar fontes";
-"START_MATCHING" = "Iniciar correspondência";
 "SYNC_LOCAL_HISTORY" = "Sincronizar histórico local";
 "MIGRATE" = "Migrar";
-"MIGRATION" = "Migração";
 "FIRST_ALTERNATIVE" = "Primeira alternativa";
 "MIGRATE_%i_ITEMS?" = "Migrar %i itens?";
 "ALL_CHAPTERS_READ" = "Todos os capítulos lidos";
@@ -309,7 +307,6 @@
 "SELECTED" = "Selecionado";
 "NOT_FOUND" = "Não encontrado";
 "MOST_CHAPTERS_SLOWER" = "A maioria dos capítulos (mais lento)";
-"TITLES" = "Títulos";
 "MIGRATE_ONE_ITEM?" = "Migrar 1 item?";
 "PILLARBOX_AMOUNT" = "Quantidade de Pillarbox";
 "PILLARBOX_ORIENTATION" = "Orientação Pillarbox";
