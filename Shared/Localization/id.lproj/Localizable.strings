@@ -90,7 +90,7 @@
 
 // History
 "HISTORY" = "Riwayat";
-"REMOVE_CHAPTER_HISTORY_TEXT" = "Ini akan menghapus riwayat untuk chapter ini. Apakah anda yakin ingin melanjutkan?";
+"REMOVE_CHAPTER_HISTORY_TEXT" = "Ini akan menghapus riwayat untuk bab ini. Apakah anda yakin ingin melanjutkan?";
 "HISTORY_LOCKED" = "Riwayat dikunci.";
 "VIEW_MORE" = "Lihat Lebih Banyak";
 "%@_AGO" = "%@ yang lalu";
@@ -677,7 +677,7 @@
 "HIDE_BARS_ON_SWIPE" = "Sembunyikan Bilah saat Geser";
 "IMPORT_BACKUP" = "Impor Cadangan";
 "SYNC_WITH_TRACKER" = "Sinkronkan dengan Pelacak";
-"SYNC_WITH_TRACKER_INFO_%i" = "%i chapter telah ditentukan sudah dibaca oleh pelacak. Apakah Anda ingin memperbarui riwayat lokal Anda agar sesuai?";
+"SYNC_WITH_TRACKER_INFO_%i" = "%i bab telah ditentukan sudah dibaca oleh pelacak. Apakah Anda ingin menandai bab-bab ini sebagai sudah dibaca?";
 "UNAVAILABLE_TRACKER_ITEM" = "Item Pelacak Tidak Tersedia";
 "UNAVAILABLE_TRACKER_ITEM_INFO" = "Item pelacak yang ditautkan ini terkait dengan pelacak yang tidak lagi tersedia. Anda harus menghapus item ini atau masuk kembali ke pelacak terkait.";
 "MIRRORS" = "Mirror";
@@ -694,3 +694,29 @@
 "ENHANCED_TRACKERS_INFO" = "Pelacak yang disempurnakan dapat secara otomatis menautkan ke item yang ditambahkan ke perpustakaan Anda dari sumber yang didukung, melacak riwayat membaca dua arah.";
 "ENHANCED_TRACKERS_TOGGLE_INFO" = "Menonaktifkan pelacakan untuk suatu sumber akan menghapus semua pelacak yang tertaut, dan mengaktifkannya akan secara otomatis menautkan semua item di perpustakaan Anda.";
 "TRACKER_LOGOUT_INFO" = "Keluar akan menghapus info pelacakan yang tertaut dari pelacak ini untuk semua seri.";
+"REFRESH_NO_WIFI" = "Tidak Terhubung ke Wi-Fi";
+"REFRESH_NO_WIFI_TEXT" = "Pengaturan \"Hanya Perbarui saat Wi-Fi\" diaktifkan, sehingga pustaka tidak dapat disegarkan hingga koneksi Wi-Fi tersedia.";
+"REFRESH_ANYWAYS" = "Segarkan Tetap Saja";
+"API_KEY" = "Kunci API";
+"OIDC" = "OIDC";
+"BASIC_LOGIN" = "Login Dasar";
+"API_KEY_LOGIN_INFO" = "Memberikan kunci API secara manual untuk login akan menimpa metode login lainnya. Anda dapat mengosongkannya untuk menggunakan metode login lain.";
+"LOGIN_METHOD" = "Metode Login";
+"BASIC" = "Dasar";
+"RESUME_LAST_OPENED_CHAPTER" = "Lanjutkan Bab Terakhir yang Dibuka";
+"DISABLE_DOUBLE_TAP_ZOOM" = "Nonaktifkan Zoom Ketuk Dua Kali";
+"PAGE_OFFSET" = "Offset Halaman";
+"UNSET_AS_SINGLE_PAGE" = "Batalkan Pengaturan sebagai Halaman Tunggal";
+"TOGGLE_PAGE_OFFSET" = "Aktifkan/nonaktifkan offset halaman";
+"REMOVE_FROM_LIBRARY_CONFIRM" = "Hapus dari Pustaka?";
+"REMOVE_FROM_LIBRARY_CONFIRM_TEXT" = "Menghapus seri ini dari pustaka Anda juga akan menghapus semua pelacak yang tertaut. Apakah Anda yakin ingin melanjutkan?";
+"INCOGNITO_FILTERS_NOTICE" = "Filter yang dimodifikasi tidak akan tersimpan di Mode Penyamaran.";
+"REFRESH_DETAILS" = "Segarkan Detail";
+"LAYOUT" = "Tata Letak";
+"STANDARD" = "Standar";
+"COMPACT" = "Ringkas";
+"CUSTOM" = "Kustom";
+"PORTRAIT_ROWS" = "Baris Potret";
+"LANDSCAPE_ROWS" = "Baris Lanskap";
+"SYNC_WITH_TRACKER_INFO_1" = "1 bab telah ditentukan sudah dibaca oleh pelacak. Apakah Anda ingin menandai bab ini sebagai sudah dibaca?";
+"CONTINUOUS_WITH_GAPS" = "Berkelanjutan dengan Jeda";
