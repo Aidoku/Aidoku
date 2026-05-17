@@ -39,6 +39,7 @@ struct ErrorView: View {
                     NSLocalizedString("UNKNOWN_ERROR")
                 }
                 Text(text)
+                    .multilineTextAlignment(.center)
             }
             .foregroundStyle(.secondary)
 

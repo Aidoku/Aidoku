@@ -130,6 +130,7 @@ struct SourceHomeContentView: View {
                         await reload()
                     }
                     .transition(.opacity)
+                    .padding()
                 }
             }
             .refreshable {
