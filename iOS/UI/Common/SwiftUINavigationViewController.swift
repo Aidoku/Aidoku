@@ -10,8 +10,9 @@ import SwiftUI
 class SwiftUINavigationViewController<Content: View>: UINavigationController {
     let path = NavigationCoordinator(rootViewController: nil)
 
-    init (rootView: Content) {
-        super.init(rootViewController: UIHostingController(rootView: ModelWrapper(rootView: rootView, path: path)))
+    init(rootView: Content, addDismissButton: Bool = true) {
+        let view = ModelWrapper(rootView: rootView, path: path, addDismissButton: addDismissButton)
+        super.init(rootViewController: UIHostingController(rootView: view))
         path.rootViewController = self
     }
 
@@ -23,16 +24,21 @@ class SwiftUINavigationViewController<Content: View>: UINavigationController {
 private struct ModelWrapper<Content: View>: View {
     let rootView: Content
     let path: NavigationCoordinator
+    let addDismissButton: Bool
 
     var body: some View {
-        rootView
-            .environmentObject(path)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    CloseButton {
-                        path.dismiss()
+        let view = rootView.environmentObject(path)
+        if addDismissButton {
+            view
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        CloseButton {
+                            path.dismiss()
+                        }
                     }
                 }
-            }
+        } else {
+            view
+        }
     }
 }

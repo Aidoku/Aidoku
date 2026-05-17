@@ -11,6 +11,7 @@ import SwiftUI
 struct MigrateResultsView: View {
     let targetSources: [AidokuRunner.Source]
     @State private var selectedSeries: [AidokuRunner.Manga]
+    let forceMigrate: Bool
 
     private let sourceNames: [String: String]
 
@@ -32,9 +33,14 @@ struct MigrateResultsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(targetSources: [AidokuRunner.Source], selectedSeries: [AidokuRunner.Manga]) {
+    init(
+        targetSources: [AidokuRunner.Source],
+        selectedSeries: [AidokuRunner.Manga],
+        forceMigrate: Bool = false
+    ) {
         self.targetSources = targetSources
         self._selectedSeries = State(initialValue: selectedSeries)
+        self.forceMigrate = forceMigrate
 
         var sourceNames: [String: String] = [:]
         for source in SourceManager.shared.sources {
@@ -67,6 +73,10 @@ struct MigrateResultsView: View {
             ToolbarItem(placement: .confirmationAction) {
                 if isLoading {
                     ProgressView()
+                } else if forceMigrate {
+                    Button(NSLocalizedString("MIGRATE")) {
+                        startMigration(copy: false)
+                    }
                 } else {
                     Menu(NSLocalizedString("CONTINUE")) {
                         Button(NSLocalizedString("COPY")) {
@@ -79,6 +89,7 @@ struct MigrateResultsView: View {
                 }
             }
         }
+        .interactiveDismissDisabled(forceMigrate)
         .alert(
             {
                 let itemCount = migratedManga.filter({ item in

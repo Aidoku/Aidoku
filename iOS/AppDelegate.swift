@@ -748,8 +748,8 @@ extension AppDelegate {
                                 let objects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
                                 return objects.compactMap { $0.manga?.toNewManga() }
                             }
-                            let migrateView = MigrateResultsView(targetSources: [source], selectedSeries: sourceManga)
-                            let viewController = SwiftUINavigationViewController(rootView: migrateView)
+                            let migrateView = MigrateResultsView(targetSources: [source], selectedSeries: sourceManga, forceMigrate: true)
+                            let viewController = SwiftUINavigationViewController(rootView: migrateView, addDismissButton: false)
                             self.topViewController?.present(viewController, animated: true)
                         }
                     }
