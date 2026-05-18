@@ -722,3 +722,13 @@
 "UNSET_AS_SINGLE_PAGE" = "Soltar como página única";
 "OIDC" = "OIDC";
 "LAYOUT" = "Disposición";
+"CATEGORY_SEARCH" = "Encontrar en Categoría";
+"SET_TRACK_CHAPTER_OFFSET" = "Establecer desplazamiento de capítulo";
+"TRACK_CHAPTER_OFFSET_TEXT" = "Ajustar las actualizaciones automáticas de capítulos del sistema de seguimiento para este título cuando los números de capítulo de la fuente difieran de los números de capítulo del sistema de seguimiento.";
+"MIGRATE_CONFIRM_TEXT" = "El historial de lectura de las entradas originales se eliminará al migrar a un origen diferente.";
+"SELECT_PINNED_SOURCES" = "Seleccionar Fuentes Pinchadas";
+"SEARCH_MANUALLY" = "Buscar manualmente";
+"DONT_MIGRATE" = "No migrar";
+"SELECTED_%i_OF_%i" = "Seleccionado (%i/%i)";
+"MIGRATE_%i_OF_%i" = "Migrar (%i/%i)";
+"SHOW_ENTRY" = "Mostrar Apunte";
