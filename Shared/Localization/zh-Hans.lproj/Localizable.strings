@@ -723,3 +723,13 @@
 "DISABLE_DOUBLE_TAP_ZOOM" = "禁用双击缩放";
 "CONTINUOUS_WITH_GAPS" = "连续滚动（带间距）";
 "SYNC_WITH_TRACKER_INFO_1" = "追踪器检测到 1 个章节已阅读。您要将此章节标记为已读吗？";
+"CATEGORY_SEARCH" = "在分类中查找";
+"SET_TRACK_CHAPTER_OFFSET" = "设置章节偏移";
+"TRACK_CHAPTER_OFFSET_TEXT" = "图源与追踪器章节号不一致时，调整此作品的自动追踪更新。";
+"MIGRATE_CONFIRM_TEXT" = "切换图源迁移将清除原条目的阅读记录。";
+"SELECT_PINNED_SOURCES" = "选择置顶图源";
+"SEARCH_MANUALLY" = "手动搜索";
+"DONT_MIGRATE" = "跳过迁移";
+"SELECTED_%i_OF_%i" = "已选 (%i/%i)";
+"MIGRATE_%i_OF_%i" = "迁移 (%i/%i)";
+"SHOW_ENTRY" = "查看作品";

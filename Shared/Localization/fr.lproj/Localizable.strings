@@ -723,3 +723,13 @@
 "DISABLE_DOUBLE_TAP_ZOOM" = "Désactiver le double appui pour zoomer";
 "CONTINUOUS_WITH_GAPS" = "Continu avec espaces";
 "SYNC_WITH_TRACKER_INFO_1" = "1 chapitre a été déterminé comme déjà lu par le traceur. Voulez-vous marquer ce chapitre comme lu ?";
+"CATEGORY_SEARCH" = "Trouver dans la catégorie";
+"TRACK_CHAPTER_OFFSET_TEXT" = "Réglez les mises à jour automatiques du tracker de chapitre pour cette oeuvre lorsque les numéros de chapitre de la source diffèrent des numéros de chapitre du tracker.";
+"MIGRATE_CONFIRM_TEXT" = "L'historique de lecture des entrées originales sera supprimée lors de la migration vers une source différente.";
+"SELECT_PINNED_SOURCES" = "Sélectionner des sources épinglées";
+"SEARCH_MANUALLY" = "Recherche manuelle";
+"DONT_MIGRATE" = "Ne pas migrer";
+"SELECTED_%i_OF_%i" = "Selectionné (%i/%i)";
+"MIGRATE_%i_OF_%i" = "Migrer (%i/%i)";
+"SHOW_ENTRY" = "Afficher l'entrée";
+"SET_TRACK_CHAPTER_OFFSET" = "Définir le décalage de chapitre";
