@@ -334,3 +334,6 @@
 "RESET_SETTINGS" = "កំណត់ការកំណត់ឡើងវិញ";
 "TRACKERS" = "ការតាមដាន";
 "BOTH" = "ទាំងពីរ";
+"NOTIFY_NEW_CHAPTERS" = "ជូនដំណឹងពីជំពូកថ្មី";
+"1_NEW_CHAPTER_AVAILABLE" = "មានជំពូកថ្មី";
+"X_NEW_CHAPTERS_AVAILABLE" = "មានជំពូកថ្មី %d";

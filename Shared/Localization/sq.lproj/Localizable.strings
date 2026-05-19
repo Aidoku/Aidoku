@@ -315,3 +315,6 @@
 "BUILD" = "Build";
 "SCANLATOR" = "Scanlator";
 "NO_SCANLATOR" = "Pa scanlator";
+"NOTIFY_NEW_CHAPTERS" = "Njofto për Kapituj të Rinj";
+"1_NEW_CHAPTER_AVAILABLE" = "Kapitulli i ri është i disponueshëm";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d kapituj të rinj të disponueshëm";

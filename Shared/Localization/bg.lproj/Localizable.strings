@@ -348,3 +348,6 @@
 "%i_SERIES" = "%i серии";
 "VIEW_SERIES" = "Преглед на серии";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Премахване на предмет от библиотека";
+"NOTIFY_NEW_CHAPTERS" = "Известяване за нови глави";
+"1_NEW_CHAPTER_AVAILABLE" = "Налична е нова глава";
+"X_NEW_CHAPTERS_AVAILABLE" = "Налични са %d нови глави";

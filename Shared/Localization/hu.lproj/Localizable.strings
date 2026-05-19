@@ -252,3 +252,6 @@
 "ALL_SOURCES_INSTALLED_INFO" = "Nincs több telepíteni való külső forrás.";
 "LOCAL_FILES_INFO" = "A helyi forrás lehetővé teszi saját olvasási könyvtár feltöltését és kezelését közvetlenül az Aidoku-ban.";
 "LOCAL_FILES_SETUP" = "Helyi Forrás Beállítása";
+"NOTIFY_NEW_CHAPTERS" = "Értesítés új fejezetekről";
+"1_NEW_CHAPTER_AVAILABLE" = "Új fejezet elérhető";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d új fejezet elérhető";

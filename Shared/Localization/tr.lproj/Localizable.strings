@@ -445,3 +445,6 @@
 "DESCRIPTION" = "Açıklama";
 "SERIES" = "Seriler";
 "NEW_SERIES" = "Yeni seri";
+"NOTIFY_NEW_CHAPTERS" = "Yeni Bölümleri Bildir";
+"1_NEW_CHAPTER_AVAILABLE" = "Yeni bölüm mevcut";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d yeni bölüm mevcut";

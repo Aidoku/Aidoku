@@ -466,6 +466,9 @@
 "REFRESH_METADATA" = "Refresh Metadata";
 "BACKGROUND_REFRESH" = "Background Refresh";
 "BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
+"NOTIFY_NEW_CHAPTERS" = "Notify on New Chapters";
+"1_NEW_CHAPTER_AVAILABLE" = "New chapter available";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d new chapters available";
 "DELETE_DOWNLOAD_AFTER_READING" = "Delete Download After Reading";
 "NEVER" = "Never";
 "EVERY_6_HOURS" = "Every 6 hours";

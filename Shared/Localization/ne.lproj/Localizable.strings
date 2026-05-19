@@ -533,3 +533,6 @@
 "RECENTLY_SEARCHED" = "हालसालै खोजिएको";
 "NO_RECENT_SEARCHES" = "हालसालैका कुनै खोजहरू छैनन्";
 "NO_RECENT_SEARCHES_TEXT" = "तपाईंका हालसालैका खोजहरू यहाँ देखा पर्नेछन्।";
+"NOTIFY_NEW_CHAPTERS" = "नयाँ अध्यायहरूको सूचना दिनुहोस्";
+"1_NEW_CHAPTER_AVAILABLE" = "नयाँ अध्याय उपलब्ध छ";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d नयाँ अध्यायहरू उपलब्ध छन्";

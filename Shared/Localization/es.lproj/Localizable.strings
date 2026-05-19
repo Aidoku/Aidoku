@@ -732,3 +732,6 @@
 "SELECTED_%i_OF_%i" = "Seleccionado (%i/%i)";
 "MIGRATE_%i_OF_%i" = "Migrar (%i/%i)";
 "SHOW_ENTRY" = "Mostrar Apunte";
+"NOTIFY_NEW_CHAPTERS" = "Notificar de Nuevos Capítulos";
+"1_NEW_CHAPTER_AVAILABLE" = "Nuevo capítulo disponible";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d nuevos capítulos disponibles";

@@ -299,3 +299,6 @@
 "RESUME" = "חדש";
 "COPY" = "העתק";
 "WARNING" = "אזהרה";
+"NOTIFY_NEW_CHAPTERS" = "התראה על פרקים חדשים";
+"1_NEW_CHAPTER_AVAILABLE" = "פרק חדש זמין";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d פרקים חדשים זמינים";

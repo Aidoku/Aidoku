@@ -642,3 +642,6 @@
 "SAVE" = "บันทึก";
 "SAVED_SEARCHES" = "การค้นหาที่บันทึกไว้";
 "NAME_SAVED_SEARCH" = "ตั้งชื่อการบันทึกของการค้นหา";
+"NOTIFY_NEW_CHAPTERS" = "แจ้งเตือนตอนใหม่";
+"1_NEW_CHAPTER_AVAILABLE" = "ตอนใหม่พร้อมใช้งาน";
+"X_NEW_CHAPTERS_AVAILABLE" = "ตอนใหม่ %d ตอนพร้อมใช้งาน";

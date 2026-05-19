@@ -720,3 +720,6 @@
 "LANDSCAPE_ROWS" = "Baris Lanskap";
 "SYNC_WITH_TRACKER_INFO_1" = "1 bab telah ditentukan sudah dibaca oleh pelacak. Apakah Anda ingin menandai bab ini sebagai sudah dibaca?";
 "CONTINUOUS_WITH_GAPS" = "Berkelanjutan dengan Jeda";
+"NOTIFY_NEW_CHAPTERS" = "Beri Tahu Bab Baru";
+"1_NEW_CHAPTER_AVAILABLE" = "Bab baru tersedia";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d bab baru tersedia";

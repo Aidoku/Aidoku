@@ -652,3 +652,6 @@
 "NO_CURRENT_STREAK_TEXT" = "Читайте каждый день, чтобы накопить серию.";
 "LONGEST_STREAK" = "Длиннейшая серия";
 "FILTER_SEPARATOR" = ", ";
+"NOTIFY_NEW_CHAPTERS" = "Уведомлять о новых главах";
+"1_NEW_CHAPTER_AVAILABLE" = "Доступна новая глава";
+"X_NEW_CHAPTERS_AVAILABLE" = "Доступно %d новых глав";

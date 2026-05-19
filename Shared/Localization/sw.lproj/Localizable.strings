@@ -22,3 +22,6 @@
 "PHOTOS_ACCESS_DENIED_TEXT" = "Kuingia umekataliwa. samahani ruhusu Aidoku kuingia kwa ifadhi ya picha ndio iweke picha. Unaweza peana ruhusa katika mipangilio fiche.";
 "CONTENT" = "yaliyomo";
 "%@_EXPERIMENTAL" = "%@(Majaribio)";
+"NOTIFY_NEW_CHAPTERS" = "Arifu Sura Mpya";
+"1_NEW_CHAPTER_AVAILABLE" = "Sura mpya inapatikana";
+"X_NEW_CHAPTERS_AVAILABLE" = "Sura mpya %d zinapatikana";

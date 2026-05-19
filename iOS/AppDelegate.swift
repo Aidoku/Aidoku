@@ -9,6 +9,7 @@ import AidokuRunner
 import CloudKit
 import Nuke
 import SwiftUI
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -140,6 +141,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.backgroundRefresh": true,
                 "Library.updateOnlyOnWifi": true,
                 "Library.refreshMetadata": false,
+                "Library.notifyNewChapters": false,
 
                 "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
                 "Browse.contentRatings": ["safe", "containsNsfw"],
@@ -270,7 +272,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             await MangaManager.shared.scheduleLibraryRefresh()
         }
 
+        UNUserNotificationCenter.current().delegate = self
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNotifyNewChaptersToggle(_:)),
+            name: Notification.Name(NotificationManager.settingKey),
+            object: nil
+        )
+
         return true
+    }
+
+    @objc private func handleNotifyNewChaptersToggle(_ note: Notification) {
+        let enabled = (note.object as? Bool) ?? UserDefaults.standard.bool(forKey: NotificationManager.settingKey)
+        guard enabled else { return }
+        Task {
+            let granted = await NotificationManager.shared.requestAuthorization()
+            if !granted {
+                await MainActor.run {
+                    UserDefaults.standard.set(false, forKey: NotificationManager.settingKey)
+                    NotificationCenter.default.post(
+                        name: Notification.Name(NotificationManager.settingKey),
+                        object: false
+                    )
+                }
+            }
+        }
     }
 
     func application(
@@ -809,5 +836,35 @@ extension AppDelegate: ImagePipelineDelegate {
         } else {
             pipeline.configuration.makeImageDecoder(context)
         }
+    }
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .list])
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        if
+            let sourceId = userInfo[NotificationManager.sourceIdInfoKey] as? String,
+            let mangaId = userInfo[NotificationManager.mangaIdInfoKey] as? String,
+            let encodedSource = sourceId.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed),
+            let encodedManga = mangaId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+            let url = URL(string: "aidoku://\(encodedSource)/\(encodedManga)")
+        {
+            Task { @MainActor in
+                self.handleUrl(url: url)
+            }
+        }
+        completionHandler()
     }
 }

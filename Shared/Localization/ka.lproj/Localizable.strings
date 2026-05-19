@@ -218,3 +218,6 @@
 "START_TRACKING" = "ტრეკინგის დაწყება";
 "STOP_TRACKING" = "ტრეკინგის შეჩერება";
 "ONESHOT" = "ერთი-ცდით";
+"NOTIFY_NEW_CHAPTERS" = "ახალი თავების შესახებ შეტყობინება";
+"1_NEW_CHAPTER_AVAILABLE" = "ხელმისაწვდომია ახალი თავი";
+"X_NEW_CHAPTERS_AVAILABLE" = "ხელმისაწვდომია %d ახალი თავი";

@@ -336,3 +336,6 @@
 "NO_SCANLATOR" = "Brak Scanlatora";
 "BACKUP_ERROR" = "Błąd Odzyskiwania Backupu";
 "BACKUP_ERROR_TEXT" = "Wystąpił błąd podczas odzyskiwania: %@. Backup może być nieprawidłowy.";
+"NOTIFY_NEW_CHAPTERS" = "Powiadamiaj o nowych rozdziałach";
+"1_NEW_CHAPTER_AVAILABLE" = "Dostępny nowy rozdział";
+"X_NEW_CHAPTERS_AVAILABLE" = "Dostępnych %d nowych rozdziałów";

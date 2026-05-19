@@ -610,3 +610,6 @@
 "FOCUS_ITEM_PREV" = "Focar o elemento anterior";
 "REFRESH_NO_WIFI" = "Não conectado ao Wi-Fi";
 "REFRESH_NO_WIFI_TEXT" = "A opção \"Apenas Atualizar com Wi-Fi\" está ativada, a biblioteca não pode ser atualizada até uma ligação Wi-Fi estar disponível.";
+"NOTIFY_NEW_CHAPTERS" = "Notificar Novos Capítulos";
+"1_NEW_CHAPTER_AVAILABLE" = "Novo capítulo disponível";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d novos capítulos disponíveis";

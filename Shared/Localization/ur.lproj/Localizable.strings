@@ -124,3 +124,6 @@
 // History
 "HISTORY" = "تاریخ";
 "REMOVE_ALL_MANGA_HISTORY" = "منگا کی تمام تاریخ کو ہٹا دیں۔";
+"NOTIFY_NEW_CHAPTERS" = "نئے ابواب کی اطلاع دیں";
+"1_NEW_CHAPTER_AVAILABLE" = "نیا باب دستیاب ہے";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d نئے ابواب دستیاب ہیں";

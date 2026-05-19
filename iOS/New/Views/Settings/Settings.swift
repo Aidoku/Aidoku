@@ -291,6 +291,11 @@ extension Settings {
                 key: "Library.refreshMetadata",
                 title: NSLocalizedString("REFRESH_METADATA"),
                 value: .toggle(.init())
+            ),
+            .init(
+                key: "Library.notifyNewChapters",
+                title: NSLocalizedString("NOTIFY_NEW_CHAPTERS"),
+                value: .toggle(.init())
             )
         ]
         if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {

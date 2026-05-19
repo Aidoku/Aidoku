@@ -187,3 +187,6 @@
 "MANGA" = "Manga";
 "TYPE_COLON_%@" = "Type: %@";
 "STATUS_COLON_%@" = "Status: %@";
+"NOTIFY_NEW_CHAPTERS" = "Varsle om nye kapitler";
+"1_NEW_CHAPTER_AVAILABLE" = "Nytt kapittel tilgjengelig";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d nye kapitler tilgjengelig";

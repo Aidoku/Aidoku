@@ -498,3 +498,6 @@
 "MARK_DUPLICATE_CHAPTERS" = "Markiere doppelte Kapitel as gelesen";
 "%@_TRACKER_LOGIN_NEEDED" = "%@ Anmeldung benötigt";
 "CLOSE_READER" = "Reader schließen";
+"NOTIFY_NEW_CHAPTERS" = "Über neue Kapitel benachrichtigen";
+"1_NEW_CHAPTER_AVAILABLE" = "Neues Kapitel verfügbar";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d neue Kapitel verfügbar";
