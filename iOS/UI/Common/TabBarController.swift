@@ -81,34 +81,22 @@ class TabBarController: UITabBarController {
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
         let settingsViewController: UIViewController
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            // this breaks the zoom transitions from the toolbar buttons in the backups setting page
+        if #available(iOS 26.0, *), UIDevice.current.userInterfaceIdiom != .pad {
+            settingsViewController = UIHostingController(
+                rootView: NavigationStack {
+                    SettingsView()
+                        .environmentObject(settingsPath)
+                }.introspect(.navigationStack, on: .iOS(.v26)) { entity in
+                    settingsPath.rootViewController = entity
+                }
+            )
+        } else {
+            // this breaks the zoom transitions from the toolbar buttons in the backups setting page on ios 18 / ipads
             let hosting = UIHostingController(rootView: SettingsView().environmentObject(settingsPath))
             let entity = NavigationController(rootViewController: hosting)
+            entity.navigationBar.prefersLargeTitles = true
             settingsPath.rootViewController = entity
             settingsViewController = entity
-        } else {
-            if #available(iOS 17.0, *) {
-                settingsViewController = UIHostingController(
-                    rootView: NavigationStack {
-                        SettingsView()
-                            .environmentObject(settingsPath)
-                    }.introspect(.navigationStack, on: .iOS(.v17, .v18, .v26)) { entity in
-                        settingsPath.rootViewController = entity
-                    }
-                )
-            } else {
-                // todo: there's a bug with using navigationview on ios 16 (953)
-                // ...but we can't use navigationstack because of a different bug (5b86b863b0a30c258460d01ebd57968c85d3ddd2)
-                settingsViewController = UIHostingController(
-                    rootView: NavigationView {
-                        SettingsView()
-                            .environmentObject(settingsPath)
-                    }.introspect(.navigationView(style: .stack), on: .iOS(.v15, .v16)) { entity in
-                        settingsPath.rootViewController = entity
-                    }
-                )
-            }
         }
         self.settingsPath = settingsPath
 
