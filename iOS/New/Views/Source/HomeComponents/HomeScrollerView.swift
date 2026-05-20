@@ -23,7 +23,6 @@ struct HomeScrollerView: View {
 
     @State private var bookmarkedItems: Set<String> = .init()
     @State private var loadedBookmarks = false
-    @State private var longHeldItem = false
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -119,18 +118,17 @@ struct HomeScrollerView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                             }
                             .frame(width: Self.coverHeight * 2/3)
+
                             if let value = entry.value {
-                                Button {
-                                    if longHeldItem {
-                                        longHeldItem = false
-                                        return
-                                    }
+                                let tapAction = {
                                     switch value {
                                         case .url(let urlString):
                                             guard
                                                 let url = URL(string: urlString),
                                                 url.scheme == "http" || url.scheme == "https"
-                                            else { return }
+                                            else {
+                                                return
+                                            }
                                             path.present(SFSafariViewController(url: url))
                                         case .listing(let listing):
                                             path.push(SourceListingViewController(source: source, listing: listing))
@@ -141,26 +139,44 @@ struct HomeScrollerView: View {
                                                 path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
                                             }
                                     }
-                                } label: {
-                                    label
                                 }
-                                .foregroundStyle(.primary)
-                                .buttonStyle(.borderless)
-                                .simultaneousGesture(
-                                    // on long hold, open if pressAction is set
-                                    LongPressGesture()
-                                        .onEnded { _ in
-                                            if pressAction != nil {
-                                                longHeldItem = true
-                                                switch value {
-                                                    case .manga(let manga):
-                                                        path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
-                                                    default:
-                                                        break
-                                                }
-                                            }
+                                let longPressAction = {
+                                    switch value {
+                                        case .manga(let manga):
+                                            path.push(MangaViewController(source: source, manga: manga, parent: path.rootViewController))
+                                        default:
+                                            break
+                                    }
+                                }
+                                if #unavailable(iOS 18.0), pressAction != nil {
+                                    // there's a bug on <= ios 17 where the scroll view won't scroll if there's a long press gesture on a button
+                                    label
+                                        .onTapGesture {
+                                            tapAction()
                                         }
-                                )
+                                        .onLongPressGesture {
+                                            longPressAction()
+                                        }
+                                } else {
+                                    let button = Button {
+                                        tapAction()
+                                    } label: {
+                                        label
+                                    }
+                                    .foregroundStyle(.primary)
+                                    .buttonStyle(.borderless)
+
+                                    if pressAction != nil {
+                                        button.simultaneousGesture(
+                                            LongPressGesture()
+                                                .onEnded { _ in
+                                                    longPressAction()
+                                                }
+                                        )
+                                    } else {
+                                        button
+                                    }
+                                }
                             } else {
                                 label
                             }
@@ -260,6 +276,7 @@ struct PlaceholderMangaScroller: View {
                 }
             }
             .padding(.horizontal)
+            .scrollTargetLayoutPlease()
         }
         .scrollViewAlignedPlease()
     }
