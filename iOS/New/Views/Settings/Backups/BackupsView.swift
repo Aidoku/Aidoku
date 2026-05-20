@@ -14,6 +14,7 @@ struct BackupsView: View {
 
     @State private var loadedInitialBackupInfo = false
     @State private var targetRestoreBackup: Backup?
+    @State private var targetExportBackup: Backup?
     @State private var showCreateSheet = false
     @State private var showImportSheet = false
     @State private var showAutoBackupsSheet = false
@@ -216,11 +217,21 @@ struct BackupsView: View {
         }
         .contextMenu {
             Button {
-                export(url: url)
+                targetExportBackup = backup
             } label: {
                 Label(NSLocalizedString("EXPORT"), systemImage: "square.and.arrow.up")
             }
         }
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .onChange(of: targetExportBackup) { newValue in
+                        if newValue == backup {
+                            export(url: url, sourceRect: geo.frame(in: .global))
+                        }
+                    }
+            }
+        )
     }
 
     var automaticBadge: some View {
@@ -293,10 +304,11 @@ extension BackupsView {
         }
     }
 
-    func export(url: URL) {
+    func export(url: URL, sourceRect: CGRect) {
         let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
         guard let sourceView = path.rootViewController?.view else { return }
         vc.popoverPresentationController?.sourceView = sourceView
+        vc.popoverPresentationController?.sourceRect = sourceRect
         path.present(vc)
     }
 }
