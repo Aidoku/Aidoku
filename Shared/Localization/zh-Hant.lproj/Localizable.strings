@@ -694,3 +694,5 @@
 "TEXT_FONT_SIZE" = "字體大小";
 "TEXT_LINE_SPACING" = "行距";
 "TEXT_HORIZONTAL_PADDING" = "水平間距";
+"CATEGORY_SEARCH" = "在類別中尋找";
+"REFRESH_NO_WIFI" = "未連接 Wi-Fi";
