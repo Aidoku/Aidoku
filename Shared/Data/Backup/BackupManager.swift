@@ -571,7 +571,7 @@ extension BackupManager {
                 if !missingSources.isEmpty {
                     delegate?.presentAlert(
                         title: NSLocalizedString("MISSING_SOURCES"),
-                        message: NSLocalizedString("MISSING_SOURCES_TEXT") + missingSources.map { "\n- \($0)" }.joined()
+                        message: NSLocalizedString("MISSING_SOURCES_TEXT") + missingSources.map { "\n- \($0.id)" }.joined()
                     )
                 }
             }
