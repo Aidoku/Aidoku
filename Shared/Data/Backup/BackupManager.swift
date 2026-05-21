@@ -299,8 +299,8 @@ extension BackupManager {
             }
 
             // restore source lists
-            SourceManager.shared.clearSourceLists()
             guard let sourceLists = backup.sourceLists else { return }
+            SourceManager.shared.clearSourceLists()
             for sourceList in sourceLists {
                 guard let sourceListURL = URL(string: sourceList) else { continue }
                 _ = await SourceManager.shared.addSourceList(url: sourceListURL)
