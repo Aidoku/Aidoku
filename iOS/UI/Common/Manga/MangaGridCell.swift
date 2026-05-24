@@ -5,6 +5,7 @@
 //  Created by Skitty on 7/24/22.
 //
 
+import AidokuRunner
 import Gifu
 import Nuke
 import UIKit
@@ -288,8 +289,16 @@ extension MangaGridCell {
                             self.imageView.animate(withGIFData: data)
                         }
                     }
-                case .failure:
+                case .failure(let error):
                     imageTask = nil
+                    guard let sourceId, let mangaId else { return }
+                    Task { @MainActor [weak self] in
+                        guard
+                            let newUrl = await CoverRecovery.recover(from: error, sourceId: sourceId, mangaId: mangaId),
+                            self?.sourceId == sourceId, self?.mangaId == mangaId
+                        else { return }
+                        await self?.loadImage(url: newUrl)
+                    }
             }
         }
     }

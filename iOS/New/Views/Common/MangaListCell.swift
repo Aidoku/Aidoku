@@ -12,6 +12,7 @@ import UIKit
 
 class MangaListCell: UICollectionViewCell {
     private var sourceId: String?
+    private var mangaId: String?
     private var url: String?
     private var imageTask: ImageTask?
 
@@ -236,6 +237,7 @@ extension MangaListCell {
 extension MangaListCell {
     func configure(with manga: AidokuRunner.Manga, isBookmarked: Bool = false) {
         sourceId = manga.sourceKey
+        mangaId = manga.key
         titleLabel.text = manga.title
         subtitleLabel.text = manga.authors?.joined(separator: ", ")
         subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true
@@ -255,6 +257,7 @@ extension MangaListCell {
 
     func configure(with info: MangaInfo) {
         sourceId = info.sourceId
+        mangaId = info.mangaId
         titleLabel.text = info.title
         subtitleLabel.text = info.author
         subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true
@@ -322,8 +325,16 @@ extension MangaListCell {
                             self.coverImageView.animate(withGIFData: data)
                         }
                     }
-                case .failure:
+                case .failure(let error):
                     imageTask = nil
+                    guard let sourceId, let mangaId else { return }
+                    Task { @MainActor [weak self] in
+                        guard
+                            let newUrl = await CoverRecovery.recover(from: error, sourceId: sourceId, mangaId: mangaId),
+                            self?.sourceId == sourceId, self?.mangaId == mangaId
+                        else { return }
+                        await self?.loadImage(url: newUrl)
+                    }
             }
         }
     }
