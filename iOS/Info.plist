@@ -4,9 +4,9 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER).download</string>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER).backup</string>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER).libraryRefresh</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).A42P5QWN3Y.download</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).A42P5QWN3Y.backup</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).A42P5QWN3Y.libraryRefresh</string>
 	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
