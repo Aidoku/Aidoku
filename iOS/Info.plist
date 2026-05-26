@@ -8,6 +8,10 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).A42P5QWN3Y.backup</string>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).A42P5QWN3Y.libraryRefresh</string>
 	</array>
+
+<key>LSApplicationCategoryType</key>
+<string>public.app-category.books</string>
+
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
