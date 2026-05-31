@@ -20,6 +20,7 @@ actor NotificationManager {
     static let threadIdentifier = "newChapters"
     static let sourceIdInfoKey = "sourceId"
     static let mangaIdInfoKey = "mangaId"
+    static let batchNotificationThreshold = 3
 
     nonisolated func isEnabled() -> Bool {
         UserDefaults.standard.bool(forKey: Self.settingKey)
@@ -46,6 +47,21 @@ actor NotificationManager {
         guard settings.authorizationStatus == .authorized
             || settings.authorizationStatus == .provisional
         else { return }
+
+        if summaries.count > Self.batchNotificationThreshold {
+            let content = UNMutableNotificationContent()
+            content.title = NSLocalizedString("NEW_CHAPTERS_AVAILABLE")
+            content.body = String(format: NSLocalizedString("X_SERIES_HAVE_NEW_CHAPTERS"), summaries.count)
+            content.sound = .default
+            content.threadIdentifier = Self.threadIdentifier
+            content.categoryIdentifier = Self.categoryIdentifier
+
+            let identifier = "newChapters.batch.\(Int(Date.now.timeIntervalSince1970))"
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
+
+            try? await center.add(request)
+            return
+        }
 
         for summary in summaries {
             let content = UNMutableNotificationContent()
