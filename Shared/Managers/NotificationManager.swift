@@ -49,37 +49,48 @@ actor NotificationManager {
         else { return }
 
         if summaries.count > Self.batchNotificationThreshold {
-            let content = UNMutableNotificationContent()
-            content.title = NSLocalizedString("NEW_CHAPTERS_AVAILABLE")
-            content.body = String(format: NSLocalizedString("X_SERIES_HAVE_NEW_CHAPTERS"), summaries.count)
-            content.sound = .default
-            content.threadIdentifier = Self.threadIdentifier
-            content.categoryIdentifier = Self.categoryIdentifier
-
-            let identifier = "newChapters.batch.\(Int(Date.now.timeIntervalSince1970))"
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
-
-            try? await center.add(request)
+            await Self.sendNotification(
+                identifier: "newChapters.batch.\(Int(Date.now.timeIntervalSince1970))",
+                title: NSLocalizedString("NEW_CHAPTERS_AVAILABLE"),
+                body: String(format: NSLocalizedString("X_SERIES_HAVE_NEW_CHAPTERS"), summaries.count),
+                center: center
+            )
             return
         }
 
         for summary in summaries {
-            let content = UNMutableNotificationContent()
-            content.title = summary.mangaTitle
-            content.body = Self.body(for: summary)
-            content.sound = .default
-            content.threadIdentifier = Self.threadIdentifier
-            content.categoryIdentifier = Self.categoryIdentifier
-            content.userInfo = [
-                Self.sourceIdInfoKey: summary.mangaIdentifier.sourceKey,
-                Self.mangaIdInfoKey: summary.mangaIdentifier.mangaKey
-            ]
-
-            let identifier = "newChapters.\(summary.mangaIdentifier.sourceKey).\(summary.mangaIdentifier.mangaKey).\(Int(Date.now.timeIntervalSince1970))"
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
-
-            try? await center.add(request)
+            let timestamp = Int(Date.now.timeIntervalSince1970)
+            let identifier = "newChapters.\(summary.mangaIdentifier.sourceKey).\(summary.mangaIdentifier.mangaKey).\(timestamp)"
+            await Self.sendNotification(
+                identifier: identifier,
+                title: summary.mangaTitle,
+                body: Self.body(for: summary),
+                userInfo: [
+                    Self.sourceIdInfoKey: summary.mangaIdentifier.sourceKey,
+                    Self.mangaIdInfoKey: summary.mangaIdentifier.mangaKey
+                ],
+                center: center
+            )
         }
+    }
+
+    private static func sendNotification(
+        identifier: String,
+        title: String,
+        body: String,
+        userInfo: [AnyHashable: Any] = [:],
+        center: UNUserNotificationCenter
+    ) async {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        content.threadIdentifier = threadIdentifier
+        content.categoryIdentifier = categoryIdentifier
+        content.userInfo = userInfo
+
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
+        try? await center.add(request)
     }
 
     private static func body(for summary: NewChaptersSummary) -> String {
