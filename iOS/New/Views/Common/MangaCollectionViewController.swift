@@ -120,8 +120,7 @@ extension MangaCollectionViewController {
 
     func makeGridCellRegistration() -> GridCellRegistration {
         GridCellRegistration { [weak self] cell, _, manga in
-            cell.sourceId = manga.sourceKey
-            cell.mangaId = manga.key
+            cell.identifier = MangaIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key)
             cell.title = manga.title
             cell.showsBookmark = self?.bookmarkedItems.contains(manga.key) ?? false
             Task {
