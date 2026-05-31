@@ -276,7 +276,7 @@ extension MangaManager {
             }
 
             Task { @Sendable in
-                await self.refreshLibrary(category: self.targetCategory, task: task as? ProgressReporting)
+                await self.refreshLibrary(category: self.targetCategory, task: task as? ProgressReporting, isBackground: true)
 
                 task.setTaskCompleted(success: true)
             }
@@ -304,7 +304,7 @@ extension MangaManager {
         if nextUpdateTime < Date.now {
             // interval time has passed, refresh now
             Task {
-                await refreshLibrary()
+                await refreshLibrary(isBackground: true)
             }
         } else {
 #if !os(macOS) && !targetEnvironment(simulator)
@@ -350,7 +350,8 @@ extension MangaManager {
     func refreshLibrary(
         category: String? = nil,
         forceAll: Bool = false,
-        task: (ProgressReporting & Sendable)? = nil
+        task: (ProgressReporting & Sendable)? = nil,
+        isBackground: Bool = false
     ) async {
 #if !os(macOS)
         let tabController = await UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
@@ -367,6 +368,7 @@ extension MangaManager {
                     skipReachabilityCheck: skipReachabilityCheck,
                     forceAll: forceAll,
                     task: task,
+                    isBackground: isBackground,
                     refreshStarted: {
 #if !os(macOS)
                         await tabController?.showLibraryRefreshView()
@@ -471,6 +473,7 @@ extension MangaManager {
         skipReachabilityCheck: Bool,
         forceAll: Bool,
         task: ProgressReporting? = nil,
+        isBackground: Bool = false,
         refreshStarted: (() async -> Void)? = nil
     ) async {
         // make sure user agent and sources have loaded before doing library refresh
@@ -521,7 +524,7 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
-        let notificationsEnabled = NotificationManager.shared.isEnabled()
+        let notificationsEnabled = isBackground && NotificationManager.shared.isEnabled()
         var pendingNotifications: [NotificationManager.NewChaptersSummary] = []
 
         let newDetails = await {
