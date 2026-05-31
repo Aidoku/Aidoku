@@ -579,3 +579,8 @@
 "FORMAT_PDF" = "PDF";
 "VOLUME" = "Volume";
 "RECENTLY_SEARCHED" = "Buscado Recentemente";
+"NOTIFY_NEW_CHAPTERS" = "Notificar Novos Capítulos";
+"1_NEW_CHAPTER_AVAILABLE" = "Novo capítulo disponível";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d novos capítulos disponíveis";
+"NEW_CHAPTERS_AVAILABLE" = "Novos capítulos disponíveis";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d séries têm novos capítulos";

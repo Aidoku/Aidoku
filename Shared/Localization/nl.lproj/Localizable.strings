@@ -376,3 +376,8 @@
 "NO_EXTERNAL_SOURCES" = "Geen externe bronnen";
 "BROWSE_NO_SOURCES_TEXT_NEW" = "Voeg een bron toe via de plus knop.";
 "VIEW_SERIES" = "Bekijk Series";
+"NOTIFY_NEW_CHAPTERS" = "Op de hoogte stellen van nieuwe hoofdstukken";
+"1_NEW_CHAPTER_AVAILABLE" = "Nieuw hoofdstuk beschikbaar";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d nieuwe hoofdstukken beschikbaar";
+"NEW_CHAPTERS_AVAILABLE" = "Nieuwe hoofdstukken beschikbaar";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d series hebben nieuwe hoofdstukken";

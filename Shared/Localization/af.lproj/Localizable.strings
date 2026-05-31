@@ -209,3 +209,8 @@
 "IMPORT_FAIL" = "Invoer Misluk";
 "BACKUP_IMPORT_SUCCESS" = "Rugsteun Ingevoer";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "Om na hierdie rugsteun te herstel, vind dit in die rugsteunbladsy in instellings.";
+"NOTIFY_NEW_CHAPTERS" = "Stel In Kennis Van Nuwe Hoofstukke";
+"1_NEW_CHAPTER_AVAILABLE" = "Nuwe hoofstuk beskikbaar";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d nuwe hoofstukke beskikbaar";
+"NEW_CHAPTERS_AVAILABLE" = "Nuwe hoofstukke beskikbaar";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d reekse het nuwe hoofstukke";

@@ -323,3 +323,8 @@
 "PHOTOS_ACCESS_DENIED_TEXT" = "Accesul a fost refuzat anterior. Te rugăm să permiți Aidoku acces la Fotografii pentru a salva imaginile în Galeria ta. Poți activa accesul din Setările de confidențialitate.";
 "CONTENT" = "Conținut";
 "%@_EXPERIMENTAL" = "%@ (Experimental)";
+"NOTIFY_NEW_CHAPTERS" = "Notifică despre Capitole Noi";
+"1_NEW_CHAPTER_AVAILABLE" = "Capitol nou disponibil";
+"X_NEW_CHAPTERS_AVAILABLE" = "%d capitole noi disponibile";
+"NEW_CHAPTERS_AVAILABLE" = "Capitole noi disponibile";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d serii au capitole noi";
