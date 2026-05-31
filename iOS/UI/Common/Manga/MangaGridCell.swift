@@ -11,8 +11,7 @@ import Nuke
 import UIKit
 
 class MangaGridCell: UICollectionViewCell {
-    var sourceId: String?
-    var mangaId: String?
+    var identifier: MangaIdentifier?
 
     var title: String? {
         get {
@@ -252,7 +251,7 @@ extension MangaGridCell {
         if !cached {
             if let fileUrl = url.toAidokuFileUrl() {
                 urlRequest = URLRequest(url: fileUrl)
-            } else if let sourceId {
+            } else if let sourceId = identifier?.sourceKey {
                 // ensure sources are loaded so we can get the modified image request
                 await SourceManager.shared.waitForSourcesLoad()
                 if let source = SourceManager.shared.source(for: sourceId) {
@@ -291,11 +290,11 @@ extension MangaGridCell {
                     }
                 case .failure(let error):
                     imageTask = nil
-                    guard let sourceId, let mangaId else { return }
+                    guard let identifier else { return }
                     Task { @MainActor [weak self] in
                         guard
-                            let newUrl = await CoverRecovery.recover(from: error, sourceId: sourceId, mangaId: mangaId),
-                            self?.sourceId == sourceId, self?.mangaId == mangaId
+                            let newUrl = await CoverRecovery.recover(from: error, identifier: identifier),
+                            self?.identifier == identifier
                         else { return }
                         await self?.loadImage(url: newUrl)
                     }

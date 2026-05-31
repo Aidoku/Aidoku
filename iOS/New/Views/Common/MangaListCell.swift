@@ -11,8 +11,7 @@ import Nuke
 import UIKit
 
 class MangaListCell: UICollectionViewCell {
-    private var sourceId: String?
-    private var mangaId: String?
+    private var identifier: MangaIdentifier?
     private var url: String?
     private var imageTask: ImageTask?
 
@@ -236,8 +235,7 @@ extension MangaListCell {
 
 extension MangaListCell {
     func configure(with manga: AidokuRunner.Manga, isBookmarked: Bool = false) {
-        sourceId = manga.sourceKey
-        mangaId = manga.key
+        identifier = MangaIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key)
         titleLabel.text = manga.title
         subtitleLabel.text = manga.authors?.joined(separator: ", ")
         subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true
@@ -256,8 +254,7 @@ extension MangaListCell {
     }
 
     func configure(with info: MangaInfo) {
-        sourceId = info.sourceId
-        mangaId = info.mangaId
+        identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
         titleLabel.text = info.title
         subtitleLabel.text = info.author
         subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true
@@ -284,7 +281,7 @@ extension MangaListCell {
         if !cached {
             if let fileUrl = url.toAidokuFileUrl() {
                 urlRequest = URLRequest(url: fileUrl)
-            } else if let sourceId {
+            } else if let sourceId = identifier?.sourceKey {
                 // ensure sources are loaded so we can get the modified image request
                 await SourceManager.shared.waitForSourcesLoad()
                 if let source = SourceManager.shared.source(for: sourceId) {
@@ -327,11 +324,11 @@ extension MangaListCell {
                     }
                 case .failure(let error):
                     imageTask = nil
-                    guard let sourceId, let mangaId else { return }
+                    guard let identifier else { return }
                     Task { @MainActor [weak self] in
                         guard
-                            let newUrl = await CoverRecovery.recover(from: error, sourceId: sourceId, mangaId: mangaId),
-                            self?.sourceId == sourceId, self?.mangaId == mangaId
+                            let newUrl = await CoverRecovery.recover(from: error, identifier: identifier),
+                            self?.identifier == identifier
                         else { return }
                         await self?.loadImage(url: newUrl)
                     }

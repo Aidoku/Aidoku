@@ -52,8 +52,7 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
 
     // MARK: Cell Registration
     func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
-        cell.sourceId = info.sourceId
-        cell.mangaId = info.mangaId
+        cell.identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
         cell.title = info.title
 
         Task {
