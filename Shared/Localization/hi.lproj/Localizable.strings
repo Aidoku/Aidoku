@@ -242,3 +242,5 @@
 "NOTIFY_NEW_CHAPTERS" = "नए अध्यायों की सूचना दें";
 "1_NEW_CHAPTER_AVAILABLE" = "नया अध्याय उपलब्ध है";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d नए अध्याय उपलब्ध हैं";
+"NEW_CHAPTERS_AVAILABLE" = "नए अध्याय उपलब्ध हैं";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d श्रृंखलाओं में नए अध्याय हैं";

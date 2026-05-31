@@ -221,3 +221,5 @@
 "NOTIFY_NEW_CHAPTERS" = "ახალი თავების შესახებ შეტყობინება";
 "1_NEW_CHAPTER_AVAILABLE" = "ხელმისაწვდომია ახალი თავი";
 "X_NEW_CHAPTERS_AVAILABLE" = "ხელმისაწვდომია %d ახალი თავი";
+"NEW_CHAPTERS_AVAILABLE" = "ხელმისაწვდომია ახალი თავები";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d სერიას აქვს ახალი თავები";

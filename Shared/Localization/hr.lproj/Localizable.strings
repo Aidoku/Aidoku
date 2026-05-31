@@ -725,3 +725,5 @@
 "NOTIFY_NEW_CHAPTERS" = "Obavijesti o novim poglavljima";
 "1_NEW_CHAPTER_AVAILABLE" = "Novo poglavlje dostupno";
 "X_NEW_CHAPTERS_AVAILABLE" = "Dostupno %d novih poglavlja";
+"NEW_CHAPTERS_AVAILABLE" = "Nova poglavlja dostupna";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d serija ima nova poglavlja";

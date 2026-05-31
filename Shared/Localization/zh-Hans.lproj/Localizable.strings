@@ -736,3 +736,5 @@
 "NOTIFY_NEW_CHAPTERS" = "新章节通知";
 "1_NEW_CHAPTER_AVAILABLE" = "有新章节";
 "X_NEW_CHAPTERS_AVAILABLE" = "有 %d 个新章节";
+"NEW_CHAPTERS_AVAILABLE" = "有新章节";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "有 %d 部作品有新章节";

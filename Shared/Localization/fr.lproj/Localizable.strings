@@ -736,3 +736,5 @@
 "NOTIFY_NEW_CHAPTERS" = "Notifier les Nouveaux Chapitres";
 "1_NEW_CHAPTER_AVAILABLE" = "Nouveau chapitre disponible";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d nouveaux chapitres disponibles";
+"NEW_CHAPTERS_AVAILABLE" = "Nouveaux chapitres disponibles";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d séries ont de nouveaux chapitres";

@@ -326,3 +326,5 @@
 "NOTIFY_NEW_CHAPTERS" = "Notifică despre Capitole Noi";
 "1_NEW_CHAPTER_AVAILABLE" = "Capitol nou disponibil";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d capitole noi disponibile";
+"NEW_CHAPTERS_AVAILABLE" = "Capitole noi disponibile";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d serii au capitole noi";

@@ -212,3 +212,5 @@
 "NOTIFY_NEW_CHAPTERS" = "Stel In Kennis Van Nuwe Hoofstukke";
 "1_NEW_CHAPTER_AVAILABLE" = "Nuwe hoofstuk beskikbaar";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d nuwe hoofstukke beskikbaar";
+"NEW_CHAPTERS_AVAILABLE" = "Nuwe hoofstukke beskikbaar";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d reekse het nuwe hoofstukke";

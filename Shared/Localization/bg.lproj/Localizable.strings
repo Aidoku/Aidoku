@@ -351,3 +351,5 @@
 "NOTIFY_NEW_CHAPTERS" = "Известяване за нови глави";
 "1_NEW_CHAPTER_AVAILABLE" = "Налична е нова глава";
 "X_NEW_CHAPTERS_AVAILABLE" = "Налични са %d нови глави";
+"NEW_CHAPTERS_AVAILABLE" = "Налични са нови глави";
+"X_SERIES_HAVE_NEW_CHAPTERS" = "%d поредици имат нови глави";
