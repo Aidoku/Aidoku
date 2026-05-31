@@ -545,7 +545,7 @@ extension MangaManager {
                     results[manga.hashValue] = newManga
                 }
 
-                let summary: NotificationManager.NewChaptersSummary? = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let summary: NotificationManager.NewChaptersSummary? = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
                     guard
                         let libraryObject = CoreDataManager.shared.getLibraryManga(
                             sourceId: manga.sourceId,
@@ -603,8 +603,7 @@ extension MangaManager {
                     guard notifiableCount > 0 else { return nil }
                     let title = mangaObject.title.isEmpty ? (manga.title ?? "") : mangaObject.title
                     return NotificationManager.NewChaptersSummary(
-                        sourceId: manga.sourceId,
-                        mangaId: manga.id,
+                        mangaIdentifier: MangaIdentifier(sourceKey: manga.sourceId, mangaKey: manga.id),
                         mangaTitle: title,
                         chapterCount: notifiableCount
                     )

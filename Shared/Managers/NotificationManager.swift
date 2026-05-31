@@ -10,8 +10,7 @@ actor NotificationManager {
     static let shared = NotificationManager()
 
     struct NewChaptersSummary {
-        let sourceId: String
-        let mangaId: String
+        let mangaIdentifier: MangaIdentifier
         let mangaTitle: String
         let chapterCount: Int
     }
@@ -56,11 +55,11 @@ actor NotificationManager {
             content.threadIdentifier = Self.threadIdentifier
             content.categoryIdentifier = Self.categoryIdentifier
             content.userInfo = [
-                Self.sourceIdInfoKey: summary.sourceId,
-                Self.mangaIdInfoKey: summary.mangaId
+                Self.sourceIdInfoKey: summary.mangaIdentifier.sourceKey,
+                Self.mangaIdInfoKey: summary.mangaIdentifier.mangaKey
             ]
 
-            let identifier = "newChapters.\(summary.sourceId).\(summary.mangaId).\(Int(Date.now.timeIntervalSince1970))"
+            let identifier = "newChapters.\(summary.mangaIdentifier.sourceKey).\(summary.mangaIdentifier.mangaKey).\(Int(Date.now.timeIntervalSince1970))"
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
 
             try? await center.add(request)
@@ -69,8 +68,8 @@ actor NotificationManager {
 
     private static func body(for summary: NewChaptersSummary) -> String {
         if summary.chapterCount == 1 {
-            return NSLocalizedString("1_NEW_CHAPTER_AVAILABLE", comment: "")
+            return NSLocalizedString("1_NEW_CHAPTER_AVAILABLE")
         }
-        return String(format: NSLocalizedString("X_NEW_CHAPTERS_AVAILABLE", comment: ""), summary.chapterCount)
+        return String(format: NSLocalizedString("X_NEW_CHAPTERS_AVAILABLE"), summary.chapterCount)
     }
 }
