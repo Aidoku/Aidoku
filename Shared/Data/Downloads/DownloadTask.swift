@@ -36,6 +36,10 @@ actor DownloadTask: Identifiable {
 
     private static let maxConcurrentPageTasks = 5
 
+    private static let maxPageRetries = 3
+    private static let retryBaseDelay: TimeInterval = 1
+    private static let maxRetryDelay: TimeInterval = 60
+
     enum DownloadError: Error {
         case pageProcessorFailed
     }
@@ -268,7 +272,7 @@ extension DownloadTask {
                 for pageGroup in networkPages.chunked(into: groupSize) {
                     for page in pageGroup {
                         taskGroup.addTask {
-                            await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor)
+                            await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
                         }
                     }
                     for await (data, path) in taskGroup {
@@ -290,7 +294,7 @@ extension DownloadTask {
         } else {
             // download pages from the network serially
             for page in networkPages {
-                let (data, path) = await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor)
+                let (data, path) = await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
                 guard tmpDirectory.exists else {
                     // download was cancelled, stop processing
                     return
@@ -316,14 +320,15 @@ extension DownloadTask {
     private func downloadPage(
         _ page: NetworkPage,
         source: AidokuRunner.Source,
-        pageInterceptor: PageInterceptorProcessor?
+        pageInterceptor: PageInterceptorProcessor?,
+        tmpDirectory: URL
     ) async -> (Data?, URL?) {
         let urlRequest = await source.getModifiedImageRequest(
             url: page.url,
             context: page.context
         )
 
-        let result = try? await URLSession.shared.data(for: urlRequest)
+        let result = await self.fetchPageData(for: urlRequest, tmpDirectory: tmpDirectory)
 
         var resultData: Data?
         var resultPath: URL?
@@ -367,11 +372,56 @@ extension DownloadTask {
             let fileExtention = self.guessFileExtension(response: res, defaultValue: "png")
             resultData = data
             resultPath = page.targetPath.appendingPathExtension(fileExtention)
-        } else {
-            LogManager.logger.error("Error downloading image with url \(urlRequest)")
         }
 
         return (resultData, resultPath)
+    }
+
+    // fetch page data, retrying on any non-2xx HTTP response or network error
+    private func fetchPageData(for urlRequest: URLRequest, tmpDirectory: URL) async -> (Data, URLResponse)? {
+        var attempt = 0
+        while true {
+            let result = try? await URLSession.shared.data(for: urlRequest)
+
+            // response was okay, bail out
+            if let result, self.isSuccessResponse(result.1) {
+                return result
+            }
+
+            let statusCode = (result?.1 as? HTTPURLResponse)?.statusCode
+
+            let reason = switch statusCode {
+                case 429: "rate limited (HTTP 429)"
+                case let statusCode?: "HTTP \(statusCode)"
+                case nil: "network error"
+            }
+
+            let isRetryable = statusCode.map(self.isRetryableStatus) ?? true
+
+            guard isRetryable, attempt < Self.maxPageRetries else {
+                LogManager.logger.error("Failed to download image (\(reason)): \(urlRequest)")
+                return nil
+            }
+
+            // honor the server's Retry-After when present, otherwise use exponential backoff
+            let (delay, waitSource): (TimeInterval, String) = if let retryAfter = self.retryDelay(from: result?.1) {
+                (retryAfter, "Retry-After")
+            } else {
+                (Self.backoffDelay(forAttempt: attempt), "backoff")
+            }
+            LogManager.logger.warn("Image download \(reason), retrying in \(Int(delay))s via \(waitSource): \(urlRequest)")
+
+            // stop retrying if the download was cancelled
+            guard tmpDirectory.exists else { return nil }
+            do {
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            } catch {
+                return nil // task cancelled during backoff
+            }
+            guard tmpDirectory.exists else { return nil }
+
+            attempt += 1
+        }
     }
 
     private func incrementProgress(for id: ChapterIdentifier, failed: Bool = false) async {
@@ -431,7 +481,7 @@ extension DownloadTask {
                 {
                     let request = await source.getModifiedImageRequest(url: coverUrl, context: nil)
                     let result = try? await URLSession.shared.data(for: request)
-                    if let data = result?.0 {
+                    if let data = result?.0, self.isSuccessResponse(result?.1) {
                         try? data.write(to: coverPath)
                     }
                 }
@@ -455,6 +505,49 @@ extension DownloadTask {
 
 // MARK: Utility
 extension DownloadTask {
+    private nonisolated func isSuccessResponse(_ response: URLResponse?) -> Bool {
+        guard let httpResponse = response as? HTTPURLResponse else { return true }
+
+        // redirect are followed by URLSession
+        return (200..<300).contains(httpResponse.statusCode)
+    }
+
+    private nonisolated func isRetryableStatus(_ statusCode: Int) -> Bool {
+        statusCode == 429 || (500...599).contains(statusCode)
+    }
+
+    // exponential backoff
+    private nonisolated static func backoffDelay(forAttempt attempt: Int) -> TimeInterval {
+        min(maxRetryDelay, retryBaseDelay * pow(2, Double(attempt)))
+    }
+
+    private nonisolated func retryDelay(from response: URLResponse?) -> TimeInterval? {
+        guard
+            let httpResponse = response as? HTTPURLResponse,
+            let value = httpResponse.value(forHTTPHeaderField: "Retry-After")?
+                .trimmingCharacters(in: .whitespaces),
+            !value.isEmpty
+        else {
+            return nil
+        }
+
+        // Retry-After: <delay-seconds>
+        if let seconds = TimeInterval(value) {
+            return min(Self.maxRetryDelay, max(0, seconds))
+        }
+
+        // Retry-After: <http-date> (e.g. "Wed, 21 Oct 2015 07:28:00 GMT")
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "GMT")
+        formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
+        if let date = formatter.date(from: value) {
+            return min(Self.maxRetryDelay, max(0, date.timeIntervalSinceNow))
+        }
+
+        return nil
+    }
+
     private nonisolated func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
         if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
             return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
