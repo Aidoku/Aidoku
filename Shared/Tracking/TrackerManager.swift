@@ -28,9 +28,11 @@ actor TrackerManager {
     static let shikimori = ShikimoriTracker()
     /// An instance of the Bangumi tracker.
     static let bangumi = BangumiTracker()
+    /// An instance of the Kitsu tracker.
+    static let kitsu = KitsuTracker()
 
     /// An array of the available trackers.
-    static let trackers: [Tracker] = [komga, kavita, anilist, myanimelist, mangabaka, shikimori, bangumi]
+    static let trackers: [Tracker] = [komga, kavita, anilist, myanimelist, mangabaka, shikimori, bangumi, kitsu]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     static var hasAvailableTrackers: Bool {
