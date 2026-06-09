@@ -331,7 +331,7 @@ extension SourceViewController {
             let indexPath = indexPaths.first,
             let mangaInfo = dataSource.itemIdentifier(for: indexPath)
         else { return nil }
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] actions -> UIMenu? in
             var actions: [UIMenuElement] = []
 
             // library option

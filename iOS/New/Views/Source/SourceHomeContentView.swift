@@ -59,9 +59,7 @@ struct SourceHomeContentView: View {
         self.source = source
         self._listings = listings
         self._headerListingSelection = headerListingSelection
-
-        weak var holding = holdingViewController
-        self._path = StateObject(wrappedValue: NavigationCoordinator(rootViewController: holding))
+        self._path = StateObject(wrappedValue: NavigationCoordinator(rootViewController: holdingViewController))
     }
 
     var body: some View {
