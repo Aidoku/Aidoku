@@ -86,7 +86,7 @@ class TabBarController: UITabBarController {
                 rootView: NavigationStack {
                     SettingsView()
                         .environmentObject(settingsPath)
-                }.introspect(.navigationStack, on: .iOS(.v26)) { entity in
+                }.introspect(.navigationStack, on: .iOS(.v26, .v27)) { entity in
                     settingsPath.rootViewController = entity
                 }
             )
