@@ -186,7 +186,7 @@ struct HistoryView: View {
         .contentShape(Rectangle())
         .listRowSeparator(.hidden, edges: .top)
         .listRowSeparator(.visible, edges: .bottom)
-        .introspect(.listCell, on: .iOS(.v16, .v17, .v18, .v26)) { entity in
+        .introspect(.listCell, on: .iOS(.v16, .v17, .v18, .v26, .v27)) { entity in
             // match cell background color to list background color when not selected (plain cell style)
             guard let cell = entity as? UICollectionViewListCell, cell.tag != 1 else { return }
             cell.backgroundConfiguration = UIBackgroundConfiguration.listPlainCell()

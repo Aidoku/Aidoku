@@ -42,9 +42,9 @@ actor DownloadManager {
             Self.directory.createDirectory()
         }
         Task {
-            await self.queue.setOnCompletion { @Sendable [weak self] in
+            await self.queue.setOnCompletion { @Sendable in
                 Task { @MainActor in
-                    await self?.invalidateDownloadedMangaCache()
+                    await self.invalidateDownloadedMangaCache()
                 }
             }
         }

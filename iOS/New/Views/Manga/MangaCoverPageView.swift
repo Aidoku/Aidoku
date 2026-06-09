@@ -137,8 +137,12 @@ struct MangaCoverPageView: View {
                         Button {
                             if let viewController = UIApplication.shared.firstKeyWindow?.rootViewController {
                                 Task {
-                                    let image = try await loadImage(url: url)
-                                    image.saveToAlbum(viewController: viewController)
+                                    do {
+                                        let image = try await loadImage(url: url)
+                                        image.saveToAlbum(viewController: viewController)
+                                    } catch {
+                                        LogManager.logger.error("Error loading image: \(error)")
+                                    }
                                 }
                             }
                         } label: {

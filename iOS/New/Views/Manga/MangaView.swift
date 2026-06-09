@@ -110,7 +110,7 @@ struct MangaView: View {
             .refreshable {
                 await viewModel.refresh()
             }
-            .introspect(.list, on: .iOS(.v18, .v26)) { list in
+            .introspect(.list, on: .iOS(.v18, .v26, .v27)) { list in
                 refreshController.list = list
             }
             .navigationBarTitleDisplayMode(.inline)

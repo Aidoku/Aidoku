@@ -75,6 +75,11 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         scrollView.scrollsToTop = false // dont want status bar tap to work
         scrollNode.insetsLayoutMarginsFromSafeArea = false
 
+        if #available(iOS 27.0, *) {
+            scrollView.topEdgeEffect.style = .soft
+            collectionNode.view.topEdgeEffect.style = .soft
+        }
+
         collectionNode.contentInset = .zero
         collectionNode.showsVerticalScrollIndicator = false
         collectionNode.showsHorizontalScrollIndicator = false

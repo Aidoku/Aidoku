@@ -417,6 +417,8 @@
 		FB7F05FC2DDE77B50036B116 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FB2DDE77B30036B116 /* WebView.swift */; };
 		FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FE2DDF79400036B116 /* KomgaSource.swift */; };
 		FB7F06002DDF79420036B116 /* KomgaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FE2DDF79400036B116 /* KomgaSource.swift */; };
+		FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB80997C2FD7F5830088FE9A /* iOSVersion.swift */; };
+		FB80997E2FD7F5850088FE9A /* iOSVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB80997C2FD7F5830088FE9A /* iOSVersion.swift */; };
 		FB82A5C32DF8622700366BC8 /* LocalModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C22DF8622500366BC8 /* LocalModels.swift */; };
 		FB82A5C42DF8622700366BC8 /* LocalModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C22DF8622500366BC8 /* LocalModels.swift */; };
 		FB82A5C62DF874D500366BC8 /* LocalFileDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C52DF874D100366BC8 /* LocalFileDataManager.swift */; };
@@ -920,6 +922,7 @@
 		FB7F05F92DDE76430036B116 /* WKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebView.swift; sourceTree = "<group>"; };
 		FB7F05FB2DDE77B30036B116 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		FB7F05FE2DDF79400036B116 /* KomgaSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaSource.swift; sourceTree = "<group>"; };
+		FB80997C2FD7F5830088FE9A /* iOSVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSVersion.swift; sourceTree = "<group>"; };
 		FB82A5C22DF8622500366BC8 /* LocalModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalModels.swift; sourceTree = "<group>"; };
 		FB82A5C52DF874D100366BC8 /* LocalFileDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileDataManager.swift; sourceTree = "<group>"; };
 		FB82A5C82DF8786B00366BC8 /* ObjectActorSerialExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectActorSerialExecutor.swift; sourceTree = "<group>"; };
@@ -1504,6 +1507,7 @@
 			isa = PBXGroup;
 			children = (
 				FB8E48DC2DC04E17002A3621 /* Array.swift */,
+				FB80997C2FD7F5830088FE9A /* iOSVersion.swift */,
 				FB716E03283E7D4D00F1BB5D /* String.swift */,
 				FB4B0AE2285CCC8E0066A13B /* URL.swift */,
 				FB4B0AE7285D0A0E0066A13B /* Dictionary.swift */,
@@ -2786,6 +2790,7 @@
 				FB99591E2F6863A700B632D5 /* ReaderTextView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
+				FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB0518322E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB42750B295FB7B400131377 /* BrowseViewController.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
@@ -3128,6 +3133,7 @@
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB619E402E94A62000E3B565 /* PageTracker.swift in Sources */,
+				FB80997E2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB82A5C32DF8622700366BC8 /* LocalModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

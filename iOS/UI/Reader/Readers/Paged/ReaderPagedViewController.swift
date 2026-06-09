@@ -59,11 +59,16 @@ class ReaderPagedViewController: BaseObservingViewController {
     private lazy var pageViewController = makePageViewController()
 
     func makePageViewController() -> UIPageViewController {
-        UIPageViewController(
+        let controller = UIPageViewController(
             transitionStyle: .scroll,
             navigationOrientation: readingMode == .vertical ? .vertical : .horizontal,
             options: nil
         )
+        if #available(iOS 27.0, *) {
+            let scrollView = controller.view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView
+            scrollView?.topEdgeEffect.style = .soft
+        }
+        return controller
     }
 
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
