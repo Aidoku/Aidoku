@@ -129,8 +129,3 @@
 "HISTORY" = "Ιστορικό";
 "%@_AGO" = "%@ ago";
 "PAGE_X" = "Page %i";
-"NOTIFY_NEW_CHAPTERS" = "Ειδοποίηση για νέα κεφάλαια";
-"1_NEW_CHAPTER_AVAILABLE" = "Διαθέσιμο νέο κεφάλαιο";
-"X_NEW_CHAPTERS_AVAILABLE" = "%d νέα κεφάλαια διαθέσιμα";
-"NEW_CHAPTERS_AVAILABLE" = "Διαθέσιμα νέα κεφάλαια";
-"X_SERIES_HAVE_NEW_CHAPTERS" = "%d σειρές έχουν νέα κεφάλαια";

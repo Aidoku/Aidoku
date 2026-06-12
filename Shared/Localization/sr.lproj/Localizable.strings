@@ -338,8 +338,3 @@
 "DELETE_DOWNLOAD_AFTER_READING" = "Izbriši preuzeto nakon čitanja";
 "NO_SCANLATOR" = "Нема скен-преводиоца";
 "SCANLATOR" = "Скен-преводилац";
-"NOTIFY_NEW_CHAPTERS" = "Обавести о новим поглављима";
-"1_NEW_CHAPTER_AVAILABLE" = "Ново поглавље је доступно";
-"X_NEW_CHAPTERS_AVAILABLE" = "Доступно %d нових поглавља";
-"NEW_CHAPTERS_AVAILABLE" = "Доступна нова поглавља";
-"X_SERIES_HAVE_NEW_CHAPTERS" = "%d серија има нова поглавља";

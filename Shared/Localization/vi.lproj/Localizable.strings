@@ -657,8 +657,3 @@
 "VOLUME" = "Tập";
 "EDIT" = "Chỉnh sửa";
 "SAVE" = "Lưu";
-"NOTIFY_NEW_CHAPTERS" = "Thông báo Chương Mới";
-"1_NEW_CHAPTER_AVAILABLE" = "Có chương mới";
-"X_NEW_CHAPTERS_AVAILABLE" = "Có %d chương mới";
-"NEW_CHAPTERS_AVAILABLE" = "Có chương mới";
-"X_SERIES_HAVE_NEW_CHAPTERS" = "%d bộ truyện có chương mới";
