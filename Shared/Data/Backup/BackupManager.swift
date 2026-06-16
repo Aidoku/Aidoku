@@ -12,69 +12,45 @@ import Foundation
 import UIKit
 #endif
 
-struct BackupRestoreMangaKey: Hashable, Sendable {
-    let sourceId: String
-    let mangaId: String
-
-    init(sourceId: String, mangaId: String) {
-        self.sourceId = sourceId
-        self.mangaId = mangaId
-    }
-
-    init(_ manga: BackupManga) {
-        self.init(sourceId: manga.sourceId, mangaId: manga.id)
-    }
-
-    init(_ libraryManga: BackupLibraryManga) {
-        self.init(sourceId: libraryManga.sourceId, mangaId: libraryManga.mangaId)
-    }
-
-    init(_ mangaObject: MangaObject) {
-        self.init(sourceId: mangaObject.sourceId, mangaId: mangaObject.id)
+private extension BackupLibraryManga {
+    var identifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
     }
 }
 
-struct BackupRestoreChapterKey: Hashable, Sendable {
-    let sourceId: String
-    let mangaId: String
-    let chapterId: String
-
-    init(sourceId: String, mangaId: String, chapterId: String) {
-        self.sourceId = sourceId
-        self.mangaId = mangaId
-        self.chapterId = chapterId
+private extension BackupChapter {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
     }
+}
 
-    init(_ chapter: BackupChapter) {
-        self.init(sourceId: chapter.sourceId, mangaId: chapter.mangaId, chapterId: chapter.id)
+private extension BackupHistory {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
     }
+}
 
-    init(_ history: BackupHistory) {
-        self.init(sourceId: history.sourceId, mangaId: history.mangaId, chapterId: history.chapterId)
+private extension BackupUpdate {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
     }
+}
 
-    init(_ update: BackupUpdate) {
-        self.init(sourceId: update.sourceId, mangaId: update.mangaId, chapterId: update.chapterId)
+private extension BackupReadingSession {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
     }
+}
 
-    init(_ session: BackupReadingSession) {
-        self.init(sourceId: session.sourceId, mangaId: session.mangaId, chapterId: session.chapterId)
+private extension ChapterObject {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
     }
+}
 
-    init(_ chapterObject: ChapterObject) {
-        self.init(
-            sourceId: chapterObject.sourceId,
-            mangaId: chapterObject.mangaId,
-            chapterId: chapterObject.id
-        )
-    }
-
-    init(_ historyObject: HistoryObject) {
-        self.init(
-            sourceId: historyObject.sourceId,
-            mangaId: historyObject.mangaId,
-            chapterId: historyObject.chapterId
-        )
+private extension HistoryObject {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
     }
 }
 
@@ -419,7 +395,7 @@ extension BackupManager {
                     CoreDataManager.shared.clearLibrary(context: context)
                     let mangaByKey = Dictionary(
                         CoreDataManager.shared.getManga(context: context).map {
-                            (BackupRestoreMangaKey($0), $0)
+                            ($0.identifier, $0)
                         },
                         uniquingKeysWith: { first, _ in first }
                     )
@@ -431,7 +407,7 @@ extension BackupManager {
                     )
                     for libraryBackupItem in backupLibrary {
                         let libraryObject = libraryBackupItem.toObject(context: context)
-                        if let manga = mangaByKey[BackupRestoreMangaKey(libraryBackupItem)] {
+                        if let manga = mangaByKey[libraryBackupItem.identifier] {
                             libraryObject.manga = manga
                             if let categories = libraryBackupItem.categories, !categories.isEmpty {
                                 libraryObject.categories = NSSet(array: categories.compactMap { categoryByTitle[$0] })
@@ -477,23 +453,20 @@ extension BackupManager {
                     CoreDataManager.shared.clearChapters(context: context)
                     let mangaByKey = Dictionary(
                         CoreDataManager.shared.getManga(context: context).map {
-                            (BackupRestoreMangaKey($0), $0)
+                            ($0.identifier, $0)
                         },
                         uniquingKeysWith: { first, _ in first }
                     )
                     let historyByKey = Dictionary(
                         CoreDataManager.shared.getHistory(context: context).map {
-                            (BackupRestoreChapterKey($0), $0)
+                            ($0.identifier, $0)
                         },
                         uniquingKeysWith: { first, _ in first }
                     )
                     for backupChapter in backupChapters {
                         let chapter = backupChapter.toObject(context: context)
-                        chapter.manga = mangaByKey[BackupRestoreMangaKey(
-                            sourceId: backupChapter.sourceId,
-                            mangaId: backupChapter.mangaId
-                        )]
-                        chapter.history = historyByKey[BackupRestoreChapterKey(backupChapter)]
+                        chapter.manga = mangaByKey[backupChapter.identifier.mangaIdentifier]
+                        chapter.history = historyByKey[backupChapter.identifier]
                     }
                     do {
                         try context.save()
@@ -514,13 +487,13 @@ extension BackupManager {
                     CoreDataManager.shared.clearUpdates(context: context)
                     let chaptersByKey = Dictionary(
                         CoreDataManager.shared.getChapters(context: context).map {
-                            (BackupRestoreChapterKey($0), $0)
+                            ($0.identifier, $0)
                         },
                         uniquingKeysWith: { first, _ in first }
                     )
                     for backupUpdate in backupUpdates {
                         let update = backupUpdate.toObject(context: context)
-                        update.chapter = chaptersByKey[BackupRestoreChapterKey(backupUpdate)]
+                        update.chapter = chaptersByKey[backupUpdate.identifier]
                     }
                     do {
                         try context.save()
@@ -541,7 +514,7 @@ extension BackupManager {
                     CoreDataManager.shared.clearSessions(context: context)
                     let historyByKey = Dictionary(
                         CoreDataManager.shared.getHistory(context: context).map {
-                            (BackupRestoreChapterKey($0), $0)
+                            ($0.identifier, $0)
                         },
                         uniquingKeysWith: { first, _ in first }
                     )
@@ -551,7 +524,7 @@ extension BackupManager {
                             continue
                         }
                         let session = backupSession.toObject(context: context)
-                        session.history = historyByKey[BackupRestoreChapterKey(backupSession)]
+                        session.history = historyByKey[backupSession.identifier]
                     }
                     do {
                         try context.save()
