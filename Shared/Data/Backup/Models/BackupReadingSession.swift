@@ -11,9 +11,14 @@ struct BackupReadingSession: Codable, Hashable {
     var pagesRead: Int
     var startDate: Date
     var endDate: Date
+
     var sourceId: String
     var mangaId: String
     var chapterId: String
+
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
+    }
 
     init?(_ object: ReadingSessionObject) {
         guard
@@ -27,8 +32,8 @@ struct BackupReadingSession: Codable, Hashable {
         self.startDate = startDate
         self.endDate = endDate
         sourceId = history.sourceId
-        chapterId = history.chapterId
         mangaId = history.mangaId
+        chapterId = history.chapterId
     }
 
     func toObject(context: NSManagedObjectContext? = nil) -> ReadingSessionObject {

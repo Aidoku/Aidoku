@@ -19,6 +19,10 @@ struct BackupLibraryManga: Codable, Hashable {
     var mangaId: String
     var sourceId: String
 
+    var identifier: MangaIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId)
+    }
+
     init(libraryObject: LibraryMangaObject, skipCategories: Bool = false) {
         lastOpened = libraryObject.lastOpened
         lastUpdated = libraryObject.lastUpdated
