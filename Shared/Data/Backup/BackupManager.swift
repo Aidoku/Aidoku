@@ -12,48 +12,6 @@ import Foundation
 import UIKit
 #endif
 
-private extension BackupLibraryManga {
-    var identifier: MangaIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId)
-    }
-}
-
-private extension BackupChapter {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
-    }
-}
-
-private extension BackupHistory {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
-    }
-}
-
-private extension BackupUpdate {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
-    }
-}
-
-private extension BackupReadingSession {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
-    }
-}
-
-private extension ChapterObject {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
-    }
-}
-
-private extension HistoryObject {
-    var identifier: ChapterIdentifier {
-        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
-    }
-}
-
 actor BackupManager {
     static let shared = BackupManager()
 
@@ -465,8 +423,8 @@ extension BackupManager {
                     )
                     for backupChapter in backupChapters {
                         let chapter = backupChapter.toObject(context: context)
-                        chapter.manga = mangaByKey[backupChapter.identifier.mangaIdentifier]
-                        chapter.history = historyByKey[backupChapter.identifier]
+                        chapter.manga = mangaByKey[chapter.identifier.mangaIdentifier]
+                        chapter.history = historyByKey[chapter.identifier]
                     }
                     do {
                         try context.save()
@@ -493,7 +451,7 @@ extension BackupManager {
                     )
                     for backupUpdate in backupUpdates {
                         let update = backupUpdate.toObject(context: context)
-                        update.chapter = chaptersByKey[backupUpdate.identifier]
+                        update.chapter = chaptersByKey[update.identifier]
                     }
                     do {
                         try context.save()
