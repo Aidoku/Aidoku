@@ -428,7 +428,7 @@ class ReaderPageView: UIView {
 
     // match image constraints with image size
     func fixImageSize() {
-        guard imageView.image != nil else { return }
+        guard imageView.image != nil, imageView.image!.size.width > 0 else { return }
 
         imageHeightConstraint?.isActive = false
         imageWidthConstraint?.isActive = false
