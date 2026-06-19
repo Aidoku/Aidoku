@@ -26,6 +26,11 @@ class WebViewViewController: BaseViewController, WKNavigationDelegate {
         handler?.navigated(webView: webView, for: request)
     }
 
+    func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
+        handler?.handle(response: navigationResponse)
+        return .allow
+    }
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         handler?.canceled(request: request)
