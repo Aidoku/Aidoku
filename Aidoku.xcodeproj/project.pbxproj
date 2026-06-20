@@ -3594,7 +3594,7 @@
 			repositoryURL = "https://github.com/kean/Nuke";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
+				minimumVersion = 13.0.0;
 			};
 		};
 		FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {

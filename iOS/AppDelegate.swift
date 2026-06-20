@@ -801,7 +801,7 @@ extension AppDelegate {
     }
 }
 
-extension AppDelegate: ImagePipelineDelegate {
+extension AppDelegate: ImagePipeline.Delegate {
     nonisolated func imageDecoder(for context: ImageDecodingContext, pipeline: ImagePipeline) -> (any ImageDecoding)? {
         if context.request.userInfo[.processesKey] as? Bool == true {
             // when using a page processor, don't decode data as an image since it may be invalid

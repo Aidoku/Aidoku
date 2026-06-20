@@ -273,7 +273,7 @@ extension MangaGridCell {
             guard let self else { return }
             switch result {
                 case .success(let response):
-                    if response.request.imageId != self.url {
+                    if response.request.imageID != self.url {
                         return
                     }
                     Task { @MainActor in

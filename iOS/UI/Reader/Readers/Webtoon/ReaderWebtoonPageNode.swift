@@ -316,7 +316,6 @@ extension ReaderWebtoonPageNode {
                 displayPage()
             }
         } catch {
-            let error = error as? ImagePipeline.Error
             Task {
                 switch error {
                     case .dataLoadingFailed, .dataIsEmpty:

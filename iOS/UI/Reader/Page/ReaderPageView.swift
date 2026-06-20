@@ -235,8 +235,6 @@ class ReaderPageView: UIView {
             completion?(true)
             return true
         } catch {
-            let error = error as? ImagePipeline.Error
-
             // we can still send to image processor even if the request failed
             if request.userInfo[.processesKey] as? Bool == true {
                 let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor

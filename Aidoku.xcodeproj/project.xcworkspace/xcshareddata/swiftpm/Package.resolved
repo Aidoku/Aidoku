@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "3dcb4ea9afd8f6ad35b4f7fe47166f596ae4a0a9"
+        "revision" : "47697660fb4e3a4d68247ec665fe91cfc9c9101b"
       }
     },
     {
@@ -17,15 +17,6 @@
       "state" : {
         "revision" : "46434cd816f035271beb16d80f7bc91381cbd8e4",
         "version" : "3.5.1"
-      }
-    },
-    {
-      "identity" : "lrucache",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nicklockwood/LRUCache.git",
-      "state" : {
-        "revision" : "0d91406ecd4d6c1c56275866f00508d9aeacc92a",
-        "version" : "1.2.0"
       }
     },
     {
@@ -42,17 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Nuke",
       "state" : {
-        "revision" : "0ead44350d2737db384908569c012fe67c421e4d",
-        "version" : "12.8.0"
-      }
-    },
-    {
-      "identity" : "swift-atomics",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-atomics.git",
-      "state" : {
-        "revision" : "b601256eab081c0f92f059e12818ac1d4f178ff7",
-        "version" : "1.3.0"
+        "revision" : "63a8fcbd6621340a2410bc3e9575ac97058615f4",
+        "version" : "13.0.6"
       }
     },
     {
@@ -60,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-cmark",
       "state" : {
-        "revision" : "b022b08312decdc46585e0b3440d97f6f22ef703",
-        "version" : "0.6.0"
+        "revision" : "924936d0427cb25a61169739a7660230bffa6ea6",
+        "version" : "0.8.0"
       }
     },
     {
@@ -78,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SimplyDanny/SwiftLintPlugins",
       "state" : {
-        "revision" : "8545ddf4de043e6f2051c5cf204f39ef778ebf6b",
-        "version" : "0.59.1"
+        "revision" : "18d8d2d18e1668006d1d209e0b5f5e06c1da7cb5",
+        "version" : "0.63.3"
       }
     },
     {
@@ -87,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "revision" : "4206bc7b8bd9a4ff8e9511211e1b4bff979ef9c4",
-        "version" : "2.11.1"
+        "revision" : "49dcadd93161f4a44b4994d3a3e8de9f085aface",
+        "version" : "2.13.5"
       }
     },
     {
@@ -114,7 +96,7 @@
       "location" : "https://github.com/Skittyblock/Wasm3",
       "state" : {
         "branch" : "main",
-        "revision" : "565f4858aa59976ab27719ec02238524eb27030d"
+        "revision" : "8c0e4ef3dec8e88a94c19959c3fe100cf50c548b"
       }
     },
     {
@@ -122,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/weichsel/ZIPFoundation.git",
       "state" : {
-        "revision" : "02b6abe5f6eef7e3cbd5f247c5cc24e246efcfe0",
-        "version" : "0.9.19"
+        "revision" : "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
+        "version" : "0.9.20"
       }
     }
   ],
