@@ -43,6 +43,7 @@
 		FB0051422FB970FF004B4A6F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051412FB970FD004B4A6F /* SafariView.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
+		30EAB0012FC051B5000BFEDF /* CoverRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30EAB0002FC051B5000BFEDF /* CoverRecovery.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
 		FB034E942EAAB6A90072EEEB /* OIDCLoginController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */; };
 		FB034E982EAAFA850072EEEB /* KavitaTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB034E952EAAFA850072EEEB /* KavitaTracker.swift */; };
@@ -277,9 +278,7 @@
 		FB55C0B82DF32BA20019A551 /* LocalFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55C0B72DF32B9E0019A551 /* LocalFileManager.swift */; };
 		FB55C0B92DF32BA20019A551 /* LocalFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB55C0B72DF32B9E0019A551 /* LocalFileManager.swift */; };
 		FB57A6042E7F021600C9FD40 /* LoginShimViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB57A6032E7F021200C9FD40 /* LoginShimViewController.swift */; };
-		FB58C6B02999B44100A6F49F /* WasmNetWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */; };
 		FB58C6B22999B44D00A6F49F /* WebViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */; };
-		FB58C6B32999B4AA00A6F49F /* WasmNetWebViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */; };
 		FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
 		FB5B43732ECBC78C00F06534 /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8E48DC2DC04E17002A3621 /* Array.swift */; };
 		FB5E5D012E32BFC700843E27 /* TapZonesSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */; };
@@ -419,6 +418,8 @@
 		FB7F05FC2DDE77B50036B116 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FB2DDE77B30036B116 /* WebView.swift */; };
 		FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FE2DDF79400036B116 /* KomgaSource.swift */; };
 		FB7F06002DDF79420036B116 /* KomgaSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05FE2DDF79400036B116 /* KomgaSource.swift */; };
+		FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB80997C2FD7F5830088FE9A /* iOSVersion.swift */; };
+		FB80997E2FD7F5850088FE9A /* iOSVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB80997C2FD7F5830088FE9A /* iOSVersion.swift */; };
 		FB82A5C32DF8622700366BC8 /* LocalModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C22DF8622500366BC8 /* LocalModels.swift */; };
 		FB82A5C42DF8622700366BC8 /* LocalModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C22DF8622500366BC8 /* LocalModels.swift */; };
 		FB82A5C62DF874D500366BC8 /* LocalFileDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82A5C52DF874D100366BC8 /* LocalFileDataManager.swift */; };
@@ -637,6 +638,7 @@
 		FB0051412FB970FD004B4A6F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
+		30EAB0002FC051B5000BFEDF /* CoverRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverRecovery.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
 		FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OIDCLoginController.swift; sourceTree = "<group>"; };
 		FB034E952EAAFA850072EEEB /* KavitaTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaTracker.swift; sourceTree = "<group>"; };
@@ -819,7 +821,6 @@
 		FB55C0B42DF247940019A551 /* LocalSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSetupView.swift; sourceTree = "<group>"; };
 		FB55C0B72DF32B9E0019A551 /* LocalFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileManager.swift; sourceTree = "<group>"; };
 		FB57A6032E7F021200C9FD40 /* LoginShimViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginShimViewController.swift; sourceTree = "<group>"; };
-		FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmNetWebViewHandler.swift; sourceTree = "<group>"; };
 		FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewViewController.swift; sourceTree = "<group>"; };
 		FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapZonesSelectView.swift; sourceTree = "<group>"; };
 		FB619E3E2E94A61D00E3B565 /* PageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTracker.swift; sourceTree = "<group>"; };
@@ -923,6 +924,7 @@
 		FB7F05F92DDE76430036B116 /* WKWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebView.swift; sourceTree = "<group>"; };
 		FB7F05FB2DDE77B30036B116 /* WebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebView.swift; sourceTree = "<group>"; };
 		FB7F05FE2DDF79400036B116 /* KomgaSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaSource.swift; sourceTree = "<group>"; };
+		FB80997C2FD7F5830088FE9A /* iOSVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSVersion.swift; sourceTree = "<group>"; };
 		FB82A5C22DF8622500366BC8 /* LocalModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalModels.swift; sourceTree = "<group>"; };
 		FB82A5C52DF874D100366BC8 /* LocalFileDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileDataManager.swift; sourceTree = "<group>"; };
 		FB82A5C82DF8786B00366BC8 /* ObjectActorSerialExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectActorSerialExecutor.swift; sourceTree = "<group>"; };
@@ -1507,6 +1509,7 @@
 			isa = PBXGroup;
 			children = (
 				FB8E48DC2DC04E17002A3621 /* Array.swift */,
+				FB80997C2FD7F5830088FE9A /* iOSVersion.swift */,
 				FB716E03283E7D4D00F1BB5D /* String.swift */,
 				FB4B0AE2285CCC8E0066A13B /* URL.swift */,
 				FB4B0AE7285D0A0E0066A13B /* Dictionary.swift */,
@@ -1625,6 +1628,7 @@
 			children = (
 				FBE578F628983C3C00F9F1B5 /* OldMangaCollectionViewController.swift */,
 				FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */,
+				30EAB0002FC051B5000BFEDF /* CoverRecovery.swift */,
 			);
 			path = Manga;
 			sourceTree = "<group>";
@@ -1686,7 +1690,6 @@
 		FB58C6AE2999B43000A6F49F /* WebView */ = {
 			isa = PBXGroup;
 			children = (
-				FB58C6AF2999B44100A6F49F /* WasmNetWebViewHandler.swift */,
 				FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */,
 			);
 			path = WebView;
@@ -2751,6 +2754,7 @@
 				FB0CAA5028A55BB80024561A /* CoreDataManager+Category.swift in Sources */,
 				FB9A48332967E41400FFC414 /* MigrateSelectDestinationView.swift in Sources */,
 				FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */,
+				30EAB0012FC051B5000BFEDF /* CoverRecovery.swift in Sources */,
 				FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */,
 				7CF79D3D2F31E81300BF0800 /* ReaderPagedTextViewController.swift in Sources */,
 				7CF79D3E2F31E81300BF0800 /* TextPaginator.swift in Sources */,
@@ -2790,6 +2794,7 @@
 				FB99591E2F6863A700B632D5 /* ReaderTextView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
+				FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB0518322E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				FB42750B295FB7B400131377 /* BrowseViewController.swift in Sources */,
 				FBE7812C282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
@@ -2955,7 +2960,6 @@
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB0AB8A52F52047100AF1451 /* FilterGroup.swift in Sources */,
 				FB9A48422968943400FFC414 /* SwiftUINavigationViewController.swift in Sources */,
-				FB58C6B02999B44100A6F49F /* WasmNetWebViewHandler.swift in Sources */,
 				FB947CFB2EF1D15500FC6226 /* CoreDataManager+ReadingSession.swift in Sources */,
 				FBE53F0E29CCA78000899601 /* HeightQueryable.swift in Sources */,
 				FBD6A4082858D365007116C9 /* TrackerManager.swift in Sources */,
@@ -2987,7 +2991,6 @@
 				FB3D20782FA4A1A1004DAC5E /* BackupSource.swift in Sources */,
 				FB034EA52EAC27600072EEEB /* MangaIdentifier.swift in Sources */,
 				FBE7A5952DE35AC400CA5B60 /* CustomSourceConfig.swift in Sources */,
-				FB58C6B32999B4AA00A6F49F /* WasmNetWebViewHandler.swift in Sources */,
 				FBA748A82E81C12400D9BE86 /* BangumiModels.swift in Sources */,
 				FB7B7EDE278CEAA2001E6EAF /* URLSession.swift in Sources */,
 				FB1A4E672E79B1A6006F4BA8 /* KomgaApi.swift in Sources */,
@@ -3134,6 +3137,7 @@
 				FB4EEBBE27A2F103005081A3 /* MangaObject.swift in Sources */,
 				FB72502027CAACC90037F1C9 /* BackupHistory.swift in Sources */,
 				FB619E402E94A62000E3B565 /* PageTracker.swift in Sources */,
+				FB80997E2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB82A5C32DF8622700366BC8 /* LocalModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3600,7 +3604,7 @@
 			repositoryURL = "https://github.com/kean/Nuke";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
+				minimumVersion = 13.0.0;
 			};
 		};
 		FB2C83972E43F074003CA85F /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {

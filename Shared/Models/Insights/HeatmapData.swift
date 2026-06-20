@@ -16,7 +16,9 @@ struct HeatmapData: Hashable {
         let today = calendar.startOfDay(for: Date.now)
         let initialStartDate = calendar.date(byAdding: .day, value: -364, to: today)!
 
-        let daysToSubtract = calendar.component(.weekday, from: initialStartDate) - 1
+        let weekday = calendar.component(.weekday, from: initialStartDate)
+        let firstWeekday = calendar.firstWeekday
+        let daysToSubtract = (weekday - firstWeekday + 7) % 7
         let alignedStartDate = calendar.date(byAdding: .day, value: -daysToSubtract, to: initialStartDate)!
 
         let totalDays = 365 + daysToSubtract

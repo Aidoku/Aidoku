@@ -296,7 +296,7 @@ struct MangaDetailsHeaderView: View {
                     longHeldBookmark = false
                     return
                 }
-                if isTracking {
+                if bookmarked && isTracking {
                     // show confirm prompt
                     showLibraryRemoveConfirm = true
                 } else {

@@ -162,20 +162,24 @@ extension WasmNet {
         URLSession.shared.dataTask(with: request) { data, response, error in
             self.incrementRequest()
 
-            let headers = ((response as? HTTPURLResponse)?.allHeaderFields as? [String: String]) ?? [:]
-            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
-
-            // check for cloudflare block
-            if cloudflare && headers["Server"] == "cloudflare" && (code == 503 || code == 403 || code == 429) {
-                DispatchQueue.main.async {
-                    let request = request
-                    let handler = WasmNetWebViewHandler(netModule: self, request: request)
-                    handler.load()
+            if let httpResponse = response as? HTTPURLResponse, let data {
+                // check for cloudflare block
+                if CloudflareHandler.shared.shouldHandle(response: httpResponse, data: data) {
+                    Task {
+                        do {
+                            let (data, response) = try await CloudflareHandler.shared.handle(request: request)
+                            self.storedResponse = .init(data: data, response: response)
+                        } catch {
+                            self.storedResponse = .init(error: error)
+                        }
+                        self.semaphore.signal()
+                    }
+                    return
                 }
-            } else {
-                self.storedResponse = WasmResponseObject(data: data, response: response, error: error)
-                self.semaphore.signal()
             }
+
+            self.storedResponse = WasmResponseObject(data: data, response: response, error: error)
+            self.semaphore.signal()
         }.resume()
 
         self.semaphore.wait()

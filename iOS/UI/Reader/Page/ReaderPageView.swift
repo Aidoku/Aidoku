@@ -235,8 +235,6 @@ class ReaderPageView: UIView {
             completion?(true)
             return true
         } catch {
-            let error = error as? ImagePipeline.Error
-
             // we can still send to image processor even if the request failed
             if request.userInfo[.processesKey] as? Bool == true {
                 let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
@@ -428,7 +426,7 @@ class ReaderPageView: UIView {
 
     // match image constraints with image size
     func fixImageSize() {
-        guard imageView.image != nil else { return }
+        guard imageView.image != nil, imageView.image!.size.width > 0 else { return }
 
         imageHeightConstraint?.isActive = false
         imageWidthConstraint?.isActive = false

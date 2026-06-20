@@ -155,8 +155,7 @@ class SourceViewController: OldMangaCollectionViewController {
     }
 
     override func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
-        cell.sourceId = info.sourceId
-        cell.mangaId = info.mangaId
+        cell.identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
         cell.title = info.title
         Task {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -331,7 +330,7 @@ extension SourceViewController {
             let indexPath = indexPaths.first,
             let mangaInfo = dataSource.itemIdentifier(for: indexPath)
         else { return nil }
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions -> UIMenu? in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] actions -> UIMenu? in
             var actions: [UIMenuElement] = []
 
             // library option

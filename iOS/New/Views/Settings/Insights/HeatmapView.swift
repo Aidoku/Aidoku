@@ -19,6 +19,7 @@ struct HeatmapView: View {
     private let cellSpacing: CGFloat = 2
     private let headerHeight: CGFloat = 16
     private let headerSpacing: CGFloat = 4
+    private let sidebarWidth: CGFloat = 32
 
     init(data: HeatmapData, themeColor: Color? = nil) {
         self.data = data
@@ -33,30 +34,11 @@ struct HeatmapView: View {
                 .systemGray6
             }
         }))
-        let colors = [
-            themeColor.opacity(0.3),
-            themeColor.opacity(0.4),
-            themeColor.opacity(0.6),
-            themeColor.opacity(0.8),
-            themeColor
-        ]
-        let bucketCount = colors.count
-        let sortedValues = data.values.sorted().filter { $0 > 0 }
-        if !sortedValues.isEmpty {
-            let thresholds = (0..<bucketCount).map { i in
-                let q = Int(floor(Float(i) / Float(bucketCount) * Float(sortedValues.count)))
-                return sortedValues[q]
-            }
-            self.colorForValue = { value in
-                if value == 0 {
-                    return noColor
-                }
-                let bucketIndex = thresholds.firstIndex { value <= $0 } ?? bucketCount - 1
-                return colors[bucketIndex]
-            }
-        } else {
-            self.colorForValue = { _ in noColor }
-        }
+        self.colorForValue = Self.makeColorMapper(
+            values: data.values,
+            themeColor: themeColor,
+            noColor: noColor
+        )
 
         var result: [(Int, String)] = []
         var lastMonth: Int?
@@ -82,15 +64,29 @@ struct HeatmapView: View {
         ScrollViewReader { proxy in
             let height = 7 * (cellSize + cellSpacing) + headerHeight + headerSpacing * 2
             ScrollView(.horizontal, showsIndicators: false) {
+                let topPadding = headerHeight + headerSpacing
+                let leadingPadding: CGFloat = sidebarWidth
+
                 ZStack(alignment: .topLeading) {
+                    // days of week labels
+                    let daysOfWeek = calendar.shortStandaloneWeekdaySymbols
+                    let startIndex = calendar.firstWeekday - 1
+                    ForEach(daysOfWeek.indices, id: \.self) { index in
+                        Text(daysOfWeek[(index + startIndex) % daysOfWeek.count])
+                            .font(.system(.caption2, design: .rounded).weight(.medium))
+                            .foregroundColor(.primary)
+                            .offset(y: topPadding + CGFloat(index) * (cellSize + cellSpacing))
+                            .frame(height: cellSize)
+                    }
+
                     // month headers
                     ForEach(monthHeaders, id: \.index) { header in
                         Text(header.label)
-                            .font(.caption2)
+                            .font(.system(.caption2, design: .rounded).weight(.medium))
                             .foregroundColor(.primary)
                             .fixedSize(horizontal: true, vertical: false)
                             .frame(height: headerHeight, alignment: .leading)
-                            .offset(x: CGFloat(header.index) * (cellSize + cellSpacing))
+                            .offset(x: leadingPadding + CGFloat(header.index) * (cellSize + cellSpacing))
                     }
 
                     // heatmap cells
@@ -117,10 +113,11 @@ struct HeatmapView: View {
                             .id(weekIndex == weekCount - 1 ? "lastWeek" : nil)
                         }
                     }
-                    .padding(.top, headerHeight + headerSpacing)
+                    .padding(.top, topPadding)
+                    .padding(.leading, leadingPadding)
                 }
                 .frame(
-                    width: CGFloat(weekCount) * (cellSize + cellSpacing),
+                    width: leadingPadding + CGFloat(weekCount) * (cellSize + cellSpacing),
                     height: height
                 )
             }
@@ -134,6 +131,47 @@ struct HeatmapView: View {
         }
         .centerScrollAnchorPlease()
         .scrollClipDisabledPlease()
+    }
+
+    // do "quantile bucketing" to determine heatmap colors
+    private static func makeColorMapper(
+        values: [Int],
+        themeColor: Color,
+        noColor: Color
+    ) -> (Int) -> Color {
+        let colors = [
+            themeColor.opacity(0.3),
+            themeColor.opacity(0.4),
+            themeColor.opacity(0.55),
+            themeColor.opacity(0.75),
+            themeColor
+        ]
+
+        let nonZero = values.filter { $0 > 0 }.sorted()
+        guard !nonZero.isEmpty else { return { _ in noColor } }
+
+        func percentile(_ p: Double, in values: [Int]) -> Int {
+            let index = Int((Double(values.count - 1) * p).rounded(.down))
+            return values[max(0, min(index, values.count - 1))]
+        }
+
+        let cap = percentile(0.95, in: nonZero)
+        let clipped = nonZero.map { min($0, cap) }
+
+        let thresholds = [
+            percentile(0.3, in: clipped),
+            percentile(0.4, in: clipped),
+            percentile(0.6, in: clipped),
+            percentile(0.8, in: clipped),
+            percentile(1, in: clipped)
+        ]
+
+        return { value in
+            guard value > 0 else { return noColor }
+            let clippedValue = min(value, cap)
+            let bucket = thresholds.firstIndex { clippedValue <= $0 } ?? (colors.count - 1)
+            return colors[bucket]
+        }
     }
 }
 

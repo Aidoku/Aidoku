@@ -67,9 +67,14 @@ struct YearlyMonthChartView: View {
                 {
                     let value = data.value(for: month)
                     AxisValueLabel(anchor: .top) {
+                        let xOffset: CGFloat = if #available(iOS 27.0, *) {
+                            -8
+                        } else {
+                            0
+                        }
                         Text(month.axisLabel)
                             .font(.caption2.weight(.semibold))
-                            .offset(y: 2)
+                            .offset(x: xOffset, y: 2)
                             .fixedSize()
                     }
                     .foregroundStyle(value == 0 ? .secondary : .primary)

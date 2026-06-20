@@ -21,7 +21,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 
     var image: UIImage? {
         didSet {
-            guard let image else { return }
+            guard let image, image.size.width > 0 else { return }
             ratio = image.size.height / image.size.width
         }
     }
@@ -157,7 +157,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     }
 
     func getPillarboxHeight(percent: CGFloat, maxWidth: CGFloat) -> CGFloat {
-        guard let image else { return 0 }
+        guard let image, image.size.width > 0 else { return 0 }
         let width = maxWidth * percent
         return width / image.size.width * image.size.height
     }
@@ -185,7 +185,10 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
                     child: imageNode
                 )
             } else {
-                return ASRatioLayoutSpec(ratio: image.size.height / image.size.width, child: imageNode)
+                let ratio = image.size.width > 0
+                    ? image.size.height / image.size.width
+                    : Self.defaultRatio
+                return ASRatioLayoutSpec(ratio: ratio, child: imageNode)
             }
         } else if text != nil {
             // todo: the text node should probably adjust its size based on the text
@@ -313,7 +316,6 @@ extension ReaderWebtoonPageNode {
                 displayPage()
             }
         } catch {
-            let error = error as? ImagePipeline.Error
             Task {
                 switch error {
                     case .dataLoadingFailed, .dataIsEmpty:
@@ -536,12 +538,12 @@ extension ReaderWebtoonPageNode {
     }
 
     private func transition() {
-        let ratio = if let image {
-            image.size.width / image.size.height
+        let ratio = if let image, image.size.width > 0 {
+            image.size.height / image.size.width
         } else {
             ratio ?? Self.defaultRatio
         }
-        let scaledHeight = UIScreen.main.bounds.width / ratio
+        let scaledHeight = UIScreen.main.bounds.width * ratio
         let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
         frame = CGRect(origin: .zero, size: size)
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)

@@ -73,8 +73,7 @@ extension MangaView {
                         guard
                             let self,
                             let manga = output.object as? AidokuRunner.Manga,
-                            manga.sourceKey == self.manga.sourceKey,
-                            manga.key == self.manga.key
+                            manga.identifier == self.manga.identifier
                         else {
                             return
                         }
@@ -83,33 +82,38 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .addToLibrary)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
-                    guard
-                        let self,
-                        let manga = output.object as? Manga,
-                        manga.key == self.manga.sourceKey + "." + self.manga.key
-                    else {
-                        return
+            for name in [
+                Notification.Name.addToLibrary,
+                Notification.Name.removeFromLibrary
+            ] {
+                NotificationCenter.default.publisher(for: name)
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] output in
+                        guard
+                            let self,
+                            let manga = output.object as? AidokuRunner.Manga,
+                            manga.identifier == self.manga.identifier
+                        else {
+                            return
+                        }
+                        Task {
+                            await self.loadBookmarked()
+                        }
                     }
-                    Task {
-                        await self.loadBookmarked()
-                    }
-                }
-                .store(in: &cancellables)
+                    .store(in: &cancellables)
+            }
 
             NotificationCenter.default.publisher(for: .migratedManga)
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
                     guard
                         let self,
-                        let migration = output.object as? (from: Manga, to: Manga),
-                        migration.from.id == self.manga.key && migration.from.sourceId == self.manga.sourceKey,
-                        let newSource = SourceManager.shared.source(for: migration.to.sourceId)
+                        let migration = output.object as? (from: AidokuRunner.Manga, to: AidokuRunner.Manga),
+                        migration.from.identifier == self.manga.identifier,
+                        let newSource = SourceManager.shared.source(for: migration.to.sourceKey)
                     else { return }
                     self.source = newSource
-                    self.manga = migration.to.toNew()
+                    self.manga = migration.to
                 }
                 .store(in: &cancellables)
 
