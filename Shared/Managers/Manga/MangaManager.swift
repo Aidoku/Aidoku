@@ -121,10 +121,7 @@ extension MangaManager {
         // add enhanced trackers
         await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
 
-        NotificationCenter.default.post(
-            name: .addToLibrary,
-            object: manga.toOld()
-        )
+        NotificationCenter.default.post(name: .addToLibrary, object: manga)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 
