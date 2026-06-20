@@ -880,7 +880,7 @@ extension MangaManager {
                                         let tracker = TrackerManager.getTracker(id: trackerId),
                                         tracker.canRegister(sourceKey: newManga.sourceKey, mangaKey: newManga.key)
                                     else {
-                                        if !copy {
+                                        if !copy && newManga.identifier != oldManga.identifier {
                                             context.delete(item)
                                         }
                                         continue
