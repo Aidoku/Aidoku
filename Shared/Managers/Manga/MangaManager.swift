@@ -545,7 +545,7 @@ extension MangaManager {
                     results[manga.hashValue] = newManga
                 }
 
-                let summary: NotificationManager.NewChaptersSummary? = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
+                let summary = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
                     guard
                         let libraryObject = CoreDataManager.shared.getLibraryManga(
                             sourceId: manga.sourceId,
