@@ -466,7 +466,8 @@
 "REFRESH_METADATA" = "Refresh Metadata";
 "BACKGROUND_REFRESH" = "Background Refresh";
 "BACKGROUND_REFRESH_TEXT" = "When starting a library refresh manually, allow the refresh to complete even if the app is backgrounded.";
-"NOTIFY_NEW_CHAPTERS" = "Notify on New Chapters";
+"NEW_CHAPTER_NOTIFICATIONS" = "New Chapter Notifications";
+"NEW_CHAPTER_NOTIFICATIONS_TEXT" = "Send notifications when the library is refreshed in the background.";
 "1_NEW_CHAPTER_AVAILABLE" = "New chapter available";
 "X_NEW_CHAPTERS_AVAILABLE" = "%d new chapters available";
 "NEW_CHAPTERS_AVAILABLE" = "New Chapters Available";
