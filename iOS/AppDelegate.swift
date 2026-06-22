@@ -207,6 +207,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             ]
         )
 
+        // PlayCover fix: eagerly initialize the Core Data stack on the main thread
+        // before any background migration task touches it. The `lazy var container`
+        // and the singleton's init are not thread-safe; under PlayCover's timing the
+        // main thread and a background migration task race to initialize them, and the
+        // persistent-history remote-change observer's performAndWait deadlocks the
+        // launch (no window ever appears). Forcing first init on the main thread here
+        // makes the main thread win the race deterministically.
+        _ = CoreDataManager.shared
+
         // check for icloud availability
         // https://developer.apple.com/documentation/foundation/filemanager/url(forubiquitycontaineridentifier:)
         // Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of
