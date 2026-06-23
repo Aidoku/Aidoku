@@ -518,7 +518,11 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
+#if canImport(UIKit)
         let isBackground = await UIApplication.shared.applicationState != .active
+#else
+        let isBackground = false
+#endif
         let notificationsEnabled = isBackground && NotificationManager.shared.isEnabled()
         var pendingNotifications: [NotificationManager.NewChaptersSummary] = []
 
