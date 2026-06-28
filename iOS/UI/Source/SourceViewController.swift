@@ -155,8 +155,7 @@ class SourceViewController: OldMangaCollectionViewController {
     }
 
     override func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
-        cell.sourceId = info.sourceId
-        cell.mangaId = info.mangaId
+        cell.identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
         cell.title = info.title
         Task {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in

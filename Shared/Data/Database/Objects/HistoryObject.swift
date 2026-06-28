@@ -10,6 +10,9 @@ import CoreData
 
 @objc(HistoryObject)
 public class HistoryObject: NSManagedObject {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
+    }
 
     public override func awakeFromInsert() {
         super.awakeFromInsert()

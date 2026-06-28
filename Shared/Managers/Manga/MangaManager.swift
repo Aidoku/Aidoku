@@ -121,10 +121,7 @@ extension MangaManager {
         // add enhanced trackers
         await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
 
-        NotificationCenter.default.post(
-            name: .addToLibrary,
-            object: manga.toOld()
-        )
+        NotificationCenter.default.post(name: .addToLibrary, object: manga)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 
@@ -521,6 +518,10 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
+        let isBackground = await UIApplication.shared.applicationState != .active
+        let notificationsEnabled = isBackground && NotificationManager.shared.isEnabled()
+        var pendingNotifications: [NotificationManager.NewChaptersSummary] = []
+
         let newDetails = await {
             var results: [Int: AidokuRunner.Manga] = [:]
             let progress = Progress(totalUnitCount: Int64(total))
@@ -542,7 +543,7 @@ extension MangaManager {
                     results[manga.hashValue] = newManga
                 }
 
-                await CoreDataManager.shared.container.performBackgroundTask { context in
+                let summary = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
                     guard
                         let libraryObject = CoreDataManager.shared.getLibraryManga(
                             sourceId: manga.sourceId,
@@ -551,7 +552,7 @@ extension MangaManager {
                         ),
                         let mangaObject = libraryObject.manga
                     else {
-                        return
+                        return nil
                     }
 
                     // update details
@@ -560,7 +561,7 @@ extension MangaManager {
                     }
 
                     // update chapters
-                    guard let chapters = newManga.chapters, !chapters.isEmpty else { return }
+                    guard let chapters = newManga.chapters, !chapters.isEmpty else { return nil }
 
                     let newChapters = CoreDataManager.shared.setChapters(
                         chapters,
@@ -568,6 +569,7 @@ extension MangaManager {
                         mangaId: manga.id,
                         context: context
                     )
+                    var notifiableCount = 0
                     if !newChapters.isEmpty {
                         // add manga updates
                         let scanlatorFilter = mangaObject.scanlatorFilter ?? []
@@ -582,6 +584,7 @@ extension MangaManager {
                                 chapterObject: chapter,
                                 context: context
                             )
+                            notifiableCount += 1
                         }
                         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
                         libraryObject.lastUpdatedChapters = Date.now
@@ -594,6 +597,18 @@ extension MangaManager {
                     if context.hasChanges {
                         try? context.save()
                     }
+
+                    guard notifiableCount > 0 else { return nil }
+                    let title = mangaObject.title.isEmpty ? (manga.title ?? "") : mangaObject.title
+                    return NotificationManager.NewChaptersSummary(
+                        mangaIdentifier: MangaIdentifier(sourceKey: manga.sourceId, mangaKey: manga.id),
+                        mangaTitle: title,
+                        chapterCount: notifiableCount
+                    )
+                }
+
+                if notificationsEnabled, let summary {
+                    pendingNotifications.append(summary)
                 }
 
                 completed += 1
@@ -603,6 +618,10 @@ extension MangaManager {
 
             return results
         }()
+
+        if notificationsEnabled, !pendingNotifications.isEmpty {
+            await NotificationManager.shared.notifyNewChapters(pendingNotifications)
+        }
 
         if updateMetadata {
             for mangaItem in filteredManga {
@@ -738,177 +757,7 @@ extension MangaManager {
                         let newManga = details.0
                         let newChapters = details.1
 
-                        if copy {
-                            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-                                let storedNewManga = CoreDataManager.shared.getManga(
-                                    sourceId: newManga.sourceKey,
-                                    mangaId: newManga.key,
-                                    context: context
-                                )
-                                guard let storedNewManga else {
-                                    return false // add to library
-                                }
-                                // update details
-                                storedNewManga.load(from: newManga)
-                                // update chapters
-                                CoreDataManager.shared.setChapters(
-                                    newChapters,
-                                    sourceId: newManga.sourceKey,
-                                    mangaId: newManga.key,
-                                    context: context
-                                )
-                                return true
-                            }
-                            if !inLibrary {
-                                await MangaManager.shared.addToLibrary(
-                                    manga: newManga,
-                                    chapters: newChapters
-                                )
-                            }
-                        }
-
-                        return await CoreDataManager.shared.container.performBackgroundTask { context in
-                            do {
-                                // update manga object in library with new data
-                                // remove old entry if the new one already exists in library
-                                if !copy {
-                                    var mangaObjectToUpdate: MangaObject?
-
-                                    // new is already in library
-                                    if newManga.key != oldManga.key, let storedNewManga = CoreDataManager.shared.getManga(
-                                        sourceId: newManga.sourceKey,
-                                        mangaId: newManga.key,
-                                        context: context
-                                    ) {
-                                        // update the object in the library with the new details we fetched already
-                                        mangaObjectToUpdate = storedNewManga
-                                        // remove old entry
-                                        CoreDataManager.shared.removeManga(
-                                            sourceId: oldManga.sourceKey,
-                                            mangaId: oldManga.key,
-                                            context: context
-                                        )
-                                    } else {
-                                        // get existing old object to replace data with new details
-                                        mangaObjectToUpdate = CoreDataManager.shared.getManga(
-                                            sourceId: oldManga.sourceKey,
-                                            mangaId: oldManga.key,
-                                            context: context
-                                        )
-                                    }
-
-                                    mangaObjectToUpdate?.load(from: newManga)
-                                }
-
-                                // migrate history
-                                let storedOldHistory = CoreDataManager.shared.getHistoryForManga(
-                                    sourceId: oldManga.sourceKey,
-                                    mangaId: oldManga.key,
-                                    context: context
-                                )
-
-                                var maxChapterRead = storedOldHistory
-                                    .compactMap { $0.chapter?.chapter != nil ? $0.chapter : nil }
-                                    .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
-                                    .chapter?.floatValue
-
-                                if maxChapterRead == nil || maxChapterRead == -1 {
-                                    // try finding max volume read instead, in case of no chapters
-                                    maxChapterRead = storedOldHistory
-                                        .compactMap { $0.chapter?.volume != nil ? $0.chapter : nil }
-                                        .max { $0.volume!.decimalValue < $1.volume!.decimalValue }?
-                                        .volume?.floatValue
-                                }
-
-                                // remove old chapters and history
-                                if !copy {
-                                    CoreDataManager.shared.removeChapters(
-                                        sourceId: oldManga.sourceKey,
-                                        mangaId: oldManga.key,
-                                        context: context
-                                    )
-
-                                    CoreDataManager.shared.removeHistory(
-                                        sourceId: oldManga.sourceKey,
-                                        mangaId: oldManga.key,
-                                        context: context
-                                    )
-
-                                    // store new chapters
-                                    CoreDataManager.shared.setChapters(
-                                        newChapters,
-                                        sourceId: newManga.sourceKey,
-                                        mangaId: newManga.key,
-                                        context: context
-                                    )
-                                }
-
-                                // mark new chapters as read
-                                if let maxChapterRead {
-                                    var chaptersToMark = newChapters.filter({ $0.chapterNumber ?? Float.greatestFiniteMagnitude <= maxChapterRead })
-                                    if chaptersToMark.isEmpty {
-                                        // fall back to using volume numbers instead, in case the source we're migrating to uses volumes
-                                        chaptersToMark = newChapters.filter({ $0.volumeNumber ?? Float.greatestFiniteMagnitude <= maxChapterRead })
-                                    }
-                                    if !chaptersToMark.isEmpty {
-                                        CoreDataManager.shared.setCompleted(
-                                            sourceId: newManga.sourceKey,
-                                            mangaId: newManga.key,
-                                            chapterIds: chaptersToMark.map { $0.key },
-                                            context: context
-                                        )
-                                    }
-                                }
-
-                                // migrate trackers
-                                let trackItems = CoreDataManager.shared.getTracks(
-                                    sourceId: oldManga.sourceKey,
-                                    mangaId: oldManga.key,
-                                    context: context
-                                )
-
-                                for item in trackItems {
-                                    guard
-                                        let trackId = item.id,
-                                        let trackerId = item.trackerId,
-                                        !CoreDataManager.shared.hasTrack(
-                                            trackerId: trackerId,
-                                            sourceId: newManga.sourceKey,
-                                            mangaId: newManga.key,
-                                            context: context
-                                        ),
-                                        let tracker = TrackerManager.getTracker(id: trackerId),
-                                        tracker.canRegister(sourceKey: newManga.sourceKey, mangaKey: newManga.key)
-                                    else {
-                                        if !copy {
-                                            context.delete(item)
-                                        }
-                                        continue
-                                    }
-
-                                    if copy {
-                                        CoreDataManager.shared.createTrack(
-                                            id: trackId,
-                                            trackerId: trackerId,
-                                            sourceId: newManga.sourceKey,
-                                            mangaId: newManga.key,
-                                            title: item.title,
-                                            context: context
-                                        )
-                                    } else {
-                                        item.sourceId = newManga.sourceKey
-                                        item.mangaId = newManga.key
-                                    }
-                                }
-
-                                try context.save()
-
-                                return (from: oldManga, to: newManga)
-                            } catch {
-                                LogManager.logger.error("Error migrating manga \(oldManga.key): \(error)")
-                                return nil
-                            }
-                        }
+                        return await Self.migrate(copy: copy, from: oldManga, to: newManga, withChapters: newChapters)
                     }
                 }
 
@@ -924,6 +773,195 @@ extension MangaManager {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private static func migrate(
+        copy: Bool,
+        from oldManga: AidokuRunner.Manga,
+        to newManga: AidokuRunner.Manga,
+        withChapters newChapters: [AidokuRunner.Chapter],
+    ) async -> (AidokuRunner.Manga, AidokuRunner.Manga)? {
+        // migrate settings
+        if let readingMode = UserDefaults.standard.string(forKey: "Reader.readingMode.\(oldManga.identifier)") {
+            UserDefaults.standard.set(readingMode, forKey: "Reader.readingMode.\(newManga.identifier)")
+            if !copy {
+                UserDefaults.standard.removeObject(forKey: "Reader.readingMode.\(oldManga.identifier)")
+            }
+        }
+
+        // add new item to library if copying
+        if copy {
+            let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
+                let storedNewManga = CoreDataManager.shared.getManga(
+                    sourceId: newManga.sourceKey,
+                    mangaId: newManga.key,
+                    context: context
+                )
+                guard let storedNewManga else {
+                    return false // add to library
+                }
+                // update details
+                storedNewManga.load(from: newManga)
+                // update chapters
+                CoreDataManager.shared.setChapters(
+                    newChapters,
+                    sourceId: newManga.sourceKey,
+                    mangaId: newManga.key,
+                    context: context
+                )
+                return true
+            }
+            if !inLibrary {
+                await MangaManager.shared.addToLibrary(
+                    manga: newManga,
+                    chapters: newChapters
+                )
+            }
+        }
+
+        // migrate/copy data
+        return await CoreDataManager.shared.container.performBackgroundTask { context in
+            do {
+                // update manga object in library with new data
+                // remove old entry if the new one already exists in library
+                if !copy {
+                    var mangaObjectToUpdate: MangaObject?
+
+                    // new is already in library
+                    if newManga.key != oldManga.key, let storedNewManga = CoreDataManager.shared.getManga(
+                        sourceId: newManga.sourceKey,
+                        mangaId: newManga.key,
+                        context: context
+                    ) {
+                        // update the object in the library with the new details we fetched already
+                        mangaObjectToUpdate = storedNewManga
+                        // remove old entry
+                        CoreDataManager.shared.removeManga(
+                            sourceId: oldManga.sourceKey,
+                            mangaId: oldManga.key,
+                            context: context
+                        )
+                    } else {
+                        // get existing old object to replace data with new details
+                        mangaObjectToUpdate = CoreDataManager.shared.getManga(
+                            sourceId: oldManga.sourceKey,
+                            mangaId: oldManga.key,
+                            context: context
+                        )
+                    }
+
+                    mangaObjectToUpdate?.load(from: newManga)
+                }
+
+                // migrate history
+                let storedOldHistory = CoreDataManager.shared.getHistoryForManga(
+                    sourceId: oldManga.sourceKey,
+                    mangaId: oldManga.key,
+                    context: context
+                )
+
+                var maxChapterRead = storedOldHistory
+                    .compactMap { $0.chapter?.chapter != nil ? $0.chapter : nil }
+                    .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
+                    .chapter?.floatValue
+
+                if maxChapterRead == nil || maxChapterRead == -1 {
+                    // try finding max volume read instead, in case of no chapters
+                    maxChapterRead = storedOldHistory
+                        .compactMap { $0.chapter?.volume != nil ? $0.chapter : nil }
+                        .max { $0.volume!.decimalValue < $1.volume!.decimalValue }?
+                        .volume?.floatValue
+                }
+
+                // remove old chapters and history
+                if !copy {
+                    CoreDataManager.shared.removeChapters(
+                        sourceId: oldManga.sourceKey,
+                        mangaId: oldManga.key,
+                        context: context
+                    )
+
+                    CoreDataManager.shared.removeHistory(
+                        sourceId: oldManga.sourceKey,
+                        mangaId: oldManga.key,
+                        context: context
+                    )
+
+                    // store new chapters
+                    CoreDataManager.shared.setChapters(
+                        newChapters,
+                        sourceId: newManga.sourceKey,
+                        mangaId: newManga.key,
+                        context: context
+                    )
+                }
+
+                // mark new chapters as read
+                if let maxChapterRead {
+                    var chaptersToMark = newChapters.filter({ $0.chapterNumber ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                    if chaptersToMark.isEmpty {
+                        // fall back to using volume numbers instead, in case the source we're migrating to uses volumes
+                        chaptersToMark = newChapters.filter({ $0.volumeNumber ?? Float.greatestFiniteMagnitude <= maxChapterRead })
+                    }
+                    if !chaptersToMark.isEmpty {
+                        CoreDataManager.shared.setCompleted(
+                            sourceId: newManga.sourceKey,
+                            mangaId: newManga.key,
+                            chapterIds: chaptersToMark.map { $0.key },
+                            context: context
+                        )
+                    }
+                }
+
+                // migrate trackers
+                let trackItems = CoreDataManager.shared.getTracks(
+                    sourceId: oldManga.sourceKey,
+                    mangaId: oldManga.key,
+                    context: context
+                )
+
+                for item in trackItems {
+                    guard
+                        let trackId = item.id,
+                        let trackerId = item.trackerId,
+                        !CoreDataManager.shared.hasTrack(
+                            trackerId: trackerId,
+                            sourceId: newManga.sourceKey,
+                            mangaId: newManga.key,
+                            context: context
+                        ),
+                        let tracker = TrackerManager.getTracker(id: trackerId),
+                        tracker.canRegister(sourceKey: newManga.sourceKey, mangaKey: newManga.key)
+                    else {
+                        if !copy && newManga.identifier != oldManga.identifier {
+                            context.delete(item)
+                        }
+                        continue
+                    }
+
+                    if copy {
+                        CoreDataManager.shared.createTrack(
+                            id: trackId,
+                            trackerId: trackerId,
+                            sourceId: newManga.sourceKey,
+                            mangaId: newManga.key,
+                            title: item.title,
+                            context: context
+                        )
+                    } else {
+                        item.sourceId = newManga.sourceKey
+                        item.mangaId = newManga.key
+                    }
+                }
+
+                try context.save()
+
+                return (from: oldManga, to: newManga)
+            } catch {
+                LogManager.logger.error("Error migrating manga \(oldManga.key): \(error)")
+                return nil
             }
         }
     }

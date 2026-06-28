@@ -11,6 +11,10 @@ import AidokuRunner
 
 @objc(ChapterObject)
 public class ChapterObject: NSManagedObject {
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: id)
+    }
+
     func load(
         from chapter: AidokuRunner.Chapter,
         sourceId: String,

@@ -12,6 +12,10 @@ extension MangaUpdateObject {
         (sourceId ?? "") + (chapterId ?? "") + (mangaId ?? "")
     }
 
+    var identifier: ChapterIdentifier {
+        .init(sourceKey: sourceId ?? "", mangaKey: mangaId ?? "", chapterKey: chapterId ?? "")
+    }
+
     func toItem() -> MangaUpdateItem {
         MangaUpdateItem(
             sourceId: sourceId,

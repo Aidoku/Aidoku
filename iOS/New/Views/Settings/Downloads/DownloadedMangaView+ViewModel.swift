@@ -285,15 +285,17 @@ extension DownloadedMangaView.ViewModel {
                 return downloads.contains { $0.mangaIdentifier == self?.manga.mangaIdentifier }
             }),
             (.addToLibrary, { [weak self] notification in
-                guard let addedManga = notification.object as? Manga,
-                      addedManga.sourceId == self?.manga.sourceId,
-                      addedManga.id == self?.manga.mangaId else { return false }
+                guard
+                    let addedManga = notification.object as? AidokuRunner.Manga,
+                    addedManga.identifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             }),
             (.removeFromLibrary, { [weak self] notification in
-                guard let removedManga = notification.object as? AidokuRunner.Manga,
-                      removedManga.sourceKey == self?.manga.sourceId,
-                      removedManga.key == self?.manga.mangaId else { return false }
+                guard
+                    let removedManga = notification.object as? AidokuRunner.Manga,
+                    removedManga.identifier == self?.manga.mangaIdentifier
+                else { return false }
                 return true
             })
         ]

@@ -5,13 +5,13 @@
 //  Created by Skitty on 7/24/22.
 //
 
+import AidokuRunner
 import Gifu
 import Nuke
 import UIKit
 
 class MangaGridCell: UICollectionViewCell {
-    var sourceId: String?
-    var mangaId: String?
+    var identifier: MangaIdentifier?
 
     var title: String? {
         get {
@@ -251,7 +251,7 @@ extension MangaGridCell {
         if !cached {
             if let fileUrl = url.toAidokuFileUrl() {
                 urlRequest = URLRequest(url: fileUrl)
-            } else if let sourceId {
+            } else if let sourceId = identifier?.sourceKey {
                 // ensure sources are loaded so we can get the modified image request
                 await SourceManager.shared.waitForSourcesLoad()
                 if let source = SourceManager.shared.source(for: sourceId) {
@@ -273,7 +273,7 @@ extension MangaGridCell {
             guard let self else { return }
             switch result {
                 case .success(let response):
-                    if response.request.imageId != self.url {
+                    if response.request.imageID != self.url {
                         return
                     }
                     Task { @MainActor in
@@ -288,8 +288,16 @@ extension MangaGridCell {
                             self.imageView.animate(withGIFData: data)
                         }
                     }
-                case .failure:
+                case .failure(let error):
                     imageTask = nil
+                    guard let identifier else { return }
+                    Task { @MainActor [weak self] in
+                        guard
+                            let newUrl = await CoverRecovery.recover(from: error, identifier: identifier),
+                            self?.identifier == identifier
+                        else { return }
+                        await self?.loadImage(url: newUrl)
+                    }
             }
         }
     }

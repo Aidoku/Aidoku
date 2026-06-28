@@ -81,6 +81,42 @@ class MangaCollectionViewController: BaseCollectionViewController {
         ])
     }
 
+    override func observe() {
+        super.observe()
+
+        addObserver(forName: .addToLibrary) { [weak self] notification in
+            guard
+                let self,
+                let manga = notification.object as? AidokuRunner.Manga,
+                let index = self.entries.firstIndex(where: { $0.identifier == manga.identifier }),
+                let entry = self.dataSource.itemIdentifier(for: IndexPath(item: index, section: 0))
+            else {
+                return
+            }
+            if self.bookmarkedItems.insert(entry.key).inserted {
+                var snapshot = self.dataSource.snapshot()
+                snapshot.reloadItems([entry])
+                self.dataSource.apply(snapshot)
+            }
+        }
+
+        addObserver(forName: .removeFromLibrary) { [weak self] notification in
+            guard
+                let self,
+                let manga = notification.object as? AidokuRunner.Manga,
+                let index = self.entries.firstIndex(where: { $0.identifier == manga.identifier }),
+                let entry = self.dataSource.itemIdentifier(for: IndexPath(item: index, section: 0))
+            else {
+                return
+            }
+            if self.bookmarkedItems.remove(entry.key) != nil {
+                var snapshot = self.dataSource.snapshot()
+                snapshot.reloadItems([entry])
+                self.dataSource.apply(snapshot)
+            }
+        }
+    }
+
     // MARK: Collection View Layout
     override func makeCollectionViewLayout() -> UICollectionViewLayout {
         UICollectionViewCompositionalLayout { sectionIndex, environment in
@@ -120,8 +156,7 @@ extension MangaCollectionViewController {
 
     func makeGridCellRegistration() -> GridCellRegistration {
         GridCellRegistration { [weak self] cell, _, manga in
-            cell.sourceId = manga.sourceKey
-            cell.mangaId = manga.key
+            cell.identifier = MangaIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key)
             cell.title = manga.title
             cell.showsBookmark = self?.bookmarkedItems.contains(manga.key) ?? false
             Task {

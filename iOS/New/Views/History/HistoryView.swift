@@ -193,11 +193,13 @@ struct HistoryView: View {
             cell.tag = 1
         }
         .swipeActions(edge: .trailing) {
-            Button(NSLocalizedString("DELETE")) {
+            Button {
                 entryToDelete = entry
                 showDeleteConfirm = true
+            } label: {
+                Label(NSLocalizedString("DELETE"), systemImage: "trash")
             }
-            .tint(.red)
+            .tint(.red) // adding destructive role breaks animation, so do this instead
         }
         .id(entry.chapterCacheKey)
         .tag(entry.chapterCacheKey)

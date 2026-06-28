@@ -217,13 +217,12 @@ struct PlaceholderMangaHomeBigScroller: View {
     static var mainView: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 12) {
-                Rectangle()
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
                     .fill(Color(.secondarySystemFill))
                     .frame(
                         width: HomeBigScrollerView.coverHeight * 2/3,
                         height: HomeBigScrollerView.coverHeight
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Loading Title")
@@ -234,17 +233,18 @@ struct PlaceholderMangaHomeBigScroller: View {
                     Text("Loading")
                         .foregroundStyle(.secondary)
 
-                    // swiftlint:disable:next line_length
-                    Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
-                        .foregroundStyle(.secondary)
-                        .font(.callout)
-                        .lineLimit(3)
-                        .multilineTextAlignment(.leading)
-
-                    Spacer()
+                    // fake redacted text lines, to avoid layout issues with multiline redacted text
+                    VStack(alignment: .leading, spacing: 29/3) {
+                        ForEach(0..<3) { _ in
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color(uiColor: .secondaryLabel).opacity(0.25))
+                                .frame(maxWidth: .infinity, minHeight: 34/3, maxHeight: 34/3)
+                        }
+                    }
+                    .padding(.top, 4)
+                    .opacity(0.5)
                 }
                 .padding(.vertical, 8)
-                Spacer()
             }
             .frame(height: HomeBigScrollerView.coverHeight)
             .padding(.bottom, 16)
@@ -255,8 +255,6 @@ struct PlaceholderMangaHomeBigScroller: View {
                 }
                 Spacer()
             }
-
-            Spacer(minLength: 0)
         }
         .padding(.horizontal)
         .frame(height: HomeBigScrollerView.coverHeight + 40)

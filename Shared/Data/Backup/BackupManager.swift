@@ -350,20 +350,25 @@ extension BackupManager {
             try await categoriesTask.value
             if let backupLibrary = backup.library {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
-                    let manga = CoreDataManager.shared.getManga(context: context)
+                    CoreDataManager.shared.clearLibrary(context: context)
+                    let mangaByKey = Dictionary(
+                        CoreDataManager.shared.getManga(context: context).map {
+                            ($0.identifier, $0)
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
+                    let categoryByTitle = Dictionary(
+                        CoreDataManager.shared.getCategories(context: context).compactMap { category in
+                            category.title.map { ($0, category) }
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
                     for libraryBackupItem in backupLibrary {
                         let libraryObject = libraryBackupItem.toObject(context: context)
-                        if let manga = manga.first(where: {
-                            $0.id == libraryBackupItem.mangaId && $0.sourceId == libraryBackupItem.sourceId
-                        }) {
+                        if let manga = mangaByKey[libraryBackupItem.identifier] {
                             libraryObject.manga = manga
                             if let categories = libraryBackupItem.categories, !categories.isEmpty {
-                                CoreDataManager.shared.addCategoriesToManga(
-                                    sourceId: libraryBackupItem.sourceId,
-                                    mangaId: libraryBackupItem.mangaId,
-                                    categories: categories,
-                                    context: context
-                                )
+                                libraryObject.categories = NSSet(array: categories.compactMap { categoryByTitle[$0] })
                             }
                         }
                     }
@@ -404,18 +409,22 @@ extension BackupManager {
             if let backupChapters = backup.chapters {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearChapters(context: context)
-                    let manga = CoreDataManager.shared.getManga(context: context)
-                    let history = CoreDataManager.shared.getHistory(context: context)
+                    let mangaByKey = Dictionary(
+                        CoreDataManager.shared.getManga(context: context).map {
+                            ($0.identifier, $0)
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
+                    let historyByKey = Dictionary(
+                        CoreDataManager.shared.getHistory(context: context).map {
+                            ($0.identifier, $0)
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
                     for backupChapter in backupChapters {
                         let chapter = backupChapter.toObject(context: context)
-                        chapter.manga = manga.first {
-                            $0.id == backupChapter.mangaId && $0.sourceId == backupChapter.sourceId
-                        }
-                        chapter.history = history.first {
-                            $0.chapterId == backupChapter.id
-                                && $0.mangaId == backupChapter.mangaId
-                                && $0.sourceId == backupChapter.sourceId
-                        }
+                        chapter.manga = mangaByKey[chapter.identifier.mangaIdentifier]
+                        chapter.history = historyByKey[chapter.identifier]
                     }
                     do {
                         try context.save()
@@ -434,14 +443,15 @@ extension BackupManager {
             if let backupUpdates = backup.updates {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearUpdates(context: context)
-                    let chapters = CoreDataManager.shared.getChapters(context: context)
+                    let chaptersByKey = Dictionary(
+                        CoreDataManager.shared.getChapters(context: context).map {
+                            ($0.identifier, $0)
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
                     for backupUpdate in backupUpdates {
                         let update = backupUpdate.toObject(context: context)
-                        update.chapter = chapters.first {
-                            $0.id == backupUpdate.chapterId
-                                && $0.mangaId == backupUpdate.mangaId
-                                && $0.sourceId == backupUpdate.sourceId
-                        }
+                        update.chapter = chaptersByKey[update.identifier]
                     }
                     do {
                         try context.save()
@@ -460,18 +470,19 @@ extension BackupManager {
             if let backupSessions = backup.readingSessions {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.clearSessions(context: context)
-                    let history = CoreDataManager.shared.getHistory(context: context)
+                    let historyByKey = Dictionary(
+                        CoreDataManager.shared.getHistory(context: context).map {
+                            ($0.identifier, $0)
+                        },
+                        uniquingKeysWith: { first, _ in first }
+                    )
                     for backupSession in backupSessions {
                         // ensure data is valid
                         guard backupSession.endDate > backupSession.startDate && backupSession.pagesRead > 0 else {
                             continue
                         }
                         let session = backupSession.toObject(context: context)
-                        session.history = history.first {
-                            $0.chapterId == backupSession.chapterId
-                                && $0.mangaId == backupSession.mangaId
-                                && $0.sourceId == backupSession.sourceId
-                        }
+                        session.history = historyByKey[backupSession.identifier]
                     }
                     do {
                         try context.save()

@@ -5,6 +5,8 @@
 //  Created by Skitty on 6/15/25.
 //
 
+import AidokuRunner
+import SwiftSoup
 import WebKit
 
 // handles requests blocked by cloudflare, retrieving new cookies from a webview
@@ -12,10 +14,13 @@ import WebKit
 actor CloudflareHandler: NSObject {
     static let shared = CloudflareHandler()
 
-    private var shouldTimeout = true
+    private let blockedStatusCodes: Set<Int> = [403, 503]
 
+    private var shouldTimeout = true
     private var finishContinuation: CheckedContinuation<Void, Never>?
+    private var timeoutTask: Task<Void, Never>?
     private var proxy: Proxy?
+    private var lastMainFrameStatusCode: Int?
 
     @MainActor
     private lazy var webView = WKWebView(frame: .zero)
@@ -56,13 +61,41 @@ actor CloudflareHandler: NSObject {
     }
 #endif
 
-    func handle(request: URLRequest) async {
+    enum HandleError: Error {
+        case missingParentView
+    }
+
+    nonisolated func shouldHandle(response: HTTPURLResponse, data: Data) -> Bool {
+        let server = response.value(forHTTPHeaderField: "Server")
+        if !["cloudflare", "cloudflare-nginx"].contains(server) {
+            return false
+        }
+        if !blockedStatusCodes.contains(response.statusCode) {
+            return false
+        }
+
+        guard let html = String(data: data, encoding: .utf8) else { return false }
+        do {
+            let doc = try SwiftSoup.parse(html)
+            if try doc.getElementById("challenge-error-title") != nil {
+                return true
+            }
+            if try doc.getElementById("challenge-error-text") != nil {
+                return true
+            }
+        } catch {}
+        return false
+    }
+
+    func handle(request: URLRequest) async throws -> (Data, URLResponse) {
         // wait until previous request finishes
         while finishContinuation != nil {
             try? await Task.sleep(nanoseconds: 100_000_000)
         }
 
-        guard await addWebView(for: request) else { return }
+        shouldTimeout = true
+
+        guard await addWebView(for: request) else { throw HandleError.missingParentView }
 
         _ = await webView.load(request)
 
@@ -70,20 +103,25 @@ actor CloudflareHandler: NSObject {
             self.finishContinuation = continuation
 
             // timeout after 12s if bypass doesn't work
-            Task {
+            timeoutTask = Task {
                 try? await Task.sleep(nanoseconds: 12_000_000_000)
-                if self.shouldTimeout {
+                guard !Task.isCancelled else { return }
+                if self.shouldTimeout, finishContinuation != nil {
                     self.finish()
                 }
             }
         }
+
+        let newRequest = if let url = request.url {
+            await AidokuRunner.Source.modify(url: url, request: request)
+        } else {
+            request
+        }
+        return try await URLSession.shared.data(for: newRequest)
     }
 
     private func finish() {
         guard let continuation = finishContinuation else { return }
-        finishContinuation = nil
-
-        proxy = nil
 
         Task { @MainActor in
             webView.removeFromSuperview()
@@ -93,10 +131,16 @@ actor CloudflareHandler: NSObject {
 #endif
         }
 
+        timeoutTask?.cancel()
+        finishContinuation = nil
+        timeoutTask = nil
+        proxy = nil
+        lastMainFrameStatusCode = nil
+
         continuation.resume()
     }
 
-    func proxy(for request: URLRequest) async -> Proxy {
+    private func proxy(for request: URLRequest) async -> Proxy {
         if let proxy {
             return proxy
         }
@@ -110,6 +154,7 @@ actor CloudflareHandler: NSObject {
     private func addWebView(for request: URLRequest) async -> Bool {
         guard let parentView else { return false }
 
+        webView = WKWebView(frame: .zero)
         webView.navigationDelegate = await proxy(for: request)
         webView.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
         webView.translatesAutoresizingMaskIntoConstraints = false
@@ -164,17 +209,24 @@ actor CloudflareHandler: NSObject {
     @MainActor
     private func checkForCaptcha(for request: URLRequest) {
         guard !popupShown else { return }
-        let js = """
-        (document.querySelector('input[name="cf-turnstile-response"]') !== null
-            || document.body.textContent.includes('Verify you are human by completing')) ? 1 : 0
-        """
-        webView.evaluateJavaScript(js) { [weak self] result, _ in
-            if let found = result as? Int, found == 1 {
-                Task {
-                    await self?.showPopup(for: request)
-                }
+        Task {
+            let found = await isCaptchaPage()
+            if found {
+                await showPopup(for: request)
             }
         }
+    }
+
+    @MainActor
+    private func isCaptchaPage() async -> Bool {
+        let js = """
+        (document.querySelector('input[name="cf-turnstile-response"]') !== null
+            || document.getElementById('challenge-error-title') !== null
+            || document.getElementById('challenge-error-text') !== null) ? 1 : 0
+        """
+        let result = try? await webView.evaluateJavaScript(js)
+        guard let result = result as? Int else { return false }
+        return result == 1
     }
 }
 
@@ -202,15 +254,32 @@ extension CloudflareHandler {
             }
         }
 
+        func handle(response: WKNavigationResponse) {
+            guard
+                response.isForMainFrame,
+                let response = response.response as? HTTPURLResponse
+            else { return }
+            Task { [weak handler] in
+                await handler?.setLastMainFrameStatusCode(response.statusCode)
+            }
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             navigated(webView: webView, for: request)
         }
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse) async -> WKNavigationResponsePolicy {
+            handle(response: navigationResponse)
+            return .allow
+        }
+    }
+
+    private func setLastMainFrameStatusCode(_ statusCode: Int) {
+        lastMainFrameStatusCode = statusCode
     }
 
     // handle web view reload/redirect
     nonisolated func navigated(webView: WKWebView, for request: URLRequest) async {
-        let webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
-
         guard let url = request.url else { return }
 
 #if !os(macOS)
@@ -228,6 +297,8 @@ extension CloudflareHandler {
         }
 #endif
 
+        var webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
+
         // check for old (expired) clearance cookie
         let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
 
@@ -239,16 +310,26 @@ extension CloudflareHandler {
         })
         guard hasClearance else { return }
 
+        // remove old cookie and save new cookies for future requests
+        if let oldCookie {
+            HTTPCookieStorage.shared.deleteCookie(oldCookie)
+            if let idx = webViewCookies.firstIndex(of: oldCookie) {
+                webViewCookies.remove(at: idx)
+            }
+        }
+        HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
+
+        // ensure we're no longer blocked by cloudflare status or captcha
+        if let statusCode = await self.lastMainFrameStatusCode, blockedStatusCodes.contains(statusCode) {
+            return
+        }
+        let isCaptcha = await isCaptchaPage()
+        guard !isCaptcha else { return }
+
         await webView.removeFromSuperview()
 #if !os(macOS)
         await self.popupController?.dismiss(animated: true)
 #endif
-
-        // remove old cookie and save new cookies for future requests
-        if let oldCookie {
-            HTTPCookieStorage.shared.deleteCookie(oldCookie)
-        }
-        HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
 
         await self.finish()
     }
