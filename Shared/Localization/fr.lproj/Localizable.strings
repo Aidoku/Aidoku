@@ -737,3 +737,5 @@
 "X_NEW_CHAPTERS_AVAILABLE" = "%d nouveaux chapitres disponibles";
 "NEW_CHAPTERS_AVAILABLE" = "Nouveaux chapitres disponibles";
 "X_SERIES_HAVE_NEW_CHAPTERS" = "%d séries ont de nouveaux chapitres";
+"NEW_CHAPTER_NOTIFICATIONS" = "Notifications de nouveaux chapitres";
+"NEW_CHAPTER_NOTIFICATIONS_TEXT" = "Envoyer des notifications lorsque la bibliothèque est actualisée en arrière-plan.";
