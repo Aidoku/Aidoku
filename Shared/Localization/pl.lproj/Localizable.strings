@@ -336,3 +336,17 @@
 "NO_SCANLATOR" = "Brak Scanlatora";
 "BACKUP_ERROR" = "Błąd Odzyskiwania Backupu";
 "BACKUP_ERROR_TEXT" = "Wystąpił błąd podczas odzyskiwania: %@. Backup może być nieprawidłowy.";
+"DONE" = "Gotowe";
+"EDIT" = "Edytuj";
+"INVALID" = "Nieprawidłowy";
+"ENABLE_PERMISSION" = "Włącz uprawnienia";
+"DOWNLOADING_PAUSED" = "Pobieranie przerwane";
+"PAUSED" = "Wstrzymane";
+"NO_DOWNLOADS_TEXT" = "Pobrana zawartość pojawi się tutaj.";
+"IN_LIBRARY" = "W bibliotece";
+"BACKGROUND_DOWNLOADING" = "Pobieranie w tle";
+"REMOVE_FILTER" = "Usuń filtr";
+"FILTER_HAS_UNREAD" = "Nieprzeczytane";
+"OLDEST_FIRST" = "Najpierw najstarsze";
+"NEWEST_FIRST" = "Najpierw najnowsze";
+"REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "Usuwanie elementu z biblioteki";
