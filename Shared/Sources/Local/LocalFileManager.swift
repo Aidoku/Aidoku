@@ -23,6 +23,8 @@ actor LocalFileManager {
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
     static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif"])
+    static let allowedTextExtensions = Set(["txt", "md"])
+    static let allowedPageExtensions = allowedImageExtensions.union(allowedTextExtensions)
 
     private var localFolderFileDescriptor: CInt?
     private var localFolderSource: DispatchSourceFileSystemObject?
@@ -75,7 +77,7 @@ extension LocalFileManager {
                 if ext == "txt" {
                     return !entry.path.hasSuffix("desc.txt")
                 }
-                return Self.allowedImageExtensions.contains(ext)
+                return Self.allowedPageExtensions.contains(ext)
             }
             .sorted {
                 $0.path.localizedStandardCompare($1.path) == .orderedAscending
@@ -87,7 +89,7 @@ extension LocalFileManager {
 
         // extract the first three images for preview
         let previewImages = pageEntries
-            .filter { !$0.path.lowercased().hasSuffix("txt") }
+            .filter { LocalFileManager.allowedImageExtensions.contains($0.path.lowercased()) }
             .prefix(3)
             .compactMap { entry -> PlatformImage? in
                 var imageData = Data()
@@ -160,7 +162,7 @@ extension LocalFileManager {
                     }
                     return true
                 }
-                return Self.allowedImageExtensions.contains(ext)
+                return Self.allowedPageExtensions.contains(ext)
             }
             // sort by file name
             .sorted {
@@ -279,7 +281,7 @@ extension LocalFileManager {
                 if ext == "txt" {
                     return !entry.path.hasSuffix("desc.txt")
                 }
-                return Self.allowedImageExtensions.contains(ext)
+                return Self.allowedPageExtensions.contains(ext)
             }
             .sorted {
                 $0.path.localizedStandardCompare($1.path) == .orderedAscending
@@ -373,7 +375,7 @@ extension LocalFileManager {
             }
         } else if mangaId == nil {
             // copy first page image to use as cover image
-            let firstImageEntry = pageEntries.first(where: { !$0.path.lowercased().hasSuffix("txt") })
+            let firstImageEntry = pageEntries.first(where: { LocalFileManager.allowedImageExtensions.contains($0.path.lowercased()) })
             if let firstImageEntry {
                 let coverExt = (firstImageEntry.path as NSString).pathExtension
                 let coverFileName = "cover.\(coverExt)"

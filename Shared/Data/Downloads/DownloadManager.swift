@@ -77,7 +77,7 @@ actor DownloadManager {
                     guard !url.lastPathComponent.hasPrefix(".") else {
                         return nil
                     }
-                    if url.pathExtension == "txt" {
+                    if LocalFileManager.allowedTextExtensions.contains(url.pathExtension) {
                         // add description file to list
                         if url.lastPathComponent.hasSuffix("desc.txt") {
                             descriptionFiles.append(url)
