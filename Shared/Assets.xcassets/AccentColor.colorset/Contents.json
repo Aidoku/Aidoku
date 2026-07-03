@@ -3,7 +3,7 @@
     {
       "color" : {
         "platform" : "ios",
-        "reference" : "systemPurpleColor"
+        "reference" : "UIColor(red: 0.854902, green: 0.560784, blue: 1.0, alpha: 1.0)"
       },
       "idiom" : "universal"
     }
