@@ -549,15 +549,22 @@ extension DownloadTask {
     }
 
     private nonisolated func guessFileExtension(response: URLResponse, defaultValue: String) -> String {
-        if let suggestedFilename = response.suggestedFilename, !suggestedFilename.isEmpty {
-            return URL(string: suggestedFilename)?.pathExtension ?? defaultValue
+        if
+            let suggestedFilename = response.suggestedFilename,
+            !suggestedFilename.isEmpty,
+            let pathExtension = URL(string: suggestedFilename)?.pathExtension,
+            LocalFileManager.allowedImageExtensions.contains(pathExtension.lowercased())
+        {
+            return pathExtension
         }
-        guard
+        if
             let mimeType = response.mimeType,
-            let type = UTType(mimeType: mimeType)
-        else {
-            return defaultValue
+            let type = UTType(mimeType: mimeType),
+            let pathExtension = type.preferredFilenameExtension,
+            LocalFileManager.allowedImageExtensions.contains(pathExtension)
+        {
+            return pathExtension
         }
-        return type.preferredFilenameExtension ?? defaultValue
+        return defaultValue
     }
 }
