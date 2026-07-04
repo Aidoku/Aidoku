@@ -122,6 +122,15 @@ class TextPaginator {
                 result.append(NSAttributedString(string: "\n", attributes: config.attributes))
             }
 
+            // Render inline images (e.g. epub illustrations) as text attachments
+            if let imageURL = run.imageURL {
+                if let attachmentString = imageAttachmentString(for: imageURL) {
+                    result.append(attachmentString)
+                }
+                lastBlockIdentity = currentIdentity
+                continue
+            }
+
             // Determine block-level attributes
             var runAttrs = config.attributes
             if let intent = blockIntent {
@@ -149,6 +158,36 @@ class TextPaginator {
             lastBlockIdentity = currentIdentity
         }
 
+        return result
+    }
+
+    /// Build a centered text attachment for an image, scaled to fit the page
+    /// content area so pagination never produces an unfillable page.
+    private func imageAttachmentString(for url: URL) -> NSAttributedString? {
+        guard url.isFileURL, let image = UIImage(contentsOfFile: url.path) else {
+            return nil
+        }
+
+        let content = contentSize(for: pageSize)
+        let maxWidth = content.width > 50 ? content.width : 300
+        let maxHeight = content.height > 50 ? content.height * 0.95 : 400
+        let scale = min(1, maxWidth / max(1, image.size.width), maxHeight / max(1, image.size.height))
+
+        let attachment = NSTextAttachment()
+        attachment.image = image
+        attachment.bounds = CGRect(
+            x: 0,
+            y: 0,
+            width: image.size.width * scale,
+            height: image.size.height * scale
+        )
+
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+        style.paragraphSpacing = config.paragraphSpacing
+
+        let result = NSMutableAttributedString(attributedString: NSAttributedString(attachment: attachment))
+        result.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: result.length))
         return result
     }
 

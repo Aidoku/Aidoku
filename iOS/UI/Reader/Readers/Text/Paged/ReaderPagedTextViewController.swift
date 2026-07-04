@@ -627,13 +627,20 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
     func loadPreviousChapter() {
         guard let previousChapter else { return }
         Task {
-            // Preload and verify the chapter has text pages before switching.
-            // Non-text chapters would require a reading-mode change that the
-            // paged text reader can't handle — snap back to the transition page.
+            // Preload to check whether the chapter has text pages.
             await viewModel.preload(chapter: previousChapter)
             let preloaded = viewModel.preloadedPages
-            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+            guard !preloaded.isEmpty else {
                 await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            guard preloaded.allSatisfy({ $0.isTextPage }) else {
+                // Non-text chapter: hand off to the parent controller, which
+                // switches to the appropriate reader and reloads the chapter.
+                await MainActor.run {
+                    delegate?.setChapter(previousChapter)
+                    delegate?.setPages(preloaded)
+                }
                 return
             }
             delegate?.setChapter(previousChapter)
@@ -646,8 +653,17 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
         Task {
             await viewModel.preload(chapter: nextChapter)
             let preloaded = viewModel.preloadedPages
-            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+            guard !preloaded.isEmpty else {
                 await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            guard preloaded.allSatisfy({ $0.isTextPage }) else {
+                // Non-text chapter: hand off to the parent controller, which
+                // switches to the appropriate reader and reloads the chapter.
+                await MainActor.run {
+                    delegate?.setChapter(nextChapter)
+                    delegate?.setPages(preloaded)
+                }
                 return
             }
             delegate?.setChapter(nextChapter)
