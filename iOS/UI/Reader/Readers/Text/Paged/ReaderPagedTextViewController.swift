@@ -362,7 +362,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             return
         }
 
-        let targetIndex = min(max(0, index), pages.count - 1)
+        let targetIndex = alignedPageIndex(min(max(0, index), pages.count - 1))
 
         let oldIndex = currentPageIndex
         currentPageIndex = targetIndex
@@ -396,7 +396,15 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         updateSliderPosition()
     }
 
+    /// Snap an index to the left page of its double-page spread so spreads always
+    /// pair (0,1), (2,3), … — otherwise stepping by 2 skips the first/last page
+    /// when navigation lands on an odd index (slider, history restore, chapter end).
+    private func alignedPageIndex(_ index: Int) -> Int {
+        usesDoublePages ? index - (index % 2) : index
+    }
+
     private func createPageViewController(for index: Int) -> UIViewController {
+        let index = alignedPageIndex(index)
 
         guard index >= 0 && index < pages.count else {
             // Return empty view controller as fallback
