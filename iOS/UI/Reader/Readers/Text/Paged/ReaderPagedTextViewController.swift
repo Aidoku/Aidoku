@@ -392,7 +392,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         }
 
         // Update current page display (1-indexed for UI)
-        delegate?.setCurrentPage(targetIndex + 1, position: normalizedPosition(for: targetIndex))
+        reportCurrentPage(for: targetIndex)
         updateSliderPosition()
     }
 
@@ -401,6 +401,15 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     /// when navigation lands on an odd index (slider, history restore, chapter end).
     private func alignedPageIndex(_ index: Int) -> Int {
         usesDoublePages ? index - (index % 2) : index
+    }
+
+    /// Report the rightmost visible page of the spread at the given aligned index.
+    /// The delegate marks the chapter completed when the reported page reaches the
+    /// total page count, so the right page of the final spread must be reported —
+    /// not just the (left) spread index.
+    private func reportCurrentPage(for index: Int) {
+        let visibleIndex = usesDoublePages ? min(index + 1, pages.count - 1) : index
+        delegate?.setCurrentPage(visibleIndex + 1, position: normalizedPosition(for: visibleIndex))
     }
 
     private func createPageViewController(for index: Int) -> UIViewController {
@@ -715,7 +724,7 @@ extension ReaderPagedTextViewController: UIPageViewControllerDelegate {
             currentCharacterOffset = doublePage.leftPage.range.location
         }
 
-        delegate?.setCurrentPage(currentPageIndex + 1, position: normalizedPosition(for: currentPageIndex))
+        reportCurrentPage(for: currentPageIndex)
         updateSliderPosition()
     }
 
