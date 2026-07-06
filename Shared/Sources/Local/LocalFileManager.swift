@@ -196,20 +196,29 @@ extension LocalFileManager {
         }
     }
 
-    // extract an image from an epub archive into the cache directory so it can
-    // be referenced with a file url from markdown text
-    nonisolated static func cacheEpubImage(archiveURL: URL, path: String) -> URL? {
+    // cache directory for extracted images of a given epub archive
+    nonisolated static func epubImageCacheDirectory(for archiveURL: URL) -> URL? {
         guard let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
         else { return nil }
 
-        // stable per-book folder name (fnv-1a hash of the archive path)
-        var hash: UInt64 = 0xcbf29ce484222325
-        for byte in archiveURL.path.utf8 {
-            hash = (hash ^ UInt64(byte)) &* 0x100000001b3
+        // stable per-book folder name (fnv-1a hash)
+        func hash(_ string: String) -> String {
+            var hash: UInt64 = 0xcbf29ce484222325
+            for byte in string.utf8 {
+                hash = (hash ^ UInt64(byte)) &* 0x100000001b3
+            }
+            return String(hash, radix: 16)
         }
-        let bookDir = cachesDir
+
+        return cachesDir
             .appendingPathComponent("EpubImages", isDirectory: true)
-            .appendingPathComponent(String(hash, radix: 16), isDirectory: true)
+            .appendingPathComponent(hash(archiveURL.path), isDirectory: true)
+    }
+
+    // extract an image from an epub archive into the cache directory so it can
+    // be referenced with a file url from markdown text
+    nonisolated static func cacheEpubImage(archiveURL: URL, path: String) -> URL? {
+        guard let bookDir = epubImageCacheDirectory(for: archiveURL) else { return nil }
         let fileURL = bookDir.appendingPathComponent(path.replacingOccurrences(of: "/", with: "_"))
 
         if fileURL.exists {
@@ -698,6 +707,7 @@ extension LocalFileManager {
         if fileURL.exists {
             try? FileManager.default.removeItem(at: fileURL)
         }
+        Self.removeEpubImageCache(for: fileURL)
     }
 
     // remove a chapter from a given local manga
@@ -715,6 +725,15 @@ extension LocalFileManager {
         if fileURL.exists {
             try? FileManager.default.removeItem(at: fileURL)
         }
+        Self.removeEpubImageCache(for: fileURL)
+    }
+
+    // remove cached extracted images for a given epub archive
+    nonisolated static func removeEpubImageCache(for archiveURL: URL) {
+        guard archiveURL.pathExtension.lowercased() == "epub",
+              let bookDir = epubImageCacheDirectory(for: archiveURL)
+        else { return }
+        try? FileManager.default.removeItem(at: bookDir)
     }
 
     // remove all local source files and db objects
@@ -729,6 +748,11 @@ extension LocalFileManager {
             try fileManager.removeItem(at: localFolder)
         } catch {
             LogManager.logger.error("Failed to remove Local folder: \(error)")
+        }
+
+        // clear extracted epub images
+        if let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
+            try? fileManager.removeItem(at: cachesDir.appendingPathComponent("EpubImages", isDirectory: true))
         }
 
         // update database
