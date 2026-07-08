@@ -1,22 +1,20 @@
 //
-//  KavitaTracker.swift
+//  SuwayomiTracker.swift
 //  Aidoku
 //
-//  Created by Skitty on 10/23/25.
+//  Created by skitty on 7/8/26.
 //
 
 import AidokuRunner
 import Foundation
 
-final class KavitaTracker: EnhancedTracker, PageTracker {
-    let id = "kavita"
-    let name = NSLocalizedString("KAVITA")
-    let icon = PlatformImage(named: "kavita")
-
+final class SuwayomiTracker: EnhancedTracker, PageTracker {
+    let id = "suwayomi"
+    let name = NSLocalizedString("SUWAYOMI")
+    let icon = PlatformImage(named: "suwayomi")
     let isLoggedIn = true
 
-    private let api = KavitaApi()
-
+    private let api = SuwayomiApi()
     private let idSeparator: Character = "|"
 
     func getTrackerInfo() -> TrackerInfo {
@@ -25,11 +23,10 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
 
     func register(trackId: String, highestChapterRead: Float?, earliestReadDate: Date?) async throws -> String? {
         guard let highestChapterRead else { return nil }
-
         let (sourceKey, seriesId) = try getIdParts(from: trackId)
 
         let state = try? await api.getState(sourceKey: sourceKey, seriesId: seriesId)
-        if state?.lastReadVolume == nil || state?.lastReadVolume == 0 {
+        if state?.lastReadChapter == nil || highestChapterRead > state?.lastReadChapter ?? 0 {
             try await api.update(
                 sourceKey: sourceKey,
                 seriesId: seriesId,
@@ -51,11 +48,10 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
 
     func getState(trackId: String) async throws -> TrackState {
         let (sourceKey, seriesId) = try getIdParts(from: trackId)
-        if let state = try await api.getState(sourceKey: sourceKey, seriesId: seriesId) {
-            return state
-        } else {
-            throw KavitaTrackerError.getStateFailed
+        guard let state = try await api.getState(sourceKey: sourceKey, seriesId: seriesId) else {
+            throw SuwayomiTrackerError.getStateFailed
         }
+        return state
     }
 
     func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
@@ -68,11 +64,11 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
     }
 
     func getUrl(trackId: String) async -> URL? {
-        nil // url is the same as the series url, so it's not necessary to provide
+        nil
     }
 
     func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
+        sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
@@ -81,7 +77,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
             let seriesId = Int(seriesId),
             let chapterId = Int(chapter.key)
         else {
-            throw KavitaTrackerError.invalidId
+            throw SuwayomiTrackerError.invalidId
         }
         try await api.updateReadProgress(
             sourceKey: sourceKey,
@@ -97,14 +93,15 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
     }
 
     func logout() {
-        fatalError("logout not implemented for kavita tracker")
+        fatalError("logout not implemented for suwayomi tracker")
     }
 
     func removeTrackItems(source: AidokuRunner.Source) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let request = TrackObject.fetchRequest()
             request.predicate = NSPredicate(
-                format: "trackerId == %@", self.id
+                format: "trackerId == %@",
+                self.id
             )
             do {
                 let items = try? context.fetch(request)
@@ -118,21 +115,21 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
                 }
                 try context.save()
             } catch {
-                LogManager.logger.error("Error removing kavita track items: \(error)")
+                LogManager.logger.error("Error removing suwayomi track items: \(error)")
             }
         }
     }
 }
 
-extension KavitaTracker {
+extension SuwayomiTracker {
     private func getIdParts(from id: String) throws -> (sourceKey: String, seriesId: String) {
         let split = id.split(separator: idSeparator, maxSplits: 2).map(String.init)
-        guard split.count == 2 else { throw KavitaTrackerError.invalidId }
+        guard split.count == 2 else { throw SuwayomiTrackerError.invalidId }
         return (sourceKey: split[0], seriesId: split[1])
     }
 }
 
-enum KavitaTrackerError: Error {
+enum SuwayomiTrackerError: Error {
     case invalidId
     case getStateFailed
 }

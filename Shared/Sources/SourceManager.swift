@@ -390,7 +390,7 @@ extension SourceManager {
             } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
                 await TrackerManager.kavita.removeTrackItems(source: source)
             } else if source.key.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
-                // todo: suwayomi tracker
+                await TrackerManager.suwayomi.removeTrackItems(source: source)
             }
             await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.removeSource(id: source.key, context: context)

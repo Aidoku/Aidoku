@@ -205,7 +205,7 @@ struct SuwayomiMangaNode: Decodable, Sendable {
     let chapters: ChapterConnection?
     let latestUploadedChapter: UploadedChapter?
     let latestFetchedChapter: FetchedChapter?
-    let latestReadChapter: ReadChapter?
+    let lastReadChapter: ReadChapter?
     let unreadCount: Int?
     let downloadCount: Int?
     let source: Source?
@@ -262,5 +262,103 @@ extension Date {
     init?(suwayomiTimestamp: String) {
         guard let value = Double(suwayomiTimestamp) else { return nil }
         self.init(timeIntervalSince1970: value > 10_000_000_000 ? value / 1000 : value)
+    }
+}
+
+// MARK: Tracking
+
+struct SuwayomiTrackStateResponse: Decodable, Sendable {
+    let data: DataContainer
+
+    struct DataContainer: Decodable, Sendable {
+        let manga: Manga
+    }
+
+    struct Manga: Decodable, Sendable {
+        let chapters: ChapterConnection
+        let latestReadChapter: Chapter?
+        let highestNumberedChapter: Chapter?
+    }
+
+    struct ChapterConnection: Decodable, Sendable {
+        let totalCount: Int?
+    }
+
+    struct Chapter: Decodable, Sendable {
+        let chapterNumber: Float?
+    }
+}
+
+struct SuwayomiTrackChaptersResponse: Decodable, Sendable {
+    let data: DataContainer
+
+    struct DataContainer: Decodable, Sendable {
+        let chapters: ChapterConnection
+    }
+
+    struct ChapterConnection: Decodable, Sendable {
+        let nodes: [Chapter]
+    }
+
+    struct Chapter: Decodable, Sendable {
+        let id: Int
+        let chapterNumber: Float?
+    }
+}
+
+struct SuwayomiReadProgressResponse: Decodable, Sendable {
+    let data: DataContainer
+
+    struct DataContainer: Decodable, Sendable {
+        let chapters: ChapterConnection
+    }
+
+    struct ChapterConnection: Decodable, Sendable {
+        let nodes: [Chapter]
+    }
+
+    struct Chapter: Decodable, Sendable {
+        let id: Int
+        let isRead: Bool
+        let lastPageRead: Int
+        let lastReadAt: String
+        let pageCount: Int
+    }
+}
+
+struct SuwayomiChapterProgressPatch: Encodable, Sendable {
+    var isRead: Bool?
+    var lastPageRead: Int?
+}
+
+struct SuwayomiUpdateChapterResponse: Decodable, Sendable {
+    let data: DataContainer?
+
+    struct DataContainer: Decodable, Sendable {
+        let updateChapter: Payload?
+    }
+
+    struct Payload: Decodable, Sendable {
+        let chapter: Chapter?
+    }
+
+    struct Chapter: Decodable, Sendable {
+        let id: Int
+    }
+}
+
+struct SuwayomiUpdateChaptersResponse: Decodable, Sendable {
+    let data: DataContainer?
+
+    struct DataContainer: Decodable, Sendable {
+        let updateChapters: Payload?
+    }
+
+    struct Payload: Decodable, Sendable {
+        let chapters: [Chapter]
+    }
+
+    struct Chapter: Decodable, Sendable {
+        let id: Int
     }
 }

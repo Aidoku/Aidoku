@@ -31,8 +31,14 @@ struct TrackerListView: View {
                         let item = trackItems.first(where: { $0.trackerId == tracker.id }),
                         let info = trackerInfo[tracker.id]
                     {
-                        TrackerView(tracker: tracker, item: item, info: info, refresh: $refresh)
-                            .transition(.opacity)
+                        TrackerView(
+                            tracker: tracker,
+                            item: item,
+                            info: info,
+                            manga: manga,
+                            refresh: $refresh
+                        )
+                        .transition(.opacity)
                     } else {
                         TrackerAddView(tracker: tracker, manga: manga, refresh: $refresh)
                             .transition(.opacity)

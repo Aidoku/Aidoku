@@ -5,14 +5,16 @@
 //  Created by Skitty on 6/26/22.
 //
 
-import SwiftUI
+import AidokuRunner
 import SafariServices
+import SwiftUI
 import UIKit
 
 struct TrackerView: View {
     let tracker: Tracker
     let item: TrackItem
     let info: TrackerInfo
+    let manga: AidokuRunner.Manga
 
     @Binding var refresh: Bool
 
@@ -233,6 +235,15 @@ struct TrackerView: View {
                 Task {
                     do {
                         try await tracker.update(trackId: item.id, update: update)
+
+                        // refresh page read history in case the tracker updated it
+                        if let tracker = tracker as? PageTracker {
+                            await TrackerManager.shared.syncPageTrackerHistory(
+                                tracker: tracker,
+                                manga: manga,
+                                chapters: manga.chapters
+                            )
+                        }
                     } catch {
                         LogManager.logger.error("Failed to update tracker \(tracker.id): \(error)")
                     }

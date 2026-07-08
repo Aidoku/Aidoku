@@ -130,7 +130,7 @@ actor SuwayomiSourceRunner: Runner {
                       latestFetchedChapter {
                         fetchedAt
                       }
-                      latestReadChapter {
+                      lastReadChapter {
                         lastReadAt
                       }
                       unreadCount
@@ -550,9 +550,11 @@ extension SuwayomiSourceRunner {
             case .totalChapters:
                 nodes.sorted { ($0.chapters?.totalCount ?? 0) < ($1.chapters?.totalCount ?? 0) }
             case .latestUploadedChapter:
-                nodes.sorted { ($0.latestUploadedChapter?.uploadDate ?? "") < ($1.latestUploadedChapter?.uploadDate ?? "") }
+                nodes.sorted {
+                    ($0.latestUploadedChapter?.uploadDate.flatMap(Int.init) ?? 0) < ($1.latestUploadedChapter?.uploadDate.flatMap(Int.init) ?? 0)
+                }
             case .recentlyRead:
-                nodes.sorted { ($0.latestReadChapter?.lastReadAt ?? "") < ($1.latestReadChapter?.lastReadAt ?? "") }
+                nodes.sorted { ($0.lastReadChapter?.lastReadAt.flatMap(Int.init) ?? 0) < ($1.lastReadChapter?.lastReadAt.flatMap(Int.init) ?? 0) }
             case .unreadChapters:
                 nodes.sorted { ($0.unreadCount ?? 0) < ($1.unreadCount ?? 0) }
             default:
