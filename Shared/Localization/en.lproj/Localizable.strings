@@ -273,12 +273,12 @@
 "ARTIST" = "Artist";
 "SORT" = "Sort";
 "SORT_NAME" = "Name";
-"SORT_DATE_ADDED" = "Date added";
-"SORT_DATE_UPDATED" = "Date updated";
-"SORT_DATE_READ" = "Date read";
-"SORT_RELEASE_DATE" = "Release date";
-"SORT_FOLDER_NAME" = "Folder name";
-"SORT_BOOKS_COUNT" = "Books count";
+"SORT_DATE_ADDED" = "Date Added";
+"SORT_DATE_UPDATED" = "Date Updated";
+"SORT_DATE_READ" = "Date Read";
+"SORT_RELEASE_DATE" = "Release Date";
+"SORT_FOLDER_NAME" = "Folder Name";
+"SORT_BOOKS_COUNT" = "Books Count";
 "SORT_RANDOM" = "Random";
 "STATUS_ONGOING" = "Random";
 "GENRE" = "Genre";
@@ -313,6 +313,17 @@
 "OIDC" = "OIDC";
 "BASIC_LOGIN" = "Basic Login";
 "API_KEY_LOGIN_INFO" = "Manually providing an API key for login will override other login methods. You can leave it blank to use other login methods.";
+
+// Suwayomi
+"SUWAYOMI" = "Suwayomi";
+"SUWAYOMI_TAGLINE" = "Manga reader server";
+"SUWAYOMI_INFO" = "Suwayomi is a self-hosted manga reader server that runs extensions built for Mihon (Tachiyomi). You will need a Suwayomi server set up and running in order to use this source.";
+"SUWAYOMI_SETUP" = "Suwayomi Setup";
+"STATUS_LICENSED" = "Licensed";
+"STATUS_PUBLISHING_FINISHED" = "Publishing Finished";
+"AUTHOR_NAME" = "Author name";
+"ARTIST_NAME" = "Aritst name";
+"INVALID_KEY" = "Invalid Key";
 
 // Manga
 "UNTITLED" = "Untitled";

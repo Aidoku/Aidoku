@@ -194,6 +194,13 @@
 		FB30958829CB3EEF00EF2B0A /* ReaderTransitionNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB30958729CB3EEF00EF2B0A /* ReaderTransitionNode.swift */; };
 		FB30D582296CC0FE006B03A7 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB30D581296CC0FE006B03A7 /* HistoryManager.swift */; };
 		FB30D583296CC0FE006B03A7 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB30D581296CC0FE006B03A7 /* HistoryManager.swift */; };
+		FB3164702FF9F1DC004037C2 /* KomgaSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31646F2FF9F1DC004037C2 /* KomgaSetupView.swift */; };
+		FB3164722FF9F1E9004037C2 /* KavitaSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164712FF9F1E9004037C2 /* KavitaSetupView.swift */; };
+		FB3164742FF9F213004037C2 /* SuwayomiSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164732FF9F213004037C2 /* SuwayomiSetupView.swift */; };
+		FB3164762FFCD065004037C2 /* SuwayomiHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164752FFCD061004037C2 /* SuwayomiHelper.swift */; };
+		FB3164772FFCD065004037C2 /* SuwayomiHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164752FFCD061004037C2 /* SuwayomiHelper.swift */; };
+		FB3164792FFCD16B004037C2 /* SuwayomiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164782FFCD168004037C2 /* SuwayomiModels.swift */; };
+		FB31647A2FFCD16B004037C2 /* SuwayomiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164782FFCD168004037C2 /* SuwayomiModels.swift */; };
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
@@ -281,6 +288,8 @@
 		FB58C6B22999B44D00A6F49F /* WebViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */; };
 		FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB05F868296499DE00D1EA2D /* CoreDataManager+Source.swift */; };
 		FB5B43732ECBC78C00F06534 /* Array.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8E48DC2DC04E17002A3621 /* Array.swift */; };
+		FB5C704C2FF4E7A8001D5723 /* SuwayomiSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5C704B2FF4E7A3001D5723 /* SuwayomiSource.swift */; };
+		FB5C704D2FF4E7A8001D5723 /* SuwayomiSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5C704B2FF4E7A3001D5723 /* SuwayomiSource.swift */; };
 		FB5E5D012E32BFC700843E27 /* TapZonesSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */; };
 		FB619E3F2E94A62000E3B565 /* PageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB619E3E2E94A61D00E3B565 /* PageTracker.swift */; };
 		FB619E402E94A62000E3B565 /* PageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB619E3E2E94A61D00E3B565 /* PageTracker.swift */; };
@@ -742,6 +751,11 @@
 		FB2E02532868B3D900786F21 /* TrackerSettingOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerSettingOptionView.swift; sourceTree = "<group>"; };
 		FB30958729CB3EEF00EF2B0A /* ReaderTransitionNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTransitionNode.swift; sourceTree = "<group>"; };
 		FB30D581296CC0FE006B03A7 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
+		FB31646F2FF9F1DC004037C2 /* KomgaSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KomgaSetupView.swift; sourceTree = "<group>"; };
+		FB3164712FF9F1E9004037C2 /* KavitaSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KavitaSetupView.swift; sourceTree = "<group>"; };
+		FB3164732FF9F213004037C2 /* SuwayomiSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiSetupView.swift; sourceTree = "<group>"; };
+		FB3164752FFCD061004037C2 /* SuwayomiHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiHelper.swift; sourceTree = "<group>"; };
+		FB3164782FFCD168004037C2 /* SuwayomiModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiModels.swift; sourceTree = "<group>"; };
 		FB31AD0A27AE180300D50410 /* WasmHtml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmHtml.swift; sourceTree = "<group>"; };
 		FB3796A02B1416F8005E6264 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A12B141726005E6264 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -822,6 +836,7 @@
 		FB55C0B72DF32B9E0019A551 /* LocalFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFileManager.swift; sourceTree = "<group>"; };
 		FB57A6032E7F021200C9FD40 /* LoginShimViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginShimViewController.swift; sourceTree = "<group>"; };
 		FB58C6B12999B44D00A6F49F /* WebViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewViewController.swift; sourceTree = "<group>"; };
+		FB5C704B2FF4E7A3001D5723 /* SuwayomiSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiSource.swift; sourceTree = "<group>"; };
 		FB5E5D002E32BFC300843E27 /* TapZonesSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapZonesSelectView.swift; sourceTree = "<group>"; };
 		FB619E3E2E94A61D00E3B565 /* PageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTracker.swift; sourceTree = "<group>"; };
 		FB619E502E9E90EB00E3B565 /* SettingHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingHeaderView.swift; sourceTree = "<group>"; };
@@ -1457,6 +1472,7 @@
 				FB55C0B02DF2444F0019A551 /* Local */,
 				FB7F05FD2DDF79390036B116 /* Komga */,
 				FB248CBF2EA55CFB00BECD2E /* Kavita */,
+				FB5C704A2FF4E79A001D5723 /* Suwayomi */,
 				FB7B7ED0278CE670001E6EAF /* SourceManager.swift */,
 				FB7B7ED3278CE692001E6EAF /* Source.swift */,
 				FBAE7BED2AF2DC5D00D530EE /* LegacySource.swift */,
@@ -1586,6 +1602,17 @@
 			path = Tracking;
 			sourceTree = "<group>";
 		};
+		FB31646E2FF9F1BF004037C2 /* SelfHostedSource */ = {
+			isa = PBXGroup;
+			children = (
+				FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */,
+				FB31646F2FF9F1DC004037C2 /* KomgaSetupView.swift */,
+				FB3164712FF9F1E9004037C2 /* KavitaSetupView.swift */,
+				FB3164732FF9F213004037C2 /* SuwayomiSetupView.swift */,
+			);
+			path = SelfHostedSource;
+			sourceTree = "<group>";
+		};
 		FB31AD0527AC3A1900D50410 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1695,6 +1722,16 @@
 			path = WebView;
 			sourceTree = "<group>";
 		};
+		FB5C704A2FF4E79A001D5723 /* Suwayomi */ = {
+			isa = PBXGroup;
+			children = (
+				FB5C704B2FF4E7A3001D5723 /* SuwayomiSource.swift */,
+				FB3164752FFCD061004037C2 /* SuwayomiHelper.swift */,
+				FB3164782FFCD168004037C2 /* SuwayomiModels.swift */,
+			);
+			path = Suwayomi;
+			sourceTree = "<group>";
+		};
 		FB662E892DA58B0900007514 /* New */ = {
 			isa = PBXGroup;
 			children = (
@@ -1708,6 +1745,7 @@
 		FB662E8F2DA813E300007514 /* Browse */ = {
 			isa = PBXGroup;
 			children = (
+				FB31646E2FF9F1BF004037C2 /* SelfHostedSource */,
 				FBE7A5882DE0D64300CA5B60 /* AddSourceView.swift */,
 				FB1DD8922EF057EB0007FC78 /* AddSourceFilterMenu.swift */,
 				FBE7A58E2DE1214E00CA5B60 /* ExternalSourceTableCell.swift */,
@@ -1716,7 +1754,6 @@
 				FBD245A82DF3826900F591E4 /* LocalFileImportView.swift */,
 				FB55C0B42DF247940019A551 /* LocalSetupView.swift */,
 				FB034E932EAAB6A50072EEEB /* OIDCLoginController.swift */,
-				FB248CC62EA55E3100BECD2E /* SelfHostedSourceSetupView.swift */,
 				FB662E8E2DA813E300007514 /* SourceTableCell.swift */,
 			);
 			path = Browse;
@@ -2596,6 +2633,7 @@
 				FB662F102DA81B8200007514 /* EdgeInsets.swift in Sources */,
 				FB662F112DA81B8200007514 /* ListButtonStyle.swift in Sources */,
 				FBF059B72EF7013600907B0E /* InsightsData.swift in Sources */,
+				FB3164762FFCD065004037C2 /* SuwayomiHelper.swift in Sources */,
 				FB1DD89B2EF0C7710007FC78 /* IncognitoBannerView.swift in Sources */,
 				FB662F152DA81B8200007514 /* UIApplication.swift in Sources */,
 				FB3DDF7E2E1452A800A64897 /* DocumentPickerView.swift in Sources */,
@@ -2633,6 +2671,8 @@
 				FB28CF4628090A2200BC7663 /* WasmDefaults.swift in Sources */,
 				FB97BFFA2EC7BD6000235F87 /* SearchContentView.swift in Sources */,
 				002C0AC22EC0F44D0071CE82 /* LAPolicy.swift in Sources */,
+				FB3164702FF9F1DC004037C2 /* KomgaSetupView.swift in Sources */,
+				FB5C704D2FF4E7A8001D5723 /* SuwayomiSource.swift in Sources */,
 				FBE578F928983F5700F9F1B5 /* UICollectionView+CellRegistration.swift in Sources */,
 				FBED232527BC07690095D0C0 /* SourceInfoViewController.swift in Sources */,
 				FBED232727BDB69B0095D0C0 /* SettingSelectViewController.swift in Sources */,
@@ -2748,6 +2788,7 @@
 				FBE578FD289951F700F9F1B5 /* BaseObservingViewController.swift in Sources */,
 				FBE3E4922DD163DD00EF8145 /* BetterBorderedButtonStyle.swift in Sources */,
 				FBF059B92EF7014D00907B0E /* HeatmapData.swift in Sources */,
+				FB3164742FF9F213004037C2 /* SuwayomiSetupView.swift in Sources */,
 				FB79839F2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FBE53F0629CB723D00899601 /* ReaderWebtoonTransitionNode.swift in Sources */,
 				FB4EEBB927A2F0FC005081A3 /* MangaObject.swift in Sources */,
@@ -2827,6 +2868,7 @@
 				FB0AB8A32F51FD8D00AF1451 /* FilterGroupCreateView.swift in Sources */,
 				FB7B7E952787740A001E6EAF /* WasmJson.swift in Sources */,
 				FBD796682ED1333D00BD05F4 /* DoubleBadgeView.swift in Sources */,
+				FB3164722FF9F1E9004037C2 /* KavitaSetupView.swift in Sources */,
 				FB67EE6027F3708400C468EA /* WasmImports.swift in Sources */,
 				FB034EA42EAC27600072EEEB /* MangaIdentifier.swift in Sources */,
 				FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */,
@@ -2970,6 +3012,7 @@
 				FB79841D2E0DD183000761A9 /* TapZone.swift in Sources */,
 				FB58C6B22999B44D00A6F49F /* WebViewViewController.swift in Sources */,
 				FB72500F27CAAC6F0037F1C9 /* BackupManager.swift in Sources */,
+				FB31647A2FFCD16B004037C2 /* SuwayomiModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2979,6 +3022,7 @@
 			files = (
 				FBF059B62EF7013600907B0E /* InsightsData.swift in Sources */,
 				FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */,
+				FB3164792FFCD16B004037C2 /* SuwayomiModels.swift in Sources */,
 				FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */,
 				FBD6A412285B7789007116C9 /* TrackItem.swift in Sources */,
 				04B48CF82CD6836100F719D0 /* ShikimoriTracker.swift in Sources */,
@@ -3042,9 +3086,11 @@
 				FB5B43732ECBC78C00F06534 /* Array.swift in Sources */,
 				FB1B4869277CE76B0056D02C /* MangaModels.swift in Sources */,
 				FBD0F2F02D923E14009CB0C4 /* UserAgentProvider.swift in Sources */,
+				FB3164772FFCD065004037C2 /* SuwayomiHelper.swift in Sources */,
 				FB7B7E9927877416001E6EAF /* WasmNet.swift in Sources */,
 				FBF059CB2EF8331200907B0E /* BackupReadingSession.swift in Sources */,
 				FBF059BA2EF7014D00907B0E /* HeatmapData.swift in Sources */,
+				FB5C704C2FF4E7A8001D5723 /* SuwayomiSource.swift in Sources */,
 				FB0E1CD9288AEAF700B67BA9 /* OAuthClient.swift in Sources */,
 				FB14B1302DF4D2EF0067E4D4 /* AniListApi.swift in Sources */,
 				FB7984122E0C8068000761A9 /* ModelManager.swift in Sources */,

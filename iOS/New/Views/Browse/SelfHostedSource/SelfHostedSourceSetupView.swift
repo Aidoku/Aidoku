@@ -7,11 +7,20 @@
 
 import SwiftUI
 
-private struct ServerCheck: Hashable {
-    let canLoginBasic: Bool
+struct ServerCheck: Hashable {
+    var canSkipLogin: Bool = false
+    var canLoginBasic: Bool = false
     var canLoginApiKey: Bool = false
     var canLoginOIDC: Bool = false
     var oidcLoginURL: URL?
+
+    var hasLoginMethod: Bool {
+        canSkipLogin || canLoginBasic || canLoginApiKey || canLoginOIDC
+    }
+
+    var mustSkipLogin: Bool {
+        canSkipLogin && !canLoginBasic && !canLoginApiKey && !canLoginOIDC
+    }
 }
 
 struct SelfHostedSourceSetupView: View {
@@ -21,15 +30,17 @@ struct SelfHostedSourceSetupView: View {
     let info: String
     let learnMoreUrl: URL?
     let useEmail: Bool
+    let placeholderServer: String?
 
-    let demoServer: String
-    let demoTitle: String
-    let demoInfo: String
+    let demoServer: String?
+    let demoTitle: String?
+    let demoInfo: String?
 
     private let checkHandler: (String) async -> ServerCheck
     private let logInHandler: (String, URL, String, String) async -> Bool
     private let apiKeyLogInHandler: ((String, URL, String) async -> Bool)?
     private let oidcLogInHandler: ((String, URL, [HTTPCookie]) async -> Bool)?
+    private let noLogInHandler: ((String, URL) async -> Bool)?
 
     @State private var name: String
     @State private var server: String = ""
@@ -93,7 +104,7 @@ struct SelfHostedSourceSetupView: View {
 
     @EnvironmentObject private var path: NavigationCoordinator
 
-    fileprivate init(
+    init(
         icon: Image,
         title: String,
         sourceName: String,
@@ -101,13 +112,15 @@ struct SelfHostedSourceSetupView: View {
         learnMoreUrl: URL?,
         sourceKeyPrefix: String,
         useEmail: Bool,
-        demoServer: String,
-        demoTitle: String,
-        demoInfo: String,
+        placeholderServer: String? = nil,
+        demoServer: String? = nil,
+        demoTitle: String? = nil,
+        demoInfo: String? = nil,
         checkServer: @escaping (String) async -> ServerCheck,
         logIn: @escaping (String, URL, String, String) async -> Bool,
         apiKeyLogIn: ((String, URL, String) async -> Bool)? = nil,
-        oidcLogIn: ((String, URL, [HTTPCookie]) async -> Bool)? = nil
+        oidcLogIn: ((String, URL, [HTTPCookie]) async -> Bool)? = nil,
+        noLogIn: ((String, URL) async -> Bool)? = nil
     ) {
         self.icon = icon
         self.title = title
@@ -115,6 +128,7 @@ struct SelfHostedSourceSetupView: View {
         self.info = info
         self.learnMoreUrl = learnMoreUrl
         self.useEmail = useEmail
+        self.placeholderServer = placeholderServer ?? demoServer
         self.demoServer = demoServer
         self.demoTitle = demoTitle
         self.demoInfo = demoInfo
@@ -122,6 +136,7 @@ struct SelfHostedSourceSetupView: View {
         self.logInHandler = logIn
         self.apiKeyLogInHandler = apiKeyLogIn
         self.oidcLogInHandler = oidcLogIn
+        self.noLogInHandler = noLogIn
 
         // find unique default name
         var defaultName = sourceName
@@ -167,7 +182,7 @@ struct SelfHostedSourceSetupView: View {
                 }
             }
             Section {
-                TextField(demoServer, text: $server)
+                TextField(placeholderServer ?? NSLocalizedString("SERVER_URL"), text: $server)
                     .keyboardType(.URL)
                     .textContentType(.URL)
                     .textInputAutocapitalization(.never)
@@ -282,7 +297,12 @@ struct SelfHostedSourceSetupView: View {
                 }
             }
 
-            if (isLogInState || isLoadingLoginState) && server == demoServer {
+            if
+                isLogInState || isLoadingLoginState,
+                server == demoServer,
+                let demoTitle,
+                let demoInfo
+            {
                 Section {
                     LocalSetupView.infoView(
                         title: LocalizedStringKey(demoTitle),
@@ -399,9 +419,15 @@ struct SelfHostedSourceSetupView: View {
         }
 
         let serverCheck = await checkHandler(server)
-        guard serverCheck.canLoginBasic || serverCheck.canLoginOIDC else {
+
+        guard serverCheck.hasLoginMethod else {
             state = .initial
             error = .connection
+            return
+        }
+
+        if serverCheck.mustSkipLogin {
+            await noLogIn() // todo: also have some sort of option for no login in the login view
             return
         }
 
@@ -448,209 +474,25 @@ struct SelfHostedSourceSetupView: View {
 
         path.dismiss()
     }
-}
 
-struct KomgaSetupView: View {
-    var body: some View {
-        SelfHostedSourceSetupView(
-            icon: Image(.komga),
-            title: NSLocalizedString("KOMGA_SETUP"),
-            sourceName: NSLocalizedString("KOMGA"),
-            info: NSLocalizedString("KOMGA_INFO"),
-            learnMoreUrl: URL(string: "https://komga.org/docs/introduction"),
-            sourceKeyPrefix: KomgaSourceRunner.sourceKeyPrefix,
-            useEmail: true,
-            demoServer: "https://demo.komga.org",
-            demoTitle: NSLocalizedString("DEMO_KOMGA_SERVER"),
-            demoInfo: NSLocalizedString("DEMO_KOMGA_SERVER_INFO"),
-            checkServer: check(server:),
-            logIn: logIn(name:server:username:password:)
-        )
-    }
-
-    private func check(server: String) async -> ServerCheck {
-        // ensure url is valid (shouldn't fail)
-        guard let testUrl = URL(string: server + "/api/v2/users/me") else {
-            return ServerCheck(canLoginBasic: false)
-        }
-
-        // request the user info endpoint to ensure it gives us an komga auth error
-        let response: KomgaError? = try? await URLSession.shared.object(from: testUrl)
-
-        guard let response, response.error == "Unauthorized" else {
-            return ServerCheck(canLoginBasic: false)
-        }
-
-        return ServerCheck(canLoginBasic: true)
-    }
-
-    private func logIn(name: String, server: URL, username: String, password: String) async -> Bool {
-        // request the user info endpoint to ensure we can authenticate
-        guard let testUrl = URL(string: "api/v2/users/me", relativeTo: server) else {
-            return false
-        }
-
-        var request = URLRequest(url: testUrl)
-        let auth = Data("\(username):\(password)".utf8).base64EncodedString()
-        request.setValue("Basic \(auth)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        struct Response: Codable {
-            let email: String
-        }
-        let response: Response? = try? await URLSession.shared.object(from: request)
-
-        guard let response, response.email == username else {
-            return false
-        }
-
-        await SourceManager.shared.createCustomSource(
-            kind: .komga,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
-
-        return true
-    }
-}
-
-struct KavitaSetupView: View {
-    static let demoServer = "https://demo.kavitareader.com"
-
-    var body: some View {
-        SelfHostedSourceSetupView(
-            icon: Image(.kavita),
-            title: NSLocalizedString("KAVITA_SETUP"),
-            sourceName: NSLocalizedString("KAVITA"),
-            info: NSLocalizedString("KAVITA_INFO"),
-            learnMoreUrl: URL(string: "https://wiki.kavitareader.com/getting-started/"),
-            sourceKeyPrefix: KavitaSourceRunner.sourceKeyPrefix,
-            useEmail: false,
-            demoServer: Self.demoServer,
-            demoTitle: NSLocalizedString("DEMO_KAVITA_SERVER"),
-            demoInfo: NSLocalizedString("DEMO_KAVITA_SERVER_INFO"),
-            checkServer: check(server:),
-            logIn: logIn(name:server:username:password:),
-            apiKeyLogIn: logIn(name:server:apiKey:),
-            oidcLogIn: logIn(name:server:cookies:)
-        )
-    }
-
-    private func check(server: String) async -> ServerCheck {
-        // ensure url is valid (shouldn't fail)
+    func noLogIn() async {
         guard
-            let testUrl = URL(string: server + "/api/admin/exists"),
-            let oidcCheckUrl = URL(string: server + "/api/settings/oidc")
+            let serverURL = server.urlWithTrailingSlash(),
+            let noLogInHandler
         else {
-            return ServerCheck(canLoginBasic: false)
+            state = .initial
+            error = .connection
+            return
         }
 
-        // ensure we can reach kavita api from server
-        let check: Bool? = try? await URLSession.shared.object(from: testUrl)
-        guard check == true else {
-            return ServerCheck(canLoginBasic: false)
+        let success = await noLogInHandler(name, serverURL)
+
+        guard success else {
+            state = .initial
+            error = .connection
+            return
         }
 
-        let canLoginApiKey = server != Self.demoServer // disable api key login for demo server since it isn't accessible
-
-        struct OIDCResponse: Decodable {
-            let disablePasswordAuthentication: Bool
-            let enabled: Bool
-            let providerName: String
-        }
-        let response: OIDCResponse? = try? await URLSession.shared.object(from: oidcCheckUrl)
-        if let response {
-            return ServerCheck(
-                canLoginBasic: !response.disablePasswordAuthentication,
-                canLoginApiKey: canLoginApiKey,
-                canLoginOIDC: response.enabled,
-                oidcLoginURL: URL(string: server + "/oidc/login?returnURL=aidoku://oidc-auth")
-            )
-        }
-
-        return ServerCheck(
-            canLoginBasic: true,
-            canLoginApiKey: canLoginApiKey,
-            canLoginOIDC: false,
-            oidcLoginURL: nil
-        )
+        path.dismiss()
     }
-
-    private func logIn(name: String, server: URL, username: String, password: String) async -> Bool {
-        let response = await KavitaSourceRunner.getLoginResponse(server: server, username: username, password: password)
-
-        guard
-            let response,
-            let token = response.token,
-            let refreshToken = response.refreshToken,
-            let apiKey = response.getApiKey(),
-            response.username == username
-        else {
-            return false
-        }
-
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
-
-        UserDefaults.standard.setValue(apiKey, forKey: "\(key).apiKey")
-        UserDefaults.standard.setValue(token, forKey: "\(key).token")
-        UserDefaults.standard.setValue(refreshToken, forKey: "\(key).refreshToken")
-
-        return true
-    }
-
-    private func logIn(name: String, server: URL, apiKey: String) async -> Bool {
-        let response = await KavitaSourceRunner.getLoginResponse(server: server, apiKey: apiKey)
-
-        guard
-            let response,
-            let token = response.token,
-            let refreshToken = response.refreshToken,
-            let apiKey = response.getApiKey()
-        else {
-            return false
-        }
-
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server
-        )
-
-        UserDefaults.standard.setValue(apiKey, forKey: "\(key).login_key") // populate api key source setting
-        UserDefaults.standard.setValue(apiKey, forKey: "\(key).apiKey")
-        UserDefaults.standard.setValue(token, forKey: "\(key).token")
-        UserDefaults.standard.setValue(refreshToken, forKey: "\(key).refreshToken")
-
-        return true
-    }
-
-    private func logIn(name: String, server: URL, cookies: [HTTPCookie]) async -> Bool {
-        let response = await KavitaSourceRunner.getLoginResponse(server: server, cookies: cookies)
-
-        guard let response, let cookie = response.cookie else { return false }
-
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server
-        )
-
-        UserDefaults.standard.setValue("logged_in", forKey: "\(key).login_oidc")
-        UserDefaults.standard.setValue(response.getApiKey(), forKey: "\(key).apiKey")
-        UserDefaults.standard.setValue(cookie, forKey: "\(key).cookie")
-
-        return true
-    }
-}
-
-#Preview {
-    KomgaSetupView()
 }

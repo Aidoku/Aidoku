@@ -441,7 +441,7 @@ actor KomgaSourceRunner: Runner {
                             key: "name",
                             notification: "name_change",
                             value: .text(.init(
-                                placeholder: NSLocalizedString("KAVITA"),
+                                placeholder: NSLocalizedString("KOMGA"),
                                 returnKeyType: UIReturnKeyType.done.rawValue,
                                 autocorrectionDisabled: true,
                                 defaultValue: name
@@ -594,7 +594,7 @@ actor KomgaSourceRunner: Runner {
     }
 
     private func updateSourceConfig(updateSourceList: Bool = false) {
-        let config = CustomSourceConfig.komga(key: sourceKey, name: name, server: server)
+        let config = CustomSourceConfig.komga(.init(key: sourceKey, name: name, server: server))
         SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }
