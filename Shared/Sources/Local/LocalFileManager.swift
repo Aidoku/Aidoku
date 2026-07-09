@@ -714,18 +714,24 @@ extension LocalFileManager {
     func removeChapter(mangaId: String, chapterId: String) async {
         // remove from db
         let filePath = await LocalFileDataManager.shared.removeChapter(mangaId: mangaId, chapterId: chapterId)
-        guard let filePath else { return }
 
-        // disable file listener while we make changes to the disk
-        self.suppressFileEvents = true
-        defer { self.suppressFileEvents = false }
+        if let filePath {
+            // disable file listener while we make changes to the disk
+            self.suppressFileEvents = true
+            defer { self.suppressFileEvents = false }
 
-        let documentsDir = FileManager.default.documentDirectory
-        let fileURL = documentsDir.append(path: filePath)
-        if fileURL.exists {
-            try? FileManager.default.removeItem(at: fileURL)
+            let documentsDir = FileManager.default.documentDirectory
+            let fileURL = documentsDir.append(path: filePath)
+            if fileURL.exists {
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+            Self.removeEpubImageCache(for: fileURL)
         }
-        Self.removeEpubImageCache(for: fileURL)
+
+        // remove the manga entry once no chapters remain
+        if await LocalFileDataManager.shared.fetchChapters(mangaId: mangaId).isEmpty {
+            await removeManga(with: mangaId)
+        }
     }
 
     // remove cached extracted images for a given epub archive
