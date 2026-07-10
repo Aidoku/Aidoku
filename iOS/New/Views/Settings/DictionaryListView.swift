@@ -90,11 +90,11 @@ struct DictionaryListView: View {
         .sheet(isPresented: $importing) {
             DocumentPickerView(
                 allowedContentTypes: [UTType.zip],
-                allowsMultipleSelection: false
+                allowsMultipleSelection: true
             ) { urls in
                 importing = false
-                guard let url = urls.first else { return }
-                importDictionary(url: url, type: importType)
+                guard !urls.isEmpty else { return }
+                importDictionaries(urls: urls, type: importType)
             }
         }
         .onAppear {
@@ -151,13 +151,13 @@ struct DictionaryListView: View {
         DictionaryManager.shared.rebuildLookupQuery()
     }
 
-    func importDictionary(url: URL, type: DictionaryType) {
+    func importDictionaries(urls: [URL], type: DictionaryType) {
         isImporting = true
         Task {
-            let success = await DictionaryManager.shared.importDictionary(from: url, type: type)
+            let result = await DictionaryManager.shared.importDictionary(from: urls, type: type)
             await MainActor.run {
                 isImporting = false
-                if success {
+                if result.didImportAny {
                     reload()
                 }
             }

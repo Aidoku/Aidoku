@@ -129,42 +129,72 @@ class DictionaryManager {
         }
     }
 
-    func importDictionary(from url: URL, type: DictionaryType) async -> Bool {
-        #if canImport(CHoshiDicts)
-        let hasAccess = url.startAccessingSecurityScopedResource()
-        defer {
-            if hasAccess { url.stopAccessingSecurityScopedResource() }
-        }
+    struct ImportSummary {
+        let imported: [String]
+        let failed: [String]
 
-        let sourcePath = url.path(percentEncoded: false)
-        guard FileManager.default.fileExists(atPath: sourcePath) else { return false }
+        var didImportAny: Bool {
+            !imported.isEmpty
+        }
+    }
+
+    func importDictionary(from urls: [URL], type: DictionaryType) async -> ImportSummary {
+        #if canImport(CHoshiDicts)
+        guard !urls.isEmpty else {
+            return .init(imported: [], failed: [])
+        }
 
         guard let destinationDir = try? Self.getDictionariesDirectory()
             .appendingPathComponent(type.rawValue)
-        else { return false }
+        else {
+            let failed = urls.map(\.lastPathComponent)
+            return .init(imported: [], failed: failed)
+        }
 
         let destinationPath = destinationDir.path(percentEncoded: false)
         if !FileManager.default.fileExists(atPath: destinationPath) {
             try? FileManager.default.createDirectory(at: destinationDir, withIntermediateDirectories: true)
         }
 
-        let importResult = await Task.detached {
-            dictionary_importer.import(
-                std.string(sourcePath),
-                std.string(destinationPath)
-            )
-        }.value
+        var imported: [String] = []
+        var failed: [String] = []
+        for url in urls {
+            let fileName = url.lastPathComponent
+            let hasAccess = url.startAccessingSecurityScopedResource()
+            defer {
+                if hasAccess { url.stopAccessingSecurityScopedResource() }
+            }
 
-        if importResult.term_count > 0 || importResult.meta_count > 0 {
+            let sourcePath = url.path(percentEncoded: false)
+            guard FileManager.default.fileExists(atPath: sourcePath) else {
+                failed.append(fileName)
+                continue
+            }
+
+            let importResult = await Task.detached {
+                dictionary_importer.import(
+                    std.string(sourcePath),
+                    std.string(destinationPath)
+                )
+            }.value
+            if importResult.term_count > 0 || importResult.meta_count > 0 {
+                imported.append(fileName)
+            } else {
+                failed.append(fileName)
+            }
+        }
+
+        if !imported.isEmpty {
             await MainActor.run {
                 loadDictionaries()
                 saveDictionaryConfig()
             }
-            return true
         }
-        return false
+
+        return .init(imported: imported, failed: failed)
         #else
-        return false
+        let failed = urls.map(\.lastPathComponent)
+        return .init(imported: [], failed: failed)
         #endif
     }
 
