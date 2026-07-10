@@ -39,6 +39,14 @@ protocol ReaderReaderDelegate: UIViewController {
 
 extension ReaderReaderDelegate {
     @available(iOS 18.0, *)
+    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
+        nil
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {}
+
+    @available(iOS 18.0, *)
     func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {}
 
     @available(iOS 18.0, *)

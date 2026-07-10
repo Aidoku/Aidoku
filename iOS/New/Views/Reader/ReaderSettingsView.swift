@@ -136,7 +136,7 @@ struct ReaderSettingsView: View {
                             title: NSLocalizedString("LIVE_TEXT"),
                             value: .toggle(.init())
                         )
-                    }
+                    )
                     SettingView(
                         setting: .init(
                             key: "Reader.hideBarsOnSwipe",
