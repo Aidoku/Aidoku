@@ -1214,6 +1214,8 @@
 				FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */,
 			);
 			path = Migration;
+			sourceTree = "<group>";
+		};
 		EE7A41B62F5CF4CE0044AF4C /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
