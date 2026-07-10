@@ -217,7 +217,7 @@
 "IMPORT" = "Import";
 "IMPORT_FILE" = "Import File";
 "LOCAL_FILE_IMPORT" = "Local File Import";
-"LOCAL_FILE_IMPORT_TEXT" = "Import a CBZ or ZIP file containing images to read.";
+"LOCAL_FILE_IMPORT_TEXT" = "Import a CBZ, ePub, or ZIP file containing images to read.";
 "CHAPTER_TITLE" = "Chapter Title";
 "SERIES_TITLE" = "Series Title";
 "DESCRIPTION" = "Description";
@@ -235,6 +235,7 @@
 "1_PAGE" = "1 page";
 "CBZ_NAME" = "Comic Book Zip Archive";
 "ZIP_NAME" = "Zip Archive";
+"EPUB_NAME" = "EPUB";
 
 // Komga
 "KOMGA" = "Komga";

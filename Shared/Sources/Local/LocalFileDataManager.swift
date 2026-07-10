@@ -248,6 +248,22 @@ extension LocalFileDataManager {
 
         try? context.save()
 
+        // only report the file for removal if no other chapters still reference it
+        // (epub chapters share a single archive file)
+        if let filePath {
+            let request = ChapterObject.fetchRequest()
+            request.predicate = NSPredicate(
+                format: "mangaId == %@ AND sourceId == %@ AND fileInfo.path == %@",
+                mangaId,
+                LocalSourceRunner.sourceKey,
+                filePath
+            )
+            request.fetchLimit = 1
+            if let remaining = try? context.count(for: request), remaining > 0 {
+                return nil
+            }
+        }
+
         return filePath
     }
 
@@ -298,6 +314,7 @@ extension LocalFileDataManager {
         title: String,
         cover: String? = nil,
         description: String? = nil,
+        viewer: AidokuRunner.Viewer = .unknown,
         comicInfo: ComicInfo? = nil
     ) {
         let fileInfo = LocalFileInfoObject(context: context)
@@ -314,7 +331,8 @@ extension LocalFileDataManager {
                 key: id,
                 title: title,
                 cover: cover,
-                description: description
+                description: description,
+                viewer: viewer
             )
             var detailedManga = comicInfo.copy(into: basicManga)
             detailedManga.title = title
@@ -326,6 +344,13 @@ extension LocalFileDataManager {
             object.title = title
             object.cover = cover
             object.desc = description
+            object.viewer = switch viewer {
+                case .unknown: 0
+                case .rightToLeft: 1
+                case .leftToRight: 2
+                case .vertical: 3
+                case .webtoon: 4
+            }
         }
         object.fileInfo = fileInfo
 

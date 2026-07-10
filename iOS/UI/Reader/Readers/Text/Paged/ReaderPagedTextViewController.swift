@@ -362,7 +362,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             return
         }
 
-        let targetIndex = min(max(0, index), pages.count - 1)
+        let targetIndex = alignedPageIndex(min(max(0, index), pages.count - 1))
 
         let oldIndex = currentPageIndex
         currentPageIndex = targetIndex
@@ -392,11 +392,28 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         }
 
         // Update current page display (1-indexed for UI)
-        delegate?.setCurrentPage(targetIndex + 1, position: normalizedPosition(for: targetIndex))
+        reportCurrentPage(for: targetIndex)
         updateSliderPosition()
     }
 
+    /// Snap an index to the left page of its double-page spread so spreads always
+    /// pair (0,1), (2,3), … — otherwise stepping by 2 skips the first/last page
+    /// when navigation lands on an odd index (slider, history restore, chapter end).
+    private func alignedPageIndex(_ index: Int) -> Int {
+        usesDoublePages ? index - (index % 2) : index
+    }
+
+    /// Report the rightmost visible page of the spread at the given aligned index.
+    /// The delegate marks the chapter completed when the reported page reaches the
+    /// total page count, so the right page of the final spread must be reported —
+    /// not just the (left) spread index.
+    private func reportCurrentPage(for index: Int) {
+        let visibleIndex = usesDoublePages ? min(index + 1, pages.count - 1) : index
+        delegate?.setCurrentPage(visibleIndex + 1, position: normalizedPosition(for: visibleIndex))
+    }
+
     private func createPageViewController(for index: Int) -> UIViewController {
+        let index = alignedPageIndex(index)
 
         guard index >= 0 && index < pages.count else {
             // Return empty view controller as fallback
@@ -619,13 +636,20 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
     func loadPreviousChapter() {
         guard let previousChapter else { return }
         Task {
-            // Preload and verify the chapter has text pages before switching.
-            // Non-text chapters would require a reading-mode change that the
-            // paged text reader can't handle — snap back to the transition page.
+            // Preload to check whether the chapter has text pages.
             await viewModel.preload(chapter: previousChapter)
             let preloaded = viewModel.preloadedPages
-            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+            guard !preloaded.isEmpty else {
                 await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            guard preloaded.allSatisfy({ $0.isTextPage }) else {
+                // Non-text chapter: hand off to the parent controller, which
+                // switches to the appropriate reader and reloads the chapter.
+                await MainActor.run {
+                    delegate?.setChapter(previousChapter)
+                    delegate?.setPages(preloaded)
+                }
                 return
             }
             delegate?.setChapter(previousChapter)
@@ -638,8 +662,17 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
         Task {
             await viewModel.preload(chapter: nextChapter)
             let preloaded = viewModel.preloadedPages
-            guard !preloaded.isEmpty, preloaded.allSatisfy({ $0.isTextPage }) else {
+            guard !preloaded.isEmpty else {
                 await MainActor.run { snapBackToTransitionPage() }
+                return
+            }
+            guard preloaded.allSatisfy({ $0.isTextPage }) else {
+                // Non-text chapter: hand off to the parent controller, which
+                // switches to the appropriate reader and reloads the chapter.
+                await MainActor.run {
+                    delegate?.setChapter(nextChapter)
+                    delegate?.setPages(preloaded)
+                }
                 return
             }
             delegate?.setChapter(nextChapter)
@@ -691,7 +724,7 @@ extension ReaderPagedTextViewController: UIPageViewControllerDelegate {
             currentCharacterOffset = doublePage.leftPage.range.location
         }
 
-        delegate?.setCurrentPage(currentPageIndex + 1, position: normalizedPosition(for: currentPageIndex))
+        reportCurrentPage(for: currentPageIndex)
         updateSliderPosition()
     }
 

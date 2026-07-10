@@ -37,6 +37,7 @@ struct MarkdownView: View {
         Markdown {
             markdownString
         }
+        .markdownImageProvider(LocalFileImageProvider())
         .markdownTextStyle {
             FontFamily(.custom(fontFamily == "System" ? ".AppleSystemUIFont" : fontFamily))
             FontSize(fontSize)
@@ -60,6 +61,21 @@ struct MarkdownView: View {
         .fullScreenCover(isPresented: $showSafari) {
             SafariView(url: $safariUrl)
                 .ignoresSafeArea()
+        }
+    }
+}
+
+/// Loads file urls (e.g. images extracted from epubs) directly from disk,
+/// since the default provider only handles network urls.
+private struct LocalFileImageProvider: ImageProvider {
+    @ViewBuilder
+    func makeImage(url: URL?) -> some View {
+        if let url, url.isFileURL, let image = UIImage(contentsOfFile: url.path) {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        } else {
+            DefaultImageProvider.default.makeImage(url: url)
         }
     }
 }

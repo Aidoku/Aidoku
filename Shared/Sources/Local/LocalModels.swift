@@ -24,11 +24,13 @@ struct LocalSeriesInfo: Hashable {
 enum LocalFileType {
     case cbz
     case zip
+    case epub
 
     var localizedName: String {
         switch self {
             case .cbz: NSLocalizedString("CBZ_NAME")
             case .zip: NSLocalizedString("ZIP_NAME")
+            case .epub: NSLocalizedString("EPUB_NAME")
         }
     }
 }
