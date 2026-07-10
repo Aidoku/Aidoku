@@ -1166,6 +1166,7 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
 // MARK: - Dictionary Lookup
 extension ReaderPagedViewController {
     @available(iOS 18.0, *)
+    // swiftlint:disable:next large_tuple
     func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
         guard let currentVCs = pageViewController.viewControllers else { return nil }
 
@@ -1190,10 +1191,8 @@ extension ReaderPagedViewController {
     @available(iOS 18.0, *)
     func dismissActiveDictionaryOverlay() -> Bool {
         guard let currentVCs = pageViewController.viewControllers else { return false }
-        for case let pageVC as ReaderPageViewController in currentVCs {
-            if pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
-                return true
-            }
+        for case let pageVC as ReaderPageViewController in currentVCs where pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
+            return true
         }
         return false
     }

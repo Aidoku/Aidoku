@@ -96,7 +96,7 @@ final class DictionaryOverlayButton: UIButton {
         localCharHits.removeAll()
 
         let storedScale = CGFloat(UserDefaults.standard.double(forKey: "Reader.dictionaryOverlayTextScaleMultiplier"))
-        let textScaleMultiplier = max(0.5, min(1.25, storedScale > 0 ? storedScale : 1.0))
+        let textScaleMultiplier = max(0.5, min(1.25, storedScale > 0 ? storedScale : 1))
         let storedPadding = CGFloat(UserDefaults.standard.double(forKey: "Reader.dictionaryOverlayPadding"))
         let labelPadding = max(0, min(10, storedPadding > 0 ? storedPadding : 5))
 
@@ -263,6 +263,7 @@ final class DictionaryOverlayController: NSObject {
         return true
     }
 
+    // swiftlint:disable:next large_tuple
     func lookupPayload(at point: CGPoint) -> (text: String, rect: CGRect, charRects: [CGRect])? {
         guard let button = overlayButton(at: point) else { return nil }
         setActiveButton(button)

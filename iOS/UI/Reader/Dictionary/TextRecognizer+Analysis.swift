@@ -99,7 +99,7 @@ extension TextRecognizer {
 
         // Improve tiny glyph recognition by upscaling smaller pages before OCR.
         let targetLongestSide: CGFloat = 2800
-        let scaleFactor = min(2.0, max(1.0, targetLongestSide / longestSide))
+        let scaleFactor = min(2, max(1, targetLongestSide / longestSide))
         guard scaleFactor > 1.05 else { return cgImage }
 
         let scaledSize = CGSize(width: width * scaleFactor, height: height * scaleFactor)

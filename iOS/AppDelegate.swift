@@ -164,7 +164,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.dictionaryOCRLanguage": "ja",
                 "Reader.dictionaryOCRPreUpscale": true,
                 "Reader.dictionaryOverlayPadding": 5,
-                "Reader.dictionaryOverlayTextScaleMultiplier": 1.0,
+                "Reader.dictionaryOverlayTextScaleMultiplier": 1,
                 "Reader.lookupGestureLocksQuickActions": false,
                 "Reader.dictionaryPopupWidth": 320,
                 "Reader.dictionaryPopupHeight": 250,

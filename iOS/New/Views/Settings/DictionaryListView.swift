@@ -130,19 +130,19 @@ struct DictionaryListView: View {
         switch type {
         case .term:
             termDicts.move(fromOffsets: source, toOffset: destination)
-            for (i, _) in termDicts.enumerated() {
+            for i in termDicts.indices {
                 termDicts[i].order = i
             }
             DictionaryManager.shared.termDictionaries = termDicts
         case .frequency:
             freqDicts.move(fromOffsets: source, toOffset: destination)
-            for (i, _) in freqDicts.enumerated() {
+            for i in freqDicts.indices {
                 freqDicts[i].order = i
             }
             DictionaryManager.shared.frequencyDictionaries = freqDicts
         case .pitch:
             pitchDicts.move(fromOffsets: source, toOffset: destination)
-            for (i, _) in pitchDicts.enumerated() {
+            for i in pitchDicts.indices {
                 pitchDicts[i].order = i
             }
             DictionaryManager.shared.pitchDictionaries = pitchDicts

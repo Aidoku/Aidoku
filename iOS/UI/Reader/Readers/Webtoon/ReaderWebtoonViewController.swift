@@ -364,6 +364,7 @@ extension ReaderWebtoonViewController {
     }
 
     @available(iOS 18.0, *)
+    // swiftlint:disable:next large_tuple
     func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
         let collectionPoint = view.convert(point, to: collectionNode.view)
         guard let indexPath = collectionNode.indexPathForItem(at: collectionPoint),
@@ -386,10 +387,8 @@ extension ReaderWebtoonViewController {
 
     @available(iOS 18.0, *)
     func dismissActiveDictionaryOverlay() -> Bool {
-        for case let node as ReaderWebtoonPageNode in collectionNode.visibleNodes {
-            if node.dismissActiveDictionaryOverlay() {
-                return true
-            }
+        for case let node as ReaderWebtoonPageNode in collectionNode.visibleNodes where node.dismissActiveDictionaryOverlay() {
+            return true
         }
         return false
     }

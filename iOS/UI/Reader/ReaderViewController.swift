@@ -50,6 +50,7 @@ class ReaderViewController: BaseObservingViewController {
 
     // Dictionary popup state
     private lazy var dictionaryCoordinator = ReaderDictionaryCoordinator(owner: self)
+    // swiftlint:disable:next large_tuple
     private var dictionaryLongPressSelection: (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
     private var isDictionaryPopupVisible: Bool {
         if #available(iOS 18.0, *) {

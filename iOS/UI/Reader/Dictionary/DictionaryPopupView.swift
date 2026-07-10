@@ -278,7 +278,9 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                     window.webkit.messageHandlers.duplicateCheck = { postMessage: async function() { return false; } };
                 }
                 if (!window.webkit.messageHandlers.getEntry) {
-                    window.webkit.messageHandlers.getEntry = { postMessage: async function(index) { return (window.lookupEntries || [])[index] || null; } };
+                    window.webkit.messageHandlers.getEntry = {
+                        postMessage: async function(index) { return (window.lookupEntries || [])[index] || null; }
+                    };
                 }
             </script>
             <script>\(Self.selectionJs)</script>

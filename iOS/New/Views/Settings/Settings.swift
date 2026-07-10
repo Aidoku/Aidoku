@@ -425,7 +425,7 @@ extension Settings {
             } else {
                 []
             }
-        }()))),
+        }())))
     ] + {
         if #available(iOS 18.0, *) {
             [

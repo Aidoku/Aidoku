@@ -121,7 +121,9 @@ class ReaderPageView: UIView {
             dictionaryOverlayContainerView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor)
         ])
     }
+}
 
+extension ReaderPageView {
     func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) async -> Bool {
         // Store current page data for reload functionality
         self.currentPage = page
@@ -536,7 +538,9 @@ class ReaderPageView: UIView {
             ])
         }
     }
+}
 
+extension ReaderPageView {
     func clearLiveTextSelection() {
         if #available(iOS 16.0, *) {
             guard let interaction = imageAnalaysisInteraction else { return }

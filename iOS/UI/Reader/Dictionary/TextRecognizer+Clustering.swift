@@ -79,10 +79,8 @@ extension TextRecognizer {
             while let current = queue.first {
                 queue.removeFirst()
                 cluster.append(current)
-                for neighbor in unvisited {
-                    if isContextNeighbor(current, neighbor) {
-                        queue.append(neighbor)
-                    }
+                for neighbor in unvisited where isContextNeighbor(current, neighbor) {
+                    queue.append(neighbor)
                 }
                 for item in queue {
                     unvisited.remove(item)
@@ -252,9 +250,9 @@ extension TextRecognizer {
         if lhsOrientation == .vertical && rhsOrientation == .vertical {
             let thicknessScale = max(min(a.width, a.height), min(b.width, b.height))
             let sameColumn = xOverlap > 0.45 && yGap < thicknessScale * 1.8
-            let adjacentColumn = yOverlap > 0.50 && xGap < thicknessScale * 1.0
+            let adjacentColumn = yOverlap > 0.50 && xGap < thicknessScale * 1
             guard sameColumn || adjacentColumn else { return false }
-            let connected = centerDistance <= thicknessScale * 3.0
+            let connected = centerDistance <= thicknessScale * 3
 #if DEBUG
             if connected {
                 let relation = sameColumn ? "vertical/sameColumn" : "vertical/adjacentColumn"
@@ -267,7 +265,7 @@ extension TextRecognizer {
                     xOverlap: xOverlap,
                     yOverlap: yOverlap,
                     centerDistance: centerDistance,
-                    threshold: thicknessScale * 3.0
+                    threshold: thicknessScale * 3
                 )
             }
 #endif
@@ -346,6 +344,7 @@ extension TextRecognizer {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func logNeighborMerge(
         lhs: Int,
         rhs: Int,
