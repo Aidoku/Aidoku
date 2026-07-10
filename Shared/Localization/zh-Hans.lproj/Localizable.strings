@@ -192,9 +192,9 @@
 "MISSING_SOURCES_TEXT" = "恢复的备份可能包含来自以下图源的数据，但这些图源当前未安装：";
 "RESTORE_BACKUP" = "恢复到此备份？";
 "RESTORE_BACKUP_TEXT" = "所有当前数据将被删除并用此备份中的数据替换。";
-"BACKUP_IMPORT_SUCCESS" = "导入备份成功";
+"BACKUP_IMPORT_SUCCESS" = "备份已导入";
 "BACKUP_IMPORT_SUCCESS_TEXT" = "要恢复到此备份，请在设置中的备份页面中找到它。";
-"IMPORT_FAIL" = "导入备份失败";
+"IMPORT_FAIL" = "导入失败";
 "BACKUP_IMPORT_FAIL_TEXT" = "无法保存备份。请确保您的备份格式正确。";
 "EXPORT" = "导出";
 "RESTORE" = "恢复";
@@ -293,7 +293,7 @@
 "DESTINATION" = "目标";
 "MIGRATE_SOURCES" = "迁移图源";
 "MIGRATE" = "迁移";
-"SYNC_LOCAL_HISTORY" = "同步至本机历史";
+"SYNC_LOCAL_HISTORY" = "同步至本地历史";
 "OPTIONS" = "选项";
 "SELECTED" = "已选择";
 "NOT_FOUND" = "未找到";
@@ -392,10 +392,10 @@
 "ALL_SOURCES_INSTALLED" = "已安装所有图源";
 "ALL_SOURCES_INSTALLED_INFO" = "没有其他外部图源可以安装。";
 "IMPORT" = "导入";
-"LOCAL_FILES" = "本机文件";
-"LOCAL_FILES_SETUP" = "本机来源设置";
+"LOCAL_FILES" = "本地文件";
+"LOCAL_FILES_SETUP" = "本地来源设置";
 "IMPORT_FILE" = "导入文件";
-"LOCAL_FILE_IMPORT" = "本机文件导入";
+"LOCAL_FILE_IMPORT" = "本地文件导入";
 "LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的CBZ或ZIP文件进行阅读。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
@@ -466,7 +466,7 @@
 "LOGIN_WEBVIEW_WARNING_TEXT" = "在显示的网页中设置的所有Cookie都将提供给来源。请勿登录您不信任的任何来源。";
 "UNAVAILABLE_SOURCE_LISTS" = "不可用来源列表";
 "COPY_URL" = "复制网址";
-"SOURCE_IMPORT_FAIL_TEXT" = "导入图源失败。请确保您的 aix 文件有效。";
+"SOURCE_IMPORT_FAIL_TEXT" = "导入图源失败。请确保您的aix文件有效。";
 "ADD" = "添加";
 "ALL_CHAPTERS_LOCKED" = "所有章节锁定";
 "DEMO_KOMGA_SERVER_INFO" = "你可以使用邮箱 `demo@komga.org` 和密码 `komga-demo` 登录演示 Komga 服务器。";
@@ -481,7 +481,7 @@
 "SOURCE_BREAKING_CHANGE" = "图源重大变更";
 "SOURCE_BREAKING_CHANGE_TEXT" = "此图源发生了重大变更，需要迁移才能保留您的书库和阅读历史。";
 "LOCAL_FILES_INFO" = "本地图源允许你在Aidoku中直接上传和管理你自己的阅读库。";
-"LOCAL_FILES_TAGLINE" = "读取本机文件";
+"LOCAL_FILES_TAGLINE" = "读取本地文件";
 "REMOVING_(ONE)_ITEM_FROM_LIBRARY" = "从书架删除项目";
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "从书架删除 %i 项目";
 "DISPLAY_VOLUME" = "卷";
