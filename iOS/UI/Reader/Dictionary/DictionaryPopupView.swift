@@ -16,7 +16,8 @@ private enum DictionaryAudioPlaybackMode: String {
     case mix
 }
 
-private actor DictionaryWordAudioPlayer {
+@MainActor
+private final class DictionaryWordAudioPlayer {
     static let shared = DictionaryWordAudioPlayer()
 
     private var player: AVPlayer?
@@ -57,8 +58,8 @@ private actor DictionaryWordAudioPlayer {
             queue: nil
         ) { [weak self] _ in
             guard let self else { return }
-            Task {
-                await self.stop()
+            Task { @MainActor in
+                self.stop()
             }
         }
 
@@ -68,8 +69,8 @@ private actor DictionaryWordAudioPlayer {
             queue: nil
         ) { [weak self] _ in
             guard let self else { return }
-            Task {
-                await self.stop()
+            Task { @MainActor in
+                self.stop()
             }
         }
 
@@ -363,8 +364,8 @@ struct DictionaryPopupWebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
-        Task {
-            await DictionaryWordAudioPlayer.shared.stop(id: coordinator.audioPlaybackID)
+        Task { @MainActor in
+            DictionaryWordAudioPlayer.shared.stop(id: coordinator.audioPlaybackID)
         }
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "openLink")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "tapOutside")
@@ -428,8 +429,8 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                       let urlString = body["url"] as? String {
                 let mode = (body["mode"] as? String)
                     .flatMap(DictionaryAudioPlaybackMode.init(rawValue:)) ?? .interrupt
-                Task(priority: .userInitiated) {
-                    await DictionaryWordAudioPlayer.shared.play(
+                Task(priority: .userInitiated) { @MainActor in
+                    DictionaryWordAudioPlayer.shared.play(
                         urlString: urlString,
                         mode: mode,
                         id: audioPlaybackID
