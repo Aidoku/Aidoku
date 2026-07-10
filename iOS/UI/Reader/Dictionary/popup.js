@@ -92,6 +92,10 @@ function showDescription(element) {
     overlay.style.display = 'block';
 }
 
+function closeOverlay() {
+    document.querySelector('.overlay').style.display = 'none';
+}
+
 // https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L171
 function createFuriganaSegment(text, reading) {
     return {text, reading};
@@ -194,7 +198,8 @@ function segmentFurigana(expression, reading) {
 }
 
 function buildFuriganaEl(parent, expression, reading) {
-    for (const [text, furigana] of segmentFurigana(expression, reading)) {
+    const segments = segmentFurigana(expression, reading);
+    for (const [text, furigana] of segments) {
         if (furigana) {
             const ruby = el('ruby', {}, [text]);
             ruby.appendChild(el('rt', { textContent: furigana }));
@@ -203,6 +208,7 @@ function buildFuriganaEl(parent, expression, reading) {
             parent.appendChild(document.createTextNode(text));
         }
     }
+    return segments.length === 1 && segments[0][1];
 }
 
 function constructFuriganaPlain(expression, reading) {
@@ -311,43 +317,16 @@ function applyTableStyles(html) {
     .replace(/<td(?=[>\s])/g, `<td style="${cellStyle}"`);
 }
 
-function formatScopedCss(css, dictName) {
-    const scopedCss = constructDictCss(css, dictName);
-    return scopedCss
-    .replace(/\s+/g, ' ')
-    .replace(/\s*\{\s*/g, ' { ')
-    .replace(/\s*\}\s*/g, ' }\n')
-    .replace(/;\s*/g, '; ')
-    .trim();
-}
-
-function renderGlossaryContent(content) {
-    const tempDiv = document.createElement('div');
-    try {
-        renderStructuredContent(tempDiv, JSON.parse(content));
-    } catch {
-        renderStructuredContent(tempDiv, content);
-    }
-    return applyTableStyles(tempDiv.innerHTML);
-}
-
-function getFilteredGlossaryTags(rawTags, previousPosTagsSignature) {
-    const parsedTags = parseTags(rawTags).filter(tag => !NUMERIC_TAG.test(tag));
-    const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
-    const currentPosTagsSignature = JSON.stringify(posTags);
-    const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(
-        previousPosTagsSignature !== null && previousPosTagsSignature === currentPosTagsSignature
-    ));
-    return {
-        currentPosTagsSignature,
-        tagsText: filteredTags.length > 0 ? filteredTags.join(', ') : ''
-    };
-}
+const COMPACT_GLOSSARIES_ANKI = `.yomitan-glossary ul[data-sc-content="glossary"] > li:not(:first-child)::before, .yomitan-glossary .glossary-list > li:not(:first-child)::before { white-space: pre-wrap; content: " | "; display: inline; color: rgb(119, 119, 119); }
+.yomitan-glossary ul[data-sc-content="glossary"] > li, .yomitan-glossary .glossary-list > li { display: inline; }
+.yomitan-glossary ul[data-sc-content="glossary"], .yomitan-glossary .glossary-list { display: inline; list-style: none; padding-left: 0px; }`;
 
 // the following two should roughly match the glossary format of yomitan and keep compatibility with notetypes like lapis
 // 23.01.2026: this still has some differences
 // 24.01.2026: should be a bit closer now
 // 25.01.2026: fixed jmdict
+// 19.02.2026: fixed jmdict legacy
+// 24.03.2026: fixed compact glossaries for jmdict legacy
 function constructSingleGlossaryHtml(entryIndex) {
     if (!window.lookupEntries || entryIndex >= window.lookupEntries.length) {
         return {};
@@ -367,7 +346,17 @@ function constructSingleGlossaryHtml(entryIndex) {
         let html = `<div style="text-align: left;" class="yomitan-glossary"><ol>${currentGlossary}</ol>`;
         const css = window.dictionaryStyles?.[lastDict] ?? '';
         if (css) {
-            html += `<style>${formatScopedCss(css, lastDict)}</style>`;
+            const scopedCss = constructDictCss(css, lastDict);
+            const formatted = scopedCss
+            .replace(/\s+/g, ' ')
+            .replace(/\s*\{\s*/g, ' { ')
+            .replace(/\s*\}\s*/g, ' }\n')
+            .replace(/;\s*/g, '; ')
+            .trim();
+            html += `<style>${formatted}</style>`;
+        }
+        if (window.compactGlossariesAnki) {
+            html += `<style>${COMPACT_GLOSSARIES_ANKI}</style>`;
         }
         html += `</div>`;
         
@@ -384,13 +373,27 @@ function constructSingleGlossaryHtml(entryIndex) {
             prevTags = null;
         }
         
-        const content = renderGlossaryContent(g.content);
-        const { currentPosTagsSignature, tagsText } = getFilteredGlossaryTags(g.definitionTags, prevTags);
-        const label = dictChanged
-            ? (tagsText ? `(${tagsText}, ${dictName})` : `(${dictName})`)
-            : (tagsText ? `(${tagsText})` : '');
-        currentGlossary += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${content}</span></li>`;
-        prevTags = currentPosTagsSignature;
+        const tempDiv = document.createElement('div');
+        try {
+            renderStructuredContent(tempDiv, JSON.parse(g.content), null, dictName, true);
+        } catch {
+            renderStructuredContent(tempDiv, g.content, null, dictName, true);
+        }
+        
+        const parsedTags = parseTags(g.definitionTags).filter(tag => !NUMERIC_TAG.test(tag));
+        const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
+        const currentTags = JSON.stringify(posTags);
+        const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(prevTags !== null && prevTags === currentTags));
+        const tags = filteredTags.length > 0 ? filteredTags.join(', ') : '';
+        const content = applyTableStyles(tempDiv.innerHTML);
+        let listIdentifier = '';
+        if (dictChanged) {
+            label = tags ? `(${tags}, ${dictName})` : `(${dictName})`;
+        } else {
+            label = tags ? `(${tags})` : '';
+        }
+        currentGlossary += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${content}</span></li>`
+        prevTags = currentTags;
     });
     
     flush();
@@ -412,20 +415,31 @@ function constructGlossaryHtml(entryIndex) {
     entry.glossaries.forEach(g => {
         const dictName = g.dictionary;
         
+        const tempDiv = document.createElement('div');
+        try {
+            renderStructuredContent(tempDiv, JSON.parse(g.content), null, dictName, true);
+        } catch {
+            renderStructuredContent(tempDiv, g.content, null, dictName, true);
+        }
+        
         index++;
         let label = '';
-        const { currentPosTagsSignature, tagsText } = getFilteredGlossaryTags(g.definitionTags, prevTags);
+        const parsedTags = parseTags(g.definitionTags).filter(tag => !NUMERIC_TAG.test(tag));
+        const posTags = [...new Set(parsedTags.filter(isPartOfSpeech))].sort();
+        const currentTags = JSON.stringify(posTags);
+        const filteredTags = parsedTags.filter(tag => !isPartOfSpeech(tag) || !(prevTags !== null && prevTags === currentTags));
+        const tags = filteredTags.length > 0 ? filteredTags.join(', ') : '';
         if (dictName !== lastDict) {
             index = 1;
             lastDict = dictName;
-            label = tagsText ? `(${index}, ${tagsText}, ${dictName})` : `(${index}, ${dictName})`
+            label = tags ? `(${index}, ${tags}, ${dictName})` : `(${index}, ${dictName})`
         }
         else {
-            label = tagsText ? `(${index}, ${tagsText})` : `(${index})`
+            label = tags ? `(${index}, ${tags})` : `(${index})`
         }
         
-        glossaryItems += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${renderGlossaryContent(g.content)}</span></li>`;
-        prevTags = currentPosTagsSignature;
+        glossaryItems += `<li data-dictionary="${dictName}"><i>${label}</i> <span>${applyTableStyles(tempDiv.innerHTML)}</span></li>`;
+        prevTags = currentTags;
         
         const css = window.dictionaryStyles?.[dictName];
         if (css && !styles[dictName]) {
@@ -438,9 +452,18 @@ function constructGlossaryHtml(entryIndex) {
     result += '</ol>';
     
     for (const [dictName, css] of Object.entries(styles)) {
-        result += `<style>${formatScopedCss(css, dictName)}</style>`;
+        const scopedCss = constructDictCss(css, dictName);
+        const formatted = scopedCss
+        .replace(/\s+/g, ' ')
+        .replace(/\s*\{\s*/g, ' { ')
+        .replace(/\s*\}\s*/g, ' }\n')
+        .replace(/;\s*/g, '; ')
+        .trim();
+        result += `<style>${formatted}</style>`;
     }
-    
+    if (window.compactGlossariesAnki) {
+        result += `<style>${COMPACT_GLOSSARIES_ANKI}</style>`;
+    }
     result += '</div>';
     return result;
 }
@@ -479,12 +502,12 @@ function constructPitchPositionHtml(pitches) {
     return result;
 }
 
-function constructPitchCategories(pitches, reading, definitionTags) {
+function constructPitchCategories(pitches, reading, rules) {
     if (!pitches?.length) {
         return '';
     }
     
-    const verbOrAdj = isVerbOrAdjective(definitionTags);
+    const verbOrAdj = isVerbOrAdjective(rules);
     const categories = [];
     pitches.forEach(pitchGroup => {
         pitchGroup.pitchPositions.forEach(pos => {
@@ -497,7 +520,185 @@ function constructPitchCategories(pitches, reading, definitionTags) {
     return categories.join(',');
 }
 
-// Yomitan reference:
+// https://github.com/yomidevs/yomitan/blob/d810b2f0842536d24ab82b6cd75d00841710e57b/ext/js/display/structured-content-generator.js#L64
+function createDefinitionImage(data, dictionary, exporting = false) {
+    const {
+        path,
+        width = 100,
+        height = 100,
+        preferredWidth,
+        preferredHeight,
+        title,
+        pixelated,
+        imageRendering,
+        appearance,
+        background,
+        collapsed,
+        collapsible,
+        verticalAlign,
+        border,
+        borderRadius,
+        sizeUnits,
+        data: nodeData,
+    } = data;
+    
+    const hasPreferredWidth = (typeof preferredWidth === 'number');
+    const hasPreferredHeight = (typeof preferredHeight === 'number');
+    const hasDimensions = (hasPreferredWidth || hasPreferredHeight || typeof data.width === 'number' || typeof data.height === 'number');
+    const invAspectRatio = (
+                            hasPreferredWidth && hasPreferredHeight ?
+                            preferredHeight / preferredWidth :
+                            height / width
+                            );
+    const usedWidth = (
+                       hasPreferredWidth ?
+                       preferredWidth :
+                       (hasPreferredHeight ? preferredHeight / invAspectRatio : width)
+                       );
+    
+    const node = document.createElement(exporting ? 'span' : 'a');
+    node.classList.add('gloss-image-link');
+    if (!exporting) {
+        node.target = '_blank';
+        node.rel = 'noreferrer noopener';
+    }
+    
+    const imageContainer = document.createElement('span');
+    imageContainer.classList.add('gloss-image-container');
+    node.appendChild(imageContainer);
+    
+    const aspectRatioSizer = document.createElement('span');
+    aspectRatioSizer.classList.add('gloss-image-sizer');
+    imageContainer.appendChild(aspectRatioSizer);
+    
+    const imageBackground = document.createElement('span');
+    imageBackground.classList.add('gloss-image-background');
+    imageContainer.appendChild(imageBackground);
+    
+    const overlay = document.createElement('span');
+    overlay.classList.add('gloss-image-container-overlay');
+    imageContainer.appendChild(overlay);
+    
+    node.dataset.path = path;
+    node.dataset.dictionary = dictionary;
+    node.dataset.hasAspectRatio = 'true';
+    node.dataset.imageRendering = typeof imageRendering === 'string' ? imageRendering : (pixelated ? 'pixelated' : 'auto');
+    node.dataset.appearance = typeof appearance === 'string' ? appearance : 'auto';
+    node.dataset.background = typeof background === 'boolean' ? `${background}` : 'true';
+    node.dataset.collapsed = typeof collapsed === 'boolean' ? `${collapsed}` : 'false';
+    node.dataset.collapsible = typeof collapsible === 'boolean' ? `${collapsible}` : 'true';
+    if (typeof verticalAlign === 'string') {
+        node.dataset.verticalAlign = verticalAlign;
+    }
+    if (typeof sizeUnits === 'string') {
+        node.dataset.sizeUnits = sizeUnits;
+    }
+    
+    aspectRatioSizer.style.paddingTop = `${invAspectRatio * 100}%`;
+    
+    if (typeof border === 'string') { imageContainer.style.border = border; }
+    if (typeof borderRadius === 'string') { imageContainer.style.borderRadius = borderRadius; }
+    imageContainer.style.width = `${usedWidth}em`;
+    if (typeof title === 'string') {
+        imageContainer.title = title;
+    }
+    
+    if (!exporting) {
+        const imageUrl = `image://?dictionary=${encodeURIComponent(dictionary)}&path=${encodeURIComponent(path)}`;
+        if (shouldRenderDefinitionImageToCanvas(path, appearance, usedWidth, invAspectRatio)) {
+            imageContainer.appendChild(createDefinitionImageCanvas(imageUrl, nodeData?.alt || title || '', (canvas, sourceImage) => {
+                renderDefinitionImageToCanvas(canvas, sourceImage, usedWidth, invAspectRatio, appearance);
+            }));
+        } else {
+            imageContainer.appendChild(createDefinitionImageCanvas(imageUrl, nodeData?.alt || title || '', (canvas, sourceImage) => {
+                renderRasterDefinitionImageToCanvas(canvas, sourceImage, imageContainer, aspectRatioSizer, hasDimensions);
+            }));
+        }
+    } else {
+        const image = document.createElement('img');
+        image.classList.add('gloss-image');
+        image.alt = nodeData?.alt || title || '';
+        imageContainer.appendChild(image);
+    }
+    return node;
+}
+
+function shouldRenderDefinitionImageToCanvas(path, appearance, usedWidth, invAspectRatio) {
+    return /\.svg$/i.test(path) && appearance === 'monochrome' && usedWidth <= 4 && (usedWidth * invAspectRatio) <= 4;
+}
+
+function createDefinitionImageCanvas(imageUrl, alt, onLoad) {
+    const canvas = document.createElement('canvas');
+    canvas.classList.add('gloss-image');
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', alt);
+    
+    const sourceImage = new Image();
+    sourceImage.addEventListener('load', () => {
+        onLoad(canvas, sourceImage);
+    }, {once: true});
+    sourceImage.src = imageUrl;
+    
+    return canvas;
+}
+
+function renderDefinitionImageToCanvas(canvas, image, usedWidth, invAspectRatio, appearance) {
+    const emSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const scaleFactor = Math.ceil(window.devicePixelRatio * 2);
+    const pixelWidth = Math.round(usedWidth * emSize * scaleFactor);
+    const pixelHeight = Math.round(usedWidth * emSize * invAspectRatio * scaleFactor);
+    const maxCanvasSize = 128;
+    const scale = Math.min(
+                           1,
+                           maxCanvasSize / Math.max(pixelWidth, pixelHeight),
+                           Math.sqrt((maxCanvasSize * maxCanvasSize) / (pixelWidth * pixelHeight))
+                           );
+    
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.width = Math.round(pixelWidth * scale);
+    canvas.height = Math.round(pixelHeight * scale);
+    
+    const context = canvas.getContext('2d');
+    if (!context) {
+        return;
+    }
+    
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    
+    if (appearance === 'monochrome') {
+        context.globalCompositeOperation = 'source-in';
+        context.fillStyle = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? '#ffffff' : '#000000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.globalCompositeOperation = 'source-over';
+    }
+}
+
+function renderRasterDefinitionImageToCanvas(canvas, image, imageContainer, aspectRatioSizer, hasDimensions) {
+    if (!hasDimensions) {
+        imageContainer.style.width = `${Math.min(image.naturalWidth, window.innerWidth - 20)}px`;
+    }
+    
+    const invAspectRatio = image.naturalHeight / image.naturalWidth;
+    const scaleFactor = Math.ceil(window.devicePixelRatio);
+    
+    aspectRatioSizer.style.paddingTop = `${invAspectRatio * 100}%`;
+    
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.width = Math.round(imageContainer.clientWidth * scaleFactor);
+    canvas.height = Math.round(imageContainer.clientWidth * invAspectRatio * scaleFactor);
+    
+    const context = canvas.getContext('2d');
+    if (!context) {
+        return;
+    }
+    
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+}
+
 // https://github.com/yomidevs/yomitan/blob/c0abb9e98a15aeb6b6f8f6e2d91fe5e54240b54a/ext/js/data/anki-note-data-creator.js#L177-L221
 function getFrequencyHarmonicRank(frequencies) {
     if (!frequencies || frequencies.length === 0) {
@@ -546,7 +747,7 @@ function getFrequencyHarmonicRank(frequencies) {
     return String(Math.floor(values.length / sumOfReciprocals));
 }
 
-async function mineEntry(expression, reading, frequencies, pitches, definitionTags, matched, entryIndex, popupSelectionText) {
+async function mineEntry(expression, reading, frequencies, pitches, rules, matched, entryIndex, popupSelectionText) {
     const idx = entryIndex || 0;
     const furiganaPlain = constructFuriganaPlain(expression, reading);
     const glossary = constructGlossaryHtml(idx);
@@ -555,7 +756,7 @@ async function mineEntry(expression, reading, frequencies, pitches, definitionTa
     const singleGlossaries = constructSingleGlossaryHtml(idx);
     const glossaryFirst = Object.values(singleGlossaries)[0] || '';
     const pitchPositions = constructPitchPositionHtml(pitches);
-    const pitchCategories = constructPitchCategories(pitches, reading, definitionTags);
+    const pitchCategories = constructPitchCategories(pitches, reading, rules);
     
     if (!audioUrls[idx] && window.audioSources?.length && window.needsAudio) {
         audioUrls[idx] = await fetchAudioUrl(expression, reading || expression);
@@ -580,7 +781,7 @@ async function mineEntry(expression, reading, frequencies, pitches, definitionTa
     });
 }
 
-function renderStructuredContent(parent, node, language = null) {
+function renderStructuredContent(parent, node, language = null, dictName = null, exporting = false) {
     if (typeof node === 'string') {
         node.split(/\r?\n/).forEach((line, i) => {
             if (i > 0) {
@@ -614,7 +815,23 @@ function renderStructuredContent(parent, node, language = null) {
             return;
         }
         
-        node.forEach(child => renderStructuredContent(parent, child, language));
+        const items = node.map(item =>
+            item?.type === 'structured-content' ? item.content : item
+        );
+        const isLinkArray = items.every(item => item?.tag === 'a');
+        if (isLinkArray && node.length > 1) {
+            const ul = document.createElement('ul');
+            ul.classList.add('glossary-list');
+            node.forEach(child => {
+                const li = document.createElement('li');
+                renderStructuredContent(li, child, language, dictName, exporting);
+                ul.appendChild(li);
+            });
+            parent.appendChild(ul);
+            return;
+        }
+        
+        node.forEach(child => renderStructuredContent(parent, child, language, dictName, exporting));
         return;
     }
     
@@ -623,11 +840,21 @@ function renderStructuredContent(parent, node, language = null) {
     }
     
     if (node.type === 'structured-content') {
-        renderStructuredContent(parent, node.content, language);
+        const container = document.createElement('span');
+        container.classList.add('structured-content');
+        parent.appendChild(container);
+        renderStructuredContent(container, node.content, language, dictName, exporting);
         return;
     }
     
-    const element = document.createElement(node.tag || 'span');
+    if (node.tag === 'img') {
+        parent.appendChild(createDefinitionImage(node, dictName, exporting));
+        return;
+    }
+    
+    const tagName = node.tag || 'span';
+    const element = document.createElement(tagName);
+    element.classList.add(`gloss-sc-${tagName}`);
     let nextLanguage = language;
     
     if (node.href) {
@@ -665,15 +892,23 @@ function renderStructuredContent(parent, node, language = null) {
     }
     
     if (node.content) {
-        renderStructuredContent(element, node.content, nextLanguage);
+        renderStructuredContent(element, node.content, nextLanguage, dictName, exporting);
     }
     
     if (node.colSpan) {
-      element.setAttribute('colspan', node.colSpan);
+        element.setAttribute('colspan', node.colSpan);
     }
     
     if (node.rowSpan) {
-      element.setAttribute('rowspan', node.rowSpan);
+        element.setAttribute('rowspan', node.rowSpan);
+    }
+    
+    if (tagName === 'table') {
+        const container = document.createElement('div');
+        container.classList.add('gloss-sc-table-container');
+        container.appendChild(element);
+        parent.appendChild(container);
+        return;
     }
     
     parent.appendChild(element);
@@ -737,8 +972,8 @@ function getKanaMorae(text) {
 }
 
 // this might be unreliable
-function isVerbOrAdjective(definitionTags) {
-    return definitionTags?.some(tag => tag.startsWith('v') || tag.startsWith('adj-i')) ?? false;
+function isVerbOrAdjective(rules) {
+    return rules?.some(tag => tag.startsWith('v') || tag.startsWith('adj-i')) ?? false;
 }
 
 // https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L366
@@ -895,17 +1130,24 @@ function createAudioButton(expression, reading, entryIndex) {
     return button;
 }
 
-function createEntryHeader(entry, idx) {
-    const { expression, reading, matched, frequencies, pitches, definitionTags } = entry;
+async function createEntryHeader(entry, idx) {
+    const { expression, reading, matched, frequencies, pitches, rules } = entry;
     const header = el('div', { className: 'entry-header' });
     
     const expressionSpan = el('span', { className: 'expression' });
+    let needsScroll = false;
     if (reading && reading !== expression) {
-        buildFuriganaEl(expressionSpan, expression, reading);
+        needsScroll = buildFuriganaEl(expressionSpan, expression, reading);
     } else {
         expressionSpan.textContent = expression;
     }
-    header.appendChild(expressionSpan);
+    if (needsScroll) {
+        const expressionScroll = el('div', { className: 'expression-scroll' });
+        expressionScroll.appendChild(expressionSpan);
+        header.appendChild(expressionScroll);
+    } else {
+        header.appendChild(expressionSpan);
+    }
     
     const buttonsContainer = el('div', { className: 'header-buttons' });
     
@@ -913,14 +1155,30 @@ function createEntryHeader(entry, idx) {
         buttonsContainer.appendChild(createAudioButton(expression, reading, idx));
     }
     
-    buttonsContainer.appendChild(el('button', {
-        className: 'mine-button',
-        textContent: '+',
+    const isDuplicate = await webkit.messageHandlers.duplicateCheck.postMessage(expression);
+    const mineButton = el('button', {
+        className: 'mine-button' + (isDuplicate ? ' duplicate' : '') + (isDuplicate && !window.allowDupes ? ' disabled' : ''),
+        textContent: isDuplicate ? '✓' : '+',
+        disabled: isDuplicate && !window.allowDupes,
         ontouchstart: () => {
             lastSelection = window.getSelection()?.toString() || '';
         },
-        onclick: () => mineEntry(expression, reading, frequencies, pitches, definitionTags, matched, idx, lastSelection)
-    }));
+        onclick: async () => {
+            await mineEntry(expression, reading, frequencies, pitches, rules, matched, idx, lastSelection);
+            setTimeout(async () => {
+                const wasAdded = await webkit.messageHandlers.duplicateCheck.postMessage(expression);
+                if (wasAdded) {
+                    mineButton.textContent = '✓';
+                    mineButton.classList.add('duplicate');
+                    if (!window.allowDupes) {
+                        mineButton.classList.add('disabled');
+                        mineButton.disabled = true;
+                    }
+                }
+            }, 1500);
+        }
+    });
+    buttonsContainer.appendChild(mineButton);
     
     header.appendChild(buttonsContainer);
     
@@ -969,43 +1227,6 @@ function createGlossarySection(dictName, contents, isFirst) {
     dictWrapper.appendChild(el('style', {
         textContent: `
             [data-dictionary="${dictName}"] {
-                display: block;
-                font-size: 14px;
-                line-height: 1.4;
-                padding: 0;
-            
-                ul, ol {
-                    padding-left: 1.2em;
-                    margin: 2px 0; 
-                }
-                li { 
-                    margin: 1px 0;
-                }
-                .glossary-tags {
-                    display: inline-flex;
-                    gap: 4px;
-                    flex-wrap: wrap;
-                    margin: 0 0 2px 0;
-                }
-                .glossary-tag {
-                    font-size: 10px;
-                    padding: 2px 4px;
-                    background-color: rgba(128, 128, 128, 0.2);
-                    border-radius: 4px;
-                    line-height: 1;
-                }
-                table {
-                    table-layout: auto;
-                    border-collapse: collapse;
-                }
-                th, td {
-                    border: 1px solid currentColor;
-                    padding: 0.25em;
-                    vertical-align: top;
-                }
-                th {
-                    font-weight: bold;
-                }
                 @media (prefers-color-scheme: light) { color: #000; }
                 @media (prefers-color-scheme: dark) { color: #fff; }
                 ${dictStyle}
@@ -1017,9 +1238,9 @@ function createGlossarySection(dictName, contents, isFirst) {
     const termTags = [...new Set(parseTags(contents[0]?.termTags))];
     const renderContent = (parent, content) => {
         try {
-            renderStructuredContent(parent, JSON.parse(content));
+            renderStructuredContent(parent, JSON.parse(content), null, dictName);
         } catch {
-            renderStructuredContent(parent, content);
+            renderStructuredContent(parent, content, null, dictName);
         }
     };
     
@@ -1066,54 +1287,65 @@ function createGlossarySection(dictName, contents, isFirst) {
     return details;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+window.renderPopup = function() {
     const container = document.getElementById('entries-container');
-    if (!window.lookupEntries) {
+    if (!window.entryCount) {
         return;
     }
     
-    window.lookupEntries.forEach((entry, idx) => {
-        if (idx > 0) {
-            container.appendChild(document.createElement('hr'));
-        }
-        
-        const entryDiv = el('div', { className: 'entry' });
-        entryDiv.appendChild(createEntryHeader(entry, idx));
-        
-        const tags = createTags(entry);
-        if (tags) {
-            entryDiv.appendChild(tags);
-        }
-        
-        const grouped = {};
-        entry.glossaries.forEach(g => {
-            (grouped[g.dictionary] ??= []).push({
-                content: g.content,
-                definitionTags: g.definitionTags,
-                termTags: g.termTags
+    (async () => {
+        for (let idx = 0; idx < window.entryCount; idx++) {
+            const entry = await webkit.messageHandlers.getEntry.postMessage(idx);
+            if (!entry) continue;
+            
+            window.lookupEntries ??= [];
+            window.lookupEntries[idx] = entry;
+            
+            if (idx > 0) {
+                container.appendChild(document.createElement('hr'));
+            }
+            
+            const entryDiv = el('div', { className: 'entry' });
+            entryDiv.appendChild(await createEntryHeader(entry, idx));
+            
+            if (window.audioEnableAutoplay && window.audioSources?.length && idx == 0) {
+                setTimeout(() => {
+                    const audioButton = entryDiv.querySelector('.audio-button');
+                    if (audioButton) {
+                        audioButton.click();
+                    }
+                }, 70);
+            }
+            
+            const tags = createTags(entry);
+            if (tags) {
+                entryDiv.appendChild(tags);
+            }
+            
+            container.appendChild(entryDiv);
+            await new Promise(r => requestAnimationFrame(r));
+            
+            const grouped = {};
+            entry.glossaries.forEach(g => {
+                (grouped[g.dictionary] ??= []).push({
+                    content: g.content,
+                    definitionTags: g.definitionTags,
+                    termTags: g.termTags
+                });
             });
-        });
-        
-        Object.keys(grouped).forEach((dictName, dictIdx) => {
-            entryDiv.appendChild(createGlossarySection(dictName, grouped[dictName], dictIdx === 0));
-        });
-        
-        container.appendChild(entryDiv);
-    });
-
+            
+            const dictNames = Object.keys(grouped);
+            for (let dictIdx = 0; dictIdx < dictNames.length; dictIdx++) {
+                entryDiv.appendChild(createGlossarySection(dictNames[dictIdx], grouped[dictNames[dictIdx]], dictIdx === 0));
+                await new Promise(r => requestAnimationFrame(r));
+            }
+        }
+    })();
+    
     if (window.customCSS) {
         const customStyle = document.createElement('style');
         customStyle.textContent = window.customCSS;
         document.body.appendChild(customStyle);
-    }
-
-    if (window.audioEnableAutoplay && window.audioSources?.length && window.lookupEntries.length > 0) {
-        setTimeout(() => {
-            const audioButton = document.querySelector('.audio-button');
-            if (audioButton) {
-                audioButton.click();
-            }
-        }, 30);
     }
     
     container.addEventListener('click', (e) => {
@@ -1128,4 +1360,4 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     });
-});
+};

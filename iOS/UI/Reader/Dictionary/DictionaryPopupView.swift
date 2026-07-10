@@ -78,7 +78,7 @@ struct DictionaryPopupView: View {
 
     private var popupOrigin: CGPoint {
         let showOnRight = spaceRight >= spaceLeft
-        let showBelow = spaceBelow >= spaceAbove
+        let showBelow = spaceBelow >= popupHeight || spaceBelow >= spaceAbove
 
         if isVerticalSelection {
             var x: CGFloat
@@ -274,6 +274,12 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                 if (!window.webkit.messageHandlers.playWordAudio) {
                     window.webkit.messageHandlers.playWordAudio = { postMessage: function() {} };
                 }
+                if (!window.webkit.messageHandlers.duplicateCheck) {
+                    window.webkit.messageHandlers.duplicateCheck = { postMessage: async function() { return false; } };
+                }
+                if (!window.webkit.messageHandlers.getEntry) {
+                    window.webkit.messageHandlers.getEntry = { postMessage: async function(index) { return (window.lookupEntries || [])[index] || null; } };
+                }
             </script>
             <script>\(Self.selectionJs)</script>
             <script>\(Self.popupJs)</script>
@@ -282,6 +288,7 @@ struct DictionaryPopupWebView: UIViewRepresentable {
             <script>
                 window.dictionaryStyles = \(stylesJson);
                 window.lookupEntries = \(entriesJson);
+                window.entryCount = window.lookupEntries.length;
                 window.collapseDictionaries = false;
                 window.compactGlossaries = false;
                 window.audioSources = [];
@@ -290,6 +297,13 @@ struct DictionaryPopupWebView: UIViewRepresentable {
                 window.customCSS = "";
             </script>
             <div id="entries-container"></div>
+            <div class="overlay">
+                <div class="overlay-close" onclick="closeOverlay()">×</div>
+                <div class="overlay-content"></div>
+            </div>
+            <script>
+                window.renderPopup();
+            </script>
         </body>
         </html>
         """
