@@ -414,7 +414,6 @@
 "ARTIST" = "Artist";
 "SORT" = "Sortera";
 "SORT_NAME" = "Namn";
-"SORT_DATE_ADDED" = "Tilläggsdatum";
 "SORT_DATE_UPDATED" = "Uppdateringsdatum";
 "SORT_DATE_READ" = "Läsdatum";
 "SORT_RELEASE_DATE" = "Släppdatum";

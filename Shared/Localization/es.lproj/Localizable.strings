@@ -474,7 +474,6 @@
 "SERVER_ERROR" = "Error de servidor";
 "KOMGA_SETUP" = "Ajustes de Komga";
 "KEEP_READING" = "Seguir leyendo";
-"SORT_DATE_ADDED" = "Fecha de agregación";
 "SORT_DATE_UPDATED" = "Fecha de actualización";
 "SORT_DATE_READ" = "Fecha de lectura";
 "SORT_RELEASE_DATE" = "Fecha de lanzamiento";

@@ -439,7 +439,6 @@
 "ARTIST" = "艺术家";
 "SORT" = "排序";
 "SORT_NAME" = "名称";
-"SORT_DATE_ADDED" = "添加日期";
 "SORT_DATE_UPDATED" = "更新日期";
 "SORT_RELEASE_DATE" = "发布日期";
 "SORT_FOLDER_NAME" = "文件夹名称";

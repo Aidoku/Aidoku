@@ -438,7 +438,6 @@
 "ARTIST" = "Художник";
 "SORT" = "Сортировка";
 "SORT_NAME" = "по названию";
-"SORT_DATE_ADDED" = "По дате добавления";
 "SORT_DATE_UPDATED" = "По дате обновления";
 "SORT_DATE_READ" = "По дате прочтения";
 "SORT_RELEASE_DATE" = "По дате выпуска";

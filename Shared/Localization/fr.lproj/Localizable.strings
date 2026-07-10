@@ -452,7 +452,6 @@
 "ARTIST" = "Illustrateur";
 "SORT" = "Trier";
 "SORT_NAME" = "Nom";
-"SORT_DATE_ADDED" = "Date d’ajout";
 "SORT_DATE_UPDATED" = "Date de mise à jour";
 "SORT_DATE_READ" = "Date de lecture";
 "SORT_RELEASE_DATE" = "Date de publication";

@@ -274,7 +274,6 @@
 "ARTIST" = "Artist";
 "SORT" = "Sort";
 "SORT_NAME" = "Name";
-"SORT_DATE_ADDED" = "Date Added";
 "SORT_DATE_UPDATED" = "Date Updated";
 "SORT_DATE_READ" = "Date Read";
 "SORT_RELEASE_DATE" = "Release Date";

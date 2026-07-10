@@ -439,7 +439,6 @@
 "ARTIST" = "작가";
 "SORT" = "정렬";
 "SORT_NAME" = "이름";
-"SORT_DATE_ADDED" = "추가된 날짜";
 "SORT_DATE_UPDATED" = "업데이트된 날짜";
 "SORT_DATE_READ" = "읽은 날짜";
 "SORT_RELEASE_DATE" = "발행일";

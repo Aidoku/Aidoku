@@ -466,7 +466,6 @@
 "ARTIST" = "ศิลปิน";
 "SORT" = "เรียง";
 "SORT_NAME" = "ชื่อ";
-"SORT_DATE_ADDED" = "วันที่เพิ่ม";
 "SORT_DATE_UPDATED" = "วันที่อัปเดต";
 "SORT_DATE_READ" = "วันที่อ่าน";
 "SORT_RELEASE_DATE" = "วันที่วางจำหน่าย";

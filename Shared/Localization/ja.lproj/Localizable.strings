@@ -395,7 +395,6 @@
 "RELEASE_DATE" = "リリース日";
 "SORT" = "並び替え";
 "SORT_NAME" = "タイトル順";
-"SORT_DATE_ADDED" = "追加順";
 "SORT_DATE_UPDATED" = "更新順";
 "SORT_DATE_READ" = "読んだ日順";
 "SORT_FOLDER_NAME" = "フォルダー名";
