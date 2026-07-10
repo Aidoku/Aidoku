@@ -1019,7 +1019,6 @@ extension ReaderViewController: ReaderHoldingDelegate {
         guard UserDefaults.standard.isDictionaryLongPressLookupEnabled else { return }
         guard !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
         guard !isDictionaryPopupVisible else { return }
-
         guard LookupEngine.shared.isReady else { return }
 
         let point = gestureRecognizer.location(in: view)
@@ -1118,10 +1117,6 @@ extension ReaderViewController {
            singleTapOCRLookupEnabled,
            LookupEngine.shared.isReady {
             if let result = reader?.recognizedText(at: point) {
-#if DEBUG
-                print("[DictionaryOCR] context: \(result.fullText)")
-                print("[DictionaryOCR] text slice: \(result.text)")
-#endif
                 if performDictionaryLookup(
                     text: result.text,
                     anchorRect: result.rect,
@@ -1183,21 +1178,11 @@ extension ReaderViewController {
     }
 
     private var readerControlTopTapZoneHeight: CGFloat {
-        let safeTop = view.safeAreaInsets.top
-        let navigationBarHeight = navigationController?.navigationBar.bounds.height ?? 0
-        return max(
-            ReaderControlTapZoneConstants.minimumTapZoneHeight,
-            safeTop + navigationBarHeight
-        )
+        view.safeAreaInsets.top + ReaderControlTapZoneConstants.minimumTapZoneHeight
     }
 
     private var readerControlBottomTapZoneHeight: CGFloat {
-        let safeBottom = view.safeAreaInsets.bottom
-        let toolbarHeight = navigationController?.toolbar.bounds.height ?? 0
-        return max(
-            ReaderControlTapZoneConstants.minimumTapZoneHeight,
-            safeBottom + toolbarHeight
-        )
+        view.safeAreaInsets.bottom + ReaderControlTapZoneConstants.minimumTapZoneHeight
     }
 }
 

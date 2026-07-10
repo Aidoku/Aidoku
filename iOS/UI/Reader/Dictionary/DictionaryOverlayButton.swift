@@ -86,10 +86,6 @@ final class DictionaryOverlayButton: UIButton {
         let matchedText = resolveMatchedText(from: hit.text)
         let matchLength = max(1, matchedText.count)
         let localRects = Array(hit.localRects.prefix(matchLength))
-#if DEBUG
-        print("[DictionaryOCR] context: \(overlayText)")
-        print("[DictionaryOCR] text slice: \(matchedText)")
-#endif
         return .init(text: matchedText, localRect: hit.localRect, localRects: localRects)
     }
 
