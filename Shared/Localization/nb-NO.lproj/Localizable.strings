@@ -33,8 +33,8 @@
 "MANGA_INFO" = "Manga-info";
 "SORT_BY" = "Sorter etter";
 "FILTER_BY" = "Filtrer etter";
-"LAST_OPENED" = "Sist åpnet";
-"LAST_READ" = "Sist lest";
+"SORT_LAST_OPENED" = "Sist åpnet";
+"SORT_LAST_READ" = "Sist lest";
 
 // Categories
 "ALL" = "Alle";
@@ -54,8 +54,8 @@
 
 // Manga
 "UNTITLED" = "Uten navn";
-"CANCELLED" = "Avbrutt";
-"COMPLETED" = "Fullført";
+"STATUS_CANCELLED" = "Avbrutt";
+"STATUS_COMPLETED" = "Fullført";
 "MORE" = "mer";
 "SOURCE_ORDER" = "Kilde-rekkefølge";
 "MISSING_SOURCE" = "Manglende kilde";
@@ -164,7 +164,7 @@
 "LOGS" = "Logger";
 "BACKUP_IMPORT_SUCCESS" = "Sikkerhetskopi importert";
 "LIBRARY_LOCKED" = "Biblioteket er låst.";
-"TITLE" = "Navn";
+"SORT_TITLE" = "Navn";
 "MIGRATE" = "Flytt";
 "OPTIONS" = "Alternativer";
 "DESTINATION" = "Mål";
@@ -179,7 +179,7 @@
 "ONE_PAGE_LEFT" = "1 side igjen";
 "FAILED_CHAPTER_LOAD" = "Klarte ikke å laste inn kapittel";
 "BOTH" = "Begge";
-"UNREAD_CHAPTERS" = "Uleste kapitler";
+"SORT_UNREAD_CHAPTERS" = "Uleste kapitler";
 "%i_OF_%i" = "%i av %i";
 "AVAILABLE" = "Tilgjengelig";
 "EXPORT" = "Eksporter";

@@ -32,12 +32,12 @@ enum SuwayomiMangaStatus: String, Encodable, Sendable, CaseIterable {
     var title: String {
         switch self {
             case .unknown: NSLocalizedString("UNKNOWN")
-            case .ongoing: NSLocalizedString("ONGOING")
-            case .completed: NSLocalizedString("COMPLETED")
+            case .ongoing: NSLocalizedString("STATUS_ONGOING")
+            case .completed: NSLocalizedString("STATUS_COMPLETED")
             case .licensed: NSLocalizedString("STATUS_LICENSED")
             case .publishingFinished: NSLocalizedString("STATUS_PUBLISHING_FINISHED")
-            case .cancelled: NSLocalizedString("CANCELLED")
-            case .onHiatus: NSLocalizedString("HIATUS")
+            case .cancelled: NSLocalizedString("STATUS_CANCELLED")
+            case .onHiatus: NSLocalizedString("STATUS_HIATUS")
         }
     }
 }

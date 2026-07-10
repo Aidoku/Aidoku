@@ -5,7 +5,7 @@
 "SOURCE_INFO" = "Informcije o izvoru";
 "BUTTON_FILTER" = "Filtriraj";
 "SUGGESTIVE" = "Sugestivno";
-"CANCELLED" = "Otkazano";
+"STATUS_CANCELLED" = "Otkazano";
 "MISSING_SOURCE_TEXT" = "Čini se da za ovu mangu nedostaje originalni izvor. Ponovo preuzmi ili ukloni naslov iz biblioteke.";
 "MARK_READ" = "Označi kao pročitano";
 "SELECT_ALL" = "Odaberi sve";
@@ -33,10 +33,10 @@
 "MANGA_INFO" = "Informacije o mangi";
 "SORT_BY" = "Poredaj po";
 "FILTER_BY" = "Filtriraj po";
-"TITLE" = "Naslov";
-"LAST_OPENED" = "Zadnje otvoreno";
-"LAST_READ" = "Zadnje pročitano";
-"DATE_ADDED" = "Datum dodavanja";
+"SORT_TITLE" = "Naslov";
+"SORT_LAST_OPENED" = "Zadnje otvoreno";
+"SORT_LAST_READ" = "Zadnje pročitano";
+"SORT_DATE_ADDED" = "Datum dodavanja";
 
 // Categories
 "ALL" = "Sve";
@@ -65,8 +65,8 @@
 
 // Manga
 "UNTITLED" = "Bez naslova";
-"ONGOING" = "U tijeku";
-"COMPLETED" = "Dovršeno";
+"STATUS_ONGOING" = "U tijeku";
+"STATUS_COMPLETED" = "Dovršeno";
 "NSFW" = "Sadržaj za odrasle";
 "MORE" = "više";
 "SOURCE_ORDER" = "Redoslijed izvora";
@@ -101,12 +101,12 @@
 "ADD_TO_LIBRARY" = "Dodaj u biblioteku";
 "LIBRARY_EMPTY" = "Biblioteka je prazna";
 "REMOVE_FROM_LIBRARY" = "Ukloni iz biblioteke";
-"LATEST_CHAPTER" = "Najnovije poglavlje";
+"SORT_LATEST_CHAPTER" = "Najnovije poglavlje";
 "CATEGORY_ADD_TEXT" = "Unesi ime nove kategorije koju želiš stvoriti.";
 "UPDATES" = "Aktualiziranja";
 "VOLUME_X" = "Svezak %g";
 "COVER" = "Naslovnica";
-"HIATUS" = "Pauza";
+"STATUS_HIATUS" = "Pauza";
 "NO_NEXT_CHAPTER" = "Nema sljedećeg poglavlja";
 "NO_PREVIOUS_CHAPTER" = "Nema prethodnog poglavlja";
 "READER_SETTINGS" = "Postavke čitača";
@@ -254,16 +254,16 @@
 "TYPE_COLON_%@" = "Vrsta: %@";
 "CLEAR_TRACKED_MANGA" = "Očisti praćenu mangu";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Sigurno želiš ukloniti sva preuzimanja?";
-"UNREAD_CHAPTERS" = "Nepročitana poglavlja";
+"SORT_UNREAD_CHAPTERS" = "Nepročitana poglavlja";
 "FAILED_CHAPTER_LOAD" = "Učitavanje poglavlja nije uspjelo";
-"LAST_UPDATED" = "Zadnje aktualiziranje";
+"SORT_LAST_UPDATED" = "Zadnje aktualiziranje";
 "RELOAD" = "Ponovno učitaj";
 "%i_OF_%i" = "%i od %i";
 "WEBTOON" = "Webtoon";
 "%i_PAGES_LEFT" = "%i stranice(a) preostalo";
 "ONE_PAGE_LEFT" = "Jedna stranica preostala";
 "FAILED_CHAPTER_LOAD_INFO" = "Možda si izvan mreže ili postoji problem s izvorom.";
-"TOTAL_CHAPTERS" = "Ukupno poglavlja";
+"SORT_TOTAL_CHAPTERS" = "Ukupno poglavlja";
 "REMOVE_FROM_CATEGORY" = "Ukloni iz kategorije";
 "PINNED" = "Prikvačeno";
 "%i_CHAPTERS" = "%i poglavlja";
@@ -274,7 +274,7 @@
 "TRACK" = "Prati";
 "CLEAR_TRACKED_MANGA_TEXT" = "Ovo je nepovratna radnja. Praćenje za sve alate praćenja koja su dodana mangi će se ukloniti.";
 "CACHE_SIZE_%@" = "Veličina predmemorije: %@";
-"NOT_PUBLISHED" = "Nije objavljeno";
+"STATUS_NOT_PUBLISHED" = "Nije objavljeno";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "MANHUA" = "Manhua";
@@ -382,7 +382,6 @@
 "SORT_FOLDER_NAME" = "Ime mape";
 "SORT_BOOKS_COUNT" = "Broj knjiga";
 "SORT_RANDOM" = "Slučajno";
-"STATUS_ONGOING" = "Slučajno";
 "GENRE" = "Žanr";
 "TAG" = "Oznaka";
 "PUBLISHER" = "Izdavač";
@@ -569,7 +568,7 @@
 "SORT_CHAPTER_ADDED" = "Dodano poglavlje";
 "SORT_TIME_TO_READ" = "Vrijeme za čitanje";
 "SORT_AVERAGE_RATING" = "Prosječna ocjena";
-"ENDED" = "Završilo";
+"STATUS_ENDED" = "Završilo";
 "FORMAT" = "Format";
 "FORMAT_IMAGE" = "Slika";
 "FORMAT_EPUB" = "EPUB";

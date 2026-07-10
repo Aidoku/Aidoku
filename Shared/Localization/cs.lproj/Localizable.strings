@@ -33,8 +33,8 @@
 "MANGA_INFO" = "Informace o manze";
 "SORT_BY" = "Seřadit podle";
 "FILTER_BY" = "Filtrovat podle";
-"TITLE" = "Název";
-"LATEST_CHAPTER" = "Poslední kapitola";
+"SORT_TITLE" = "Název";
+"SORT_LATEST_CHAPTER" = "Poslední kapitola";
 "CATEGORIES" = "Kategorie";
 "EDIT_CATEGORIES" = "Upravit kategorie";
 "CATEGORY_ADD" = "Přidat kategorii";
@@ -45,9 +45,9 @@
 // Browse
 "BROWSE" = "Procházet";
 "BROWSE_NO_SOURCES" = "Žádné zdroje";
-"LAST_OPENED" = "Naposledy otevřeno";
-"LAST_READ" = "Naposledy čteno";
-"DATE_ADDED" = "Datum přidání";
+"SORT_LAST_OPENED" = "Naposledy otevřeno";
+"SORT_LAST_READ" = "Naposledy čteno";
+"SORT_DATE_ADDED" = "Datum přidání";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Průvodce přidáváním zdrojů";
 "UPDATES" = "Aktualizace";
 "INSTALLED" = "Nainstalováno";
@@ -70,8 +70,8 @@
 
 // Manga
 "UNTITLED" = "Bez názvu";
-"CANCELLED" = "Zrušeno";
-"COMPLETED" = "Dokončeno";
+"STATUS_CANCELLED" = "Zrušeno";
+"STATUS_COMPLETED" = "Dokončeno";
 "SUGGESTIVE" = "Sugestivní";
 "NSFW" = "18+";
 "MORE" = "více";
@@ -161,11 +161,11 @@
 "TRACK_DROPPED" = "Zahozené";
 "STOP_TRACKING" = "Zastavit sledování";
 "ONESHOT" = "Jednorázové";
-"NOT_PUBLISHED" = "Nezveřejněno";
+"STATUS_NOT_PUBLISHED" = "Nezveřejněno";
 "CLEAR_TRACKED_MANGA_TEXT" = "Tato akce je nevratná. Sledování všech sledovačů přidaných do mangy bude odstraněno.";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Opravdu chcete odstranit všechna stažená data?";
 "CACHE_SIZE_%@" = "Velikost mezipaměti: %@";
-"TOTAL_CHAPTERS" = "Celkem kapitol";
+"SORT_TOTAL_CHAPTERS" = "Celkem kapitol";
 "SELECT" = "Vybrat";
 "ADD_TO_CATEGORY" = "Přidat do kategorie";
 "ADD_TO_CATEGORIES" = "Přidat do kategorií";
@@ -178,7 +178,7 @@
 
 // Categories
 "ALL" = "Vše";
-"HIATUS" = "Pauza";
+"STATUS_HIATUS" = "Pauza";
 
 // Search
 "SEARCH" = "Vyhledávání";
@@ -268,7 +268,7 @@
 "TRACK_REREADING" = "Opětovné čtení";
 "TRACK_PLANNING" = "Plánováno";
 "SUPPORT_VIA_KOFI" = "Podpora přes Ko-Fi";
-"UNREAD_CHAPTERS" = "Nepřečtené kapitoly";
+"SORT_UNREAD_CHAPTERS" = "Nepřečtené kapitoly";
 "RELOAD" = "Znovu načíst";
 "%i_OF_%i" = "%i z %i";
 "%i_PAGES_LEFT" = "zbývá %i stránek";
@@ -298,7 +298,7 @@
 "SOURCE_LIST_ADD_FAIL_TEXT" = "Zadaná adresa URL seznamu zdrojů je neplatná nebo již byla přidána.";
 "EXPORT" = "Exportovat";
 "RESTORE" = "Obnovit";
-"LAST_UPDATED" = "Naposledy aktualizováno";
+"SORT_LAST_UPDATED" = "Naposledy aktualizováno";
 "WEBTOON" = "Webový komiks";
 "NOT_FOUND" = "Nenalezeno";
 "MOST_CHAPTERS_SLOWER" = "Většina kapitol (pomalejší)";
@@ -307,7 +307,7 @@
 "RESET_TEXT" = "Tato akce je nevratná. Všechna data, nastavení a mezipaměť budou vymazány a resetovány.";
 "GITHUB_REPO" = "Úložiště GitHub";
 "PIN_UNREAD" = "Nepřečteno";
-"ONGOING" = "Pokračující";
+"STATUS_ONGOING" = "Pokračující";
 "DISCORD_SERVER" = "Discord server";
 "NEVER" = "Nikdy";
 "EVERY_12_HOURS" = "Každých 12 hodin";

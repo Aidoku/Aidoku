@@ -18,10 +18,10 @@
 "LIBRARY_EMPTY" = "ไม่มีในคลัง";
 "ADD_TO_LIBRARY" = "เพิ่มเข้าคลัง";
 "SORT_BY" = "เรียงตาม";
-"LAST_OPENED" = "เปิดล่าสุด";
-"LAST_READ" = "อ่านล่าสุด";
-"LATEST_CHAPTER" = "ตอนล่าสุด";
-"DATE_ADDED" = "วันที่เพิ่มเข้า";
+"SORT_LAST_OPENED" = "เปิดล่าสุด";
+"SORT_LAST_READ" = "อ่านล่าสุด";
+"SORT_LATEST_CHAPTER" = "ตอนล่าสุด";
+"SORT_DATE_ADDED" = "วันที่เพิ่มเข้า";
 "NONE" = "ไม่มี";
 "CATEGORIES" = "หมวดหมู่";
 "EDIT_CATEGORIES" = "แก้ไขหมวดหมู่";
@@ -42,10 +42,10 @@
 
 // Manga
 "UNTITLED" = "ไม่มีชื่อ";
-"ONGOING" = "ยังไม่จบ";
-"CANCELLED" = "เลิกทำแล้ว";
-"COMPLETED" = "จบบริบูรณ์";
-"HIATUS" = "หยุดพัก";
+"STATUS_ONGOING" = "ยังไม่จบ";
+"STATUS_CANCELLED" = "เลิกทำแล้ว";
+"STATUS_COMPLETED" = "จบบริบูรณ์";
+"STATUS_HIATUS" = "หยุดพัก";
 "SOURCE_ORDER" = "ลำดับแหล่งข้อมูล";
 "MISSING_SOURCE" = "ไม่พบแหล่งข้อมูล";
 "SELECT_CHAPTERS" = "เลือกตอน";
@@ -160,7 +160,7 @@
 "REMOVE_FROM_LIBRARY" = "นำออกจากคลัง";
 "MANGA_INFO" = "ข้อมูลมังงะ";
 "FILTER_BY" = "กรองตาม";
-"TITLE" = "ชื่อเรื่อง";
+"SORT_TITLE" = "ชื่อเรื่อง";
 
 // Categories
 "ALL" = "ทั้งหมด";
@@ -245,7 +245,7 @@
 "TRACK_DROPPED" = "ร้าง";
 "STOP_TRACKING" = "หยุดการติดตาม";
 "ONESHOT" = "การ์ตูนเรื่องเดียว";
-"NOT_PUBLISHED" = "ยังไม่ถูกพิมพ์";
+"STATUS_NOT_PUBLISHED" = "ยังไม่ถูกพิมพ์";
 "MANGA" = "มังงะ";
 "MANHWA" = "มังฮวา";
 "MANHUA" = "มันฮัว (Manhua)";
@@ -258,7 +258,7 @@
 "CLEAR_TRACKED_MANGA_TEXT" = "การกระทำนี้ไม่สามารถย้อนกลับได้ การติดตามของตัวติดตามที่เพิ่มเข้ามังงะจะถูกลบ";
 "CACHE_SIZE_%@" = "ขนาดแคช: %@";
 "SUPPORT_VIA_KOFI" = "สนับสนุนผ่าน Ko-Fi";
-"UNREAD_CHAPTERS" = "ตอนที่ยังไม่อ่าน";
+"SORT_UNREAD_CHAPTERS" = "ตอนที่ยังไม่อ่าน";
 "RELOAD" = "โหลดใหม่";
 "%i_OF_%i" = "%i ของ %i";
 "%i_PAGES_LEFT" = "เหลือ %i หน้า";
@@ -294,9 +294,9 @@
 "CLEAR_READ_HISTORY" = "ลบประวัติการอ่าน";
 "CLEAR_READ_HISTORY_TEXT" = "การกระทำนี้ไม่สามารถย้อนกลับได้ ประวัติการอ่านทั้งหมดจะถูกลบ";
 "RESET_SETTINGS" = "รีเซ็ตการตั้งค่า";
-"TOTAL_CHAPTERS" = "ตอนทั้งหมด";
+"SORT_TOTAL_CHAPTERS" = "ตอนทั้งหมด";
 "FAILED_CHAPTER_LOAD" = "โหลดตอนล้มเหลว";
-"LAST_UPDATED" = "อัปเดตล่าสุด";
+"SORT_LAST_UPDATED" = "อัปเดตล่าสุด";
 "FAILED_CHAPTER_LOAD_INFO" = "คุณอาจจะออฟไลน์หรือแหล่งข้อมูลมีปัญหา";
 "WEBTOON" = "เว็บตูน";
 "REMOVE_FROM_CATEGORY" = "ลบจากหมวดหมู่";
@@ -473,7 +473,6 @@
 "SORT_FOLDER_NAME" = "ชื่อแฟ้ม";
 "SORT_BOOKS_COUNT" = "จำนวนหนังสือ";
 "SORT_RANDOM" = "สุ่มสลับ";
-"STATUS_ONGOING" = "สุ่มสลับ";
 "GENRE" = "แนวเนื้อหา";
 "TAG" = "แท็ก";
 "PUBLISHER" = "ผู้ตีพิมพ์";
@@ -493,7 +492,7 @@
 "SORT_CHAPTER_ADDED" = "เพิ่มตอนแล้ว";
 "SORT_TIME_TO_READ" = "เวลาในการอ่าน";
 "SORT_AVERAGE_RATING" = "คะแนนเฉลี่ย";
-"ENDED" = "สิ้นสุดแล้ว";
+"STATUS_ENDED" = "สิ้นสุดแล้ว";
 "FORMAT" = "รูปแบบ";
 "FORMAT_IMAGE" = "รูปภาพ";
 "FORMAT_EPUB" = "EPUB";

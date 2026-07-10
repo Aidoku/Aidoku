@@ -27,10 +27,10 @@
 "MANGA_INFO" = "Інформація про мангу";
 "SORT_BY" = "Сортувати за";
 "FILTER_BY" = "Фільтрувати за";
-"LAST_OPENED" = "Останній відкритий";
-"LAST_READ" = "Останнє прочитане";
-"LATEST_CHAPTER" = "Остання глава";
-"DATE_ADDED" = "Дата додаванні";
+"SORT_LAST_OPENED" = "Останній відкритий";
+"SORT_LAST_READ" = "Останнє прочитане";
+"SORT_LATEST_CHAPTER" = "Остання глава";
+"SORT_DATE_ADDED" = "Дата додаванні";
 
 // Categories
 "ALL" = "Усі";
@@ -60,8 +60,8 @@
 
 // Manga
 "UNTITLED" = "Без назви";
-"CANCELLED" = "Відмінено";
-"HIATUS" = "Перерва";
+"STATUS_CANCELLED" = "Відмінено";
+"STATUS_HIATUS" = "Перерва";
 "NSFW" = "NSFW";
 "SUGGESTIVE" = "Непристойний";
 "MORE" = "більше";
@@ -183,7 +183,7 @@
 "LOADING_ELLIPSIS" = "Завантаження…";
 "CANCEL_DOWNLOAD" = "Скасувати завантаження";
 "REMOVE_DOWNLOADS_CONFIRM" = "Видалити всі виділені завантаження?";
-"TITLE" = "Назва";
+"SORT_TITLE" = "Назва";
 "EDIT_CATEGORIES" = "Редагувати категорії";
 "CATEGORY_ADD_TEXT" = "Введіть назву нової категорії для створення.";
 "UNINSTALL" = "Видалити";
@@ -191,9 +191,9 @@
 "INFO" = "Інформація";
 "VERSION" = "Версія";
 "LIST_HEADER" = "Список";
-"COMPLETED" = "Завершено";
+"STATUS_COMPLETED" = "Завершено";
 "MISSING_SOURCE_TEXT" = "Здається, оригінал цієї манги відсутній. Будь ласка, завантажте його повторно або видаліть цю мангу зі своєї бібліотеки.";
-"ONGOING" = "Триває";
+"STATUS_ONGOING" = "Триває";
 "SOURCE_ORDER" = "Порядок джерел";
 "CONTINUE_READING" = "Продовжити читання";
 "MARK_UNREAD" = "Відмітити як непрочитане";
@@ -227,7 +227,7 @@
 "ONE_PAGE_LEFT" = "залишилася 1 сторінка";
 "ADD_TO_CATEGORY" = "Додати до категорії";
 "FAILED_CHAPTER_LOAD" = "Не вдалося завантажити главу";
-"LAST_UPDATED" = "Останнє оновлення";
+"SORT_LAST_UPDATED" = "Останнє оновлення";
 "FAILED_CHAPTER_LOAD_INFO" = "Можливо, ви офлайн або у джерела виникли проблеми.";
 "RENAME_CATEGORY_INFO" = "Введіть нову назву для цієї категорії.";
 "WEBTOON" = "Вебтун";
@@ -243,7 +243,7 @@
 "STOP_TRACKING" = "Припинити відстеження";
 "MANHWA" = "Манхва";
 "ONESHOT" = "Ван-шот";
-"NOT_PUBLISHED" = "Не опубліковано";
+"STATUS_NOT_PUBLISHED" = "Не опубліковано";
 "MANHUA" = "Маньхва";
 "STATUS_COLON_%@" = "Статус: %@";
 "LIGHT_NOVEL" = "Ранобе";
@@ -257,7 +257,7 @@
 "CACHE_SIZE_%@" = "Розмір кешу: %@";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Ви впевнені, що хочете видалити всі завантаження?";
 "SUPPORT_VIA_KOFI" = "Підтримати на Ko-Fi";
-"UNREAD_CHAPTERS" = "Непрочитані глави";
+"SORT_UNREAD_CHAPTERS" = "Непрочитані глави";
 "RELOAD" = "Перезавантажити";
 "%i_OF_%i" = "%i з %i";
 "ADD_TO_CATEGORIES" = "Додати до категорій";
@@ -296,7 +296,7 @@
 "MANGA" = "Манґа";
 "SET_AS_WIDE_PAGE" = "Встановити як широку сторінку";
 "CATEGORY_NAME" = "Назва категорії";
-"TOTAL_CHAPTERS" = "Всього глав";
+"SORT_TOTAL_CHAPTERS" = "Всього глав";
 "PINNED" = "Закріплені";
 "1_CHAPTER" = "1 глава";
 "UPCOMING" = "Найближчі";
@@ -419,7 +419,6 @@
 "SORT_FOLDER_NAME" = "Назва папки";
 "SORT_BOOKS_COUNT" = "Кількість книг";
 "SORT_RANDOM" = "Випадкове";
-"STATUS_ONGOING" = "Випадкове";
 "GENRE" = "Жанр";
 "TAG" = "Тег";
 "PUBLISHER" = "Видавець";
@@ -570,7 +569,7 @@
 "SORT_CHAPTER_ADDED" = "Розділ додано";
 "SORT_TIME_TO_READ" = "Час читати";
 "SORT_AVERAGE_RATING" = "Середній рейтинг";
-"ENDED" = "Закінчилося";
+"STATUS_ENDED" = "Закінчилося";
 "FORMAT" = "Формат";
 "FORMAT_IMAGE" = "Зображення";
 "FORMAT_EPUB" = "EPUB";

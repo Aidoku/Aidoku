@@ -33,11 +33,11 @@
 "MANGA_INFO" = "漫画详情";
 "SORT_BY" = "排序方式";
 "FILTER_BY" = "筛选方式";
-"TITLE" = "标题";
-"LAST_OPENED" = "最近打开";
-"LAST_READ" = "最近阅读";
-"LATEST_CHAPTER" = "最新章节";
-"DATE_ADDED" = "添加日期";
+"SORT_TITLE" = "标题";
+"SORT_LAST_OPENED" = "最近打开";
+"SORT_LAST_READ" = "最近阅读";
+"SORT_LATEST_CHAPTER" = "最新章节";
+"SORT_DATE_ADDED" = "添加日期";
 
 // Categories
 "ALL" = "全部";
@@ -74,10 +74,10 @@
 
 // Manga
 "UNTITLED" = "无标题";
-"ONGOING" = "连载中";
-"CANCELLED" = "已取消";
-"COMPLETED" = "已完结";
-"HIATUS" = "暂停";
+"STATUS_ONGOING" = "连载中";
+"STATUS_CANCELLED" = "已取消";
+"STATUS_COMPLETED" = "已完结";
+"STATUS_HIATUS" = "暂停";
 "SUGGESTIVE" = "建议";
 "NSFW" = "NSFW";
 "MORE" = "更多";
@@ -256,7 +256,7 @@
 "TRACK_READING" = "阅读";
 "TRACK_REREADING" = "重读";
 "ONESHOT" = "短篇";
-"NOT_PUBLISHED" = "未出版";
+"STATUS_NOT_PUBLISHED" = "未出版";
 "MANHWA" = "韩漫";
 "MANGA" = "漫画";
 "MANHUA" = "国漫";
@@ -272,12 +272,12 @@
 "VOLUMES" = "卷数";
 "TITLE_DISPLAY_MODE" = "标题显示模式";
 "VIEW_ON_WEBSITE" = "在网站上查看";
-"LAST_UPDATED" = "最后更新";
+"SORT_LAST_UPDATED" = "最后更新";
 "RELOAD" = "重新加载";
 "ONE_PAGE_LEFT" = "剩余 1 页";
 "FAILED_CHAPTER_LOAD" = "加载章节失败";
-"TOTAL_CHAPTERS" = "总章节数";
-"UNREAD_CHAPTERS" = "未读章节";
+"SORT_TOTAL_CHAPTERS" = "总章节数";
+"SORT_UNREAD_CHAPTERS" = "未读章节";
 "SET_AS_SINGLE_PAGE" = "作为单独页面显示";
 "FAILED_CHAPTER_LOAD_INFO" = "您可能处于离线状态，或图源可能存在问题。";
 "%i_PAGES_LEFT" = "剩余 %i 页";
@@ -445,7 +445,6 @@
 "SORT_FOLDER_NAME" = "文件夹名称";
 "SORT_BOOKS_COUNT" = "图书数量";
 "SORT_RANDOM" = "随机";
-"STATUS_ONGOING" = "随机";
 "GENRE" = "类型";
 "TAG" = "标签";
 "PUBLISHER" = "出版社";
@@ -575,7 +574,7 @@
 "SORT_CHAPTER_ADDED" = "章节已添加";
 "SORT_TIME_TO_READ" = "阅读时间";
 "SORT_AVERAGE_RATING" = "平均评分";
-"ENDED" = "结束";
+"STATUS_ENDED" = "结束";
 "FORMAT" = "格式";
 "FORMAT_IMAGE" = "图片";
 "FORMAT_ARCHIVE" = "压缩包";

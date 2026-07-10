@@ -54,14 +54,14 @@ class LibraryViewModel {
 
         var title: String {
             switch self {
-                case .alphabetical: NSLocalizedString("TITLE")
-                case .lastRead: NSLocalizedString("LAST_READ")
-                case .lastOpened: NSLocalizedString("LAST_OPENED")
-                case .lastUpdated: NSLocalizedString("LAST_UPDATED")
-                case .dateAdded: NSLocalizedString("DATE_ADDED")
-                case .lastChapter: NSLocalizedString("LATEST_CHAPTER")
-                case .unreadChapters: NSLocalizedString("UNREAD_CHAPTERS")
-                case .totalChapters: NSLocalizedString("TOTAL_CHAPTERS")
+                case .alphabetical: NSLocalizedString("SORT_TITLE")
+                case .lastRead: NSLocalizedString("SORT_LAST_READ")
+                case .lastOpened: NSLocalizedString("SORT_LAST_OPENED")
+                case .lastUpdated: NSLocalizedString("SORT_LAST_UPDATED")
+                case .dateAdded: NSLocalizedString("SORT_DATE_ADDED")
+                case .lastChapter: NSLocalizedString("SORT_LATEST_CHAPTER")
+                case .unreadChapters: NSLocalizedString("SORT_UNREAD_CHAPTERS")
+                case .totalChapters: NSLocalizedString("SORT_TOTAL_CHAPTERS")
             }
         }
 

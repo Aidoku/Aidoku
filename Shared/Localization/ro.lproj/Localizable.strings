@@ -32,10 +32,10 @@
 "MANGA_INFO" = "Informații Manga";
 "SORT_BY" = "Sortează după";
 "FILTER_BY" = "Filtrează după";
-"TITLE" = "Titlu";
-"LAST_OPENED" = "Ultima deschidere";
-"LAST_READ" = "Ultima citire";
-"DATE_ADDED" = "Data adăugării";
+"SORT_TITLE" = "Titlu";
+"SORT_LAST_OPENED" = "Ultima deschidere";
+"SORT_LAST_READ" = "Ultima citire";
+"SORT_DATE_ADDED" = "Data adăugării";
 
 // Categories
 "ALL" = "Toate";
@@ -146,15 +146,15 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Sunteți sigur că doriți să eliminați toate descărcările?";
 "CACHE_SIZE_%@" = "Cache size: %@";
 "SUPPORT_VIA_KOFI" = "Sprijin prin Ko-Fi";
-"UNREAD_CHAPTERS" = "Capitole Necitite";
+"SORT_UNREAD_CHAPTERS" = "Capitole Necitite";
 "REMOVE_ALL_MANGA_HISTORY" = "Ștergeți tot istoricul Manga";
 "VIEW_HISTORY" = "Vezi Istoricul";
 "RELOAD" = "Reîncarcă";
 "%i_OF_%i" = "%i of %i";
 "%i_PAGES_LEFT" = "%i pagini rămase";
 "FAILED_CHAPTER_LOAD" = "Nu a reușit să încarce capitolul";
-"LAST_UPDATED" = "Ultima actualizare";
-"TOTAL_CHAPTERS" = "Capitole Totale";
+"SORT_LAST_UPDATED" = "Ultima actualizare";
+"SORT_TOTAL_CHAPTERS" = "Capitole Totale";
 "WEBTOON" = "Webtoon";
 "REMOVE_FROM_CATEGORY" = "Elimină din categorie";
 "PINNED" = "Fixat";
@@ -188,7 +188,7 @@
 "CANCEL" = "Anulează";
 "UNKNOWN" = "Necunoscut";
 "REMOVE_CHAPTER_HISTORY_TEXT" = "Acest lucru va elimina istoricul pentru acest capitol. Sunteți sigur că doriți să continuați?";
-"LATEST_CHAPTER" = "Ultimul capitol";
+"SORT_LATEST_CHAPTER" = "Ultimul capitol";
 "DEFAULT_CATEGORY" = "Categoria implicită";
 "ALWAYS_ASK" = "Intreabă mereu";
 "LIST_ALL" = "Toate";
@@ -228,10 +228,10 @@
 
 // Manga
 "UNTITLED" = "Fără titlu";
-"ONGOING" = "În desfășurare";
-"CANCELLED" = "Anulat";
-"COMPLETED" = "Completat";
-"HIATUS" = "Hiatus";
+"STATUS_ONGOING" = "În desfășurare";
+"STATUS_CANCELLED" = "Anulat";
+"STATUS_COMPLETED" = "Completat";
+"STATUS_HIATUS" = "Hiatus";
 "NSFW" = "NSFW";
 
 // Reader
@@ -295,7 +295,7 @@
 "LOGGING" = "Jurnale";
 "RESET_SETTINGS_TEXT" = "Această acțiune este ireversibilă. Toate setările aplicației și ale sursei vor fi resetate.";
 "LOGOUT_FROM_%@" = "Doriți să vă deconectați de la %@?";
-"NOT_PUBLISHED" = "Nepublicat";
+"STATUS_NOT_PUBLISHED" = "Nepublicat";
 "CLEAR_TRACKED_MANGA" = "Șterge lista de manga urmărite";
 "CLEAR_TRACKED_MANGA_TEXT" = "Această acțiune este ireversibilă. Urmărirea tuturor urmăritorilor adăugați la manga va fi eliminată.";
 "ADD_TO_CATEGORIES" = "Adaugă la categorii";

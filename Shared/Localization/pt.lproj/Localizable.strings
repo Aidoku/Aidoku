@@ -25,9 +25,9 @@
 "MANGA_INFO" = "Informação do Mangá";
 "SORT_BY" = "Ordenar Por";
 "FILTER_BY" = "Filtrar Por";
-"LAST_READ" = "Último Lido";
-"LATEST_CHAPTER" = "Capítulo Mais Recente";
-"DATE_ADDED" = "Data Adicionado";
+"SORT_LAST_READ" = "Último Lido";
+"SORT_LATEST_CHAPTER" = "Capítulo Mais Recente";
+"SORT_DATE_ADDED" = "Data Adicionado";
 
 // Categories
 "ALL" = "Todos";
@@ -48,8 +48,8 @@
 
 // Manga
 "UNTITLED" = "Sem Título";
-"ONGOING" = "Em Progresso";
-"HIATUS" = "Hiato";
+"STATUS_ONGOING" = "Em Progresso";
+"STATUS_HIATUS" = "Hiato";
 "SUGGESTIVE" = "Suggestivo";
 "NSFW" = "NSFW";
 "SOURCE_ORDER" = "Ordem da Fonte";
@@ -120,8 +120,8 @@
 "CLEAR" = "Limpar";
 "REMOVE_DOWNLOADS" = "Remover descargas";
 "ADD_TO_LIBRARY" = "Adicionar para Biblioteca";
-"TITLE" = "Título";
-"LAST_OPENED" = "Último Aberto";
+"SORT_TITLE" = "Título";
+"SORT_LAST_OPENED" = "Último Aberto";
 "NONE" = "Nenhum";
 "CATEGORIES" = "Categorias";
 "EDIT_CATEGORIES" = "Editar Categorias";
@@ -138,8 +138,8 @@
 "INFO" = "Informação";
 "VERSION" = "Versão";
 "BUILD" = "Compilação";
-"CANCELLED" = "Cancelado";
-"COMPLETED" = "Completo";
+"STATUS_CANCELLED" = "Cancelado";
+"STATUS_COMPLETED" = "Completo";
 "SELECT_CHAPTERS" = "Selecionar Capítulos";
 "SELECT_ALL" = "Selecionar Tudo";
 "DESELECT_ALL" = "Deselecionar Tudo";
@@ -260,7 +260,7 @@
 "SET_TRACK_CHAPTER_OFFSET" = "Definir Compensação de Capítulo";
 "TRACK_CHAPTER_OFFSET_TEXT" = "Ajusta automaticamente as atualizações de capítulo no rastreador para este título quando a numeração dos capítulos na fonte difere da numeração no rastreador.";
 "ONESHOT" = "One-shot";
-"NOT_PUBLISHED" = "Não Publicado";
+"STATUS_NOT_PUBLISHED" = "Não Publicado";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "TYPE_COLON_%@" = "Tipo: %@";
@@ -277,14 +277,14 @@
 "SKIP_DUPLICATE_CHAPTERS" = "Saltar capítulos duplicados";
 "%i_CHAPTERS" = "%i Capítulos";
 "%i_OF_%i" = "%i de %i";
-"LAST_UPDATED" = "Ultima atualização";
-"UNREAD_CHAPTERS" = "Capítulos não lidos";
+"SORT_LAST_UPDATED" = "Ultima atualização";
+"SORT_UNREAD_CHAPTERS" = "Capítulos não lidos";
 "FAILED_CHAPTER_LOAD_INFO" = "Pode estar sem rede ou a fonte está com problemas.";
 "RELOAD" = "Recarregar";
 "%i_PAGES_LEFT" = "%i páginas restantes";
 "ONE_PAGE_LEFT" = "1 página restante";
 "FAILED_CHAPTER_LOAD" = "Erro ao carregar Capítulo";
-"TOTAL_CHAPTERS" = "Capítulos totais";
+"SORT_TOTAL_CHAPTERS" = "Capítulos totais";
 "WEBTOON" = "Webtoon";
 "AVAILABLE" = "Disponível";
 "FIRST_ALTERNATIVE" = "Pirmeira Alternativa";
@@ -404,7 +404,6 @@
 "SORT_FOLDER_NAME" = "Nome da pasta";
 "SORT_BOOKS_COUNT" = "Quantidade de livros";
 "SORT_RANDOM" = "Aleatório";
-"STATUS_ONGOING" = "Aleatório";
 "GENRE" = "Género";
 "TAG" = "Etiqueta";
 "PUBLISHER" = "Editora";
@@ -543,7 +542,7 @@
 "KAVITA" = "Kavita";
 "KAVITA_TAGLINE" = "Biblioteca digital local";
 "SORT_CHAPTER_ADDED" = "Capítulo adicionado";
-"ENDED" = "Finalizado";
+"STATUS_ENDED" = "Finalizado";
 "FORMAT" = "Formato";
 "FORMAT_IMAGE" = "Imagem";
 "FORMAT_EPUB" = "EPUB";

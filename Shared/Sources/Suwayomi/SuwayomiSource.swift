@@ -88,12 +88,12 @@ actor SuwayomiSourceRunner: Runner {
 
         var title: String {
             switch self {
-                case .unreadChapters: NSLocalizedString("UNREAD_CHAPTERS")
-                case .totalChapters: NSLocalizedString("TOTAL_CHAPTERS")
-                case .title: NSLocalizedString("SORT_NAME")
+                case .unreadChapters: NSLocalizedString("SORT_UNREAD_CHAPTERS")
+                case .totalChapters: NSLocalizedString("SORT_TOTAL_CHAPTERS")
+                case .title: NSLocalizedString("SORT_TITLE")
                 case .dateAdded: NSLocalizedString("SORT_DATE_ADDED")
-                case .recentlyRead: NSLocalizedString("LAST_READ")
-                case .latestFetchedChapter: NSLocalizedString("LAST_UPDATED")
+                case .recentlyRead: NSLocalizedString("SORT_LAST_READ")
+                case .latestFetchedChapter: NSLocalizedString("SORT_LAST_UPDATED")
                 case .latestUploadedChapter: NSLocalizedString("SORT_CHAPTER_ADDED")
             }
         }

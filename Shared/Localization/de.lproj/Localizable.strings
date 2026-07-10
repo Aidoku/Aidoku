@@ -33,8 +33,8 @@
 "REMOVE_DOWNLOADS_CONFIRM" = "Alle ausgewählten Downloads entfernen?";
 "SORT_BY" = "Sortieren nach";
 "FILTER_BY" = "Filtern nach";
-"TITLE" = "Titel";
-"LAST_OPENED" = "Zuletzt geöffnet";
+"SORT_TITLE" = "Titel";
+"SORT_LAST_OPENED" = "Zuletzt geöffnet";
 "SUGGESTIVE" = "Anzüglich";
 "NSFW" = "NSFW";
 "MORE" = "mehr";
@@ -74,16 +74,16 @@
 // Source
 "SOURCE_INFO" = "Quelleninfo";
 "CHAPTER_X" = "Kapitel %g";
-"LAST_READ" = "Zuletzt gelesen";
-"LATEST_CHAPTER" = "Letztes Kapitel";
-"DATE_ADDED" = "Hinzugefügt am";
+"SORT_LAST_READ" = "Zuletzt gelesen";
+"SORT_LATEST_CHAPTER" = "Letztes Kapitel";
+"SORT_DATE_ADDED" = "Hinzugefügt am";
 "NONE" = "Keine";
 "CATEGORY_ADD" = "Kategorie hinzufügen";
 "EDIT_CATEGORIES" = "Kategorien bearbeiten";
 "CATEGORY_ADD_TEXT" = "Gib den Namen der neuen Kategorie ein.";
 "BUTTON_ERROR" = "FEHLER";
 "LIST_ALL" = "Alle";
-"CANCELLED" = "Abgesagt";
+"STATUS_CANCELLED" = "Abgesagt";
 "ALWAYS_ASK" = "Immer fragen";
 
 // Browse
@@ -102,10 +102,10 @@
 "UNTITLED" = "Ohne Titel";
 "SELECT_ALL" = "Alle auswählen";
 "CONTINUE_READING" = "Weiterlesen";
-"ONGOING" = "Fortlaufend";
+"STATUS_ONGOING" = "Fortlaufend";
 "READER_SETTINGS" = "Leser-Einstellungen";
 "DEFAULT" = "Standard";
-"COMPLETED" = "Abgeschlossen";
+"STATUS_COMPLETED" = "Abgeschlossen";
 "CHAPTERS" = "Kapitel";
 "VOLUME_X" = "Band %g";
 "VOL_X" = "Band %g";
@@ -144,7 +144,7 @@
 "EXTERNAL" = "Extern";
 "BUTTON_UPDATE" = "AKTUALISIEREN";
 "INFO" = "Infos";
-"HIATUS" = "Hiatus";
+"STATUS_HIATUS" = "Hiatus";
 "DESELECT_ALL" = "Alle abwählen";
 "VIEW_LIBRARY" = "Bibliothek anzeigen";
 "VIEW_MORE" = "Mehr anzeigen";
@@ -239,10 +239,10 @@
 "LOGOUT" = "Abmelden";
 "LOGOUT_FROM_%@" = "Von %@ abmelden?";
 "FAILED_CHAPTER_LOAD" = "Kapitel konnte nicht geladen werden";
-"LAST_UPDATED" = "Zuletzt aktualisiert";
+"SORT_LAST_UPDATED" = "Zuletzt aktualisiert";
 "WEBTOON" = "Webtoon";
 "ONE_PAGE_LEFT" = "1 Seite übrig";
-"TOTAL_CHAPTERS" = "Kapitel insgesamt";
+"SORT_TOTAL_CHAPTERS" = "Kapitel insgesamt";
 "FAILED_CHAPTER_LOAD_INFO" = "Möglicherweise bist du offline oder es gibt Probleme bei der Quelle.";
 "STATUS" = "Status";
 "VOLUMES" = "Bände";
@@ -251,7 +251,7 @@
 "VIEW_ON_WEBSITE" = "Auf Webseite ansehen";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Bist du sicher, dass du alle Downloads entfernen möchtest?";
 "CACHE_SIZE_%@" = "Cachegröße: %@";
-"UNREAD_CHAPTERS" = "Ungelesene Kapitel";
+"SORT_UNREAD_CHAPTERS" = "Ungelesene Kapitel";
 "RELOAD" = "Neu laden";
 "%i_OF_%i" = "%i von %i";
 "%i_PAGES_LEFT" = "%i Seiten übrig";
@@ -288,7 +288,7 @@
 "FINISHED" = "Abgeschlossen";
 "TRACK_PLANNING" = "Geplant";
 "ONESHOT" = "One-shot";
-"NOT_PUBLISHED" = "Nicht veröffentlicht";
+"STATUS_NOT_PUBLISHED" = "Nicht veröffentlicht";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "MANHUA" = "Manhua";
@@ -460,7 +460,6 @@
 "SORT_FOLDER_NAME" = "Ordnername";
 "SORT_BOOKS_COUNT" = "Bücheranzahl";
 "SORT_RANDOM" = "Zufällig";
-"STATUS_ONGOING" = "Zufällig";
 "GENRE" = "Genre";
 "PUBLISHER" = "Herausgeber";
 "AGE_RATING" = "Altersfreigabe";

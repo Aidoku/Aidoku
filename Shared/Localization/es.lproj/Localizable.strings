@@ -18,11 +18,11 @@
 "REMOVE_FROM_LIBRARY" = "Eliminar de la Biblioteca";
 "MANGA_INFO" = "Información del manga";
 "SORT_BY" = "Ordenar Por";
-"TITLE" = "Título";
-"LAST_OPENED" = "Última vez abierto";
-"LAST_READ" = "Último leído";
-"LATEST_CHAPTER" = "Último capítulo actualizado";
-"DATE_ADDED" = "Fecha de agregado";
+"SORT_TITLE" = "Título";
+"SORT_LAST_OPENED" = "Última vez abierto";
+"SORT_LAST_READ" = "Último leído";
+"SORT_LATEST_CHAPTER" = "Último capítulo actualizado";
+"SORT_DATE_ADDED" = "Fecha de agregado";
 
 // Browse
 "BROWSE" = "Explorar";
@@ -47,9 +47,9 @@
 
 // Manga
 "UNTITLED" = "Sin título";
-"ONGOING" = "En curso";
-"COMPLETED" = "Completado";
-"HIATUS" = "Hiato";
+"STATUS_ONGOING" = "En curso";
+"STATUS_COMPLETED" = "Completado";
+"STATUS_HIATUS" = "Hiato";
 "SUGGESTIVE" = "Insinuante";
 "NSFW" = "NSFW";
 "MORE" = "Ver más";
@@ -177,7 +177,7 @@
 "REMOVE_DOWNLOADS_CONFIRM" = "¿Eliminar todas las descargas seleccionadas?";
 "CATEGORY_ADD" = "Agregar categoría";
 "FILTER_BY" = "Filtrar Por";
-"CANCELLED" = "Cancelado";
+"STATUS_CANCELLED" = "Cancelado";
 "SELECT_ALL" = "Seleccionar todos";
 "SKIP_TITLES" = "Saltar títulos";
 "DAILY" = "Diariamente";
@@ -250,7 +250,7 @@
 "TRACK_PLANNING" = "Pendiente";
 "TRACK_DROPPED" = "Abandonado";
 "ONESHOT" = "One-Shot";
-"NOT_PUBLISHED" = "No Publicado";
+"STATUS_NOT_PUBLISHED" = "No Publicado";
 "MANHWA" = "Manhwa";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Novela Ligera";
@@ -267,10 +267,10 @@
 "MANGA" = "Manga";
 "RELOAD" = "Recargar";
 "%i_OF_%i" = "%i de %i";
-"LAST_UPDATED" = "Última actualización";
-"TOTAL_CHAPTERS" = "Total de capítulos";
+"SORT_LAST_UPDATED" = "Última actualización";
+"SORT_TOTAL_CHAPTERS" = "Total de capítulos";
 "%i_PAGES_LEFT" = "%i páginas restantes";
-"UNREAD_CHAPTERS" = "Capítulos sin leer";
+"SORT_UNREAD_CHAPTERS" = "Capítulos sin leer";
 "ONE_PAGE_LEFT" = "1 página restante";
 "FAILED_CHAPTER_LOAD" = "No se pudo cargar el capítulo";
 "FAILED_CHAPTER_LOAD_INFO" = "Puede que estés desconectado o que la fuente tenga problemas.";
@@ -413,7 +413,6 @@
 "SORT" = "Ordenar";
 "SORT_NAME" = "Nombre";
 "SORT_RANDOM" = "Aleatorio";
-"STATUS_ONGOING" = "Aleatorio";
 "GENRE" = "Género";
 "TAG" = "Etiqueta";
 "PUBLISHER" = "Editor";
@@ -513,7 +512,7 @@
 "REMOVING_%i_ITEMS_FROM_LIBRARY" = "Eliminando %i elementos de la Biblioteca";
 "CLEAR_EXCLUDING_LIBRARY" = "Borrar historial de lectura excluyendo Biblioteca";
 "DISABLED" = "Desactivado";
-"ENDED" = "Terminado";
+"STATUS_ENDED" = "Terminado";
 "FORMAT_ARCHIVE" = "Archivo";
 "FILTER_STARTED" = "Comenzado";
 "INSIGHTS" = "Perspectivas";

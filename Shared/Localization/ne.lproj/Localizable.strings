@@ -14,9 +14,9 @@
 "LIBRARY" = "पुस्तकालय";
 "LIBRARY_SEARCH" = "पुस्तकालयमा खोज्नुहोस्";
 "LIBRARY_EMPTY" = "पुस्तकालय खाली छ";
-"LAST_OPENED" = "अन्तिम पटक खोलिएको";
-"LAST_READ" = "अन्तिम पटक पढिएको";
-"DATE_ADDED" = "मितिमा थपियो";
+"SORT_LAST_OPENED" = "अन्तिम पटक खोलिएको";
+"SORT_LAST_READ" = "अन्तिम पटक पढिएको";
+"SORT_DATE_ADDED" = "मितिमा थपियो";
 "FILTER_BY" = "द्वारा फिल्टर";
 "INSTALLED" = "स्थापित";
 "EXTERNAL" = "बाह्य";
@@ -91,9 +91,9 @@
 "SET_AS_WIDE_PAGE" = "चौडा पृष्ठको रूपमा सेट गर्नुहोस्";
 "TRACKERS" = "ट्र्याकरहरू";
 "LOGOUT" = "लग आउट";
-"LAST_UPDATED" = "अन्तिम पटक अपडेट गरिएको";
-"UNREAD_CHAPTERS" = "नपढिएका अध्यायहरू";
-"TOTAL_CHAPTERS" = "कुल अध्यायहरू";
+"SORT_LAST_UPDATED" = "अन्तिम पटक अपडेट गरिएको";
+"SORT_UNREAD_CHAPTERS" = "नपढिएका अध्यायहरू";
+"SORT_TOTAL_CHAPTERS" = "कुल अध्यायहरू";
 "SUPPORT_VIA_KOFI" = "Ko-Fi मार्फत समर्थन गर्नुहोस्";
 "WEBTOON" = "वेबटून";
 "%i_PAGES_LEFT" = "%i पृष्ठहरू बाँकी";
@@ -126,7 +126,7 @@
 "SEARCH" = "खोज्नुहोस्";
 "SETTINGS" = "सेटिंग्स";
 "SORT_BY" = "द्वारा क्रमबद्ध";
-"TITLE" = "शीर्षक";
+"SORT_TITLE" = "शीर्षक";
 "MULTI_LANGUAGE" = "बहु-भाषा";
 "APPEARANCE_LIGHT" = "उज्यालो";
 "APPEARANCE_DARK" = "अँध्यारो";
@@ -162,7 +162,7 @@
 "ADD_TO_LIBRARY" = "पुस्तकालयमा थप्नुहोस्";
 "REMOVE_FROM_LIBRARY" = "पुस्तकालयबाट हटाउनुहोस्";
 "MANGA_INFO" = "माङ्गा जानकारी";
-"LATEST_CHAPTER" = "नवीनतम अध्याय";
+"SORT_LATEST_CHAPTER" = "नवीनतम अध्याय";
 "COVER" = "कभर";
 "NONE" = "कुनै हैन";
 "CATEGORY_ADD" = "वर्ग थप्नुहोस्";
@@ -180,10 +180,10 @@
 "INFO" = "जानकारी";
 "BUTTON_FILTER" = "फिल्टर";
 "UNTITLED" = "शीर्षकविहीन";
-"ONGOING" = "जारी छ";
-"CANCELLED" = "रद्द गरिएको";
-"COMPLETED" = "समाप्त";
-"HIATUS" = "अन्तरालमा";
+"STATUS_ONGOING" = "जारी छ";
+"STATUS_CANCELLED" = "रद्द गरिएको";
+"STATUS_COMPLETED" = "समाप्त";
+"STATUS_HIATUS" = "अन्तरालमा";
 "SUGGESTIVE" = "सुझावात्मक";
 "NSFW" = "NSFW";
 "MORE" = "थप";
@@ -272,7 +272,7 @@
 "TRACK_DROPPED" = "छोडिसकेको";
 "STOP_TRACKING" = "ट्र्याकिङ रोक्नुहोस्";
 "ONESHOT" = "वान-शट";
-"NOT_PUBLISHED" = "प्रकाशित नभएको";
+"STATUS_NOT_PUBLISHED" = "प्रकाशित नभएको";
 "MANGA" = "माङ्गा";
 "MANHWA" = "मान्ह्वा";
 "MANHUA" = "मान्हुवा";
@@ -496,7 +496,6 @@
 "SORT_FOLDER_NAME" = "फोल्डरको नाम";
 "SORT_BOOKS_COUNT" = "पुस्तकहरूको गणना";
 "SORT_RANDOM" = "ऱ्याण्डम";
-"STATUS_ONGOING" = "ऱ्याण्डम";
 "GENRE" = "Genre";
 "TAG" = "ट्याग";
 "PUBLISHER" = "प्रकाशक";
@@ -516,7 +515,7 @@
 "SORT_CHAPTER_ADDED" = "अध्याय थपियो";
 "SORT_TIME_TO_READ" = "पढ्ने समय";
 "SORT_AVERAGE_RATING" = "औसत मूल्याङ्कन";
-"ENDED" = "समाप्त भयो";
+"STATUS_ENDED" = "समाप्त भयो";
 "FORMAT" = "Format";
 "FORMAT_IMAGE" = "छवि";
 "FORMAT_EPUB" = "EPUB";

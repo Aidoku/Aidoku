@@ -45,8 +45,8 @@
 
 // Source
 "SOURCE_INFO" = "Informoj pri fonto";
-"CANCELLED" = "Nuligita";
-"COMPLETED" = "Kompleta";
+"STATUS_CANCELLED" = "Nuligita";
+"STATUS_COMPLETED" = "Kompleta";
 "MORE" = "pli";
 
 // Reader
@@ -100,7 +100,7 @@
 "DISPLAY_LOGS" = "Montri protokolojn";
 "IMPORT_FAIL" = "Enporto malsukcesis";
 "RENAME" = "Ŝanĝi nomon";
-"TITLE" = "Titolo";
+"SORT_TITLE" = "Titolo";
 "LIBRARY_LOCKED" = "Biblioteko estas ŝlosita.";
 "CATEGORY_LOCKED" = "Kategorio estas ŝlosita.";
 "LOCK_LIBRARY" = "Ŝlosi bibliotekon";

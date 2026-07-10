@@ -69,10 +69,10 @@ extension AidokuRunner.Source {
                         canExclude: true,
                         usesTagStyle: false,
                         options: [
-                            NSLocalizedString("COMPLETED"),
-                            NSLocalizedString("ONGOING"),
-                            NSLocalizedString("CANCELLED"),
-                            NSLocalizedString("HIATUS")
+                            NSLocalizedString("STATUS_COMPLETED"),
+                            NSLocalizedString("STATUS_ONGOING"),
+                            NSLocalizedString("STATUS_CANCELLED"),
+                            NSLocalizedString("STATUS_HIATUS")
                         ],
                         ids: ["ENDED", "ONGOING", "ABANDONED", "HIATUS"],
                     ))

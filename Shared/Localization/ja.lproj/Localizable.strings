@@ -32,13 +32,13 @@
 "DOWNLOAD" = "ダウンロード";
 "DOWNLOADED" = "ダウンロード済み";
 "FILTER_BY" = "絞り込み";
-"TITLE" = "タイトル";
+"SORT_TITLE" = "タイトル";
 "LANGUAGE" = "言語";
 "LANGUAGES" = "言語";
 "BUILD" = "ビルド";
 "UNINSTALL" = "アンインストール";
 "LIST_HEADER" = "リスト";
-"COMPLETED" = "完結済み";
+"STATUS_COMPLETED" = "完結済み";
 "VOLUME_X" = "%g巻";
 "CHAPTER_X" = "第%g話";
 "VOL_X" = "%g巻";
@@ -68,10 +68,10 @@
 "ADD_TO_LIBRARY" = "ライブラリに追加";
 "REMOVE_FROM_LIBRARY" = "ライブラリから削除";
 "SORT_BY" = "並べ替え";
-"LAST_OPENED" = "最後に開いた";
-"LAST_READ" = "最後に読んだ";
-"LATEST_CHAPTER" = "最新の章";
-"DATE_ADDED" = "追加日";
+"SORT_LAST_OPENED" = "最後に開いた";
+"SORT_LAST_READ" = "最後に読んだ";
+"SORT_LATEST_CHAPTER" = "最新の章";
+"SORT_DATE_ADDED" = "追加日";
 
 // Categories
 "ALL" = "すべて";
@@ -98,8 +98,8 @@
 
 // Manga
 "UNTITLED" = "無題";
-"ONGOING" = "連載中";
-"CANCELLED" = "連載中止";
+"STATUS_ONGOING" = "連載中";
+"STATUS_CANCELLED" = "連載中止";
 "NSFW" = "NSFW";
 "MORE" = "さらに表示";
 "SOURCE_ORDER" = "ソース順";
@@ -112,7 +112,7 @@
 
 // Reader
 "CHAPTER" = "章";
-"HIATUS" = "一時休止";
+"STATUS_HIATUS" = "一時休止";
 "SUGGESTIVE" = "示唆的な内容";
 "CHAPTERS" = "章";
 "NO_CHAPTERS" = "章なし";
@@ -185,7 +185,7 @@
 "RESTORE" = "復元";
 "RESET_SETTINGS" = "設定をリセット";
 "PAGE_X_OF_X" = "%i / %i ページ";
-"UNREAD_CHAPTERS" = "未読の章";
+"SORT_UNREAD_CHAPTERS" = "未読の章";
 "RELOAD" = "再読み込み";
 "EVERY_12_HOURS" = "12時間ごと";
 "EVERY_2_DAYS" = "2日ごと";
@@ -257,8 +257,8 @@
 "FAILED_CHAPTER_LOAD_INFO" = "接続がオフラインになっているか、ソースに問題が発生している可能性があります。";
 "%i_PAGES_LEFT" = "残り%iページ";
 "FAILED_CHAPTER_LOAD" = "章の読み込みに失敗しました";
-"TOTAL_CHAPTERS" = "総章数";
-"LAST_UPDATED" = "最終更新";
+"SORT_TOTAL_CHAPTERS" = "総章数";
+"SORT_LAST_UPDATED" = "最終更新";
 "AVAILABLE" = "利用可能";
 "FIRST_ALTERNATIVE" = "最初の選択肢";
 "DEFAULT_READING_MODE" = "デフォルトの読書モード";
@@ -284,7 +284,7 @@
 "TRACK_DROPPED" = "放棄済み";
 "TRACKERS" = "トラッカー";
 "LOGOUT_FROM_%@" = "%@からログアウトしますか？";
-"NOT_PUBLISHED" = "未発表";
+"STATUS_NOT_PUBLISHED" = "未発表";
 "TRACK" = "追跡";
 "TYPE_COLON_%@" = "タイプ：%@";
 "STATUS_COLON_%@" = "ステータス：%@";

@@ -31,9 +31,9 @@
 "REMOVE_FROM_LIBRARY" = "لائبریری سےہٹا دیں";
 "ADD_TO_LIBRARY" = "لائبریری میں شامل کریں";
 "MANGA_INFO" = "مانگا معلومات";
-"LAST_READ" = "آخری پڑھا";
-"LATEST_CHAPTER" = "تازہ ترین باب";
-"DATE_ADDED" = "شامل کرنے کی تاریخ";
+"SORT_LAST_READ" = "آخری پڑھا";
+"SORT_LATEST_CHAPTER" = "تازہ ترین باب";
+"SORT_DATE_ADDED" = "شامل کرنے کی تاریخ";
 
 // Categories
 "ALL" = "سب";
@@ -46,10 +46,10 @@
 
 // Browse
 "BROWSE" = "براؤز";
-"TITLE" = "عنوان";
+"SORT_TITLE" = "عنوان";
 "SORT_BY" = "ترتیب دیں";
 "FILTER_BY" = "فلٹر بذریعہ";
-"LAST_OPENED" = "آخری بار کھولا گیا";
+"SORT_LAST_OPENED" = "آخری بار کھولا گیا";
 "CATEGORY_ADD_TEXT" = "تخلیق کرنے کے لئے نئے زمرے کا عنوان درج کریں.";
 "BROWSE_NO_SOURCES" = "کوئی ذرائع نہیں";
 "UPDATES" = "نیا بنانا";
@@ -74,10 +74,10 @@
 
 // Manga
 "UNTITLED" = "غیر خطاب یافتہ";
-"ONGOING" = "واقعہ";
-"CANCELLED" = "منسوخ";
-"COMPLETED" = "تمام";
-"HIATUS" = "نقص";
+"STATUS_ONGOING" = "واقعہ";
+"STATUS_CANCELLED" = "منسوخ";
+"STATUS_COMPLETED" = "تمام";
+"STATUS_HIATUS" = "نقص";
 "SUGGESTIVE" = "اشتعال انگیز";
 "SOURCE_ORDER" = "سورس آرڈر";
 "MISSING_SOURCE" = "لاپتہ ذریعہ";

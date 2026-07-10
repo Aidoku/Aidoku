@@ -24,11 +24,11 @@
 "LIBRARY_EMPTY" = "Библиотека пуста";
 "SORT_BY" = "Сортировать по";
 "FILTER_BY" = "Фильтровать по";
-"TITLE" = "Название";
-"LAST_OPENED" = "По последнему открытому";
-"LAST_READ" = "По последнему прочитанному";
-"LATEST_CHAPTER" = "последней главе";
-"DATE_ADDED" = "По дате добавления";
+"SORT_TITLE" = "Название";
+"SORT_LAST_OPENED" = "По последнему открытому";
+"SORT_LAST_READ" = "По последнему прочитанному";
+"SORT_LATEST_CHAPTER" = "последней главе";
+"SORT_DATE_ADDED" = "По дате добавления";
 
 // Categories
 "ALL" = "Все";
@@ -51,10 +51,10 @@
 "BUILD" = "Сборка";
 "BUTTON_FILTER" = "Фильтр";
 "LIST_HEADER" = "Список";
-"ONGOING" = "Выходит";
-"CANCELLED" = "Отмененный";
-"COMPLETED" = "Завершённый";
-"HIATUS" = "Перерыв";
+"STATUS_ONGOING" = "Выходит";
+"STATUS_CANCELLED" = "Отмененный";
+"STATUS_COMPLETED" = "Завершённый";
+"STATUS_HIATUS" = "Перерыв";
 "SUGGESTIVE" = "Неприличный";
 "NSFW" = "NSFW";
 "MORE" = "больше";
@@ -245,7 +245,7 @@
 "TRACK_PLANNING" = "В планах";
 "TRACK_DROPPED" = "Брошено";
 "MANHWA" = "Манхва";
-"NOT_PUBLISHED" = "Не опубликовано";
+"STATUS_NOT_PUBLISHED" = "Не опубликовано";
 "MANGA" = "Манга";
 "VOLUMES" = "Тома";
 "TRACK_PAUSED" = "Приостановлено";
@@ -269,15 +269,15 @@
 "%i_PAGES_LEFT" = "%i страниц осталось";
 "%i_OF_%i" = "%i из %i";
 "ONE_PAGE_LEFT" = "1 страница осталась";
-"LAST_UPDATED" = "Последний обновленный";
-"TOTAL_CHAPTERS" = "По количеству глав";
+"SORT_LAST_UPDATED" = "Последний обновленный";
+"SORT_TOTAL_CHAPTERS" = "По количеству глав";
 "RENAME_CATEGORY_INFO" = "Введите новое название для категории.";
 "RENAME_CATEGORY_FAIL" = "Не удалось переименовать Категорию";
 "SKIP_DUPLICATE_CHAPTERS" = "Пропустить дублирующиеся главы";
 "RENAME_CATEGORY" = "Переименовать Категорию";
 "CATEGORY_NAME" = "Название Категории";
 "FAILED_CHAPTER_LOAD_INFO" = "Возможно вы отключены от сети, или у источника возникли технические неполадки.";
-"UNREAD_CHAPTERS" = "По непрочитанным главам";
+"SORT_UNREAD_CHAPTERS" = "По непрочитанным главам";
 "RELOAD" = "Обновить";
 "FAILED_CHAPTER_LOAD" = "Не удалось загрузить главу";
 "WEBTOON" = "Вебтун";
@@ -445,7 +445,6 @@
 "SORT_FOLDER_NAME" = "По названию папки";
 "SORT_BOOKS_COUNT" = "По количеству книг";
 "SORT_RANDOM" = "Случайно";
-"STATUS_ONGOING" = "Случайный";
 "GENRE" = "Жанр";
 "TAG" = "Тэг";
 "PUBLISHER" = "Издатель";
@@ -595,7 +594,7 @@
 "SORT_CHAPTER_ADDED" = "По появлению новых глав";
 "SORT_TIME_TO_READ" = "По времени на прочтение";
 "SORT_AVERAGE_RATING" = "По средней оценке";
-"ENDED" = "Завершено";
+"STATUS_ENDED" = "Завершено";
 "FORMAT" = "Формат";
 "FORMAT_IMAGE" = "Изображение";
 "FORMAT_ARCHIVE" = "Архив";

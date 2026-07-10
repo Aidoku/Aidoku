@@ -203,10 +203,10 @@ extension AidokuRunner.PublishingStatus {
     var title: String {
         switch self {
             case .unknown: NSLocalizedString("UNKNOWN")
-            case .ongoing: NSLocalizedString("ONGOING")
-            case .completed: NSLocalizedString("COMPLETED")
-            case .cancelled: NSLocalizedString("CANCELLED")
-            case .hiatus: NSLocalizedString("HIATUS")
+            case .ongoing: NSLocalizedString("STATUS_ONGOING")
+            case .completed: NSLocalizedString("STATUS_COMPLETED")
+            case .cancelled: NSLocalizedString("STATUS_CANCELLED")
+            case .hiatus: NSLocalizedString("STATUS_HIATUS")
         }
     }
 }

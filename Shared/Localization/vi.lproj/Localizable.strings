@@ -33,11 +33,11 @@
 "MANGA_INFO" = "Thông tin truyện";
 "SORT_BY" = "Sắp xếp theo";
 "FILTER_BY" = "Lọc theo";
-"TITLE" = "Tiêu đề";
-"LAST_OPENED" = "Lần cuối đã xem";
-"LAST_READ" = "Lần cuối đã đọc";
-"LATEST_CHAPTER" = "Chương mới nhất";
-"DATE_ADDED" = "Ngày thêm";
+"SORT_TITLE" = "Tiêu đề";
+"SORT_LAST_OPENED" = "Lần cuối đã xem";
+"SORT_LAST_READ" = "Lần cuối đã đọc";
+"SORT_LATEST_CHAPTER" = "Chương mới nhất";
+"SORT_DATE_ADDED" = "Ngày thêm";
 
 // Categories
 "ALL" = "Tất cả";
@@ -74,10 +74,10 @@
 
 // Manga
 "UNTITLED" = "Không có tiêu đề";
-"ONGOING" = "Đang tiến hành";
-"CANCELLED" = "Đã bị huỷ";
-"COMPLETED" = "Đã hoàn thành";
-"HIATUS" = "Tạm ngưng";
+"STATUS_ONGOING" = "Đang tiến hành";
+"STATUS_CANCELLED" = "Đã bị huỷ";
+"STATUS_COMPLETED" = "Đã hoàn thành";
+"STATUS_HIATUS" = "Tạm ngưng";
 "SUGGESTIVE" = "Gợi cảm";
 "NSFW" = "18+";
 "MORE" = "xem thêm";
@@ -250,7 +250,7 @@
 "TRACK_DROPPED" = "Đã bỏ";
 "MANHWA" = "Manhwa (Hàn)";
 "ONESHOT" = "One-shot";
-"NOT_PUBLISHED" = "Không phát hành";
+"STATUS_NOT_PUBLISHED" = "Không phát hành";
 "MANHUA" = "Manhua (Trung)";
 "TRACK" = "Theo dõi";
 "TYPE_COLON_%@" = "Thể loại: %@";
@@ -273,13 +273,13 @@
 "SKIP_DUPLICATE_CHAPTERS" = "Bỏ qua chương bị trùng";
 "RENAME_CATEGORY" = "Đổi tên danh mục";
 "CATEGORY_NAME" = "Tên danh mục";
-"UNREAD_CHAPTERS" = "Chương chưa đọc";
+"SORT_UNREAD_CHAPTERS" = "Chương chưa đọc";
 "RELOAD" = "Tải lại";
 "%i_OF_%i" = "%i của %i";
 "%i_PAGES_LEFT" = "Còn lại %i trang";
 "ONE_PAGE_LEFT" = "Còn lại 1 trang";
 "FAILED_CHAPTER_LOAD" = "Tải chương thất bại";
-"TOTAL_CHAPTERS" = "Tổng số chương";
+"SORT_TOTAL_CHAPTERS" = "Tổng số chương";
 "WEBTOON" = "Webtoon";
 "PINNED" = "Đã ghim";
 "REMOVE_FROM_CATEGORY" = "Xoá khỏi danh mục";
@@ -289,7 +289,7 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Tên danh mục không được trùng lặp.";
 "MIGRATE_SOURCES" = "Chuyển nguồn";
 "ADD_TO_CATEGORIES" = "Thêm vào các danh mục";
-"LAST_UPDATED" = "Lần cuối cập nhật";
+"SORT_LAST_UPDATED" = "Lần cuối cập nhật";
 "PIN" = "Ghim";
 "COVER" = "Bìa";
 "OPTIONS" = "Tùy chọn";
@@ -412,7 +412,6 @@
 "SORT_RELEASE_DATE" = "Ngày phát hành";
 "SORT_FOLDER_NAME" = "Tên thư mục";
 "SORT_RANDOM" = "Ngẫu nhiên";
-"STATUS_ONGOING" = "Ngẫu nhiên";
 "GENRE" = "Thể loại";
 "TAG" = "Thẻ";
 "PUBLISHER" = "Nhà phát hành";
@@ -429,7 +428,7 @@
 "MORE_IN_%@" = "Xem thêm tại %@";
 "SORT_CHAPTER_ADDED" = "Chương đã thêm";
 "SORT_AVERAGE_RATING" = "Đánh giá trung bình";
-"ENDED" = "Đã kết thúc";
+"STATUS_ENDED" = "Đã kết thúc";
 "FORMAT_IMAGE" = "Ảnh";
 "FORMAT_EPUB" = "EPUB";
 "FORMAT_PDF" = "PDF";

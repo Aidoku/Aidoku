@@ -16,7 +16,7 @@
 "RENAME_CATEGORY_FAIL_INFO" = "Kategorinamn måste vara unika.";
 "UPDATES" = "Uppdateringar";
 "DOWNLOAD_QUEUE" = "Nedladdningskö";
-"LAST_READ" = "Senast läst";
+"SORT_LAST_READ" = "Senast läst";
 "PIN_UNREAD" = "Oläst";
 "SOURCE_LIST_ADD" = "Lägg till källista";
 "READ" = "Läst";
@@ -31,7 +31,7 @@
 "WITH_COMPLETED_STATUS" = "Med avslutad status";
 "FILTER_BY" = "Filtrera efter";
 "LANGUAGE" = "Språk";
-"UNREAD_CHAPTERS" = "Olästa kapitel";
+"SORT_UNREAD_CHAPTERS" = "Olästa kapitel";
 "READING_MODE" = "Läsläge";
 "DESTINATION" = "Destination";
 "MIGRATE_SOURCES" = "Överför källor";
@@ -53,10 +53,10 @@
 "DOUBLE_PAGE" = "Dubbelsidig";
 "%i_OF_%i" = "%i av %i";
 "CATEGORY_NAME" = "Kategorinamn";
-"TITLE" = "Titel";
+"SORT_TITLE" = "Titel";
 "BUILD" = "Utgivningsversion";
 "VIEW_MORE" = "Visa mer";
-"CANCELLED" = "Inställd";
+"STATUS_CANCELLED" = "Inställd";
 "CACHE_SIZE_%@" = "Storlek för cacheminne: %@";
 "TRACK_DROPPED" = "Avbruten";
 "BACKUP_INFO" = "Långtryck på säkerhetskopia för att exportera den, eller svep till vänster för att radera.";
@@ -65,7 +65,7 @@
 "BROWSE" = "Upptäck";
 "NO_PREVIOUS_CHAPTER" = "Inget föregående kapitel tillgängligt";
 "COVER" = "Omslag";
-"LATEST_CHAPTER" = "Senaste kapitlet";
+"SORT_LATEST_CHAPTER" = "Senaste kapitlet";
 "BUTTON_UPDATE" = "UPPDATERA";
 "LIBRARY_LOCKED" = "Biblioteket är låst.";
 "ALWAYS_ASK" = "Fråga alltid";
@@ -80,7 +80,7 @@
 "SHARE" = "Dela";
 "INCOGNITO_MODE" = "Inkognitoläge";
 "IS_TRACKING" = "Spårning";
-"LAST_UPDATED" = "Senast uppdaterad";
+"SORT_LAST_UPDATED" = "Senast uppdaterad";
 "RESTORE_BACKUP" = "Återställ till denna säkerhetskopia?";
 "FAILED_CHAPTER_LOAD" = "Kunde ej ladda kapitlet";
 "REORDER" = "Ordna om";
@@ -89,7 +89,7 @@
 "PINNED" = "Fastmarkerad";
 "REMOVE_DOWNLOADS" = "Ta bort nedladdningar";
 "PAGED" = "Paginerat";
-"DATE_ADDED" = "Tilläggsdatum";
+"SORT_DATE_ADDED" = "Tilläggsdatum";
 "%i_CHAPTERS" = "%i kapitel";
 // General
 "CONTINUE" = "Fortsätt";
@@ -133,7 +133,7 @@
 "PILLARBOX" = "Svarta fält";
 "UPCOMING" = "Kommande";
 "EVERY_12_HOURS" = "Var tolfte timme";
-"LAST_OPENED" = "Senast öppnad";
+"SORT_LAST_OPENED" = "Senast öppnad";
 "SELECT_ALL" = "Välj alla";
 "REMOVE_ALL_MANGA_HISTORY" = "Ta bort all mangahistorik";
 "INFINITE_VERTICAL_SCROLL" = "Oändlig lodrät skrollning";
@@ -159,7 +159,7 @@
 "ALL_CHAPTERS_READ" = "Alla kapitel är lästa";
 "ADD_TO_CATEGORY" = "Lägg till i kategori";
 "LTR" = "Vänster till höger";
-"NOT_PUBLISHED" = "Ej publicerad";
+"STATUS_NOT_PUBLISHED" = "Ej publicerad";
 "CORRUPTED_BACKUP_TEXT" = "Denna säkerhetskopia tycks ha felkonfigurerad data. Ej möjligt att döpa om.";
 "SOURCE_LIST_ADDED" = "Källista tillagd";
 "AUTH_TO_ENABLE" = "Autentisera för att aktivera.";
@@ -184,7 +184,7 @@
 "CORRUPTED_BACKUP" = "Korrupt säkerhetskopia";
 "UNKNOWN" = "Okänd";
 "TRACK_PLANNING" = "Planerar";
-"COMPLETED" = "Avslutad";
+"STATUS_COMPLETED" = "Avslutad";
 "PILLARBOX_AMOUNT" = "Mängd svarta fält";
 "NEXT_COLON" = "Nästa:";
 "MARK_READ" = "Markera som läst";
@@ -192,7 +192,7 @@
 "VOLUMES" = "Volymer";
 "MULTI_LANGUAGE" = "Flerspråkig";
 "LIST_HEADER" = "Lista";
-"TOTAL_CHAPTERS" = "Antal kapitel";
+"SORT_TOTAL_CHAPTERS" = "Antal kapitel";
 "MORE" = "mer";
 "REMOVE_DOWNLOAD" = "Ta bort nedladdning";
 "%i_PAGES_LEFT" = "%i sidor kvar";
@@ -264,7 +264,7 @@
 "CLEAR_NETWORK_CACHE" = "Frigör cacheminne för nätverk";
 "READER" = "Läsare";
 "TRACK_READING" = "Läser";
-"HIATUS" = "Uppehåll";
+"STATUS_HIATUS" = "Uppehåll";
 "EXPERIMENTAL" = "Experimentell";
 
 // History
@@ -298,7 +298,7 @@
 "VERSION" = "Version";
 "EXPORT" = "Exportera";
 "CLEAR_TRACKED_MANGA_TEXT" = "Denna åtgärd går inte att ångra. Spårningen för alla trackers som lagts till i mangas kommer att tas bort.";
-"ONGOING" = "Pågående";
+"STATUS_ONGOING" = "Pågående";
 "VOL_SPACE_X" = "Vol. %g";
 "MARK_UNREAD" = "Markera som oläst";
 "MARK" = "Markera";
@@ -421,7 +421,6 @@
 "SORT_FOLDER_NAME" = "Mappnamn";
 "SORT_BOOKS_COUNT" = "Antal böcker";
 "SORT_RANDOM" = "Slumpmässigt";
-"STATUS_ONGOING" = "Slumpmässig";
 "GENRE" = "Genre";
 "TAG" = "Tagg";
 "PUBLISHER" = "Utgivare";
@@ -544,7 +543,7 @@
 "SORT_CHAPTER_ADDED" = "Kapitel tillagt";
 "SORT_TIME_TO_READ" = "Tid att läsa";
 "SORT_AVERAGE_RATING" = "Genomsnittligt betyg";
-"ENDED" = "Avslutad";
+"STATUS_ENDED" = "Avslutad";
 "FORMAT" = "Format";
 "FORMAT_IMAGE" = "Bild";
 "FORMAT_EPUB" = "EPUB";

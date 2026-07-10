@@ -18,10 +18,10 @@
 "LIBRARY_EMPTY" = "빈 라이브러리";
 "ADD_TO_LIBRARY" = "라이브러리에 추가";
 "MANGA_INFO" = "만화 정보";
-"LAST_OPENED" = "최근 확인순";
-"LAST_READ" = "최근 열람순";
-"TITLE" = "제목순";
-"DATE_ADDED" = "추가 날짜순";
+"SORT_LAST_OPENED" = "최근 확인순";
+"SORT_LAST_READ" = "최근 열람순";
+"SORT_TITLE" = "제목순";
+"SORT_DATE_ADDED" = "추가 날짜순";
 
 // Categories
 "ALL" = "모두";
@@ -42,7 +42,7 @@
 "FILTER_BY" = "필터";
 "SORT_BY" = "정렬";
 "REMOVE_FROM_LIBRARY" = "라이브러리에서 제거";
-"LATEST_CHAPTER" = "최신 챕터순";
+"SORT_LATEST_CHAPTER" = "최신 챕터순";
 "CATEGORY_ADD" = "카테고리 추가";
 "CATEGORY_ADD_TEXT" = "새로운 카테고리의 제목을 적어주세요.";
 "CATEGORIES" = "카테고리";
@@ -65,8 +65,8 @@
 
 // Manga
 "UNTITLED" = "제목 없음";
-"ONGOING" = "진행 중";
-"HIATUS" = "중단";
+"STATUS_ONGOING" = "진행 중";
+"STATUS_HIATUS" = "중단";
 "NSFW" = "성인용";
 "MORE" = "더 보기";
 "SOURCE_ORDER" = "소스 순서";
@@ -172,8 +172,8 @@
 
 // Source
 "SOURCE_INFO" = "소스 정보";
-"CANCELLED" = "취소";
-"COMPLETED" = "완료";
+"STATUS_CANCELLED" = "취소";
+"STATUS_COMPLETED" = "완료";
 "MISSING_SOURCE" = "소스 누락";
 "CHAPTERS" = "챕터";
 "VOLUME_X" = "볼륨 %g";
@@ -253,7 +253,7 @@
 "TRACK_DROPPED" = "떨어짐";
 "ONESHOT" = "일회성";
 "MANHWA" = "한국 만화";
-"NOT_PUBLISHED" = "출간되지 않음";
+"STATUS_NOT_PUBLISHED" = "출간되지 않음";
 "MANHUA" = "중국 만화";
 "MANGA" = "일본 만화";
 "LIGHT_NOVEL" = "라이트 노벨";
@@ -266,16 +266,16 @@
 "CACHE_SIZE_%@" = "캐시 크기: %@";
 "SUPPORT_VIA_KOFI" = "Ko-Fi 통한 지원";
 "FAILED_CHAPTER_LOAD_INFO" = "오프라인 상태이거나 소스에 문제가 있을 수 있습니다.";
-"UNREAD_CHAPTERS" = "읽지 않은 장";
+"SORT_UNREAD_CHAPTERS" = "읽지 않은 장";
 "RELOAD" = "새로 고침";
 "%i_OF_%i" = "%i 의 %i";
 "%i_PAGES_LEFT" = "%i 페이지 남음";
 "ONE_PAGE_LEFT" = "1 페이지 남음";
-"LAST_UPDATED" = "최신 업데이트";
+"SORT_LAST_UPDATED" = "최신 업데이트";
 "WEBTOON" = "웹툰";
 "REMOVE_FROM_CATEGORY" = "범주에서 제거";
 "FAILED_CHAPTER_LOAD" = "장 불러오기 실패";
-"TOTAL_CHAPTERS" = "전체 장";
+"SORT_TOTAL_CHAPTERS" = "전체 장";
 "MIGRATE_SOURCES" = "소스 마이그레이션";
 "SYNC_LOCAL_HISTORY" = "로컬 기록 동기화";
 "MIGRATE" = "이동하다";
@@ -446,7 +446,6 @@
 "SORT_FOLDER_NAME" = "폴더명";
 "SORT_BOOKS_COUNT" = "권수";
 "SORT_RANDOM" = "무작위";
-"STATUS_ONGOING" = "무작위";
 "GENRE" = "장르";
 "TAG" = "태그";
 "PUBLISHER" = "출판사";

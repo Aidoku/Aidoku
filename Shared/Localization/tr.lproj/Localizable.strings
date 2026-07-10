@@ -48,9 +48,9 @@
 "ADD_TO_LIBRARY" = "Kütüphaneye Ekle";
 "REMOVE_FROM_LIBRARY" = "Kütüphaneden Kaldır";
 "SORT_BY" = "Sırala";
-"LAST_READ" = "Son Okunan";
-"LATEST_CHAPTER" = "Son Bölüm";
-"DATE_ADDED" = "Eklenme Tarihi";
+"SORT_LAST_READ" = "Son Okunan";
+"SORT_LATEST_CHAPTER" = "Son Bölüm";
+"SORT_DATE_ADDED" = "Eklenme Tarihi";
 "NONE" = "Hiçbiri";
 "CATEGORIES" = "Kategoriler";
 "EDIT_CATEGORIES" = "Kategorileri Düzenle";
@@ -79,9 +79,9 @@
 
 // Manga
 "UNTITLED" = "Başlıksız";
-"ONGOING" = "Devam eden";
-"CANCELLED" = "İptal edilmiş";
-"COMPLETED" = "Tamamlanmış";
+"STATUS_ONGOING" = "Devam eden";
+"STATUS_CANCELLED" = "İptal edilmiş";
+"STATUS_COMPLETED" = "Tamamlanmış";
 "MORE" = "daha fazla";
 "SOURCE_ORDER" = "Kaynak Sırası";
 "SELECT_CHAPTERS" = "Bölüm Seç";
@@ -127,11 +127,11 @@
 "RENAME_BACKUP_TEXT" = "Yedek için yeni bir isim gir";
 "SOURCE_LIST_ADD" = "Kaynak Listesi Ekle";
 "MANGA_INFO" = "Manga hakkında bilgi";
-"TITLE" = "Başlık";
-"LAST_OPENED" = "En son açılan";
+"SORT_TITLE" = "Başlık";
+"SORT_LAST_OPENED" = "En son açılan";
 "BUTTON_GET" = "AL";
 "BUILD" = "Kur";
-"HIATUS" = "Açıklık";
+"STATUS_HIATUS" = "Açıklık";
 "SUGGESTIVE" = "Müstehcen";
 "NSFW" = "+18";
 "MISSING_SOURCE" = "Eksik Kaynak";
@@ -214,8 +214,8 @@
 "CLEAR_READ_HISTORY_TEXT" = "Bu aksiyon geri döndürülemez. Bütün okuma geçmişi silinecek.";
 "UNREAD_CHAPTER_BADGES" = "Bölüm Rozetlerini Okunmamışa Çevir";
 "FAILED_CHAPTER_LOAD_INFO" = "Çevrimdışı olabilirsiniz yada kaynak sorunlar yaşıyor olabilir.";
-"UNREAD_CHAPTERS" = "Okunmamış Bölümler";
-"TOTAL_CHAPTERS" = "Toplam Bölümler";
+"SORT_UNREAD_CHAPTERS" = "Okunmamış Bölümler";
+"SORT_TOTAL_CHAPTERS" = "Toplam Bölümler";
 "RESET_SETTINGS" = "Ayarları Sıfırla";
 "RESET_SETTINGS_TEXT" = "Bu aksiyon geri döndürülemez. Bütün uygulama vev kaynak ayarları sıfırlanacak.";
 "PAGE_X_OF_X" = "%i sayfa içinden %i. sayfa";
@@ -248,7 +248,7 @@
 "TRACK_DROPPED" = "Bırakıldı";
 "STOP_TRACKING" = "İzlemeyi Bırak";
 "ONESHOT" = "Tekli";
-"NOT_PUBLISHED" = "Yayınlanmamış";
+"STATUS_NOT_PUBLISHED" = "Yayınlanmamış";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "MANHUA" = "Manhua";
@@ -271,7 +271,7 @@
 "RELOAD" = "Yenile";
 "%i_OF_%i" = "%i içinden %i";
 "FAILED_CHAPTER_LOAD" = "Bölüm Yüklenemedi";
-"LAST_UPDATED" = "En Son Güncellenen";
+"SORT_LAST_UPDATED" = "En Son Güncellenen";
 "WEBTOON" = "Webtoon";
 "REMOVE_FROM_CATEGORY" = "Kategoriden Sil";
 "SELECT" = "Seç";

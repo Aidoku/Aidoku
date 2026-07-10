@@ -29,11 +29,11 @@
 "REMOVE_FROM_LIBRARY" = "Hapus dari Perpustakaan";
 "SORT_BY" = "Urutkan berdasarkan";
 "FILTER_BY" = "Saring Berdasarkan";
-"TITLE" = "Judul";
-"LAST_OPENED" = "Terakhir dibuka";
-"LAST_READ" = "Terakhir dibaca";
-"LATEST_CHAPTER" = "Bab Terbaru";
-"DATE_ADDED" = "Tanggal Ditambahkan";
+"SORT_TITLE" = "Judul";
+"SORT_LAST_OPENED" = "Terakhir dibuka";
+"SORT_LAST_READ" = "Terakhir dibaca";
+"SORT_LATEST_CHAPTER" = "Bab Terbaru";
+"SORT_DATE_ADDED" = "Tanggal Ditambahkan";
 
 // Categories
 "ALL" = "Semua";
@@ -63,10 +63,10 @@
 
 // Manga
 "UNTITLED" = "Tanpa Judul";
-"ONGOING" = "Sedang Berlangsung";
-"CANCELLED" = "Dibatalkan";
-"COMPLETED" = "Tamat";
-"HIATUS" = "Jeda";
+"STATUS_ONGOING" = "Sedang Berlangsung";
+"STATUS_CANCELLED" = "Dibatalkan";
+"STATUS_COMPLETED" = "Tamat";
+"STATUS_HIATUS" = "Jeda";
 "NSFW" = "NSFW";
 "BUILD" = "Bangun";
 "SOURCE_ORDER" = "Urutan Sumber";
@@ -155,7 +155,7 @@
 "TRACK_PLANNING" = "Perencanaan";
 "TRACK_DROPPED" = "Ditinggalkan";
 "ONESHOT" = "Komik Pendek";
-"NOT_PUBLISHED" = "Belum diterbitkan";
+"STATUS_NOT_PUBLISHED" = "Belum diterbitkan";
 "MANGA" = "Manga";
 "MANHWA" = "Manhwa";
 "LIGHT_NOVEL" = "Novel Ringan";
@@ -384,7 +384,6 @@
 "SORT_FOLDER_NAME" = "Nama folder";
 "SORT_BOOKS_COUNT" = "Buku dihitung";
 "SORT_RANDOM" = "Acak";
-"STATUS_ONGOING" = "Acak";
 "GENRE" = "Genre";
 "TAG" = "Tag";
 "PUBLISHER" = "Penerbit";
@@ -481,7 +480,7 @@
 "UPDATE_AFTER_READING_INFO" = "Setelah membaca satu bab, perbarui pelacak agar sesuai dengan bab dan/atau volume yang sedang dibaca.";
 "AUTO_SYNC_HISTORY" = "Sinkronisasi Riwayat Secara Otomatis";
 "AUTO_SYNC_HISTORY_INFO" = "Ketika bab dan/atau volume yang lebih baru terdeteksi di tracker, perbarui riwayat lokal agar sesuai.";
-"UNREAD_CHAPTERS" = "Bab yang Belum Dibaca";
+"SORT_UNREAD_CHAPTERS" = "Bab yang Belum Dibaca";
 "SET_AS_SINGLE_PAGE" = "Atur sebagai Halaman Tunggal";
 "RELOAD" = "Muat ulang";
 "RELOAD_FAILED" = "Pemuatan Ulang Gagal";
@@ -490,8 +489,8 @@
 "%i_PAGES_LEFT" = "%i halaman tersisa";
 "ONE_PAGE_LEFT" = "Sisa 1 halaman";
 "FAILED_CHAPTER_LOAD" = "Gagal Memuat Bab";
-"LAST_UPDATED" = "Terakhir Diperbarui";
-"TOTAL_CHAPTERS" = "Jumlah Bab";
+"SORT_LAST_UPDATED" = "Terakhir Diperbarui";
+"SORT_TOTAL_CHAPTERS" = "Jumlah Bab";
 "FAILED_CHAPTER_LOAD_INFO" = "Anda mungkin sedang offline atau sumbernya mungkin mengalami masalah.";
 "WEBTOON" = "Webtoon";
 "REMOVE_FROM_CATEGORY" = "Hapus dari Kategori";
@@ -570,7 +569,7 @@
 "SORT_CHAPTER_ADDED" = "Bab Ditambahkan";
 "SORT_TIME_TO_READ" = "Waktu untuk Membaca";
 "SORT_AVERAGE_RATING" = "Rating Rata-Rata";
-"ENDED" = "Sudah berakhir";
+"STATUS_ENDED" = "Sudah berakhir";
 "FORMAT" = "Format";
 "FORMAT_IMAGE" = "Gambar";
 "FORMAT_EPUB" = "EPUB";

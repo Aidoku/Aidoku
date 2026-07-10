@@ -19,9 +19,9 @@
 "MANGA_INFO" = "Infos sur le manga";
 "SORT_BY" = "Trier par";
 "FILTER_BY" = "Filtrer par";
-"TITLE" = "Titre";
-"LAST_OPENED" = "Dernier accès";
-"LATEST_CHAPTER" = "Dernier chapitre";
+"SORT_TITLE" = "Titre";
+"SORT_LAST_OPENED" = "Dernier accès";
+"SORT_LATEST_CHAPTER" = "Dernier chapitre";
 "ALWAYS_ASK" = "Toujours demander";
 
 // Browse
@@ -40,9 +40,9 @@
 
 // Manga
 "UNTITLED" = "Sans titre";
-"CANCELLED" = "Annulé";
-"COMPLETED" = "Terminé";
-"HIATUS" = "Hiatus";
+"STATUS_CANCELLED" = "Annulé";
+"STATUS_COMPLETED" = "Terminé";
+"STATUS_HIATUS" = "Hiatus";
 "SUGGESTIVE" = "Osé";
 "NSFW" = "Érotique";
 "MORE" = "plus";
@@ -129,8 +129,8 @@
 // Library
 "LIBRARY" = "Bibliothèque";
 "LIBRARY_EMPTY" = "Bibliothèque vide";
-"LAST_READ" = "Dernière lecture";
-"DATE_ADDED" = "Date d'ajout";
+"SORT_LAST_READ" = "Dernière lecture";
+"SORT_DATE_ADDED" = "Date d'ajout";
 "NONE" = "Aucun";
 "UNAVAILABLE" = "Indisponible";
 "DOWNLOAD_QUEUE" = "File d'attente de téléchargement";
@@ -143,7 +143,7 @@
 // Source
 "SOURCE_INFO" = "Infos sur la source";
 "LANGUAGES" = "Langues";
-"ONGOING" = "En cours";
+"STATUS_ONGOING" = "En cours";
 "AUTH_TO_DISABLE" = "S'authentifier pour désactiver.";
 "SHARE" = "Partager";
 
@@ -264,13 +264,13 @@
 "CACHE_SIZE_%@" = "Taille du cache : %@";
 "SUPPORT_VIA_KOFI" = "Soutenir via Ko-Fi";
 "STOP_TRACKING" = "Arrêter le suivi";
-"NOT_PUBLISHED" = "Non publié";
+"STATUS_NOT_PUBLISHED" = "Non publié";
 "MANGA" = "Manga";
-"UNREAD_CHAPTERS" = "Chapitres non lus";
+"SORT_UNREAD_CHAPTERS" = "Chapitres non lus";
 "RELOAD" = "Recharger";
 "ONE_PAGE_LEFT" = "1 page restante";
-"LAST_UPDATED" = "Dernière mise à jour";
-"TOTAL_CHAPTERS" = "Total des chapitres";
+"SORT_LAST_UPDATED" = "Dernière mise à jour";
+"SORT_TOTAL_CHAPTERS" = "Total des chapitres";
 "%i_OF_%i" = "%i sur %i";
 "%i_PAGES_LEFT" = "%i pages restantes";
 "FAILED_CHAPTER_LOAD" = "Échec du chargement du chapitre";
@@ -459,7 +459,6 @@
 "SORT_FOLDER_NAME" = "Nom du répertoire";
 "SORT_BOOKS_COUNT" = "Nombre de livres";
 "SORT_RANDOM" = "Aléatoire";
-"STATUS_ONGOING" = "Aléatoire";
 "GENRE" = "Genre";
 "TAG" = "Tag";
 "PUBLISHER" = "Éditeur";
@@ -478,7 +477,7 @@
 "SORT_CHAPTER_ADDED" = "Chapitre ajouté";
 "SORT_TIME_TO_READ" = "Temps de lecture";
 "SORT_AVERAGE_RATING" = "Note moyenne";
-"ENDED" = "Terminer";
+"STATUS_ENDED" = "Terminer";
 "FORMAT" = "Format";
 "FORMAT_IMAGE" = "Image";
 "FORMAT_EPUB" = "EPUB";

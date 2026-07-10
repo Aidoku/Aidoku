@@ -19,11 +19,11 @@
 "REMOVE_FROM_LIBRARY" = "Remover da biblioteca";
 "MANGA_INFO" = "Informação do mangá";
 "SORT_BY" = "Ordenar por";
-"TITLE" = "Título";
-"LAST_OPENED" = "Último aberto";
-"LAST_READ" = "Último lido";
-"LATEST_CHAPTER" = "Capítulo mais recente";
-"DATE_ADDED" = "Data de adição";
+"SORT_TITLE" = "Título";
+"SORT_LAST_OPENED" = "Último aberto";
+"SORT_LAST_READ" = "Último lido";
+"SORT_LATEST_CHAPTER" = "Capítulo mais recente";
+"SORT_DATE_ADDED" = "Data de adição";
 
 // Browse
 "BROWSE" = "Explorar";
@@ -48,9 +48,9 @@
 
 // Manga
 "UNTITLED" = "Sem título";
-"ONGOING" = "Em andamento";
-"COMPLETED" = "Completo";
-"HIATUS" = "Hiato";
+"STATUS_ONGOING" = "Em andamento";
+"STATUS_COMPLETED" = "Completo";
+"STATUS_HIATUS" = "Hiato";
 "SUGGESTIVE" = "Suggestivo";
 "NSFW" = "NSFW";
 "MORE" = "mais";
@@ -167,7 +167,7 @@
 "EDIT_CATEGORIES" = "Editar categorias";
 "CATEGORY_ADD" = "Adicionar categoria";
 "LANGUAGES" = "Idiomas";
-"CANCELLED" = "Cancelado";
+"STATUS_CANCELLED" = "Cancelado";
 "HISTORY_LOCKED" = "O histórico está bloqueado.";
 "SELECT_ALL" = "Selecionar todos";
 "CHAPTERS" = "Capítulos";
@@ -249,7 +249,7 @@
 "TRACK_READING" = "Lendo";
 "TRACK_DROPPED" = "Abandonado";
 "MANHWA" = "Manhwa";
-"NOT_PUBLISHED" = "Não publicado";
+"STATUS_NOT_PUBLISHED" = "Não publicado";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Romance leve";
 "SCORE" = "Pontuação";
@@ -294,12 +294,12 @@
 "REMOVE_FROM_CATEGORY" = "Remover da categoria";
 "%i_CHAPTERS" = "%i capítulos";
 "1_CHAPTER" = "1 capítulo";
-"UNREAD_CHAPTERS" = "Capítulos não lidos";
+"SORT_UNREAD_CHAPTERS" = "Capítulos não lidos";
 "%i_PAGES_LEFT" = "%i páginas restantes";
 "ONE_PAGE_LEFT" = "1 página restante";
 "RELOAD" = "Recarregar";
-"LAST_UPDATED" = "Ultima atualização";
-"TOTAL_CHAPTERS" = "Capítulos totais";
+"SORT_LAST_UPDATED" = "Ultima atualização";
+"SORT_TOTAL_CHAPTERS" = "Capítulos totais";
 "%i_OF_%i" = "%i de %i";
 "UPCOMING" = "A seguir";
 "OPTIONS" = "Opções";
@@ -382,7 +382,7 @@
 "SORT_NAME" = "Nome";
 "GENRE" = "Gênero";
 "SORT_CHAPTER_ADDED" = "Capítulo Adicionado";
-"ENDED" = "Finalizado";
+"STATUS_ENDED" = "Finalizado";
 "FORMAT" = "Formato";
 "EVERY_6_HOURS" = "A cada 6 horas";
 "EXTERNAL_SOURCES" = "Fontes Externas";
@@ -551,7 +551,6 @@
 "SORT_RELEASE_DATE" = "Data de lançamento";
 "SORT_FOLDER_NAME" = "Nome da Pasta";
 "SORT_BOOKS_COUNT" = "Quantidade de Livros";
-"STATUS_ONGOING" = "Aleatório";
 "PUBLISHER" = "Editora";
 "AGE_RATING" = "Classificação etária";
 "RELEASE_DATE" = "Data de lançamento";
