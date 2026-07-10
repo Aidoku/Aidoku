@@ -18,6 +18,8 @@ actor TrackerManager {
     static let komga = KomgaTracker()
     /// An instance of the Komga tracker.
     static let kavita = KavitaTracker()
+    /// An instance of the Suwayomi tracker.
+    static let suwayomi = SuwayomiTracker()
     /// An instance of the AniList tracker.
     static let anilist = AniListTracker()
     /// An instance of the MyAnimeList tracker.
@@ -30,7 +32,7 @@ actor TrackerManager {
     static let bangumi = BangumiTracker()
 
     /// An array of the available trackers.
-    static let trackers: [Tracker] = [komga, kavita, anilist, myanimelist, mangabaka, shikimori, bangumi]
+    static let trackers: [Tracker] = [komga, kavita, suwayomi, anilist, myanimelist, mangabaka, shikimori, bangumi]
 
     /// A boolean indicating if there is a tracker that is currently logged in.
     static var hasAvailableTrackers: Bool {

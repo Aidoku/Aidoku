@@ -285,6 +285,7 @@ extension SourceManager {
     enum CustomSourceKind {
         case komga
         case kavita
+        case suwayomi
     }
 
     @discardableResult
@@ -298,6 +299,7 @@ extension SourceManager {
         let keyPrefix = switch kind {
             case .komga: KomgaSourceRunner.sourceKeyPrefix
             case .kavita: KavitaSourceRunner.sourceKeyPrefix
+            case .suwayomi: SuwayomiSourceRunner.sourceKeyPrefix
         }
         let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
         var key = "\(keyPrefix).\(nameEncoded)"
@@ -309,9 +311,11 @@ extension SourceManager {
             counter += 1
         }
 
+        let configValues = CustomSourceConfig.KeyNameServer(key: key, name: name, server: server.absoluteString)
         let config = switch kind {
-            case .komga: CustomSourceConfig.komga(key: key, name: name, server: server.absoluteString)
-            case .kavita: CustomSourceConfig.kavita(key: key, name: name, server: server.absoluteString)
+            case .komga: CustomSourceConfig.komga(configValues)
+            case .kavita: CustomSourceConfig.kavita(configValues)
+            case .suwayomi: CustomSourceConfig.suwayomi(configValues)
         }
         let source = config.toSource()
 
@@ -385,6 +389,8 @@ extension SourceManager {
                 await TrackerManager.komga.removeTrackItems(source: source)
             } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
                 await TrackerManager.kavita.removeTrackItems(source: source)
+            } else if source.key.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
+                await TrackerManager.suwayomi.removeTrackItems(source: source)
             }
             await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.removeSource(id: source.key, context: context)
@@ -464,8 +470,12 @@ extension SourceManager {
             return false
         }
 
-        let reservedPrefixes =
-            ["komga", "kavita", "local"] // built-in sources
+        let reservedPrefixes = [
+            "local",
+            KomgaSourceRunner.sourceKeyPrefix,
+            KavitaSourceRunner.sourceKeyPrefix,
+            SuwayomiSourceRunner.sourceKeyPrefix
+        ] // built-in sources
             + BackupManager.allowedSettingsPrefixes
             + BackupManager.excludedSettingsPrefixes
         let usesReservedPrefix = reservedPrefixes.contains(where: { sourceKey.hasPrefix($0) })

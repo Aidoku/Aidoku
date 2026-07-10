@@ -770,7 +770,7 @@ extension KavitaSourceRunner {
     }
 
     private func updateSourceConfig(updateSourceList: Bool = false) {
-        let config = CustomSourceConfig.kavita(key: sourceKey, name: name, server: server)
+        let config = CustomSourceConfig.kavita(.init(key: sourceKey, name: name, server: server))
         SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }
