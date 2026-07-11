@@ -17,6 +17,27 @@ enum Settings {
         return fonts
     }()
 
+    private static let sourceLanguageCodes: [String] = {
+        var languageCodes = Array(SourceManager.shared.sourceLanguages)
+
+        // sort alphabetically
+        languageCodes.sort(by: {
+            let lhs = Locale.current.localizedString(forIdentifier: $0)
+            let rhs = Locale.current.localizedString(forIdentifier: $1)
+            return lhs ?? $0 < rhs ?? $1
+        })
+
+        // bring local language to top
+        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+        if let code = Locale.current.languageCode {
+            languageCodes.insert(code, at: 0)
+        }
+
+        return languageCodes
+    }()
+
+    private static let sourceLanguageTitles = sourceLanguageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
+
     static let settings: [Setting] = [
         .init(value: .group(.init(items: [
             .init(
@@ -672,6 +693,32 @@ extension Settings {
                                     minimumValue: 0.5,
                                     maximumValue: 1.25,
                                     stepValue: 0.05
+                                ))
+                            )
+                        ]))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            requires: "Dictionary.enable",
+            value: .group(.init(
+                footer: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO"),
+                items: [
+                    .init(
+                        key: "Dictionary.restrictOCRLanguages",
+                        title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        requires: "Dictionary.restrictOCRLanguages",
+                        value: .group(.init(items: [
+                            .init(
+                                key: "Dictionary.restrictedOCRLanguages",
+                                title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
+                                value: .multiselect(.init(
+                                    values: sourceLanguageCodes,
+                                    titles: sourceLanguageTitles
                                 ))
                             )
                         ]))

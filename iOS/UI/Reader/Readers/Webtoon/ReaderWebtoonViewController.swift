@@ -95,20 +95,32 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
         scrollView.minimumZoomScale = 1
         scrollView.maximumZoomScale = 5
-        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        updateDoubleTapZoomSetting()
 
         zoomView.onZoomScaleChanged = { [weak self] scale in
             self?.setLiveTextButtonHidden(scale != 1)
         }
     }
 
+    private func updateDoubleTapZoomSetting() {
+        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+            && UserDefaults.standard.isOCREnabled(language: chapter?.language ?? viewModel.source?.languages.first)
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
+    }
+
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
         }
-        for key in ["Reader.disableDoubleTap", "Dictionary.enable", "Dictionary.lookupGesture"] {
+        for key in [
+            "Reader.disableDoubleTap",
+            "Dictionary.enable",
+            "Dictionary.lookupGesture",
+            "Dictionary.restrictOCRLanguages",
+            "Dictionary.restrictedOCRLanguages"
+        ] {
             addObserver(forName: key) { [weak self] _ in
-                self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+                self?.updateDoubleTapZoomSetting()
             }
         }
         addObserver(forName: .readerShowingBars) { [weak self] _ in
@@ -560,6 +572,7 @@ extension ReaderWebtoonViewController {
             let pages = pages[safe: chapterIndex - 1]
         else { return }
         self.chapter = chapter
+        updateDoubleTapZoomSetting()
         delegate?.setChapter(chapter)
         delegate?.setPages(pages.filter({ $0.type == .imagePage }))
         viewModel.setPages(chapter: chapter, pages: pages)
@@ -574,6 +587,7 @@ extension ReaderWebtoonViewController {
             let pages = pages[safe: chapterIndex + 1]
         else { return }
         self.chapter = chapter
+        updateDoubleTapZoomSetting()
         delegate?.setChapter(chapter)
         delegate?.setPages(pages.filter({ $0.type == .imagePage }))
         viewModel.setPages(chapter: chapter, pages: pages)
@@ -676,6 +690,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
 
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         self.chapter = chapter
+        updateDoubleTapZoomSetting()
         chapters = [chapter]
 
         Task {

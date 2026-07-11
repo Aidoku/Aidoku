@@ -120,8 +120,7 @@ extension WasmAidoku {
                 index: Int(index),
                 imageURL: imageUrlLength > 0 ? self.globalStore.readString(offset: imageUrl, length: imageUrlLength) : nil,
                 base64: base64Length > 0 ? self.globalStore.readString(offset: base64, length: base64Length) : nil,
-                text: textLength > 0 ? self.globalStore.readString(offset: text, length: textLength) : nil,
-                language: ""
+                text: textLength > 0 ? self.globalStore.readString(offset: text, length: textLength) : nil
             ))
         }
     }

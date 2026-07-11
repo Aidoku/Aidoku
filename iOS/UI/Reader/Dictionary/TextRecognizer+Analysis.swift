@@ -28,8 +28,9 @@ extension TextRecognizer {
         if let language {
             request.recognitionLanguages = [Locale.Language(identifier: language)]
         }
+        let restrictOCRLanguages = UserDefaults.standard.bool(forKey: "Dictionary.restrictOCRLanguages")
+        request.automaticallyDetectsLanguage = !restrictOCRLanguages
         request.usesLanguageCorrection = true
-        request.automaticallyDetectsLanguage = true
 
         let results = (try? await request.perform(on: cgImage)) ?? []
         return results.compactMap { observation in
@@ -128,9 +129,11 @@ enum DictionaryTextAnalysisScheduler {
         onFinish: @MainActor @escaping () -> Void
     ) {
         task?.cancel()
-        guard UserDefaults.standard.bool(forKey: "Dictionary.enable"),
-              LookupEngine.shared.isReady,
-              let image else {
+        guard
+            UserDefaults.standard.isOCREnabled(language: language),
+            LookupEngine.shared.isReady,
+            let image
+        else {
             recognizer?.reset()
             task = nil
             return

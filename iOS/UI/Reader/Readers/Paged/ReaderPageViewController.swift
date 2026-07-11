@@ -101,7 +101,8 @@ class ReaderPageViewController: BaseObservingViewController {
                 // zoom view
                 let zoomView = ZoomableScrollView(frame: view.bounds)
                 zoomView.translatesAutoresizingMaskIntoConstraints = false
-                zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+                self.zoomView = zoomView
+                updateDoubleTapZoomSetting()
                 view.addSubview(zoomView)
 
                 // page view
@@ -114,8 +115,6 @@ class ReaderPageViewController: BaseObservingViewController {
                     self?.pageView?.setLiveTextHidden(scale != 1 || (self?.delegate?.barsHidden ?? false))
                 }
                 view.addSubview(reloadButton)
-
-                self.zoomView = zoomView
         }
     }
 
@@ -150,9 +149,15 @@ class ReaderPageViewController: BaseObservingViewController {
         addObserver(forName: .orientationDidChange) { [weak self] _ in
             self?.loadPageBackground(forceReload: true)
         }
-        for key in ["Reader.disableDoubleTap", "Dictionary.enable", "Dictionary.lookupGesture"] {
+        for key in [
+            "Reader.disableDoubleTap",
+            "Dictionary.enable",
+            "Dictionary.lookupGesture",
+            "Dictionary.restrictOCRLanguages",
+            "Dictionary.restrictedOCRLanguages"
+        ] {
             addObserver(forName: key) { [weak self] _ in
-                self?.zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+                self?.updateDoubleTapZoomSetting()
             }
         }
     }
@@ -162,11 +167,18 @@ class ReaderPageViewController: BaseObservingViewController {
         loadPageBackground() // fix page background resetting on system appearance change
     }
 
+    private func updateDoubleTapZoomSetting() {
+        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+            && UserDefaults.standard.isOCREnabled(language: page?.language)
+        zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
+    }
+
     func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) {
         guard !pageSet, let pageView else { return }
         pageSet = true
         self.page = page
         self.sourceId = sourceId
+        updateDoubleTapZoomSetting()
         reloadButton.isHidden = true
         zoomView?.zoomEnabled = false
         Task {

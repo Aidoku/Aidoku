@@ -185,6 +185,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Dictionary.lookupGesture": "single-tap",
                 "Dictionary.lookupGestureLocksQuickActions": false,
                 "Dictionary.textOverlayMode": false,
+                "Dictionary.restrictOCRLanguages": false,
+                "Dictionary.restrictedOCRLanguages": [],
                 "Dictionary.OCRPreUpscale": true,
                 "Dictionary.overlayPadding": 5,
                 "Dictionary.overlayTextScaleMultiplier": 1,
@@ -919,5 +921,17 @@ extension UserDefaults {
 
     func syncReaderLookupGestureCompatibilityLocks() {
         set(isDictionaryLongPressLookupEnabled, forKey: "Dictionary.lookupGestureLocksQuickActions")
+    }
+
+    func isOCREnabled(language: String?) -> Bool {
+        guard isDictionaryLookupEnabledForReader else { return false }
+        guard
+            let language,
+            bool(forKey: "Dictionary.restrictOCRLanguages")
+        else {
+            return true
+        }
+        let languages = UserDefaults.standard.stringArray(forKey: "Dictionary.restrictedOCRLanguages") ?? []
+        return languages.contains(language)
     }
 }

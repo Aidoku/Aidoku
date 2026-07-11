@@ -83,14 +83,19 @@ class ReaderDoublePageViewController: BaseViewController {
     }
 
     private func updateDoubleTapZoomSetting() {
-        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+            && [firstPage?.language, secondPage?.language]
+                .contains { UserDefaults.standard.isOCREnabled(language: $0) }
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
     }
 
     private func observeZoomSettingChanges() {
         let names = [
             Notification.Name("Reader.disableDoubleTap"),
             Notification.Name("Dictionary.enable"),
-            Notification.Name("Dictionary.lookupGesture")
+            Notification.Name("Dictionary.lookupGesture"),
+            Notification.Name("Dictionary.restrictOCRLanguages"),
+            Notification.Name("Dictionary.restrictedOCRLanguages")
         ]
         for name in names {
             let token = NotificationCenter.default.addObserver(
@@ -218,6 +223,7 @@ class ReaderDoublePageViewController: BaseViewController {
         guard let pageView = pageView else {
             return
         }
+        updateDoubleTapZoomSetting()
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
             if !result {

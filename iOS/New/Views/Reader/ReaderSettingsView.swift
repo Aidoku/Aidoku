@@ -11,14 +11,18 @@ struct ReaderSettingsView: View {
     let mangaId: MangaIdentifier
     let reader: ReaderViewController.Reader
 
+    private let sourceLanguageCodes: [String]
+    private let sourceLanguageTitles: [String]
+
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
     @State private var dictionaryLookupGestureMode: String
-    @State private var dictionaryLookupEnabled: Bool
-    @State private var dictionaryTextOverlayModeEnabled: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
+    @StateObject private var dictionaryLookupEnabled = UserDefaultsBool(key: "Dictionary.enable")
+    @StateObject private var dictionaryTextOverlayModeEnabled = UserDefaultsBool(key: "Dictionary.textOverlayMode")
+    @StateObject private var restrictOCRLanguages = UserDefaultsBool(key: "Dictionary.restrictOCRLanguages")
 
     // All available font families on the system
     private static let availableFonts: [String] = {
@@ -33,6 +37,22 @@ struct ReaderSettingsView: View {
     init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader) {
         self.mangaId = mangaId
         self.reader = reader
+
+        var languageCodes = Array(SourceManager.shared.sourceLanguages)
+        // sort alphabetically
+        languageCodes.sort(by: {
+            let lhs = Locale.current.localizedString(forIdentifier: $0)
+            let rhs = Locale.current.localizedString(forIdentifier: $1)
+            return lhs ?? $0 < rhs ?? $1
+        })
+        // bring local language to top
+        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+        if let code = Locale.current.languageCode {
+            languageCodes.insert(code, at: 0)
+        }
+        sourceLanguageCodes = languageCodes
+        sourceLanguageTitles = languageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
+
         self._readingMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
                 .flatMap(ReadingMode.init)
@@ -43,12 +63,6 @@ struct ReaderSettingsView: View {
         )
         self._dictionaryLookupGestureMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
-        )
-        self._dictionaryLookupEnabled = State(
-            initialValue: UserDefaults.standard.bool(forKey: "Dictionary.enable")
-        )
-        self._dictionaryTextOverlayModeEnabled = State(
-            initialValue: UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode")
         )
     }
 
@@ -416,16 +430,9 @@ struct ReaderSettingsView: View {
             .onReceive(NotificationCenter.default.publisher(for: .readerTapZones)) { _ in
                 tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
             }
-            .onReceive(NotificationCenter.default.publisher(for: .init("Dictionary.enable"))) { _ in
-                dictionaryLookupEnabled = UserDefaults.standard.bool(forKey: "Dictionary.enable")
-                onSettingChange("Dictionary.enable")
-            }
             .onReceive(NotificationCenter.default.publisher(for: .init("Dictionary.lookupGesture"))) { _ in
                 dictionaryLookupGestureMode = UserDefaults.standard.string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
                 onSettingChange("Dictionary.lookupGesture")
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .init("Dictionary.textOverlayMode"))) { _ in
-                dictionaryTextOverlayModeEnabled = UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode")
             }
         }
     }
@@ -447,7 +454,7 @@ extension ReaderSettingsView {
                     value: .toggle(.init())
                 )
             )
-            if dictionaryLookupEnabled {
+            if dictionaryLookupEnabled.value {
                 NavigationLink(destination: DictionaryListView()) {
                     Text(NSLocalizedString("DICTIONARIES"))
                 }
@@ -472,7 +479,7 @@ extension ReaderSettingsView {
                         value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
                     )
                 )
-                if dictionaryTextOverlayModeEnabled {
+                if dictionaryTextOverlayModeEnabled.value {
                     SettingView(
                         setting: .init(
                             key: "Dictionary.overlayPadding",
@@ -492,6 +499,25 @@ extension ReaderSettingsView {
                                 minimumValue: 0.5,
                                 maximumValue: 1.25,
                                 stepValue: 0.05
+                            ))
+                        )
+                    )
+                }
+                SettingView(
+                    setting: .init(
+                        key: "Dictionary.restrictOCRLanguages",
+                        title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
+                        value: .toggle(.init())
+                    )
+                )
+                if restrictOCRLanguages.value {
+                    SettingView(
+                        setting: .init(
+                            key: "Dictionary.restrictedOCRLanguages",
+                            title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
+                            value: .multiselect(.init(
+                                values: sourceLanguageCodes,
+                                titles: sourceLanguageTitles
                             ))
                         )
                     )
@@ -531,10 +557,6 @@ extension ReaderSettingsView {
             }
         } header: {
             Text(NSLocalizedString("DICTIONARY_LOOKUP"))
-        } footer: {
-            if dictionaryLookupEnabled && dictionaryLookupGestureMode == "single-tap" {
-                Text(NSLocalizedString("LOOKUP_GESTURE_SINGLE_TAP_HINT"))
-            }
         }
     }
 }
