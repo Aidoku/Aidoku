@@ -216,17 +216,19 @@ class ReaderViewController: BaseObservingViewController {
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(activityIndicator)
 
-        // bar toggle tap gesture
-        configureBarToggleTapGestures()
-
         // initialize dictionary engine
-        if #available(iOS 18.0, *),
-           UserDefaults.standard.bool(forKey: "Dictionary.enable") {
+        if
+            #available(iOS 18.0, *),
+            UserDefaults.standard.bool(forKey: "Dictionary.enable")
+        {
             DictionaryManager.shared.rebuildLookupQuery()
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
         }
         configureDictionaryLookupGesture()
         configureDictionaryOverlayInteractionMode()
+
+        // bar toggle tap gesture
+        configureBarToggleTapGestures()
 
         // page offset tap gesture
         let pageOffsetGesture = UITapGestureRecognizer(target: self, action: #selector(toggleOffset))

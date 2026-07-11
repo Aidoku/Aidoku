@@ -897,7 +897,7 @@ extension UserDefaults {
 
     var isDictionaryLookupEnabledForReader: Bool {
         if #available(iOS 18.0, *) {
-            bool(forKey: "Dictionary.enable")
+            bool(forKey: "Dictionary.enable") && LookupEngine.shared.isReady
         } else {
             false
         }

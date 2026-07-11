@@ -131,7 +131,6 @@ enum DictionaryTextAnalysisScheduler {
         task?.cancel()
         guard
             UserDefaults.standard.isOCREnabled(language: language),
-            LookupEngine.shared.isReady,
             let image
         else {
             recognizer?.reset()
