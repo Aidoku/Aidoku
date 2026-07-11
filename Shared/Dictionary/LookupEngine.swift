@@ -7,29 +7,21 @@
 //
 
 import Foundation
-#if canImport(CHoshiDicts)
 import CHoshiDicts
-import CxxStdlib
-#endif
 
-@available(iOS 18.0, *)
+@available(iOS 18.0, macOS 15.0, *)
 class LookupEngine {
     static let shared = LookupEngine()
 
-    #if canImport(CHoshiDicts)
     private var dictQuery: DictionaryQuery?
     private var deinflector: Deinflector?
     private var lookupEngine: Lookup?
-    #endif
 
     private init() {
-        #if canImport(CHoshiDicts)
         deinflector = Deinflector()
-        #endif
     }
 
     func buildQuery(termPaths: [URL], freqPaths: [URL], pitchPaths: [URL]) {
-        #if canImport(CHoshiDicts)
         lookupEngine = nil
         dictQuery = nil
 
@@ -50,19 +42,13 @@ class LookupEngine {
         if dictQuery != nil, deinflector != nil {
             lookupEngine = Lookup(&dictQuery!, &deinflector!)
         }
-        #endif
     }
 
     var isReady: Bool {
-        #if canImport(CHoshiDicts)
-        return lookupEngine != nil
-        #else
-        return false
-        #endif
+        lookupEngine != nil
     }
 
     func lookup(_ str: String, maxResults: Int = 16) -> [DictEntryData] {
-        #if canImport(CHoshiDicts)
         guard let lookupEngine else { return [] }
         let results = Array(lookupEngine.lookup(std.string(str), Int32(maxResults)))
         return results.map { result in
@@ -124,13 +110,9 @@ class LookupEngine {
                 definitionTags: []
             )
         }
-        #else
-        return []
-        #endif
     }
 
     func getStyles() -> [String: String] {
-        #if canImport(CHoshiDicts)
         guard dictQuery != nil else { return [:] }
         var styles: [String: String] = [:]
         for style in dictQuery!.get_styles() {
@@ -141,8 +123,5 @@ class LookupEngine {
             }
         }
         return styles
-        #else
-        return [:]
-        #endif
     }
 }

@@ -38,10 +38,6 @@
 		7C63F0D92F48FD4B007D1811 /* ChapterTransitionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C63F0D42F48FD4B007D1811 /* ChapterTransitionViewController.swift */; };
 		7CF79D3D2F31E81300BF0800 /* ReaderPagedTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF79D392F31E81300BF0800 /* ReaderPagedTextViewController.swift */; };
 		7CF79D3E2F31E81300BF0800 /* TextPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF79D3A2F31E81300BF0800 /* TextPaginator.swift */; };
-		FB0051222FAF054D004B4A6F /* MigrateSelectSeriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */; };
-		FB0051262FAF0574004B4A6F /* MigrateResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */; };
-		FB0051282FB7F926004B4A6F /* MigrateSingleSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */; };
-		FB0051422FB970FF004B4A6F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051412FB970FD004B4A6F /* SafariView.swift */; };
 		EE7A41B92F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
 		EE7A41BA2F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
 		EE7A41BC2F5CF4ED0044AF4C /* LookupEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */; };
@@ -49,17 +45,21 @@
 		EE7A41BF2F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
 		EE7A41C02F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
 		EE7A41C22F5CF5960044AF4C /* TextRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */; };
+		EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */; };
+		EE7A41C62F5CF6460044AF4C /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C52F5CF6460044AF4C /* popup.js */; };
+		EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C72F5CF65B0044AF4C /* popup.css */; };
+		EE7A41CB2F5CF7710044AF4C /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */; };
+		EE7A41E52F5CFA630044AF4C /* DictionaryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */; };
+		EE7A41EE2F5D04B40044AF4C /* selection.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41ED2F5D04B40044AF4C /* selection.js */; };
 		EE7A42112F5E31A10044AF4C /* TextRecognizer+Analysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */; };
 		EE7A42122F5E31A10044AF4C /* TextRecognizer+Lookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */; };
 		EE7A42132F5E31A10044AF4C /* TextRecognizer+Clustering.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */; };
 		EE7A42142F5E31A10044AF4C /* DictionaryOverlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */; };
 		EE7A42262F5E90010044AF4C /* ReaderDictionaryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */; };
-		EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */; };
-		EE7A41C62F5CF6460044AF4C /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C52F5CF6460044AF4C /* popup.js */; };
-		EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C72F5CF65B0044AF4C /* popup.css */; };
-		EE7A41EE2F5D04B40044AF4C /* selection.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41ED2F5D04B40044AF4C /* selection.js */; };
-		EE7A41CB2F5CF7710044AF4C /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */; };
-		EE7A41E52F5CFA630044AF4C /* DictionaryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */; };
+		FB0051222FAF054D004B4A6F /* MigrateSelectSeriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */; };
+		FB0051262FAF0574004B4A6F /* MigrateResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */; };
+		FB0051282FB7F926004B4A6F /* MigrateSingleSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */; };
+		FB0051422FB970FF004B4A6F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0051412FB970FD004B4A6F /* SafariView.swift */; };
 		FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */; };
 		FB02E1F2288D7BE900B9E2DE /* MangaGridCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */; };
 		FB02E1F4288D7C0C00B9E2DE /* Manga.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB02E1F3288D7C0C00B9E2DE /* Manga.swift */; };
@@ -616,6 +616,7 @@
 		FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
+		FBFC09843001DF36007C94E8 /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = FBFC09833001DF36007C94E8 /* CHoshiDicts */; };
 		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 		FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
 		FBFDF5F82DF799180064F603 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FBFDF5F72DF799180064F603 /* AidokuRunner */; };
@@ -665,24 +666,24 @@
 		91D7BEF92DD7E48400898539 /* Aidoku-MACOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Aidoku-MACOS.xcconfig"; sourceTree = "<group>"; };
 		91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Aidoku.xcconfig; sourceTree = "<group>"; };
 		91D7BEFF2DD8881300898539 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSelectSeriesView.swift; sourceTree = "<group>"; };
-		FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateResultsView.swift; sourceTree = "<group>"; };
-		FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSingleSearchView.swift; sourceTree = "<group>"; };
-		FB0051412FB970FD004B4A6F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryModels.swift; sourceTree = "<group>"; };
 		EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupEngine.swift; sourceTree = "<group>"; };
 		EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryManager.swift; sourceTree = "<group>"; };
 		EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognizer.swift; sourceTree = "<group>"; };
+		EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryPopupView.swift; sourceTree = "<group>"; };
+		EE7A41C52F5CF6460044AF4C /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		EE7A41C72F5CF65B0044AF4C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
+		EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryListView.swift; sourceTree = "<group>"; };
+		EE7A41ED2F5D04B40044AF4C /* selection.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = selection.js; sourceTree = "<group>"; };
 		EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Analysis.swift"; sourceTree = "<group>"; };
 		EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Lookup.swift"; sourceTree = "<group>"; };
 		EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TextRecognizer+Clustering.swift"; sourceTree = "<group>"; };
 		EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryOverlayButton.swift; sourceTree = "<group>"; };
 		EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDictionaryCoordinator.swift; sourceTree = "<group>"; };
-		EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryPopupView.swift; sourceTree = "<group>"; };
-		EE7A41C52F5CF6460044AF4C /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
-		EE7A41C72F5CF65B0044AF4C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
-		EE7A41ED2F5D04B40044AF4C /* selection.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = selection.js; sourceTree = "<group>"; };
-		EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryListView.swift; sourceTree = "<group>"; };
+		FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSelectSeriesView.swift; sourceTree = "<group>"; };
+		FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateResultsView.swift; sourceTree = "<group>"; };
+		FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigrateSingleSearchView.swift; sourceTree = "<group>"; };
+		FB0051412FB970FD004B4A6F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		FB02E1EA288CC1DA00B9E2DE /* LibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewController.swift; sourceTree = "<group>"; };
 		FB02E1F1288D7BE900B9E2DE /* MangaGridCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridCell.swift; sourceTree = "<group>"; };
 		FB02E1F3288D7C0C00B9E2DE /* Manga.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manga.swift; sourceTree = "<group>"; };
@@ -1159,6 +1160,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBFC09843001DF36007C94E8 /* CHoshiDicts in Frameworks */,
 				FB6340C9279246D50072A2A2 /* ZIPFoundation in Frameworks */,
 				FB14B1352DF4D4E70067E4D4 /* Nuke in Frameworks */,
 				FBFDF5FA2DF799340064F603 /* AidokuRunner in Frameworks */,
@@ -1204,18 +1206,6 @@
 			path = Updates;
 			sourceTree = "<group>";
 		};
-		FB0051202FAF01ED004B4A6F /* Migration */ = {
-			isa = PBXGroup;
-			children = (
-				FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */,
-				FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */,
-				FB9A48322967E41400FFC414 /* MigrateSelectDestinationView.swift */,
-				FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */,
-				FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */,
-			);
-			path = Migration;
-			sourceTree = "<group>";
-		};
 		EE7A41B62F5CF4CE0044AF4C /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
@@ -1241,6 +1231,18 @@
 				EE7A41ED2F5D04B40044AF4C /* selection.js */,
 			);
 			path = Dictionary;
+			sourceTree = "<group>";
+		};
+		FB0051202FAF01ED004B4A6F /* Migration */ = {
+			isa = PBXGroup;
+			children = (
+				FB9A483F29688B5300FFC414 /* MigrateSourcesView.swift */,
+				FB0051212FAF053F004B4A6F /* MigrateSelectSeriesView.swift */,
+				FB9A48322967E41400FFC414 /* MigrateSelectDestinationView.swift */,
+				FB0051252FAF056E004B4A6F /* MigrateResultsView.swift */,
+				FB0051272FB7F91E004B4A6F /* MigrateSingleSearchView.swift */,
+			);
+			path = Migration;
 			sourceTree = "<group>";
 		};
 		FB02E1EE288D7B9D00B9E2DE /* UI */ = {
@@ -2509,6 +2511,7 @@
 				FB6340C8279246D50072A2A2 /* ZIPFoundation */,
 				FB14B1342DF4D4E70067E4D4 /* Nuke */,
 				FBFDF5F92DF799340064F603 /* AidokuRunner */,
+				FBFC09833001DF36007C94E8 /* CHoshiDicts */,
 			);
 			productName = "Aidoku (macOS)";
 			productReference = FB1B483B277CE1920056D02C /* Aidoku.app */;
@@ -3613,6 +3616,7 @@
 				PRODUCT_NAME = Aidoku;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -3648,6 +3652,7 @@
 				PRODUCT_NAME = Aidoku;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3881,6 +3886,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FBE53F0A29CC015E00899601 /* XCRemoteSwiftPackageReference "Texture" */;
 			productName = AsyncDisplayKit;
+		};
+		FBFC09833001DF36007C94E8 /* CHoshiDicts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EE7A41EF2F5D20000044AF4C /* XCRemoteSwiftPackageReference "hoshidicts" */;
+			productName = CHoshiDicts;
 		};
 		FBFDF5F72DF799180064F603 /* AidokuRunner */ = {
 			isa = XCSwiftPackageProductDependency;

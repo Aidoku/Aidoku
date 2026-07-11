@@ -579,6 +579,8 @@
 "DICTIONARY_LOOKUP" = "Dictionary Lookup";
 "DICTIONARY_SETTINGS_TEXT" = "Enable Dictionary Lookup to allow OCR processing on page images to search words in any imported Yomitan dictionaries.";
 "DICTIONARIES" = "Dictionaries";
+"ABOUT_DICTIONARIES" = "About Dictionaries";
+"ABOUT_DICTIONARIES_TEXT" = "Yomitan dictionaries can be imported from zip files. You can enable or disable dictionaries, and they can be reordered by dragging.";
 "LOOKUP_GESTURE" = "Lookup Gesture";
 "SINGLE_TAP" = "Single Tap";
 "LONG_PRESS" = "Long Press";

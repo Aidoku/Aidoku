@@ -7,12 +7,11 @@
 //
 
 import Foundation
-#if canImport(CHoshiDicts)
 import CHoshiDicts
 import CxxStdlib
-#endif
 
-@available(iOS 18.0, *)
+@available(iOS 18.0, macOS 15.0, *)
+@MainActor
 class DictionaryManager {
     static let shared = DictionaryManager()
 
@@ -138,64 +137,60 @@ class DictionaryManager {
         }
     }
 
-    func importDictionary(from urls: [URL], type: DictionaryType) async -> ImportSummary {
-        #if canImport(CHoshiDicts)
-        guard !urls.isEmpty else {
-            return .init(imported: [], failed: [])
-        }
-
-        guard let destinationDir = try? Self.getDictionariesDirectory()
-            .appendingPathComponent(type.rawValue)
-        else {
+    func importDictionary(from urls: [URL]) async -> ImportSummary {
+        guard let dictionariesDir = try? Self.getDictionariesDirectory() else {
             let failed = urls.map(\.lastPathComponent)
             return .init(imported: [], failed: failed)
         }
 
-        let destinationPath = destinationDir.path(percentEncoded: false)
-        if !FileManager.default.fileExists(atPath: destinationPath) {
-            try? FileManager.default.createDirectory(at: destinationDir, withIntermediateDirectories: true)
-        }
+        return await Task.detached {
+            var imported: [String] = []
+            var failed: [String] = []
 
-        var imported: [String] = []
-        var failed: [String] = []
-        for url in urls {
-            let fileName = url.lastPathComponent
-            let hasAccess = url.startAccessingSecurityScopedResource()
-            defer {
-                if hasAccess { url.stopAccessingSecurityScopedResource() }
-            }
+            for url in urls {
+                let current = url.lastPathComponent
+                guard url.startAccessingSecurityScopedResource() else {
+                    failed.append(current)
+                    continue
+                }
 
-            let sourcePath = url.path(percentEncoded: false)
-            guard FileManager.default.fileExists(atPath: sourcePath) else {
-                failed.append(fileName)
-                continue
-            }
+                defer { url.stopAccessingSecurityScopedResource() }
 
-            let importResult = await Task.detached {
-                dictionary_importer.import(
-                    std.string(sourcePath),
-                    std.string(destinationPath)
+                let importResult = dictionary_importer.import(
+                    std.string(url.path(percentEncoded: false)),
+                    std.string(FileManager.default.temporaryDirectory.path(percentEncoded: false))
                 )
-            }.value
-            if importResult.term_count > 0 || importResult.meta_count > 0 {
-                imported.append(fileName)
-            } else {
-                failed.append(fileName)
-            }
-        }
 
-        if !imported.isEmpty {
-            await MainActor.run {
-                loadDictionaries()
-                saveDictionaryConfig()
+                if importResult.success {
+                    let title = String(cString: importResult.title.__c_strUnsafe())
+                    let temp = FileManager.default.temporaryDirectory.appendingPathComponent(title)
+                    defer { try? FileManager.default.removeItem(at: temp) }
+                    if importResult.term_count > 0 {
+                        let destination = dictionariesDir.appendingPathComponent(DictionaryType.term.rawValue).appendingPathComponent(title)
+                        try? FileManager.default.moveItem(at: temp, to: destination)
+                    } else if importResult.freq_count > 0 {
+                        let destination = dictionariesDir.appendingPathComponent(DictionaryType.frequency.rawValue).appendingPathComponent(title)
+                        try? FileManager.default.moveItem(at: temp, to: destination)
+                    } else if importResult.pitch_count > 0 {
+                        let destination = dictionariesDir.appendingPathComponent(DictionaryType.pitch.rawValue).appendingPathComponent(title)
+                        try? FileManager.default.moveItem(at: temp, to: destination)
+                    }
+                    imported.append(current)
+                } else {
+                    failed.append(current)
+                }
             }
-        }
 
-        return .init(imported: imported, failed: failed)
-        #else
-        let failed = urls.map(\.lastPathComponent)
-        return .init(imported: [], failed: failed)
-        #endif
+            await MainActor.run { [imported] in
+                if !imported.isEmpty {
+                    self.loadDictionaries()
+                    self.saveDictionaryConfig()
+                    self.rebuildLookupQuery()
+                }
+            }
+
+            return .init(imported: imported, failed: failed)
+        }.value
     }
 
     func deleteDictionary(indexSet: IndexSet, type: DictionaryType) {

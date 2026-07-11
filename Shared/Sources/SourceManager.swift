@@ -145,7 +145,7 @@ extension SourceManager {
         Self.directory.createDirectory()
 
         // download and unzip source aix
-        guard let temporaryDirectory = FileManager.default.temporaryDirectory else { return nil }
+        let temporaryDirectory = FileManager.default.temporaryDirectory
         var secured = false
         var fileUrl = url
         if fileUrl.scheme != "file" {

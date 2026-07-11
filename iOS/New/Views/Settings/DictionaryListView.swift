@@ -5,6 +5,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+import SafariServices
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -15,69 +16,100 @@ struct DictionaryListView: View {
     @State private var pitchDicts: [DictionaryInfo] = []
 
     @State private var importing = false
-    @State private var importType: DictionaryType = .term
     @State private var isImporting = false
+    @State private var showSafari = false
+
+    @StateObject private var dismissedInfo = UserDefaultsBool(key: "Flag.dismissedDictionaryInfo")
 
     var body: some View {
         List {
-            Section {
-                ForEach(termDicts) { dict in
-                    dictRow(dict, type: .term)
+            if !dismissedInfo.value {
+                ZStack(alignment: .topTrailing) {
+                    HStack(alignment: .top, spacing: 16) {
+                        Image(systemName: "character.book.closed")
+                            .font(.title)
+                            .foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(NSLocalizedString("ABOUT_DICTIONARIES"))
+                                .fontWeight(.medium)
+                                .foregroundStyle(.primary)
+                            Text(NSLocalizedString("ABOUT_DICTIONARIES_TEXT"))
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.leading)
+                            Button {
+                                showSafari = true
+                            } label: {
+                                Text(NSLocalizedString("LEARN_MORE"))
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal, 11)
+                                    .background(Capsule().fill(.tint.opacity(0.1)))
+                            }
+                            .buttonStyle(.borderless)
+                            .padding(.top, 4)
+                        }
+                    }
+                    Button {
+                        withAnimation {
+                            dismissedInfo.value = true
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14).weight(.bold))
+                            .foregroundStyle(.secondary)
+                            .padding(6)
+                            .background(Circle().fill(Color(uiColor: .tertiarySystemFill)))
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.primary)
+                    .offset(x: 8, y: -8)
                 }
-                .onDelete { offsets in delete(offsets: offsets, type: .term) }
-                .onMove { from, to in move(from: from, to: to, type: .term) }
-            } header: {
-                Text(NSLocalizedString("TERM_DICTIONARIES"))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 6)
             }
 
-            Section {
-                ForEach(freqDicts) { dict in
-                    dictRow(dict, type: .frequency)
+            if !termDicts.isEmpty {
+                Section {
+                    ForEach(termDicts) { dict in
+                        dictRow(dict, type: .term)
+                    }
+                    .onDelete { offsets in delete(offsets: offsets, type: .term) }
+                    .onMove { from, to in move(from: from, to: to, type: .term) }
+                } header: {
+                    Text(NSLocalizedString("TERM_DICTIONARIES"))
                 }
-                .onDelete { offsets in delete(offsets: offsets, type: .frequency) }
-                .onMove { from, to in move(from: from, to: to, type: .frequency) }
-            } header: {
-                Text(NSLocalizedString("FREQUENCY_DICTIONARIES"))
             }
-
-            Section {
-                ForEach(pitchDicts) { dict in
-                    dictRow(dict, type: .pitch)
+            if !freqDicts.isEmpty {
+                Section {
+                    ForEach(freqDicts) { dict in
+                        dictRow(dict, type: .frequency)
+                    }
+                    .onDelete { offsets in delete(offsets: offsets, type: .frequency) }
+                    .onMove { from, to in move(from: from, to: to, type: .frequency) }
+                } header: {
+                    Text(NSLocalizedString("FREQUENCY_DICTIONARIES"))
                 }
-                .onDelete { offsets in delete(offsets: offsets, type: .pitch) }
-                .onMove { from, to in move(from: from, to: to, type: .pitch) }
-            } header: {
-                Text(NSLocalizedString("PITCH_DICTIONARIES"))
+            }
+            if !pitchDicts.isEmpty {
+                Section {
+                    ForEach(pitchDicts) { dict in
+                        dictRow(dict, type: .pitch)
+                    }
+                    .onDelete { offsets in delete(offsets: offsets, type: .pitch) }
+                    .onMove { from, to in move(from: from, to: to, type: .pitch) }
+                } header: {
+                    Text(NSLocalizedString("PITCH_DICTIONARIES"))
+                }
             }
         }
         .navigationTitle(NSLocalizedString("DICTIONARIES"))
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button {
-                        importType = .term
-                        importing = true
-                    } label: {
-                        Label(NSLocalizedString("IMPORT_TERM_DICTIONARY"), systemImage: "text.book.closed")
-                    }
-                    Button {
-                        importType = .frequency
-                        importing = true
-                    } label: {
-                        Label(NSLocalizedString("IMPORT_FREQUENCY_DICTIONARY"), systemImage: "number")
-                    }
-                    Button {
-                        importType = .pitch
-                        importing = true
-                    } label: {
-                        Label(NSLocalizedString("IMPORT_PITCH_DICTIONARY"), systemImage: "waveform")
-                    }
+                Button {
+                    importing = true
                 } label: {
                     Image(systemName: "plus")
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                EditButton()
             }
         }
         .overlay {
@@ -94,8 +126,11 @@ struct DictionaryListView: View {
             ) { urls in
                 importing = false
                 guard !urls.isEmpty else { return }
-                importDictionaries(urls: urls, type: importType)
+                importDictionaries(urls: urls)
             }
+        }
+        .sheet(isPresented: $showSafari) {
+            SafariView(url: .constant(URL(string: "https://yomitan.wiki/dictionaries/")))
         }
         .onAppear {
             reload()
@@ -128,33 +163,33 @@ struct DictionaryListView: View {
 
     func move(from source: IndexSet, to destination: Int, type: DictionaryType) {
         switch type {
-        case .term:
-            termDicts.move(fromOffsets: source, toOffset: destination)
-            for i in termDicts.indices {
-                termDicts[i].order = i
-            }
-            DictionaryManager.shared.termDictionaries = termDicts
-        case .frequency:
-            freqDicts.move(fromOffsets: source, toOffset: destination)
-            for i in freqDicts.indices {
-                freqDicts[i].order = i
-            }
-            DictionaryManager.shared.frequencyDictionaries = freqDicts
-        case .pitch:
-            pitchDicts.move(fromOffsets: source, toOffset: destination)
-            for i in pitchDicts.indices {
-                pitchDicts[i].order = i
-            }
-            DictionaryManager.shared.pitchDictionaries = pitchDicts
+            case .term:
+                termDicts.move(fromOffsets: source, toOffset: destination)
+                for i in termDicts.indices {
+                    termDicts[i].order = i
+                }
+                DictionaryManager.shared.termDictionaries = termDicts
+            case .frequency:
+                freqDicts.move(fromOffsets: source, toOffset: destination)
+                for i in freqDicts.indices {
+                    freqDicts[i].order = i
+                }
+                DictionaryManager.shared.frequencyDictionaries = freqDicts
+            case .pitch:
+                pitchDicts.move(fromOffsets: source, toOffset: destination)
+                for i in pitchDicts.indices {
+                    pitchDicts[i].order = i
+                }
+                DictionaryManager.shared.pitchDictionaries = pitchDicts
         }
         DictionaryManager.shared.saveDictionaryConfig()
         DictionaryManager.shared.rebuildLookupQuery()
     }
 
-    func importDictionaries(urls: [URL], type: DictionaryType) {
+    func importDictionaries(urls: [URL]) {
         isImporting = true
         Task {
-            let result = await DictionaryManager.shared.importDictionary(from: urls, type: type)
+            let result = await DictionaryManager.shared.importDictionary(from: urls)
             await MainActor.run {
                 isImporting = false
                 if result.didImportAny {
