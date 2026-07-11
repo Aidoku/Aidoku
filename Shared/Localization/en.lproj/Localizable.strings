@@ -574,6 +574,12 @@
 "TEXT_FONT_SIZE" = "Font Size";
 "TEXT_LINE_SPACING" = "Line Spacing";
 "TEXT_HORIZONTAL_PADDING" = "Horizontal Padding";
+"TEXT_COLORS" = "Colors";
+"TEXT_BACKGROUND_COLOR_LIGHT" = "Background Color (Light)";
+"TEXT_BACKGROUND_COLOR_DARK" = "Background Color (Dark)";
+"TEXT_COLOR_LIGHT" = "Text Color (Light)";
+"TEXT_COLOR_DARK" = "Text Color (Dark)";
+"RESET_COLORS" = "Reset Colors";
 
 // Backups
 "BACKUPS" = "Backups";

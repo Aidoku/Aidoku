@@ -336,6 +336,8 @@ extension SettingsView {
                 return setting
             }()
             SettingView(setting: newSetting)
+        } else if setting.key == "Reader.textColors" {
+            ReaderTextColorSettingsRows()
         }
     }
 }

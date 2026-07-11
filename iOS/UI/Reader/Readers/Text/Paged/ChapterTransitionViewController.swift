@@ -56,7 +56,7 @@ extension ReaderPagedTextViewController.ChapterTransitionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.background
 
         guard let infoView else { return }
         infoView.translatesAutoresizingMaskIntoConstraints = false
@@ -103,7 +103,7 @@ extension ReaderPagedTextViewController {
 
         override func viewDidLoad() {
             super.viewDidLoad()
-            view.backgroundColor = .systemBackground
+            view.backgroundColor = ReaderTextTheme.background
         }
     }
 }

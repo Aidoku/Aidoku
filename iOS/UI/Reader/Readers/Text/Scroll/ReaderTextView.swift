@@ -68,7 +68,8 @@ struct ReaderTextView: View {
                fontFamily: fontFamily,
                fontSize: fontSize,
                lineSpacing: lineSpacing,
-               horizontalPadding: horizontalPadding
+               horizontalPadding: horizontalPadding,
+               textColor: Color(uiColor: ReaderTextTheme.text)
            )
            .frame(maxWidth: .infinity, alignment: .leading)
            .ignoresSafeArea()

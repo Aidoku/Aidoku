@@ -17,13 +17,22 @@ struct MarkdownView: View {
     let fontSize: CGFloat
     let lineSpacing: CGFloat
     let horizontalPadding: CGFloat
+    let textColor: Color?
 
-    init(_ markdownString: String, fontFamily: String = "System", fontSize: CGFloat = 18, lineSpacing: CGFloat = 8, horizontalPadding: CGFloat = 16) {
+    init(
+        _ markdownString: String,
+        fontFamily: String = "System",
+        fontSize: CGFloat = 18,
+        lineSpacing: CGFloat = 8,
+        horizontalPadding: CGFloat = 16,
+        textColor: Color? = nil
+    ) {
         self.markdownString = markdownString
         self.fontFamily = fontFamily
         self.fontSize = fontSize
         self.lineSpacing = lineSpacing
         self.horizontalPadding = horizontalPadding
+        self.textColor = textColor
     }
 
     private var textFont: Font {
@@ -41,6 +50,7 @@ struct MarkdownView: View {
         .markdownTextStyle {
             FontFamily(.custom(fontFamily == "System" ? ".AppleSystemUIFont" : fontFamily))
             FontSize(fontSize)
+            ForegroundColor(textColor ?? .primary)
         }
         .markdownBlockStyle(\.paragraph) { configuration in
             configuration.label
