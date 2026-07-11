@@ -266,6 +266,9 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.disableDoubleTap") { [weak self] _ in
             self?.configureBarToggleTapGestures()
         }
+        addObserver(forName: .readerTapZones) { [weak self] _ in
+            self?.updateTapZone()
+        }
         let reloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
@@ -275,7 +278,6 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.upscaleImages", using: reloadBlock)
         addObserver(forName: "Reader.cropBorders", using: reloadBlock)
         addObserver(forName: "Reader.liveText", using: reloadBlock)
-        addObserver(forName: "Reader.tapZones", using: reloadBlock)
         addObserver(forName: "Dictionary.overlayPadding", using: reloadBlock)
         addObserver(forName: "Dictionary.overlayTextScaleMultiplier", using: reloadBlock)
         addObserver(forName: "Dictionary.OCRLanguage", using: reloadBlock)
@@ -1090,21 +1092,27 @@ extension ReaderViewController {
             return
         }
 
-        if #available(iOS 18.0, *),
-           overlayModeEnabled,
-           reader?.dismissActiveDictionaryOverlay() == true {
+        // dismiss text overlay box if visible
+        if
+            #available(iOS 18.0, *),
+            overlayModeEnabled,
+            reader?.dismissActiveDictionaryOverlay() == true
+        {
             return
         }
 
+        // toggle bars when tapping safe areas
         if singleTapLookupEnabled, isReaderControlToggleTapZone(point) {
             toggleBarVisibility()
             return
         }
 
         // check for dictionary lookup
-        if #available(iOS 18.0, *),
-           singleTapOCRLookupEnabled,
-           LookupEngine.shared.isReady {
+        if
+            #available(iOS 18.0, *),
+            singleTapOCRLookupEnabled,
+            LookupEngine.shared.isReady
+        {
             if let result = reader?.recognizedText(at: point) {
                 if performDictionaryLookup(
                     text: result.text,
@@ -1117,7 +1125,6 @@ extension ReaderViewController {
         }
 
         guard let reader, let tapZone else {
-            if singleTapLookupEnabled { return }
             toggleBarVisibility()
             return
         }
@@ -1133,9 +1140,7 @@ extension ReaderViewController {
 
         if let type {
             // hide the bars when tapping regardless
-            if !singleTapLookupEnabled,
-               let navigationController,
-               navigationController.navigationBar.alpha > 0 {
+            if let navigationController, navigationController.navigationBar.alpha > 0 {
                 hideBars()
             }
             // handle page moving
@@ -1151,7 +1156,6 @@ extension ReaderViewController {
                 }
             }
         } else {
-            if singleTapLookupEnabled { return }
             toggleBarVisibility()
         }
     }
@@ -1161,7 +1165,6 @@ extension ReaderViewController {
         if point.y <= topZoneHeight {
             return true
         }
-
         let bottomZoneMinY = view.bounds.height - readerControlBottomTapZoneHeight
         return point.y >= bottomZoneMinY
     }
