@@ -149,12 +149,12 @@ class DictionaryManager {
 
             for url in urls {
                 let current = url.lastPathComponent
-                guard url.startAccessingSecurityScopedResource() else {
-                    failed.append(current)
-                    continue
+                let secured = url.startAccessingSecurityScopedResource()
+                defer {
+                    if secured {
+                        url.stopAccessingSecurityScopedResource()
+                    }
                 }
-
-                defer { url.stopAccessingSecurityScopedResource() }
 
                 let importResult = dictionary_importer.import(
                     std.string(url.path(percentEncoded: false)),

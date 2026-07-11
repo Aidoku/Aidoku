@@ -195,6 +195,9 @@ struct DictionaryListView: View {
                 if result.didImportAny {
                     reload()
                 }
+                if !result.failed.isEmpty {
+                    LogManager.logger.error("Failed to import dictionaries: \(result.failed.joined(separator: ", "))")
+                }
             }
         }
     }
