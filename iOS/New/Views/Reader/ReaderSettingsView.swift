@@ -503,9 +503,9 @@ extension ReaderSettingsView {
                         value: .select(.init(
                             values: ["ja", "zh", "ko"],
                             titles: [
-                                NSLocalizedString("DICTIONARY_OCR_LANGUAGE_JAPANESE"),
-                                NSLocalizedString("DICTIONARY_OCR_LANGUAGE_CHINESE"),
-                                NSLocalizedString("DICTIONARY_OCR_LANGUAGE_KOREAN")
+                                Locale.current.localizedString(forLanguageCode: "ja") ?? "Japanese",
+                                Locale.current.localizedString(forLanguageCode: "zh") ?? "Chinese",
+                                Locale.current.localizedString(forLanguageCode: "ko") ?? "Korean"
                             ]
                         ))
                     )
