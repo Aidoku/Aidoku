@@ -212,7 +212,7 @@ class ReaderViewController: BaseObservingViewController {
 
         // initialize dictionary engine
         if #available(iOS 18.0, *),
-           UserDefaults.standard.bool(forKey: "Reader.dictionary") {
+           UserDefaults.standard.bool(forKey: "Dictionary.enable") {
             DictionaryManager.shared.rebuildLookupQuery()
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
         }
@@ -276,33 +276,21 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.cropBorders", using: reloadBlock)
         addObserver(forName: "Reader.liveText", using: reloadBlock)
         addObserver(forName: "Reader.tapZones", using: reloadBlock)
-        addObserver(forName: "Reader.dictionaryOverlayPadding", using: reloadBlock)
-        addObserver(forName: "Reader.dictionaryOverlayTextScaleMultiplier", using: reloadBlock)
-        addObserver(forName: "Reader.dictionaryOCRLanguage", using: reloadBlock)
-        addObserver(forName: "Reader.dictionaryOCRPreUpscale", using: reloadBlock)
-        addObserver(forName: "Reader.dictionary") { [weak self] _ in
+        addObserver(forName: "Dictionary.overlayPadding", using: reloadBlock)
+        addObserver(forName: "Dictionary.overlayTextScaleMultiplier", using: reloadBlock)
+        addObserver(forName: "Dictionary.OCRLanguage", using: reloadBlock)
+        addObserver(forName: "Dictionary.OCRPreUpscale", using: reloadBlock)
+        let dictionaryReloadBlock: (Notification) -> Void = { [weak self] _ in
+            guard let self else { return }
             UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
-            self?.configureBarToggleTapGestures()
-            self?.configureDictionaryLookupGesture()
-            self?.configureDictionaryOverlayInteractionMode()
-            guard let self else { return }
+            self.configureBarToggleTapGestures()
+            self.configureDictionaryLookupGesture()
+            self.configureDictionaryOverlayInteractionMode()
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
-        addObserver(forName: "Reader.dictionaryLookupGesture") { [weak self] _ in
-            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
-            self?.configureBarToggleTapGestures()
-            self?.configureDictionaryLookupGesture()
-            self?.configureDictionaryOverlayInteractionMode()
-            guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
-        addObserver(forName: "Reader.dictionaryTextOverlayMode") { [weak self] _ in
-            self?.configureBarToggleTapGestures()
-            self?.configureDictionaryOverlayInteractionMode()
-            self?.configureDictionaryOverlayTapHandler()
-            guard let self else { return }
-            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
-        }
+        addObserver(forName: "Dictionary.enable", using: dictionaryReloadBlock)
+        addObserver(forName: "Dictionary.lookupGesture", using: dictionaryReloadBlock)
+        addObserver(forName: "Dictionary.textOverlayMode", using: dictionaryReloadBlock)
         // Switch text reader style (paged <-> scroll) without restart
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
@@ -1005,7 +993,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         dictionaryLongPressSelection = nil
 
         guard UserDefaults.standard.isDictionaryLongPressLookupEnabled else { return }
-        guard !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+        guard !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
 
         let gesture = UILongPressGestureRecognizer(target: self, action: #selector(handleDictionaryLongPress(_:)))
         gesture.minimumPressDuration = 0.25
@@ -1018,7 +1006,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     @objc private func handleDictionaryLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         guard #available(iOS 18.0, *) else { return }
         guard UserDefaults.standard.isDictionaryLongPressLookupEnabled else { return }
-        guard !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+        guard !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
         guard !isDictionaryPopupVisible else { return }
         guard LookupEngine.shared.isReady else { return }
 
@@ -1092,7 +1080,7 @@ extension ReaderViewController {
 
     @objc func handleTap(_ gestureRecognizer: UITapGestureRecognizer) {
         let point = gestureRecognizer.location(in: view)
-        let overlayModeEnabled = UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode")
+        let overlayModeEnabled = UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode")
         let singleTapLookupEnabled = UserDefaults.standard.isDictionarySingleTapLookupEnabled
         let singleTapOCRLookupEnabled = singleTapLookupEnabled && !overlayModeEnabled
 
@@ -1263,7 +1251,7 @@ extension ReaderViewController {
         guard #available(iOS 18.0, *) else { return }
 
         let mode: DictionaryOverlayInteractionMode
-        if !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") {
+        if !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") {
             mode = .none
         } else if UserDefaults.standard.isDictionarySingleTapLookupEnabled {
             mode = .singleTap
@@ -1280,7 +1268,7 @@ extension ReaderViewController {
         guard #available(iOS 18.0, *) else { return }
         reader?.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
             guard let self else { return }
-            guard UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+            guard UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
             _ = performDictionaryLookup(text: text, anchorRect: rect, charRects: charRects)
         }
     }

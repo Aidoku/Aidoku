@@ -502,7 +502,7 @@ extension SettingView {
 extension (SettingView) {
     private var shouldShowDisabledOnlyToggleSubtitle: Bool {
         switch setting.key {
-            case "Reader.disableQuickActions", "Reader.dictionaryOCRPreUpscale":
+            case "Reader.disableQuickActions", "Dictionary.OCRPreUpscale":
                 return true
             default:
                 return false
@@ -516,7 +516,7 @@ extension (SettingView) {
             case "Reader.disableQuickActions":
                 // Lookup gesture lock effectively forces these protections on.
                 return true
-            case "Reader.dictionaryOCRPreUpscale":
+            case "Dictionary.OCRPreUpscale":
                 // Upscale Images lock effectively forces OCR pre-upscale off.
                 return false
             default:

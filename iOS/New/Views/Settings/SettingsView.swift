@@ -168,7 +168,7 @@ extension SettingsView {
                 }
             case "Logs.display":
                 path.push(LogViewController())
-            case "Reader.dictionary", "Reader.dictionaryLookupGesture":
+            case "Dictionary.enable", "Dictionary.lookupGesture":
                 UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
 
             case "Advanced.clearTrackedManga":
@@ -293,7 +293,7 @@ extension SettingsView {
             TapZonesSelectView()
         } else if key == "Reader.upscalingModels" {
             UpscaleModelListView()
-        } else if key == "Reader.dictionaries" {
+        } else if key == "Dictionary.dictionaries" {
             if #available(iOS 18.0, *) {
                 DictionaryListView()
             }

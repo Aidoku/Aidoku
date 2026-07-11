@@ -106,14 +106,10 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
         }
-        addObserver(forName: "Reader.disableDoubleTap") { [weak self] _ in
-            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
-        }
-        addObserver(forName: "Reader.dictionary") { [weak self] _ in
-            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
-        }
-        addObserver(forName: "Reader.dictionaryLookupGesture") { [weak self] _ in
-            self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        for key in ["Reader.disableDoubleTap", "Dictionary.enable", "Dictionary.lookupGesture"] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+            }
         }
         addObserver(forName: .readerShowingBars) { [weak self] _ in
             self?.setLiveTextButtonHidden(false)

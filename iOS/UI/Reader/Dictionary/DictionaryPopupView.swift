@@ -26,13 +26,13 @@ struct DictionaryPopupView: View {
     let onTapOutside: () -> Void
 
     private var maxWidth: CGFloat {
-        let storedValue = UserDefaults.standard.double(forKey: "Reader.dictionaryPopupWidth")
+        let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupWidth")
         let width = storedValue > 0 ? storedValue : 320
         return min(max(CGFloat(width), 220), 500)
     }
 
     private var maxHeight: CGFloat {
-        let storedValue = UserDefaults.standard.double(forKey: "Reader.dictionaryPopupHeight")
+        let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupHeight")
         let height = storedValue > 0 ? storedValue : 250
         return min(max(CGFloat(height), 160), 350)
     }

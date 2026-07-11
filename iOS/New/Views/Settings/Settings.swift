@@ -382,7 +382,7 @@ extension Settings {
             .init(
                 key: "Reader.disableQuickActions",
                 title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                requiresFalse: "Reader.lookupGestureLocksQuickActions",
+                requiresFalse: "Dictionary.lookupGestureLocksQuickActions",
                 value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
             ),
             .init(
@@ -616,20 +616,20 @@ extension Settings {
         .init(
             value: .group(.init(items: [
                 .init(
-                    key: "Reader.dictionary",
+                    key: "Dictionary.enable",
                     title: NSLocalizedString("DICTIONARY_LOOKUP"),
                     value: .toggle(.init())
                 ),
                 .init(
-                    key: "Reader.dictionaries",
+                    key: "Dictionary.dictionaries",
                     title: NSLocalizedString("DICTIONARIES"),
                     value: .page(.init(items: []))
                 ),
                 .init(
-                    requires: "Reader.dictionary",
+                    requires: "Dictionary.enable",
                     value: .group(.init(items: [
                         .init(
-                            key: "Reader.dictionaryLookupGesture",
+                            key: "Dictionary.lookupGesture",
                             title: NSLocalizedString("LOOKUP_GESTURE"),
                             value: .select(.init(
                                 values: ["single-tap", "long-press"],
@@ -640,15 +640,15 @@ extension Settings {
                             ))
                         ),
                         .init(
-                            key: "Reader.dictionaryTextOverlayMode",
+                            key: "Dictionary.textOverlayMode",
                             title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
                             value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
                         ),
                         .init(
-                            requires: "Reader.dictionaryTextOverlayMode",
+                            requires: "Dictionary.textOverlayMode",
                             value: .group(.init(items: [
                                 .init(
-                                    key: "Reader.dictionaryOverlayPadding",
+                                    key: "Dictionary.overlayPadding",
                                     title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
                                     value: .stepper(.init(
                                         minimumValue: 0,
@@ -657,7 +657,7 @@ extension Settings {
                                     ))
                                 ),
                                 .init(
-                                    key: "Reader.dictionaryOverlayTextScaleMultiplier",
+                                    key: "Dictionary.overlayTextScaleMultiplier",
                                     title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
                                     value: .stepper(.init(
                                         minimumValue: 0.5,
@@ -668,7 +668,7 @@ extension Settings {
                             ]))
                         ),
                         .init(
-                            key: "Reader.dictionaryOCRLanguage",
+                            key: "Dictionary.OCRLanguage",
                             title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
                             value: .select(.init(
                                 values: ["ja", "zh", "ko"],
@@ -680,7 +680,7 @@ extension Settings {
                             ))
                         ),
                         .init(
-                            key: "Reader.dictionaryOCRPreUpscale",
+                            key: "Dictionary.OCRPreUpscale",
                             title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
                             requiresFalse: "Reader.upscaleImages",
                             value: .toggle(.init(
@@ -688,7 +688,7 @@ extension Settings {
                             ))
                         ),
                         .init(
-                            key: "Reader.dictionaryPopupWidth",
+                            key: "Dictionary.popupWidth",
                             title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
                             value: .stepper(.init(
                                 minimumValue: 220,
@@ -697,7 +697,7 @@ extension Settings {
                             ))
                         ),
                         .init(
-                            key: "Reader.dictionaryPopupHeight",
+                            key: "Dictionary.popupHeight",
                             title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
                             value: .stepper(.init(
                                 minimumValue: 160,

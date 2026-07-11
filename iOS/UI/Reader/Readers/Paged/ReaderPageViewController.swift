@@ -147,18 +147,13 @@ class ReaderPageViewController: BaseObservingViewController {
         addObserver(forName: "Reader.backgroundColor") { [weak self] _ in
             self?.loadPageBackground()
         }
-        addObserver(forName: "Reader.disableDoubleTap") { [weak self] _ in
-            self?.zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
-        }
-
         addObserver(forName: .orientationDidChange) { [weak self] _ in
             self?.loadPageBackground(forceReload: true)
         }
-        addObserver(forName: "Reader.dictionary") { [weak self] _ in
-            self?.zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
-        }
-        addObserver(forName: "Reader.dictionaryLookupGesture") { [weak self] _ in
-            self?.zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+        for key in ["Reader.disableDoubleTap", "Dictionary.enable", "Dictionary.lookupGesture"] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+            }
         }
     }
 

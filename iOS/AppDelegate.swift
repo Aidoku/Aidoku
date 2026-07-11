@@ -181,16 +181,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.textLineSpacing": 8,
                 "Reader.textHorizontalPadding": 24,
 
-                "Reader.dictionary": false,
-                "Reader.dictionaryLookupGesture": "single-tap",
-                "Reader.dictionaryTextOverlayMode": false,
-                "Reader.dictionaryOCRLanguage": "ja",
-                "Reader.dictionaryOCRPreUpscale": true,
-                "Reader.dictionaryOverlayPadding": 5,
-                "Reader.dictionaryOverlayTextScaleMultiplier": 1,
-                "Reader.lookupGestureLocksQuickActions": false,
-                "Reader.dictionaryPopupWidth": 320,
-                "Reader.dictionaryPopupHeight": 250,
+                "Dictionary.enable": false,
+                "Dictionary.lookupGesture": "single-tap",
+                "Dictionary.lookupGestureLocksQuickActions": false,
+                "Dictionary.textOverlayMode": false,
+                "Dictionary.OCRLanguage": "ja",
+                "Dictionary.OCRPreUpscale": true,
+                "Dictionary.overlayPadding": 5,
+                "Dictionary.overlayTextScaleMultiplier": 1,
+                "Dictionary.popupWidth": 320,
+                "Dictionary.popupHeight": 250,
 
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,
@@ -891,12 +891,12 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 extension UserDefaults {
     var dictionaryLookupGestureMode: String {
-        string(forKey: "Reader.dictionaryLookupGesture") ?? "single-tap"
+        string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
     }
 
     var isDictionaryLookupEnabledForReader: Bool {
         if #available(iOS 18.0, *) {
-            bool(forKey: "Reader.dictionary")
+            bool(forKey: "Dictionary.enable")
         } else {
             false
         }
@@ -919,6 +919,6 @@ extension UserDefaults {
     }
 
     func syncReaderLookupGestureCompatibilityLocks() {
-        set(isDictionaryLongPressLookupEnabled, forKey: "Reader.lookupGestureLocksQuickActions")
+        set(isDictionaryLongPressLookupEnabled, forKey: "Dictionary.lookupGestureLocksQuickActions")
     }
 }

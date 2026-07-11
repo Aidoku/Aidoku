@@ -622,12 +622,15 @@ extension ReaderPageView {
     private func renderDictionaryOverlaysIfNeeded() {
         clearDictionaryOverlays()
 
-        guard #available(iOS 18.0, *),
-              UserDefaults.standard.bool(forKey: "Reader.dictionary"),
-              UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode"),
-              let textRecognizer,
-              let image = imageView.image
-        else { return }
+        guard
+            #available(iOS 18.0, *),
+            UserDefaults.standard.bool(forKey: "Dictionary.enable"),
+            UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode"),
+            let textRecognizer,
+            let image = imageView.image
+        else {
+            return
+        }
 
         let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
         dictionaryOverlayController.onLookup = onDictionaryOverlayTap

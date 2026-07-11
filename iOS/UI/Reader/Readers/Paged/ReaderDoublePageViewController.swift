@@ -89,10 +89,9 @@ class ReaderDoublePageViewController: BaseViewController {
     private func observeZoomSettingChanges() {
         let names = [
             Notification.Name("Reader.disableDoubleTap"),
-            Notification.Name("Reader.dictionary"),
-            Notification.Name("Reader.dictionaryLookupGesture")
+            Notification.Name("Dictionary.enable"),
+            Notification.Name("Dictionary.lookupGesture")
         ]
-
         for name in names {
             let token = NotificationCenter.default.addObserver(
                 forName: name,

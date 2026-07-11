@@ -25,7 +25,7 @@ extension TextRecognizer {
     private func recognizeObservations(in cgImage: CGImage) async -> [OCRObservation] {
         var request = RecognizeTextRequest()
         request.recognitionLevel = .accurate
-        let selectedLanguage = UserDefaults.standard.string(forKey: "Reader.dictionaryOCRLanguage") ?? "ja"
+        let selectedLanguage = UserDefaults.standard.string(forKey: "Dictionary.OCRLanguage") ?? "ja"
         request.recognitionLanguages = switch selectedLanguage {
         case "zh":
             [Locale.Language(identifier: "zh-Hans")]
@@ -87,7 +87,7 @@ extension TextRecognizer {
     }
 
     private func preprocessForOCR(_ cgImage: CGImage) -> CGImage {
-        guard UserDefaults.standard.bool(forKey: "Reader.dictionaryOCRPreUpscale") else { return cgImage }
+        guard UserDefaults.standard.bool(forKey: "Dictionary.OCRPreUpscale") else { return cgImage }
         guard !UserDefaults.standard.bool(forKey: "Reader.upscaleImages") else { return cgImage }
         return preprocessForOCRPlain(cgImage)
     }
@@ -133,7 +133,7 @@ enum DictionaryTextAnalysisScheduler {
         onFinish: @MainActor @escaping () -> Void
     ) {
         task?.cancel()
-        guard UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+        guard UserDefaults.standard.bool(forKey: "Dictionary.enable"),
               LookupEngine.shared.isReady,
               let image else {
             recognizer?.reset()
