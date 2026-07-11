@@ -608,9 +608,22 @@ extension ReaderPagedViewController {
         let chapterId = chapter?.id ?? ""
         let reverseOrderSetting = UserDefaults.standard.bool(forKey: "Reader.reverseSplitOrder")
         let reverseOrder = readingMode == .rtl ? reverseOrderSetting : !reverseOrderSetting
+        let originalPage = viewModel.pages[safe: pageIndex] ?? viewModel.pages.first
 
-        let leftPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: leftImage)
-        let rightPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: rightImage)
+        let leftPage = Page(
+            sourceId: sourceId,
+            chapterId: chapterId,
+            index: pageIndex,
+            image: leftImage,
+            language: originalPage?.language
+        )
+        let rightPage = Page(
+            sourceId: sourceId,
+            chapterId: chapterId,
+            index: pageIndex,
+            image: rightImage,
+            language: originalPage?.language
+        )
         return reverseOrder ? [leftPage, rightPage] : [rightPage, leftPage]
     }
 

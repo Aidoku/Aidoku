@@ -25,6 +25,7 @@ struct Page: Hashable {
     var text: String?
     var image: PlatformImage?
     var zipURL: String?
+    var language: String?
 
     var context: PageContext?
     var hasDescription: Bool = false

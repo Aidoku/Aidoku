@@ -498,20 +498,6 @@ extension ReaderSettingsView {
                 }
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.OCRLanguage",
-                        title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
-                        value: .select(.init(
-                            values: ["ja", "zh", "ko"],
-                            titles: [
-                                Locale.current.localizedString(forLanguageCode: "ja") ?? "Japanese",
-                                Locale.current.localizedString(forLanguageCode: "zh") ?? "Chinese",
-                                Locale.current.localizedString(forLanguageCode: "ko") ?? "Korean"
-                            ]
-                        ))
-                    )
-                )
-                SettingView(
-                    setting: .init(
                         key: "Dictionary.OCRPreUpscale",
                         title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
                         requiresFalse: "Reader.upscaleImages",

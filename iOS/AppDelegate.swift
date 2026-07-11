@@ -185,7 +185,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Dictionary.lookupGesture": "single-tap",
                 "Dictionary.lookupGestureLocksQuickActions": false,
                 "Dictionary.textOverlayMode": false,
-                "Dictionary.OCRLanguage": "ja",
                 "Dictionary.OCRPreUpscale": true,
                 "Dictionary.overlayPadding": 5,
                 "Dictionary.overlayTextScaleMultiplier": 1,

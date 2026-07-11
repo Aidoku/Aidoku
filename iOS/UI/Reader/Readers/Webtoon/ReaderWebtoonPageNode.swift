@@ -625,7 +625,8 @@ extension ReaderWebtoonPageNode {
             DictionaryTextAnalysisScheduler.schedule(
                 task: &dictionaryAnalysisTask,
                 recognizer: &textRecognizer,
-                image: image
+                image: image,
+                language: page.language
             ) { [weak self] in
                 self?.renderDictionaryOverlaysIfNeeded()
             }

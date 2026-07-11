@@ -52,11 +52,12 @@ class ReaderPagedViewModel {
             mangaKey: manga.key,
             chapterKey: chapter.key
         )
+        let language = chapter.language ?? source?.languages.first
         let isDownloaded = DownloadManager.shared.isChapterDownloaded(chapter: identifier)
         if isDownloaded {
             return await DownloadManager.shared.getDownloadedPages(for: identifier)
                 .map {
-                    $0.toOld(sourceId: sourceId, chapterId: chapter.key)
+                    $0.toOld(sourceId: sourceId, chapterId: chapter.key, language: language)
                 }
         } else {
             return (try? await source?
@@ -66,7 +67,7 @@ class ReaderPagedViewModel {
                 )
             )?
                 .map {
-                    $0.toOld(sourceId: sourceId, chapterId: chapter.key)
+                    $0.toOld(sourceId: sourceId, chapterId: chapter.key, language: language)
                 } ?? []
         }
     }

@@ -280,7 +280,6 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.liveText", using: reloadBlock)
         addObserver(forName: "Dictionary.overlayPadding", using: reloadBlock)
         addObserver(forName: "Dictionary.overlayTextScaleMultiplier", using: reloadBlock)
-        addObserver(forName: "Dictionary.OCRLanguage", using: reloadBlock)
         addObserver(forName: "Dictionary.OCRPreUpscale", using: reloadBlock)
         let dictionaryReloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }

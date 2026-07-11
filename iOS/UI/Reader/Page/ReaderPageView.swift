@@ -559,7 +559,8 @@ extension ReaderPageView {
             DictionaryTextAnalysisScheduler.schedule(
                 task: &dictionaryAnalysisTask,
                 recognizer: &textRecognizer,
-                image: imageView.image
+                image: imageView.image,
+                language: currentPage?.language
             ) { [weak self] in
                 self?.renderDictionaryOverlaysIfNeeded()
             }

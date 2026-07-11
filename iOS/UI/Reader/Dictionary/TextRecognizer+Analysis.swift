@@ -10,10 +10,10 @@ import Vision
 
 @available(iOS 18.0, *)
 extension TextRecognizer {
-    func analyze(_ image: UIImage) async {
+    func analyze(_ image: UIImage, language: String?) async {
         guard let cgImage = image.cgImage else { return }
         let preprocessedImage = preprocessForOCR(cgImage)
-        let recognizedObservations = await recognizeObservations(in: preprocessedImage)
+        let recognizedObservations = await recognizeObservations(in: preprocessedImage, language: language)
         guard !Task.isCancelled else { return }
         observations = recognizedObservations
         rebuildClusterCache()
@@ -22,17 +22,11 @@ extension TextRecognizer {
 #endif
     }
 
-    private func recognizeObservations(in cgImage: CGImage) async -> [OCRObservation] {
+    private func recognizeObservations(in cgImage: CGImage, language: String?) async -> [OCRObservation] {
         var request = RecognizeTextRequest()
         request.recognitionLevel = .accurate
-        let selectedLanguage = UserDefaults.standard.string(forKey: "Dictionary.OCRLanguage") ?? "ja"
-        request.recognitionLanguages = switch selectedLanguage {
-        case "zh":
-            [Locale.Language(identifier: "zh-Hans")]
-        case "ko":
-            [Locale.Language(identifier: "ko")]
-        default:
-            [Locale.Language(identifier: "ja")]
+        if let language {
+            request.recognitionLanguages = [Locale.Language(identifier: language)]
         }
         request.usesLanguageCorrection = true
         request.automaticallyDetectsLanguage = true
@@ -130,6 +124,7 @@ enum DictionaryTextAnalysisScheduler {
         task: inout Task<Void, Never>?,
         recognizer: inout TextRecognizer?,
         image: UIImage?,
+        language: String?,
         onFinish: @MainActor @escaping () -> Void
     ) {
         task?.cancel()
@@ -145,7 +140,7 @@ enum DictionaryTextAnalysisScheduler {
         recognizer = runRecognizer
         task = Task { [weak runRecognizer] in
             guard !Task.isCancelled, let runRecognizer else { return }
-            await runRecognizer.analyze(image)
+            await runRecognizer.analyze(image, language: language)
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 onFinish()
