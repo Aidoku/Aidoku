@@ -584,6 +584,9 @@
 "LOOKUP_GESTURE" = "Lookup Gesture";
 "SINGLE_TAP" = "Single Tap";
 "LONG_PRESS" = "Long Press";
+"LOOKUP_GESTURE_SINGLE_TAP_INFO" = "Tapping on the start of a word will activate the popup. This disables double tap to zoom when enabled.";
+"LOOKUP_GESTURE_LONG_PRESS_INFO" = "Holding down on the start of a word will highlight it, and releasing will activate the popup. This disables page quick actions when enabled.";
+"LOOKUP_GESTURE_LOCKS_DOUBLE_TAP" = "Locked by Lookup Gesture: Single Press.";
 "LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS" = "Locked by Lookup Gesture: Long Press.";
 "DICTIONARY_TEXT_OVERLAY_MODE" = "OCR Text Overlay";
 "DICTIONARY_TEXT_OVERLAY_MODE_INFO" = "Shows OCR text boxes on image regions. Tap a box to look up that text.";

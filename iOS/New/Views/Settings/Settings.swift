@@ -647,23 +647,36 @@ extension Settings {
                     value: .page(.init(items: []))
                 )
             ]))
-        ),
-        .init(
-            requires: "Dictionary.enable",
-            value: .group(.init(items: [
-                .init(
-                    key: "Dictionary.lookupGesture",
-                    title: NSLocalizedString("LOOKUP_GESTURE"),
-                    value: .select(.init(
-                        values: ["single-tap", "long-press"],
-                        titles: [
-                            NSLocalizedString("SINGLE_TAP"),
-                            NSLocalizedString("LONG_PRESS")
-                        ]
-                    ))
-                )
-            ]))
-        ),
+        )
+    ] + {
+        let lookupGestureSetting = Setting(
+            key: "Dictionary.lookupGesture",
+            title: NSLocalizedString("LOOKUP_GESTURE"),
+            value: .select(.init(
+                values: ["single-tap", "long-press"],
+                titles: [
+                    NSLocalizedString("SINGLE_TAP"),
+                    NSLocalizedString("LONG_PRESS")
+                ]
+            ))
+        )
+        return [
+            .init(
+                requires: "Dictionary.enable && Dictionary.lookupGesture==single-tap",
+                value: .group(.init(
+                    footer: NSLocalizedString("LOOKUP_GESTURE_SINGLE_TAP_INFO"),
+                    items: [lookupGestureSetting]
+                ))
+            ),
+            .init(
+                requires: "Dictionary.enable && Dictionary.lookupGesture==long-press",
+                value: .group(.init(
+                    footer: NSLocalizedString("LOOKUP_GESTURE_LONG_PRESS_INFO"),
+                    items: [lookupGestureSetting]
+                ))
+            )
+        ]
+    }() + [
         .init(
             requires: "Dictionary.enable",
             value: .group(.init(
