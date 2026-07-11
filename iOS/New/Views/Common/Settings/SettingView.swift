@@ -93,16 +93,16 @@ struct SettingView: View {
 
         var keys: [String] = []
         if let requires = setting.requires {
-            let key = key(requires)
-            _requires = State(initialValue: SettingsStore.shared.get(key: key))
-            keys.append(key)
+            let (observedKeys, result) = Self.parseRequires(value: requires, namespace: namespace)
+            _requires = State(initialValue: result)
+            keys.append(contentsOf: observedKeys)
         } else {
             _requires = State(initialValue: true)
         }
         if let requiresFalse = setting.requiresFalse {
-            let key = key(requiresFalse)
-            _requiresFalse = State(initialValue: SettingsStore.shared.get(key: key))
-            keys.append(key)
+            let (observedKeys, result) = Self.parseRequires(value: requiresFalse, namespace: namespace)
+            _requiresFalse = State(initialValue: result)
+            keys.append(contentsOf: observedKeys)
         } else {
             _requiresFalse = State(initialValue: false)
         }
@@ -142,6 +142,53 @@ struct SettingView: View {
         }
     }
 
+    static func parseRequires(value: String, namespace: String? = nil) -> (observedKeys: [String], result: Bool) {
+        // need to use this before all properties are initialized
+        func key(_ key: String) -> String {
+            let key = key.trim()
+            return if key.isEmpty {
+                key
+            } else if let namespace {
+                "\(namespace).\(key)"
+            } else {
+                key
+            }
+        }
+
+        let statements = value
+            .components(separatedBy: "&&")
+            .map { $0.trim() }
+            .filter { !$0.isEmpty }
+
+        var observedKeys: [String] = []
+        var result = true
+
+        for statement in statements {
+            let components = statement.components(separatedBy: "==")
+
+            let statementResult: Bool
+
+            if components.count == 2 {
+                let observedKey = key(components[0])
+                let targetValue = components[1].trim()
+                let storedValue = UserDefaults.standard.string(forKey: observedKey)
+
+                observedKeys.append(observedKey)
+                statementResult = storedValue == targetValue
+            } else {
+                let observedKey = key(statement)
+                let storedValue = UserDefaults.standard.string(forKey: observedKey)
+
+                observedKeys.append(observedKey)
+                statementResult = storedValue != nil && storedValue != "0"
+            }
+
+            result = result && statementResult
+        }
+
+        return (observedKeys, result)
+    }
+
     var body: some View {
         content
             .id(setting.type.requiresKey ? key(setting.key) : String(setting.hashValue))
@@ -155,12 +202,10 @@ struct SettingView: View {
             }
             .onReceive(requiresObserver.$observedValues) { _ in
                 if let requires = setting.requires {
-                    let value = UserDefaults.standard.string(forKey: key(requires))
-                    self.requires = value != nil && value != "0"
+                    self.requires = Self.parseRequires(value: requires, namespace: namespace).result
                 }
                 if let requiresFalse = setting.requiresFalse {
-                    let value = UserDefaults.standard.string(forKey: key(requiresFalse))
-                    self.requiresFalse = value != nil && value != "0"
+                    self.requiresFalse = Self.parseRequires(value: requiresFalse, namespace: namespace).result
                 }
             }
     }
