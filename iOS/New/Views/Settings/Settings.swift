@@ -624,88 +624,106 @@ extension Settings {
                     key: "Dictionary.dictionaries",
                     title: NSLocalizedString("DICTIONARIES"),
                     value: .page(.init(items: []))
+                )
+            ]))
+        ),
+        .init(
+            requires: "Dictionary.enable",
+            value: .group(.init(items: [
+                .init(
+                    key: "Dictionary.lookupGesture",
+                    title: NSLocalizedString("LOOKUP_GESTURE"),
+                    value: .select(.init(
+                        values: ["single-tap", "long-press"],
+                        titles: [
+                            NSLocalizedString("SINGLE_TAP"),
+                            NSLocalizedString("LONG_PRESS")
+                        ]
+                    ))
+                )
+            ]))
+        ),
+        .init(
+            requires: "Dictionary.enable",
+            value: .group(.init(
+                footer: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO"),
+                items: [
+                    .init(
+                        key: "Dictionary.textOverlayMode",
+                        title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        requires: "Dictionary.textOverlayMode",
+                        value: .group(.init(items: [
+                            .init(
+                                key: "Dictionary.overlayPadding",
+                                title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
+                                value: .stepper(.init(
+                                    minimumValue: 0,
+                                    maximumValue: 10,
+                                    stepValue: 1
+                                ))
+                            ),
+                            .init(
+                                key: "Dictionary.overlayTextScaleMultiplier",
+                                title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
+                                value: .stepper(.init(
+                                    minimumValue: 0.5,
+                                    maximumValue: 1.25,
+                                    stepValue: 0.05
+                                ))
+                            )
+                        ]))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            requires: "Dictionary.enable",
+            value: .group(.init(items: [
+                .init(
+                    key: "Dictionary.OCRLanguage",
+                    title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
+                    value: .select(.init(
+                        values: ["ja", "zh", "ko"],
+                        titles: [
+                            Locale.current.localizedString(forLanguageCode: "ja") ?? "Japanese",
+                            Locale.current.localizedString(forLanguageCode: "zh") ?? "Chinese",
+                            Locale.current.localizedString(forLanguageCode: "ko") ?? "Korean"
+                        ]
+                    ))
                 ),
                 .init(
-                    requires: "Dictionary.enable",
-                    value: .group(.init(items: [
-                        .init(
-                            key: "Dictionary.lookupGesture",
-                            title: NSLocalizedString("LOOKUP_GESTURE"),
-                            value: .select(.init(
-                                values: ["single-tap", "long-press"],
-                                titles: [
-                                    NSLocalizedString("SINGLE_TAP"),
-                                    NSLocalizedString("LONG_PRESS")
-                                ]
-                            ))
-                        ),
-                        .init(
-                            key: "Dictionary.textOverlayMode",
-                            title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
-                            value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
-                        ),
-                        .init(
-                            requires: "Dictionary.textOverlayMode",
-                            value: .group(.init(items: [
-                                .init(
-                                    key: "Dictionary.overlayPadding",
-                                    title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
-                                    value: .stepper(.init(
-                                        minimumValue: 0,
-                                        maximumValue: 10,
-                                        stepValue: 1
-                                    ))
-                                ),
-                                .init(
-                                    key: "Dictionary.overlayTextScaleMultiplier",
-                                    title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
-                                    value: .stepper(.init(
-                                        minimumValue: 0.5,
-                                        maximumValue: 1.25,
-                                        stepValue: 0.05
-                                    ))
-                                )
-                            ]))
-                        ),
-                        .init(
-                            key: "Dictionary.OCRLanguage",
-                            title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
-                            value: .select(.init(
-                                values: ["ja", "zh", "ko"],
-                                titles: [
-                                    Locale.current.localizedString(forLanguageCode: "ja") ?? "Japanese",
-                                    Locale.current.localizedString(forLanguageCode: "zh") ?? "Chinese",
-                                    Locale.current.localizedString(forLanguageCode: "ko") ?? "Korean"
-                                ]
-                            ))
-                        ),
-                        .init(
-                            key: "Dictionary.OCRPreUpscale",
-                            title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
-                            requiresFalse: "Reader.upscaleImages",
-                            value: .toggle(.init(
-                                subtitle: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO")
-                            ))
-                        ),
-                        .init(
-                            key: "Dictionary.popupWidth",
-                            title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
-                            value: .stepper(.init(
-                                minimumValue: 220,
-                                maximumValue: 500,
-                                stepValue: 10
-                            ))
-                        ),
-                        .init(
-                            key: "Dictionary.popupHeight",
-                            title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
-                            value: .stepper(.init(
-                                minimumValue: 160,
-                                maximumValue: 350,
-                                stepValue: 10
-                            ))
-                        )
-                    ]))
+                    key: "Dictionary.OCRPreUpscale",
+                    title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
+                    requiresFalse: "Reader.upscaleImages",
+                    value: .toggle(.init(
+                        subtitle: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO")
+                    ))
+                )
+            ]))
+        ),
+        .init(
+            requires: "Dictionary.enable",
+            value: .group(.init(items: [
+                .init(
+                    key: "Dictionary.popupWidth",
+                    title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                    value: .stepper(.init(
+                        minimumValue: 220,
+                        maximumValue: 500,
+                        stepValue: 10
+                    ))
+                ),
+                .init(
+                    key: "Dictionary.popupHeight",
+                    title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
+                    value: .stepper(.init(
+                        minimumValue: 160,
+                        maximumValue: 350,
+                        stepValue: 10
+                    ))
                 )
             ]))
         )
