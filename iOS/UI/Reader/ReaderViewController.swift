@@ -303,6 +303,7 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Dictionary.enable", using: dictionaryReloadBlock)
         addObserver(forName: "Dictionary.lookupGesture", using: dictionaryReloadBlock)
         addObserver(forName: "Dictionary.textOverlayMode", using: dictionaryReloadBlock)
+        addObserver(forName: .dictionaryDictionariesChanged, using: dictionaryReloadBlock)
         addObserver(forName: "Dictionary.restrictOCRLanguages", using: dictionaryReloadBlock)
         addObserver(forName: "Dictionary.restrictedOCRLanguages", using: dictionaryReloadBlock)
         // Switch text reader style (paged <-> scroll) without restart

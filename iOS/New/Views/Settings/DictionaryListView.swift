@@ -143,6 +143,7 @@ struct DictionaryListView: View {
                 get: { dict.isEnabled },
                 set: { newValue in
                     DictionaryManager.shared.toggleDictionary(id: dict.id, enabled: newValue, type: type)
+                    notifyDictionariesChanged()
                     reload()
                 }
             ))
@@ -158,6 +159,7 @@ struct DictionaryListView: View {
 
     func delete(offsets: IndexSet, type: DictionaryType) {
         DictionaryManager.shared.deleteDictionary(indexSet: offsets, type: type)
+        notifyDictionariesChanged()
         reload()
     }
 
@@ -184,6 +186,11 @@ struct DictionaryListView: View {
         }
         DictionaryManager.shared.saveDictionaryConfig()
         DictionaryManager.shared.rebuildLookupQuery()
+        notifyDictionariesChanged()
+    }
+
+    private func notifyDictionariesChanged() {
+        NotificationCenter.default.post(name: .dictionaryDictionariesChanged, object: nil)
     }
 
     func importDictionaries(urls: [URL]) {
@@ -193,6 +200,7 @@ struct DictionaryListView: View {
             await MainActor.run {
                 isImporting = false
                 if result.didImportAny {
+                    notifyDictionariesChanged()
                     reload()
                 }
                 if !result.failed.isEmpty {
