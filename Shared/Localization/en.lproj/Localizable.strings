@@ -601,10 +601,8 @@
 "TERM_DICTIONARIES" = "Term Dictionaries";
 "FREQUENCY_DICTIONARIES" = "Frequency Dictionaries";
 "PITCH_DICTIONARIES" = "Pitch Dictionaries";
-"IMPORT_TERM_DICTIONARY" = "Import Term Dictionary";
-"IMPORT_FREQUENCY_DICTIONARY" = "Import Frequency Dictionary";
-"IMPORT_PITCH_DICTIONARY" = "Import Pitch Dictionary";
 "IMPORTING_DICTIONARY" = "Importing Dictionary…";
+"IMPORT_ERROR" = "Import Error";
 
 // Backups
 "BACKUPS" = "Backups";

@@ -11,12 +11,9 @@ import UniformTypeIdentifiers
 
 @available(iOS 18.0, *)
 struct DictionaryListView: View {
-    @State private var termDicts: [DictionaryInfo] = []
-    @State private var freqDicts: [DictionaryInfo] = []
-    @State private var pitchDicts: [DictionaryInfo] = []
+    @State private var dictionaryManager = DictionaryManager.shared
 
     @State private var importing = false
-    @State private var isImporting = false
     @State private var showSafari = false
 
     @StateObject private var dismissedInfo = UserDefaultsBool(key: "Flag.dismissedDictionaryInfo")
@@ -68,9 +65,9 @@ struct DictionaryListView: View {
                 .padding(.vertical, 6)
             }
 
-            if !termDicts.isEmpty {
+            if !dictionaryManager.termDictionaries.isEmpty {
                 Section {
-                    ForEach(termDicts) { dict in
+                    ForEach(dictionaryManager.termDictionaries) { dict in
                         dictRow(dict, type: .term)
                     }
                     .onDelete { offsets in delete(offsets: offsets, type: .term) }
@@ -79,9 +76,9 @@ struct DictionaryListView: View {
                     Text(NSLocalizedString("TERM_DICTIONARIES"))
                 }
             }
-            if !freqDicts.isEmpty {
+            if !dictionaryManager.frequencyDictionaries.isEmpty {
                 Section {
-                    ForEach(freqDicts) { dict in
+                    ForEach(dictionaryManager.frequencyDictionaries) { dict in
                         dictRow(dict, type: .frequency)
                     }
                     .onDelete { offsets in delete(offsets: offsets, type: .frequency) }
@@ -90,9 +87,9 @@ struct DictionaryListView: View {
                     Text(NSLocalizedString("FREQUENCY_DICTIONARIES"))
                 }
             }
-            if !pitchDicts.isEmpty {
+            if !dictionaryManager.pitchDictionaries.isEmpty {
                 Section {
-                    ForEach(pitchDicts) { dict in
+                    ForEach(dictionaryManager.pitchDictionaries) { dict in
                         dictRow(dict, type: .pitch)
                     }
                     .onDelete { offsets in delete(offsets: offsets, type: .pitch) }
@@ -113,7 +110,7 @@ struct DictionaryListView: View {
             }
         }
         .overlay {
-            if isImporting {
+            if dictionaryManager.isImporting {
                 ProgressView(NSLocalizedString("IMPORTING_DICTIONARY"))
                     .padding()
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -132,60 +129,32 @@ struct DictionaryListView: View {
         .sheet(isPresented: $showSafari) {
             SafariView(url: .constant(URL(string: "https://yomitan.wiki/dictionaries/")))
         }
-        .onAppear {
-            reload()
+        .alert(NSLocalizedString("IMPORT_ERROR"), isPresented: $dictionaryManager.shouldShowError) {
+            Button(NSLocalizedString("OK"), role: .cancel) {}
+        } message: {
+            Text(verbatim: dictionaryManager.errorMessage)
         }
     }
 
     func dictRow(_ dict: DictionaryInfo, type: DictionaryType) -> some View {
         HStack {
-            Toggle(dict.name, isOn: Binding(
+            Toggle(dict.index.title, isOn: Binding(
                 get: { dict.isEnabled },
                 set: { newValue in
-                    DictionaryManager.shared.toggleDictionary(id: dict.id, enabled: newValue, type: type)
+                    dictionaryManager.toggleDictionary(id: dict.id, enabled: newValue, type: type)
                     notifyDictionariesChanged()
-                    reload()
                 }
             ))
         }
     }
 
-    func reload() {
-        let manager = DictionaryManager.shared
-        termDicts = manager.termDictionaries
-        freqDicts = manager.frequencyDictionaries
-        pitchDicts = manager.pitchDictionaries
-    }
-
     func delete(offsets: IndexSet, type: DictionaryType) {
-        DictionaryManager.shared.deleteDictionary(indexSet: offsets, type: type)
+        dictionaryManager.deleteDictionary(indexSet: offsets, type: type)
         notifyDictionariesChanged()
-        reload()
     }
 
     func move(from source: IndexSet, to destination: Int, type: DictionaryType) {
-        switch type {
-            case .term:
-                termDicts.move(fromOffsets: source, toOffset: destination)
-                for i in termDicts.indices {
-                    termDicts[i].order = i
-                }
-                DictionaryManager.shared.termDictionaries = termDicts
-            case .frequency:
-                freqDicts.move(fromOffsets: source, toOffset: destination)
-                for i in freqDicts.indices {
-                    freqDicts[i].order = i
-                }
-                DictionaryManager.shared.frequencyDictionaries = freqDicts
-            case .pitch:
-                pitchDicts.move(fromOffsets: source, toOffset: destination)
-                for i in pitchDicts.indices {
-                    pitchDicts[i].order = i
-                }
-                DictionaryManager.shared.pitchDictionaries = pitchDicts
-        }
-        DictionaryManager.shared.saveDictionaryConfig()
-        DictionaryManager.shared.rebuildLookupQuery()
+        dictionaryManager.moveDictionary(from: source, to: destination, type: type)
         notifyDictionariesChanged()
     }
 
@@ -195,19 +164,8 @@ struct DictionaryListView: View {
     }
 
     func importDictionaries(urls: [URL]) {
-        isImporting = true
         Task {
-            let result = await DictionaryManager.shared.importDictionary(from: urls)
-            await MainActor.run {
-                isImporting = false
-                if result.didImportAny {
-                    notifyDictionariesChanged()
-                    reload()
-                }
-                if !result.failed.isEmpty {
-                    LogManager.logger.error("Failed to import dictionaries: \(result.failed.joined(separator: ", "))")
-                }
-            }
+            await dictionaryManager.importDictionary(from: urls)
         }
     }
 }

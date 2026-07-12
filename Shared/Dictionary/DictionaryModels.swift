@@ -5,22 +5,41 @@
 //  Created with reference to Hoshi Reader by Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Models/Dictionary.swift
+//  Modified for use in Aidoku
+//
 
 import Foundation
 
+enum DictionaryCategory: String, Codable, CaseIterable, Identifiable {
+    case none, monolingual, bilingual, exclude
+
+    var id: String { self.rawValue }
+    var label: String {
+        switch self {
+            case .none: return "None"
+            case .monolingual: return "Monolingual"
+            case .bilingual: return "Bilingual"
+            case .exclude: return "Exclude"
+        }
+    }
+}
+
 struct DictionaryInfo: Identifiable, Codable {
     let id: UUID
-    let name: String
+    let index: DictionaryIndex
     let path: URL
     var isEnabled: Bool
     var order: Int
+    var category: DictionaryCategory
 
-    init(id: UUID = UUID(), name: String, path: URL, isEnabled: Bool = true, order: Int = 0) {
+    init(id: UUID = UUID(), index: DictionaryIndex, path: URL, isEnabled: Bool = true, order: Int = 0, category: DictionaryCategory = .none) {
         self.id = id
-        self.name = name
+        self.index = index
         self.path = path
         self.isEnabled = isEnabled
         self.order = order
+        self.category = category
     }
 }
 
@@ -33,49 +52,15 @@ struct DictionaryConfig: Codable {
         let fileName: String
         var isEnabled: Bool
         var order: Int
+        var category: DictionaryCategory?
     }
 }
 
-enum DictionaryType: String {
-    case term = "Term"
-    case frequency = "Frequency"
-    case pitch = "Pitch"
-}
-
-struct DictGlossaryData: Encodable {
-    let dictionary: String
-    let content: String
-    let definitionTags: String
-    let termTags: String
-}
-
-struct DictFrequencyData: Encodable {
-    let dictionary: String
-    let frequencies: [DictFrequencyTag]
-}
-
-struct DictFrequencyTag: Encodable {
-    let value: Int
-    let displayValue: String
-}
-
-struct DictPitchData: Encodable {
-    let dictionary: String
-    let pitchPositions: [Int]
-}
-
-struct DictEntryData: Encodable {
-    let expression: String
-    let reading: String
-    let matched: String
-    let deinflectionTrace: [DictDeinflectionTag]
-    let glossaries: [DictGlossaryData]
-    let frequencies: [DictFrequencyData]
-    let pitches: [DictPitchData]
-    let definitionTags: [String]
-}
-
-struct DictDeinflectionTag: Encodable {
-    let name: String
-    let description: String
+nonisolated struct DictionaryIndex: Codable {
+    let title: String
+    let format: Int
+    let revision: String
+    let isUpdatable: Bool
+    let indexUrl: String
+    let downloadUrl: String
 }
