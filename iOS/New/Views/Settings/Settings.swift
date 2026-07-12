@@ -409,7 +409,8 @@ extension Settings {
             .init(
                 key: "Reader.disableDoubleTap",
                 title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                value: .toggle(.init())
+                requiresFalse: "Dictionary.lookupGestureLocksDoubleTap",
+                value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP")))
             ),
             .init(
                 key: "Reader.liveText",

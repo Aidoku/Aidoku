@@ -547,7 +547,7 @@ extension SettingView {
 extension SettingView {
     private var shouldShowDisabledOnlyToggleSubtitle: Bool {
         switch setting.key {
-            case "Reader.disableQuickActions":
+            case "Reader.disableQuickActions", "Reader.disableDoubleTap":
                 return true
             default:
                 return false
@@ -558,7 +558,7 @@ extension SettingView {
         guard disabled else { return toggleValue }
 
         switch setting.key {
-            case "Reader.disableQuickActions":
+            case "Reader.disableQuickActions", "Reader.disableDoubleTap":
                 // Lookup gesture lock effectively forces these protections on.
                 return true
             default:

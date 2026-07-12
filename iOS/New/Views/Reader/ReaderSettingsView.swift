@@ -19,6 +19,7 @@ struct ReaderSettingsView: View {
     @State private var tapZones: DefaultTapZones
     @State private var dictionaryLookupGestureMode: String
     @State private var lookupGestureLocksQuickActions: Bool
+    @State private var lookupGestureLocksDoubleTap: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
@@ -75,6 +76,9 @@ struct ReaderSettingsView: View {
         )
         self._lookupGestureLocksQuickActions = State(
             initialValue: Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
+        )
+        self._lookupGestureLocksDoubleTap = State(
+            initialValue: Self.lookupGestureLocksDoubleTap(chapterLanguage: chapterLanguage)
         )
     }
 
@@ -143,7 +147,8 @@ struct ReaderSettingsView: View {
                             setting: .init(
                                 key: "Reader.disableDoubleTap",
                                 title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                                value: .toggle(.init())
+                                requiresFalse: lookupGestureLocksDoubleTap ? "Dictionary.lookupGestureLocksDoubleTap" : nil,
+                                value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP")))
                             )
                         )
                     }
@@ -447,10 +452,10 @@ struct ReaderSettingsView: View {
                 onSettingChange("Dictionary.lookupGesture")
             }
             .onReceive(dictionaryCompatibilityObserver.$observedValues) { _ in
-                updateLookupGestureQuickActionsLock()
+                updateLookupGestureLocks()
             }
             .onReceive(NotificationCenter.default.publisher(for: .dictionaryDictionariesChanged)) { _ in
-                updateLookupGestureQuickActionsLock()
+                updateLookupGestureLocks()
             }
         }
     }
@@ -460,14 +465,20 @@ struct ReaderSettingsView: View {
             && UserDefaults.standard.isOCREnabled(language: chapterLanguage)
     }
 
-    private func updateLookupGestureQuickActionsLock() {
+    private static func lookupGestureLocksDoubleTap(chapterLanguage: String?) -> Bool {
+        UserDefaults.standard.isDictionarySingleTapLookupEnabled
+            && UserDefaults.standard.isOCREnabled(language: chapterLanguage)
+    }
+
+    private func updateLookupGestureLocks() {
         lookupGestureLocksQuickActions = Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
+        lookupGestureLocksDoubleTap = Self.lookupGestureLocksDoubleTap(chapterLanguage: chapterLanguage)
     }
 
     private func onSettingChange(_ key: String) {
         guard key == "Dictionary.enable" || key == "Dictionary.lookupGesture" else { return }
         UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
-        updateLookupGestureQuickActionsLock()
+        updateLookupGestureLocks()
     }
 }
 

@@ -190,6 +190,7 @@ struct DictionaryListView: View {
     }
 
     private func notifyDictionariesChanged() {
+        UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
         NotificationCenter.default.post(name: .dictionaryDictionariesChanged, object: nil)
     }
 

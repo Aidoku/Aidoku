@@ -184,6 +184,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Dictionary.enable": false,
                 "Dictionary.lookupGesture": "single-tap",
                 "Dictionary.lookupGestureLocksQuickActions": false,
+                "Dictionary.lookupGestureLocksDoubleTap": false,
                 "Dictionary.textOverlayMode": false,
                 "Dictionary.restrictOCRLanguages": false,
                 "Dictionary.restrictedOCRLanguages": [],
@@ -919,11 +920,16 @@ extension UserDefaults {
     }
 
     var isReaderDoubleTapZoomDisabledEffective: Bool {
-        bool(forKey: "Reader.disableDoubleTap") || isDictionarySingleTapLookupEnabled
+        isReaderDoubleTapZoomDisabledEffective(language: nil)
+    }
+
+    func isReaderDoubleTapZoomDisabledEffective(language: String?) -> Bool {
+        bool(forKey: "Reader.disableDoubleTap") || (isDictionarySingleTapLookupEnabled && isOCREnabled(language: language))
     }
 
     func syncReaderLookupGestureCompatibilityLocks() {
         set(isDictionaryLongPressLookupEnabled, forKey: "Dictionary.lookupGestureLocksQuickActions")
+        set(isDictionarySingleTapLookupEnabled, forKey: "Dictionary.lookupGestureLocksDoubleTap")
     }
 
     func isOCREnabled(language: String?) -> Bool {
