@@ -192,7 +192,7 @@ struct ReaderSettingsView: View {
                     }
                 }
 
-                if #available(iOS 18.0, *) {
+                if #available(iOS 18.0, *), reader != .text {
                     dictionarySection
                 }
 
