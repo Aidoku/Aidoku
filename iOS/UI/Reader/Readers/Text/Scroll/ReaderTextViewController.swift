@@ -76,11 +76,14 @@ class ReaderTextViewController: BaseViewController {
 
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .systemBackground
+        scrollView.backgroundColor = ReaderTextTheme.background
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.delegate = self
         scrollView.alwaysBounceVertical = true
         scrollView.contentInsetAdjustmentBehavior = .never
+        if #available(iOS 27.0, *) {
+            scrollView.topEdgeEffect.style = .soft
+        }
         return scrollView
     }()
 
@@ -191,13 +194,28 @@ class ReaderTextViewController: BaseViewController {
             "Reader.textFontFamily",
             "Reader.textFontSize",
             "Reader.textLineSpacing",
-            "Reader.textHorizontalPadding"
+            "Reader.textHorizontalPadding",
+            ReaderTextTheme.changeNotification
         ]
         for key in styleKeys {
             NotificationCenter.default.addObserver(
                 self, selector: #selector(textStyleChanged),
                 name: .init(key), object: nil
             )
+        }
+
+        // the top edge effect only makes sense under the floating bars,
+        // otherwise it dims the top of the page
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(showTopEdgeEffect),
+            name: .readerShowingBars, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(hideTopEdgeEffect),
+            name: .readerHidingBars, object: nil
+        )
+        if navigationController?.navigationBar.isHidden == true {
+            hideTopEdgeEffect()
         }
 
         scrollView.addSubview(contentStackView)
@@ -414,7 +432,20 @@ extension ReaderTextViewController {
     }
 
     @objc private func textStyleChanged() {
+        scrollView.backgroundColor = ReaderTextTheme.background
         refreshTextViews()
+    }
+
+    @objc private func showTopEdgeEffect() {
+        if #available(iOS 27.0, *) {
+            scrollView.topEdgeEffect.isHidden = false
+        }
+    }
+
+    @objc private func hideTopEdgeEffect() {
+        if #available(iOS 27.0, *) {
+            scrollView.topEdgeEffect.isHidden = true
+        }
     }
 
     // MARK: - Chapter Section Index from Scroll Position

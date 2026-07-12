@@ -47,7 +47,7 @@ class TextDoublePageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.background
 
         view.addSubview(dividerView)
         dividerView.translatesAutoresizingMaskIntoConstraints = false
@@ -98,7 +98,7 @@ class TextDoublePageViewController: UIViewController {
         tv.isScrollEnabled = false
         tv.isUserInteractionEnabled = false  // Let taps pass through to parent tap zones
         tv.textContainer.lineFragmentPadding = 0  // Match paginator's layout width
-        tv.backgroundColor = .systemBackground
+        tv.backgroundColor = ReaderTextTheme.background
         return tv
     }
 }

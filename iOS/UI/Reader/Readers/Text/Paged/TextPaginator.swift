@@ -48,7 +48,7 @@ struct PaginationConfig {
         [
             .font: font,
             .paragraphStyle: paragraphStyle,
-            .foregroundColor: UIColor.label
+            .foregroundColor: ReaderTextTheme.text
         ]
     }
 }

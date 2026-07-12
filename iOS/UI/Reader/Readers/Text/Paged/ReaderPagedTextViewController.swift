@@ -61,11 +61,16 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     // Page view controller
     private lazy var pageViewController: UIPageViewController = {
         // Scroll is more reliable than pageCurl
-        UIPageViewController(
+        let controller = UIPageViewController(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
             options: nil
         )
+        if #available(iOS 27.0, *) {
+            let scrollView = controller.view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView
+            scrollView?.topEdgeEffect.style = .soft
+        }
+        return controller
     }()
 
     // Chapter navigation
@@ -110,8 +115,30 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         let textSettingChanged: (Notification) -> Void = { [weak self] _ in
             self?.updateTextConfig()
         }
-        for key in ["Reader.textFontSize", "Reader.textLineSpacing", "Reader.textHorizontalPadding", "Reader.textFontFamily"] {
+        for key in [
+            "Reader.textFontSize", "Reader.textLineSpacing", "Reader.textHorizontalPadding",
+            "Reader.textFontFamily", ReaderTextTheme.changeNotification
+        ] {
             addObserver(forName: key, using: textSettingChanged)
+        }
+
+        // the top edge effect only makes sense under the floating bars,
+        // otherwise it dims the top of the page
+        addObserver(forName: .readerShowingBars) { [weak self] _ in
+            self?.setTopEdgeEffectHidden(false)
+        }
+        addObserver(forName: .readerHidingBars) { [weak self] _ in
+            self?.setTopEdgeEffectHidden(true)
+        }
+        if navigationController?.navigationBar.isHidden == true {
+            setTopEdgeEffectHidden(true)
+        }
+    }
+
+    private func setTopEdgeEffectHidden(_ hidden: Bool) {
+        if #available(iOS 27.0, *) {
+            let scrollView = pageViewController.view.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView
+            scrollView?.topEdgeEffect.isHidden = hidden
         }
     }
 

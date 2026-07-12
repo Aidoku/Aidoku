@@ -596,6 +596,11 @@ extension Settings {
                         title: NSLocalizedString("TEXT_HORIZONTAL_PADDING"),
                         notification: .init("Reader.textHorizontalPadding"),
                         value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
+                    ),
+                    .init(
+                        key: "Reader.textColors",
+                        title: NSLocalizedString("TEXT_COLORS"),
+                        value: .custom
                     )
                 ]
             ))

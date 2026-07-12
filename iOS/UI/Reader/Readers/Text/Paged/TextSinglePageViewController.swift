@@ -14,7 +14,7 @@ class TextSinglePageViewController: UIViewController {
         tv.isEditable = false
         tv.isScrollEnabled = false
         tv.isUserInteractionEnabled = false  // Let taps pass through to parent tap zones
-        tv.backgroundColor = .systemBackground
+        tv.backgroundColor = ReaderTextTheme.background
         tv.font = .systemFont(ofSize: 18)
         return tv
     }()
@@ -32,7 +32,7 @@ class TextSinglePageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.background
         view.addSubview(textView)
 
         textView.translatesAutoresizingMaskIntoConstraints = false
