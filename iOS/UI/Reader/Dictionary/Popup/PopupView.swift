@@ -135,7 +135,7 @@ struct PopupLayout {
 struct PopupView: View {
 //    @Environment(UserConfig.self) private var userConfig
     private var userConfig: UserConfig
-    @Binding var isVisible: Bool
+//    @Binding var isVisible: Bool
     let selectionData: SelectionData?
     let lookupResults: [LookupResult]
     let dictionaryStyles: [String: String]
@@ -144,8 +144,8 @@ struct PopupView: View {
     let isFullWidth: Bool
     var topInset: CGFloat = 0
     var bottomInset: CGFloat = 0
-    let coverURL: URL?
-    let documentTitle: String?
+//    let coverURL: URL?
+//    let documentTitle: String?
     var clearSelection: Bool
     var onTextSelected: ((SelectionData) -> Int?)?
     var onTapOutside: (() -> Void)?
@@ -165,7 +165,7 @@ struct PopupView: View {
 
     init(
         userConfig: UserConfig,
-        isVisible: Binding<Bool>,
+//        isVisible: Binding<Bool>,
         selectionData: SelectionData?,
         lookupResults: [LookupResult],
         dictionaryStyles: [String: String],
@@ -174,8 +174,8 @@ struct PopupView: View {
         isFullWidth: Bool,
         topInset: CGFloat = 0,
         bottomInset: CGFloat = 0,
-        coverURL: URL?,
-        documentTitle: String?,
+//        coverURL: URL?,
+//        documentTitle: String?,
         clearSelection: Bool,
         onTextSelected: ((SelectionData) -> Int?)? = nil,
         onTapOutside: (() -> Void)? = nil,
@@ -186,7 +186,7 @@ struct PopupView: View {
         wasPaused: Bool = false
     ) {
         self.userConfig = userConfig
-        _isVisible = isVisible
+//        _isVisible = isVisible
         self.selectionData = selectionData
         self.lookupResults = lookupResults
         self.dictionaryStyles = dictionaryStyles
@@ -195,8 +195,8 @@ struct PopupView: View {
         self.isFullWidth = isFullWidth
         self.topInset = topInset
         self.bottomInset = bottomInset
-        self.coverURL = coverURL
-        self.documentTitle = documentTitle
+//        self.coverURL = coverURL
+//        self.documentTitle = documentTitle
         self.clearSelection = clearSelection
         self.onTextSelected = onTextSelected
         self.onTapOutside = onTapOutside
@@ -375,7 +375,7 @@ struct PopupView: View {
         ZStack(alignment: .topLeading) {
             if #available(iOS 26.0, *), !userConfig.popupDisableTransparency {
                 GlassEffectContainer {
-                    if isVisible, let selectionData, let layout, !content.isEmpty {
+                    if let selectionData, let layout, !content.isEmpty {
                         popupContent(selectionData: selectionData, layout: layout)
                             .glassEffect(.regular, in: .rect(cornerRadius: 8))
                             .position(layout.position)
@@ -383,7 +383,7 @@ struct PopupView: View {
                 }
             } else {
                 Group {
-                    if isVisible, let selectionData, let layout, !content.isEmpty {
+                    if let selectionData, let layout, !content.isEmpty {
                         popupContent(selectionData: selectionData, layout: layout)
                             .background(
                                 userConfig.popupDisableTransparency ? AnyShapeStyle(Color(.systemBackground)) : AnyShapeStyle(.ultraThinMaterial),

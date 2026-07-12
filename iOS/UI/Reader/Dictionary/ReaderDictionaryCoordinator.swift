@@ -15,6 +15,7 @@ final class ReaderDictionaryCoordinator {
         let controller: UIViewController
     }
 
+    private let popupAnimationDuration: TimeInterval = 0.1
     private weak var owner: ReaderViewController?
     private var popupControllers: [PopupController] = []
     private var lookupHighlightViews: [UIView] = []
@@ -56,15 +57,12 @@ final class ReaderDictionaryCoordinator {
             : owner.view.safeAreaLayoutGuide.layoutFrame
         let popupView = PopupView(
             userConfig: .init(),
-            isVisible: .constant(true),
             selectionData: .init(text: text, sentence: text, rect: anchorRect),
             lookupResults: entries,
             dictionaryStyles: styles,
             availableFrame: availableFrame,
             isVertical: anchorRect.height > anchorRect.width * 1.15,
             isFullWidth: false,
-            coverURL: nil,
-            documentTitle: nil,
             clearSelection: false,
             onTextSelected: { [weak self] selection in
                 guard let self else { return nil }
@@ -88,6 +86,8 @@ final class ReaderDictionaryCoordinator {
         let hostingController = UIHostingController(rootView: popupView)
         hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.alpha = 0
+        hostingController.view.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
 
         owner.add(child: hostingController)
         NSLayoutConstraint.activate([
@@ -98,14 +98,20 @@ final class ReaderDictionaryCoordinator {
         ])
 
         popupControllers.append(PopupController(id: popupID, controller: hostingController))
+        UIView.animate(
+            withDuration: popupAnimationDuration,
+            delay: 0,
+            options: [.beginFromCurrentState, .curveEaseOut]
+        ) {
+            hostingController.view.alpha = 1
+            hostingController.view.transform = .identity
+        }
         return true
     }
 
     func dismissTopPopup() {
         guard let popup = popupControllers.popLast() else { return }
-        let controller = popup.controller
-        controller.view.removeFromSuperview()
-        controller.removeFromParent()
+        hideAndRemove(popup)
 
         if popupControllers.isEmpty {
             clearLookupHighlights()
@@ -118,8 +124,7 @@ final class ReaderDictionaryCoordinator {
         guard !childRange.isEmpty else { return }
 
         for popup in popupControllers[childRange].reversed() {
-            popup.controller.view.removeFromSuperview()
-            popup.controller.removeFromParent()
+            hideAndRemove(popup)
         }
         popupControllers.removeSubrange(childRange)
     }
@@ -127,10 +132,23 @@ final class ReaderDictionaryCoordinator {
     func dismissAllPopups() {
         clearLookupHighlights()
         for popup in popupControllers.reversed() {
+            hideAndRemove(popup)
+        }
+        popupControllers.removeAll()
+    }
+
+    private func hideAndRemove(_ popup: PopupController) {
+        UIView.animate(
+            withDuration: popupAnimationDuration,
+            delay: 0,
+            options: [.beginFromCurrentState, .curveEaseIn]
+        ) {
+            popup.controller.view.alpha = 0
+            popup.controller.view.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+        } completion: { _ in
             popup.controller.view.removeFromSuperview()
             popup.controller.removeFromParent()
         }
-        popupControllers.removeAll()
     }
 
     @available(iOS 18.0, *)
