@@ -554,7 +554,11 @@ class ReaderViewController: BaseObservingViewController {
                 currentReader = .paged
         }
         let vc = UIHostingController(
-            rootView: ReaderSettingsView(mangaId: manga.identifier, reader: currentReader)
+            rootView: ReaderSettingsView(
+                mangaId: manga.identifier,
+                reader: currentReader,
+                chapterLanguage: chapter.language ?? source?.languages.first
+            )
         )
         present(vc, animated: true)
     }

@@ -50,8 +50,8 @@ class ReaderPageViewController: BaseObservingViewController {
         set { infoView?.nextChapter = newValue }
     }
 
+    var page: Page?
     private var pageSet = false
-    private var page: Page?
     private var sourceId: String?
     private var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
     private var pageBackground: PageBackground?

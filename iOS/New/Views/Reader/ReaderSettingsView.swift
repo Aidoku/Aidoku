@@ -10,6 +10,7 @@ import SwiftUI
 struct ReaderSettingsView: View {
     let mangaId: MangaIdentifier
     let reader: ReaderViewController.Reader
+    let chapterLanguage: String?
 
     private let sourceLanguageCodes: [String]
     private let sourceLanguageTitles: [String]
@@ -17,12 +18,19 @@ struct ReaderSettingsView: View {
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
     @State private var dictionaryLookupGestureMode: String
+    @State private var lookupGestureLocksQuickActions: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
     @StateObject private var dictionaryLookupEnabled = UserDefaultsBool(key: "Dictionary.enable")
     @StateObject private var dictionaryTextOverlayModeEnabled = UserDefaultsBool(key: "Dictionary.textOverlayMode")
     @StateObject private var restrictOCRLanguages = UserDefaultsBool(key: "Dictionary.restrictOCRLanguages")
+    @StateObject private var dictionaryCompatibilityObserver = UserDefaultsObserver(keys: [
+        "Dictionary.enable",
+        "Dictionary.lookupGesture",
+        "Dictionary.restrictOCRLanguages",
+        "Dictionary.restrictedOCRLanguages"
+    ])
 
     // All available font families on the system
     private static let availableFonts: [String] = {
@@ -34,9 +42,10 @@ struct ReaderSettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader) {
+    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader, chapterLanguage: String?) {
         self.mangaId = mangaId
         self.reader = reader
+        self.chapterLanguage = chapterLanguage
 
         var languageCodes = Array(SourceManager.shared.sourceLanguages)
         // sort alphabetically
@@ -63,6 +72,9 @@ struct ReaderSettingsView: View {
         )
         self._dictionaryLookupGestureMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
+        )
+        self._lookupGestureLocksQuickActions = State(
+            initialValue: Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
         )
     }
 
@@ -139,7 +151,7 @@ struct ReaderSettingsView: View {
                         setting: .init(
                             key: "Reader.disableQuickActions",
                             title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                            requiresFalse: "Dictionary.lookupGestureLocksQuickActions",
+                            requiresFalse: lookupGestureLocksQuickActions ? "Dictionary.lookupGestureLocksQuickActions" : nil,
                             value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
                         ),
                         onChange: onSettingChange
@@ -434,12 +446,28 @@ struct ReaderSettingsView: View {
                 dictionaryLookupGestureMode = UserDefaults.standard.string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
                 onSettingChange("Dictionary.lookupGesture")
             }
+            .onReceive(dictionaryCompatibilityObserver.$observedValues) { _ in
+                updateLookupGestureQuickActionsLock()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .dictionaryDictionariesChanged)) { _ in
+                updateLookupGestureQuickActionsLock()
+            }
         }
+    }
+
+    private static func lookupGestureLocksQuickActions(chapterLanguage: String?) -> Bool {
+        UserDefaults.standard.isDictionaryLongPressLookupEnabled
+            && UserDefaults.standard.isOCREnabled(language: chapterLanguage)
+    }
+
+    private func updateLookupGestureQuickActionsLock() {
+        lookupGestureLocksQuickActions = Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
     }
 
     private func onSettingChange(_ key: String) {
         guard key == "Dictionary.enable" || key == "Dictionary.lookupGesture" else { return }
         UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
+        updateLookupGestureQuickActionsLock()
     }
 }
 

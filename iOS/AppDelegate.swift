@@ -911,7 +911,11 @@ extension UserDefaults {
     }
 
     var isReaderQuickActionsDisabledEffective: Bool {
-        bool(forKey: "Reader.disableQuickActions") || isDictionaryLongPressLookupEnabled
+        isReaderQuickActionsDisabledEffective(language: nil)
+    }
+
+    func isReaderQuickActionsDisabledEffective(language: String?) -> Bool {
+        bool(forKey: "Reader.disableQuickActions") || (isDictionaryLongPressLookupEnabled && isOCREnabled(language: language))
     }
 
     var isReaderDoubleTapZoomDisabledEffective: Bool {

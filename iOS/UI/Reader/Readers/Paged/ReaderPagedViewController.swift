@@ -235,7 +235,7 @@ extension ReaderPagedViewController {
             .filter { $0 is UIContextMenuInteraction }
             .forEach { imageView.removeInteraction($0) }
 
-        if !UserDefaults.standard.isReaderQuickActionsDisabledEffective {
+        if !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions") {
             imageView.addInteraction(UIContextMenuInteraction(delegate: self))
         }
     }
@@ -1213,15 +1213,14 @@ extension ReaderPagedViewController {
 
 // MARK: - Context Menu Delegate
 extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
-
     func contextMenuInteraction(
         _ interaction: UIContextMenuInteraction,
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
-            !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions"),
             let pageView = interaction.view as? UIImageView,
-            pageView.image != nil
+            pageView.image != nil,
+            !UserDefaults.standard.isReaderQuickActionsDisabledEffective(language: pageLanguage(for: pageView))
         else {
             return nil
         }
@@ -1356,6 +1355,13 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
         )
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default))
         present(alert, animated: true)
+    }
+
+    private func pageLanguage(for imageView: UIImageView) -> String? {
+        for pageViewController in pageViewControllers where pageViewController.pageView?.imageView == imageView {
+            return pageViewController.page?.language
+        }
+        return nil
     }
 }
 
