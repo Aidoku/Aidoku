@@ -595,8 +595,6 @@
 "DICTIONARY_RESTRICT_OCR_LANGUAGES" = "Restrict OCR Languages";
 "DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO" = "When enabled, only chapters marked as the selected language(s) will be processed for OCR. It is recommended to select only the languages you have dictionaries imported for.";
 "DICTIONARY_OCR_LANGUAGES" = "OCR Languages";
-"DICTIONARY_OCR_PRE_UPSCALE" = "OCR Pre-Upscale";
-"DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO" = "Locked while Upscale Images is enabled.";
 "DICTIONARY_POPUP_WIDTH" = "Popup Width";
 "DICTIONARY_POPUP_HEIGHT" = "Popup Height";
 "TERM_DICTIONARIES" = "Term Dictionaries";

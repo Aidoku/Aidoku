@@ -544,10 +544,10 @@ extension SettingView {
 }
 
 // MARK: Toggle View
-extension (SettingView) {
+extension SettingView {
     private var shouldShowDisabledOnlyToggleSubtitle: Bool {
         switch setting.key {
-            case "Reader.disableQuickActions", "Dictionary.OCRPreUpscale":
+            case "Reader.disableQuickActions":
                 return true
             default:
                 return false
@@ -561,9 +561,6 @@ extension (SettingView) {
             case "Reader.disableQuickActions":
                 // Lookup gesture lock effectively forces these protections on.
                 return true
-            case "Dictionary.OCRPreUpscale":
-                // Upscale Images lock effectively forces OCR pre-upscale off.
-                return false
             default:
                 return toggleValue
         }

@@ -12,8 +12,7 @@ import Vision
 extension TextRecognizer {
     func analyze(_ image: UIImage, language: String?) async {
         guard let cgImage = image.cgImage else { return }
-        let preprocessedImage = preprocessForOCR(cgImage)
-        let recognizedObservations = await recognizeObservations(in: preprocessedImage, language: language)
+        let recognizedObservations = await recognizeObservations(in: cgImage, language: language)
         guard !Task.isCancelled else { return }
         observations = recognizedObservations
         rebuildClusterCache()
@@ -80,34 +79,6 @@ extension TextRecognizer {
         }
         return characters
     }
-
-    private func preprocessForOCR(_ cgImage: CGImage) -> CGImage {
-        guard UserDefaults.standard.bool(forKey: "Dictionary.OCRPreUpscale") else { return cgImage }
-        guard !UserDefaults.standard.bool(forKey: "Reader.upscaleImages") else { return cgImage }
-        return preprocessForOCRPlain(cgImage)
-    }
-
-    private func preprocessForOCRPlain(_ cgImage: CGImage) -> CGImage {
-        let width = CGFloat(cgImage.width)
-        let height = CGFloat(cgImage.height)
-        let longestSide = max(width, height)
-
-        // Improve tiny glyph recognition by upscaling smaller pages before OCR.
-        let targetLongestSide: CGFloat = 2800
-        let scaleFactor = min(2, max(1, targetLongestSide / longestSide))
-        guard scaleFactor > 1.05 else { return cgImage }
-
-        let scaledSize = CGSize(width: width * scaleFactor, height: height * scaleFactor)
-        let format = UIGraphicsImageRendererFormat.default()
-        format.scale = 1
-        format.opaque = true
-        let renderer = UIGraphicsImageRenderer(size: scaledSize, format: format)
-        let image = renderer.image { _ in
-            UIImage(cgImage: cgImage).draw(in: CGRect(origin: .zero, size: scaledSize))
-        }
-        return image.cgImage ?? cgImage
-    }
-
 }
 
 @available(iOS 18.0, *)

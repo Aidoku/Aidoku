@@ -743,19 +743,6 @@ extension Settings {
             requires: "Dictionary.enable",
             value: .group(.init(items: [
                 .init(
-                    key: "Dictionary.OCRPreUpscale",
-                    title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
-                    requiresFalse: "Reader.upscaleImages",
-                    value: .toggle(.init(
-                        subtitle: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO")
-                    ))
-                )
-            ]))
-        ),
-        .init(
-            requires: "Dictionary.enable",
-            value: .group(.init(items: [
-                .init(
                     key: "Dictionary.popupWidth",
                     title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
                     value: .stepper(.init(

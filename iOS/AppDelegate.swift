@@ -187,7 +187,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Dictionary.textOverlayMode": false,
                 "Dictionary.restrictOCRLanguages": false,
                 "Dictionary.restrictedOCRLanguages": [],
-                "Dictionary.OCRPreUpscale": true,
                 "Dictionary.overlayPadding": 5,
                 "Dictionary.overlayTextScaleMultiplier": 1,
                 "Dictionary.popupWidth": 320,
