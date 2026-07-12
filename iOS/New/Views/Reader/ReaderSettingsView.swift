@@ -475,7 +475,7 @@ extension ReaderSettingsView {
                 SettingView(
                     setting: .init(
                         key: "Dictionary.textOverlayMode",
-                        title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
+                        title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE")),
                         value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
                     )
                 )

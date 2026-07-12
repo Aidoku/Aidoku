@@ -589,7 +589,7 @@
 "LOOKUP_GESTURE_LOCKS_DOUBLE_TAP" = "Locked by Lookup Gesture: Single Press.";
 "LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS" = "Locked by Lookup Gesture: Long Press.";
 "DICTIONARY_TEXT_OVERLAY_MODE" = "OCR Text Overlay";
-"DICTIONARY_TEXT_OVERLAY_MODE_INFO" = "Shows OCR text boxes on image regions. Tap a box to look up that text.";
+"DICTIONARY_TEXT_OVERLAY_MODE_INFO" = "Shows text boxes on image regions when a lookup is activated. This can be helpful to determine which text has been recognized properly by OCR.";
 "DICTIONARY_OVERLAY_PADDING" = "Overlay Padding";
 "DICTIONARY_OVERLAY_TEXT_SCALE" = "Overlay Text Size";
 "DICTIONARY_RESTRICT_OCR_LANGUAGES" = "Restrict OCR Languages";
