@@ -40,18 +40,19 @@ final class ReaderDictionaryCoordinator {
     ) -> Bool {
         guard let owner else { return false }
 
-        if !appendPopup {
-            dismissAllPopups()
-            let entries = LookupEngine.shared.lookup(text)
-            guard !entries.isEmpty else { return false }
-            addLookupHighlight(for: entries, charRects: charRects)
-        }
-
         let entries: [LookupResult] = LookupEngine.shared.lookup(text)
         guard !entries.isEmpty else { return false }
 
+        if !appendPopup {
+            dismissAllPopups()
+            addLookupHighlight(for: entries, charRects: charRects)
+        }
+
         let popupID = UUID()
-        let styles = LookupEngine.shared.getStyles()
+        var dictionaryStyles: [String: String] = [:]
+        for style in LookupEngine.shared.getStyles() {
+            dictionaryStyles[String(style.dict_name)] = String(style.styles)
+        }
         let availableFrame = owner.barsHidden
             ? owner.view.bounds
             : owner.view.safeAreaLayoutGuide.layoutFrame
@@ -59,7 +60,7 @@ final class ReaderDictionaryCoordinator {
             userConfig: .init(),
             selectionData: .init(text: text, sentence: text, rect: anchorRect),
             lookupResults: entries,
-            dictionaryStyles: styles,
+            dictionaryStyles: dictionaryStyles,
             availableFrame: availableFrame,
             isVertical: anchorRect.height > anchorRect.width * 1.15,
             isFullWidth: false,
@@ -158,7 +159,7 @@ final class ReaderDictionaryCoordinator {
         if let cachedSelectionMatch, cachedSelectionMatch.text == text {
             matchedCount = cachedSelectionMatch.matchedCount
         } else {
-            matchedCount = LookupEngine.shared.lookup(text).first?.matched.count
+            matchedCount = LookupEngine.shared.lookup(text).first.flatMap { String($0.matched).count }
             cachedSelectionMatch = (text: text, matchedCount: matchedCount)
         }
 
@@ -202,10 +203,13 @@ final class ReaderDictionaryCoordinator {
     }
 
     @available(iOS 18.0, *)
-    private func addLookupHighlight(for entries: [DictEntryData], charRects: [CGRect]) {
-        guard let owner,
-              let matched = entries.first?.matched
-        else { return }
+    private func addLookupHighlight(for entries: [LookupResult], charRects: [CGRect]) {
+        guard
+            let owner,
+            let matched = entries.first.flatMap({ String($0.matched) })
+        else {
+            return
+        }
 
         let rects = charRects.prefix(matched.count).map { $0.insetBy(dx: -2, dy: -2) }
         guard !rects.isEmpty else { return }

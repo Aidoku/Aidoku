@@ -5,6 +5,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+import CHoshiDicts
 import UIKit
 
 enum DictionaryOverlayInteractionMode {
@@ -204,19 +205,24 @@ final class DictionaryOverlayButton: UIButton {
 
     private func resolveMatchedText(from text: String) -> String {
         guard #available(iOS 18.0, *), let first = LookupEngine.shared.lookup(text).first else { return text }
+
+        let matched = String(first.matched)
+        let expression = String(first.term.expression)
+        let reading = String(first.term.reading)
+
         var candidates: [Int] = []
 
-        if !first.matched.isEmpty, text.hasPrefix(first.matched) {
-            candidates.append(first.matched.count)
+        if !matched.isEmpty, text.hasPrefix(matched) {
+            candidates.append(matched.count)
         }
-        if !first.expression.isEmpty, text.hasPrefix(first.expression) {
-            candidates.append(first.expression.count)
+        if !expression.isEmpty, text.hasPrefix(expression) {
+            candidates.append(expression.count)
         }
-        if !first.reading.isEmpty, text.hasPrefix(first.reading) {
-            candidates.append(first.reading.count)
+        if !reading.isEmpty, text.hasPrefix(reading) {
+            candidates.append(reading.count)
         }
 
-        let fallback = min(first.matched.count, text.count)
+        let fallback = min(matched.count, text.count)
         let matchLength = max(1, candidates.min() ?? max(1, fallback))
         return String(text.prefix(matchLength))
     }
