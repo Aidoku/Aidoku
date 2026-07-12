@@ -79,6 +79,32 @@ extension TextRecognizer {
 }
 
 @available(iOS 18.0, *)
+private actor DictionaryTextAnalysisQueue {
+    static let shared = DictionaryTextAnalysisQueue()
+
+    private var isRunning = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func waitForTurn() async {
+        if !isRunning {
+            isRunning = true
+            return
+        }
+        await withCheckedContinuation { continuation in
+            waiters.append(continuation)
+        }
+    }
+
+    func finishTurn() {
+        if waiters.isEmpty {
+            isRunning = false
+        } else {
+            waiters.removeFirst().resume()
+        }
+    }
+}
+
+@available(iOS 18.0, *)
 enum DictionaryTextAnalysisScheduler {
     static func cancel(
         task: inout Task<Void, Never>?,
@@ -109,6 +135,9 @@ enum DictionaryTextAnalysisScheduler {
         let runRecognizer = TextRecognizer()
         recognizer = runRecognizer
         task = Task { [weak runRecognizer] in
+            await DictionaryTextAnalysisQueue.shared.waitForTurn()
+            defer { await DictionaryTextAnalysisQueue.shared.finishTurn() }
+
             guard !Task.isCancelled, let runRecognizer else { return }
             await runRecognizer.analyze(image, language: language)
             guard !Task.isCancelled else { return }
