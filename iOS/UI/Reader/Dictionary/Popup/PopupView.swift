@@ -508,6 +508,7 @@ struct PopupView: View {
 //        let scaledCSS = userConfig.customCSS.replacingOccurrences(of: #"(-?(?:\d+(?:\.\d+)?|\.\d+))px"#, with: "calc($1px * var(--popup-scale))", options: .regularExpression)
 //        let customCSS = (try? JSONSerialization.data(withJSONObject: scaledCSS, options: .fragmentsAllowed))
 //            .flatMap { String(data: $0, encoding: .utf8) } ?? "\"\""
+        let customCSS = "a{text-decoration:none;color:#FF2F52;}"
 
         let content = """
         <script>
@@ -533,7 +534,7 @@ struct PopupView: View {
             window.useAnkiConnect = false;
             window.embedMedia = false;
             window.compactGlossariesAnki = false;
-            window.customCSS = "";
+            window.customCSS = "\(customCSS)";
             window.swipeThreshold = 0;
         </script>
         <div id="entries-container"></div>
