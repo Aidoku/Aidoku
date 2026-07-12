@@ -253,22 +253,6 @@ extension TextRecognizer {
             let adjacentColumn = yOverlap > 0.50 && xGap < thicknessScale * 1
             guard sameColumn || adjacentColumn else { return false }
             let connected = centerDistance <= thicknessScale * 3
-#if DEBUG
-            if connected {
-                let relation = sameColumn ? "vertical/sameColumn" : "vertical/adjacentColumn"
-                logNeighborMerge(
-                    lhs: lhs,
-                    rhs: rhs,
-                    relation: relation,
-                    xGap: xGap,
-                    yGap: yGap,
-                    xOverlap: xOverlap,
-                    yOverlap: yOverlap,
-                    centerDistance: centerDistance,
-                    threshold: thicknessScale * 3
-                )
-            }
-#endif
             return connected
         }
 
@@ -279,52 +263,10 @@ extension TextRecognizer {
         guard sameLine || adjacentLine || sameColumn || adjacentColumn else { return false }
 
         if lhsOrientation == rhsOrientation {
-            let connected = centerDistance <= sizeScale * 3.5
-#if DEBUG
-            if connected {
-                let relation: String
-                if sameLine {
-                    relation = "horizontal/sameLine"
-                } else if adjacentLine {
-                    relation = "horizontal/adjacentLine"
-                } else if sameColumn {
-                    relation = "horizontal/sameColumn"
-                } else {
-                    relation = "horizontal/adjacentColumn"
-                }
-                logNeighborMerge(
-                    lhs: lhs,
-                    rhs: rhs,
-                    relation: relation,
-                    xGap: xGap,
-                    yGap: yGap,
-                    xOverlap: xOverlap,
-                    yOverlap: yOverlap,
-                    centerDistance: centerDistance,
-                    threshold: sizeScale * 3.5
-                )
-            }
-#endif
-            return connected
+            return centerDistance <= sizeScale * 3.5
         }
 
-        let connected = centerDistance <= sizeScale * 1.15
-#if DEBUG
-        if connected {
-            logNeighborMerge(
-                lhs: lhs,
-                rhs: rhs,
-                relation: "mixedOrientation/veryClose",
-                xGap: xGap,
-                yGap: yGap,
-                xOverlap: xOverlap,
-                yOverlap: yOverlap,
-                centerDistance: centerDistance,
-                threshold: sizeScale * 1.15
-            )
-        }
-#endif
-        return connected
+        return centerDistance <= sizeScale * 1.15
     }
 
     private func overlapRatio(_ a0: CGFloat, _ a1: CGFloat, _ b0: CGFloat, _ b1: CGFloat, divisor: CGFloat) -> CGFloat {
@@ -332,39 +274,4 @@ extension TextRecognizer {
         let overlap = max(0, min(a1, b1) - max(a0, b0))
         return overlap / divisor
     }
-
-#if DEBUG
-    func debugDumpClusters() {
-        guard !cachedClusters.isEmpty else { return }
-        for (clusterIndex, ordered) in cachedOrderedClusters.enumerated() {
-            let text = ordered
-                .map { observations[$0].text.replacingOccurrences(of: "\n", with: " ") }
-                .joined(separator: " | ")
-            print("[DictionaryOCR][ClusterDump] cluster[\(clusterIndex)] \(text)")
-        }
-    }
-
-    // swiftlint:disable:next function_parameter_count
-    private func logNeighborMerge(
-        lhs: Int,
-        rhs: Int,
-        relation: String,
-        xGap: CGFloat,
-        yGap: CGFloat,
-        xOverlap: CGFloat,
-        yOverlap: CGFloat,
-        centerDistance: CGFloat,
-        threshold: CGFloat
-    ) {
-        guard observations.indices.contains(lhs), observations.indices.contains(rhs) else { return }
-        let lhsText = observations[lhs].text.replacingOccurrences(of: "\n", with: " ")
-        let rhsText = observations[rhs].text.replacingOccurrences(of: "\n", with: " ")
-        print(
-            "[DictionaryOCR][ClusterMerge] \(relation) lhs[\(lhs)]=\(lhsText) rhs[\(rhs)]=\(rhsText) " +
-                "xGap=\(String(format: "%.4f", xGap)) yGap=\(String(format: "%.4f", yGap)) " +
-                "xOverlap=\(String(format: "%.4f", xOverlap)) yOverlap=\(String(format: "%.4f", yOverlap)) " +
-                "dist=\(String(format: "%.4f", centerDistance))/\(String(format: "%.4f", threshold))"
-        )
-    }
-#endif
 }

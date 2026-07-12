@@ -16,9 +16,6 @@ extension TextRecognizer {
         guard !Task.isCancelled else { return }
         observations = recognizedObservations
         rebuildClusterCache()
-#if DEBUG
-        debugDumpClusters()
-#endif
     }
 
     private func recognizeObservations(in cgImage: CGImage, language: String?) async -> [OCRObservation] {

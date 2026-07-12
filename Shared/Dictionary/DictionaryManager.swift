@@ -108,9 +108,7 @@ class DictionaryManager {
             }
         )
 
-        guard let configURL = try? Self.getDictionariesDirectory()
-            .appendingPathComponent(Self.configFileName)
-        else { return }
+        guard let configURL = try? Self.getDictionariesDirectory().appendingPathComponent(Self.configFileName) else { return }
 
         do {
             let encoder = JSONEncoder()
@@ -124,7 +122,7 @@ class DictionaryManager {
 
             try data.write(to: configURL, options: .atomic)
         } catch {
-            print("Failed to save dictionary config: \(error.localizedDescription)")
+            LogManager.logger.error("Failed to save dictionary config: \(error.localizedDescription)")
         }
     }
 
