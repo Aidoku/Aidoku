@@ -740,6 +740,7 @@ extension Settings {
             ))
         ),
         .init(
+            title: NSLocalizedString("DICTIONARY_POPUP"),
             requires: "Dictionary.enable",
             value: .group(.init(items: [
                 .init(
