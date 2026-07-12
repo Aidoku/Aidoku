@@ -48,11 +48,14 @@ final class ReaderDictionaryCoordinator {
 
         let popupID = UUID()
         let styles = LookupEngine.shared.getStyles()
+        let availableFrame = owner.barsHidden
+            ? owner.view.bounds
+            : owner.view.safeAreaLayoutGuide.layoutFrame
         let popupView = DictionaryPopupView(
             entries: entries,
             dictionaryStyles: styles,
             anchorRect: anchorRect,
-            screenSize: owner.view.bounds.size,
+            availableFrame: availableFrame,
             onLookup: { [weak self] selection in
                 guard let self else { return }
                 _ = self.performLookup(

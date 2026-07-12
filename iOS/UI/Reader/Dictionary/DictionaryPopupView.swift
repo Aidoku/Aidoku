@@ -20,7 +20,7 @@ struct DictionaryPopupView: View {
     let entries: [DictEntryData]
     let dictionaryStyles: [String: String]
     let anchorRect: CGRect
-    let screenSize: CGSize
+    let availableFrame: CGRect
     let onLookup: (DictionaryPopupSelection) -> Void
     let onDismiss: () -> Void
     let onTapOutside: () -> Void
@@ -45,19 +45,19 @@ struct DictionaryPopupView: View {
     }
 
     private var spaceLeft: CGFloat {
-        anchorRect.minX - padding
+        anchorRect.minX - availableFrame.minX - padding
     }
 
     private var spaceRight: CGFloat {
-        screenSize.width - anchorRect.maxX - padding
+        availableFrame.maxX - anchorRect.maxX - padding
     }
 
     private var spaceAbove: CGFloat {
-        anchorRect.minY - padding
+        anchorRect.minY - availableFrame.minY - padding
     }
 
     private var spaceBelow: CGFloat {
-        screenSize.height - anchorRect.maxY - padding
+        availableFrame.maxY - anchorRect.maxY - padding
     }
 
     private var popupWidth: CGFloat {
@@ -65,7 +65,7 @@ struct DictionaryPopupView: View {
             let available = max(spaceLeft, spaceRight) - borderPadding
             return max(1, min(available, maxWidth))
         }
-        return min(screenSize.width - borderPadding * 2, maxWidth)
+        return min(availableFrame.width - borderPadding * 2, maxWidth)
     }
 
     private var popupHeight: CGFloat {
@@ -87,14 +87,17 @@ struct DictionaryPopupView: View {
             } else {
                 x = anchorRect.minX - padding - popupWidth
             }
-            x = max(borderPadding, min(x, screenSize.width - popupWidth - borderPadding))
+            x = max(availableFrame.minX + borderPadding, min(x, availableFrame.maxX - popupWidth - borderPadding))
 
             var y = anchorRect.minY
-            y = max(borderPadding, min(y, screenSize.height - popupHeight - borderPadding))
+            y = max(availableFrame.minY + borderPadding, min(y, availableFrame.maxY - popupHeight - borderPadding))
             return CGPoint(x: x, y: y)
         } else {
             var x = anchorRect.minX + (popupWidth / 2)
-            x = max(popupWidth / 2 + borderPadding, min(x, screenSize.width - popupWidth / 2 - borderPadding))
+            x = max(
+                availableFrame.minX + popupWidth / 2 + borderPadding,
+                min(x, availableFrame.maxX - popupWidth / 2 - borderPadding)
+            )
 
             var y: CGFloat
             if showBelow {
@@ -102,7 +105,7 @@ struct DictionaryPopupView: View {
             } else {
                 y = anchorRect.minY - padding - (popupHeight / 2)
             }
-            y = max(popupHeight / 2, min(y, screenSize.height - popupHeight / 2))
+            y = max(availableFrame.minY + popupHeight / 2, min(y, availableFrame.maxY - popupHeight / 2))
             return CGPoint(x: x - popupWidth / 2, y: y - popupHeight / 2)
         }
     }
