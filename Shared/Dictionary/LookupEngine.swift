@@ -48,6 +48,11 @@ class LookupEngine {
         lookupEngine != nil
     }
 
+    func lookup(_ str: String, maxResults: Int = 16, scanLength: Int = 16) -> [LookupResult] {
+        guard let lookupEngine else { return [] }
+        return Array(lookupEngine.lookup(std.string(str), Int32(maxResults), scanLength))
+    }
+
     func lookup(_ str: String, maxResults: Int = 16) -> [DictEntryData] {
         guard let lookupEngine else { return [] }
         let results = Array(lookupEngine.lookup(std.string(str), Int32(maxResults)))

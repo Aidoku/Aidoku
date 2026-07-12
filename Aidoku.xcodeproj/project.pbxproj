@@ -45,7 +45,6 @@
 		EE7A41BF2F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
 		EE7A41C02F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
 		EE7A41C22F5CF5960044AF4C /* TextRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */; };
-		EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */; };
 		EE7A41C62F5CF6460044AF4C /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C52F5CF6460044AF4C /* popup.js */; };
 		EE7A41C82F5CF65B0044AF4C /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = EE7A41C72F5CF65B0044AF4C /* popup.css */; };
 		EE7A41CB2F5CF7710044AF4C /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = EE7A41CA2F5CF7710044AF4C /* CHoshiDicts */; };
@@ -222,6 +221,8 @@
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
+		FB39A4BF30033AD5006E3289 /* PopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB39A4BE30033AD2006E3289 /* PopupView.swift */; };
+		FB39A4C230033AED006E3289 /* PopupWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB39A4C130033AEA006E3289 /* PopupWebView.swift */; };
 		FB3D20782FA4A1A1004DAC5E /* BackupSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3D20772FA4A19E004DAC5E /* BackupSource.swift */; };
 		FB3D20792FA4A1A1004DAC5E /* BackupSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3D20772FA4A19E004DAC5E /* BackupSource.swift */; };
 		FB3DDA082ECE37570081232F /* SourceSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3DDA072ECE37510081232F /* SourceSearchViewController.swift */; };
@@ -670,7 +671,6 @@
 		EE7A41BB2F5CF4ED0044AF4C /* LookupEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookupEngine.swift; sourceTree = "<group>"; };
 		EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryManager.swift; sourceTree = "<group>"; };
 		EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognizer.swift; sourceTree = "<group>"; };
-		EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryPopupView.swift; sourceTree = "<group>"; };
 		EE7A41C52F5CF6460044AF4C /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
 		EE7A41C72F5CF65B0044AF4C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
 		EE7A41E42F5CFA630044AF4C /* DictionaryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryListView.swift; sourceTree = "<group>"; };
@@ -800,6 +800,8 @@
 		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A32B14180F005E6264 /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A42B14183C005E6264 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FB39A4BE30033AD2006E3289 /* PopupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupView.swift; sourceTree = "<group>"; };
+		FB39A4C130033AEA006E3289 /* PopupWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWebView.swift; sourceTree = "<group>"; };
 		FB3D20772FA4A19E004DAC5E /* BackupSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSource.swift; sourceTree = "<group>"; };
 		FB3DDA072ECE37510081232F /* SourceSearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSearchViewController.swift; sourceTree = "<group>"; };
 		FB3DDA092ECE4D360081232F /* SourceSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceSearchViewModel.swift; sourceTree = "<group>"; };
@@ -1219,15 +1221,13 @@
 		EE7A41B72F5CF4CE0044AF4C /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
+				FB39A4C030033AE2006E3289 /* Popup */,
 				EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */,
 				EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */,
 				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
 				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
 				EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */,
 				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
-				EE7A41C32F5CF5AD0044AF4C /* DictionaryPopupView.swift */,
-				EE7A41C52F5CF6460044AF4C /* popup.js */,
-				EE7A41C72F5CF65B0044AF4C /* popup.css */,
 				EE7A41ED2F5D04B40044AF4C /* selection.js */,
 			);
 			path = Dictionary;
@@ -1700,6 +1700,17 @@
 				FB4E579A2E352CAA006EF27C /* UIKeyModifierFlags.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		FB39A4C030033AE2006E3289 /* Popup */ = {
+			isa = PBXGroup;
+			children = (
+				FB39A4BE30033AD2006E3289 /* PopupView.swift */,
+				FB39A4C130033AEA006E3289 /* PopupWebView.swift */,
+				EE7A41C52F5CF6460044AF4C /* popup.js */,
+				EE7A41C72F5CF65B0044AF4C /* popup.css */,
+			);
+			path = Popup;
 			sourceTree = "<group>";
 		};
 		FB3DDF7C2E134F8100A64897 /* Reader */ = {
@@ -2807,6 +2818,7 @@
 				04B48CFC2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */,
 				FB55AFA028AAAD9E0083EFC3 /* UIToolbar.swift in Sources */,
 				FB82A5C42DF8622700366BC8 /* LocalModels.swift in Sources */,
+				FB39A4BF30033AD5006E3289 /* PopupView.swift in Sources */,
 				FBA748A72E81C12400D9BE86 /* BangumiModels.swift in Sources */,
 				FB6340BB2792202B0072A2A2 /* Listing.swift in Sources */,
 				FB1A4E6A2E7AFEC2006F4BA8 /* SettingsView.swift in Sources */,
@@ -2834,7 +2846,6 @@
 				FB9A483E2967E48300FFC414 /* MigrationStrategy.swift in Sources */,
 				FB077DAE2E7DC85A00C9C214 /* BackupsView.swift in Sources */,
 				FB7864862848215500125DC0 /* Reachability.swift in Sources */,
-				EE7A41C42F5CF5AD0044AF4C /* DictionaryPopupView.swift in Sources */,
 				FBF059CC2EF8331200907B0E /* BackupReadingSession.swift in Sources */,
 				FB662EEA2DA81A5C00007514 /* MangaView.swift in Sources */,
 				FB662EEB2DA81A5C00007514 /* CollectionView.swift in Sources */,
@@ -3060,6 +3071,7 @@
 				FB0051422FB970FF004B4A6F /* SafariView.swift in Sources */,
 				FBF9259A2F4DFB7A0049CB43 /* MangaBakaApi.swift in Sources */,
 				FB9691562E89971F00BC0587 /* Color.swift in Sources */,
+				FB39A4C230033AED006E3289 /* PopupWebView.swift in Sources */,
 				FB05182B2E09B05E00CEE275 /* GIFImage.swift in Sources */,
 				FBD6A419285B8EBC007116C9 /* TrackState.swift in Sources */,
 				FB7B7EDD278CEAA2001E6EAF /* URLSession.swift in Sources */,

@@ -5,6 +5,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+import CHoshiDicts
 import SwiftUI
 import UIKit
 
@@ -38,42 +39,54 @@ final class ReaderDictionaryCoordinator {
     ) -> Bool {
         guard let owner else { return false }
 
-        let entries = LookupEngine.shared.lookup(text)
-        guard !entries.isEmpty else { return false }
-
         if !appendPopup {
             dismissAllPopups()
+            let entries = LookupEngine.shared.lookup(text)
+            guard !entries.isEmpty else { return false }
             addLookupHighlight(for: entries, charRects: charRects)
         }
+
+        let entries: [LookupResult] = LookupEngine.shared.lookup(text)
+        guard !entries.isEmpty else { return false }
 
         let popupID = UUID()
         let styles = LookupEngine.shared.getStyles()
         let availableFrame = owner.barsHidden
             ? owner.view.bounds
             : owner.view.safeAreaLayoutGuide.layoutFrame
-        let popupView = DictionaryPopupView(
-            entries: entries,
+        let popupView = PopupView(
+            userConfig: .init(),
+            isVisible: .constant(true),
+            selectionData: .init(text: text, sentence: text, rect: anchorRect),
+            lookupResults: entries,
             dictionaryStyles: styles,
-            anchorRect: anchorRect,
             availableFrame: availableFrame,
-            onLookup: { [weak self] selection in
-                guard let self else { return }
+            isVertical: anchorRect.height > anchorRect.width * 1.15,
+            isFullWidth: false,
+            coverURL: nil,
+            documentTitle: nil,
+            clearSelection: false,
+            onTextSelected: { [weak self] selection in
+                guard let self else { return nil }
                 _ = self.performLookup(
                     text: selection.text,
-                    anchorRect: selection.rect ?? anchorRect,
+                    anchorRect: selection.rect,
                     appendPopup: true
                 )
-            },
-            onDismiss: { [weak self] in
-                self?.dismissTopPopup()
+                return nil
             },
             onTapOutside: { [weak self] in
                 self?.dismissChildPopups(parentID: popupID)
-            }
+            },
+            onSwipeDismiss: { [weak self] in
+                self?.dismissTopPopup()
+            },
+            onPause: nil,
+            wasPaused: false
         )
 
         let hostingController = UIHostingController(rootView: popupView)
-        hostingController.view.backgroundColor = .clear
+        hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
 
         owner.add(child: hostingController)
