@@ -10,6 +10,7 @@ import Gifu
 import MarkdownUI
 import Nuke
 import SwiftUI
+import Vision
 import VisionKit
 import ZIPFoundation
 
@@ -26,6 +27,13 @@ class ReaderPageView: UIView {
 
     private var textView: UIHostingController<MarkdownView>?
 
+    private var _textRecognizer: Any?
+    @available(iOS 18.0, *)
+    var textRecognizer: TextRecognizer? {
+        get { _textRecognizer as? TextRecognizer }
+        set { _textRecognizer = newValue }
+    }
+
     private var imageWidthConstraint: NSLayoutConstraint?
     private var imageHeightConstraint: NSLayoutConstraint?
     private var imageTask: ImageTask?
@@ -35,6 +43,14 @@ class ReaderPageView: UIView {
     private static let sharedImageAnalyzer = ImageAnalyzer()
     private var liveTextTask: Task<Void, Never>?
     private var liveTextGeneration = 0
+    private var dictionaryAnalysisTask: Task<Void, Never>?
+    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
+        didSet {
+            dictionaryOverlayController.onLookup = onDictionaryOverlayTap
+        }
+    }
+    private let dictionaryOverlayContainerView = DictionaryOverlayPassthroughView()
+    private let dictionaryOverlayController = DictionaryOverlayController()
 
     private var completion: ((Bool) -> Void)?
 
@@ -57,6 +73,10 @@ class ReaderPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        dictionaryAnalysisTask?.cancel()
+    }
+
     func configure() {
         progressView.trackColor = .quaternaryLabel
         progressView.progressColor = tintColor
@@ -74,6 +94,12 @@ class ReaderPageView: UIView {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(imageView)
 
+        dictionaryOverlayContainerView.translatesAutoresizingMaskIntoConstraints = false
+        dictionaryOverlayContainerView.backgroundColor = .clear
+        dictionaryOverlayContainerView.isUserInteractionEnabled = true
+        imageView.addSubview(dictionaryOverlayContainerView)
+        dictionaryOverlayController.containerView = dictionaryOverlayContainerView
+
         imageWidthConstraint = imageView.widthAnchor.constraint(equalTo: widthAnchor)
         imageWidthConstraint?.isActive = true
     }
@@ -88,7 +114,11 @@ class ReaderPageView: UIView {
             imageView.heightAnchor.constraint(lessThanOrEqualTo: heightAnchor),
             imageView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor),
             imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            imageView.centerYAnchor.constraint(equalTo: centerYAnchor)
+            imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            dictionaryOverlayContainerView.topAnchor.constraint(equalTo: imageView.topAnchor),
+            dictionaryOverlayContainerView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
+            dictionaryOverlayContainerView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
+            dictionaryOverlayContainerView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor)
         ])
     }
 
@@ -115,6 +145,7 @@ class ReaderPageView: UIView {
             imageView.image = image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
@@ -232,6 +263,7 @@ class ReaderPageView: UIView {
             }
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             completion?(true)
             return true
         } catch {
@@ -255,6 +287,7 @@ class ReaderPageView: UIView {
                         }
                         fixImageSize()
                         startLiveTextAnalysis()
+                        scheduleDictionaryTextAnalysis()
                         completion?(true)
                         return true
                     }
@@ -288,6 +321,7 @@ class ReaderPageView: UIView {
             imageView.image = imageContainer?.image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         }
 
@@ -325,6 +359,7 @@ class ReaderPageView: UIView {
         imageView.image = image
         fixImageSize()
         startLiveTextAnalysis()
+        scheduleDictionaryTextAnalysis()
 
         return true
     }
@@ -350,6 +385,7 @@ class ReaderPageView: UIView {
             imageView.image = imageContainer?.image
             fixImageSize()
             startLiveTextAnalysis()
+            scheduleDictionaryTextAnalysis()
             return true
         }
 
@@ -420,6 +456,7 @@ class ReaderPageView: UIView {
         }
         fixImageSize()
         startLiveTextAnalysis()
+        scheduleDictionaryTextAnalysis()
 
         return true
     }
@@ -456,6 +493,15 @@ class ReaderPageView: UIView {
     }
 
     func setPageText(text: String) {
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.cancel(
+                task: &dictionaryAnalysisTask,
+                recognizer: textRecognizer
+            )
+        } else {
+            dictionaryAnalysisTask?.cancel()
+        }
+        clearDictionaryOverlays()
         imageView.image = nil
         progressView.isHidden = true
 
@@ -502,6 +548,22 @@ class ReaderPageView: UIView {
         }
     }
 
+    private func scheduleDictionaryTextAnalysis() {
+        clearDictionaryOverlays()
+
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.schedule(
+                task: &dictionaryAnalysisTask,
+                recognizer: &textRecognizer,
+                image: imageView.image
+            ) { [weak self] in
+                self?.renderDictionaryOverlaysIfNeeded()
+            }
+        } else {
+            dictionaryAnalysisTask?.cancel()
+        }
+    }
+
     func setLiveTextHidden(_ hidden: Bool) {
         if #available(iOS 16.0, *) {
             shouldShowLiveTextButton = !hidden
@@ -543,6 +605,38 @@ class ReaderPageView: UIView {
         liveTextTask = nil
         guard #available(iOS 16.0, *) else { return }
         imageAnalaysisInteraction?.analysis = nil
+    }
+}
+
+// MARK: - Dictionary Overlay
+extension ReaderPageView {
+    private func clearDictionaryOverlays() {
+        dictionaryOverlayController.clear()
+    }
+
+    @MainActor
+    private func renderDictionaryOverlaysIfNeeded() {
+        clearDictionaryOverlays()
+
+        guard #available(iOS 18.0, *),
+              UserDefaults.standard.bool(forKey: "Reader.dictionary"),
+              UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode"),
+              let textRecognizer,
+              let image = imageView.image
+        else { return }
+
+        let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
+        dictionaryOverlayController.onLookup = onDictionaryOverlayTap
+        dictionaryOverlayController.render(overlays: overlays)
+    }
+
+    @discardableResult
+    func dismissActiveDictionaryOverlay() -> Bool {
+        dictionaryOverlayController.dismissActive()
+    }
+
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayController.interactionMode = mode
     }
 }
 

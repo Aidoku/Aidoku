@@ -48,6 +48,17 @@ class ReaderViewController: BaseObservingViewController {
 
     weak var reader: ReaderReaderDelegate?
 
+    // Dictionary popup state
+    private lazy var dictionaryCoordinator = ReaderDictionaryCoordinator(owner: self)
+    private var dictionaryLongPressSelection: (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
+    private var isDictionaryPopupVisible: Bool {
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.isPopupVisible
+        } else {
+            false
+        }
+    }
+
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
@@ -78,19 +89,10 @@ class ReaderViewController: BaseObservingViewController {
             }()
         )
 
-    // fake zoom gesture so that the bar toggle gesture doesn't conflict with zooming
-    private lazy var fakeZoomTapGesture: UITapGestureRecognizer = {
-        let doubleTap = UITapGestureRecognizer(target: self, action: nil)
-        doubleTap.numberOfTapsRequired = 2
-        return doubleTap
-    }()
-
-    private lazy var barToggleTapGesture: UITapGestureRecognizer = {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
-        tap.numberOfTapsRequired = 1
-        tap.require(toFail: fakeZoomTapGesture)
-        return tap
-    }()
+    private var barToggleTapGesture: UITapGestureRecognizer?
+    private var barToggleSecondaryTapGesture: UITapGestureRecognizer?
+    private var barDismissNavigationBarTapGesture: UITapGestureRecognizer?
+    private var dictionaryLongPressGesture: UILongPressGestureRecognizer?
 
     var statusBarHidden = false
 
@@ -205,9 +207,16 @@ class ReaderViewController: BaseObservingViewController {
         view.addSubview(activityIndicator)
 
         // bar toggle tap gesture
-        fakeZoomTapGesture.isEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap")
-        view.addGestureRecognizer(fakeZoomTapGesture)
-        view.addGestureRecognizer(barToggleTapGesture)
+        configureBarToggleTapGestures()
+
+        // initialize dictionary engine
+        if #available(iOS 18.0, *),
+           UserDefaults.standard.bool(forKey: "Reader.dictionary") {
+            DictionaryManager.shared.rebuildLookupQuery()
+            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
+        }
+        configureDictionaryLookupGesture()
+        configureDictionaryOverlayInteractionMode()
 
         // page offset tap gesture
         let pageOffsetGesture = UITapGestureRecognizer(target: self, action: #selector(toggleOffset))
@@ -253,8 +262,8 @@ class ReaderViewController: BaseObservingViewController {
             // if the tap zone is auto, it will changed based on the current reader
             self.updateTapZone()
         }
-        addObserver(forName: "Reader.disableDoubleTap") { [weak self] notification in
-            self?.fakeZoomTapGesture.isEnabled = !(notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap"))
+        addObserver(forName: "Reader.disableDoubleTap") { [weak self] _ in
+            self?.configureBarToggleTapGestures()
         }
         let reloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
@@ -266,6 +275,33 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.cropBorders", using: reloadBlock)
         addObserver(forName: "Reader.liveText", using: reloadBlock)
         addObserver(forName: "Reader.tapZones", using: reloadBlock)
+        addObserver(forName: "Reader.dictionaryOverlayPadding", using: reloadBlock)
+        addObserver(forName: "Reader.dictionaryOverlayTextScaleMultiplier", using: reloadBlock)
+        addObserver(forName: "Reader.dictionaryOCRLanguage", using: reloadBlock)
+        addObserver(forName: "Reader.dictionaryOCRPreUpscale", using: reloadBlock)
+        addObserver(forName: "Reader.dictionary") { [weak self] _ in
+            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
+            self?.configureBarToggleTapGestures()
+            self?.configureDictionaryLookupGesture()
+            self?.configureDictionaryOverlayInteractionMode()
+            guard let self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
+        addObserver(forName: "Reader.dictionaryLookupGesture") { [weak self] _ in
+            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
+            self?.configureBarToggleTapGestures()
+            self?.configureDictionaryLookupGesture()
+            self?.configureDictionaryOverlayInteractionMode()
+            guard let self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
+        addObserver(forName: "Reader.dictionaryTextOverlayMode") { [weak self] _ in
+            self?.configureBarToggleTapGestures()
+            self?.configureDictionaryOverlayInteractionMode()
+            self?.configureDictionaryOverlayTapHandler()
+            guard let self else { return }
+            self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+        }
         // Switch text reader style (paged <-> scroll) without restart
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
@@ -325,6 +361,7 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.toolbar.alpha = 1
 
         disableSwipeGestures()
+        configureNavigationBarDismissTapGesture(enabled: UserDefaults.standard.isDictionarySingleTapLookupEnabled)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -343,6 +380,8 @@ class ReaderViewController: BaseObservingViewController {
         Task {
             await updateReadPosition()
         }
+
+        barDismissNavigationBarTapGesture?.isEnabled = false
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -651,6 +690,8 @@ extension ReaderViewController {
             add(child: pageController, below: descriptionButtonController.view)
         }
         reader?.readingMode = readingMode
+        configureDictionaryOverlayInteractionMode()
+        configureDictionaryOverlayTapHandler()
         disableSwipeGestures()
     }
 }
@@ -902,10 +943,133 @@ extension ReaderViewController: ReaderHoldingDelegate {
             chaptersToRemoveDownload.append(chapter)
         }
     }
+
+    private func configureBarToggleTapGestures() {
+        if let gesture = barToggleTapGesture {
+            view.removeGestureRecognizer(gesture)
+        }
+        if let gesture = barToggleSecondaryTapGesture {
+            view.removeGestureRecognizer(gesture)
+        }
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        tap.numberOfTapsRequired = 1
+        let singleTapLookupEnabled = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+        configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
+
+        if singleTapLookupEnabled {
+            barToggleSecondaryTapGesture = nil
+        } else if !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective {
+            let doubleTap = UITapGestureRecognizer(
+                target: self,
+                action: nil
+            )
+            doubleTap.numberOfTapsRequired = 2
+            view.addGestureRecognizer(doubleTap)
+            tap.require(toFail: doubleTap)
+            barToggleSecondaryTapGesture = doubleTap
+        } else {
+            barToggleSecondaryTapGesture = nil
+        }
+
+        view.addGestureRecognizer(tap)
+        barToggleTapGesture = tap
+    }
+
+    private func configureNavigationBarDismissTapGesture(enabled: Bool) {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        if barDismissNavigationBarTapGesture == nil {
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleNavigationBarTapToDismissBars(_:)))
+            tap.cancelsTouchesInView = false
+            tap.delegate = self
+            navigationBar.addGestureRecognizer(tap)
+            barDismissNavigationBarTapGesture = tap
+        }
+        barDismissNavigationBarTapGesture?.isEnabled = enabled
+    }
+
+    @objc private func handleNavigationBarTapToDismissBars(_ gestureRecognizer: UITapGestureRecognizer) {
+        guard gestureRecognizer.state == .ended else { return }
+        guard UserDefaults.standard.isDictionarySingleTapLookupEnabled else { return }
+        hideBars()
+    }
+
+    private func configureDictionaryLookupGesture() {
+        if let gesture = dictionaryLongPressGesture {
+            view.removeGestureRecognizer(gesture)
+            dictionaryLongPressGesture = nil
+        }
+        clearDictionarySelectionHighlight()
+        dictionaryLongPressSelection = nil
+
+        guard UserDefaults.standard.isDictionaryLongPressLookupEnabled else { return }
+        guard !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+
+        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(handleDictionaryLongPress(_:)))
+        gesture.minimumPressDuration = 0.25
+        gesture.allowableMovement = 60
+        gesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(gesture)
+        dictionaryLongPressGesture = gesture
+    }
+
+    @objc private func handleDictionaryLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard #available(iOS 18.0, *) else { return }
+        guard UserDefaults.standard.isDictionaryLongPressLookupEnabled else { return }
+        guard !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+        guard !isDictionaryPopupVisible else { return }
+        guard LookupEngine.shared.isReady else { return }
+
+        let point = gestureRecognizer.location(in: view)
+        switch gestureRecognizer.state {
+            case .began, .changed:
+                guard let result = reader?.recognizedText(at: point) else {
+                    dictionaryLongPressSelection = nil
+                    clearDictionarySelectionHighlight()
+                    return
+                }
+                dictionaryLongPressSelection = result
+                updateDictionarySelectionHighlight(text: result.text, charRects: result.charRects)
+
+            case .ended:
+                defer {
+                    dictionaryLongPressSelection = nil
+                    clearDictionarySelectionHighlight()
+                }
+                let selection = dictionaryLongPressSelection ?? reader?.recognizedText(at: point)
+                if let selection {
+                    _ = performDictionaryLookup(
+                        text: selection.text,
+                        anchorRect: selection.rect,
+                        charRects: selection.charRects
+                    )
+                }
+
+            default:
+                dictionaryLongPressSelection = nil
+                clearDictionarySelectionHighlight()
+        }
+    }
+
+    @available(iOS 18.0, *)
+    private func updateDictionarySelectionHighlight(text: String, charRects: [CGRect]) {
+        dictionaryCoordinator.updateSelectionHighlight(text: text, charRects: charRects)
+    }
+
+    private func clearDictionarySelectionHighlight() {
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.clearSelectionHighlight()
+        }
+    }
 }
 
 // MARK: - Tap Zones
 extension ReaderViewController {
+    private enum ReaderControlTapZoneConstants {
+        static let minimumTapZoneHeight: CGFloat = 44
+    }
+
     func updateTapZone() {
         let enabledTapZone = UserDefaults.standard.string(forKey: "Reader.tapZones")
         let tapZone: TapZone? = switch enabledTapZone {
@@ -926,12 +1090,49 @@ extension ReaderViewController {
     }
 
     @objc func handleTap(_ gestureRecognizer: UITapGestureRecognizer) {
-        guard let reader, let tapZone else {
+        let point = gestureRecognizer.location(in: view)
+        let overlayModeEnabled = UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode")
+        let singleTapLookupEnabled = UserDefaults.standard.isDictionarySingleTapLookupEnabled
+        let singleTapOCRLookupEnabled = singleTapLookupEnabled && !overlayModeEnabled
+
+        // dismiss dictionary popup if visible
+        if isDictionaryPopupVisible {
+            dismissDictionaryPopup()
+            return
+        }
+
+        if #available(iOS 18.0, *),
+           overlayModeEnabled,
+           reader?.dismissActiveDictionaryOverlay() == true {
+            return
+        }
+
+        if singleTapLookupEnabled, isReaderControlToggleTapZone(point) {
             toggleBarVisibility()
             return
         }
 
-        let point = gestureRecognizer.location(in: view)
+        // check for dictionary lookup
+        if #available(iOS 18.0, *),
+           singleTapOCRLookupEnabled,
+           LookupEngine.shared.isReady {
+            if let result = reader?.recognizedText(at: point) {
+                if performDictionaryLookup(
+                    text: result.text,
+                    anchorRect: result.rect,
+                    charRects: result.charRects
+                ) {
+                    return
+                }
+            }
+        }
+
+        guard let reader, let tapZone else {
+            if singleTapLookupEnabled { return }
+            toggleBarVisibility()
+            return
+        }
+
         let relativePoint = CGPoint(
             x: point.x / view.bounds.width,
             y: point.y / view.bounds.height
@@ -943,7 +1144,9 @@ extension ReaderViewController {
 
         if let type {
             // hide the bars when tapping regardless
-            if let navigationController, navigationController.navigationBar.alpha > 0 {
+            if !singleTapLookupEnabled,
+               let navigationController,
+               navigationController.navigationBar.alpha > 0 {
                 hideBars()
             }
             // handle page moving
@@ -959,8 +1162,27 @@ extension ReaderViewController {
                 }
             }
         } else {
+            if singleTapLookupEnabled { return }
             toggleBarVisibility()
         }
+    }
+
+    private func isReaderControlToggleTapZone(_ point: CGPoint) -> Bool {
+        let topZoneHeight = readerControlTopTapZoneHeight
+        if point.y <= topZoneHeight {
+            return true
+        }
+
+        let bottomZoneMinY = view.bounds.height - readerControlBottomTapZoneHeight
+        return point.y >= bottomZoneMinY
+    }
+
+    private var readerControlTopTapZoneHeight: CGFloat {
+        view.safeAreaInsets.top + ReaderControlTapZoneConstants.minimumTapZoneHeight
+    }
+
+    private var readerControlBottomTapZoneHeight: CGFloat {
+        view.safeAreaInsets.bottom + ReaderControlTapZoneConstants.minimumTapZoneHeight
     }
 }
 
@@ -1031,6 +1253,34 @@ extension ReaderViewController: UIPencilInteractionDelegate {
         switch readingMode {
             case .rtl: reader?.moveRight()
             default: reader?.moveLeft()
+        }
+    }
+}
+
+extension ReaderViewController {
+    private func configureDictionaryOverlayInteractionMode() {
+        guard #available(iOS 18.0, *) else { return }
+
+        let mode: DictionaryOverlayInteractionMode
+        if !UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") {
+            mode = .none
+        } else if UserDefaults.standard.isDictionarySingleTapLookupEnabled {
+            mode = .singleTap
+        } else if UserDefaults.standard.isDictionaryLongPressLookupEnabled {
+            mode = .longPress
+        } else {
+            mode = .none
+        }
+
+        reader?.setDictionaryOverlayInteractionMode(mode)
+    }
+
+    private func configureDictionaryOverlayTapHandler() {
+        guard #available(iOS 18.0, *) else { return }
+        reader?.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
+            guard let self else { return }
+            guard UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode") else { return }
+            _ = performDictionaryLookup(text: text, anchorRect: rect, charRects: charRects)
         }
     }
 }
@@ -1139,6 +1389,19 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
         let velocity = pan.velocity(in: pan.view)
         return velocity.y > velocity.x && (abs(velocity.x) < 40 || abs(velocity.y) > abs(velocity.x) * 3)
     }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard gestureRecognizer === barDismissNavigationBarTapGesture else { return true }
+
+        var view: UIView? = touch.view
+        while let currentView = view {
+            if currentView is UIControl {
+                return false
+            }
+            view = currentView.superview
+        }
+        return true
+    }
 }
 
 // MARK: - Keyboard Shortcuts
@@ -1215,6 +1478,36 @@ extension ReaderViewController {
         if let previousChaoter = getPreviousChapter() {
             reader?.setChapter(previousChaoter, startPage: 1)
             setChapter(previousChaoter)
+        }
+    }
+}
+
+// MARK: - Dictionary Popup
+extension ReaderViewController {
+    @available(iOS 18.0, *)
+    func performDictionaryLookup(
+        text: String,
+        anchorRect: CGRect,
+        charRects: [CGRect] = [],
+        appendPopup: Bool = false
+    ) -> Bool {
+        dictionaryCoordinator.performLookup(
+            text: text,
+            anchorRect: anchorRect,
+            charRects: charRects,
+            appendPopup: appendPopup
+        )
+    }
+
+    private func dismissTopDictionaryPopup() {
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.dismissTopPopup()
+        }
+    }
+
+    func dismissDictionaryPopup() {
+        if #available(iOS 18.0, *) {
+            dictionaryCoordinator.dismissAllPopups()
         }
     }
 }

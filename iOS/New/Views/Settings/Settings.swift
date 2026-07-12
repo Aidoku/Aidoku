@@ -374,7 +374,8 @@ extension Settings {
             .init(
                 key: "Reader.disableQuickActions",
                 title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                value: .toggle(.init())
+                requiresFalse: "Reader.lookupGestureLocksQuickActions",
+                value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
             ),
             .init(
                 key: "Reader.disableDoubleTap",
@@ -425,6 +426,136 @@ extension Settings {
                 []
             }
         }()))),
+    ] + {
+        if #available(iOS 18.0, *) {
+            [
+                .init(
+                    title: NSLocalizedString("DICTIONARY_LOOKUP"),
+                    value: .group(.init(items: [
+                        .init(
+                            key: "Reader.dictionary",
+                            title: NSLocalizedString("DICTIONARY_LOOKUP"),
+                            value: .toggle(.init())
+                        ),
+                        .init(
+                            requires: "Reader.dictionary",
+                            value: .group(.init(items: [
+                                .init(
+                                    key: "Reader.dictionaries",
+                                    title: NSLocalizedString("DICTIONARIES"),
+                                    value: .page(.init(items: []))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryLookupGesture",
+                                    title: NSLocalizedString("LOOKUP_GESTURE"),
+                                    value: .select(.init(
+                                        values: ["single-tap", "long-press"],
+                                        titles: [
+                                            NSLocalizedString("SINGLE_TAP"),
+                                            NSLocalizedString("LONG_PRESS")
+                                        ]
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryTextOverlayMode",
+                                    title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
+                                    value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
+                                ),
+                                .init(
+                                    requires: "Reader.dictionaryTextOverlayMode",
+                                    value: .group(.init(items: [
+                                        .init(
+                                            key: "Reader.dictionaryOverlayPadding",
+                                            title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
+                                            value: .stepper(.init(
+                                                minimumValue: 0,
+                                                maximumValue: 10,
+                                                stepValue: 1
+                                            ))
+                                        ),
+                                        .init(
+                                            key: "Reader.dictionaryOverlayTextScaleMultiplier",
+                                            title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
+                                            value: .stepper(.init(
+                                                minimumValue: 0.5,
+                                                maximumValue: 1.25,
+                                                stepValue: 0.05
+                                            ))
+                                        )
+                                    ]))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryOCRLanguage",
+                                    title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
+                                    value: .select(.init(
+                                        values: ["ja", "zh", "ko"],
+                                        titles: [
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_JAPANESE"),
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_CHINESE"),
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_KOREAN")
+                                        ]
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryOCRPreUpscale",
+                                    title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
+                                    requiresFalse: "Reader.upscaleImages",
+                                    value: .toggle(.init(
+                                        subtitle: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO")
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryPopupWidth",
+                                    title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                                    value: .stepper(.init(
+                                        minimumValue: 220,
+                                        maximumValue: 500,
+                                        stepValue: 10
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryPopupHeight",
+                                    title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
+                                    value: .stepper(.init(
+                                        minimumValue: 160,
+                                        maximumValue: 350,
+                                        stepValue: 10
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioSources",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_SOURCES"),
+                                    value: .editableList(.init(
+                                        lineLimit: 1,
+                                        placeholder: NSLocalizedString("DICTIONARY_AUDIO_SOURCE_PLACEHOLDER")
+                                    ))
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioAutoplay",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_AUTOPLAY"),
+                                    value: .toggle(.init())
+                                ),
+                                .init(
+                                    key: "Reader.dictionaryAudioPlaybackMode",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_PLAYBACK_MODE"),
+                                    value: .select(.init(
+                                        values: ["interrupt", "duck", "mix"],
+                                        titles: [
+                                            NSLocalizedString("AUDIO_PLAYBACK_INTERRUPT"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_DUCK"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_MIX")
+                                        ]
+                                    ))
+                                )
+                            ]))
+                        )
+                    ]))
+                )
+            ]
+        } else {
+            []
+        }
+    }() + [
         .init(
             title: NSLocalizedString("TAP_ZONES"),
             value: .group(.init(items: [

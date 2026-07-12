@@ -29,6 +29,8 @@ class ReaderPagedViewController: BaseObservingViewController {
     }
     var pageViewControllers: [ReaderPageViewController] = []
     var currentPage = 0
+    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     private var usesDoublePages = false
     private var usesAutoPageLayout = false
@@ -189,6 +191,55 @@ class ReaderPagedViewController: BaseObservingViewController {
 }
 
 extension ReaderPagedViewController {
+    @available(iOS 18.0, *)
+    private func forwardDictionaryOverlayTap(
+        text: String,
+        rect: CGRect,
+        charRects: [CGRect],
+        from imageView: UIImageView
+    ) {
+        let rectInReader = imageView.convert(rect, to: view)
+        let charRectsInReader = charRects.map { imageView.convert($0, to: view) }
+        dictionaryOverlayTapHandler?(text, rectInReader, charRectsInReader)
+    }
+
+    @available(iOS 18.0, *)
+    private func bindDictionaryOverlayTap(to controller: ReaderPageViewController?) {
+        controller?.pageView?.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
+        controller?.pageView?.onDictionaryOverlayTap = { [weak self, weak controller] text, rect, charRects in
+            guard let self, let imageView = controller?.pageView?.imageView else { return }
+            self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
+        }
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+        dictionaryOverlayTapHandler = handler
+        for controller in pageViewControllers {
+            bindDictionaryOverlayTap(to: controller)
+        }
+    }
+
+    @available(iOS 18.0, *)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayInteractionMode = mode
+        for controller in pageViewControllers {
+            controller.pageView?.setDictionaryOverlayInteractionMode(mode)
+        }
+    }
+
+    private func configureContextMenuInteraction(for imageView: UIImageView?) {
+        guard let imageView else { return }
+
+        imageView.interactions
+            .filter { $0 is UIContextMenuInteraction }
+            .forEach { imageView.removeInteraction($0) }
+
+        if !UserDefaults.standard.isReaderQuickActionsDisabledEffective {
+            imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+        }
+    }
+
     func loadPageControllers(chapter: AidokuRunner.Chapter) {
         guard !viewModel.pages.isEmpty else { return } // TODO: handle zero pages
 
@@ -304,7 +355,10 @@ extension ReaderPagedViewController {
         skipProcessing: Bool = false
     ) -> ReaderPageViewController {
         let page = ReaderPageViewController(type: .page, delegate: delegate)
-        page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+        configureContextMenuInteraction(for: page.pageView?.imageView)
+        if #available(iOS 18.0, *) {
+            bindDictionaryOverlayTap(to: page)
+        }
         if hasImageCallbacks {
             page.onImageisWideImage = { [weak self, weak page] isWide in
                 guard let self, let page, isWide else { return }
@@ -1106,6 +1160,42 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
             return pageViewControllers[currentIndex - 1]
         }
         return nil
+    }
+}
+
+// MARK: - Dictionary Lookup
+extension ReaderPagedViewController {
+    @available(iOS 18.0, *)
+    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
+        guard let currentVCs = pageViewController.viewControllers else { return nil }
+
+        for case let pageVC as ReaderPageViewController in currentVCs {
+            guard let pageView = pageVC.pageView,
+                  let image = pageView.imageView.image,
+                  let recognizer = pageView.textRecognizer
+            else { continue }
+
+            let localPoint = view.convert(point, to: pageView.imageView)
+            guard pageView.imageView.bounds.contains(localPoint) else { continue }
+
+            if let result = recognizer.findText(at: localPoint, in: pageView.imageView, imageSize: image.size) {
+                let rectInView = pageView.imageView.convert(result.charRect, to: view)
+                let rectsInView = result.charRects.map { pageView.imageView.convert($0, to: view) }
+                return (result.text, result.fullText, rectInView, rectsInView)
+            }
+        }
+        return nil
+    }
+
+    @available(iOS 18.0, *)
+    func dismissActiveDictionaryOverlay() -> Bool {
+        guard let currentVCs = pageViewController.viewControllers else { return false }
+        for case let pageVC as ReaderPageViewController in currentVCs {
+            if pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
+                return true
+            }
+        }
+        return false
     }
 }
 
