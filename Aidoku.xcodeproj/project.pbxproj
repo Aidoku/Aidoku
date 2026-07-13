@@ -1228,7 +1228,6 @@
 				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
 				EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */,
 				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
-				EE7A41ED2F5D04B40044AF4C /* selection.js */,
 			);
 			path = Dictionary;
 			sourceTree = "<group>";
@@ -1381,7 +1380,6 @@
 				FB55AF9D28AAA4E50083EFC3 /* ReaderToolbarView.swift */,
 				FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */,
 				FB1DD8582EF0491C0007FC78 /* LiquidLensView.swift */,
-				EE7A41B72F5CF4CE0044AF4C /* Dictionary */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -1467,13 +1465,13 @@
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
 				FBD6A4062858D33A007116C9 /* Tracking */,
 				FB7984162E0CA4FA000761A9 /* Upscaling */,
+				EE7A41B62F5CF4CE0044AF4C /* Dictionary */,
 				FB716DE8283D5F2000F1BB5D /* Logging */,
 				FBD6A40128525C77007116C9 /* Localization */,
 				FB16E6262DF4D85500E09ED5 /* Utilities */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
-				EE7A41B62F5CF4CE0044AF4C /* Dictionary */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -1709,6 +1707,7 @@
 				FB39A4C130033AEA006E3289 /* PopupWebView.swift */,
 				EE7A41C52F5CF6460044AF4C /* popup.js */,
 				EE7A41C72F5CF65B0044AF4C /* popup.css */,
+				EE7A41ED2F5D04B40044AF4C /* selection.js */,
 			);
 			path = Popup;
 			sourceTree = "<group>";
@@ -1962,6 +1961,7 @@
 				FB662EB62DA813E300007514 /* Source */,
 				FB662E9C2DA813E300007514 /* Manga */,
 				FB3DDF7C2E134F8100A64897 /* Reader */,
+				EE7A41B72F5CF4CE0044AF4C /* Dictionary */,
 				FBAED4072E3A6BBF00B81E74 /* History */,
 				FB7984152E0C9F4D000761A9 /* Settings */,
 				FBC337FF2EC78C0F007465BA /* Search */,
