@@ -191,7 +191,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Dictionary.overlayPadding": 5,
                 "Dictionary.overlayTextScaleMultiplier": 1,
                 "Dictionary.popupWidth": 320,
-                "Dictionary.popupHeight": 250,
+                "Dictionary.popupHeight": 350,
 
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,

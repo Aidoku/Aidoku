@@ -21,12 +21,12 @@ struct UserConfig {
     var popupWidth: CGFloat {
         let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupWidth")
         let width = storedValue > 0 ? storedValue : 320
-        return min(max(CGFloat(width), 220), 500)
+        return CGFloat(width)
     }
     var popupHeight: CGFloat {
         let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupHeight")
-        let height = storedValue > 0 ? storedValue : 250
-        return min(max(CGFloat(height), 160), 350)
+        let height = storedValue > 0 ? storedValue : 350
+        return CGFloat(height)
     }
     var popupScale: Double = 1
 }

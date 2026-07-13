@@ -566,8 +566,8 @@ extension ReaderSettingsView {
                         key: "Dictionary.popupWidth",
                         title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
                         value: .stepper(.init(
-                            minimumValue: 220,
-                            maximumValue: 500,
+                            minimumValue: 100,
+                            maximumValue: 700,
                             stepValue: 10
                         ))
                     )
@@ -577,8 +577,8 @@ extension ReaderSettingsView {
                         key: "Dictionary.popupHeight",
                         title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
                         value: .stepper(.init(
-                            minimumValue: 160,
-                            maximumValue: 350,
+                            minimumValue: 100,
+                            maximumValue: 800,
                             stepValue: 10
                         ))
                     )
