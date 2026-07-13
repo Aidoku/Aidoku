@@ -5,6 +5,7 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 
+import CHoshiDicts
 import SafariServices
 import SwiftUI
 import UniformTypeIdentifiers
@@ -13,6 +14,7 @@ import UniformTypeIdentifiers
 struct DictionaryListView: View {
     @State private var dictionaryManager = DictionaryManager.shared
 
+    @State private var selectedDictionaryInfo: DictionaryInfo?
     @State private var importing = false
     @State private var showSafari = false
 
@@ -65,37 +67,20 @@ struct DictionaryListView: View {
                 .padding(.vertical, 6)
             }
 
-            if !dictionaryManager.termDictionaries.isEmpty {
-                Section {
-                    ForEach(dictionaryManager.termDictionaries) { dict in
-                        dictRow(dict, type: .term)
+            let items = [
+                (DictionaryType.term, dictionaryManager.termDictionaries, NSLocalizedString("TERM_DICTIONARIES")),
+                (DictionaryType.frequency, dictionaryManager.frequencyDictionaries, NSLocalizedString("FREQUENCY_DICTIONARIES")),
+                (DictionaryType.pitch, dictionaryManager.pitchDictionaries, NSLocalizedString("PITCH_DICTIONARIES"))
+            ]
+            ForEach(items, id: \.0) { type, dictionaries, title in
+                if !dictionaries.isEmpty {
+                    Section(title) {
+                        ForEach(dictionaries) { dict in
+                            dictRow(dict, type: type)
+                        }
+                        .onDelete { offsets in delete(offsets: offsets, type: type) }
+                        .onMove { from, to in move(from: from, to: to, type: type) }
                     }
-                    .onDelete { offsets in delete(offsets: offsets, type: .term) }
-                    .onMove { from, to in move(from: from, to: to, type: .term) }
-                } header: {
-                    Text(NSLocalizedString("TERM_DICTIONARIES"))
-                }
-            }
-            if !dictionaryManager.frequencyDictionaries.isEmpty {
-                Section {
-                    ForEach(dictionaryManager.frequencyDictionaries) { dict in
-                        dictRow(dict, type: .frequency)
-                    }
-                    .onDelete { offsets in delete(offsets: offsets, type: .frequency) }
-                    .onMove { from, to in move(from: from, to: to, type: .frequency) }
-                } header: {
-                    Text(NSLocalizedString("FREQUENCY_DICTIONARIES"))
-                }
-            }
-            if !dictionaryManager.pitchDictionaries.isEmpty {
-                Section {
-                    ForEach(dictionaryManager.pitchDictionaries) { dict in
-                        dictRow(dict, type: .pitch)
-                    }
-                    .onDelete { offsets in delete(offsets: offsets, type: .pitch) }
-                    .onMove { from, to in move(from: from, to: to, type: .pitch) }
-                } header: {
-                    Text(NSLocalizedString("PITCH_DICTIONARIES"))
                 }
             }
         }
@@ -134,17 +119,29 @@ struct DictionaryListView: View {
         } message: {
             Text(verbatim: dictionaryManager.errorMessage)
         }
+        .sheet(item: $selectedDictionaryInfo) { dict in
+            DictionaryInfoView(info: dict)
+        }
     }
 
     func dictRow(_ dict: DictionaryInfo, type: DictionaryType) -> some View {
-        HStack {
-            Toggle(dict.index.title, isOn: Binding(
-                get: { dict.isEnabled },
-                set: { newValue in
-                    dictionaryManager.toggleDictionary(id: dict.id, enabled: newValue, type: type)
-                    notifyDictionariesChanged()
+        Toggle(isOn: Binding(
+            get: { dict.isEnabled },
+            set: { newValue in
+                dictionaryManager.toggleDictionary(id: dict.id, enabled: newValue, type: type)
+                notifyDictionariesChanged()
+            }
+        )) {
+            HStack {
+                Text(dict.index.title)
+                Spacer()
+                Button {
+                    selectedDictionaryInfo = dict
+                } label: {
+                    Image(systemName: "info.circle")
                 }
-            ))
+                .buttonStyle(.borderless)
+            }
         }
     }
 
@@ -167,5 +164,36 @@ struct DictionaryListView: View {
         Task {
             await dictionaryManager.importDictionary(from: urls)
         }
+    }
+}
+
+@available(iOS 18.0, *)
+private struct DictionaryInfoView: View {
+    let info: DictionaryInfo
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack {
+                        Text(NSLocalizedString("Revision"))
+                        Spacer()
+                        Text(info.index.revision).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .navigationTitle(info.index.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
