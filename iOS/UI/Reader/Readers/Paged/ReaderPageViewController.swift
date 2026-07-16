@@ -168,9 +168,7 @@ class ReaderPageViewController: BaseObservingViewController {
     }
 
     private func updateDoubleTapZoomSetting() {
-        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
-            && UserDefaults.standard.isOCREnabled(language: page?.language)
-        zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
+        zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: page?.language)
     }
 
     func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) {

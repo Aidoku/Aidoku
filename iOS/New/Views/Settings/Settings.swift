@@ -403,14 +403,12 @@ extension Settings {
             .init(
                 key: "Reader.disableQuickActions",
                 title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                requiresFalse: "Dictionary.lookupGestureLocksQuickActions",
-                value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
+                value: .toggle(.init())
             ),
             .init(
                 key: "Reader.disableDoubleTap",
                 title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                requiresFalse: "Dictionary.lookupGestureLocksDoubleTap",
-                value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP")))
+                value: .toggle(.init())
             ),
             .init(
                 key: "Reader.liveText",

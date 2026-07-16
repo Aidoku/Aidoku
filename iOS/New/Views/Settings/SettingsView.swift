@@ -168,8 +168,6 @@ extension SettingsView {
                 }
             case "Logs.display":
                 path.push(LogViewController())
-            case "Dictionary.enable", "Dictionary.lookupGesture":
-                UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
 
             case "Advanced.clearTrackedManga":
                 confirmAction(

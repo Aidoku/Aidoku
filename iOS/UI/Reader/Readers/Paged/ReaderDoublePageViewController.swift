@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ReaderDoublePageViewController: BaseViewController {
+class ReaderDoublePageViewController: BaseObservingViewController {
 
     enum Direction {
         case rtl
@@ -35,7 +35,6 @@ class ReaderDoublePageViewController: BaseViewController {
     private var firstPage: Page?
     private var secondPage: Page?
     private var pageLayoutConstraints: [NSLayoutConstraint] = []
-    private var observerTokens: [NSObjectProtocol] = []
 
     init(firstPage: ReaderPageViewController, secondPage: ReaderPageViewController, direction: Direction) {
         self.firstPageController = firstPage
@@ -48,7 +47,6 @@ class ReaderDoublePageViewController: BaseViewController {
 
     override func configure() {
         updateDoubleTapZoomSetting()
-        observeZoomSettingChanges()
         zoomView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(zoomView)
 
@@ -74,39 +72,6 @@ class ReaderDoublePageViewController: BaseViewController {
         secondReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
         secondReloadButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(secondReloadButton)
-    }
-
-    deinit {
-        for token in observerTokens {
-            NotificationCenter.default.removeObserver(token)
-        }
-    }
-
-    private func updateDoubleTapZoomSetting() {
-        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
-            && [firstPage?.language, secondPage?.language]
-                .contains { UserDefaults.standard.isOCREnabled(language: $0) }
-        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
-    }
-
-    private func observeZoomSettingChanges() {
-        let names = [
-            Notification.Name("Reader.disableDoubleTap"),
-            Notification.Name("Dictionary.enable"),
-            Notification.Name("Dictionary.lookupGesture"),
-            Notification.Name("Dictionary.restrictOCRLanguages"),
-            Notification.Name("Dictionary.restrictedOCRLanguages")
-        ]
-        for name in names {
-            let token = NotificationCenter.default.addObserver(
-                forName: name,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateDoubleTapZoomSetting()
-            }
-            observerTokens.append(token)
-        }
     }
 
     override func constrain() {
@@ -141,6 +106,20 @@ class ReaderDoublePageViewController: BaseViewController {
             secondReloadButton.centerXAnchor.constraint(equalTo: secondPageView.centerXAnchor),
             secondReloadButton.centerYAnchor.constraint(equalTo: secondPageView.centerYAnchor)
         ]
+    }
+
+    override func observe() {
+        for key in [
+            "Reader.disableDoubleTap",
+            "Dictionary.enable",
+            "Dictionary.lookupGesture",
+            "Dictionary.restrictOCRLanguages",
+            "Dictionary.restrictedOCRLanguages"
+        ] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.updateDoubleTapZoomSetting()
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -257,5 +236,11 @@ class ReaderDoublePageViewController: BaseViewController {
                 setPage(secondPage, for: .second)
             }
         }
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        let disabled = UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: firstPage?.language)
+            && UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: secondPage?.language)
+        zoomView.doubleTapZoomEnabled = !disabled
     }
 }

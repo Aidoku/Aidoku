@@ -131,7 +131,12 @@ struct SettingView: View {
                 _doubleBinding = Binding.constant(0)
         }
         if case .toggle = setting.value {
-            _toggleValue = State(initialValue: SettingsStore.shared.get(key: key(setting.key)))
+            let value: Bool = if setting.key == "true" {
+                true
+            } else {
+                SettingsStore.shared.get(key: key(setting.key))
+            }
+            _toggleValue = State(initialValue: value)
         } else {
             _toggleValue = State(initialValue: false)
         }
@@ -146,12 +151,23 @@ struct SettingView: View {
         // need to use this before all properties are initialized
         func key(_ key: String) -> String {
             let key = key.trim()
-            return if key.isEmpty {
+            return if key.isEmpty || key == "true" {
                 key
             } else if let namespace {
                 "\(namespace).\(key)"
             } else {
                 key
+            }
+        }
+        func isTrue(_ key: String, target: String? = nil) -> Bool {
+            if key == "true" {
+                return true
+            }
+            let storedValue = UserDefaults.standard.string(forKey: key)
+            if let target {
+                return storedValue == target
+            } else {
+                return storedValue != nil && storedValue != "0"
             }
         }
 
@@ -171,16 +187,12 @@ struct SettingView: View {
             if components.count == 2 {
                 let observedKey = key(components[0])
                 let targetValue = components[1].trim()
-                let storedValue = UserDefaults.standard.string(forKey: observedKey)
-
                 observedKeys.append(observedKey)
-                statementResult = storedValue == targetValue
+                statementResult = isTrue(observedKey, target: targetValue)
             } else {
                 let observedKey = key(statement)
-                let storedValue = UserDefaults.standard.string(forKey: observedKey)
-
                 observedKeys.append(observedKey)
-                statementResult = storedValue != nil && storedValue != "0"
+                statementResult = isTrue(observedKey)
             }
 
             result = result && statementResult
@@ -545,49 +557,17 @@ extension SettingView {
 
 // MARK: Toggle View
 extension SettingView {
-    private var shouldShowDisabledOnlyToggleSubtitle: Bool {
-        switch setting.key {
-            case "Reader.disableQuickActions", "Reader.disableDoubleTap":
-                return true
-            default:
-                return false
-        }
-    }
-
-    private var effectiveToggleDisplayValue: Bool {
-        guard disabled else { return toggleValue }
-
-        switch setting.key {
-            case "Reader.disableQuickActions", "Reader.disableDoubleTap":
-                // Lookup gesture lock effectively forces these protections on.
-                return true
-            default:
-                return toggleValue
-        }
-    }
-
     @ViewBuilder
     func toggleView(value: ToggleSetting) -> some View {
-        let toggleBinding = Binding<Bool>(
-            get: { effectiveToggleDisplayValue },
-            set: { newValue in
-                guard !disabled else { return }
-                toggleValue = newValue
-            }
-        )
-
         HStack {
             VStack(alignment: .leading) {
                 Text(setting.title)
                     .lineLimit(1)
                 if let subtitle = value.subtitle {
-                    let showSubtitle = shouldShowDisabledOnlyToggleSubtitle ? disabled : true
-                    if showSubtitle {
-                        Text(NSLocalizedString(subtitle))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    }
+                    Text(NSLocalizedString(subtitle))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
             .opacity(disabled ? disabledOpacity : 1)
@@ -603,7 +583,7 @@ extension SettingView {
 
             Spacer()
 
-            Toggle(isOn: toggleBinding) {
+            Toggle(isOn: $toggleValue) {
                 EmptyView()
             }
             .labelsHidden()

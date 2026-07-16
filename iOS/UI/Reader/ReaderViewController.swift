@@ -222,7 +222,6 @@ class ReaderViewController: BaseObservingViewController {
             UserDefaults.standard.bool(forKey: "Dictionary.enable")
         {
             DictionaryManager.shared.rebuildLookupQuery()
-            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
         }
         configureDictionaryLookupGesture()
         configureDictionaryOverlayInteractionMode()
@@ -293,7 +292,6 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Dictionary.overlayTextScaleMultiplier", using: reloadBlock)
         let dictionaryReloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
-            UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
             self.configureBarToggleTapGestures()
             self.configureDictionaryLookupGesture()
             self.configureDictionaryOverlayInteractionMode()

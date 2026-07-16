@@ -18,7 +18,7 @@ class ZoomableCollectionView: ASDisplayNode {
     private let dummyZoomView: UIView
 
     var onZoomScaleChanged: ((CGFloat) -> Void)?
-    var doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective {
+    var doubleTapZoomEnabled = true {
         didSet {
             zoomingTap.isEnabled = doubleTapZoomEnabled
         }

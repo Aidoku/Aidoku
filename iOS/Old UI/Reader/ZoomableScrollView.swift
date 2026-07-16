@@ -24,7 +24,7 @@ class ZoomableScrollView: UIScrollView {
         }
     }
 
-    var doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective {
+    var doubleTapZoomEnabled = true {
         didSet {
             zoomingTap.isEnabled = zoomEnabled && doubleTapZoomEnabled
         }

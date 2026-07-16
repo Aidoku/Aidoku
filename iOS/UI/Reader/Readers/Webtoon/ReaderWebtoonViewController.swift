@@ -102,12 +102,6 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         }
     }
 
-    private func updateDoubleTapZoomSetting() {
-        let dictionarySingleTapActive = UserDefaults.standard.isDictionarySingleTapLookupEnabled
-            && UserDefaults.standard.isOCREnabled(language: chapter?.language ?? viewModel.source?.languages.first)
-        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") && !dictionarySingleTapActive
-    }
-
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
@@ -185,6 +179,11 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
                 pageNode.setLiveTextHidden(scale != 1)
             }
         }
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        let language = chapter?.language ?? viewModel.source?.languages.first
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: language)
     }
 }
 
