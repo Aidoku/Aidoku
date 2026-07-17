@@ -24,7 +24,7 @@ extension TextRecognizer {
         if let language {
             request.recognitionLanguages = [Locale.Language(identifier: language)]
         }
-        let restrictOCRLanguages = UserDefaults.standard.bool(forKey: "Dictionary.restrictOCRLanguages")
+        let restrictOCRLanguages = AppSettings.dictionary.restrictOCRLanguages.get()
         request.automaticallyDetectsLanguage = !restrictOCRLanguages
         request.usesLanguageCorrection = true
 

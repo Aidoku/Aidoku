@@ -616,6 +616,14 @@
 		FBF925B82F4F79750049CB43 /* LibraryCategorySelectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF925B72F4F79740049CB43 /* LibraryCategorySelectionHeader.swift */; };
 		FBF9DC0528205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
 		FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */; };
+		FBFA033F3008DF610008B4B6 /* SettingsValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033C3008DF610008B4B6 /* SettingsValue.swift */; };
+		FBFA03403008DF610008B4B6 /* SettingsValue+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033D3008DF610008B4B6 /* SettingsValue+Extensions.swift */; };
+		FBFA03413008DF610008B4B6 /* SettingsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033B3008DF610008B4B6 /* SettingsKey.swift */; };
+		FBFA03423008DF610008B4B6 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033A3008DF610008B4B6 /* AppSettings.swift */; };
+		FBFA03433008DF610008B4B6 /* SettingsValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033C3008DF610008B4B6 /* SettingsValue.swift */; };
+		FBFA03443008DF610008B4B6 /* SettingsValue+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033D3008DF610008B4B6 /* SettingsValue+Extensions.swift */; };
+		FBFA03453008DF610008B4B6 /* SettingsKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033B3008DF610008B4B6 /* SettingsKey.swift */; };
+		FBFA03463008DF610008B4B6 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA033A3008DF610008B4B6 /* AppSettings.swift */; };
 		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
 		FBFC09843001DF36007C94E8 /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = FBFC09833001DF36007C94E8 /* CHoshiDicts */; };
 		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
@@ -1125,6 +1133,10 @@
 		FBF925B52F4F6FF10049CB43 /* FilterGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroupsView.swift; sourceTree = "<group>"; };
 		FBF925B72F4F79740049CB43 /* LibraryCategorySelectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryCategorySelectionHeader.swift; sourceTree = "<group>"; };
 		FBF9DC0428205FCE0056FA9A /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		FBFA033A3008DF610008B4B6 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		FBFA033B3008DF610008B4B6 /* SettingsKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsKey.swift; sourceTree = "<group>"; };
+		FBFA033C3008DF610008B4B6 /* SettingsValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsValue.swift; sourceTree = "<group>"; };
+		FBFA033D3008DF610008B4B6 /* SettingsValue+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsValue+Extensions.swift"; sourceTree = "<group>"; };
 		FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSliderView.swift; sourceTree = "<group>"; };
 		FBFA43AE2799DD260065A445 /* ReaderInfoPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInfoPageView.swift; sourceTree = "<group>"; };
 		FBFAC3BB2996B292004D8489 /* af */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = af; path = af.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -1469,6 +1481,7 @@
 				FB716DE8283D5F2000F1BB5D /* Logging */,
 				FBD6A40128525C77007116C9 /* Localization */,
 				FB16E6262DF4D85500E09ED5 /* Utilities */,
+				FBFA033E3008DF610008B4B6 /* Settings */,
 				FB1B4830277CE1920056D02C /* Assets.xcassets */,
 				FB1DD89C2EF1A6BC0007FC78 /* AppIcon.icon */,
 				FB1B482B277CE18D0056D02C /* Aidoku.xcdatamodeld */,
@@ -2472,6 +2485,17 @@
 			path = Downloads;
 			sourceTree = "<group>";
 		};
+		FBFA033E3008DF610008B4B6 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				FBFA033A3008DF610008B4B6 /* AppSettings.swift */,
+				FBFA033B3008DF610008B4B6 /* SettingsKey.swift */,
+				FBFA033C3008DF610008B4B6 /* SettingsValue.swift */,
+				FBFA033D3008DF610008B4B6 /* SettingsValue+Extensions.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2726,6 +2750,10 @@
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
 				FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */,
 				FBF925B82F4F79750049CB43 /* LibraryCategorySelectionHeader.swift in Sources */,
+				FBFA03433008DF610008B4B6 /* SettingsValue.swift in Sources */,
+				FBFA03443008DF610008B4B6 /* SettingsValue+Extensions.swift in Sources */,
+				FBFA03453008DF610008B4B6 /* SettingsKey.swift in Sources */,
+				FBFA03463008DF610008B4B6 /* AppSettings.swift in Sources */,
 				FBD7966A2ED270B500BD05F4 /* PageBackground.swift in Sources */,
 				FB248CC42EA55D8D00BECD2E /* KomgaHelper.swift in Sources */,
 				FB8E318B2DB98AFE0084F899 /* ChapterListHeaderView.swift in Sources */,
@@ -3290,6 +3318,10 @@
 				FB14B12E2DF4D2DE0067E4D4 /* MangaUpdateObject.swift in Sources */,
 				FB0CAA5F28A9986A0024561A /* CoreDataManager+LibraryManga.swift in Sources */,
 				FB0E1CC8288A5A2300B67BA9 /* TrackUpdate.swift in Sources */,
+				FBFA033F3008DF610008B4B6 /* SettingsValue.swift in Sources */,
+				FBFA03403008DF610008B4B6 /* SettingsValue+Extensions.swift in Sources */,
+				FBFA03413008DF610008B4B6 /* SettingsKey.swift in Sources */,
+				FBFA03423008DF610008B4B6 /* AppSettings.swift in Sources */,
 				FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */,
 				FB0CAA5D28A998670024561A /* CoreDataManager+Chapter.swift in Sources */,
 				FB3DDF7B2E1317AB00A64897 /* ImageModel.swift in Sources */,

@@ -636,7 +636,7 @@ extension Settings {
         .init(
             value: .group(.init(items: [
                 .init(
-                    key: "Dictionary.enable",
+                    key: AppSettings.dictionary.enable.key,
                     title: NSLocalizedString("DICTIONARY_LOOKUP"),
                     value: .toggle(.init())
                 ),
@@ -649,14 +649,11 @@ extension Settings {
         )
     ] + {
         let lookupGestureSetting = Setting(
-            key: "Dictionary.lookupGesture",
+            key: AppSettings.dictionary.lookupGesture.key,
             title: NSLocalizedString("LOOKUP_GESTURE"),
             value: .select(.init(
-                values: ["single-tap", "long-press"],
-                titles: [
-                    NSLocalizedString("SINGLE_TAP"),
-                    NSLocalizedString("LONG_PRESS")
-                ]
+                values: DictionarySettings.LookupGesture.allCases.map(\.rawValue),
+                titles: DictionarySettings.LookupGesture.allCases.map(\.title)
             ))
         )
         return [
@@ -677,20 +674,20 @@ extension Settings {
         ]
     }() + [
         .init(
-            requires: "Dictionary.enable",
+            requires: AppSettings.dictionary.enable.key,
             value: .group(.init(
                 footer: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO"),
                 items: [
                     .init(
-                        key: "Dictionary.textOverlayMode",
+                        key: AppSettings.dictionary.textOverlayMode.key,
                         title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE")),
                         value: .toggle(.init())
                     ),
                     .init(
-                        requires: "Dictionary.textOverlayMode",
+                        requires: AppSettings.dictionary.textOverlayMode.key,
                         value: .group(.init(items: [
                             .init(
-                                key: "Dictionary.overlayPadding",
+                                key: AppSettings.dictionary.overlayPadding.key,
                                 title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
                                 value: .stepper(.init(
                                     minimumValue: 0,
@@ -699,7 +696,7 @@ extension Settings {
                                 ))
                             ),
                             .init(
-                                key: "Dictionary.overlayTextScaleMultiplier",
+                                key: AppSettings.dictionary.overlayTextScaleMultiplier.key,
                                 title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
                                 value: .stepper(.init(
                                     minimumValue: 0.5,
@@ -713,20 +710,20 @@ extension Settings {
             ))
         ),
         .init(
-            requires: "Dictionary.enable",
+            requires: AppSettings.dictionary.enable.key,
             value: .group(.init(
                 footer: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO"),
                 items: [
                     .init(
-                        key: "Dictionary.restrictOCRLanguages",
+                        key: AppSettings.dictionary.restrictOCRLanguages.key,
                         title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
                         value: .toggle(.init())
                     ),
                     .init(
-                        requires: "Dictionary.restrictOCRLanguages",
+                        requires: AppSettings.dictionary.restrictOCRLanguages.key,
                         value: .group(.init(items: [
                             .init(
-                                key: "Dictionary.restrictedOCRLanguages",
+                                key: AppSettings.dictionary.restrictedOCRLanguages.key,
                                 title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
                                 value: .multiselect(.init(
                                     values: sourceLanguageCodes,
@@ -740,10 +737,10 @@ extension Settings {
         ),
         .init(
             title: NSLocalizedString("DICTIONARY_POPUP"),
-            requires: "Dictionary.enable",
+            requires: AppSettings.dictionary.enable.key,
             value: .group(.init(items: [
                 .init(
-                    key: "Dictionary.popupWidth",
+                    key: AppSettings.dictionary.popupWidth.key,
                     title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
                     value: .stepper(.init(
                         minimumValue: 220,
@@ -752,7 +749,7 @@ extension Settings {
                     ))
                 ),
                 .init(
-                    key: "Dictionary.popupHeight",
+                    key: AppSettings.dictionary.popupHeight.key,
                     title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
                     value: .stepper(.init(
                         minimumValue: 160,

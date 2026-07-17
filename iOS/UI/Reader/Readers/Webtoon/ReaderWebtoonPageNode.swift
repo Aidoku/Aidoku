@@ -657,8 +657,8 @@ extension ReaderWebtoonPageNode {
 
         guard
             #available(iOS 18.0, *),
-            UserDefaults.standard.bool(forKey: "Dictionary.enable"),
-            UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode"),
+            AppSettings.dictionary.enable.get(),
+            AppSettings.dictionary.textOverlayMode.get(),
             let textRecognizer,
             let image,
             let imageView = imageNode.imageView

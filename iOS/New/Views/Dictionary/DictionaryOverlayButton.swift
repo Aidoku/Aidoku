@@ -6,6 +6,7 @@
 //
 
 import CHoshiDicts
+import CxxStdlib
 import UIKit
 
 enum DictionaryOverlayInteractionMode {
@@ -96,9 +97,9 @@ final class DictionaryOverlayButton: UIButton {
         renderedSegmentLabels.removeAll()
         localCharHits.removeAll()
 
-        let storedScale = CGFloat(UserDefaults.standard.double(forKey: "Dictionary.overlayTextScaleMultiplier"))
+        let storedScale = CGFloat(AppSettings.dictionary.overlayTextScaleMultiplier.get())
         let textScaleMultiplier = max(0.5, min(1.25, storedScale > 0 ? storedScale : 1))
-        let storedPadding = CGFloat(UserDefaults.standard.double(forKey: "Dictionary.overlayPadding"))
+        let storedPadding = CGFloat(AppSettings.dictionary.overlayPadding.get())
         let labelPadding = max(0, min(10, storedPadding > 0 ? storedPadding : 5))
 
         for segment in overlay.segments {

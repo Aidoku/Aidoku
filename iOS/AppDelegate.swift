@@ -181,16 +181,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.textLineSpacing": 8,
                 "Reader.textHorizontalPadding": 24,
 
-                "Dictionary.enable": false,
-                "Dictionary.lookupGesture": "single-tap",
-                "Dictionary.textOverlayMode": false,
-                "Dictionary.restrictOCRLanguages": false,
-                "Dictionary.restrictedOCRLanguages": [],
-                "Dictionary.overlayPadding": 5,
-                "Dictionary.overlayTextScaleMultiplier": 1,
-                "Dictionary.popupWidth": 320,
-                "Dictionary.popupHeight": 350,
-
                 "Tracking.updateAfterReading": true,
                 "Tracking.autoSyncFromTracker": false,
 
@@ -215,6 +205,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Downloads.background": true
             ]
         )
+        AppSettings.registerDefaults()
 
         // PlayCover fix: eagerly initialize the Core Data stack on the main thread
         // before any background migration task touches it. The `lazy var container`
@@ -888,24 +879,12 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 }
 
 extension UserDefaults {
-    var isDictionaryLookupEnabledForReader: Bool {
-        if #available(iOS 18.0, *) {
-            bool(forKey: "Dictionary.enable")
-        } else {
-            false
-        }
-    }
-
-    private var dictionaryLookupGestureMode: String {
-        string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
-    }
-
     var isDictionarySingleTapLookupEnabled: Bool {
-        isDictionaryLookupEnabledForReader && dictionaryLookupGestureMode == "single-tap"
+        AppSettings.dictionary.enable.get() && AppSettings.dictionary.lookupGesture.get() == .singleTap
     }
 
     var isDictionaryLongPressLookupEnabled: Bool {
-        isDictionaryLookupEnabledForReader && dictionaryLookupGestureMode == "long-press"
+        AppSettings.dictionary.enable.get() && AppSettings.dictionary.lookupGesture.get() == .longPress
     }
 
     func isReaderDoubleTapDisabledEffective(language: String?) -> Bool {
@@ -917,14 +896,14 @@ extension UserDefaults {
     }
 
     func isOCREnabled(language: String?) -> Bool {
-        guard isDictionaryLookupEnabledForReader else { return false }
+        guard AppSettings.dictionary.enable.get() else { return false }
         guard
             let language,
-            bool(forKey: "Dictionary.restrictOCRLanguages")
+            AppSettings.dictionary.restrictOCRLanguages.get()
         else {
             return true
         }
-        let languages = UserDefaults.standard.stringArray(forKey: "Dictionary.restrictedOCRLanguages") ?? []
+        let languages = AppSettings.dictionary.restrictedOCRLanguages.get()
         return languages.contains(language)
     }
 }

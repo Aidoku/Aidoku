@@ -17,15 +17,14 @@ struct ReaderSettingsView: View {
 
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
-    @State private var dictionaryLookupGestureMode: String
     @State private var lookupGestureLocksQuickActions: Bool
     @State private var lookupGestureLocksDoubleTap: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
-    @StateObject private var dictionaryLookupEnabled = UserDefaultsBool(key: "Dictionary.enable")
-    @StateObject private var dictionaryTextOverlayModeEnabled = UserDefaultsBool(key: "Dictionary.textOverlayMode")
-    @StateObject private var restrictOCRLanguages = UserDefaultsBool(key: "Dictionary.restrictOCRLanguages")
+    @StateObject private var dictionaryLookupEnabled = UserDefaultsBool(key: AppSettings.dictionary.enable.key)
+    @StateObject private var dictionaryTextOverlayModeEnabled = UserDefaultsBool(key: AppSettings.dictionary.textOverlayMode.key)
+    @StateObject private var restrictOCRLanguages = UserDefaultsBool(key: AppSettings.dictionary.restrictOCRLanguages.key)
 
     // All available font families on the system
     private static let availableFonts: [String] = {
@@ -64,9 +63,6 @@ struct ReaderSettingsView: View {
         self._tapZones = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.tapZones")
                 .flatMap(DefaultTapZones.init) ?? .disabled
-        )
-        self._dictionaryLookupGestureMode = State(
-            initialValue: UserDefaults.standard.string(forKey: "Dictionary.lookupGesture") ?? "single-tap"
         )
         self._lookupGestureLocksQuickActions = State(
             initialValue: Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
@@ -470,7 +466,7 @@ extension ReaderSettingsView {
         Section {
             SettingView(
                 setting: .init(
-                    key: "Dictionary.enable",
+                    key: AppSettings.dictionary.enable.key,
                     title: NSLocalizedString("DICTIONARY_LOOKUP"),
                     value: .toggle(.init())
                 ),
@@ -482,21 +478,18 @@ extension ReaderSettingsView {
                 }
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.lookupGesture",
+                        key: AppSettings.dictionary.lookupGesture.key,
                         title: NSLocalizedString("LOOKUP_GESTURE"),
                         value: .select(.init(
-                            values: ["single-tap", "long-press"],
-                            titles: [
-                                NSLocalizedString("SINGLE_TAP"),
-                                NSLocalizedString("LONG_PRESS")
-                            ]
+                            values: DictionarySettings.LookupGesture.allCases.map(\.rawValue),
+                            titles: DictionarySettings.LookupGesture.allCases.map(\.title)
                         ))
                     ),
                     onChange: { _ in updateLookupGestureLocks() }
                 )
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.textOverlayMode",
+                        key: AppSettings.dictionary.textOverlayMode.key,
                         title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE")),
                         value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
                     )
@@ -504,7 +497,7 @@ extension ReaderSettingsView {
                 if dictionaryTextOverlayModeEnabled.value {
                     SettingView(
                         setting: .init(
-                            key: "Dictionary.overlayPadding",
+                            key: AppSettings.dictionary.overlayPadding.key,
                             title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
                             value: .stepper(.init(
                                 minimumValue: 0,
@@ -515,7 +508,7 @@ extension ReaderSettingsView {
                     )
                     SettingView(
                         setting: .init(
-                            key: "Dictionary.overlayTextScaleMultiplier",
+                            key: AppSettings.dictionary.overlayTextScaleMultiplier.key,
                             title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
                             value: .stepper(.init(
                                 minimumValue: 0.5,
@@ -527,7 +520,7 @@ extension ReaderSettingsView {
                 }
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.restrictOCRLanguages",
+                        key: AppSettings.dictionary.restrictOCRLanguages.key,
                         title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
                         value: .toggle(.init())
                     )
@@ -535,7 +528,7 @@ extension ReaderSettingsView {
                 if restrictOCRLanguages.value {
                     SettingView(
                         setting: .init(
-                            key: "Dictionary.restrictedOCRLanguages",
+                            key: AppSettings.dictionary.restrictedOCRLanguages.key,
                             title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
                             value: .multiselect(.init(
                                 values: sourceLanguageCodes,
@@ -546,7 +539,7 @@ extension ReaderSettingsView {
                 }
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.popupWidth",
+                        key: AppSettings.dictionary.popupWidth.key,
                         title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
                         value: .stepper(.init(
                             minimumValue: 100,
@@ -557,7 +550,7 @@ extension ReaderSettingsView {
                 )
                 SettingView(
                     setting: .init(
-                        key: "Dictionary.popupHeight",
+                        key: AppSettings.dictionary.popupHeight.key,
                         title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
                         value: .stepper(.init(
                             minimumValue: 100,

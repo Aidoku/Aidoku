@@ -151,10 +151,10 @@ class ReaderPageViewController: BaseObservingViewController {
         }
         for key in [
             "Reader.disableDoubleTap",
-            "Dictionary.enable",
-            "Dictionary.lookupGesture",
-            "Dictionary.restrictOCRLanguages",
-            "Dictionary.restrictedOCRLanguages"
+            AppSettings.dictionary.enable.key,
+            AppSettings.dictionary.lookupGesture.key,
+            AppSettings.dictionary.restrictOCRLanguages.key,
+            AppSettings.dictionary.restrictedOCRLanguages.key
         ] {
             addObserver(forName: key) { [weak self] _ in
                 self?.updateDoubleTapZoomSetting()

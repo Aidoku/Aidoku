@@ -9,8 +9,9 @@
 //  Modified for use in Aidoku
 //
 
-import SwiftUI
 import CHoshiDicts
+import CxxStdlib
+import SwiftUI
 
 struct UserConfig {
     var popupActionBar = false
@@ -19,12 +20,12 @@ struct UserConfig {
     var scanLength = 16
     var maxResults = 16
     var popupWidth: CGFloat {
-        let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupWidth")
+        let storedValue = AppSettings.dictionary.popupWidth.get()
         let width = storedValue > 0 ? storedValue : 320
         return CGFloat(width)
     }
     var popupHeight: CGFloat {
-        let storedValue = UserDefaults.standard.double(forKey: "Dictionary.popupHeight")
+        let storedValue = AppSettings.dictionary.popupHeight.get()
         let height = storedValue > 0 ? storedValue : 350
         return CGFloat(height)
     }

@@ -219,7 +219,7 @@ class ReaderViewController: BaseObservingViewController {
         // initialize dictionary engine
         if
             #available(iOS 18.0, *),
-            UserDefaults.standard.bool(forKey: "Dictionary.enable")
+            AppSettings.dictionary.enable.get()
         {
             DictionaryManager.shared.rebuildLookupQuery()
         }
@@ -288,8 +288,8 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.upscaleImages", using: reloadBlock)
         addObserver(forName: "Reader.cropBorders", using: reloadBlock)
         addObserver(forName: "Reader.liveText", using: reloadBlock)
-        addObserver(forName: "Dictionary.overlayPadding", using: reloadBlock)
-        addObserver(forName: "Dictionary.overlayTextScaleMultiplier", using: reloadBlock)
+        addObserver(forName: AppSettings.dictionary.overlayPadding.key, using: reloadBlock)
+        addObserver(forName: AppSettings.dictionary.overlayTextScaleMultiplier.key, using: reloadBlock)
         let dictionaryReloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
             self.configureBarToggleTapGestures()
@@ -297,12 +297,16 @@ class ReaderViewController: BaseObservingViewController {
             self.configureDictionaryOverlayInteractionMode()
             self.reader?.setChapter(self.chapter, startPage: self.currentPage)
         }
-        addObserver(forName: "Dictionary.enable", using: dictionaryReloadBlock)
-        addObserver(forName: "Dictionary.lookupGesture", using: dictionaryReloadBlock)
-        addObserver(forName: "Dictionary.textOverlayMode", using: dictionaryReloadBlock)
+        for key in [
+            AppSettings.dictionary.enable.key,
+            AppSettings.dictionary.lookupGesture.key,
+            AppSettings.dictionary.textOverlayMode.key,
+            AppSettings.dictionary.restrictOCRLanguages.key,
+            AppSettings.dictionary.restrictedOCRLanguages.key
+        ] {
+            addObserver(forName: key, using: dictionaryReloadBlock)
+        }
         addObserver(forName: .dictionaryDictionariesChanged, using: dictionaryReloadBlock)
-        addObserver(forName: "Dictionary.restrictOCRLanguages", using: dictionaryReloadBlock)
-        addObserver(forName: "Dictionary.restrictedOCRLanguages", using: dictionaryReloadBlock)
         // Switch text reader style (paged <-> scroll) without restart
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
@@ -1011,8 +1015,12 @@ extension ReaderViewController: ReaderHoldingDelegate {
         clearDictionarySelectionHighlight()
         dictionaryLongPressSelection = nil
 
-        guard isDictionaryLongPressLookupActiveForCurrentChapter else { return }
-        guard !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
+        guard
+            isDictionaryLongPressLookupActiveForCurrentChapter,
+            !AppSettings.dictionary.textOverlayMode.get()
+        else {
+            return
+        }
 
         let gesture = UILongPressGestureRecognizer(target: self, action: #selector(handleDictionaryLongPress(_:)))
         gesture.minimumPressDuration = 0.25
@@ -1023,11 +1031,15 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     @objc private func handleDictionaryLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
-        guard #available(iOS 18.0, *) else { return }
-        guard isDictionaryLongPressLookupActiveForCurrentChapter else { return }
-        guard !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
-        guard !isDictionaryPopupVisible else { return }
-        guard LookupEngine.shared.isReady else { return }
+        guard
+            #available(iOS 18.0, *),
+            isDictionaryLongPressLookupActiveForCurrentChapter,
+            !AppSettings.dictionary.textOverlayMode.get(),
+            !isDictionaryPopupVisible,
+            LookupEngine.shared.isReady
+        else {
+            return
+        }
 
         let point = gestureRecognizer.location(in: view)
         switch gestureRecognizer.state {
@@ -1099,7 +1111,7 @@ extension ReaderViewController {
 
     @objc func handleTap(_ gestureRecognizer: UITapGestureRecognizer) {
         let point = gestureRecognizer.location(in: view)
-        let overlayModeEnabled = UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode")
+        let overlayModeEnabled = AppSettings.dictionary.textOverlayMode.get()
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         let singleTapOCRLookupEnabled = singleTapLookupEnabled && !overlayModeEnabled
 
@@ -1271,7 +1283,7 @@ extension ReaderViewController {
         guard #available(iOS 18.0, *) else { return }
 
         let mode: DictionaryOverlayInteractionMode
-        if !UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") {
+        if !AppSettings.dictionary.textOverlayMode.get() {
             mode = .none
         } else if isDictionarySingleTapLookupActiveForCurrentChapter {
             mode = .singleTap
@@ -1287,8 +1299,7 @@ extension ReaderViewController {
     private func configureDictionaryOverlayTapHandler() {
         guard #available(iOS 18.0, *) else { return }
         reader?.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
-            guard let self else { return }
-            guard UserDefaults.standard.bool(forKey: "Dictionary.textOverlayMode") else { return }
+            guard let self, AppSettings.dictionary.textOverlayMode.get() else { return }
             _ = performDictionaryLookup(text: text, anchorRect: rect, charRects: charRects)
         }
     }
