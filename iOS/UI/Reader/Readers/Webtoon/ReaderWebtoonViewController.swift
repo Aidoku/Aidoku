@@ -183,7 +183,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     private func updateDoubleTapZoomSetting() {
         let language = chapter?.language ?? viewModel.source?.languages.first
-        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: language)
+        zoomView.doubleTapZoomEnabled = !AppSettings.dictionary.isReaderDoubleTapDisabled(language: language)
     }
 }
 
@@ -264,7 +264,7 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
             let indexPath = collectionNode.indexPathForItem(at: point),
             let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
             let image = node.imageNode.image,
-            !UserDefaults.standard.isReaderQuickActionsDisabledEffective(language: node.page.language)
+            !AppSettings.dictionary.isReaderQuickActionsDisabled(language: node.page.language)
         else {
             return nil
         }

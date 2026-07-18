@@ -45,7 +45,6 @@ struct DictionarySettings {
         }
         return nil
     })
-
     enum LookupGesture: String, SettingsValue, CaseIterable {
         case singleTap = "single-tap"
         case longPress = "long-press"
@@ -58,7 +57,6 @@ struct DictionarySettings {
         }
     }
     let lookupGesture = SettingsKey<LookupGesture>("Dictionary.lookupGesture", default: .singleTap)
-
     let textOverlayMode = SettingsKey<Bool>("Dictionary.textOverlayMode", default: false)
     let restrictOCRLanguages = SettingsKey<Bool>("Dictionary.restrictOCRLanguages", default: false)
     let restrictedOCRLanguages = SettingsKey<[String]>("Dictionary.restrictedOCRLanguages", default: [])
@@ -66,4 +64,26 @@ struct DictionarySettings {
     let overlayTextScaleMultiplier = SettingsKey<Double>("Dictionary.overlayTextScaleMultiplier", default: 1)
     let popupWidth = SettingsKey<Double>("Dictionary.popupWidth", default: 320)
     let popupHeight = SettingsKey<Double>("Dictionary.popupHeight", default: 350)
+
+    func isReaderDoubleTapDisabled(language: String?) -> Bool {
+        UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap")
+            || (AppSettings.dictionary.lookupGesture.get() == .singleTap && isOCREnabled(language: language))
+    }
+
+    func isReaderQuickActionsDisabled(language: String?) -> Bool {
+        UserDefaults.standard.bool(forKey: "Reader.disableQuickActions")
+            || (AppSettings.dictionary.lookupGesture.get() == .longPress && isOCREnabled(language: language))
+    }
+
+    func isOCREnabled(language: String?) -> Bool {
+        guard AppSettings.dictionary.enable.get() else { return false }
+        guard
+            let language,
+            AppSettings.dictionary.restrictOCRLanguages.get()
+        else {
+            return true
+        }
+        let languages = AppSettings.dictionary.restrictedOCRLanguages.get()
+        return languages.contains(language)
+    }
 }

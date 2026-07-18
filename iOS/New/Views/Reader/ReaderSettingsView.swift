@@ -568,13 +568,13 @@ extension ReaderSettingsView {
 
 extension ReaderSettingsView {
     private static func lookupGestureLocksQuickActions(chapterLanguage: String?) -> Bool {
-        UserDefaults.standard.isDictionaryLongPressLookupEnabled
-            && UserDefaults.standard.isOCREnabled(language: chapterLanguage)
+        AppSettings.dictionary.lookupGesture.get() == .longPress
+            && AppSettings.dictionary.isOCREnabled(language: chapterLanguage)
     }
 
     private static func lookupGestureLocksDoubleTap(chapterLanguage: String?) -> Bool {
-        UserDefaults.standard.isDictionarySingleTapLookupEnabled
-            && UserDefaults.standard.isOCREnabled(language: chapterLanguage)
+        AppSettings.dictionary.lookupGesture.get() == .singleTap
+            && AppSettings.dictionary.isOCREnabled(language: chapterLanguage)
     }
 
     private func updateLookupGestureLocks() {

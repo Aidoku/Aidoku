@@ -124,7 +124,7 @@ enum DictionaryTextAnalysisScheduler {
     ) {
         task?.cancel()
         guard
-            UserDefaults.standard.isOCREnabled(language: language),
+            AppSettings.dictionary.isOCREnabled(language: language),
             let image
         else {
             recognizer?.reset()

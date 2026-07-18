@@ -877,33 +877,3 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         completionHandler()
     }
 }
-
-extension UserDefaults {
-    var isDictionarySingleTapLookupEnabled: Bool {
-        AppSettings.dictionary.enable.get() && AppSettings.dictionary.lookupGesture.get() == .singleTap
-    }
-
-    var isDictionaryLongPressLookupEnabled: Bool {
-        AppSettings.dictionary.enable.get() && AppSettings.dictionary.lookupGesture.get() == .longPress
-    }
-
-    func isReaderDoubleTapDisabledEffective(language: String?) -> Bool {
-        bool(forKey: "Reader.disableDoubleTap") || (isDictionarySingleTapLookupEnabled && isOCREnabled(language: language))
-    }
-
-    func isReaderQuickActionsDisabledEffective(language: String?) -> Bool {
-        bool(forKey: "Reader.disableQuickActions") || (isDictionaryLongPressLookupEnabled && isOCREnabled(language: language))
-    }
-
-    func isOCREnabled(language: String?) -> Bool {
-        guard AppSettings.dictionary.enable.get() else { return false }
-        guard
-            let language,
-            AppSettings.dictionary.restrictOCRLanguages.get()
-        else {
-            return true
-        }
-        let languages = AppSettings.dictionary.restrictedOCRLanguages.get()
-        return languages.contains(language)
-    }
-}

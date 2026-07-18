@@ -167,10 +167,6 @@ class ReaderPageViewController: BaseObservingViewController {
         loadPageBackground() // fix page background resetting on system appearance change
     }
 
-    private func updateDoubleTapZoomSetting() {
-        zoomView?.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapDisabledEffective(language: page?.language)
-    }
-
     func setPage(_ page: Page, sourceId: String? = nil, skipProcessing: Bool = false) {
         guard !pageSet, let pageView else { return }
         pageSet = true
@@ -205,7 +201,7 @@ class ReaderPageViewController: BaseObservingViewController {
         }
     }
 
-    func loadPageBackground(forceReload: Bool = false) {
+    private func loadPageBackground(forceReload: Bool = false) {
         // ensure no old gradients are left
         view.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
 
@@ -262,5 +258,9 @@ class ReaderPageViewController: BaseObservingViewController {
     var isWideImage: Bool {
         guard let imageAspectRatio else { return false }
         return imageAspectRatio > 1
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        zoomView?.doubleTapZoomEnabled = !AppSettings.dictionary.isReaderDoubleTapDisabled(language: page?.language)
     }
 }

@@ -1220,7 +1220,7 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
         guard
             let pageView = interaction.view as? UIImageView,
             pageView.image != nil,
-            !UserDefaults.standard.isReaderQuickActionsDisabledEffective(language: pageLanguage(for: pageView))
+            !AppSettings.dictionary.isReaderQuickActionsDisabled(language: pageLanguage(for: pageView))
         else {
             return nil
         }

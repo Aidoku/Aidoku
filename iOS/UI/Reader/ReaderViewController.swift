@@ -60,13 +60,13 @@ class ReaderViewController: BaseObservingViewController {
         }
     }
     private var isDictionaryOCRActiveForCurrentChapter: Bool {
-        UserDefaults.standard.isOCREnabled(language: chapter.language ?? source?.languages.first)
+        AppSettings.dictionary.isOCREnabled(language: chapter.language ?? source?.languages.first)
     }
     private var isDictionarySingleTapLookupActiveForCurrentChapter: Bool {
-        UserDefaults.standard.isDictionarySingleTapLookupEnabled && isDictionaryOCRActiveForCurrentChapter
+        AppSettings.dictionary.lookupGesture.get() == .singleTap && isDictionaryOCRActiveForCurrentChapter
     }
     private var isDictionaryLongPressLookupActiveForCurrentChapter: Bool {
-        UserDefaults.standard.isDictionaryLongPressLookupEnabled && isDictionaryOCRActiveForCurrentChapter
+        AppSettings.dictionary.lookupGesture.get() == .longPress && isDictionaryOCRActiveForCurrentChapter
     }
 
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
