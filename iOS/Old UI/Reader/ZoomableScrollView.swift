@@ -20,13 +20,6 @@ class ZoomableScrollView: UIScrollView {
     var zoomEnabled = true {
         didSet {
             isScrollEnabled = zoomEnabled
-            zoomingTap.isEnabled = zoomEnabled && doubleTapZoomEnabled
-        }
-    }
-
-    var doubleTapZoomEnabled = true {
-        didSet {
-            zoomingTap.isEnabled = zoomEnabled && doubleTapZoomEnabled
         }
     }
 
@@ -68,7 +61,6 @@ class ZoomableScrollView: UIScrollView {
     func configure() {
         zoomView?.addGestureRecognizer(zoomingTap)
         zoomView?.isUserInteractionEnabled = true
-        zoomingTap.isEnabled = zoomEnabled && doubleTapZoomEnabled
     }
 
     func centerView() {

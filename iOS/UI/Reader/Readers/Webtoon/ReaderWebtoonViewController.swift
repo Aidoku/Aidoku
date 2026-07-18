@@ -183,7 +183,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     private func updateDoubleTapZoomSetting() {
         let language = chapter?.language ?? viewModel.source?.languages.first
-        zoomView.doubleTapZoomEnabled = !AppSettings.dictionary.isReaderDoubleTapDisabled(language: language)
+        zoomView.doubleTapEnabled = !AppSettings.dictionary.isReaderDoubleTapDisabled(language: language)
     }
 }
 

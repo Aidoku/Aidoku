@@ -453,8 +453,7 @@ extension Settings {
             } else {
                 []
             }
-        }())))
-    ] + [
+        }()))),
         .init(
             title: NSLocalizedString("TAP_ZONES"),
             value: .group(.init(items: [

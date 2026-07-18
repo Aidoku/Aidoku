@@ -241,6 +241,6 @@ class ReaderDoublePageViewController: BaseObservingViewController {
     private func updateDoubleTapZoomSetting() {
         let disabled = AppSettings.dictionary.isReaderDoubleTapDisabled(language: firstPage?.language)
             && AppSettings.dictionary.isReaderDoubleTapDisabled(language: secondPage?.language)
-        zoomView.doubleTapZoomEnabled = !disabled
+        zoomView.doubleTapEnabled = !disabled
     }
 }
