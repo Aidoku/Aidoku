@@ -83,6 +83,7 @@
 		FB077DAC2E7DC83100C9C214 /* SettingsTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */; };
 		FB077DAE2E7DC85A00C9C214 /* BackupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAD2E7DC85800C9C214 /* BackupsView.swift */; };
 		FB077DB02E7DCFFA00C9C214 /* String+Highlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */; };
+		FB07A38F300C349900C5B80A /* DictionaryTextAnalysisScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB07A38E300C349800C5B80A /* DictionaryTextAnalysisScheduler.swift */; };
 		FB0AB8942F50B98300AF1451 /* BackupCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8932F50B98000AF1451 /* BackupCategory.swift */; };
 		FB0AB8952F50B98300AF1451 /* BackupCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8932F50B98000AF1451 /* BackupCategory.swift */; };
 		FB0AB8A32F51FD8D00AF1451 /* FilterGroupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */; };
@@ -712,6 +713,7 @@
 		FB077DAB2E7DC82E00C9C214 /* SettingsTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTrackingView.swift; sourceTree = "<group>"; };
 		FB077DAD2E7DC85800C9C214 /* BackupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupsView.swift; sourceTree = "<group>"; };
 		FB077DAF2E7DCFF700C9C214 /* String+Highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Highlight.swift"; sourceTree = "<group>"; };
+		FB07A38E300C349800C5B80A /* DictionaryTextAnalysisScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryTextAnalysisScheduler.swift; sourceTree = "<group>"; };
 		FB0AB8922F50B81800AF1451 /* 0.8.2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.8.2.xcdatamodel; sourceTree = "<group>"; };
 		FB0AB8932F50B98000AF1451 /* BackupCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCategory.swift; sourceTree = "<group>"; };
 		FB0AB8A22F51FD8D00AF1451 /* FilterGroupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterGroupCreateView.swift; sourceTree = "<group>"; };
@@ -1238,6 +1240,7 @@
 				EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */,
 				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
 				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
+				FB07A38E300C349800C5B80A /* DictionaryTextAnalysisScheduler.swift */,
 				EE7A42102F5E31A10044AF4C /* DictionaryOverlayButton.swift */,
 				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
 			);
@@ -2950,6 +2953,7 @@
 				FBED233827C3D0E30095D0C0 /* SourceActor.swift in Sources */,
 				FBCA1B2A2889864E007149C5 /* View.swift in Sources */,
 				FB4ADCA42814E5E700F6D7FB /* NSLocalizedString.swift in Sources */,
+				FB07A38F300C349900C5B80A /* DictionaryTextAnalysisScheduler.swift in Sources */,
 				FB02E1EB288CC1DA00B9E2DE /* LibraryViewController.swift in Sources */,
 				FB7C288C2E8312D0009FF6AF /* UnavailableView.swift in Sources */,
 				FB4EB4FF28AA959C00FDEA4A /* CoreDataManager+Track.swift in Sources */,

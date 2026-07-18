@@ -30,26 +30,25 @@ extension TextRecognizer {
 
         let results = (try? await request.perform(on: cgImage)) ?? []
         return results.compactMap { observation in
-            guard let candidate = observation.topCandidates(1).first else { return nil }
-            let characters = recognizedCharacters(from: candidate)
-            let text = characters.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !text.isEmpty, !characters.isEmpty else { return nil }
+            guard
+                let candidate = observation.topCandidates(1).first,
+                case let characters = recognizedCharacters(from: candidate),
+                case let text = characters.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines),
+                !text.isEmpty, !characters.isEmpty
+            else {
+                return nil
+            }
             return .init(
                 text: text,
                 boundingRect: observation.boundingBox.cgRect,
                 direction: {
                     if #available(iOS 26.0, *) {
                         switch observation.textDirection {
-                        case .topToBottom:
-                            return .topToBottom
-                        case .leftToRight:
-                            return .leftToRight
-                        case .rightToLeft:
-                            return .rightToLeft
-                        case .none:
-                            return .unknown
-                        @unknown default:
-                            return .unknown
+                            case .topToBottom: return .topToBottom
+                            case .leftToRight: return .leftToRight
+                            case .rightToLeft: return .rightToLeft
+                            case .none: return .unknown
+                            @unknown default: return .unknown
                         }
                     } else {
                         return .unknown
@@ -75,75 +74,5 @@ extension TextRecognizer {
             characters.append(.init(text: String(char), boundingRect: box.boundingBox.cgRect))
         }
         return characters
-    }
-}
-
-@available(iOS 18.0, *)
-private actor DictionaryTextAnalysisQueue {
-    static let shared = DictionaryTextAnalysisQueue()
-
-    private var isRunning = false
-    private var waiters: [CheckedContinuation<Void, Never>] = []
-
-    func waitForTurn() async {
-        if !isRunning {
-            isRunning = true
-            return
-        }
-        await withCheckedContinuation { continuation in
-            waiters.append(continuation)
-        }
-    }
-
-    func finishTurn() {
-        if waiters.isEmpty {
-            isRunning = false
-        } else {
-            waiters.removeFirst().resume()
-        }
-    }
-}
-
-@available(iOS 18.0, *)
-enum DictionaryTextAnalysisScheduler {
-    static func cancel(
-        task: inout Task<Void, Never>?,
-        recognizer: TextRecognizer?
-    ) {
-        task?.cancel()
-        task = nil
-        recognizer?.reset()
-    }
-
-    static func schedule(
-        task: inout Task<Void, Never>?,
-        recognizer: inout TextRecognizer?,
-        image: UIImage?,
-        language: String?,
-        onFinish: @MainActor @escaping () -> Void
-    ) {
-        task?.cancel()
-        guard
-            AppSettings.dictionary.isOCREnabled(language: language),
-            let image
-        else {
-            recognizer?.reset()
-            task = nil
-            return
-        }
-
-        let runRecognizer = TextRecognizer()
-        recognizer = runRecognizer
-        task = Task { [weak runRecognizer] in
-            await DictionaryTextAnalysisQueue.shared.waitForTurn()
-            defer { await DictionaryTextAnalysisQueue.shared.finishTurn() }
-
-            guard !Task.isCancelled, let runRecognizer else { return }
-            await runRecognizer.analyze(image, language: language)
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                onFinish()
-            }
-        }
     }
 }

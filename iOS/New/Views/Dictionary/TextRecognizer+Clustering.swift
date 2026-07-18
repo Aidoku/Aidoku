@@ -31,21 +31,23 @@ extension TextRecognizer {
     }
 
     func orderedClusterForObservation(_ index: Int) -> [Int]? {
-        guard let clusterIndex = clusterIndexByObservation[index] else { return nil }
-        guard cachedOrderedClusters.indices.contains(clusterIndex) else { return nil }
+        guard
+            let clusterIndex = clusterIndexByObservation[index],
+            cachedOrderedClusters.indices.contains(clusterIndex)
+        else {
+            return nil
+        }
         return cachedOrderedClusters[clusterIndex]
     }
 
     func orderedClusterIndices(_ indices: [Int]) -> [Int] {
-        if let clusterIndex = cachedClusters.firstIndex(where: { $0 == indices }),
-           cachedOrderedClusters.indices.contains(clusterIndex) {
+        if
+            let clusterIndex = cachedClusters.firstIndex(where: { $0 == indices }),
+            cachedOrderedClusters.indices.contains(clusterIndex)
+        {
             return cachedOrderedClusters[clusterIndex]
         }
         return orderedClusterIndicesUncached(indices)
-    }
-
-    func clusterIndices() -> [[Int]] {
-        cachedClusters
     }
 
     private func orderedClusterIndicesUncached(_ indices: [Int]) -> [Int] {
@@ -58,12 +60,9 @@ extension TextRecognizer {
         let medianHeight = heights[heights.count / 2]
 
         switch orientation {
-        case .vertical:
-            return orderVertical(indices, columnBand: max(medianWidth * 0.52, 0.008))
-        case .leftToRight:
-            return orderHorizontal(indices, rowBand: max(medianHeight * 0.65, 0.010), leftToRight: true)
-        case .rightToLeft:
-            return orderHorizontal(indices, rowBand: max(medianHeight * 0.65, 0.010), leftToRight: false)
+            case .vertical: return orderVertical(indices, columnBand: max(medianWidth * 0.52, 0.008))
+            case .leftToRight: return orderHorizontal(indices, rowBand: max(medianHeight * 0.65, 0.010), leftToRight: true)
+            case .rightToLeft: return orderHorizontal(indices, rowBand: max(medianHeight * 0.65, 0.010), leftToRight: false)
         }
     }
 
@@ -104,10 +103,12 @@ extension TextRecognizer {
 
         for idx in sortedByX {
             let x = observations[idx].boundingRect.midX
-            if let colIndex = columns.enumerated().min(by: {
-                abs($0.element.centerX - x) < abs($1.element.centerX - x)
-            }).map(\.offset),
-               abs(columns[colIndex].centerX - x) <= columnBand
+            if
+                let colIndex = columns
+                    .enumerated()
+                    .min(by: { abs($0.element.centerX - x) < abs($1.element.centerX - x) })
+                    .map(\.offset),
+                abs(columns[colIndex].centerX - x) <= columnBand
             {
                 columns[colIndex].members.append(idx)
                 let count = CGFloat(columns[colIndex].members.count)
@@ -143,10 +144,12 @@ extension TextRecognizer {
 
         for idx in sortedByY {
             let y = observations[idx].boundingRect.midY
-            if let rowIndex = rows.enumerated().min(by: {
-                abs($0.element.centerY - y) < abs($1.element.centerY - y)
-            }).map(\.offset),
-               abs(rows[rowIndex].centerY - y) <= rowBand
+            if
+                let rowIndex = rows
+                    .enumerated()
+                    .min(by: { ($0.element.centerY - y) < abs($1.element.centerY - y) })
+                    .map(\.offset),
+                abs(rows[rowIndex].centerY - y) <= rowBand
             {
                 rows[rowIndex].members.append(idx)
                 let count = CGFloat(rows[rowIndex].members.count)
@@ -184,24 +187,19 @@ extension TextRecognizer {
             let obs = observations[idx]
             let weight = max(obs.confidence, 0.35)
             switch obs.direction {
-            case .topToBottom:
-                verticalScore += weight
-                continue
-            case .leftToRight:
-                ltrScore += weight
-                continue
-            case .rightToLeft:
-                rtlScore += weight
-                continue
-            case .unknown:
-                break
-            }
-
-            let box = obs.boundingRect
-            if box.height > box.width * 1.1 {
-                verticalScore += weight * 0.7
-            } else {
-                ltrScore += weight * 0.7
+                case .topToBottom:
+                    verticalScore += weight
+                case .leftToRight:
+                    ltrScore += weight
+                case .rightToLeft:
+                    rtlScore += weight
+                case .unknown:
+                    let box = obs.boundingRect
+                    if box.height > box.width * 1.1 {
+                        verticalScore += weight * 0.7
+                    } else {
+                        ltrScore += weight * 0.7
+                    }
             }
         }
 
@@ -217,18 +215,16 @@ extension TextRecognizer {
     private func orientation(for index: Int) -> ReadingOrientation {
         let obs = observations[index]
         switch obs.direction {
-        case .topToBottom:
-            return .vertical
-        case .leftToRight:
-            return .leftToRight
-        case .rightToLeft:
-            return .rightToLeft
-        case .unknown:
-            break
+            case .topToBottom:
+                return .vertical
+            case .leftToRight:
+                return .leftToRight
+            case .rightToLeft:
+                return .rightToLeft
+            case .unknown:
+                let box = obs.boundingRect
+                return box.height > box.width * 1.1 ? .vertical : .leftToRight
         }
-
-        let box = obs.boundingRect
-        return box.height > box.width * 1.1 ? .vertical : .leftToRight
     }
 
     private func isContextNeighbor(_ lhs: Int, _ rhs: Int) -> Bool {

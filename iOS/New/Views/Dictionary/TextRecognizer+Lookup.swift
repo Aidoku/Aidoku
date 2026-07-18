@@ -10,11 +10,13 @@ import UIKit
 @available(iOS 18.0, *)
 extension TextRecognizer {
     func findText(at viewPoint: CGPoint, in imageView: UIView, imageSize: CGSize) -> Result? {
-        guard let normalizedPoint = normalizedImagePoint(viewPoint, in: imageView, imageSize: imageSize) else {
+        let sourceObservations: [(offset: Int, element: OCRObservation)] = Array(observations.enumerated())
+        guard
+            !sourceObservations.isEmpty,
+            let normalizedPoint = normalizedImagePoint(viewPoint, in: imageView, imageSize: imageSize)
+        else {
             return nil
         }
-        let sourceObservations: [(offset: Int, element: OCRObservation)] = Array(observations.enumerated())
-        guard !sourceObservations.isEmpty else { return nil }
 
         let hitCandidates = sourceObservations.filter { $0.element.boundingRect.contains(normalizedPoint) }
 
@@ -30,14 +32,16 @@ extension TextRecognizer {
             return lhs.offset < rhs.offset
         }
 
-        guard let (primaryIndex, primaryObservation) = primary else {
+        guard
+            let (primaryIndex, primaryObservation) = primary,
+            case let primaryCharacters = primaryObservation.characters,
+            !primaryCharacters.isEmpty,
+            let bestOffset = primaryCharacters.firstIndex(where: { $0.boundingRect.contains(normalizedPoint) })
+        else {
             return nil
         }
-        let primaryCharacters = primaryObservation.characters
-        guard !primaryCharacters.isEmpty else { return nil }
-        guard let bestOffset = primaryCharacters.firstIndex(where: { $0.boundingRect.contains(normalizedPoint) }) else { return nil }
-        let anchorRect = viewRect(from: primaryObservation.boundingRect, in: imageView, imageSize: imageSize)
 
+        let anchorRect = viewRect(from: primaryObservation.boundingRect, in: imageView, imageSize: imageSize)
         let orderedCluster = orderedClusterForObservation(primaryIndex) ?? [primaryIndex]
 
         var lookupSlice = ""
@@ -83,7 +87,7 @@ extension TextRecognizer {
     }
 
     func paragraphOverlays(in imageView: UIView, imageSize: CGSize) -> [ParagraphOverlay] {
-        let clusters = clusterIndices()
+        let clusters = cachedClusters
         guard !clusters.isEmpty else { return [] }
 
         return clusters.compactMap { cluster -> ParagraphOverlay? in
@@ -184,5 +188,4 @@ extension TextRecognizer {
 
         return CGRect(x: x, y: y, width: width, height: height)
     }
-
 }
