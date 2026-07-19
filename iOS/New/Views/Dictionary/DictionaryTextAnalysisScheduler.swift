@@ -31,6 +31,12 @@ private actor DictionaryTextAnalysisQueue {
             waiters.removeFirst().resume()
         }
     }
+
+    func run(_ operation: () async -> Void) async {
+        await waitForTurn()
+        await operation()
+        finishTurn()
+    }
 }
 
 @available(iOS 18.0, *)
@@ -64,14 +70,13 @@ enum DictionaryTextAnalysisScheduler {
         let runRecognizer = TextRecognizer()
         recognizer = runRecognizer
         task = Task { [weak runRecognizer] in
-            await DictionaryTextAnalysisQueue.shared.waitForTurn()
-            defer { await DictionaryTextAnalysisQueue.shared.finishTurn() }
-
-            guard !Task.isCancelled, let runRecognizer else { return }
-            await runRecognizer.analyze(image, language: language)
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                onFinish()
+            await DictionaryTextAnalysisQueue.shared.run {
+                guard !Task.isCancelled, let runRecognizer else { return }
+                await runRecognizer.analyze(image, language: language)
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    onFinish()
+                }
             }
         }
     }
