@@ -39,8 +39,8 @@ class TextRecognizer {
     struct Result {
         let text: String
         let fullText: String
-        let charRect: CGRect
-        let charRects: [CGRect]
+        var charRect: CGRect
+        var charRects: [CGRect]
     }
 
     struct ParagraphOverlay {

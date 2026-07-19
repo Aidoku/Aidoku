@@ -5,9 +5,14 @@
 //  Created by skitty on 7/19/26.
 //
 
-import CHoshiDicts
-import CxxStdlib
 import UIKit
+
+struct DictionaryRecognizedText {
+    let text: String
+    let fullText: String
+    let rect: CGRect
+    let charRects: [CGRect]
+}
 
 enum DictionaryOverlayInteractionMode {
     case none
@@ -56,8 +61,13 @@ final class DictionaryOverlayController: NSObject {
         return true
     }
 
-    // swiftlint:disable:next large_tuple
-    func lookupPayload(at point: CGPoint) -> (text: String, rect: CGRect, charRects: [CGRect])? {
+    struct LookupPayload {
+        let text: String
+        let rect: CGRect
+        let charRects: [CGRect]
+    }
+
+    func lookupPayload(at point: CGPoint) -> LookupPayload? {
         guard let button = overlayButton(at: point) else { return nil }
         setActiveButton(button)
 
@@ -69,7 +79,7 @@ final class DictionaryOverlayController: NSObject {
 
         let anchorRect = payload.localRect.offsetBy(dx: button.frame.minX, dy: button.frame.minY)
         let charRects = payload.localRects.map { $0.offsetBy(dx: button.frame.minX, dy: button.frame.minY) }
-        return (payload.text, anchorRect, charRects)
+        return .init(text: payload.text, rect: anchorRect, charRects: charRects)
     }
 
     @discardableResult
@@ -126,38 +136,34 @@ final class DictionaryOverlayController: NSObject {
         }
     }
 
-    @objc
-    private func handleTouchDown(_ sender: DictionaryOverlayButton) {
+    @objc private func handleTouchDown(_ sender: DictionaryOverlayButton) {
         setActiveButton(sender)
     }
 
-    @objc
-    private func handleTouchCancel(_ sender: DictionaryOverlayButton) {
+    @objc private func handleTouchCancel(_ sender: DictionaryOverlayButton) {
         if activeButton === sender {
             setActiveButton(nil)
         }
     }
 
-    @objc
-    private func handleTouchUpInside(_ sender: DictionaryOverlayButton, for event: UIEvent) {
+    @objc private func handleTouchUpInside(_ sender: DictionaryOverlayButton, for event: UIEvent) {
         let touch = event.touches(for: sender)?.first ?? event.allTouches?.first
         let point = touch?.location(in: sender) ?? CGPoint(x: sender.bounds.midX, y: sender.bounds.midY)
         performLookup(sender: sender, point: point)
     }
 
-    @objc
-    private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+    @objc private func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         guard let sender = gestureRecognizer.view as? DictionaryOverlayButton else { return }
         let point = gestureRecognizer.location(in: sender)
         switch gestureRecognizer.state {
-        case .began, .changed:
-            setActiveButton(sender)
-        case .ended:
-            performLookup(sender: sender, point: point)
-        default:
-            if activeButton === sender {
-                setActiveButton(nil)
-            }
+            case .began, .changed:
+                setActiveButton(sender)
+            case .ended:
+                performLookup(sender: sender, point: point)
+            default:
+                if activeButton === sender {
+                    setActiveButton(nil)
+                }
         }
     }
 

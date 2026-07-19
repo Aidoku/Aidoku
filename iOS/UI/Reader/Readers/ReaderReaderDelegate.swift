@@ -21,44 +21,20 @@ protocol ReaderReaderDelegate: UIViewController {
     func sliderMoved(value: CGFloat)
     func sliderStopped(value: CGFloat)
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
-
-    /// Returns recognized text at the given point (in the reader's view coordinates)
-    /// along with the character rect for popup positioning and per-character rects for highlighting.
-    @available(iOS 18.0, *)
-    // swiftlint:disable:next large_tuple
-    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?)
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode)
-
-    @available(iOS 18.0, *)
-    func dismissActiveDictionaryOverlay() -> Bool
-}
-
-extension ReaderReaderDelegate {
-    @available(iOS 18.0, *)
-    // swiftlint:disable:next large_tuple
-    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
-        nil
-    }
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {}
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {}
-
-    @available(iOS 18.0, *)
-    func dismissActiveDictionaryOverlay() -> Bool {
-        false
-    }
 }
 
 extension ReaderReaderDelegate {
     func toggleOffset() {
         // do nothing by default
     }
+}
+
+@available(iOS 18.0, *)
+protocol ReaderDictionaryReader: ReaderReaderDelegate {
+    /// Returns recognized text at the given point (in the reader's view coordinates)
+    /// along with the character rect for popup positioning and per-character rects for highlighting.
+    func recognizedText(at point: CGPoint) -> TextRecognizer.Result?
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?)
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode)
+    func dismissActiveDictionaryOverlay() -> Bool
 }

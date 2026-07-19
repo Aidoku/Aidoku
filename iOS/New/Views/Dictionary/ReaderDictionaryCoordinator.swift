@@ -7,7 +7,6 @@
 
 import CHoshiDicts
 import SwiftUI
-import UIKit
 
 final class ReaderDictionaryCoordinator {
     private struct PopupController {

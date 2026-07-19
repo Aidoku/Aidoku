@@ -43,14 +43,14 @@ class ReaderPageView: UIView {
     private static let sharedImageAnalyzer = ImageAnalyzer()
     private var liveTextTask: Task<Void, Never>?
     private var liveTextGeneration = 0
+
     private var dictionaryAnalysisTask: Task<Void, Never>?
-    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
-        didSet {
-            dictionaryOverlayController.onLookup = onDictionaryOverlayTap
-        }
-    }
     private let dictionaryOverlayContainerView = DictionaryOverlayPassthroughView()
     private let dictionaryOverlayController = DictionaryOverlayController()
+    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
+        get { dictionaryOverlayController.onLookup }
+        set { dictionaryOverlayController.onLookup = newValue }
+    }
 
     private var completion: ((Bool) -> Void)?
 
@@ -74,7 +74,7 @@ class ReaderPageView: UIView {
     }
 
     deinit {
-        dictionaryAnalysisTask?.cancel()
+        cancelDictionaryTextAnalysis()
     }
 
     func configure() {
@@ -495,14 +495,7 @@ extension ReaderPageView {
     }
 
     func setPageText(text: String) {
-        if #available(iOS 18.0, *) {
-            DictionaryTextAnalysisScheduler.cancel(
-                task: &dictionaryAnalysisTask,
-                recognizer: textRecognizer
-            )
-        } else {
-            dictionaryAnalysisTask?.cancel()
-        }
+        cancelDictionaryTextAnalysis()
         clearDictionaryOverlays()
         imageView.image = nil
         progressView.isHidden = true
@@ -564,8 +557,15 @@ extension ReaderPageView {
             ) { [weak self] in
                 self?.renderDictionaryOverlaysIfNeeded()
             }
-        } else {
-            dictionaryAnalysisTask?.cancel()
+        }
+    }
+
+    private func cancelDictionaryTextAnalysis() {
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.cancel(
+                task: &dictionaryAnalysisTask,
+                recognizer: textRecognizer
+            )
         }
     }
 
@@ -619,7 +619,6 @@ extension ReaderPageView {
         dictionaryOverlayController.clear()
     }
 
-    @MainActor
     private func renderDictionaryOverlaysIfNeeded() {
         clearDictionaryOverlays()
 
@@ -634,11 +633,9 @@ extension ReaderPageView {
         }
 
         let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
-        dictionaryOverlayController.onLookup = onDictionaryOverlayTap
         dictionaryOverlayController.render(overlays: overlays)
     }
 
-    @discardableResult
     func dismissActiveDictionaryOverlay() -> Bool {
         dictionaryOverlayController.dismissActive()
     }

@@ -50,14 +50,11 @@ class ReaderViewController: BaseObservingViewController {
 
     // Dictionary popup state
     private lazy var dictionaryCoordinator = ReaderDictionaryCoordinator(owner: self)
-    // swiftlint:disable:next large_tuple
-    private var dictionaryLongPressSelection: (text: String, fullText: String, rect: CGRect, charRects: [CGRect])?
-    private var isDictionaryPopupVisible: Bool {
-        if #available(iOS 18.0, *) {
-            dictionaryCoordinator.isPopupVisible
-        } else {
-            false
-        }
+    private var _dictionaryLongPressSelection: Any?
+    @available(iOS 18.0, *)
+    private var dictionaryLongPressSelection: TextRecognizer.Result? {
+        get { _dictionaryLongPressSelection as? TextRecognizer.Result }
+        set { _dictionaryLongPressSelection = newValue }
     }
     private var isDictionaryOCRActiveForCurrentChapter: Bool {
         AppSettings.dictionary.isOCREnabled(language: chapter.language ?? source?.languages.first)
@@ -1013,7 +1010,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
             dictionaryLongPressGesture = nil
         }
         clearDictionarySelectionHighlight()
-        dictionaryLongPressSelection = nil
+        if #available(iOS 18.0, *) {
+            dictionaryLongPressSelection = nil
+        }
 
         guard
             isDictionaryLongPressLookupActiveForCurrentChapter,
@@ -1035,7 +1034,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
             #available(iOS 18.0, *),
             isDictionaryLongPressLookupActiveForCurrentChapter,
             !AppSettings.dictionary.textOverlayMode.get(),
-            !isDictionaryPopupVisible,
+            !dictionaryCoordinator.isPopupVisible,
             LookupEngine.shared.isReady
         else {
             return
@@ -1044,7 +1043,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let point = gestureRecognizer.location(in: view)
         switch gestureRecognizer.state {
             case .began, .changed:
-                guard let result = reader?.recognizedText(at: point) else {
+                guard
+                    let reader = reader as? ReaderDictionaryReader,
+                    let result = reader.recognizedText(at: point)
+                else {
                     dictionaryLongPressSelection = nil
                     clearDictionarySelectionHighlight()
                     return
@@ -1057,11 +1059,14 @@ extension ReaderViewController: ReaderHoldingDelegate {
                     dictionaryLongPressSelection = nil
                     clearDictionarySelectionHighlight()
                 }
-                let selection = dictionaryLongPressSelection ?? reader?.recognizedText(at: point)
+                var selection = dictionaryLongPressSelection
+                if selection == nil, let reader = reader as? ReaderDictionaryReader {
+                    selection = reader.recognizedText(at: point)
+                }
                 if let selection {
                     _ = performDictionaryLookup(
                         text: selection.text,
-                        anchorRect: selection.rect,
+                        anchorRect: selection.charRect,
                         charRects: selection.charRects
                     )
                 }
@@ -1116,7 +1121,7 @@ extension ReaderViewController {
         let singleTapOCRLookupEnabled = singleTapLookupEnabled && !overlayModeEnabled
 
         // dismiss dictionary popup if visible
-        if isDictionaryPopupVisible {
+        if #available(iOS 18.0, *), dictionaryCoordinator.isPopupVisible {
             dismissDictionaryPopup()
             return
         }
@@ -1125,7 +1130,8 @@ extension ReaderViewController {
         if
             #available(iOS 18.0, *),
             overlayModeEnabled,
-            reader?.dismissActiveDictionaryOverlay() == true
+            let reader = reader as? ReaderDictionaryReader,
+            reader.dismissActiveDictionaryOverlay()
         {
             return
         }
@@ -1140,12 +1146,13 @@ extension ReaderViewController {
         if
             #available(iOS 18.0, *),
             singleTapOCRLookupEnabled,
+            let reader = reader as? ReaderDictionaryReader,
             LookupEngine.shared.isReady
         {
-            if let result = reader?.recognizedText(at: point) {
+            if let result = reader.recognizedText(at: point) {
                 if performDictionaryLookup(
                     text: result.text,
-                    anchorRect: result.rect,
+                    anchorRect: result.charRect,
                     charRects: result.charRects
                 ) {
                     return
@@ -1280,7 +1287,7 @@ extension ReaderViewController: UIPencilInteractionDelegate {
 
 extension ReaderViewController {
     private func configureDictionaryOverlayInteractionMode() {
-        guard #available(iOS 18.0, *) else { return }
+        guard #available(iOS 18.0, *), let reader = reader as? ReaderDictionaryReader else { return }
 
         let mode: DictionaryOverlayInteractionMode
         if !AppSettings.dictionary.textOverlayMode.get() {
@@ -1293,12 +1300,12 @@ extension ReaderViewController {
             mode = .none
         }
 
-        reader?.setDictionaryOverlayInteractionMode(mode)
+        reader.setDictionaryOverlayInteractionMode(mode)
     }
 
     private func configureDictionaryOverlayTapHandler() {
-        guard #available(iOS 18.0, *) else { return }
-        reader?.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
+        guard #available(iOS 18.0, *), let reader = reader as? ReaderDictionaryReader else { return }
+        reader.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
             guard let self, AppSettings.dictionary.textOverlayMode.get() else { return }
             _ = performDictionaryLookup(text: text, anchorRect: rect, charRects: charRects)
         }

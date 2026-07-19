@@ -33,9 +33,8 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var liveTextAnalysisTask: Task<Void, Never>?
     private var dictionaryAnalysisTask: Task<Void, Never>?
     var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
-        didSet {
-            dictionaryOverlayController.onLookup = onDictionaryOverlayTap
-        }
+        get { dictionaryOverlayController.onLookup }
+        set { dictionaryOverlayController.onLookup = newValue }
     }
     private let dictionaryOverlayController = DictionaryOverlayController()
 
@@ -99,14 +98,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     }
 
     deinit {
-        if #available(iOS 18.0, *) {
-            DictionaryTextAnalysisScheduler.cancel(
-                task: &dictionaryAnalysisTask,
-                recognizer: textRecognizer
-            )
-        } else {
-            dictionaryAnalysisTask?.cancel()
-        }
+        cancelDictionaryTextAnalysis()
     }
 
     override func didEnterDisplayState() {
@@ -121,14 +113,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         if let delegate, delegate.isZooming {
             return
         }
-        if #available(iOS 18.0, *) {
-            DictionaryTextAnalysisScheduler.cancel(
-                task: &dictionaryAnalysisTask,
-                recognizer: textRecognizer
-            )
-        } else {
-            dictionaryAnalysisTask?.cancel()
-        }
+        cancelDictionaryTextAnalysis()
         imageNode.image = nil
         image = nil
         text = nil
@@ -261,17 +246,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 }
 
 extension ReaderWebtoonPageNode {
-
     func loadPage() async {
         guard image == nil, text == nil, !loading else { return }
-        if #available(iOS 18.0, *) {
-            DictionaryTextAnalysisScheduler.cancel(
-                task: &dictionaryAnalysisTask,
-                recognizer: textRecognizer
-            )
-        } else {
-            dictionaryAnalysisTask?.cancel()
-        }
+        cancelDictionaryTextAnalysis()
         loading = true
         imageNode.alpha = 0
         textNode.alpha = 0
@@ -630,8 +607,15 @@ extension ReaderWebtoonPageNode {
             ) { [weak self] in
                 self?.renderDictionaryOverlaysIfNeeded()
             }
-        } else {
-            dictionaryAnalysisTask?.cancel()
+        }
+    }
+
+    private func cancelDictionaryTextAnalysis() {
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.cancel(
+                task: &dictionaryAnalysisTask,
+                recognizer: textRecognizer
+            )
         }
     }
 
@@ -668,7 +652,6 @@ extension ReaderWebtoonPageNode {
 
         let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
         dictionaryOverlayController.containerView = imageView
-        dictionaryOverlayController.onLookup = onDictionaryOverlayTap
         dictionaryOverlayController.render(overlays: overlays)
     }
 

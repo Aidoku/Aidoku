@@ -335,8 +335,49 @@ extension ReaderWebtoonViewController: UIContextMenuInteractionDelegate {
 }
 
 // MARK: - Dictionary Lookup
-extension ReaderWebtoonViewController {
-    @available(iOS 18.0, *)
+@available(iOS 18.0, *)
+extension ReaderWebtoonViewController: ReaderDictionaryReader {
+    func recognizedText(at point: CGPoint) -> TextRecognizer.Result? {
+        let collectionPoint = view.convert(point, to: collectionNode.view)
+        guard
+            let indexPath = collectionNode.indexPathForItem(at: collectionPoint),
+            let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
+            let image = node.image,
+            let recognizer = node.textRecognizer,
+            let imageView = node.imageNode.imageView
+        else {
+            return nil
+        }
+
+        let localPoint = collectionNode.view.convert(collectionPoint, to: imageView)
+        guard imageView.bounds.contains(localPoint) else { return nil }
+
+        if var result = recognizer.findText(at: localPoint, in: imageView, imageSize: image.size) {
+            result.charRect = imageView.convert(result.charRect, to: view)
+            result.charRects = result.charRects.map { imageView.convert($0, to: view) }
+            return result
+        }
+        return nil
+    }
+
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+        dictionaryOverlayTapHandler = handler
+    }
+
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayInteractionMode = mode
+        for case let cell as ReaderWebtoonPageNode in collectionNode.visibleNodes {
+            cell.setDictionaryOverlayInteractionMode(mode)
+        }
+    }
+
+    func dismissActiveDictionaryOverlay() -> Bool {
+        for case let node as ReaderWebtoonPageNode in collectionNode.visibleNodes where node.dismissActiveDictionaryOverlay() {
+            return true
+        }
+        return false
+    }
+
     private func forwardDictionaryOverlayTap(
         text: String,
         rect: CGRect,
@@ -348,56 +389,12 @@ extension ReaderWebtoonViewController {
         dictionaryOverlayTapHandler?(text, rectInView, rectsInView)
     }
 
-    @available(iOS 18.0, *)
     private func bindDictionaryOverlayTap(to cell: ReaderWebtoonPageNode) {
         cell.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
         cell.onDictionaryOverlayTap = { [weak self, weak cell] text, rect, charRects in
             guard let self, let imageView = cell?.imageNode.imageView else { return }
             self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
         }
-    }
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
-        dictionaryOverlayTapHandler = handler
-    }
-
-    @available(iOS 18.0, *)
-    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
-        dictionaryOverlayInteractionMode = mode
-        for case let cell as ReaderWebtoonPageNode in collectionNode.visibleNodes {
-            cell.setDictionaryOverlayInteractionMode(mode)
-        }
-    }
-
-    @available(iOS 18.0, *)
-    // swiftlint:disable:next large_tuple
-    func recognizedText(at point: CGPoint) -> (text: String, fullText: String, rect: CGRect, charRects: [CGRect])? {
-        let collectionPoint = view.convert(point, to: collectionNode.view)
-        guard let indexPath = collectionNode.indexPathForItem(at: collectionPoint),
-              let node = collectionNode.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode,
-              let image = node.image,
-              let recognizer = node.textRecognizer,
-              let imageView = node.imageNode.imageView
-        else { return nil }
-
-        let localPoint = collectionNode.view.convert(collectionPoint, to: imageView)
-        guard imageView.bounds.contains(localPoint) else { return nil }
-
-        if let result = recognizer.findText(at: localPoint, in: imageView, imageSize: image.size) {
-            let rectInView = imageView.convert(result.charRect, to: view)
-            let rectsInView = result.charRects.map { imageView.convert($0, to: view) }
-            return (result.text, result.fullText, rectInView, rectsInView)
-        }
-        return nil
-    }
-
-    @available(iOS 18.0, *)
-    func dismissActiveDictionaryOverlay() -> Bool {
-        for case let node as ReaderWebtoonPageNode in collectionNode.visibleNodes where node.dismissActiveDictionaryOverlay() {
-            return true
-        }
-        return false
     }
 }
 
