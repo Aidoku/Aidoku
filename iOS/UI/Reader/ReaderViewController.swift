@@ -382,8 +382,6 @@ class ReaderViewController: BaseObservingViewController {
         Task {
             await updateReadPosition()
         }
-
-        barDismissNavigationBarTapGesture?.isEnabled = false
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -954,11 +952,11 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     private func configureBarToggleTapGestures() {
-        if let gesture = barToggleTapGesture {
-            view.removeGestureRecognizer(gesture)
+        if let barToggleTapGesture {
+            view.removeGestureRecognizer(barToggleTapGesture)
         }
-        if let gesture = barToggleSecondaryTapGesture {
-            view.removeGestureRecognizer(gesture)
+        if let barToggleSecondaryTapGesture {
+            view.removeGestureRecognizer(barToggleSecondaryTapGesture)
         }
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
@@ -966,9 +964,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
 
-        if singleTapLookupEnabled {
-            barToggleSecondaryTapGesture = nil
-        } else if !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") {
+        if !singleTapLookupEnabled, !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap") {
             let doubleTap = UITapGestureRecognizer(
                 target: self,
                 action: nil
@@ -1064,7 +1060,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                     selection = reader.recognizedText(at: point)
                 }
                 if let selection {
-                    _ = performDictionaryLookup(
+                    _ = dictionaryCoordinator.performLookup(
                         text: selection.text,
                         anchorRect: selection.charRect,
                         charRects: selection.charRects
@@ -1122,7 +1118,7 @@ extension ReaderViewController {
 
         // dismiss dictionary popup if visible
         if #available(iOS 18.0, *), dictionaryCoordinator.isPopupVisible {
-            dismissDictionaryPopup()
+            dictionaryCoordinator.dismissAllPopups()
             return
         }
 
@@ -1150,7 +1146,7 @@ extension ReaderViewController {
             LookupEngine.shared.isReady
         {
             if let result = reader.recognizedText(at: point) {
-                if performDictionaryLookup(
+                if dictionaryCoordinator.performLookup(
                     text: result.text,
                     anchorRect: result.charRect,
                     charRects: result.charRects
@@ -1307,7 +1303,7 @@ extension ReaderViewController {
         guard #available(iOS 18.0, *), let reader = reader as? ReaderDictionaryReader else { return }
         reader.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
             guard let self, AppSettings.dictionary.textOverlayMode.get() else { return }
-            _ = performDictionaryLookup(text: text, anchorRect: rect, charRects: charRects)
+            _ = dictionaryCoordinator.performLookup(text: text, anchorRect: rect, charRects: charRects)
         }
     }
 }
@@ -1505,36 +1501,6 @@ extension ReaderViewController {
         if let previousChaoter = getPreviousChapter() {
             reader?.setChapter(previousChaoter, startPage: 1)
             setChapter(previousChaoter)
-        }
-    }
-}
-
-// MARK: - Dictionary Popup
-extension ReaderViewController {
-    @available(iOS 18.0, *)
-    func performDictionaryLookup(
-        text: String,
-        anchorRect: CGRect,
-        charRects: [CGRect] = [],
-        appendPopup: Bool = false
-    ) -> Bool {
-        dictionaryCoordinator.performLookup(
-            text: text,
-            anchorRect: anchorRect,
-            charRects: charRects,
-            appendPopup: appendPopup
-        )
-    }
-
-    private func dismissTopDictionaryPopup() {
-        if #available(iOS 18.0, *) {
-            dictionaryCoordinator.dismissTopPopup()
-        }
-    }
-
-    func dismissDictionaryPopup() {
-        if #available(iOS 18.0, *) {
-            dictionaryCoordinator.dismissAllPopups()
         }
     }
 }

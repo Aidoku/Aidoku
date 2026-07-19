@@ -536,7 +536,7 @@ extension ReaderWebtoonPageNode {
                 imageNode.view.interactions
                     .filter { $0 is UIContextMenuInteraction }
                     .forEach { imageNode.view.removeInteraction($0) }
-                if let delegate, !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions") {
+                if let delegate {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
 

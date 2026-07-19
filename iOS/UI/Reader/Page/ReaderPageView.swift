@@ -115,6 +115,7 @@ class ReaderPageView: UIView {
             imageView.widthAnchor.constraint(lessThanOrEqualTo: widthAnchor),
             imageView.centerXAnchor.constraint(equalTo: centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: centerYAnchor),
+
             dictionaryOverlayContainerView.topAnchor.constraint(equalTo: imageView.topAnchor),
             dictionaryOverlayContainerView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
             dictionaryOverlayContainerView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
@@ -144,10 +145,7 @@ extension ReaderPageView {
                     image = UpscaleProcessor().process(image) ?? image
                 }
             }
-            imageView.image = image
-            fixImageSize()
-            startLiveTextAnalysis()
-            scheduleDictionaryTextAnalysis()
+            setPageImage(image)
             return true
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             return await setPageImage(zipURL: url, filePath: filePath)
@@ -259,13 +257,7 @@ extension ReaderPageView {
             guard let response else {
                 return false
             }
-            imageView.image = response.image
-            if response.container.type == .gif, let data = response.container.data {
-                imageView.animate(withGIFData: data)
-            }
-            fixImageSize()
-            startLiveTextAnalysis()
-            scheduleDictionaryTextAnalysis()
+            setPageImage(response.image, gifData: response.container.type == .gif ? response.container.data : nil)
             completion?(true)
             return true
         } catch {
@@ -283,13 +275,7 @@ extension ReaderPageView {
                             result = nil
                     }
                     if let result {
-                        imageView.image = result.image
-                        if result.type == .gif, let data = result.data {
-                            imageView.animate(withGIFData: data)
-                        }
-                        fixImageSize()
-                        startLiveTextAnalysis()
-                        scheduleDictionaryTextAnalysis()
+                        setPageImage(result.image, gifData: result.type == .gif ? result.data : nil)
                         completion?(true)
                         return true
                     }
@@ -320,10 +306,7 @@ extension ReaderPageView {
 
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
-            imageView.image = imageContainer?.image
-            fixImageSize()
-            startLiveTextAnalysis()
-            scheduleDictionaryTextAnalysis()
+            setPageImage(imageContainer?.image)
             return true
         }
 
@@ -358,10 +341,7 @@ extension ReaderPageView {
         guard let image else { return false }
 
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
-        imageView.image = image
-        fixImageSize()
-        startLiveTextAnalysis()
-        scheduleDictionaryTextAnalysis()
+        setPageImage(image)
 
         return true
     }
@@ -384,10 +364,7 @@ extension ReaderPageView {
 
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
             let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
-            imageView.image = imageContainer?.image
-            fixImageSize()
-            startLiveTextAnalysis()
-            scheduleDictionaryTextAnalysis()
+            setPageImage(imageContainer?.image)
             return true
         }
 
@@ -452,13 +429,7 @@ extension ReaderPageView {
         guard let image else { return false }
 
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
-        imageView.image = image
-        if filePath.pathExtension().lowercased() == "gif" {
-            imageView.animate(withGIFData: result.data)
-        }
-        fixImageSize()
-        startLiveTextAnalysis()
-        scheduleDictionaryTextAnalysis()
+        setPageImage(image, gifData: filePath.pathExtension().lowercased() == "gif" ? result.data : nil)
 
         return true
     }
@@ -530,6 +501,16 @@ extension ReaderPageView {
                 textView.view.heightAnchor.constraint(greaterThanOrEqualTo: heightAnchor)
             ])
         }
+    }
+
+    func setPageImage(_ image: UIImage?, gifData: Data? = nil) {
+        imageView.image = image
+        if let gifData {
+            imageView.animate(withGIFData: gifData)
+        }
+        fixImageSize()
+        startLiveTextAnalysis()
+        scheduleDictionaryTextAnalysis()
     }
 }
 

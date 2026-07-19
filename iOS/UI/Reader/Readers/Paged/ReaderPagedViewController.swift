@@ -29,8 +29,6 @@ class ReaderPagedViewController: BaseObservingViewController {
     }
     var pageViewControllers: [ReaderPageViewController] = []
     var currentPage = 0
-    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
-    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     private var usesDoublePages = false
     private var usesAutoPageLayout = false
@@ -54,6 +52,9 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var isTransitioning = false
     private var programmaticMove = false
     private var pendingSpreadRebuild = false
+
+    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     private var previousChapter: AidokuRunner.Chapter?
     private var nextChapter: AidokuRunner.Chapter?
@@ -191,18 +192,6 @@ class ReaderPagedViewController: BaseObservingViewController {
 }
 
 extension ReaderPagedViewController {
-    private func configureContextMenuInteraction(for imageView: UIImageView?) {
-        guard let imageView else { return }
-
-        imageView.interactions
-            .filter { $0 is UIContextMenuInteraction }
-            .forEach { imageView.removeInteraction($0) }
-
-        if !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions") {
-            imageView.addInteraction(UIContextMenuInteraction(delegate: self))
-        }
-    }
-
     func loadPageControllers(chapter: AidokuRunner.Chapter) {
         guard !viewModel.pages.isEmpty else { return } // TODO: handle zero pages
 
@@ -318,7 +307,7 @@ extension ReaderPagedViewController {
         skipProcessing: Bool = false
     ) -> ReaderPageViewController {
         let page = ReaderPageViewController(type: .page, delegate: delegate)
-        configureContextMenuInteraction(for: page.pageView?.imageView)
+        page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
         if #available(iOS 18.0, *) {
             bindDictionaryOverlayTap(to: page)
         }
