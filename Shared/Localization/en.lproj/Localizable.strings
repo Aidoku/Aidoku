@@ -603,6 +603,7 @@
 "PITCH_DICTIONARIES" = "Pitch Dictionaries";
 "IMPORTING_DICTIONARY" = "Importing Dictionary…";
 "IMPORT_ERROR" = "Import Error";
+"REVISION" = "Revision";
 
 // Backups
 "BACKUPS" = "Backups";

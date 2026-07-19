@@ -177,7 +177,7 @@ private struct DictionaryInfoView: View {
             List {
                 Section {
                     HStack {
-                        Text(NSLocalizedString("Revision"))
+                        Text(NSLocalizedString("REVISION"))
                         Spacer()
                         Text(info.index.revision).foregroundStyle(.secondary)
                     }
