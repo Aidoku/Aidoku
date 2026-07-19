@@ -1132,9 +1132,7 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
 @available(iOS 18.0, *)
 extension ReaderPagedViewController: ReaderDictionaryReader {
     func recognizedText(at point: CGPoint) -> TextRecognizer.Result? {
-        guard let currentVCs = pageViewController.viewControllers else { return nil }
-
-        for case let pageVC as ReaderPageViewController in currentVCs {
+        for pageVC in visiblePageControllers() {
             guard
                 let pageView = pageVC.pageView,
                 let image = pageView.imageView.image,
@@ -1155,6 +1153,19 @@ extension ReaderPagedViewController: ReaderDictionaryReader {
         return nil
     }
 
+    private func visiblePageControllers() -> [ReaderPageViewController] {
+        guard let currentVCs = pageViewController.viewControllers else { return [] }
+        return currentVCs.flatMap { controller -> [ReaderPageViewController] in
+            if let pageVC = controller as? ReaderPageViewController {
+                return [pageVC]
+            }
+            if let doublePageVC = controller as? ReaderDoublePageViewController {
+                return [doublePageVC.firstPageController, doublePageVC.secondPageController]
+            }
+            return []
+        }
+    }
+
     func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
         dictionaryOverlayTapHandler = handler
         for controller in pageViewControllers {
@@ -1170,8 +1181,7 @@ extension ReaderPagedViewController: ReaderDictionaryReader {
     }
 
     func dismissActiveDictionaryOverlay() -> Bool {
-        guard let currentVCs = pageViewController.viewControllers else { return false }
-        for case let pageVC as ReaderPageViewController in currentVCs where pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
+        for pageVC in visiblePageControllers() where pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
             return true
         }
         return false
