@@ -2,7 +2,7 @@
 //  DictionaryModels.swift
 //  Aidoku
 //
-//  Created with reference to Hoshi Reader by Manhhao.
+//  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
 //  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Models/Dictionary.swift

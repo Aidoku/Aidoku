@@ -2,7 +2,7 @@
 //  ReaderDictionaryCoordinator.swift
 //  Aidoku (iOS)
 //
-//  SPDX-License-Identifier: GPL-3.0-or-later
+//  Created by GameFuzzy on 7/11/26.
 //
 
 import CHoshiDicts
