@@ -155,6 +155,7 @@ final class ReaderDictionaryCoordinator {
     @available(iOS 18.0, *)
     func updateSelectionHighlight(text: String, charRects: [CGRect]) {
         guard let owner else { return }
+
         let matchedCount: Int?
         if let cachedSelectionMatch, cachedSelectionMatch.text == text {
             matchedCount = cachedSelectionMatch.matchedCount
@@ -163,13 +164,11 @@ final class ReaderDictionaryCoordinator {
             cachedSelectionMatch = (text: text, matchedCount: matchedCount)
         }
 
-        guard let matchedCount else {
-            clearSelectionHighlight()
-            return
-        }
-
-        let rects = charRects.prefix(matchedCount).map { $0.insetBy(dx: -2, dy: -2) }
-        guard !rects.isEmpty else {
+        guard
+            let matchedCount,
+            case let rects = charRects.prefix(matchedCount).map({ $0.insetBy(dx: -2, dy: -2) }),
+            !rects.isEmpty
+        else {
             clearSelectionHighlight()
             return
         }

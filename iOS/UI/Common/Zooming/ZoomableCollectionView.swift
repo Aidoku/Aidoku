@@ -24,9 +24,9 @@ class ZoomableCollectionView: ASDisplayNode {
     }
 
     private lazy var zoomingTap: UITapGestureRecognizer = {
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        gesture.numberOfTapsRequired = 2
-        return gesture
+        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        zoomingTap.numberOfTapsRequired = 2
+        return zoomingTap
     }()
 
     private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
