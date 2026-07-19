@@ -70,15 +70,23 @@ enum Settings {
                     inlineTitle: true,
                     icon: .system(name: "book.fill", color: "green")
                 ))
-            ),
-            .init(
-                title: NSLocalizedString("DICTIONARIES"),
-                value: .page(.init(
-                    items: dictionarySettings,
-                    icon: .system(name: "character.book.closed.fill", color: "indigo"),
-                    info: NSLocalizedString("DICTIONARY_SETTINGS_TEXT")
-                ))
-            ),
+            )
+        ] + {
+            if #available(iOS 18.0, *) {
+                [
+                    .init(
+                        title: NSLocalizedString("DICTIONARIES"),
+                        value: .page(.init(
+                            items: dictionarySettings,
+                            icon: .system(name: "character.book.closed.fill", color: "indigo"),
+                            info: NSLocalizedString("DICTIONARY_SETTINGS_TEXT")
+                        ))
+                    )
+                ]
+            } else {
+                []
+            }
+        }() + [
             .init(
                 key: "Tracking",
                 title: NSLocalizedString("TRACKING"),
