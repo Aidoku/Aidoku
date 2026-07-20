@@ -9,6 +9,15 @@ import CHoshiDicts
 import SwiftUI
 
 final class ReaderDictionaryCoordinator {
+    private final class PopupHitTestView: UIView {
+        var popupFrame: CGRect = .zero
+
+        override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+            guard popupFrame.contains(point) else { return nil }
+            return super.hitTest(point, with: event)
+        }
+    }
+
     private struct PopupController {
         let id: UUID
         let controller: UIViewController
@@ -48,6 +57,7 @@ final class ReaderDictionaryCoordinator {
         }
 
         let popupID = UUID()
+        let userConfig = UserConfig()
         var dictionaryStyles: [String: String] = [:]
         for style in LookupEngine.shared.getStyles() {
             dictionaryStyles[String(style.dict_name)] = String(style.styles)
@@ -55,13 +65,28 @@ final class ReaderDictionaryCoordinator {
         let availableFrame = owner.barsHidden
             ? owner.view.bounds
             : owner.view.safeAreaLayoutGuide.layoutFrame
+        let isVertical = anchorRect.height > anchorRect.width * 1.15
+        let layout = PopupLayout(
+            selectionRect: anchorRect,
+            availableFrame: availableFrame,
+            maxWidth: CGFloat(userConfig.popupWidth),
+            maxHeight: CGFloat(userConfig.popupHeight),
+            isVertical: isVertical,
+            isFullWidth: false
+        )
+        let popupFrame = CGRect(
+            x: layout.position.x - layout.width / 2,
+            y: layout.position.y - layout.height / 2,
+            width: layout.width,
+            height: layout.height
+        )
         let popupView = PopupView(
-            userConfig: .init(),
+            userConfig: userConfig,
             selectionData: .init(text: text, sentence: text, rect: anchorRect),
             lookupResults: entries,
             dictionaryStyles: dictionaryStyles,
             availableFrame: availableFrame,
-            isVertical: anchorRect.height > anchorRect.width * 1.15,
+            isVertical: isVertical,
             isFullWidth: false,
             clearSelection: false,
             onTextSelected: { [weak self] selection in
@@ -83,21 +108,38 @@ final class ReaderDictionaryCoordinator {
             wasPaused: false
         )
 
+        let containerController = UIViewController()
+        let containerView = PopupHitTestView()
+        containerView.popupFrame = popupFrame
+        containerView.backgroundColor = .clear
+        containerController.view = containerView
+        containerController.view.translatesAutoresizingMaskIntoConstraints = false
+
         let hostingController = UIHostingController(rootView: popupView)
         hostingController.view.backgroundColor = UIColor.clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.alpha = 0
         hostingController.view.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
 
-        owner.add(child: hostingController)
+        containerController.addChild(hostingController)
+        containerController.view.addSubview(hostingController.view)
         NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: owner.view.topAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: owner.view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: owner.view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: owner.view.bottomAnchor)
+            hostingController.view.topAnchor.constraint(equalTo: containerController.view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: containerController.view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: containerController.view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: containerController.view.bottomAnchor)
+        ])
+        hostingController.didMove(toParent: containerController)
+
+        owner.add(child: containerController)
+        NSLayoutConstraint.activate([
+            containerController.view.topAnchor.constraint(equalTo: owner.view.topAnchor),
+            containerController.view.leadingAnchor.constraint(equalTo: owner.view.leadingAnchor),
+            containerController.view.trailingAnchor.constraint(equalTo: owner.view.trailingAnchor),
+            containerController.view.bottomAnchor.constraint(equalTo: owner.view.bottomAnchor)
         ])
 
-        popupControllers.append(PopupController(id: popupID, controller: hostingController))
+        popupControllers.append(PopupController(id: popupID, controller: containerController))
         UIView.animate(
             withDuration: popupAnimationDuration,
             delay: 0,
