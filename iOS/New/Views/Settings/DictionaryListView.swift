@@ -48,6 +48,7 @@ struct DictionaryListView: View {
                             .padding(.top, 4)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     Button {
                         withAnimation {
                             dismissedInfo.value = true
