@@ -10,12 +10,21 @@ import SwiftUI
 struct ReaderSettingsView: View {
     let mangaId: MangaIdentifier
     let reader: ReaderViewController.Reader
+    let chapterLanguage: String?
+
+    private let sourceLanguageCodes: [String]
+    private let sourceLanguageTitles: [String]
 
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
+    @State private var lookupGestureLocksQuickActions: Bool
+    @State private var lookupGestureLocksDoubleTap: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
+    @StateObject private var dictionaryLookupEnabled = UserDefaultsBool(key: AppSettings.dictionary.enable.key)
+    @StateObject private var dictionaryTextOverlayModeEnabled = UserDefaultsBool(key: AppSettings.dictionary.textOverlayMode.key)
+    @StateObject private var restrictOCRLanguages = UserDefaultsBool(key: AppSettings.dictionary.restrictOCRLanguages.key)
 
     // All available font families on the system
     private static let availableFonts: [String] = {
@@ -27,9 +36,26 @@ struct ReaderSettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader) {
+    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader, chapterLanguage: String?) {
         self.mangaId = mangaId
         self.reader = reader
+        self.chapterLanguage = chapterLanguage
+
+        var languageCodes = Array(SourceManager.shared.sourceLanguages)
+        // sort alphabetically
+        languageCodes.sort(by: {
+            let lhs = Locale.current.localizedString(forIdentifier: $0)
+            let rhs = Locale.current.localizedString(forIdentifier: $1)
+            return lhs ?? $0 < rhs ?? $1
+        })
+        // bring local language to top
+        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+        if let code = Locale.current.languageCode {
+            languageCodes.insert(code, at: 0)
+        }
+        sourceLanguageCodes = languageCodes
+        sourceLanguageTitles = languageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
+
         self._readingMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
                 .flatMap(ReadingMode.init)
@@ -37,6 +63,12 @@ struct ReaderSettingsView: View {
         self._tapZones = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.tapZones")
                 .flatMap(DefaultTapZones.init) ?? .disabled
+        )
+        self._lookupGestureLocksQuickActions = State(
+            initialValue: Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
+        )
+        self._lookupGestureLocksDoubleTap = State(
+            initialValue: Self.lookupGestureLocksDoubleTap(chapterLanguage: chapterLanguage)
         )
     }
 
@@ -101,20 +133,42 @@ struct ReaderSettingsView: View {
                                 value: .toggle(.init())
                             )
                         )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.disableQuickActions",
-                                title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                                value: .toggle(.init())
+                        if lookupGestureLocksDoubleTap {
+                            SettingView(
+                                setting: .init(
+                                    key: "true",
+                                    title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
+                                    requiresFalse: "true",
+                                    value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP")))
+                                )
                             )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.disableDoubleTap",
-                                title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                                value: .toggle(.init())
+                        } else {
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.disableDoubleTap",
+                                    title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
+                                    value: .toggle(.init())
+                                )
                             )
-                        )
+                        }
+                        if lookupGestureLocksQuickActions {
+                            SettingView(
+                                setting: .init(
+                                    key: "true",
+                                    title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                                    requiresFalse: "true",
+                                    value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
+                                )
+                            )
+                        } else {
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.disableQuickActions",
+                                    title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                                    value: .toggle(.init())
+                                )
+                            )
+                        }
                         SettingView(
                             setting: .init(
                                 key: "Reader.liveText",
@@ -162,6 +216,10 @@ struct ReaderSettingsView: View {
                             )
                         )
                     }
+                }
+
+                if #available(iOS 18.0, *), reader != .text {
+                    dictionarySection
                 }
 
                 Section {
@@ -399,5 +457,128 @@ struct ReaderSettingsView: View {
                 tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
             }
         }
+    }
+}
+
+extension ReaderSettingsView {
+    @available(iOS 18.0, *)
+    var dictionarySection: some View {
+        Section {
+            SettingView(
+                setting: .init(
+                    key: AppSettings.dictionary.enable.key,
+                    title: NSLocalizedString("DICTIONARY_LOOKUP"),
+                    value: .toggle(.init())
+                ),
+                onChange: { _ in updateLookupGestureLocks() }
+            )
+            if dictionaryLookupEnabled.value {
+                NavigationLink(destination: DictionaryListView()) {
+                    Text(NSLocalizedString("DICTIONARIES"))
+                }
+                SettingView(
+                    setting: .init(
+                        key: AppSettings.dictionary.lookupGesture.key,
+                        title: NSLocalizedString("LOOKUP_GESTURE"),
+                        value: .select(.init(
+                            values: DictionarySettings.LookupGesture.allCases.map(\.rawValue),
+                            titles: DictionarySettings.LookupGesture.allCases.map(\.title)
+                        ))
+                    ),
+                    onChange: { _ in updateLookupGestureLocks() }
+                )
+                SettingView(
+                    setting: .init(
+                        key: AppSettings.dictionary.textOverlayMode.key,
+                        title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE")),
+                        value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
+                    )
+                )
+                if dictionaryTextOverlayModeEnabled.value {
+                    SettingView(
+                        setting: .init(
+                            key: AppSettings.dictionary.overlayPadding.key,
+                            title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
+                            value: .stepper(.init(
+                                minimumValue: 0,
+                                maximumValue: 10,
+                                stepValue: 1
+                            ))
+                        )
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: AppSettings.dictionary.overlayTextScaleMultiplier.key,
+                            title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
+                            value: .stepper(.init(
+                                minimumValue: 0.5,
+                                maximumValue: 1.25,
+                                stepValue: 0.05
+                            ))
+                        )
+                    )
+                }
+                SettingView(
+                    setting: .init(
+                        key: AppSettings.dictionary.restrictOCRLanguages.key,
+                        title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
+                        value: .toggle(.init())
+                    )
+                )
+                if restrictOCRLanguages.value {
+                    SettingView(
+                        setting: .init(
+                            key: AppSettings.dictionary.restrictedOCRLanguages.key,
+                            title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
+                            value: .multiselect(.init(
+                                values: sourceLanguageCodes,
+                                titles: sourceLanguageTitles
+                            ))
+                        )
+                    )
+                }
+                SettingView(
+                    setting: .init(
+                        key: AppSettings.dictionary.popupWidth.key,
+                        title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                        value: .stepper(.init(
+                            minimumValue: 100,
+                            maximumValue: 700,
+                            stepValue: 10
+                        ))
+                    )
+                )
+                SettingView(
+                    setting: .init(
+                        key: AppSettings.dictionary.popupHeight.key,
+                        title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
+                        value: .stepper(.init(
+                            minimumValue: 100,
+                            maximumValue: 800,
+                            stepValue: 10
+                        ))
+                    )
+                )
+            }
+        } header: {
+            Text(NSLocalizedString("DICTIONARY_LOOKUP"))
+        }
+    }
+}
+
+extension ReaderSettingsView {
+    private static func lookupGestureLocksQuickActions(chapterLanguage: String?) -> Bool {
+        AppSettings.dictionary.lookupGesture.get() == .longPress
+            && AppSettings.dictionary.isOCREnabled(language: chapterLanguage)
+    }
+
+    private static func lookupGestureLocksDoubleTap(chapterLanguage: String?) -> Bool {
+        AppSettings.dictionary.lookupGesture.get() == .singleTap
+            && AppSettings.dictionary.isOCREnabled(language: chapterLanguage)
+    }
+
+    private func updateLookupGestureLocks() {
+        lookupGestureLocksQuickActions = Self.lookupGestureLocksQuickActions(chapterLanguage: chapterLanguage)
+        lookupGestureLocksDoubleTap = Self.lookupGestureLocksDoubleTap(chapterLanguage: chapterLanguage)
     }
 }

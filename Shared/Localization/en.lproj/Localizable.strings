@@ -575,6 +575,37 @@
 "TEXT_LINE_SPACING" = "Line Spacing";
 "TEXT_HORIZONTAL_PADDING" = "Horizontal Padding";
 
+// Dictionary
+"DICTIONARY_LOOKUP" = "Dictionary Lookup";
+"DICTIONARY_SETTINGS_TEXT" = "Enable Dictionary Lookup to allow OCR processing on page images to search words in any imported Yomitan dictionaries.";
+"DICTIONARIES" = "Dictionaries";
+"ABOUT_DICTIONARIES" = "About Dictionaries";
+"ABOUT_DICTIONARIES_TEXT" = "Yomitan dictionaries can be imported from zip files. You can enable or disable dictionaries, and they can be reordered by dragging.";
+"LOOKUP_GESTURE" = "Lookup Gesture";
+"SINGLE_TAP" = "Single Tap";
+"LONG_PRESS" = "Long Press";
+"LOOKUP_GESTURE_SINGLE_TAP_INFO" = "Tapping on the start of a word will activate the popup. This disables double tap to zoom when enabled.";
+"LOOKUP_GESTURE_LONG_PRESS_INFO" = "Holding down on the start of a word will highlight it, and releasing will activate the popup. This disables page quick actions when enabled.";
+"LOOKUP_GESTURE_LOCKS_DOUBLE_TAP" = "Locked by Lookup Gesture: Single Press.";
+"LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS" = "Locked by Lookup Gesture: Long Press.";
+"DICTIONARY_TEXT_OVERLAY_MODE" = "OCR Text Overlay";
+"DICTIONARY_TEXT_OVERLAY_MODE_INFO" = "Shows text boxes on image regions when a lookup is activated. This can be helpful to determine which text has been recognized properly by OCR.";
+"DICTIONARY_OVERLAY_PADDING" = "Overlay Padding";
+"DICTIONARY_OVERLAY_TEXT_SCALE" = "Overlay Text Size";
+"DICTIONARY_RESTRICT_OCR_LANGUAGES" = "Restrict OCR Languages";
+"DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO" = "When enabled, only chapters marked as the selected language(s) will be processed for OCR. It is recommended to select only the languages you have dictionaries imported for.";
+"DICTIONARY_OCR_LANGUAGES" = "OCR Languages";
+"DICTIONARY_POPUP" = "Dictionary Popup";
+"DICTIONARY_POPUP_WIDTH" = "Popup Width";
+"DICTIONARY_POPUP_HEIGHT" = "Popup Height";
+"TERM_DICTIONARIES" = "Term Dictionaries";
+"FREQUENCY_DICTIONARIES" = "Frequency Dictionaries";
+"PITCH_DICTIONARIES" = "Pitch Dictionaries";
+"IMPORTING_DICTIONARY" = "Importing Dictionary…";
+"IMPORT_ERROR" = "Import Error";
+"REVISION" = "Revision";
+"REMOVE_DICTIONARY" = "Remove Dictionary";
+
 // Backups
 "BACKUPS" = "Backups";
 "BACKUP_NAME" = "Backup Name";

@@ -97,6 +97,7 @@ actor SourceActor {
 
         for i in 0..<pages.count {
             pages[i].chapterId = chapter.id
+            pages[i].language = chapter.lang.isEmpty ? source.languages.first?.code : chapter.lang
         }
 
         return pages

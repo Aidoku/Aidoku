@@ -53,6 +53,9 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var programmaticMove = false
     private var pendingSpreadRebuild = false
 
+    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
+
     private var previousChapter: AidokuRunner.Chapter?
     private var nextChapter: AidokuRunner.Chapter?
 
@@ -305,6 +308,9 @@ extension ReaderPagedViewController {
     ) -> ReaderPageViewController {
         let page = ReaderPageViewController(type: .page, delegate: delegate)
         page.pageView?.imageView.addInteraction(UIContextMenuInteraction(delegate: self))
+        if #available(iOS 18.0, *) {
+            bindDictionaryOverlayTap(to: page)
+        }
         if hasImageCallbacks {
             page.onImageisWideImage = { [weak self, weak page] isWide in
                 guard let self, let page, isWide else { return }
@@ -554,9 +560,22 @@ extension ReaderPagedViewController {
         let chapterId = chapter?.id ?? ""
         let reverseOrderSetting = UserDefaults.standard.bool(forKey: "Reader.reverseSplitOrder")
         let reverseOrder = readingMode == .rtl ? reverseOrderSetting : !reverseOrderSetting
+        let originalPage = viewModel.pages[safe: pageIndex] ?? viewModel.pages.first
 
-        let leftPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: leftImage)
-        let rightPage = Page(sourceId: sourceId, chapterId: chapterId, index: pageIndex, image: rightImage)
+        let leftPage = Page(
+            sourceId: sourceId,
+            chapterId: chapterId,
+            index: pageIndex,
+            image: leftImage,
+            language: originalPage?.language
+        )
+        let rightPage = Page(
+            sourceId: sourceId,
+            chapterId: chapterId,
+            index: pageIndex,
+            image: rightImage,
+            language: originalPage?.language
+        )
         return reverseOrder ? [leftPage, rightPage] : [rightPage, leftPage]
     }
 
@@ -1109,17 +1128,95 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
     }
 }
 
+// MARK: - Dictionary Lookup
+@available(iOS 18.0, *)
+extension ReaderPagedViewController: ReaderDictionaryReader {
+    func recognizedText(at point: CGPoint) -> TextRecognizer.Result? {
+        for pageVC in visiblePageControllers() {
+            guard
+                let pageView = pageVC.pageView,
+                let image = pageView.imageView.image,
+                let recognizer = pageView.textRecognizer
+            else {
+                continue
+            }
+
+            let localPoint = view.convert(point, to: pageView.imageView)
+            guard pageView.imageView.bounds.contains(localPoint) else { continue }
+
+            if var result = recognizer.findText(at: localPoint, in: pageView.imageView, imageSize: image.size) {
+                result.charRect = pageView.imageView.convert(result.charRect, to: view)
+                result.charRects = result.charRects.map { pageView.imageView.convert($0, to: view) }
+                return result
+            }
+        }
+        return nil
+    }
+
+    private func visiblePageControllers() -> [ReaderPageViewController] {
+        guard let currentVCs = pageViewController.viewControllers else { return [] }
+        return currentVCs.flatMap { controller -> [ReaderPageViewController] in
+            if let pageVC = controller as? ReaderPageViewController {
+                return [pageVC]
+            }
+            if let doublePageVC = controller as? ReaderDoublePageViewController {
+                return [doublePageVC.firstPageController, doublePageVC.secondPageController]
+            }
+            return []
+        }
+    }
+
+    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+        dictionaryOverlayTapHandler = handler
+        for controller in pageViewControllers {
+            bindDictionaryOverlayTap(to: controller)
+        }
+    }
+
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayInteractionMode = mode
+        for controller in pageViewControllers {
+            controller.pageView?.setDictionaryOverlayInteractionMode(mode)
+        }
+    }
+
+    func dismissActiveDictionaryOverlay() -> Bool {
+        for pageVC in visiblePageControllers() where pageVC.pageView?.dismissActiveDictionaryOverlay() == true {
+            return true
+        }
+        return false
+    }
+
+    private func forwardDictionaryOverlayTap(
+        text: String,
+        rect: CGRect,
+        charRects: [CGRect],
+        from imageView: UIImageView
+    ) {
+        let rectInReader = imageView.convert(rect, to: view)
+        let charRectsInReader = charRects.map { imageView.convert($0, to: view) }
+        dictionaryOverlayTapHandler?(text, rectInReader, charRectsInReader)
+    }
+
+    private func bindDictionaryOverlayTap(to controller: ReaderPageViewController?) {
+        controller?.pageView?.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
+        controller?.pageView?.onDictionaryOverlayTap = { [weak self, weak controller] text, rect, charRects in
+            guard let self, let imageView = controller?.pageView?.imageView else { return }
+            self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
+        }
+    }
+}
+
 // MARK: - Context Menu Delegate
 extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
-
     func contextMenuInteraction(
         _ interaction: UIContextMenuInteraction,
         configurationForMenuAtLocation location: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard
-            !UserDefaults.standard.bool(forKey: "Reader.disableQuickActions"),
             let pageView = interaction.view as? UIImageView,
-            pageView.image != nil
+            pageView.image != nil,
+            !AppSettings.dictionary.isReaderQuickActionsDisabled(language: pageLanguage(for: pageView))
         else {
             return nil
         }
@@ -1254,6 +1351,13 @@ extension ReaderPagedViewController: UIContextMenuInteractionDelegate {
         )
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default))
         present(alert, animated: true)
+    }
+
+    private func pageLanguage(for imageView: UIImageView) -> String? {
+        for pageViewController in pageViewControllers where pageViewController.pageView?.imageView == imageView {
+            return pageViewController.page?.language
+        }
+        return nil
     }
 }
 

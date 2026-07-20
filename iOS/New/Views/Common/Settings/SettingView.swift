@@ -93,16 +93,16 @@ struct SettingView: View {
 
         var keys: [String] = []
         if let requires = setting.requires {
-            let key = key(requires)
-            _requires = State(initialValue: SettingsStore.shared.get(key: key))
-            keys.append(key)
+            let (observedKeys, result) = Self.parseRequires(value: requires, namespace: namespace)
+            _requires = State(initialValue: result)
+            keys.append(contentsOf: observedKeys)
         } else {
             _requires = State(initialValue: true)
         }
         if let requiresFalse = setting.requiresFalse {
-            let key = key(requiresFalse)
-            _requiresFalse = State(initialValue: SettingsStore.shared.get(key: key))
-            keys.append(key)
+            let (observedKeys, result) = Self.parseRequires(value: requiresFalse, namespace: namespace)
+            _requiresFalse = State(initialValue: result)
+            keys.append(contentsOf: observedKeys)
         } else {
             _requiresFalse = State(initialValue: false)
         }
@@ -131,7 +131,12 @@ struct SettingView: View {
                 _doubleBinding = Binding.constant(0)
         }
         if case .toggle = setting.value {
-            _toggleValue = State(initialValue: SettingsStore.shared.get(key: key(setting.key)))
+            let value: Bool = if setting.key == "true" {
+                true
+            } else {
+                SettingsStore.shared.get(key: key(setting.key))
+            }
+            _toggleValue = State(initialValue: value)
         } else {
             _toggleValue = State(initialValue: false)
         }
@@ -140,6 +145,60 @@ struct SettingView: View {
         } else {
             _textValue = State(initialValue: "")
         }
+    }
+
+    static func parseRequires(value: String, namespace: String? = nil) -> (observedKeys: [String], result: Bool) {
+        // need to use this before all properties are initialized
+        func key(_ key: String) -> String {
+            let key = key.trim()
+            return if key.isEmpty || key == "true" {
+                key
+            } else if let namespace {
+                "\(namespace).\(key)"
+            } else {
+                key
+            }
+        }
+        func isTrue(_ key: String, target: String? = nil) -> Bool {
+            if key == "true" {
+                return true
+            }
+            let storedValue = UserDefaults.standard.string(forKey: key)
+            if let target {
+                return storedValue == target
+            } else {
+                return storedValue != nil && storedValue != "0"
+            }
+        }
+
+        let statements = value
+            .components(separatedBy: "&&")
+            .map { $0.trim() }
+            .filter { !$0.isEmpty }
+
+        var observedKeys: [String] = []
+        var result = true
+
+        for statement in statements {
+            let components = statement.components(separatedBy: "==")
+
+            let statementResult: Bool
+
+            if components.count == 2 {
+                let observedKey = key(components[0])
+                let targetValue = components[1].trim()
+                observedKeys.append(observedKey)
+                statementResult = isTrue(observedKey, target: targetValue)
+            } else {
+                let observedKey = key(statement)
+                observedKeys.append(observedKey)
+                statementResult = isTrue(observedKey)
+            }
+
+            result = result && statementResult
+        }
+
+        return (observedKeys, result)
     }
 
     var body: some View {
@@ -155,12 +214,10 @@ struct SettingView: View {
             }
             .onReceive(requiresObserver.$observedValues) { _ in
                 if let requires = setting.requires {
-                    let value = UserDefaults.standard.string(forKey: key(requires))
-                    self.requires = value != nil && value != "0"
+                    self.requires = Self.parseRequires(value: requires, namespace: namespace).result
                 }
                 if let requiresFalse = setting.requiresFalse {
-                    let value = UserDefaults.standard.string(forKey: key(requiresFalse))
-                    self.requiresFalse = value != nil && value != "0"
+                    self.requiresFalse = Self.parseRequires(value: requiresFalse, namespace: namespace).result
                 }
             }
     }
@@ -499,7 +556,7 @@ extension SettingView {
 }
 
 // MARK: Toggle View
-extension (SettingView) {
+extension SettingView {
     @ViewBuilder
     func toggleView(value: ToggleSetting) -> some View {
         HStack {
@@ -510,7 +567,7 @@ extension (SettingView) {
                     Text(NSLocalizedString(subtitle))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
             .opacity(disabled ? disabledOpacity : 1)
@@ -530,8 +587,9 @@ extension (SettingView) {
                 EmptyView()
             }
             .labelsHidden()
-            .onChange(of: toggleValue) { _ in
-                if (value.authToDisable ?? false) && !toggleValue {
+            .onChange(of: toggleValue) { newValue in
+                guard !disabled else { return }
+                if (value.authToDisable ?? false) && !newValue {
                     Task {
                         let success = await auth()
                         if success {
@@ -541,7 +599,7 @@ extension (SettingView) {
                         }
                     }
                 } else {
-                    SettingsStore.shared.set(key: key(setting.key), value: toggleValue)
+                    SettingsStore.shared.set(key: key(setting.key), value: newValue)
                 }
             }
         }

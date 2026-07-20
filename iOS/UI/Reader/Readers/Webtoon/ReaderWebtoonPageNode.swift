@@ -10,6 +10,7 @@ import AsyncDisplayKit
 import Gifu
 import Nuke
 import SwiftUI
+import Vision
 import VisionKit
 import ZIPFoundation
 
@@ -30,6 +31,19 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var loading = false
     private var shouldShowLiveTextButton = false
     private var liveTextAnalysisTask: Task<Void, Never>?
+    private var dictionaryAnalysisTask: Task<Void, Never>?
+    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
+        get { dictionaryOverlayController.onLookup }
+        set { dictionaryOverlayController.onLookup = newValue }
+    }
+    private let dictionaryOverlayController = DictionaryOverlayController()
+
+    private var _textRecognizer: Any?
+    @available(iOS 18.0, *)
+    var textRecognizer: TextRecognizer? {
+        get { _textRecognizer as? TextRecognizer }
+        set { _textRecognizer = newValue }
+    }
 
     // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
@@ -83,6 +97,10 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         }
     }
 
+    deinit {
+        cancelDictionaryTextAnalysis()
+    }
+
     override func didEnterDisplayState() {
         super.didEnterDisplayState()
         displayPage()
@@ -95,9 +113,11 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         if let delegate, delegate.isZooming {
             return
         }
+        cancelDictionaryTextAnalysis()
         imageNode.image = nil
         image = nil
         text = nil
+        clearDictionaryOverlays()
         imageNode.alpha = 0
         textNode.alpha = 0
         progressNode.isHidden = false
@@ -226,9 +246,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 }
 
 extension ReaderWebtoonPageNode {
-
     func loadPage() async {
         guard image == nil, text == nil, !loading else { return }
+        cancelDictionaryTextAnalysis()
         loading = true
         imageNode.alpha = 0
         textNode.alpha = 0
@@ -513,6 +533,9 @@ extension ReaderWebtoonPageNode {
 
             Task { @MainActor in
                 imageNode.isUserInteractionEnabled = true
+                imageNode.view.interactions
+                    .filter { $0 is UIContextMenuInteraction }
+                    .forEach { imageNode.view.removeInteraction($0) }
                 if let delegate {
                     imageNode.addInteraction(UIContextMenuInteraction(delegate: delegate))
                 }
@@ -528,10 +551,12 @@ extension ReaderWebtoonPageNode {
                     imageNode.addInteraction(interaction)
                     await analyzeLiveText()
                 }
+                scheduleDictionaryTextAnalysis()
             }
         } else if let text {
             progressNode.isHidden = true
             textNode.content = MarkdownView(text)
+            clearDictionaryOverlays()
         }
 
         transition()
@@ -570,6 +595,31 @@ extension ReaderWebtoonPageNode {
     }
 
     @MainActor
+    private func scheduleDictionaryTextAnalysis() {
+        clearDictionaryOverlays()
+
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.schedule(
+                task: &dictionaryAnalysisTask,
+                recognizer: &textRecognizer,
+                image: image,
+                language: page.language
+            ) { [weak self] in
+                self?.renderDictionaryOverlaysIfNeeded()
+            }
+        }
+    }
+
+    private func cancelDictionaryTextAnalysis() {
+        if #available(iOS 18.0, *) {
+            DictionaryTextAnalysisScheduler.cancel(
+                task: &dictionaryAnalysisTask,
+                recognizer: textRecognizer
+            )
+        }
+    }
+
+    @MainActor
     func setLiveTextHidden(_ hidden: Bool) {
         if #available(iOS 16.0, *) {
             shouldShowLiveTextButton = !hidden
@@ -577,6 +627,41 @@ extension ReaderWebtoonPageNode {
             guard imageNode.imageAnalaysisInteraction?.selectableItemsHighlighted == false else { return }
             imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
         }
+    }
+}
+
+// MARK: - Dictionary Overlay
+extension ReaderWebtoonPageNode {
+    private func clearDictionaryOverlays() {
+        dictionaryOverlayController.clear()
+    }
+
+    private func renderDictionaryOverlaysIfNeeded() {
+        clearDictionaryOverlays()
+
+        guard
+            #available(iOS 18.0, *),
+            AppSettings.dictionary.enable.get(),
+            AppSettings.dictionary.textOverlayMode.get(),
+            let textRecognizer,
+            let image,
+            let imageView = imageNode.imageView
+        else {
+            return
+        }
+
+        let overlays = textRecognizer.paragraphOverlays(in: imageView, imageSize: image.size)
+        dictionaryOverlayController.containerView = imageView
+        dictionaryOverlayController.render(overlays: overlays)
+    }
+
+    @discardableResult
+    func dismissActiveDictionaryOverlay() -> Bool {
+        dictionaryOverlayController.dismissActive()
+    }
+
+    func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode) {
+        dictionaryOverlayController.interactionMode = mode
     }
 }
 
