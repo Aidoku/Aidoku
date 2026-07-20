@@ -45,11 +45,11 @@ final class ReaderDictionaryCoordinator {
         anchorRect: CGRect,
         charRects: [CGRect] = [],
         appendPopup: Bool = false
-    ) -> Bool {
-        guard let owner else { return false }
+    ) -> (openedPopup: Bool, matchedChars: Int) {
+        guard let owner else { return (false, 0) }
 
         let entries: [LookupResult] = LookupEngine.shared.lookup(text)
-        guard !entries.isEmpty else { return false }
+        guard !entries.isEmpty else { return (false, 0) }
 
         if !appendPopup {
             dismissAllPopups()
@@ -91,12 +91,16 @@ final class ReaderDictionaryCoordinator {
             clearSelection: false,
             onTextSelected: { [weak self] selection in
                 guard let self else { return nil }
-                _ = self.performLookup(
+                self.dismissChildPopups(parentID: popupID)
+                let (openedPopup, count) = self.performLookup(
                     text: selection.text,
                     anchorRect: selection.rect,
                     appendPopup: true
                 )
-                return nil
+                guard openedPopup else {
+                    return nil
+                }
+                return count
             },
             onTapOutside: { [weak self] in
                 self?.dismissChildPopups(parentID: popupID)
@@ -148,7 +152,7 @@ final class ReaderDictionaryCoordinator {
             hostingController.view.alpha = 1
             hostingController.view.transform = .identity
         }
-        return true
+        return (true, entries.first.flatMap { String($0.matched).count } ?? 0)
     }
 
     func dismissTopPopup() {

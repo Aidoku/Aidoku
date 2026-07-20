@@ -1150,7 +1150,7 @@ extension ReaderViewController {
                     text: result.text,
                     anchorRect: result.charRect,
                     charRects: result.charRects
-                ) {
+                ).openedPopup {
                     return
                 }
             }
