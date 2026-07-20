@@ -11,16 +11,35 @@ import SwiftUI
 final class ReaderDictionaryCoordinator {
     private final class PopupHitTestView: UIView {
         var popupFrame: CGRect = .zero
+        var passthroughFrames: [CGRect] = []
+        var onBackgroundTap: (() -> Void)?
 
         override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-            guard popupFrame.contains(point) else { return nil }
-            return super.hitTest(point, with: event)
+            if popupFrame.contains(point) {
+                return super.hitTest(point, with: event)
+            }
+            if passthroughFrames.contains(where: { $0.contains(point) }) {
+                return nil
+            }
+            return self
+        }
+
+        override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+            if
+                let point = touches.first?.location(in: self),
+                !popupFrame.contains(point),
+                !passthroughFrames.contains(where: { $0.contains(point) })
+            {
+                onBackgroundTap?()
+            }
+            super.touchesEnded(touches, with: event)
         }
     }
 
     private struct PopupController {
         let id: UUID
         let controller: UIViewController
+        let frame: CGRect
     }
 
     private let popupAnimationDuration: TimeInterval = 0.1
@@ -115,6 +134,10 @@ final class ReaderDictionaryCoordinator {
         let containerController = UIViewController()
         let containerView = PopupHitTestView()
         containerView.popupFrame = popupFrame
+        containerView.passthroughFrames = popupControllers.map(\.frame)
+        containerView.onBackgroundTap = { [weak self] in
+            self?.dismissAllPopups()
+        }
         containerView.backgroundColor = .clear
         containerController.view = containerView
         containerController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -143,7 +166,7 @@ final class ReaderDictionaryCoordinator {
             containerController.view.bottomAnchor.constraint(equalTo: owner.view.bottomAnchor)
         ])
 
-        popupControllers.append(PopupController(id: popupID, controller: containerController))
+        popupControllers.append(PopupController(id: popupID, controller: containerController, frame: popupFrame))
         UIView.animate(
             withDuration: popupAnimationDuration,
             delay: 0,
