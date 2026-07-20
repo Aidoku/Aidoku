@@ -604,6 +604,7 @@
 "IMPORTING_DICTIONARY" = "Importing Dictionary…";
 "IMPORT_ERROR" = "Import Error";
 "REVISION" = "Revision";
+"REMOVE_DICTIONARY" = "Remove Dictionary";
 
 // Backups
 "BACKUPS" = "Backups";

@@ -10,11 +10,19 @@ import SafariServices
 import SwiftUI
 import UniformTypeIdentifiers
 
+private struct SelectedDictionary: Identifiable {
+    let info: DictionaryInfo
+    let index: IndexSet
+    let type: DictionaryType
+
+    var id: UUID { info.id }
+}
+
 @available(iOS 18.0, *)
 struct DictionaryListView: View {
     @State private var dictionaryManager = DictionaryManager.shared
 
-    @State private var selectedDictionaryInfo: DictionaryInfo?
+    @State private var selectedDictionaryInfo: SelectedDictionary?
     @State private var importing = false
     @State private var showSafari = false
 
@@ -76,8 +84,8 @@ struct DictionaryListView: View {
             ForEach(items, id: \.0) { type, dictionaries, title in
                 if !dictionaries.isEmpty {
                     Section(title) {
-                        ForEach(dictionaries) { dict in
-                            dictRow(dict, type: type)
+                        ForEach(Array(dictionaries.enumerated()), id: \.element.id) { offset, dict in
+                            dictRow(dict, index: .init(integer: offset), type: type)
                         }
                         .onDelete { offsets in delete(offsets: offsets, type: type) }
                         .onMove { from, to in move(from: from, to: to, type: type) }
@@ -121,11 +129,11 @@ struct DictionaryListView: View {
             Text(verbatim: dictionaryManager.errorMessage)
         }
         .sheet(item: $selectedDictionaryInfo) { dict in
-            DictionaryInfoView(info: dict)
+            DictionaryInfoView(dictionary: dict)
         }
     }
 
-    func dictRow(_ dict: DictionaryInfo, type: DictionaryType) -> some View {
+    func dictRow(_ dict: DictionaryInfo, index: IndexSet, type: DictionaryType) -> some View {
         Toggle(isOn: Binding(
             get: { dict.isEnabled },
             set: { newValue in
@@ -137,7 +145,7 @@ struct DictionaryListView: View {
                 Text(dict.index.title)
                 Spacer()
                 Button {
-                    selectedDictionaryInfo = dict
+                    selectedDictionaryInfo = .init(info: dict, index: index, type: type)
                 } label: {
                     Image(systemName: "info.circle")
                 }
@@ -169,7 +177,7 @@ struct DictionaryListView: View {
 
 @available(iOS 18.0, *)
 private struct DictionaryInfoView: View {
-    let info: DictionaryInfo
+    let dictionary: SelectedDictionary
 
     @Environment(\.dismiss) private var dismiss
 
@@ -180,11 +188,18 @@ private struct DictionaryInfoView: View {
                     HStack {
                         Text(NSLocalizedString("REVISION"))
                         Spacer()
-                        Text(info.index.revision).foregroundStyle(.secondary)
+                        Text(dictionary.info.index.revision).foregroundStyle(.secondary)
+                    }
+                }
+                Section {
+                    Button(NSLocalizedString("REMOVE_DICTIONARY"), role: .destructive) {
+                        DictionaryManager.shared.deleteDictionary(indexSet: dictionary.index, type: dictionary.type)
+                        NotificationCenter.default.post(name: .dictionaryDictionariesChanged, object: nil)
+                        dismiss()
                     }
                 }
             }
-            .navigationTitle(info.index.title)
+            .navigationTitle(dictionary.info.index.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
