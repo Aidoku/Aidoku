@@ -396,7 +396,7 @@
 "LOCAL_FILES_SETUP" = "本地来源设置";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本地文件导入";
-"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的CBZ或ZIP文件进行阅读。";
+"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的 CBZ、ePub 或 ZIP 文件。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
 "DESCRIPTION" = "简介";
@@ -440,9 +440,9 @@
 "SORT" = "排序";
 "SORT_NAME" = "名称";
 "SORT_DATE_UPDATED" = "更新日期";
-"SORT_RELEASE_DATE" = "发布日期";
+"SORT_RELEASE_DATE" = "发行日期";
 "SORT_FOLDER_NAME" = "文件夹名称";
-"SORT_BOOKS_COUNT" = "图书数量";
+"SORT_BOOKS_COUNT" = "作品数量";
 "SORT_RANDOM" = "随机";
 "GENRE" = "类型";
 "TAG" = "标签";
@@ -737,3 +737,13 @@
 "X_NEW_CHAPTERS_AVAILABLE" = "%d 个新章节已更新";
 "NEW_CHAPTERS_AVAILABLE" = "新章节已更新";
 "X_SERIES_HAVE_NEW_CHAPTERS" = "%d 部作品有新章节";
+"EPUB_NAME" = "EPUB";
+"SUWAYOMI" = "Suwayomi";
+"SUWAYOMI_TAGLINE" = "漫画源服务器";
+"SUWAYOMI_INFO" = "Suwayomi 是一款自托管漫画阅读器服务器，支持运行为 Mihon（Tachiyomi）开发的插件。您需要先搭建并运行 Suwayomi 服务器，才能使用此图源。";
+"SUWAYOMI_SETUP" = "Suwayomi 设置";
+"STATUS_LICENSED" = "已授权";
+"STATUS_PUBLISHING_FINISHED" = "已出版完毕";
+"AUTHOR_NAME" = "作者姓名";
+"ARTIST_NAME" = "艺术家姓名";
+"INVALID_KEY" = "密钥无效";
