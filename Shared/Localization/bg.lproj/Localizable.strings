@@ -6,25 +6,25 @@
 "COPY" = "Копиране";
 "UPDATES" = "Актуализации";
 "DOWNLOAD_QUEUE" = "Опашка за изтегляне";
-"LAST_READ" = "Последно четено";
+"SORT_LAST_READ" = "Последно четено";
 "ADD_TO_LIBRARY" = "Добави в библиотека";
 "INSTALLED" = "Инсталиран";
 "FILTER_BY" = "Филтрирай по";
 "LANGUAGE" = "Език";
 "SORT_BY" = "Сортирай по";
 "EXTERNAL" = "Външен";
-"TITLE" = "Заглавие";
+"SORT_TITLE" = "Заглавие";
 
 // Browse
 "BROWSE" = "Разглеждане";
 "COVER" = "Корица";
-"LATEST_CHAPTER" = "Последна глава";
+"SORT_LATEST_CHAPTER" = "Последна глава";
 "BUTTON_UPDATE" = "АКТУАЛИЗИРАНЕ";
 "ALWAYS_ASK" = "Питай винаги";
 "SHARE" = "Споделяне";
 "REORDER" = "Пренареждане";
 "REMOVE_DOWNLOADS" = "Премахни изтегляния";
-"DATE_ADDED" = "Дата на добавяне";
+"SORT_DATE_ADDED" = "Дата на добавяне";
 // General
 "CONTINUE" = "Продължи";
 "CANCEL" = "Отказ";
@@ -37,7 +37,7 @@
 "EDIT_CATEGORIES" = "Редактиране на категории";
 "RESET" = "Нулиране";
 "UNPIN" = "Откачи";
-"LAST_OPENED" = "Последно отворено";
+"SORT_LAST_OPENED" = "Последно отворено";
 "REMOVE_FROM_LIBRARY" = "Премахни от библиотека";
 "REMOVE_ALL_DOWNLOADS" = "Премахни всички изтегляния";
 "CLEAR" = "Изчистване";
@@ -73,10 +73,10 @@
 "RENAME" = "Преименуване";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Ръководство за добавяне на източници";
 "BUTTON_FILTER" = "Филтър";
-"CANCELLED" = "Отказан";
-"ONGOING" = "Текущо";
-"COMPLETED" = "Приключен";
-"HIATUS" = "Неактивен";
+"STATUS_CANCELLED" = "Отказан";
+"STATUS_ONGOING" = "Текущо";
+"STATUS_COMPLETED" = "Приключен";
+"STATUS_HIATUS" = "Неактивен";
 "MORE" = "още";
 "SOURCE_ORDER" = "Ред на източник";
 "NSFW" = "NSFW";
@@ -265,11 +265,11 @@
 "VOLUMES" = "Томове";
 "TRACK_REREADING" = "Препрочитане";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Сигурни ли сте че искате да премахнете всички сваляния?";
-"UNREAD_CHAPTERS" = "Непрочетени глави";
+"SORT_UNREAD_CHAPTERS" = "Непрочетени глави";
 "ONESHOT" = "One-shot";
 "%i_PAGES_LEFT" = "%i оставащи страници";
 "FAILED_CHAPTER_LOAD" = "Неуспех при зареждане на глава";
-"LAST_UPDATED" = "Последно обновление";
+"SORT_LAST_UPDATED" = "Последно обновление";
 "UPCOMING" = "Предстоящи";
 "CATEGORY_NAME" = "Име на категория";
 "FIRST_ALTERNATIVE" = "Първа алтернатива";
@@ -301,7 +301,7 @@
 "TRACK" = "Следване";
 "MANGA" = "Манга";
 "LIGHT_NOVEL" = "Light Novel";
-"NOT_PUBLISHED" = "Не публикувано";
+"STATUS_NOT_PUBLISHED" = "Не публикувано";
 "MANHWA" = "Манхуа";
 "MANHUA" = "Манхуа";
 "STATUS_COLON_%@" = "Статус: %@";
@@ -311,7 +311,7 @@
 "CLEAR_TRACKED_MANGA_TEXT" = "Това действие е необратимо. Следването за всички тракери добавени към мангата ще бъде премахнато.";
 "CACHE_SIZE_%@" = "Размер на кеша: %@";
 "SUPPORT_VIA_KOFI" = "Подкрепи чрез Ko-Fi";
-"TOTAL_CHAPTERS" = "Общо глави";
+"SORT_TOTAL_CHAPTERS" = "Общо глави";
 "REMOVE_FROM_CATEGORY" = "Премахване от категория";
 "PINNED" = "Пиннати";
 "SELECT" = "Избор";

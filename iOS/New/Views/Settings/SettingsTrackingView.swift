@@ -15,6 +15,7 @@ struct SettingsTrackingView: View {
 
     @State private var komgaSources: [AidokuRunner.Source] = []
     @State private var kavitaSources: [AidokuRunner.Source] = []
+    @State private var suwayomiSources: [AidokuRunner.Source] = []
     @State private var enhancedTrackingStates: [String: Bool] = [:]
 
     @State private var loadedData = false
@@ -111,11 +112,12 @@ struct SettingsTrackingView: View {
                 }
             }
 
-            if !komgaSources.isEmpty || !kavitaSources.isEmpty {
+            if !komgaSources.isEmpty || !kavitaSources.isEmpty || !suwayomiSources.isEmpty {
                 Section {
                     let items: [(tracker: Tracker, sources: [AidokuRunner.Source])] = [
                         (TrackerManager.komga, komgaSources),
-                        (TrackerManager.kavita, kavitaSources)
+                        (TrackerManager.kavita, kavitaSources),
+                        (TrackerManager.suwayomi, suwayomiSources)
                     ]
                     ForEach(items, id: \.tracker.id) { tracker, sources in
                         if !sources.isEmpty {
@@ -226,20 +228,24 @@ extension SettingsTrackingView {
     func loadEnhancedTrackerSources() {
         var komgaSources: [AidokuRunner.Source] = []
         var kavitaSources: [AidokuRunner.Source] = []
+        var suwayomiSources: [AidokuRunner.Source] = []
         for source in SourceManager.shared.sources {
             if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
                 komgaSources.append(source)
             } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
                 kavitaSources.append(source)
+            } else if source.key.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
+                suwayomiSources.append(source)
             }
         }
         var enhancedTrackingStates: [String: Bool] = [:]
-        for source in (komgaSources + kavitaSources) {
+        for source in (komgaSources + kavitaSources + suwayomiSources) {
             let trackingDisabled = UserDefaults.standard.bool(forKey: "\(source.key).disableTracking")
             enhancedTrackingStates[source.key] = !trackingDisabled
         }
         self.komgaSources = komgaSources
         self.kavitaSources = kavitaSources
+        self.suwayomiSources = suwayomiSources
         self.enhancedTrackingStates = enhancedTrackingStates
     }
 

@@ -15,12 +15,12 @@
 "INSTALLED" = "Telepítve";
 "FILTER_BY" = "Szűrés";
 "LANGUAGE" = "Nyelv";
-"UNREAD_CHAPTERS" = "Olvasatlan Fejezetek";
+"SORT_UNREAD_CHAPTERS" = "Olvasatlan Fejezetek";
 "READING_MODE" = "Olvasási mód";
 "APPEARANCE_LIGHT" = "Világos";
 "VIEW_HISTORY" = "Előzmény megtekintése";
 "SORT_BY" = "Rendezés";
-"TITLE" = "Cím";
+"SORT_TITLE" = "Cím";
 
 // Browse
 "BROWSE" = "Böngészés";
@@ -33,7 +33,7 @@
 "INCOGNITO_MODE" = "Inkognító mód";
 "UNREAD" = "Olvasatlan";
 "REMOVE_DOWNLOADS" = "Letöltések törlése";
-"DATE_ADDED" = "Hozzáadás dátuma";
+"SORT_DATE_ADDED" = "Hozzáadás dátuma";
 // General
 "CONTINUE" = "Következő";
 "CANCEL" = "Mégse";
@@ -46,7 +46,7 @@
 "RESET" = "Visszaállítás";
 "LOGOUT" = "Kijelentkezés";
 "EVERY_12_HOURS" = "12 óránként";
-"LAST_OPENED" = "Utoljára megnyitva";
+"SORT_LAST_OPENED" = "Utoljára megnyitva";
 "SELECT_ALL" = "Összes kijelölése";
 "LANDSCAPE" = "Fekvő";
 "REMOVE_FROM_LIBRARY" = "Eltávolítás a Könyvtárból";
@@ -66,7 +66,7 @@
 "CATEGORIES" = "Kategóriák";
 "PREVIOUS_COLON" = "Előző:";
 "UNKNOWN" = "Ismeretlen";
-"COMPLETED" = "Befejezve";
+"STATUS_COMPLETED" = "Befejezve";
 "NEXT_COLON" = "Következő:";
 "MARK_READ" = "Megjelölés olvasottként";
 "REMOVE_DOWNLOAD" = "Letöltés törlése";
@@ -132,8 +132,8 @@
 "SEARCH" = "Keresés";
 "LOADING_ELLIPSIS" = "Betöltés…";
 "MANGA_INFO" = "Manga Infó";
-"LAST_READ" = "Utoljára olvasott";
-"LATEST_CHAPTER" = "Legutóbbi fejezet";
+"SORT_LAST_READ" = "Utoljára olvasott";
+"SORT_LATEST_CHAPTER" = "Legutóbbi fejezet";
 "ALWAYS_ASK" = "Mindig kérdezze meg";
 "BROWSE_NO_SOURCES" = "Nincsenek források";
 "ADDING_SOURCES_GUIDE_BUTTON" = "Útmutató a források hozzáadásához";
@@ -146,9 +146,9 @@
 "SOURCE_INFO" = "Forrás Infó";
 "LIST_HEADER" = "Lista";
 "LIST_ALL" = "Mind";
-"ONGOING" = "Folytatódó";
-"CANCELLED" = "Megszakított";
-"HIATUS" = "Szünet";
+"STATUS_ONGOING" = "Folytatódó";
+"STATUS_CANCELLED" = "Megszakított";
+"STATUS_HIATUS" = "Szünet";
 "SUGGESTIVE" = "Szuggesztív";
 "MORE" = "több";
 "SOURCE_ORDER" = "Forrás Rendezése";

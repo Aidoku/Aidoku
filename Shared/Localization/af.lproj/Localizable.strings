@@ -29,9 +29,9 @@
 "MANGA_INFO" = "Manga-inligting";
 "SORT_BY" = "Sorteer Volgens";
 "FILTER_BY" = "Filter Volgens";
-"LAST_OPENED" = "Laas Geopen";
-"LAST_READ" = "Laas Gelees";
-"DATE_ADDED" = "Datum Bygevoeg";
+"SORT_LAST_OPENED" = "Laas Geopen";
+"SORT_LAST_READ" = "Laas Gelees";
+"SORT_DATE_ADDED" = "Datum Bygevoeg";
 
 // Categories
 "ALL" = "Alle";
@@ -63,9 +63,9 @@
 
 // Manga
 "UNTITLED" = "Titelloos";
-"ONGOING" = "Aanlopend";
-"CANCELLED" = "Gekanselleer";
-"COMPLETED" = "Gevoltooi";
+"STATUS_ONGOING" = "Aanlopend";
+"STATUS_CANCELLED" = "Gekanselleer";
+"STATUS_COMPLETED" = "Gevoltooi";
 "SUGGESTIVE" = "Suggestief";
 "NSFW" = "NSFW";
 "SOURCE_ORDER" = "Bron Orde";
@@ -107,15 +107,15 @@
 "CONTINUE" = "Gaan voort";
 "REMOVE_DOWNLOADS_CONFIRM" = "Verwyder alle selekteerde aflaaisels?";
 "DOWNLOAD_QUEUE" = "Aflaai Waglys";
-"TITLE" = "Titel";
+"SORT_TITLE" = "Titel";
 "MARK" = "Merk";
-"LATEST_CHAPTER" = "Nuutste Hoofstuk";
+"SORT_LATEST_CHAPTER" = "Nuutste Hoofstuk";
 "NONE" = "Geen";
 "CATEGORY_ADD_TEXT" = "Voeg die titel van die nuwe kategorie in.";
 "EXTERNAL" = "Eksterne";
 "LANGUAGE" = "Taal";
 "LANGUAGES" = "Tale";
-"HIATUS" = "Op 'n Breek";
+"STATUS_HIATUS" = "Op 'n Breek";
 "MORE" = "meer";
 "DESELECT_ALL" = "Ontkies Alles";
 "MISSING_SOURCE_TEXT" = "Die oorspronklike bron vir hierdie Manga is ontbreek. Laai dit asseblief weer af of verwyder hierdie titel uit jou biblioteek.";

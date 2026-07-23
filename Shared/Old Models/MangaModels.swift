@@ -25,12 +25,12 @@ enum PublishingStatus: Int, Codable {
 
     func toString() -> String {
         switch self {
-            case .unknown: return NSLocalizedString("UNKNOWN", comment: "")
-            case .ongoing: return NSLocalizedString("ONGOING", comment: "")
-            case .completed: return NSLocalizedString("COMPLETED", comment: "")
-            case .cancelled: return NSLocalizedString("CANCELLED", comment: "")
-            case .hiatus: return NSLocalizedString("HIATUS", comment: "")
-            case .notPublished: return NSLocalizedString("NOT_PUBLISHED", comment: "")
+            case .unknown: return NSLocalizedString("UNKNOWN")
+            case .ongoing: return NSLocalizedString("STATUS_ONGOING")
+            case .completed: return NSLocalizedString("STATUS_COMPLETED")
+            case .cancelled: return NSLocalizedString("STATUS_CANCELLED")
+            case .hiatus: return NSLocalizedString("STATUS_HIATUS")
+            case .notPublished: return NSLocalizedString("STATUS_NOT_PUBLISHED")
         }
     }
 

@@ -8,10 +8,10 @@
 "REMOVE_FROM_LIBRARY" = "Αφαίρεση από Βιβλιοθήκη";
 "MANGA_INFO" = "Πληροφορίες Μάνγκα";
 "FILTER_BY" = "Φιλτράρισμα Κατά";
-"TITLE" = "Τίτλος";
-"LAST_READ" = "Πιο Πρόσφατη Ανάγνωση";
-"LATEST_CHAPTER" = "Πρόσφατο Κεφάλαιο";
-"DATE_ADDED" = "Ημερομηνία που Προστέθηκε";
+"SORT_TITLE" = "Τίτλος";
+"SORT_LAST_READ" = "Πιο Πρόσφατη Ανάγνωση";
+"SORT_LATEST_CHAPTER" = "Πρόσφατο Κεφάλαιο";
+"SORT_DATE_ADDED" = "Ημερομηνία που Προστέθηκε";
 
 // Categories
 "ALL" = "Όλα";
@@ -55,7 +55,7 @@
 // Browse
 "BROWSE" = "Αναζήτηση";
 "SORT_BY" = "Ταξινόμηση Κατά";
-"LAST_OPENED" = "Άνοιγμα πιο Πρόσφατου";
+"SORT_LAST_OPENED" = "Άνοιγμα πιο Πρόσφατου";
 "BUTTON_UPDATE" = "Ανανέωση";
 "BUTTON_GET" = "Πάρε";
 "BUTTON_ERROR" = "Σφάλμα";
@@ -69,10 +69,10 @@
 "VERSION" = "Εκδοχή";
 "BUILD" = "Έκδοση";
 "BUTTON_FILTER" = "Φίλτρο";
-"ONGOING" = "Σε εξέλιξη";
-"COMPLETED" = "Ολοκληρωμένο";
-"HIATUS" = "Σε διάλυμα";
-"CANCELLED" = "Ακυρωμένο";
+"STATUS_ONGOING" = "Σε εξέλιξη";
+"STATUS_COMPLETED" = "Ολοκληρωμένο";
+"STATUS_HIATUS" = "Σε διάλυμα";
+"STATUS_CANCELLED" = "Ακυρωμένο";
 "SUGGESTIVE" = "Υπαινισσόμενος";
 "NSFW" = "ΜΑΓΔ";
 "MORE" = "Περισσότερα";

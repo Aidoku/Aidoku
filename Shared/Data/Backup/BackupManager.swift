@@ -65,8 +65,8 @@ actor BackupManager {
         }
     }
 
-    func saveNewBackup(options: BackupOptions) async {
-        save(backup: await createBackup(options: options))
+    func saveNewBackup(name: String = "", options: BackupOptions) async {
+        save(backup: await createBackup(name: name, options: options))
     }
 
     func importBackup(from url: URL) -> Bool {
@@ -106,7 +106,7 @@ actor BackupManager {
         let sensitiveSettings: Bool
     }
 
-    func createBackup(options: BackupOptions) async -> Backup {
+    func createBackup(name: String = "", options: BackupOptions) async -> Backup {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let library: [BackupLibraryManga] = if options.libraryEntries {
                 CoreDataManager.shared.getLibraryManga(context: context).map {
@@ -180,6 +180,7 @@ actor BackupManager {
                 sourceLists: sourceLists,
                 settings: settings,
                 date: Date.now,
+                name: name.isEmpty ? nil : name,
                 automatic: options.automatic,
                 version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
             )

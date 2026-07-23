@@ -20,11 +20,11 @@
 "MANGA_INFO" = "معلومات المانجا";
 "PIN_UNREAD" = "غير مقروء";
 "SORT_BY" = "ترتيب حسب";
-"TITLE" = "العنوان";
-"LAST_OPENED" = "آخر عملية فتح";
-"LAST_READ" = "آخر عملية قراءة";
-"LATEST_CHAPTER" = "أحدث فصل";
-"DATE_ADDED" = "تاريخ الإضافة";
+"SORT_TITLE" = "العنوان";
+"SORT_LAST_OPENED" = "آخر عملية فتح";
+"SORT_LAST_READ" = "آخر عملية قراءة";
+"SORT_LATEST_CHAPTER" = "أحدث فصل";
+"SORT_DATE_ADDED" = "تاريخ الإضافة";
 
 // Browse
 "BROWSE" = "تصفح";
@@ -51,9 +51,9 @@
 
 // Manga
 "UNTITLED" = "بلا عنوان";
-"ONGOING" = "مستمر";
-"COMPLETED" = "مكتمل";
-"HIATUS" = "متوقفة";
+"STATUS_ONGOING" = "مستمر";
+"STATUS_COMPLETED" = "مكتمل";
+"STATUS_HIATUS" = "متوقفة";
 "SUGGESTIVE" = "إيحائي";
 "NSFW" = "NSFW";
 "MORE" = "المزيد";
@@ -153,7 +153,7 @@
 "ALWAYS_ASK" = "اسأل دائماً";
 "LANGUAGES" = "اللغات";
 "BUILD" = "بناء";
-"CANCELLED" = "مُلغى";
+"STATUS_CANCELLED" = "مُلغى";
 "SELECT_CHAPTERS" = "اختر فصول";
 "SELECT_ALL" = "تحديد الكل";
 
@@ -253,7 +253,7 @@
 "TRACK_PLANNING" = "تخطيط";
 "TRACKERS" = "المتتبعات";
 "ONESHOT" = "ون شوت / عدد فردي";
-"NOT_PUBLISHED" = "لم تنشر بعد";
+"STATUS_NOT_PUBLISHED" = "لم تنشر بعد";
 "MANGA" = "مانجا";
 "MANHWA" = "مانهوا";
 "MANHUA" = "مانها";
@@ -267,7 +267,7 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "هل أنت متأكد ترغب في حذف جميع التحميلات؟";
 "CACHE_SIZE_%@" = "حجم ذاكرة التخزين المؤقت: %@";
 "SUPPORT_VIA_KOFI" = "الدعم عبر كوفاي";
-"UNREAD_CHAPTERS" = "فصول غير مقروءة";
+"SORT_UNREAD_CHAPTERS" = "فصول غير مقروءة";
 "RELOAD" = "إعادة تحميل";
 "%i_OF_%i" = "%I من أصل %i";
 "MIGRATE_SOURCES" = "ترحيل المصادر";
@@ -290,8 +290,8 @@
 "FAILED_CHAPTER_LOAD_INFO" = "قد لا تكون متصلًا بالإنترنت أو قد يكون المصدر يواجه بعض المشاكل.";
 "%i_PAGES_LEFT" = "%i صفحات متبقية";
 "ONE_PAGE_LEFT" = "صفحة واحدة متبقية";
-"LAST_UPDATED" = "آخر التحديثات";
-"TOTAL_CHAPTERS" = "إجمالي الفصول";
+"SORT_LAST_UPDATED" = "آخر التحديثات";
+"SORT_TOTAL_CHAPTERS" = "إجمالي الفصول";
 "WEBTOON" = "ويبتون";
 "SYNC_LOCAL_HISTORY" = "مزامنة التاريخ المحلي";
 "MIGRATE" = "ترحيل";

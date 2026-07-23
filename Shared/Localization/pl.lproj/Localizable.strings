@@ -17,8 +17,8 @@
 "DOWNLOAD_QUEUE" = "Kolejka pobierania";
 "LIBRARY_SEARCH" = "Znajdź w Bibliotece";
 "REMOVE_FROM_LIBRARY" = "Usuń z Biblioteki";
-"LAST_READ" = "Ostatnio Czytane";
-"LATEST_CHAPTER" = "Ostatni Rozdział";
+"SORT_LAST_READ" = "Ostatnio Czytane";
+"SORT_LATEST_CHAPTER" = "Ostatni Rozdział";
 "DEFAULT_CATEGORY" = "Domyślna Kategoria";
 "ALWAYS_ASK" = "Zawsze Pytaj";
 
@@ -29,17 +29,17 @@
 "BUTTON_ERROR" = "Błąd";
 "LANGUAGE" = "Język";
 "LIST_HEADER" = "Lista";
-"ONGOING" = "Nieukończone";
-"CANCELLED" = "Anulowane";
-"COMPLETED" = "Ukończone";
+"STATUS_ONGOING" = "Nieukończone";
+"STATUS_CANCELLED" = "Anulowane";
+"STATUS_COMPLETED" = "Ukończone";
 "DOWNLOADED" = "Pobrane";
 "RESET" = "Reset";
 "CANCEL_DOWNLOAD" = "Anuluj pobieranie";
 
 // Library
 "LIBRARY" = "Biblioteka";
-"TITLE" = "Tytuł";
-"LAST_OPENED" = "Ostatnio Otwarte";
+"SORT_TITLE" = "Tytuł";
+"SORT_LAST_OPENED" = "Ostatnio Otwarte";
 "EDIT_CATEGORIES" = "Edytuj Kategorie";
 "CATEGORY_ADD" = "Dodaj Kategorię";
 "ADD_TO_LIBRARY" = "Dodaj do Biblioteki";
@@ -63,7 +63,7 @@
 "LIBRARY_EMPTY" = "Biblioteka jest pusta";
 "MANGA_INFO" = "Manga Info";
 "SORT_BY" = "Sortuj według";
-"DATE_ADDED" = "Dacie Dodania";
+"SORT_DATE_ADDED" = "Dacie Dodania";
 "CATEGORY_ADD_TEXT" = "Wpisz nazwę nowej kategorii.";
 "BROWSE_NO_SOURCES" = "Brak źródeł";
 "EXTERNAL" = "Zewnętrzne";
@@ -72,7 +72,7 @@
 
 // Manga
 "UNTITLED" = "Bez tytułu";
-"HIATUS" = "Przerwa Wydawnicza";
+"STATUS_HIATUS" = "Przerwa Wydawnicza";
 "NSFW" = "NSFW";
 "MISSING_SOURCE" = "Brakujące źródło";
 "DESELECT_ALL" = "Odznacz Wszystko";
@@ -252,7 +252,7 @@
 "TRACK_READING" = "Czytane";
 "ONESHOT" = "Jednorazowiec";
 "MANHWA" = "Manhwa";
-"NOT_PUBLISHED" = "Nie wydane";
+"STATUS_NOT_PUBLISHED" = "Nie wydane";
 "MANGA" = "Manga";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Light Novela";
@@ -265,15 +265,15 @@
 "CACHE_SIZE_%@" = "Rozmiar pamięci: %@";
 "FAILED_CHAPTER_LOAD_INFO" = "Możesz być offline lub źródło może mieć problemy.";
 "RELOAD" = "Załaduj ponownie";
-"UNREAD_CHAPTERS" = "Nieprzeczytane rozdziały";
+"SORT_UNREAD_CHAPTERS" = "Nieprzeczytane rozdziały";
 "%i_PAGES_LEFT" = "Pozostało %i stron";
 "%i_OF_%i" = "%i z %i";
 "FAILED_CHAPTER_LOAD" = "Nie udało się załadować rozdziału";
-"LAST_UPDATED" = "Ostatnio zaktualizowane";
+"SORT_LAST_UPDATED" = "Ostatnio zaktualizowane";
 "WEBTOON" = "Webtoon";
 "REMOVE_FROM_CATEGORY" = "Usuń z kategorii";
 "ONE_PAGE_LEFT" = "Została 1 strona";
-"TOTAL_CHAPTERS" = "Wszystkie rozdziały";
+"SORT_TOTAL_CHAPTERS" = "Wszystkie rozdziały";
 "MIGRATE_SOURCES" = "Migruj źródła";
 "SYNC_LOCAL_HISTORY" = "Synchronizuj historię lokalną";
 "MOST_CHAPTERS_SLOWER" = "Większość rozdziałów (wolniej)";

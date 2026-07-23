@@ -70,11 +70,11 @@ extension AidokuRunner.Source {
                         canExclude: true,
                         usesTagStyle: false,
                         options: [
-                            NSLocalizedString("ONGOING"),
-                            NSLocalizedString("HIATUS"),
-                            NSLocalizedString("COMPLETED"),
-                            NSLocalizedString("CANCELLED"),
-                            NSLocalizedString("ENDED")
+                            NSLocalizedString("STATUS_ONGOING"),
+                            NSLocalizedString("STATUS_HIATUS"),
+                            NSLocalizedString("STATUS_COMPLETED"),
+                            NSLocalizedString("STATUS_CANCELLED"),
+                            NSLocalizedString("STATUS_ENDED")
                         ],
                         ids: ["0", "1", "2", "3", "4"],
                     ))
@@ -770,7 +770,7 @@ extension KavitaSourceRunner {
     }
 
     private func updateSourceConfig(updateSourceList: Bool = false) {
-        let config = CustomSourceConfig.kavita(key: sourceKey, name: name, server: server)
+        let config = CustomSourceConfig.kavita(.init(key: sourceKey, name: name, server: server))
         SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }

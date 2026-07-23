@@ -28,11 +28,11 @@
 "MANGA_INFO" = "מידע על המנגה";
 "SORT_BY" = "סדר לפי";
 "FILTER_BY" = "סנן לפי";
-"TITLE" = "כותרת";
-"LAST_OPENED" = "נפתח לאחרונה";
-"LAST_READ" = "נקרא לאחרונה";
-"LATEST_CHAPTER" = "הפרק האחרון";
-"DATE_ADDED" = "תאריך הוספה";
+"SORT_TITLE" = "כותרת";
+"SORT_LAST_OPENED" = "נפתח לאחרונה";
+"SORT_LAST_READ" = "נקרא לאחרונה";
+"SORT_LATEST_CHAPTER" = "הפרק האחרון";
+"SORT_DATE_ADDED" = "תאריך הוספה";
 
 // Categories
 "ALL" = "הכל";
@@ -51,7 +51,7 @@
 
 // Manga
 "UNTITLED" = "ללא כותרת";
-"HIATUS" = "הפסקה";
+"STATUS_HIATUS" = "הפסקה";
 "SUGGESTIVE" = "מרמז";
 "MISSING_SOURCE" = "מקור חסר";
 "MISSING_SOURCE_TEXT" = "המקור המקורי של המנגה הזו לא נמצא. אנא הורד אותה מחדש או מחק אותה מהספרייה.";
@@ -129,9 +129,9 @@
 "VERSION" = "גרסה";
 "BUILD" = "Build";
 "BUTTON_FILTER" = "סנן";
-"ONGOING" = "מתמשך";
-"CANCELLED" = "מבוטל";
-"COMPLETED" = "הושלם";
+"STATUS_ONGOING" = "מתמשך";
+"STATUS_CANCELLED" = "מבוטל";
+"STATUS_COMPLETED" = "הושלם";
 "MORE" = "עוד";
 "NO_CHAPTERS" = "אין פרקים";
 "READ" = "נקרא";
@@ -240,13 +240,13 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "האם אתה בטוח שברצונך להסיר את כל ההורדות?";
 "CACHE_SIZE_%@" = "גודל מטמון: %@";
 "SUPPORT_VIA_KOFI" = "תמיכה באמצעות Ko-Fi";
-"UNREAD_CHAPTERS" = "פרקים שלא נקראו";
+"SORT_UNREAD_CHAPTERS" = "פרקים שלא נקראו";
 "RELOAD" = "טעינה מחדש";
 "%i_PAGES_LEFT" = "%i עמודים נותרו";
 "ONE_PAGE_LEFT" = "עמוד אחד נותר";
 "FAILED_CHAPTER_LOAD" = "טעינת הפרק נכשלה";
-"LAST_UPDATED" = "עודכן לאחרונה";
-"TOTAL_CHAPTERS" = "סך הכל פרקים";
+"SORT_LAST_UPDATED" = "עודכן לאחרונה";
+"SORT_TOTAL_CHAPTERS" = "סך הכל פרקים";
 "FAILED_CHAPTER_LOAD_INFO" = "יכול להיות שאתה לא מחובר לאינטרנט או שהמקור נתקל בבעיות.";
 "WEBTOON" = "קומיקס אינטרנט";
 "PINNED" = "הודבק";
@@ -276,7 +276,7 @@
 "CLEAR_READ_HISTORY_TEXT" = "פעולה זו היא בלתי הפיכה. כל היסטוריית הקריאה תוסר.";
 "LIBRARY_LOCKED" = "הספרייה נעולה.";
 "CATEGORY_LOCKED" = "הקטגוריה נעולה.";
-"NOT_PUBLISHED" = "לא יצא לאור";
+"STATUS_NOT_PUBLISHED" = "לא יצא לאור";
 "TYPE_COLON_%@" = "סוג: %@";
 "RENAME_CATEGORY_FAIL_INFO" = "שמות קטגוריה חייבים להיות מיוחדים.";
 "MIGRATE_%i_ITEMS?" = "להעביר %i פריטים?";

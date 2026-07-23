@@ -11,8 +11,15 @@ import Foundation
 enum CustomSourceConfig {
     case demo
     case local
-    case komga(key: String, name: String, server: String)
-    case kavita(key: String, name: String, server: String)
+    case komga(KeyNameServer)
+    case kavita(KeyNameServer)
+    case suwayomi(KeyNameServer)
+
+    struct KeyNameServer {
+        let key: String
+        let name: String
+        let server: String
+    }
 }
 
 extension CustomSourceConfig {
@@ -22,10 +29,12 @@ extension CustomSourceConfig {
                 .demo()
             case .local:
                 .local()
-            case let .komga(key, name, server):
-                .komga(key: key, name: name, server: server)
-            case let .kavita(key, name, server):
-                .kavita(key: key, name: name, server: server)
+            case let .komga(config):
+                .komga(key: config.key, name: config.name, server: config.server)
+            case let .kavita(config):
+                .kavita(key: config.key, name: config.name, server: config.server)
+            case let .suwayomi(config):
+                .suwayomi(key: config.key, name: config.name, server: config.server)
         }
     }
 }
@@ -63,14 +72,19 @@ extension CustomSourceConfig {
                 let key = try decodeString()
                 let name = try decodeString()
                 let server = try decodeString()
-                self = .komga(key: key, name: name, server: server)
+                self = .komga(.init(key: key, name: name, server: server))
             case 2:
                 self = .local
             case 3:
                 let key = try decodeString()
                 let name = try decodeString()
                 let server = try decodeString()
-                self = .kavita(key: key, name: name, server: server)
+                self = .kavita(.init(key: key, name: name, server: server))
+            case 4:
+                let key = try decodeString()
+                let name = try decodeString()
+                let server = try decodeString()
+                self = .suwayomi(.init(key: key, name: name, server: server))
             default:
                 throw DecodingError.dataCorrupted(.init(
                     codingPath: [],
@@ -85,18 +99,25 @@ extension CustomSourceConfig {
         switch self {
             case .demo:
                 bytes.append(0)
-            case let .komga(key, name, server):
+            case let .komga(config):
                 bytes.append(1)
-                for string in [key, name, server] {
+                for string in [config.key, config.name, config.server] {
                     let utf8 = [UInt8](string.utf8)
                     varInt(UInt64(utf8.count), data: &bytes)
                     bytes.append(contentsOf: utf8)
                 }
             case .local:
                 bytes.append(2)
-            case let .kavita(key, name, server):
+            case let .kavita(config):
                 bytes.append(3)
-                for string in [key, name, server] {
+                for string in [config.key, config.name, config.server] {
+                    let utf8 = [UInt8](string.utf8)
+                    varInt(UInt64(utf8.count), data: &bytes)
+                    bytes.append(contentsOf: utf8)
+                }
+            case let .suwayomi(config):
+                bytes.append(4)
+                for string in [config.key, config.name, config.server] {
                     let utf8 = [UInt8](string.utf8)
                     varInt(UInt64(utf8.count), data: &bytes)
                     bytes.append(contentsOf: utf8)

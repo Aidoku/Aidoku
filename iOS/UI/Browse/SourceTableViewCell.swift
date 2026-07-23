@@ -185,6 +185,8 @@ class SourceTableViewCell: UITableViewCell {
                     iconView.image = UIImage.komga
                 case let x where x.hasPrefix(KavitaSourceRunner.sourceKeyPrefix):
                     iconView.image = UIImage.kavita
+                case let x where x.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix):
+                    iconView.image = UIImage.suwayomi
                 default:
                     break
             }

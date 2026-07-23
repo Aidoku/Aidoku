@@ -561,9 +561,13 @@ extension ReaderTextViewController {
                 return
             }
 
-            // Don't infinite-scroll into non-text chapters — the reading mode
-            // would switch abruptly. The boundary transition view stays visible.
+            // Non-text chapter: hand off to the parent controller, which
+            // switches to the appropriate reader and reloads the chapter.
             guard newPages.allSatisfy({ $0.isTextPage }) else {
+                await MainActor.run {
+                    delegate?.setChapter(nextCh)
+                    delegate?.setPages(newPages)
+                }
                 loadingNext = false
                 return
             }
@@ -630,8 +634,13 @@ extension ReaderTextViewController {
                 return
             }
 
-            // Don't infinite-scroll into non-text chapters
+            // Non-text chapter: hand off to the parent controller, which
+            // switches to the appropriate reader and reloads the chapter.
             guard newPages.allSatisfy({ $0.isTextPage }) else {
+                await MainActor.run {
+                    delegate?.setChapter(prevCh)
+                    delegate?.setPages(newPages)
+                }
                 loadingPrevious = false
                 return
             }

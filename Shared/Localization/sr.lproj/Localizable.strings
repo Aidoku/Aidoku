@@ -109,14 +109,14 @@
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Да ли сте сигурни да желите да уклоните сва преузимања?";
 "CACHE_SIZE_%@" = "Величина кеша: %@";
 "SUPPORT_VIA_KOFI" = "Подршка преко Ko-Fi";
-"UNREAD_CHAPTERS" = "Непрочитана поглавља";
+"SORT_UNREAD_CHAPTERS" = "Непрочитана поглавља";
 "RELOAD" = "Поново учитај";
 "%i_OF_%i" = "%i од %i";
 "%i_PAGES_LEFT" = "%i страница преостало";
 "ONE_PAGE_LEFT" = "1 страница преостала";
 "FAILED_CHAPTER_LOAD" = "Неуспело учитавање поглавља";
-"LAST_UPDATED" = "Последње ажурирано";
-"TOTAL_CHAPTERS" = "Укупно поглавља";
+"SORT_LAST_UPDATED" = "Последње ажурирано";
+"SORT_TOTAL_CHAPTERS" = "Укупно поглавља";
 "FAILED_CHAPTER_LOAD_INFO" = "Можда сте офлајн или извор има проблема.";
 "WEBTOON" = "Вебтун";
 "REMOVE_FROM_CATEGORY" = "Уклони из категорије";
@@ -148,7 +148,7 @@
 // Library
 "LIBRARY" = "Библиотека";
 "SORT_BY" = "Сортирај по";
-"DATE_ADDED" = "Датум додавања";
+"SORT_DATE_ADDED" = "Датум додавања";
 "EDIT_CATEGORIES" = "Уреди категорије";
 "CATEGORY_ADD_TEXT" = "Унесите наслов нове категорије за креирање.";
 "MISSING_SOURCE_TEXT" = "Изгледа да оригинални извор недостаје за ову мангу. Молимо вас да је поново преузмете или уклоните овај наслов из ваше библиотеке.";
@@ -219,10 +219,10 @@
 "REMOVE_FROM_LIBRARY" = "Уклони из библиотеке";
 "MANGA_INFO" = "Информације о манги";
 "FILTER_BY" = "Филтрирај по";
-"TITLE" = "Наслов";
-"LAST_OPENED" = "Последње отворено";
-"LAST_READ" = "Последње прочитано";
-"LATEST_CHAPTER" = "Најновије поглавље";
+"SORT_TITLE" = "Наслов";
+"SORT_LAST_OPENED" = "Последње отворено";
+"SORT_LAST_READ" = "Последње прочитано";
+"SORT_LATEST_CHAPTER" = "Најновије поглавље";
 "COVER" = "Насловна страна";
 
 // Categories
@@ -243,10 +243,10 @@
 "BUTTON_UPDATE" = "АЖУРИРАЈ";
 "BUTTON_GET" = "ПРЕУЗМИ";
 "BUTTON_ERROR" = "ГРЕШКА";
-"ONGOING" = "У току";
-"CANCELLED" = "Отказано";
-"COMPLETED" = "Завршено";
-"HIATUS" = "Пауза";
+"STATUS_ONGOING" = "У току";
+"STATUS_CANCELLED" = "Отказано";
+"STATUS_COMPLETED" = "Завршено";
+"STATUS_HIATUS" = "Пауза";
 "SUGGESTIVE" = "Сугестивно";
 "NSFW" = "NSFW";
 "MORE" = "више";
@@ -314,7 +314,7 @@
 "TRACK_PAUSED" = "Паузирано";
 "STOP_TRACKING" = "Престани праћење";
 "ONESHOT" = "Једнократни";
-"NOT_PUBLISHED" = "Није објављено";
+"STATUS_NOT_PUBLISHED" = "Није објављено";
 "LIGHT_NOVEL" = "Лагана новела";
 "PINNED" = "Прикачено";
 "SELECT" = "Изабери";

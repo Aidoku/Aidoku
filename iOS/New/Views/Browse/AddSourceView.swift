@@ -21,6 +21,7 @@ struct AddSourceView: View {
     @State private var showLocalSetup = false
     @State private var showKomgaSetup = false
     @State private var showKavitaSetup = false
+    @State private var showSuwayomiSetup = false
     @State private var showImportFailAlert = false
 
     @State private var searchFocused: Bool? = false
@@ -273,6 +274,22 @@ struct AddSourceView: View {
                 }
             )
             .background(NavigationLink("", destination: KavitaSetupView(), isActive: $showKavitaSetup).hidden())
+
+            ExternalSourceTableCell(
+                source: .init(
+                    sourceId: "suwayomi",
+                    name: NSLocalizedString("SUWAYOMI"),
+                    languages: ["multi"],
+                    version: 1,
+                    contentRating: .safe
+                ),
+                subtitle: NSLocalizedString("SUWAYOMI_TAGLINE"),
+                onGet: {
+                    showSuwayomiSetup = true
+                    return true
+                }
+            )
+            .background(NavigationLink("", destination: SuwayomiSetupView(), isActive: $showSuwayomiSetup).hidden())
         }
     }
 

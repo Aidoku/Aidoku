@@ -33,7 +33,7 @@
 "OK" = "OK";
 "UNKNOWN" = "Sconosciuto";
 "FILTER_BY" = "Filtra per";
-"TITLE" = "Titolo";
+"SORT_TITLE" = "Titolo";
 "EDIT_CATEGORIES" = "Modifica Categorie";
 "CATEGORY_ADD" = "Aggiungi Categoria";
 "CATEGORY_ADD_TEXT" = "Inserisci il nome della nuova categoria da creare.";
@@ -78,7 +78,7 @@
 
 // Manga
 "UNTITLED" = "Senza titolo";
-"ONGOING" = "In corso";
+"STATUS_ONGOING" = "In corso";
 "NSFW" = "NSFW";
 "MISSING_SOURCE_TEXT" = "La fonte originale sembra essere mancante per questo manga. Per favore riscaricalo o rimuovi questo titolo dalla tua raccolta.";
 "SELECT_ALL" = "Seleziona tutto";
@@ -86,11 +86,11 @@
 "UNREAD" = "Non letto";
 "MARK" = "Contrassegna";
 "CURRENT_COLON" = "Attuale:";
-"LAST_OPENED" = "Ultima apertura";
-"LAST_READ" = "Ultima lettura";
-"LATEST_CHAPTER" = "Ultimo capitolo";
+"SORT_LAST_OPENED" = "Ultima apertura";
+"SORT_LAST_READ" = "Ultima lettura";
+"SORT_LATEST_CHAPTER" = "Ultimo capitolo";
 "VERTICAL_SCROLL" = "Scorrimento verticale";
-"DATE_ADDED" = "Data di aggiunta";
+"SORT_DATE_ADDED" = "Data di aggiunta";
 "LINK_COPIED" = "Link Copiato";
 "LINK_COPIED_TEXT" = "Il link è stato copiato negli appunti.";
 
@@ -105,9 +105,9 @@
 "VERSION" = "Versione";
 "BUTTON_FILTER" = "Filtra";
 "LIST_HEADER" = "Lista";
-"CANCELLED" = "Annullato";
-"COMPLETED" = "Concluso";
-"HIATUS" = "In pausa";
+"STATUS_CANCELLED" = "Annullato";
+"STATUS_COMPLETED" = "Concluso";
+"STATUS_HIATUS" = "In pausa";
 "MORE" = "altro";
 "INSTALLED" = "Installato";
 
@@ -238,13 +238,13 @@
 "VOL_SPACE_X" = "Vol. %g";
 "PORTRAIT" = "Verticale";
 "LANDSCAPE" = "Orizzontale";
-"UNREAD_CHAPTERS" = "Capitoli non letti";
+"SORT_UNREAD_CHAPTERS" = "Capitoli non letti";
 "FAILED_CHAPTER_LOAD_INFO" = "Potresti essere offline o la fonte potrebbe avere dei problemi.";
 "RELOAD" = "Ricarica";
 "%i_OF_%i" = "%i di %i";
 "ONE_PAGE_LEFT" = "1 pagina rimanente";
-"LAST_UPDATED" = "Ultimo aggiornamento";
-"TOTAL_CHAPTERS" = "Capitoli totali";
+"SORT_LAST_UPDATED" = "Ultimo aggiornamento";
+"SORT_TOTAL_CHAPTERS" = "Capitoli totali";
 "WEBTOON" = "Webtoon";
 "FINISHED" = "Finito";
 "%i_PAGES_LEFT" = "%i pagine rimanenti";
@@ -260,7 +260,7 @@
 "TRACK_READING" = "In lettura";
 "TRACK_PLANNING" = "Pianificato";
 "TRACK_DROPPED" = "Abbandonato";
-"NOT_PUBLISHED" = "Non pubblicato";
+"STATUS_NOT_PUBLISHED" = "Non pubblicato";
 "TYPE_COLON_%@" = "Tipo: %@";
 "STATUS_COLON_%@" = "Stato: %@";
 "VIEW_ON_WEBSITE" = "Visualizza sul sito web";

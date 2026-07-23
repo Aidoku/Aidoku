@@ -24,11 +24,11 @@
 "LIBRARY_SEARCH" = "იპოვეთ ბიბლიოთეკაში";
 "SORT_BY" = "დალაგება";
 "FILTER_BY" = "გაფილტვრა";
-"TITLE" = "სათაური";
-"LAST_OPENED" = "ბოლოს გახსნილი";
-"LAST_READ" = "ბოლოს წაკითხული";
-"LATEST_CHAPTER" = "უახლესი თავი";
-"DATE_ADDED" = "დამატების თარიღი";
+"SORT_TITLE" = "სათაური";
+"SORT_LAST_OPENED" = "ბოლოს გახსნილი";
+"SORT_LAST_READ" = "ბოლოს წაკითხული";
+"SORT_LATEST_CHAPTER" = "უახლესი თავი";
+"SORT_DATE_ADDED" = "დამატების თარიღი";
 
 // Categories
 "ALL" = "ყველა";
@@ -114,8 +114,8 @@
 "CATEGORY_ADD_TEXT" = "შეიყვანეთ შესაქმნელი ახალი კატეგორიის სახელი.";
 "INFO" = "ინფორმაცია";
 "VERSION" = "ვერსია";
-"ONGOING" = "მიმდინარე";
-"CANCELLED" = "გაუქმებული";
+"STATUS_ONGOING" = "მიმდინარე";
+"STATUS_CANCELLED" = "გაუქმებული";
 
 // Library
 "LIBRARY" = "ბიბლიოთეკა";
@@ -129,8 +129,8 @@
 "UPDATES" = "განახლებები";
 "BUTTON_GET" = "მიღება";
 "BUTTON_ERROR" = "შეცდომა";
-"COMPLETED" = "დასრულებული";
-"HIATUS" = "ჰიატუსი";
+"STATUS_COMPLETED" = "დასრულებული";
+"STATUS_HIATUS" = "ჰიატუსი";
 "SOURCE_ORDER" = "წყაროების რიგი";
 "MISSING_SOURCE_TEXT" = "როგორც ჩანს, ორიგინალი წყარო აკლია ამ მანგას. გთხოვთ, ხელახლა გადმოწეროთ ან წაშალოთ ეს სათაური თქვენი ბიბლიოთეკიდან.";
 "DESELECT_ALL" = "გააუქმეთ ყველა მონიშვნა";

@@ -54,7 +54,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
         if let state = try await api.getState(sourceKey: sourceKey, seriesId: seriesId) {
             return state
         } else {
-            throw KomgaTrackerError.getStateFailed
+            throw KavitaTrackerError.getStateFailed
         }
     }
 
@@ -81,7 +81,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
             let seriesId = Int(seriesId),
             let chapterId = Int(chapter.key)
         else {
-            return
+            throw KavitaTrackerError.invalidId
         }
         try await api.updateReadProgress(
             sourceKey: sourceKey,
@@ -127,7 +127,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
 extension KavitaTracker {
     private func getIdParts(from id: String) throws -> (sourceKey: String, seriesId: String) {
         let split = id.split(separator: idSeparator, maxSplits: 2).map(String.init)
-        guard split.count == 2 else { throw KomgaTrackerError.invalidId }
+        guard split.count == 2 else { throw KavitaTrackerError.invalidId }
         return (sourceKey: split[0], seriesId: split[1])
     }
 }
@@ -135,5 +135,4 @@ extension KavitaTracker {
 enum KavitaTrackerError: Error {
     case invalidId
     case getStateFailed
-    case notLoggedIn
 }

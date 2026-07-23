@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BackupCreateView: View {
+    @State private var name = ""
     @State private var libraryEntries = true
     @State private var chapters = true
     @State private var tracking = true
@@ -24,6 +25,13 @@ struct BackupCreateView: View {
     var body: some View {
         PlatformNavigationStack {
             List {
+                Section {
+                    TextField(NSLocalizedString("BACKUP_NAME"), text: $name)
+                        .autocorrectionDisabled()
+                        .submitLabel(.done)
+                } header: {
+                    Text(NSLocalizedString("BACKUP_NAME"))
+                }
                 Section {
                     Toggle(NSLocalizedString("LIBRARY_ENTRIES"), isOn: $libraryEntries)
                     Toggle(NSLocalizedString("CHAPTERS"), isOn: $chapters)
@@ -54,18 +62,21 @@ struct BackupCreateView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     DoneButton {
                         Task {
-                            await BackupManager.shared.saveNewBackup(options: .init(
-                                libraryEntries: libraryEntries,
-                                history: history,
-                                chapters: chapters,
-                                tracking: tracking,
-                                readingSessions: readingSessions,
-                                updates: updates,
-                                categories: categories,
-                                settings: settings,
-                                sourceLists: sourceLists,
-                                sensitiveSettings: sensitiveSettings
-                            ))
+                            await BackupManager.shared.saveNewBackup(
+                                name: name,
+                                options: .init(
+                                    libraryEntries: libraryEntries,
+                                    history: history,
+                                    chapters: chapters,
+                                    tracking: tracking,
+                                    readingSessions: readingSessions,
+                                    updates: updates,
+                                    categories: categories,
+                                    settings: settings,
+                                    sourceLists: sourceLists,
+                                    sensitiveSettings: sensitiveSettings
+                                )
+                            )
                         }
                         dismiss()
                     }

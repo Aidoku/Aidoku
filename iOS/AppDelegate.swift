@@ -605,7 +605,7 @@ extension AppDelegate {
             }
         } else if
             SourceManager.shared.localSourceInstalled
-                && (url.pathExtension == "cbz" || url.pathExtension == "zip")
+                && LocalFileManager.allowedFileExtensions.contains(url.pathExtension.lowercased())
         {
             Task {
                 let fileInfo = await LocalFileManager.shared.loadImportFileInfo(url: url)

@@ -29,9 +29,9 @@
 "MANGA_INFO" = "Manga Informatie";
 "SORT_BY" = "Sorteren op";
 "FILTER_BY" = "Filter op";
-"TITLE" = "Titel";
-"LATEST_CHAPTER" = "Nieuwste hoofdstuk";
-"DATE_ADDED" = "Datum toegevoegd";
+"SORT_TITLE" = "Titel";
+"SORT_LATEST_CHAPTER" = "Nieuwste hoofdstuk";
+"SORT_DATE_ADDED" = "Datum toegevoegd";
 "COVER" = "Omslag";
 
 // Categories
@@ -56,10 +56,10 @@
 
 // Manga
 "UNTITLED" = "Zonder titel";
-"ONGOING" = "Voortdurende";
-"CANCELLED" = "Geannuleerd";
-"COMPLETED" = "Voltooid";
-"HIATUS" = "Pauze";
+"STATUS_ONGOING" = "Voortdurende";
+"STATUS_CANCELLED" = "Geannuleerd";
+"STATUS_COMPLETED" = "Voltooid";
+"STATUS_HIATUS" = "Pauze";
 "SUGGESTIVE" = "Suggestief";
 "BUILD" = "Bouw";
 "MISSING_SOURCE" = "Ontbrekende bron";
@@ -187,18 +187,18 @@
 "TRACK_PAUSED" = "Gepauzeerd";
 "TRACK_READING" = "Lezen";
 "TRACK_PLANNING" = "Planning";
-"NOT_PUBLISHED" = "Niet gepubliceerd";
+"STATUS_NOT_PUBLISHED" = "Niet gepubliceerd";
 "MANHWA" = "Manhwa";
 "VIEW_ON_WEBSITE" = "Zie op website";
 "REMOVE_ALL_DOWNLOADS_CONFIRM" = "Weet u zeker dat u alle downloads wilt verwijderen?";
 "SUPPORT_VIA_KOFI" = "Ondersteun via Ko-Fi";
-"UNREAD_CHAPTERS" = "Ongelezen hoofdstukken";
+"SORT_UNREAD_CHAPTERS" = "Ongelezen hoofdstukken";
 "RELOAD" = "Herladen";
 "%i_PAGES_LEFT" = "%i pagina's te gaan";
 "ONE_PAGE_LEFT" = "1 pagina te gaan";
 "FAILED_CHAPTER_LOAD" = "Kan hoofdstuk niet laden";
-"LAST_UPDATED" = "Laatst bijgewerkt";
-"TOTAL_CHAPTERS" = "Totaal hoofdstukken";
+"SORT_LAST_UPDATED" = "Laatst bijgewerkt";
+"SORT_TOTAL_CHAPTERS" = "Totaal hoofdstukken";
 "FAILED_CHAPTER_LOAD_INFO" = "Mogelijk bent u offline of ondervindt de bron problemen.";
 "REMOVE_FROM_CATEGORY" = "Verwijderen uit categorie";
 "1_CHAPTER" = "1 Hoofdstuk";
@@ -232,8 +232,8 @@
 "DOWNLOADED" = "Gedownload";
 "REMOVE_DOWNLOAD" = "Verwijder download";
 "REMOVE_DOWNLOADS" = "Verwijder downloads";
-"LAST_OPENED" = "Laatst geopend";
-"LAST_READ" = "Laatst gelezen";
+"SORT_LAST_OPENED" = "Laatst geopend";
+"SORT_LAST_READ" = "Laatst gelezen";
 "NONE" = "Geen";
 
 // Browse

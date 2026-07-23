@@ -26,10 +26,10 @@
 "LIBRARY" = "लाइब्रेरी";
 "ADD_TO_LIBRARY" = "लाइब्रेरी में जोड़े";
 "REMOVE_FROM_LIBRARY" = "लाइब्रेरी से हटाएँ";
-"LAST_OPENED" = "पिछली बार खोला गया";
-"LAST_READ" = "पिछली बार पढ़े";
-"LATEST_CHAPTER" = "लेटेस्ट चैप्टर";
-"DATE_ADDED" = "डेट ऐडेड";
+"SORT_LAST_OPENED" = "पिछली बार खोला गया";
+"SORT_LAST_READ" = "पिछली बार पढ़े";
+"SORT_LATEST_CHAPTER" = "लेटेस्ट चैप्टर";
+"SORT_DATE_ADDED" = "डेट ऐडेड";
 
 // Categories
 "ALL" = "सब";
@@ -63,10 +63,10 @@
 
 // Manga
 "UNTITLED" = "अंटाइटल्ड";
-"ONGOING" = "ऑनगोइंग";
-"CANCELLED" = "कैन्सेल्ड";
-"COMPLETED" = "ख़त्म";
-"HIATUS" = "रुका हुआ";
+"STATUS_ONGOING" = "ऑनगोइंग";
+"STATUS_CANCELLED" = "कैन्सेल्ड";
+"STATUS_COMPLETED" = "ख़त्म";
+"STATUS_HIATUS" = "रुका हुआ";
 "SUGGESTIVE" = "सजेस्टिव";
 "NSFW" = "नसफव";
 "MORE" = "ज़्यादा";
@@ -126,7 +126,7 @@
 "LIBRARY_SEARCH" = "लाइब्रेरी में ढूँढे";
 "MANGA_INFO" = "माँगा जानकारी";
 "REMOVE_DOWNLOADS_CONFIRM" = "क्या आप निश्चित है की आप सभी सिलेक्टेड डाउन्लोड्ज़ को हटाना चाहते है?";
-"TITLE" = "टाइटल";
+"SORT_TITLE" = "टाइटल";
 "LIBRARY_EMPTY" = "लाइब्रेरी ख़ाली";
 "FILTER_BY" = "फ़िल्टर बाई";
 "INFO" = "जानकारी";
