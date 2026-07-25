@@ -16,8 +16,7 @@ struct ReaderTextView: View {
    let fontSize: Double
    let lineSpacing: Double
    let horizontalPadding: Double
-   // stored (not read in body) so theme changes invalidate the view
-   let textColor = Color(uiColor: ReaderTextTheme.text)
+   let textColor: Color
 
    init(
        source: AidokuRunner.Source?,
@@ -25,13 +24,15 @@ struct ReaderTextView: View {
        fontFamily: String,
        fontSize: Double,
        lineSpacing: Double,
-       horizontalPadding: Double
+       horizontalPadding: Double,
+       textColor: Color
    ) {
        self.source = source
        self.fontFamily = fontFamily
        self.fontSize = fontSize
        self.lineSpacing = lineSpacing
        self.horizontalPadding = horizontalPadding
+       self.textColor = textColor
 
        func loadText(page: Page) -> String? {
            if let text = page.text {

@@ -690,27 +690,40 @@ extension ReaderViewController {
         let themed = isTextReader && theme != .system
         navigationController?.overrideUserInterfaceStyle = themed ? theme.interfaceStyle : .unspecified
 
-        // the bar title color comes from the appearance objects set in configure()
-        // (which take precedence over navigationBar.titleTextAttributes and don't
-        // follow the trait override), so write the theme color into them directly
+        // the bar renders from the appearance objects set in configure(), which
+        // don't follow the trait override (they resolve against the device style),
+        // so write the theme colors into them directly: the bar background matches
+        // the page (like the books app) and the title uses the theme text color
         let titleColor = themed ? theme.textColor : nil
         if let navigationBar = navigationController?.navigationBar {
-            func applyTitleColor(_ appearance: UINavigationBarAppearance) {
-                if let titleColor {
-                    appearance.titleTextAttributes[.foregroundColor] = titleColor
+            func applyTheme(_ appearance: UINavigationBarAppearance) {
+                if themed {
+                    if #available(iOS 26.0, *), reader is ReaderTextViewController {
+                        // scroll reader: text scrolls under the bar, so keep it
+                        // transparent for the liquid glass look over the page
+                        appearance.configureWithTransparentBackground()
+                    } else {
+                        // paged reader: nothing extends under the bar (the paginator
+                        // reserves the top), so match the page color seamlessly
+                        appearance.backgroundEffect = nil
+                        appearance.backgroundColor = theme.backgroundColor
+                        appearance.shadowColor = .clear
+                    }
+                    appearance.titleTextAttributes[.foregroundColor] = theme.textColor
                 } else {
+                    appearance.configureWithDefaultBackground()
                     appearance.titleTextAttributes.removeValue(forKey: .foregroundColor)
                 }
             }
             let standard = navigationBar.standardAppearance
-            applyTitleColor(standard)
+            applyTheme(standard)
             navigationBar.standardAppearance = standard
             if let compact = navigationBar.compactAppearance {
-                applyTitleColor(compact)
+                applyTheme(compact)
                 navigationBar.compactAppearance = compact
             }
             if let scrollEdge = navigationBar.scrollEdgeAppearance {
-                applyTitleColor(scrollEdge)
+                applyTheme(scrollEdge)
                 navigationBar.scrollEdgeAppearance = scrollEdge
             }
         }

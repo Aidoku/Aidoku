@@ -117,7 +117,8 @@ class ReaderTextViewController: BaseViewController {
             rootView: ReaderTextView(
                 source: viewModel.source, page: page,
                 fontFamily: currentFontFamily, fontSize: currentFontSize,
-                lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding
+                lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
+                textColor: Color(uiColor: ReaderTextTheme.text)
             )
         )
         if #available(iOS 16.0, *) {
@@ -180,7 +181,8 @@ class ReaderTextViewController: BaseViewController {
                 hc.rootView = ReaderTextView(
                     source: viewModel.source, page: page,
                     fontFamily: currentFontFamily, fontSize: currentFontSize,
-                    lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding
+                    lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
+                    textColor: Color(uiColor: ReaderTextTheme.text)
                 )
                 hc.view.invalidateIntrinsicContentSize()
             }
@@ -202,20 +204,6 @@ class ReaderTextViewController: BaseViewController {
                 self, selector: #selector(textStyleChanged),
                 name: .init(key), object: nil
             )
-        }
-
-        // the top edge effect only makes sense under the floating bars,
-        // otherwise it dims the top of the page
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(showTopEdgeEffect),
-            name: .readerShowingBars, object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self, selector: #selector(hideTopEdgeEffect),
-            name: .readerHidingBars, object: nil
-        )
-        if navigationController?.navigationBar.isHidden == true {
-            hideTopEdgeEffect()
         }
 
         scrollView.addSubview(contentStackView)
@@ -434,18 +422,6 @@ extension ReaderTextViewController {
     @objc private func textStyleChanged() {
         scrollView.backgroundColor = ReaderTextTheme.background
         refreshTextViews()
-    }
-
-    @objc private func showTopEdgeEffect() {
-        if #available(iOS 27.0, *) {
-            scrollView.topEdgeEffect.isHidden = false
-        }
-    }
-
-    @objc private func hideTopEdgeEffect() {
-        if #available(iOS 27.0, *) {
-            scrollView.topEdgeEffect.isHidden = true
-        }
     }
 
     // MARK: - Chapter Section Index from Scroll Position

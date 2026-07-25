@@ -31,6 +31,17 @@ enum ReaderTextTheme: String, CaseIterable {
     static var background: UIColor { current.backgroundColor }
     static var text: UIColor { current.textColor }
 
+    var title: String {
+        switch self {
+            case .system: NSLocalizedString("READER_BG_COLOR_SYSTEM")
+            case .white: NSLocalizedString("READER_BG_COLOR_WHITE")
+            case .sepia: NSLocalizedString("TEXT_THEME_SEPIA")
+            case .paper: NSLocalizedString("TEXT_THEME_PAPER")
+            case .gray: NSLocalizedString("TEXT_THEME_GRAY")
+            case .black: NSLocalizedString("READER_BG_COLOR_BLACK")
+        }
+    }
+
     var backgroundColor: UIColor {
         switch self {
             case .system: .systemBackground

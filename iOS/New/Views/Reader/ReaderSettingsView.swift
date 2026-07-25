@@ -251,7 +251,7 @@ struct ReaderSettingsView: View {
                                 notification: .init(ReaderTextTheme.changeNotification),
                                 value: .select(.init(
                                     values: ReaderTextTheme.allCases.map(\.rawValue),
-                                    titles: Self.textThemeTitles
+                                    titles: ReaderTextTheme.allCases.map(\.title)
                                 ))
                             )
                         )
@@ -262,7 +262,7 @@ struct ReaderSettingsView: View {
                                 notification: .init(ReaderTextTheme.changeNotification),
                                 value: .select(.init(
                                     values: ReaderTextTheme.allCases.map(\.rawValue),
-                                    titles: Self.textThemeTitles
+                                    titles: ReaderTextTheme.allCases.map(\.title)
                                 ))
                             )
                         )
@@ -422,16 +422,4 @@ struct ReaderSettingsView: View {
             }
         }
     }
-}
-
-extension ReaderSettingsView {
-    /// Localized titles for the text reader themes, in `ReaderTextTheme.allCases` order.
-    static let textThemeTitles: [String] = [
-        NSLocalizedString("READER_BG_COLOR_SYSTEM"),
-        NSLocalizedString("READER_BG_COLOR_WHITE"),
-        NSLocalizedString("TEXT_THEME_SEPIA"),
-        NSLocalizedString("TEXT_THEME_PAPER"),
-        NSLocalizedString("TEXT_THEME_GRAY"),
-        NSLocalizedString("READER_BG_COLOR_BLACK")
-    ]
 }

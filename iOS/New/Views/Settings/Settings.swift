@@ -603,7 +603,7 @@ extension Settings {
                         notification: .init(ReaderTextTheme.changeNotification),
                         value: .select(.init(
                             values: ReaderTextTheme.allCases.map(\.rawValue),
-                            titles: ReaderSettingsView.textThemeTitles
+                            titles: ReaderTextTheme.allCases.map(\.title)
                         ))
                     ),
                     .init(
@@ -612,7 +612,7 @@ extension Settings {
                         notification: .init(ReaderTextTheme.changeNotification),
                         value: .select(.init(
                             values: ReaderTextTheme.allCases.map(\.rawValue),
-                            titles: ReaderSettingsView.textThemeTitles
+                            titles: ReaderTextTheme.allCases.map(\.title)
                         ))
                     )
                 ]
