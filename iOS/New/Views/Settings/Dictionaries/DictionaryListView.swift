@@ -25,6 +25,7 @@ struct DictionaryListView: View {
     @State private var selectedDictionaryInfo: SelectedDictionary?
     @State private var importing = false
     @State private var showSafari = false
+    @State private var showGetDictionaries = false
 
     @StateObject private var dismissedInfo = UserDefaultsBool(key: "Flag.dismissedDictionaryInfo")
 
@@ -32,6 +33,12 @@ struct DictionaryListView: View {
         List {
             if !dismissedInfo.value {
                 aboutSection
+            }
+
+            Section {
+                Button(NSLocalizedString("GET_RECOMMENDED_DICTIONARIES")) {
+                    showGetDictionaries = true
+                }
             }
 
             if !dictionaryManager.updatableDictionaries.isEmpty {
@@ -124,6 +131,9 @@ struct DictionaryListView: View {
         }
         .sheet(item: $selectedDictionaryInfo) { dict in
             DictionaryInfoView(dictionary: dict)
+        }
+        .sheet(isPresented: $showGetDictionaries) {
+            DictionaryRecommendedListView()
         }
     }
 
@@ -250,5 +260,131 @@ private struct DictionaryInfoView: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+@available(iOS 18.0, *)
+private struct DictionaryRecommendedListView: View {
+    struct ExternalDictionary: Identifiable {
+        var id: String { name }
+        let name: String
+        let description: String
+        let indexUrl: String
+        let homepageUrl: String
+    }
+    private let recommendedDictionaries: [(DictionaryType, [ExternalDictionary])] = [
+        (.term, [
+            .init(
+                name: "JMdict",
+                description: "A comprehensive Japanese–English dictionary maintained by the Electronic Dictionary Research and Development Group.",
+                indexUrl: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMdict_english_without_proper_names.json",
+                homepageUrl: "https://github.com/yomidevs/jmdict-yomitan?tab=readme-ov-file#jmdict-for-yomitan"
+            ),
+            .init(
+                name: "JMnedict",
+                description: "A dictionary of Japanese proper names maintained by the Electronic Dictionary Research and Development Group.",
+                indexUrl: "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMnedict.json",
+                homepageUrl: "https://github.com/yomidevs/jmdict-yomitan?tab=readme-ov-file#jmnedict-for-yomitan"
+            )
+        ]),
+        (.frequency, [
+            .init(
+                name: "Jiten",
+                description: "A frequency dictionary based on the corpus from the media stats database at https://jiten.moe.",
+                indexUrl: "https://api.jiten.moe/api/frequency-list/index",
+                homepageUrl: "https://jiten.moe/other"
+            )
+        ])
+    ]
+
+    @State private var dictionaryManager = DictionaryManager.shared
+    @State private var safariUrl: URL?
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    let string = {
+                        let note = NSLocalizedString("RECOMMENDED_DICTIONARIES_NOTE")
+                        let learnMore = NSLocalizedString("LEARN_MORE")
+                        var string = AttributedString(note + " " + learnMore)
+                        if let range = string.range(of: learnMore) {
+                            string[range].link = URL(string: "https://yomidevs.github.io/wiktionary-to-yomitan/download/")
+                        }
+                        return string
+                    }()
+                    Text(string)
+                        .environment(
+                            \.openURL,
+                            OpenURLAction { url in
+                                safariUrl = url
+                                return .handled
+                            }
+                        )
+                }
+                ForEach(recommendedDictionaries, id: \.0) { type, dictionaries in
+                    Section(type.sectionTitle) {
+                        ForEach(dictionaries) { dictionary in
+                            cell(for: dictionary, type: type)
+                        }
+                    }
+                }
+            }
+            .navigationTitle(NSLocalizedString("RECOMMENDED_DICTIONARIES"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    CloseButton {
+                        dismiss()
+                    }
+                }
+            }
+            .sheet(isPresented: .init(get: { safariUrl != nil }, set: { _ in })) {
+                SafariView(url: $safariUrl)
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    func cell(for dictionary: ExternalDictionary, type: DictionaryType) -> some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text(dictionary.name)
+                    .foregroundStyle(.primary)
+                Text(dictionary.description)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                safariUrl = URL(string: dictionary.homepageUrl)
+            } label: {
+                Image(systemName: "safari")
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.tint)
+
+            let targetDictionaries = switch type {
+                case .term: dictionaryManager.termDictionaries
+                case .frequency: dictionaryManager.frequencyDictionaries
+                case .pitch: dictionaryManager.pitchDictionaries
+            }
+            let installed = targetDictionaries.contains(where: { $0.index.indexUrl == dictionary.indexUrl })
+            GetButton {
+                await dictionaryManager.downloadDictionary(indexUrl: dictionary.indexUrl, type: type)
+            }
+            .disabled(installed || dictionaryManager.isImporting || dictionaryManager.isUpdating)
+        }
+    }
+}
+
+private extension DictionaryType {
+    var sectionTitle: String {
+        switch self {
+            case .term: NSLocalizedString("TERM_DICTIONARIES")
+            case .frequency: NSLocalizedString("FREQUENCY_DICTIONARIES")
+            case .pitch: NSLocalizedString("PITCH_DICTIONARIES")
+        }
     }
 }

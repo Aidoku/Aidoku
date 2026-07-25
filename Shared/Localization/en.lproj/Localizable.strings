@@ -620,6 +620,9 @@
 "UPDATE_NOW" = "Update Now";
 "LAST_UPDATED_%@" = "Last updated: %@";
 "MONTHLY" = "Monthly";
+"GET_RECOMMENDED_DICTIONARIES" = "Get Recommended Dictionaries";
+"RECOMMENDED_DICTIONARIES" = "Recommended Dictionaries";
+"RECOMMENDED_DICTIONARIES_NOTE" = "The Dictionaries below are all Japanese-English language. For other languages, you can check the list of Wiktionary dictionaries.";
 
 // Backups
 "BACKUPS" = "Backups";

@@ -242,71 +242,6 @@ class DictionaryManager {
 //        }
 //    }
 
-//    func importRecommendedDictionaries() {
-//        let recommendedDictionaries: [(name: String, url: String, type: DictionaryType)] = [
-//            ("JMdict", "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMdict_english_without_proper_names.json", .term),
-//            ("JMnedict", "https://github.com/yomidevs/jmdict-yomitan/releases/latest/download/JMnedict.json", .term),
-//            ("Jiten", "https://api.jiten.moe/api/frequency-list/index", .frequency),
-//        ]
-//
-//        isImporting = true
-//
-//        Task.detached {
-//            var tempFiles: [URL] = []
-//            defer {
-//                for file in tempFiles {
-//                    try? FileManager.default.removeItem(at: file)
-//                }
-//            }
-//
-//            do {
-//                for (name, url, type) in recommendedDictionaries {
-//                    await MainActor.run {
-//                        self.currentImport = "Fetching \(name)"
-//                    }
-//
-//                    let (data, _) = try await URLSession.shared.data(from: URL(string: url)!)
-//                    let remoteIndex = try JSONDecoder().decode(DictionaryIndex.self, from: data)
-//
-//                    await MainActor.run {
-//                        self.currentImport = "Downloading \(remoteIndex.title)"
-//                    }
-//
-//                    let (temp, _) = try await URLSession.shared.download(from: URL(string: remoteIndex.downloadUrl)!)
-//                    tempFiles.append(temp)
-//
-//                    await MainActor.run {
-//                        self.currentImport = "Importing \(remoteIndex.title)"
-//                    }
-//
-//                    let destinationPath = try await Self.getDictionariesDirectory()
-//                        .appendingPathComponent(type.rawValue).path(percentEncoded: false)
-//
-//                    let importResult = dictionary_importer.import(
-//                        std.string(temp.path(percentEncoded: false)),
-//                        std.string(destinationPath)
-//                    )
-//
-//                    if !importResult.success {
-//                        throw URLError(.cannotParseResponse)
-//                    }
-//                }
-//
-//                await MainActor.run {
-//                    self.isImporting = false
-//                    self.loadDictionaries()
-//                    self.saveDictionaryConfig()
-//                    self.rebuildLookupQuery()
-//                }
-//            } catch {
-//                await MainActor.run {
-//                    self.isImporting = false
-//                    self.showError("Failed to download dictionaries: \(error.localizedDescription)")
-//                }
-//            }
-//        }
-//    }
-
     func importDictionary(from urls: [URL]) async {
         guard let dictionariesDir = try? Self.getDictionariesDirectory() else { return }
 
@@ -380,12 +315,6 @@ class DictionaryManager {
         let dictionaries = updatableDictionaries
         isUpdating = true
         Task.detached {
-            var tempFiles: [URL] = []
-            defer {
-                for file in tempFiles {
-                    try? FileManager.default.removeItem(at: file)
-                }
-            }
             var failures: [String] = []
             for (dictionary, type) in dictionaries {
                 let index = dictionary.index
@@ -394,50 +323,14 @@ class DictionaryManager {
                 }
 
                 do {
-                    let (data, _) = try await session.data(from: URL(string: index.indexUrl)!)
-                    let remoteIndex = try JSONDecoder().decode(DictionaryIndex.self, from: data)
-
-                    if index.revision == remoteIndex.revision {
-                        continue
-                    }
-
-                    await MainActor.run {
-                        self.currentImport = "Downloading \(remoteIndex.title)"
-                    }
-
-                    let (temp, _) = try await session.download(from: URL(string: remoteIndex.downloadUrl)!)
-                    tempFiles.append(temp)
-
-                    await MainActor.run {
-                        self.currentImport = "Importing \(remoteIndex.title)"
-                    }
-
-                    let tempDir = FileManager.default.temporaryDirectory
-                        .appendingPathComponent(UUID().uuidString)
-                    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-                    tempFiles.append(tempDir)
-
-                    let importResult = dictionary_importer.import(
-                        std.string(temp.path(percentEncoded: false)),
-                        std.string(tempDir.path(percentEncoded: false))
-                    )
-
-                    if !importResult.success {
-                        failures.append("\(index.title): Import failed")
-                        continue
-                    }
+                    guard let importResult = try await self.importRemoteDictionary(
+                        indexUrl: index.indexUrl,
+                        type: type,
+                        session: session
+                    ) else { continue }
 
                     let new = String(importResult.title)
                     let old = dictionary.index.title
-                    let tempPath = tempDir.appendingPathComponent(new)
-                    let destPath = try await Self.getDictionariesDirectory()
-                        .appendingPathComponent(type.rawValue)
-                        .appendingPathComponent(new)
-
-                    if new == old {
-                        try? FileManager.default.removeItem(at: destPath)
-                    }
-                    try FileManager.default.moveItem(at: tempPath, to: destPath)
 
                     await MainActor.run {
                         self.loadDictionaries()
@@ -479,6 +372,102 @@ class DictionaryManager {
                 }
             }
         }
+    }
+
+    func downloadDictionary(indexUrl: String, type: DictionaryType) async -> Bool {
+        isImporting = true
+
+        return await Task.detached {
+            var failure: String?
+
+            do {
+                _ = try await self.importRemoteDictionary(indexUrl: indexUrl, type: type)
+            } catch {
+                failure = error.localizedDescription
+            }
+
+            await MainActor.run { [failure] in
+                self.isImporting = false
+
+                if let failure {
+                    self.showError(failure)
+                } else {
+                    self.loadDictionaries()
+                    self.saveDictionaryConfig()
+                    self.rebuildLookupQuery()
+                }
+            }
+
+            return failure == nil
+        }.value
+    }
+
+    private nonisolated func importRemoteDictionary(
+        indexUrl: String,
+        type: DictionaryType,
+        session: URLSession = .shared
+    ) async throws -> ImportResult? {
+        let existingIndex: DictionaryIndex? = await Task { @MainActor in
+            let targetDictionaries = switch type {
+                case .term: termDictionaries
+                case .frequency: frequencyDictionaries
+                case .pitch: pitchDictionaries
+            }
+            return targetDictionaries.first(where: { $0.index.indexUrl == indexUrl })?.index
+        }.value
+
+        let (data, _) = try await session.data(from: URL(string: indexUrl)!)
+        let remoteIndex = try JSONDecoder().decode(DictionaryIndex.self, from: data)
+
+        if existingIndex?.revision == remoteIndex.revision {
+            return nil
+        }
+
+        await MainActor.run {
+            self.currentImport = "Downloading \(remoteIndex.title)"
+        }
+
+        var tempFiles: [URL] = []
+        defer {
+            for file in tempFiles {
+                try? FileManager.default.removeItem(at: file)
+            }
+        }
+
+        let (temp, _) = try await session.download(from: URL(string: remoteIndex.downloadUrl)!)
+        tempFiles.append(temp)
+
+        await MainActor.run {
+            self.currentImport = "Importing \(remoteIndex.title)"
+        }
+
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        tempFiles.append(tempDir)
+
+        let importResult = dictionary_importer.import(
+            std.string(temp.path(percentEncoded: false)),
+            std.string(tempDir.path(percentEncoded: false))
+        )
+
+        if !importResult.success {
+            throw NSError(domain: Bundle.main.bundleIdentifier ?? "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Import failed"])
+        }
+
+        let new = String(importResult.title)
+        let old = existingIndex?.title
+        let tempPath = tempDir.appendingPathComponent(new)
+        let destPath = try await Self.getDictionariesDirectory()
+            .appendingPathComponent(type.rawValue)
+            .appendingPathComponent(new)
+
+        if new == old {
+            try? FileManager.default.removeItem(at: destPath)
+        }
+        try FileManager.default.moveItem(at: tempPath, to: destPath)
+
+        return importResult
     }
 
     func autoUpdateDictionaries() {
