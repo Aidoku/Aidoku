@@ -88,6 +88,39 @@ extension FileManager {
             try? moveItem(at: fileURL, to: destinationURL)
         }
     }
+
+    func folderSize(at url: URL) -> Int64 {
+        let keys: [URLResourceKey] = [
+            .isRegularFileKey,
+            .totalFileAllocatedSizeKey,
+            .fileAllocatedSizeKey,
+            .totalFileSizeKey,
+            .fileSizeKey
+        ]
+        guard let enumerator = self.enumerator(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: [],
+            errorHandler: nil
+        ) else {
+            return 0
+        }
+
+        var size: Int64 = 0
+        for case let fileURL as URL in enumerator {
+            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)), values.isRegularFile == true else {
+                continue
+            }
+            size += Int64(
+                values.totalFileAllocatedSize
+                    ?? values.fileAllocatedSize
+                    ?? values.totalFileSize
+                    ?? values.fileSize
+                    ?? 0
+            )
+        }
+        return size
+    }
 }
 
 extension String {

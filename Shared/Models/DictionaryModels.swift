@@ -56,10 +56,31 @@ struct DictionaryConfig: Codable {
     }
 }
 
+struct DictionarySummaryCounts: Codable {
+    struct ItemCount: Codable {
+        let total: Int
+    }
+    let terms: ItemCount
+    let termMeta: [String: Int]
+    let kanji: ItemCount
+    let kanjiMeta: [String: Int]
+    let tagMeta: ItemCount
+    let media: ItemCount
+}
+
 nonisolated struct DictionaryIndex: Codable {
     let title: String
     let revision: String
+    let importDate: Int?
+    let counts: DictionarySummaryCounts?
     let isUpdatable: Bool?
     let indexUrl: String?
     let downloadUrl: String?
+    let author: String?
+    let url: String?
+    let description: String?
+    let attribution: String?
+    let sourceLanguage: String?
+    let targetLanguage: String?
+    let frequencyMode: String?
 }

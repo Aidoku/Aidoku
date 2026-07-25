@@ -229,17 +229,59 @@ struct DictionaryListView: View {
 private struct DictionaryInfoView: View {
     let dictionary: SelectedDictionary
 
+    @State private var dictionarySize: Int64?
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    HStack {
-                        Text(NSLocalizedString("REVISION"))
-                        Spacer()
-                        Text(dictionary.info.index.revision).foregroundStyle(.secondary)
+                    let index = dictionary.info.index
+                    item(name: NSLocalizedString("REVISION"), value: index.revision)
+                    if let author = index.author {
+                        item(name: NSLocalizedString("AUTHOR"), value: author)
                     }
+                    if let url = index.url {
+                        item(name: NSLocalizedString("URL"), value: url)
+                    }
+                    if let description = index.description, !description.isEmpty {
+                        item(name: NSLocalizedString("DESCRIPTION"), value: description)
+                    }
+                    if let attribution = index.attribution, !attribution.isEmpty {
+                        item(name: NSLocalizedString("ATTRIBUTION"), value: attribution)
+                    }
+                    if let sourceLanguage = index.sourceLanguage {
+                        item(name: NSLocalizedString("SOURCE_LANGUAGE"), value: sourceLanguage)
+                    }
+                    if let targetLanguage = index.targetLanguage {
+                        item(name: NSLocalizedString("TARGET_LANGUAGE"), value: targetLanguage)
+                    }
+                    if let counts = index.counts {
+                        if counts.terms.total > 0 {
+                            item(name: NSLocalizedString("TERM_COUNT"), value: "\(counts.terms.total)")
+                        }
+                        if let total = counts.termMeta["total"], total > 0 {
+                            item(name: NSLocalizedString("TERM_META_COUNT"), value: "\(total)")
+                        }
+                        if counts.kanji.total > 0 {
+                            item(name: NSLocalizedString("KANJI_COUNT"), value: "\(counts.kanji.total)")
+                        }
+                        if let total = counts.kanjiMeta["total"], total > 0 {
+                            item(name: NSLocalizedString("KANJI_META_COUNT"), value: "\(total)")
+                        }
+                        if counts.tagMeta.total > 0 {
+                            item(name: NSLocalizedString("TAG_COUNT"), value: "\(counts.tagMeta.total)")
+                        }
+                        if counts.media.total > 0 {
+                            item(name: NSLocalizedString("MEDIA_COUNT"), value: "\(counts.media.total)")
+                        }
+                    }
+                    item(name: NSLocalizedString("IS_UPDATABLE"), value: "\(index.isUpdatable ?? false)")
+                    item(
+                        name: NSLocalizedString("SIZE"),
+                        value: dictionarySize.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? "..."
+                    )
                 }
                 Section {
                     Button(NSLocalizedString("REMOVE_DICTIONARY"), role: .destructive) {
@@ -258,8 +300,25 @@ private struct DictionaryInfoView: View {
                     }
                 }
             }
+            .task(id: dictionary.info.path) {
+                let path = dictionary.info.path
+                dictionarySize = await Task.detached {
+                    FileManager.default.folderSize(at: path)
+                }.value
+            }
         }
         .presentationDetents([.medium])
+    }
+
+    func item(name: String, value: String) -> some View {
+        HStack(alignment: .top) {
+            Text(name)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+            Spacer()
+            Text(value)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
