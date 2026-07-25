@@ -541,6 +541,12 @@ actor KavitaSourceRunner: Runner {
         return request
     }
 
+    func getBaseUrl() async throws -> URL? {
+        try helper.getConfiguredServer()
+    }
+}
+
+extension KavitaSourceRunner {
     func getSettings() async throws -> [Setting] {
         var settings: [Setting] = [
             .init(
@@ -687,10 +693,6 @@ actor KavitaSourceRunner: Runner {
         }
 
         return settings
-    }
-
-    func getBaseUrl() async throws -> URL? {
-        try helper.getConfiguredServer()
     }
 }
 

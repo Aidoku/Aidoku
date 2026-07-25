@@ -305,15 +305,16 @@ extension KavitaVolume.Chapter {
     ) -> [AidokuRunner.Chapter] {
         // first toc title per spine page
         var titles: [Int: String] = [:]
-        func walk(_ items: [KavitaBookChapterItem]) {
-            for item in items {
-                if titles[item.page] == nil, !item.title.isEmpty {
-                    titles[item.page] = item.title
-                }
-                walk(item.children ?? [])
+        var items = toc
+        var index = 0
+        while index < items.count {
+            let item = items[index]
+            if titles[item.page] == nil, !item.title.isEmpty {
+                titles[item.page] = item.title
             }
+            items.append(contentsOf: item.children ?? [])
+            index += 1
         }
-        walk(toc)
 
         // spine pages with a toc title start a new chapter, untitled pages are
         // grouped into the preceding one; without a toc, every page is its own chapter

@@ -58,6 +58,53 @@ struct KomgaHelper: Sendable {
         accept: String = "application/json",
         lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> T {
+        let data = try await requestData(path: path, method: method, body: body, accept: accept, lastWorkingMirror: &lastWorkingMirror)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom({ decoder in
+            let container = try decoder.singleValueContainer()
+            let string = try container.decode(String.self)
+            let formatter = DateFormatter()
+            formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
+                .gmt
+            } else {
+                .init(secondsFromGMT: 0)
+            }
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+            var date = formatter.date(from: string)
+            if date == nil {
+                formatter.dateFormat = "yyyy-MM-dd"
+                date = formatter.date(from: string)
+            }
+            return date ?? .distantPast
+        })
+        if let result = try? decoder.decode(T.self, from: data) {
+            return result
+        } else if let error = try? decoder.decode(KomgaError.self, from: data) {
+            throw SourceError.message(error.error)
+        } else {
+            throw SourceError.message("UNKNOWN_ERROR")
+        }
+    }
+
+    // Fetch a raw string response (e.g. epub chapter xhtml).
+    func requestString(path: String) async throws(SourceError) -> String {
+        var dummy: URL?
+        let data = try await requestData(path: path, accept: nil, lastWorkingMirror: &dummy)
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw SourceError.message("UNKNOWN_ERROR")
+        }
+        return string
+    }
+
+    // Fetch raw response data, handling mirrors.
+    func requestData(
+        path: String,
+        method: HttpMethod = .GET,
+        body: KomgaSearchBody? = nil,
+        accept: String? = "application/json",
+        lastWorkingMirror: inout URL?
+    ) async throws(SourceError) -> Data {
         guard let auth = getAuthorizationHeader() else {
             throw SourceError.message("NOT_LOGGED_IN")
         }
@@ -81,13 +128,15 @@ struct KomgaHelper: Sendable {
             URLSession.shared
         }
 
-        func doRequest(baseUrl: URL) async throws(SourceError) -> T {
+        func doRequest(baseUrl: URL) async throws(SourceError) -> Data {
             guard let url = URL(string: path, relativeTo: baseUrl) else {
                 throw SourceError.message("INVALID_SERVER_URL")
             }
             var request = URLRequest(url: url)
             request.setValue(auth, forHTTPHeaderField: "Authorization")
-            request.setValue(accept, forHTTPHeaderField: "Accept")
+            if let accept {
+                request.setValue(accept, forHTTPHeaderField: "Accept")
+            }
             request.httpMethod = method.stringValue
             if let body {
                 let encoder = JSONEncoder()
@@ -105,32 +154,7 @@ struct KomgaHelper: Sendable {
             guard let data = result?.0 else {
                 throw SourceError.networkError
             }
-
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom({ decoder in
-                let container = try decoder.singleValueContainer()
-                let string = try container.decode(String.self)
-                let formatter = DateFormatter()
-                formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
-                    .gmt
-                } else {
-                    .init(secondsFromGMT: 0)
-                }
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-                var date = formatter.date(from: string)
-                if date == nil {
-                    formatter.dateFormat = "yyyy-MM-dd"
-                    date = formatter.date(from: string)
-                }
-                return date ?? .distantPast
-            })
-            if let result = try? decoder.decode(T.self, from: data) as T? {
-                return result
-            } else if let error = try? decoder.decode(KomgaError.self, from: data) {
-                throw SourceError.message(error.error)
-            } else {
-                throw SourceError.message("UNKNOWN_ERROR")
-            }
+            return data
         }
 
         for (idx, baseUrl) in allBaseUrls.enumerated() {
@@ -151,23 +175,6 @@ struct KomgaHelper: Sendable {
         }
 
         throw SourceError.networkError
-    }
-
-    // Fetch a raw string response (e.g. epub chapter xhtml).
-    func requestString(path: String) async throws(SourceError) -> String {
-        guard let auth = getAuthorizationHeader() else {
-            throw SourceError.message("NOT_LOGGED_IN")
-        }
-        let url = try getServerUrl(path: path)
-        var request = URLRequest(url: url)
-        request.setValue(auth, forHTTPHeaderField: "Authorization")
-        guard
-            let (data, _) = try? await URLSession.shared.data(for: request),
-            let string = String(data: data, encoding: .utf8)
-        else {
-            throw SourceError.networkError
-        }
-        return string
     }
 }
 

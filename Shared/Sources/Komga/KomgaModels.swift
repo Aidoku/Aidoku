@@ -308,18 +308,19 @@ extension KomgaWebPubManifest {
     /// The spine grouped into logical chapters by TOC titles, like local epubs.
     func chapters() -> [EpubParser.Chapter] {
         var titles: [String: String] = [:]
-        func walk(_ entries: [TocEntry]) {
-            for entry in entries {
-                if let href = entry.href, let title = entry.title, !title.isEmpty {
-                    let path = Self.resourcePath(of: href)
-                    if titles[path] == nil {
-                        titles[path] = title
-                    }
+        var entries = toc ?? []
+        var index = 0
+        while index < entries.count {
+            let entry = entries[index]
+            if let href = entry.href, let title = entry.title, !title.isEmpty {
+                let path = Self.resourcePath(of: href)
+                if titles[path] == nil {
+                    titles[path] = title
                 }
-                walk(entry.children ?? [])
             }
+            entries.append(contentsOf: entry.children ?? [])
+            index += 1
         }
-        walk(toc ?? [])
 
         return EpubParser.groupSpine(
             hrefs: readingOrder.map { Self.resourcePath(of: $0.href) },

@@ -61,6 +61,53 @@ struct KavitaHelper: Sendable {
         body: Data? = nil,
         lastWorkingMirror: inout URL?
     ) async throws(SourceError) -> T {
+        let data = try await requestData(path: path, method: method, body: body, lastWorkingMirror: &lastWorkingMirror)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom({ decoder in
+            let container = try decoder.singleValueContainer()
+            let string = try container.decode(String.self)
+            let formatter = DateFormatter()
+            formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
+                .gmt
+            } else {
+                .init(secondsFromGMT: 0)
+            }
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"
+            var date = formatter.date(from: string)
+            if date == nil {
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                date = formatter.date(from: string)
+            }
+            return date ?? .distantPast
+        })
+        if let result = try? decoder.decode(T.self, from: data) {
+            return result
+        } else if let error = try? decoder.decode(KavitaErrorResponse.self, from: data) {
+            throw SourceError.message(error.title)
+        } else {
+            throw SourceError.message("UNKNOWN_ERROR")
+        }
+    }
+
+    // Fetch a raw string response (e.g. epub chapter html).
+    func requestString(path: String) async throws(SourceError) -> String {
+        var dummy: URL?
+        let data = try await requestData(path: path, accept: nil, lastWorkingMirror: &dummy)
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw SourceError.message("UNKNOWN_ERROR")
+        }
+        return string
+    }
+
+    // Fetch raw response data, handling mirrors and re-authentication.
+    func requestData(
+        path: String,
+        method: HttpMethod = .GET,
+        body: Data? = nil,
+        accept: String? = "application/json",
+        lastWorkingMirror: inout URL?
+    ) async throws(SourceError) -> Data {
         let mainUrl = try getConfiguredServer()
         let mirrors = getMirrors()
         var allBaseUrls: [URL] = []
@@ -80,7 +127,7 @@ struct KavitaHelper: Sendable {
             URLSession.shared
         }
 
-        func doRequest(baseUrl: URL) async throws(SourceError) -> T? {
+        func doRequest(baseUrl: URL) async throws(SourceError) -> Data? {
             guard let url = URL(string: path, relativeTo: baseUrl) else {
                 throw SourceError.message("INVALID_SERVER_URL")
             }
@@ -88,7 +135,9 @@ struct KavitaHelper: Sendable {
             guard authorize(request: &request) else {
                 throw SourceError.message("NOT_LOGGED_IN")
             }
-            request.setValue("application/json", forHTTPHeaderField: "Accept")
+            if let accept {
+                request.setValue(accept, forHTTPHeaderField: "Accept")
+            }
             request.httpMethod = method.stringValue
             if let body {
                 request.httpBody = body
@@ -105,35 +154,10 @@ struct KavitaHelper: Sendable {
             if response.statusCode == 401 {
                 return nil
             }
-
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .custom({ decoder in
-                let container = try decoder.singleValueContainer()
-                let string = try container.decode(String.self)
-                let formatter = DateFormatter()
-                formatter.timeZone = if #available(iOS 16.0, macOS 13.0, *) {
-                    .gmt
-                } else {
-                    .init(secondsFromGMT: 0)
-                }
-                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS"
-                var date = formatter.date(from: string)
-                if date == nil {
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                    date = formatter.date(from: string)
-                }
-                return date ?? .distantPast
-            })
-            if let result = try? decoder.decode(T.self, from: data) as T? {
-                return result
-            } else if let error = try? decoder.decode(KavitaErrorResponse.self, from: data) {
-                throw SourceError.message(error.title)
-            } else {
-                throw SourceError.message("UNKNOWN_ERROR")
-            }
+            return data
         }
 
-        func tryRequests(ignoreFinalError: Bool = false) async throws(SourceError) -> T? {
+        func tryRequests(ignoreFinalError: Bool = false) async throws(SourceError) -> Data? {
             for (idx, baseUrl) in allBaseUrls.enumerated() {
                 do {
                     if let result = try await doRequest(baseUrl: baseUrl) {
@@ -165,37 +189,6 @@ struct KavitaHelper: Sendable {
             }
             return result
         }
-    }
-
-    // Fetch a raw string response (e.g. epub chapter html).
-    func requestString(path: String) async throws(SourceError) -> String {
-        let url = try getServerUrl(path: path)
-
-        func doRequest() async throws(SourceError) -> String? {
-            var request = URLRequest(url: url)
-            guard authorize(request: &request) else {
-                throw SourceError.message("NOT_LOGGED_IN")
-            }
-            guard
-                let result = try? await URLSession.shared.data(for: request),
-                let response = result.1 as? HTTPURLResponse
-            else {
-                throw SourceError.networkError
-            }
-            if response.statusCode == 401 {
-                return nil
-            }
-            return String(data: result.0, encoding: .utf8)
-        }
-
-        if let result = try await doRequest() {
-            return result
-        }
-        // retry after re-auth
-        guard try await refreshToken(), let result = try await doRequest() else {
-            throw SourceError.message("NOT_LOGGED_IN")
-        }
-        return result
     }
 
     func refreshToken() async throws(SourceError) -> Bool {

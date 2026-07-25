@@ -518,6 +518,12 @@ actor KomgaSourceRunner: Runner {
         return request
     }
 
+    func getBaseUrl() async throws -> URL? {
+        try helper.getConfiguredServer()
+    }
+}
+
+extension KomgaSourceRunner {
     func getSettings() async throws -> [Setting] {
         var settings: [Setting] = [
             .init(
@@ -610,10 +616,6 @@ actor KomgaSourceRunner: Runner {
             )
         ])
         return settings
-    }
-
-    func getBaseUrl() async throws -> URL? {
-        try helper.getConfiguredServer()
     }
 
     func handleBasicLogin(key _: String, username email: String, password: String) async throws -> Bool {
