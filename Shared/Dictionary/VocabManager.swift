@@ -53,6 +53,16 @@ extension VocabManager {
         }
     }
 
+    func clear() {
+        CoreDataManager.shared.clearVocab(context: context)
+        do {
+            try context.save()
+            NotificationCenter.default.post(name: .dictionaryVocabChanged, object: nil)
+        } catch {
+            LogManager.logger.error("Failed to clear vocab entries: \(error)")
+        }
+    }
+
     func update(entry: VocabEntry) {
         let object = CoreDataManager.shared.getVocab(
             word: entry.word,

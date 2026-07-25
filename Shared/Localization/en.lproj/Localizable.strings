@@ -614,6 +614,8 @@
 "DEFINITION" = "Definition";
 "VOCAB_CONTEXT" = "Context";
 "VOCAB_SOURCE" = "Source";
+"CLEAR_VOCABULARY_LIST" = "Clear Vocabulary List";
+"CLEAR_VOCABULARY_LIST_TEXT" = "This action is irreversible. All saved vocabulary will be removed.";
 
 // Backups
 "BACKUPS" = "Backups";

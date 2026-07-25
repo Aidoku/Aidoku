@@ -21,6 +21,17 @@ struct BackupVocabEntry: Codable, Hashable {
         .init(sourceKey: sourceId, mangaKey: mangaId, chapterKey: chapterId)
     }
 
+    init(entry: VocabEntry) {
+        self.sourceId = entry.chapterId.sourceKey
+        self.mangaId = entry.chapterId.mangaKey
+        self.chapterId = entry.chapterId.chapterKey
+        self.word = entry.word
+        self.reading = entry.reading
+        self.sentence = entry.sentence
+        self.page = entry.page ?? 0
+        self.createdDate = entry.createdDate
+    }
+
     init?(_ object: VocabObject) {
         guard
             let sourceId = object.sourceId,

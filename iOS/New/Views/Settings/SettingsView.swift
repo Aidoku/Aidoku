@@ -297,7 +297,7 @@ extension SettingsView {
             }
         } else if key == "Dictionary.vocabulary" {
             if #available(iOS 18.0, *) {
-                DictionaryVocabListView()
+                DictionaryVocabListView().environmentObject(path)
             }
         } else if key == "Tracking" {
             SettingsTrackingView()

@@ -760,7 +760,7 @@ extension MangaView {
         activityViewController.popoverPresentationController?.sourceView = sourceView
         // manually positioned in top right of screen, near the right navigation bar button
         activityViewController.popoverPresentationController?.sourceRect = CGRect(
-            x: UIScreen.main.bounds.width - 30,
+            x: sourceView.bounds.width - 30,
             y: 60,
             width: 0,
             height: 0

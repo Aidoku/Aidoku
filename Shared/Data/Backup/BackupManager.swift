@@ -53,15 +53,15 @@ actor BackupManager {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         if let plist = try? encoder.encode(backup) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
             if let url = url {
                 try? plist.write(to: url)
             } else {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
                 let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: backup.date)).aib")
                 try? plist.write(to: path)
             }
-            NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
+            NotificationCenter.default.post(name: .updateBackupList, object: nil)
         }
     }
 

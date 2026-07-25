@@ -9,10 +9,13 @@ import SwiftUI
 
 @available(iOS 18.0, *)
 struct DictionaryVocabListView: View {
+    @EnvironmentObject private var path: NavigationCoordinator
+
     @State private var entries: [VocabEntry] = []
     @State private var isLoaded = false
     @State private var searchText = ""
     @State private var selectedEntry: VocabEntry?
+    @State private var showingClearConfirmation = false
 
     @Namespace private var zoomNamespace
 
@@ -71,6 +74,37 @@ struct DictionaryVocabListView: View {
             }
         }
         .navigationTitle(NSLocalizedString("VOCABULARY"))
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        export()
+                    } label: {
+                        Label(NSLocalizedString("EXPORT"), systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(entries.isEmpty)
+
+                    Button(role: .destructive) {
+                        showingClearConfirmation = true
+                    } label: {
+                        Label(NSLocalizedString("CLEAR"), systemImage: "trash")
+                    }
+                    .disabled(entries.isEmpty)
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        }
+        .alert(NSLocalizedString("CLEAR_VOCABULARY_LIST"), isPresented: $showingClearConfirmation) {
+            Button(NSLocalizedString("CANCEL"), role: .cancel) {}
+            Button(NSLocalizedString("CLEAR"), role: .destructive) {
+                Task {
+                    await VocabManager.shared.clear()
+                }
+            }
+        } message: {
+            Text(NSLocalizedString("CLEAR_VOCABULARY_LIST_TEXT"))
+        }
         .if(!entries.isEmpty) {
             $0.searchable(text: $searchText)
         }
@@ -116,6 +150,37 @@ struct DictionaryVocabListView: View {
     private func load() async {
         entries = await VocabManager.shared.getEntries()
         isLoaded = true
+    }
+
+    private func export() {
+        let backupEntries = entries.map(BackupVocabEntry.init(entry:))
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+
+        do {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+
+            let data = try encoder.encode(backupEntries)
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent("aidoku-vocabulary-\(dateFormatter.string(from: .now))")
+                .appendingPathExtension("json")
+            try data.write(to: url, options: .atomic)
+
+            let viewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            guard let sourceView = path.rootViewController?.view else { return }
+            viewController.popoverPresentationController?.sourceView = sourceView
+            viewController.popoverPresentationController?.sourceRect = CGRect(
+                x: sourceView.bounds.width - 30,
+                y: 60,
+                width: 0,
+                height: 0
+            )
+            path.present(viewController)
+        } catch {
+            LogManager.logger.error("Failed to export vocabulary: \(error)")
+        }
     }
 
     private static func searchTerms(for query: String) -> Set<String> {
