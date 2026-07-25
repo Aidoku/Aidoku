@@ -13,6 +13,9 @@ struct ReaderSettingsView: View {
 
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
+    @State private var dictionaryLookupGestureMode: String
+    @State private var dictionaryLookupEnabled: Bool
+    @State private var dictionaryTextOverlayModeEnabled: Bool
     @StateObject private var downsampleImages = UserDefaultsBool(key: "Reader.downsampleImages")
     @StateObject private var upscaleImages = UserDefaultsBool(key: "Reader.upscaleImages")
     @StateObject private var splitWideImages = UserDefaultsBool(key: "Reader.splitWideImages")
@@ -37,6 +40,15 @@ struct ReaderSettingsView: View {
         self._tapZones = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.tapZones")
                 .flatMap(DefaultTapZones.init) ?? .disabled
+        )
+        self._dictionaryLookupGestureMode = State(
+            initialValue: UserDefaults.standard.string(forKey: "Reader.dictionaryLookupGesture") ?? "single-tap"
+        )
+        self._dictionaryLookupEnabled = State(
+            initialValue: UserDefaults.standard.bool(forKey: "Reader.dictionary")
+        )
+        self._dictionaryTextOverlayModeEnabled = State(
+            initialValue: UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode")
         )
     }
 
@@ -103,26 +115,28 @@ struct ReaderSettingsView: View {
                         )
                         SettingView(
                             setting: .init(
-                                key: "Reader.disableQuickActions",
-                                title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                                value: .toggle(.init())
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
                                 key: "Reader.disableDoubleTap",
                                 title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
                                 value: .toggle(.init())
                             )
                         )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.liveText",
-                                title: NSLocalizedString("LIVE_TEXT"),
-                                value: .toggle(.init())
-                            )
-                        )
                     }
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.disableQuickActions",
+                            title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                            requiresFalse: "Reader.lookupGestureLocksQuickActions",
+                            value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
+                        ),
+                        onChange: onSettingChange
+                    )
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.liveText",
+                            title: NSLocalizedString("LIVE_TEXT"),
+                            value: .toggle(.init())
+                        )
+                    )
                     SettingView(
                         setting: .init(
                             key: "Reader.hideBarsOnSwipe",
@@ -161,6 +175,151 @@ struct ReaderSettingsView: View {
                                 ))
                             )
                         )
+                    }
+                }
+
+                if #available(iOS 18.0, *) {
+                    Section {
+                        SettingView(
+                            setting: .init(
+                                key: "Reader.dictionary",
+                                title: NSLocalizedString("DICTIONARY_LOOKUP"),
+                                value: .toggle(.init())
+                            )
+                        )
+                        if dictionaryLookupEnabled {
+                            NavigationLink(destination: DictionaryListView()) {
+                                Text(NSLocalizedString("DICTIONARIES"))
+                            }
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryLookupGesture",
+                                    title: NSLocalizedString("LOOKUP_GESTURE"),
+                                    value: .select(.init(
+                                        values: ["single-tap", "long-press"],
+                                        titles: [
+                                            NSLocalizedString("SINGLE_TAP"),
+                                            NSLocalizedString("LONG_PRESS")
+                                        ]
+                                    ))
+                                ),
+                                onChange: onSettingChange
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryTextOverlayMode",
+                                    title: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE"),
+                                    value: .toggle(.init(subtitle: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO")))
+                                )
+                            )
+                            if dictionaryTextOverlayModeEnabled {
+                                SettingView(
+                                    setting: .init(
+                                        key: "Reader.dictionaryOverlayPadding",
+                                        title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
+                                        value: .stepper(.init(
+                                            minimumValue: 0,
+                                            maximumValue: 10,
+                                            stepValue: 1
+                                        ))
+                                    )
+                                )
+                                SettingView(
+                                    setting: .init(
+                                        key: "Reader.dictionaryOverlayTextScaleMultiplier",
+                                        title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
+                                        value: .stepper(.init(
+                                            minimumValue: 0.5,
+                                            maximumValue: 1.25,
+                                            stepValue: 0.05
+                                        ))
+                                    )
+                                )
+                            }
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryOCRLanguage",
+                                    title: NSLocalizedString("DICTIONARY_OCR_LANGUAGE"),
+                                    value: .select(.init(
+                                        values: ["ja", "zh", "ko"],
+                                        titles: [
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_JAPANESE"),
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_CHINESE"),
+                                            NSLocalizedString("DICTIONARY_OCR_LANGUAGE_KOREAN")
+                                        ]
+                                    ))
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryOCRPreUpscale",
+                                    title: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE"),
+                                    requiresFalse: "Reader.upscaleImages",
+                                    value: .toggle(.init(
+                                        subtitle: NSLocalizedString("DICTIONARY_OCR_PRE_UPSCALE_DISABLED_INFO")
+                                    ))
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryPopupWidth",
+                                    title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                                    value: .stepper(.init(
+                                        minimumValue: 220,
+                                        maximumValue: 500,
+                                        stepValue: 10
+                                    ))
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryPopupHeight",
+                                    title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
+                                    value: .stepper(.init(
+                                        minimumValue: 160,
+                                        maximumValue: 350,
+                                        stepValue: 10
+                                    ))
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryAudioSources",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_SOURCES"),
+                                    value: .editableList(.init(
+                                        lineLimit: 1,
+                                        placeholder: NSLocalizedString("DICTIONARY_AUDIO_SOURCE_PLACEHOLDER")
+                                    ))
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryAudioAutoplay",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_AUTOPLAY"),
+                                    value: .toggle(.init())
+                                )
+                            )
+                            SettingView(
+                                setting: .init(
+                                    key: "Reader.dictionaryAudioPlaybackMode",
+                                    title: NSLocalizedString("DICTIONARY_AUDIO_PLAYBACK_MODE"),
+                                    value: .select(.init(
+                                        values: ["interrupt", "duck", "mix"],
+                                        titles: [
+                                            NSLocalizedString("AUDIO_PLAYBACK_INTERRUPT"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_DUCK"),
+                                            NSLocalizedString("AUDIO_PLAYBACK_MIX")
+                                        ]
+                                    ))
+                                )
+                            )
+                        }
+                    } header: {
+                        Text(NSLocalizedString("DICTIONARY_LOOKUP"))
+                    } footer: {
+                        if dictionaryLookupEnabled && dictionaryLookupGestureMode == "single-tap" {
+                            Text(NSLocalizedString("LOOKUP_GESTURE_SINGLE_TAP_HINT"))
+                        }
                     }
                 }
 
@@ -398,6 +557,22 @@ struct ReaderSettingsView: View {
             .onReceive(NotificationCenter.default.publisher(for: .readerTapZones)) { _ in
                 tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
             }
+            .onReceive(NotificationCenter.default.publisher(for: .init("Reader.dictionary"))) { _ in
+                dictionaryLookupEnabled = UserDefaults.standard.bool(forKey: "Reader.dictionary")
+                onSettingChange("Reader.dictionary")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .init("Reader.dictionaryLookupGesture"))) { _ in
+                dictionaryLookupGestureMode = UserDefaults.standard.string(forKey: "Reader.dictionaryLookupGesture") ?? "single-tap"
+                onSettingChange("Reader.dictionaryLookupGesture")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .init("Reader.dictionaryTextOverlayMode"))) { _ in
+                dictionaryTextOverlayModeEnabled = UserDefaults.standard.bool(forKey: "Reader.dictionaryTextOverlayMode")
+            }
         }
+    }
+
+    private func onSettingChange(_ key: String) {
+        guard key == "Reader.dictionary" || key == "Reader.dictionaryLookupGesture" else { return }
+        UserDefaults.standard.syncReaderLookupGestureCompatibilityLocks()
     }
 }

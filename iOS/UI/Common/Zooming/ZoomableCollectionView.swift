@@ -18,21 +18,21 @@ class ZoomableCollectionView: ASDisplayNode {
     private let dummyZoomView: UIView
 
     var onZoomScaleChanged: ((CGFloat) -> Void)?
-    var doubleTapEnabled: Bool {
-        get { zoomingTap.isEnabled }
-        set { zoomingTap.isEnabled = newValue }
+    var doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective {
+        didSet {
+            zoomingTap.isEnabled = doubleTapZoomEnabled
+        }
     }
-
-    private lazy var zoomingTap: UITapGestureRecognizer = {
-        let zoomingTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
-        zoomingTap.numberOfTapsRequired = 2
-        return zoomingTap
-    }()
 
     private var tempGestures: [(parent: UIView, gesture: UIGestureRecognizer)] = []
     private var lastHit = Date.distantPast
 
     var zoomTimer: Timer?
+    private lazy var zoomingTap: UITapGestureRecognizer = {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        gesture.numberOfTapsRequired = 2
+        return gesture
+    }()
 
     @MainActor
     init(layout: UICollectionViewLayout) {
@@ -57,6 +57,7 @@ class ZoomableCollectionView: ASDisplayNode {
 
         dummyZoomView.addGestureRecognizer(zoomingTap)
         dummyZoomView.isUserInteractionEnabled = true
+        zoomingTap.isEnabled = doubleTapZoomEnabled
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {

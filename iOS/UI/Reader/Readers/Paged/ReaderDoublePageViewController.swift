@@ -35,6 +35,7 @@ class ReaderDoublePageViewController: BaseViewController {
     private var firstPage: Page?
     private var secondPage: Page?
     private var pageLayoutConstraints: [NSLayoutConstraint] = []
+    private var observerTokens: [NSObjectProtocol] = []
 
     init(firstPage: ReaderPageViewController, secondPage: ReaderPageViewController, direction: Direction) {
         self.firstPageController = firstPage
@@ -46,6 +47,8 @@ class ReaderDoublePageViewController: BaseViewController {
     }
 
     override func configure() {
+        updateDoubleTapZoomSetting()
+        observeZoomSettingChanges()
         zoomView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(zoomView)
 
@@ -71,6 +74,35 @@ class ReaderDoublePageViewController: BaseViewController {
         secondReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
         secondReloadButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(secondReloadButton)
+    }
+
+    deinit {
+        for token in observerTokens {
+            NotificationCenter.default.removeObserver(token)
+        }
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        zoomView.doubleTapZoomEnabled = !UserDefaults.standard.isReaderDoubleTapZoomDisabledEffective
+    }
+
+    private func observeZoomSettingChanges() {
+        let names = [
+            Notification.Name("Reader.disableDoubleTap"),
+            Notification.Name("Reader.dictionary"),
+            Notification.Name("Reader.dictionaryLookupGesture")
+        ]
+
+        for name in names {
+            let token = NotificationCenter.default.addObserver(
+                forName: name,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.updateDoubleTapZoomSetting()
+            }
+            observerTokens.append(token)
+        }
     }
 
     override func constrain() {
