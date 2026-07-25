@@ -191,8 +191,6 @@ struct DictionaryVocabDetailsView: View {
     }
 
     private func loadSource() async {
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-
         var (manga, chapter) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable [entry] context in
             let manga = CoreDataManager.shared.getManga(
                 sourceId: entry.chapterId.sourceKey,
